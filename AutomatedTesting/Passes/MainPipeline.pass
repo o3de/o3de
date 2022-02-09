@@ -43,6 +43,16 @@
                     ]
                 },
                 {
+                    "Name": "TerrainDetailTextureComputePass",
+                    "TemplateName": "TerrainDetailTextureComputePassTemplate",
+                    "Enabled": false
+                },
+                {
+                    "Name": "TerrainMacroTextureComputePass",
+                    "TemplateName": "TerrainMacroTextureComputePassTemplate",
+                    "Enabled": false
+                },
+                {
                     "Name": "DepthPrePass",
                     "TemplateName": "DepthMSAAParentTemplate",
                     "Connections": [
@@ -215,7 +225,7 @@
                     // Note: The following two lines represent the choice of rendering pipeline for the hair.
                     // You can either choose to use PPLL or ShortCut and accordingly change the flag 
                     // 'm_usePPLLRenderTechnique' in the class 'HairFeatureProcessor.cpp'
-//                    "TemplateName": "HairParentPassTemplate",
+                    // "TemplateName": "HairParentPassTemplate",
                     "TemplateName": "HairParentShortCutPassTemplate",
                     "Enabled": true,
                     "Connections": [

@@ -32,35 +32,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AutomatedTesting::LoadLevelGPU
-        TEST_SUITE smoke
-        TEST_SERIAL
-        TEST_REQUIRES gpu
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_RemoteConsole_GPULoadLevel_Works.py
-        TIMEOUT 100
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            AZ::PythonBindingsExample
-            AutomatedTesting.GameLauncher
-            AutomatedTesting.Assets
-        COMPONENT
-            Smoke
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::EditorTestWithGPU
-        TEST_REQUIRES gpu
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Editor_NewExistingLevels_Works.py
-        TIMEOUT 100
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            AZ::PythonBindingsExample
-            Legacy::Editor
-            AutomatedTesting.GameLauncher
-            AutomatedTesting.Assets
-    )
-
-    ly_add_pytest(
         NAME AutomatedTesting::GameLauncherWithGPU
         TEST_SUITE sandbox
         TEST_REQUIRES gpu
@@ -72,6 +43,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::Editor
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
+    )
+
+    ly_add_pytest(
+        NAME AutomatedTesting::SmokeTest_Sandbox
+        TEST_SUITE sandbox
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}
+        PYTEST_MARKS "SUITE_sandbox"
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
     )
 
 endif()

@@ -10,6 +10,8 @@
 #include <LyShine/UiBase.h>
 #include <LyShine/UiRenderFormats.h>
 
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+
 namespace AZ
 {
     class Color;
@@ -41,8 +43,27 @@ namespace LyShine
         //! End the setup of a mask render node, this marks the end of adding child primitives
         virtual void EndMask() = 0;
 
+        //! Begin rendering to a texture
+        virtual void BeginRenderToTexture(AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,
+            const AZ::Vector2& viewportTopLeft,
+            const AZ::Vector2& viewportSize,
+            const AZ::Color& clearColor) = 0;
+
         //! End rendering to a texture
         virtual void EndRenderToTexture() = 0;
+
+        //! Add an indexed triangle list primitive to the render graph with given render state
+        virtual void AddPrimitive(LyShine::UiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode) = 0;
+
+        //! Add an indexed triangle list primitive to the render graph which will use maskTexture as an alpha (gradient) mask
+        virtual void AddAlphaMaskPrimitive(LyShine::UiPrimitive* primitive,
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage,
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage,
+            bool isClampTextureMode,
+            bool isTextureSRGB,
+            bool isTexturePremultipliedAlpha,
+            BlendMode blendMode) = 0;
 
         //! Get a dynamic quad primitive that can be added as an image primitive to the render graph
         //! The graph handles the allocation of this DynUiPrimitive and deletes it when the graph is reset

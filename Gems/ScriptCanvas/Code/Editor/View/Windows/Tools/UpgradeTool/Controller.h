@@ -93,9 +93,10 @@ namespace ScriptCanvasEditor
                 ( const ModifyConfiguration& config
                 , const AZStd::vector<SourceHandle>& assets
                 , const AZStd::vector<size_t>& sortedOrder) override;
+            void OnUpgradeDependencyWaitInterval(const SourceHandle& info) override;
             void OnUpgradeModificationBegin(const ModifyConfiguration& config, const SourceHandle& info) override;
             void OnUpgradeModificationEnd(const ModifyConfiguration& config, const SourceHandle& info, ModificationResult result) override;
-
+            
             void SetLoggingPreferences();
             void SetSpinnerIsBusy(bool isBusy);
             void SetRowBusy(int index);

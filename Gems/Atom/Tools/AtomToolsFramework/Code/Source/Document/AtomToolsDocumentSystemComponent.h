@@ -9,14 +9,12 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QFileInfo>
@@ -25,10 +23,9 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    //! AtomToolsDocumentSystemComponent is the central component of the Material Editor Core gem
+    //! AtomToolsDocumentSystemComponent is the central component for managing documents
     class AtomToolsDocumentSystemComponent
         : public AZ::Component
-        , private AZ::TickBus::Handler
         , private AtomToolsDocumentNotificationBus::Handler
         , private AtomToolsDocumentSystemRequestBus::Handler
     {
@@ -59,10 +56,8 @@ namespace AtomToolsFramework
         void OnDocumentExternallyModified(const AZ::Uuid& documentId) override;
         //////////////////////////////////////////////////////////////////////////
 
-        ////////////////////////////////////////////////////////////////////////
-        // AZ::TickBus::Handler overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        ////////////////////////////////////////////////////////////////////////
+        void QueueReopenDocuments();
+        void ReopenDocuments();
 
         ////////////////////////////////////////////////////////////////////////
         // AtomToolsDocumentSystemRequestBus::Handler overrides...
@@ -78,15 +73,16 @@ namespace AtomToolsFramework
         bool SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
         bool SaveDocumentAsChild(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
         bool SaveAllDocuments() override;
+        AZ::u32 GetDocumentCount() const override;
         ////////////////////////////////////////////////////////////////////////
 
         AZ::Uuid OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen);
 
-        AZStd::intrusive_ptr<AtomToolsDocumentSystemSettings> m_settings;
         AZStd::function<AtomToolsDocument*()> m_documentCreator;
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AtomToolsDocument>> m_documentMap;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithExternalChanges;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithDependencyChanges;
+        bool m_queueReopenDocuments = false;
         const size_t m_maxMessageBoxLineCount = 15;
     };
 } // namespace AtomToolsFramework

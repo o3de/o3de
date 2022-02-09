@@ -13,23 +13,24 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
 namespace AZ::Debug
 {
     struct BudgetTracker::BudgetTrackerImpl
     {
-        AZStd::unordered_map<const char*, Budget> m_budgets;
+        AZStd::unordered_map<AZStd::string_view, Budget> m_budgets;
+        AZStd::unordered_set<Budget**> m_externalBudgetRefs;
     };
 
-    Budget* BudgetTracker::GetBudgetFromEnvironment(const char* budgetName, uint32_t crc)
+    void BudgetTracker::GetBudgetFromEnvironment(Budget*& extBudgetRef, const char* budgetName, uint32_t crc)
     {
         BudgetTracker* tracker = Interface<BudgetTracker>::Get();
         if (tracker)
         {
-            return &tracker->GetBudget(budgetName, crc);
+            tracker->GetBudget(extBudgetRef, budgetName, crc);
         }
-        return nullptr;
     }
 
     BudgetTracker::~BudgetTracker()
@@ -54,17 +55,24 @@ namespace AZ::Debug
         if (m_impl)
         {
             Interface<BudgetTracker>::Unregister(this);
+
+            for (auto budgetRef : m_impl->m_externalBudgetRefs)
+            {
+                *budgetRef = nullptr;
+            }
+
             delete m_impl;
             m_impl = nullptr;
         }
     }
 
-    Budget& BudgetTracker::GetBudget(const char* budgetName, uint32_t crc)
+    void BudgetTracker::GetBudget(Budget*& extBudgetRef, const char* budgetName, uint32_t crc)
     {
         AZStd::scoped_lock lock{ m_mutex };
 
-        auto it = m_impl->m_budgets.try_emplace(budgetName, budgetName, crc).first;
+        m_impl->m_externalBudgetRefs.insert(&extBudgetRef);
 
-        return it->second;
+        auto iter = m_impl->m_budgets.try_emplace(budgetName, budgetName, crc).first;
+        extBudgetRef = &iter->second;
     }
 } // namespace AZ::Debug

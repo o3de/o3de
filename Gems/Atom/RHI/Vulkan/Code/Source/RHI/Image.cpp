@@ -376,7 +376,7 @@ namespace AZ
         void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange, RHI::ImageSubresourceLayoutPlaced* subresourceLayouts, size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
-            size_t byteOffset = 0;
+            uint32_t byteOffset = 0;
             const uint32_t offsetAligment = 4;
             for (uint16_t arraySlice = subresourceRange.m_arraySliceMin; arraySlice <= subresourceRange.m_mipSliceMax; ++arraySlice)
             {
@@ -398,7 +398,7 @@ namespace AZ
                         layout.m_size = subresourceLayout.m_size;
                     }
 
-                    byteOffset = RHI::AlignUp(byteOffset + static_cast<uint64_t>(subresourceLayout.m_bytesPerImage) * subresourceLayout.m_size.m_depth, offsetAligment);
+                    byteOffset = RHI::AlignUp(byteOffset + subresourceLayout.m_bytesPerImage * subresourceLayout.m_size.m_depth, offsetAligment);
                 }
             }
             

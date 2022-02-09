@@ -20,6 +20,8 @@ namespace AzToolsFramework
     constexpr AZStd::string_view ScaleManipulatorBoxHalfExtentSetting = "/Amazon/Preferences/Editor/Manipulator/ScaleManipulatorBoxHalfExtent";
     constexpr AZStd::string_view RotationManipulatorRadiusSetting = "/Amazon/Preferences/Editor/Manipulator/RotationManipulatorRadius";
     constexpr AZStd::string_view ManipulatorViewBaseScaleSetting = "/Amazon/Preferences/Editor/Manipulator/ViewBaseScale";
+    constexpr AZStd::string_view IconsVisibleSetting = "/Amazon/Preferences/Editor/IconsVisible";
+    constexpr AZStd::string_view HelpersVisibleSetting = "/Amazon/Preferences/Editor/HelpersVisible";
 
     bool FlipManipulatorAxesTowardsView()
     {
@@ -119,5 +121,25 @@ namespace AzToolsFramework
     void SetManipulatorViewBaseScale(const float scale)
     {
         SetRegistry(ManipulatorViewBaseScaleSetting, scale);
+    }
+
+    bool IconsVisible()
+    {
+        return GetRegistry(IconsVisibleSetting, true);
+    }
+
+    void SetIconsVisible(const bool visible)
+    {
+        SetRegistry(IconsVisibleSetting, visible);
+    }
+
+    bool HelpersVisible()
+    {
+        return GetRegistry(HelpersVisibleSetting, true);
+    }
+
+    void SetHelpersVisible(const bool visible)
+    {
+        SetRegistry(HelpersVisibleSetting, visible);
     }
 } // namespace AzToolsFramework

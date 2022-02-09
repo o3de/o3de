@@ -139,7 +139,7 @@ namespace AZStd
     };
 
     template <>
-    struct AZStd::equal_to<AzToolsFramework::Thumbnailer::SharedThumbnailKey>
+    struct equal_to<AzToolsFramework::Thumbnailer::SharedThumbnailKey>
     {
         AZ_FORCE_INLINE bool operator()(const AzToolsFramework::Thumbnailer::SharedThumbnailKey& left, const AzToolsFramework::Thumbnailer::SharedThumbnailKey& right) const
         {

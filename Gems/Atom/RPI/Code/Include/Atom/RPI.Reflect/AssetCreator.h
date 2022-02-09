@@ -28,6 +28,7 @@ namespace AZ
             // [GFX TODO] We need to iterate on this concept at some point. We may want to expose it through cvars or something
             // like that, or we may not need this at all. For now it's helpful for testing.
             void SetElevateWarnings(bool elevated);
+            bool GetElevateWarnings() const { return m_warningsElevated; }
 
             int GetErrorCount() const { return m_errorCount; }
             int GetWarningCount() const { return m_warningCount; }

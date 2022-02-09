@@ -43,6 +43,8 @@ import types
 import functools
 import re
 
+from os import path
+
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.process_utils as process_utils
@@ -313,7 +315,7 @@ class EditorTestSuite():
         return 8
 
     ## Internal ##
-    _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in secondss
+    _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in seconds
     _TEST_FAIL_RETCODE = 0xF # Return code for test failure
 
     @pytest.fixture(scope="class")
@@ -745,7 +747,9 @@ class EditorTestSuite():
         if test_spec.wait_for_debugger:
             test_cmdline_args += ["--wait-for-debugger"]
         if self.enable_prefab_system:
-            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
         else:
             test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
@@ -758,7 +762,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -767,7 +771,9 @@ class EditorTestSuite():
             output = editor.get_output()
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-
+            # Save the editor log
+            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
+                                                     f'({run_id}){log_name}')
             if return_code == 0:
                 test_result = Result.Pass.create(test_spec, output, editor_log_content)
             else:
@@ -775,12 +781,15 @@ class EditorTestSuite():
                 if has_crashed:
                     test_result = Result.Crash.create(test_spec, output, return_code, editor_utils.retrieve_crash_output
                     (run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
+                    # Save the crash log
+                    crash_file_name = os.path.basename(workspace.paths.crash_log())
+                    workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
                     editor_utils.cycle_crash_report(run_id, workspace)
                 else:
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
         except WaitTimeoutError:
             output = editor.get_output()
-            editor.kill()
+            editor.stop()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
     
@@ -812,7 +821,9 @@ class EditorTestSuite():
         if any([t.wait_for_debugger for t in test_spec_list]):
             test_cmdline_args += ["--wait-for-debugger"]
         if self.enable_prefab_system:
-            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
         else:
             test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
@@ -824,7 +835,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
 
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
@@ -836,7 +847,9 @@ class EditorTestSuite():
             output = editor.get_output()
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-
+            # Save the editor log
+            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
+                                                     f'({run_id}){log_name}')
             if return_code == 0:
                 # No need to scrap the output, as all the tests have passed
                 for test_spec in test_spec_list:
@@ -857,6 +870,10 @@ class EditorTestSuite():
                                 # The first test with "Unknown" result (no data in output) is likely the one that crashed
                                 crash_error = editor_utils.retrieve_crash_output(run_id, workspace,
                                                                                  self._TIMEOUT_CRASH_LOG)
+                                # Save the crash log
+                                crash_file_name = os.path.basename(workspace.paths.crash_log())
+                                workspace.artifact_manager.save_artifact(
+                                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
                                 editor_utils.cycle_crash_report(run_id, workspace)
                                 results[test_spec_name] = Result.Crash.create(result.test_spec, output, return_code,
                                                                               crash_error, result.editor_log)
@@ -874,7 +891,7 @@ class EditorTestSuite():
                         results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code,
                                                                       crash_error, crashed_result.editor_log)
         except WaitTimeoutError:            
-            editor.kill()
+            editor.stop()
             output = editor.get_output()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 

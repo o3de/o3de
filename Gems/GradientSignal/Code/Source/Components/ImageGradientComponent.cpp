@@ -6,7 +6,8 @@
  *
  */
 
-#include "ImageGradientComponent.h"
+#include <GradientSignal/Components/ImageGradientComponent.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/Profiler.h>
@@ -18,16 +19,103 @@
 
 namespace GradientSignal
 {
+    AZ::JsonSerializationResult::Result JsonImageGradientConfigSerializer::Load(
+        void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context)
+    {
+        // We can distinguish between version 1 and 2 by the presence of the "ImageAsset" field,
+        // which is only in version 1.
+        // For version 2, we don't need to do any special processing, so just let the base class
+        // load the JSON if we don't find the "ImageAsset" field.
+        rapidjson::Value::ConstMemberIterator itr = inputValue.FindMember("ImageAsset");
+        if (itr == inputValue.MemberEnd())
+        {
+            return AZ::BaseJsonSerializer::Load(outputValue, outputValueTypeId, inputValue, context);
+        }
+
+        namespace JSR = AZ::JsonSerializationResult;
+
+        auto configInstance = reinterpret_cast<ImageGradientConfig*>(outputValue);
+        AZ_Assert(configInstance, "Output value for JsonImageGradientConfigSerializer can't be null.");
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+
+        result.Combine(ContinueLoadingFromJsonObjectField(
+            &configInstance->m_tilingX, azrtti_typeid<decltype(configInstance->m_tilingX)>(), inputValue, "TilingX", context));
+
+        result.Combine(ContinueLoadingFromJsonObjectField(
+            &configInstance->m_tilingY, azrtti_typeid<decltype(configInstance->m_tilingY)>(), inputValue, "TilingY", context));
+
+        // Version 1 stored a custom GradientSignal::ImageAsset as the image asset.
+        // In Version 2, we changed the image asset to use the generic AZ::RPI::StreamingImageAsset,
+        // so they are both AZ::Data::Asset but reference different types.
+        // Using the assetHint, which will be something like "my_test_image.gradimage",
+        // we need to find the valid streaming image asset product from the same source,
+        // which will be something like "my_test_image.png.streamingimage"
+        AZStd::string assetHint;
+        AZ::Data::AssetId fixedAssetId;
+        auto it = itr->value.FindMember("assetHint");
+        if (it != itr->value.MemberEnd())
+        {
+            AZ::ScopedContextPath subPath(context, "assetHint");
+            result.Combine(ContinueLoading(&assetHint, azrtti_typeid<AZStd::string>(), it->value, context));
+
+            if (assetHint.ends_with(".gradimage"))
+            {
+                // We don't know what image format the original source was, so we need to loop through
+                // all the supported image extensions to check if they have a valid corresponding
+                // streaming image asset
+                for (auto& supportedImageExtension : ImageProcessingAtom::s_SupportedImageExtensions)
+                {
+                    AZStd::string imageExtension(supportedImageExtension);
+
+                    // The image extensions are stored with a wildcard (e.g. *.png) so we need to strip that off first
+                    AZ::StringFunc::Replace(imageExtension, "*", "");
+
+                    // Form potential streaming image path (e.g. my_test_image.png.streamingimage)
+                    AZStd::string potentialStreamingImagePath(assetHint);
+                    AZ::StringFunc::Replace(potentialStreamingImagePath, ".gradimage", "");
+                    potentialStreamingImagePath += imageExtension + ".streamingimage";
+
+                    // Check if there is a valid streaming image asset for this path
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(fixedAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, potentialStreamingImagePath.c_str(), azrtti_typeid<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(), false);
+                    if (fixedAssetId.IsValid())
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Replace the old gradimage with new AssetId for streaming image asset
+        if (fixedAssetId.IsValid())
+        {
+            configInstance->m_imageAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::StreamingImageAsset>(fixedAssetId, AZ::Data::AssetLoadBehavior::QueueLoad);
+        }
+
+        return context.Report(result,
+            result.GetProcessing() != JSR::Processing::Halted ?
+            "Successfully loaded ImageGradientConfig information." :
+            "Failed to load ImageGradientConfig information.");
+    }
+
+    AZ_CLASS_ALLOCATOR_IMPL(JsonImageGradientConfigSerializer, AZ::SystemAllocator, 0);
+
     void ImageGradientConfig::Reflect(AZ::ReflectContext* context)
     {
+        if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<JsonImageGradientConfigSerializer>()->HandlesType<ImageGradientConfig>();
+        }
+
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
             serialize->Class<ImageGradientConfig, AZ::ComponentConfig>()
-                ->Version(1)
-                ->Field("ImageAsset", &ImageGradientConfig::m_imageAsset)
+                ->Version(2)
                 ->Field("TilingX", &ImageGradientConfig::m_tilingX)
                 ->Field("TilingY", &ImageGradientConfig::m_tilingY)
+                ->Field("StreamingImageAsset", &ImageGradientConfig::m_imageAsset)
                 ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -129,13 +217,16 @@ namespace GradientSignal
 
     void ImageGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         SetupDependencies();
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
 
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.QueueLoad();
     }
 
@@ -144,10 +235,11 @@ namespace GradientSignal
         AZ::Data::AssetBus::Handler::BusDisconnect();
         GradientRequestBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
+        GradientTransformNotificationBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.Release();
     }
 
@@ -173,38 +265,75 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
     }
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
+    }
+
+    void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_imageMutex)> lock(m_imageMutex);
+        m_gradientTransform = newTransform;
     }
 
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
         AZ::Vector3 uvw = sampleParams.m_position;
-
         bool wasPointRejected = false;
-        const bool shouldNormalizeOutput = true;
-        GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
 
-        if (!wasPointRejected)
         {
-            AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
-            return GetValueFromImageAsset(m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+            m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                return GetValueFromImageAsset(
+                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            }
         }
 
         return 0.0f;
+    }
+
+    void ImageGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZ::Vector3 uvw;
+        bool wasPointRejected = false;
+
+        AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            m_gradientTransform.TransformPositionToUVWNormalized(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                outValues[index] = GetValueFromImageAsset(
+                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
+        }
     }
 
     AZStd::string ImageGradientComponent::GetImageAssetPath() const
@@ -223,8 +352,8 @@ namespace GradientSignal
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
-                AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
-                m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<ImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
+                AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+                m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<AZ::RPI::StreamingImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
             }
 
             SetupDependencies();

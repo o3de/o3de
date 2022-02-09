@@ -6,25 +6,20 @@
  *
  */
 
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
-
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <AzQtComponents/Components/Widgets/FileDialog.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-
-#include <Atom/Document/MaterialDocumentSettings.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzFramework/Application/Application.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 
 namespace MaterialEditor
 {
     CreateMaterialDialog::CreateMaterialDialog(QWidget* parent)
-        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
+        : CreateMaterialDialog(QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets", parent)
     {
     }
 
@@ -69,11 +64,10 @@ namespace MaterialEditor
 
         m_ui->m_materialTypeComboBox->model()->sort(0, Qt::AscendingOrder); 
 
-        // Select the default material type from settings
-        auto settings =
-            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ::Crc32("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
+        const AZStd::string defaultMaterialType = AtomToolsFramework::GetSettingOrDefault<AZStd::string>(
+            "/O3DE/Atom/MaterialEditor/CreateMaterialDialog/DefaultMaterialType", "StandardPBR");
 
-        const int index = m_ui->m_materialTypeComboBox->findText(settings->m_defaultMaterialTypeName.c_str());
+        const int index = m_ui->m_materialTypeComboBox->findText(defaultMaterialType.c_str());
         if (index >= 0)
         {
             m_ui->m_materialTypeComboBox->setCurrentIndex(index);

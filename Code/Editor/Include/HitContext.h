@@ -17,7 +17,6 @@
 class CGizmo;
 class CBaseObject;
 struct IDisplayViewport;
-class CDeepSelection;
 struct AABB;
 
 #include <QRect>
@@ -105,8 +104,6 @@ struct HitContext
     CBaseObject* object;
     //! gizmo object that have been hit.
     CGizmo* gizmo;
-    //! for deep selection mode
-    CDeepSelection* pDeepSelection;
     //! For linking tool
     const char* name;
     //! true if this hit was from the object icon
@@ -131,7 +128,6 @@ struct HitContext
         bIgnoreAxis = false;
         bOnlyGizmo = false;
         bUseSelectionHelpers = false;
-        pDeepSelection = 0;
         name = nullptr;
         iconHit = false;
     }

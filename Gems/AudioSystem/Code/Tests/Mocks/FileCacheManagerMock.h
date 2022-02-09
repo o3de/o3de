@@ -13,6 +13,11 @@
 #include <AzTest/AzTest.h>
 #include <IRenderAuxGeom.h>
 
+namespace AZ::IO
+{
+    class FileRequestHandle;
+}
+
 namespace Audio
 {
     class FileCacheManagerMock
@@ -47,7 +52,7 @@ namespace Audio
         MOCK_METHOD3(FinishCachingFileInternal, bool(CATLAudioFileEntry* const, AZ::IO::SizeType, AZ::IO::IStreamerTypes::RequestStatus));
 
         MOCK_METHOD1(FinishAsyncStreamRequest, void(AZ::IO::FileRequestHandle));
-        
+
         MOCK_METHOD1(AllocateMemoryBlockInternal, bool(CATLAudioFileEntry* const));
         MOCK_METHOD1(UncacheFile, void(CATLAudioFileEntry* const));
         MOCK_METHOD0(TryToUncacheFiles, void());

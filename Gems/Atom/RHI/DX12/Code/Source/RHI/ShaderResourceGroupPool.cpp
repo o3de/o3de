@@ -20,7 +20,7 @@ namespace AZ
     namespace DX12
     {
         template<typename T, typename U>
-        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetSRVsFromImageViews(const AZStd::array_view<RHI::ConstPtr<T>>& imageViews, D3D12_SRV_DIMENSION dimension)
+        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetSRVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& imageViews, D3D12_SRV_DIMENSION dimension)
         {
             AZStd::vector<DescriptorHandle> cpuSourceDescriptors(imageViews.size(), m_descriptorContext->GetNullHandleSRV(dimension));
 
@@ -36,7 +36,7 @@ namespace AZ
         }
 
         template<typename T, typename U>
-        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetUAVsFromImageViews(const AZStd::array_view<RHI::ConstPtr<T>>& imageViews, D3D12_UAV_DIMENSION dimension)
+        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetUAVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& imageViews, D3D12_UAV_DIMENSION dimension)
         {
             AZStd::vector<DescriptorHandle> cpuSourceDescriptors(imageViews.size(), m_descriptorContext->GetNullHandleUAV(dimension));
             for (size_t i = 0; i < cpuSourceDescriptors.size(); ++i)
@@ -50,7 +50,7 @@ namespace AZ
             return cpuSourceDescriptors;
         }
 
-        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetCBVsFromBufferViews(const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufferViews)
+        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews)
         {
             AZStd::vector<DescriptorHandle> cpuSourceDescriptors(bufferViews.size(), m_descriptorContext->GetNullHandleCBV());
 
@@ -202,23 +202,19 @@ namespace AZ
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
             auto& device = static_cast<Device&>(GetDevice());
-            group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
 
             if (!groupData.IsAnyResourceTypeUpdated())
             {
                 return RHI::ResultCode::Success;
             }
 
-            if (m_constantBufferSize &&
-                groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ConstantDataMask)))
+            group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
+            if (m_constantBufferSize)
             {
                 memcpy(group.GetCompiledData().m_cpuConstantAddress, groupData.GetConstantData().data(), groupData.GetConstantData().size());
             }
 
-            if (m_viewsDescriptorTableSize &&
-                groupData.IsResourceTypeEnabledForCompilation(
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewMask) |
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewMask)))
+            if (m_viewsDescriptorTableSize)
             {
                 //Lazy initialization for cbv/srv/uav Descriptor Tables
                 if (!group.m_viewsDescriptorTable.IsValid())
@@ -243,17 +239,12 @@ namespace AZ
                 UpdateViewsDescriptorTable(descriptorTable, groupData);
             }
 
-            if (m_unboundedArrayCount &&
-                groupData.IsResourceTypeEnabledForCompilation(
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask) |
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask)))
+            if (m_unboundedArrayCount)
             {
                 UpdateUnboundedArrayDescriptorTables(group, groupData);
             }
 
-            if (m_samplersDescriptorTableSize &&
-                groupData.IsResourceTypeEnabledForCompilation(
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
+            if (m_samplersDescriptorTableSize)
             {
                 const DescriptorTable descriptorTable(
                     group.m_samplersDescriptorTable.GetOffset() + group.m_compiledDataIndex * m_samplersDescriptorTableSize,
@@ -287,7 +278,7 @@ namespace AZ
             {
                 const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
 
-                AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
+                AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
                 D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputBufferAccess(shaderInputBuffer.m_access);
                 AZStd::vector<DescriptorHandle> descriptorHandles;
                 switch (descriptorRangeType)
@@ -322,7 +313,7 @@ namespace AZ
             {
                 const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
 
-                AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
+                AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
                 D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputImageAccess(shaderInputImage.m_access);
 
                 AZStd::vector<DescriptorHandle> descriptorHandles;
@@ -358,7 +349,7 @@ namespace AZ
             {
                 const RHI::ShaderInputSamplerIndex samplerInputIndex(shaderInputIndex);
 
-                AZStd::array_view<RHI::SamplerState> samplers = groupData.GetSamplerArray(samplerInputIndex);
+                AZStd::span<const RHI::SamplerState> samplers = groupData.GetSamplerArray(samplerInputIndex);
                 UpdateDescriptorTableRange(descriptorTable, samplerInputIndex, samplers);
             }
         }
@@ -373,7 +364,7 @@ namespace AZ
             for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
             {
                 const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
-                AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
+                AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
 
                 uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
 
@@ -412,7 +403,7 @@ namespace AZ
             for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : groupLayout.GetShaderInputListForImageUnboundedArrays())
             {
                 const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
-                AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
+                AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
 
                 uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
 
@@ -456,7 +447,7 @@ namespace AZ
             RHI::ShaderInputBufferAccess bufferAccess)
         {
             const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
-            AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> bufferViews =
+            AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews =
                 groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
 
             if (bufferViews.empty())
@@ -497,7 +488,7 @@ namespace AZ
             RHI::ShaderInputImageType imageType)
         {
             const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
-            AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> imageViews =
+            AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews =
                 groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
 
             if (imageViews.empty())
@@ -574,7 +565,7 @@ namespace AZ
                 for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
                 {
                     const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
-                    AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
 
                     uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
                     if (!bufferViews.empty())
@@ -606,7 +597,7 @@ namespace AZ
                      groupLayout.GetShaderInputListForImageUnboundedArrays())
                 {
                     const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
-                    AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> imageViews =
+                    AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews =
                         groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
 
                     uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
@@ -684,7 +675,7 @@ namespace AZ
         void ShaderResourceGroupPool::UpdateDescriptorTableRange(
             DescriptorTable descriptorTable,
             RHI::ShaderInputSamplerIndex samplerInputIndex, 
-            AZStd::array_view<RHI::SamplerState> samplerStates)
+            AZStd::span<const RHI::SamplerState> samplerStates)
         {
             const DescriptorHandle nullHandle = m_descriptorContext->GetNullHandleSampler();
             AZStd::vector<DescriptorHandle> cpuSourceDescriptors(aznumeric_caster(samplerStates.size()), nullHandle);

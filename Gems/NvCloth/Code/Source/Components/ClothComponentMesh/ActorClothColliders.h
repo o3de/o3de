@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Math/Transform.h>
 
 namespace NvCloth

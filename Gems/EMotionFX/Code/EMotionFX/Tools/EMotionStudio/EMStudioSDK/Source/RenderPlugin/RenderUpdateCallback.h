@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_RENDERUPDATECALLBACK_H
-#define __EMSTUDIO_RENDERUPDATECALLBACK_H
+#pragma once
 
 #include "../EMStudioConfig.h"
 #include <EMotionFX/Source/ActorInstance.h>
@@ -38,6 +37,3 @@ namespace EMStudio
         RenderPlugin*   m_plugin;
     };
 } // namespace EMStudio
-
-
-#endif

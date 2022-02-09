@@ -1,9 +1,10 @@
-"""
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 
 # for underlying data structures, see Code\Framework\AzFramework\AzFramework\Physics\Shape.h
 
@@ -69,7 +70,7 @@ class CharacterColliderNodeConfiguration():
     name : str
         debug name of the node
 
-    shapes : `list` of `tuple` of (ColliderConfiguration, ShapeConfiguration) 
+    shapes : `list` of `tuple` of (ColliderConfiguration, ShapeConfiguration)
         a list of pairs of collider and shape configuration
 
     Methods
@@ -83,12 +84,12 @@ class CharacterColliderNodeConfiguration():
     """
     def __init__(self):
         self.name = ''
-        self.shapes = [] # List of Tuple of (ColliderConfiguration, ShapeConfiguration) 
-        
+        self.shapes = [] # List of Tuple of (ColliderConfiguration, ShapeConfiguration)
+
     def add_collider_shape_pair(self, colliderConfiguration, shapeConfiguration) -> None:
         pair = (colliderConfiguration, shapeConfiguration)
         self.shapes.append(pair)
-        
+
     def to_dict(self):
         data = {}
         shapeList = []
@@ -115,7 +116,7 @@ class CharacterColliderConfiguration():
         Helper function to add a character collider node configuration into the nodes
 
     add_character_collider_node_configuration_node(name, colliderConfiguration, shapeConfiguration)
-        Helper function to add a character collider node configuration into the nodes 
+        Helper function to add a character collider node configuration into the nodes
 
         **Returns**: CharacterColliderNodeConfiguration
 
@@ -125,10 +126,10 @@ class CharacterColliderConfiguration():
     """
     def __init__(self):
         self.nodes = [] # list of CharacterColliderNodeConfiguration
-        
+
     def add_character_collider_node_configuration(self, characterColliderNodeConfiguration) -> None:
         self.nodes.append(characterColliderNodeConfiguration)
-        
+
     def add_character_collider_node_configuration_node(self, name, colliderConfiguration, shapeConfiguration) -> CharacterColliderNodeConfiguration:
         characterColliderNodeConfiguration = CharacterColliderNodeConfiguration()
         self.add_character_collider_node_configuration(characterColliderNodeConfiguration)
@@ -169,7 +170,7 @@ class ShapeConfiguration():
             "$type": self._shapeType,
             "Scale": self.scale
         }
-    
+
 class SphereShapeConfiguration(ShapeConfiguration):
     """
     The configuration for a Sphere collider
@@ -191,7 +192,7 @@ class SphereShapeConfiguration(ShapeConfiguration):
     def to_dict(self):
         data = super().to_dict()
         data['Radius'] = self.radius
-        return data    
+        return data
 
 class BoxShapeConfiguration(ShapeConfiguration):
     """
@@ -215,7 +216,7 @@ class BoxShapeConfiguration(ShapeConfiguration):
         data = super().to_dict()
         data['Configuration'] = self.dimensions
         return data
-    
+
 class CapsuleShapeConfiguration(ShapeConfiguration):
     """
     The configuration for a Capsule collider
@@ -237,13 +238,13 @@ class CapsuleShapeConfiguration(ShapeConfiguration):
         super().__init__('CapsuleShapeConfiguration')
         self.height = 1.00
         self.radius = 0.25
-    
+
     def to_dict(self):
         data = super().to_dict()
         data['Height'] = self.height
         data['Radius'] = self.radius
-        return data    
-    
+        return data
+
 class PhysicsAssetShapeConfiguration(ShapeConfiguration):
     """
     The configuration for a Asset collider using a mesh asset for collision
@@ -276,7 +277,7 @@ class PhysicsAssetShapeConfiguration(ShapeConfiguration):
         self.assetScale = [1.0, 1.0, 1.0]
         self.useMaterialsFromAsset = True
         self.subdivisionLevel = 4
-        
+
     def set_asset_reference(self, assetReference: str) -> None:
         self.asset = { "assetHint": assetReference }
 
@@ -286,7 +287,7 @@ class PhysicsAssetShapeConfiguration(ShapeConfiguration):
         data['AssetScale'] = self.assetScale
         data['UseMaterialsFromAsset'] = self.useMaterialsFromAsset
         data['SubdivisionLevel'] = self.subdivisionLevel
-        return data    
+        return data
 
 # for underlying data structures, see Code\Framework\AzFramework\AzFramework\Physics\Configuration\JointConfiguration.h
 
@@ -313,7 +314,7 @@ class JointConfiguration():
     ChildLocalPosition: [float, float, float]
         Joint position relative to child body.
 
-    StartSimulationEnabled: bool 
+    StartSimulationEnabled: bool
         When active, the joint will be enabled when the simulation begins.
 
     Methods
@@ -372,7 +373,7 @@ class SimulatedBodyConfiguration():
             "orientation" : self.orientation,
             "startSimulationEnabled" : self.startSimulationEnabled
         }
-    
+
 
 # for underlying data structures, see Code\Framework\AzFramework\AzFramework\Physics\Configuration\RigidBodyConfiguration.h
 
@@ -394,7 +395,7 @@ class RigidBodyConfiguration(SimulatedBodyConfiguration):
         Local space offset for the center of mass (COM).
 
     mass: float
-        The mass of the rigid body in kilograms. 
+        The mass of the rigid body in kilograms.
         A value of 0 is treated as infinite.
         The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.
 
@@ -423,8 +424,8 @@ class RigidBodyConfiguration(SimulatedBodyConfiguration):
         When active, the rigid body is not affected by gravity or other forces and is moved by script.
 
     ccdEnabled: bool
-        When active, the rigid body has continuous collision detection (CCD). 
-        Use this to ensure accurate collision detection, particularly for fast moving rigid bodies. 
+        When active, the rigid body has continuous collision detection (CCD).
+        Use this to ensure accurate collision detection, particularly for fast moving rigid bodies.
         CCD must be activated in the global PhysX preferences.
 
     ccdMinAdvanceCoefficient: float
@@ -511,7 +512,7 @@ class RigidBodyConfiguration(SimulatedBodyConfiguration):
         data["Maximum Angular Velocity"] = self.maxAngularVelocity
         data["Include All Shapes In Mass"] = self.includeAllShapesInMassCalculation
         data["CCD Min Advance"] = self.ccdMinAdvanceCoefficient
-        data["CCD Friction"] = self.ccdFrictionEnabled        
+        data["CCD Friction"] = self.ccdFrictionEnabled
         return data
 
 # for underlying data structures, see Code\Framework\AzFramework\AzFramework\Physics\Ragdoll.h
@@ -566,7 +567,7 @@ class RagdollConfiguration():
     def __init__(self):
         self.nodes = [] # list of RagdollNodeConfiguration
         self.colliders = CharacterColliderConfiguration()
-        
+
     def add_ragdoll_node_configuration(self, ragdollNodeConfiguration) -> None:
         self.nodes.append(ragdollNodeConfiguration)
 

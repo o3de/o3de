@@ -135,9 +135,10 @@ namespace AZStd
             AZ_FORCE_INLINE this_type& operator--()     { --m_offset;   return *this;   }
             AZ_FORCE_INLINE this_type  operator--(int)  { this_type tmp = *this; --m_offset; return tmp; }
             AZ_FORCE_INLINE this_type& operator+=(difference_type offset)   { m_offset += offset; return *this; }
-            AZ_FORCE_INLINE this_type  operator+(difference_type offset)        { this_type tmp = *this; tmp += offset; return tmp; }
+            AZ_FORCE_INLINE this_type  operator+(difference_type offset) const   { this_type tmp = *this; tmp += offset; return tmp; }
+            friend AZ_FORCE_INLINE this_type operator+(difference_type offset, const this_type& rhs) { this_type tmp = rhs; tmp += offset; return tmp; }
             AZ_FORCE_INLINE this_type& operator-=(difference_type offset)   { m_offset -= offset; return *this; }
-            AZ_FORCE_INLINE this_type  operator-(difference_type offset)        { this_type tmp = *this; tmp -= offset; return tmp; }
+            AZ_FORCE_INLINE this_type  operator-(difference_type offset) const  { this_type tmp = *this; tmp -= offset; return tmp; }
             /// ???
             AZ_FORCE_INLINE difference_type operator-(const this_type& rhs) const
             {
@@ -197,9 +198,10 @@ namespace AZStd
             AZ_FORCE_INLINE this_type& operator--()     { --base_type::m_offset;    return *this;   }
             AZ_FORCE_INLINE this_type  operator--(int)  { this_type tmp = *this; --base_type::m_offset; return tmp; }
             AZ_FORCE_INLINE this_type& operator+=(difference_type offset)   { base_type::m_offset += offset; return *this; }
-            AZ_FORCE_INLINE this_type  operator+(difference_type offset)        { this_type tmp = *this; tmp += offset; return tmp; }
+            AZ_FORCE_INLINE this_type  operator+(difference_type offset) const { this_type tmp = *this; tmp += offset; return tmp; }
+            friend AZ_FORCE_INLINE this_type  operator+(difference_type offset, const this_type& rhs) { this_type tmp = rhs; tmp += offset; return tmp; }
             AZ_FORCE_INLINE this_type& operator-=(difference_type offset)   { base_type::m_offset -= offset; return *this; }
-            AZ_FORCE_INLINE this_type  operator-(difference_type offset)        { this_type tmp = *this; tmp -= offset; return tmp; }
+            AZ_FORCE_INLINE this_type  operator-(difference_type offset) const { this_type tmp = *this; tmp -= offset; return tmp; }
             AZ_FORCE_INLINE difference_type operator-(const this_type& rhs) const
             {
                 return rhs.m_offset <= base_type::m_offset ? base_type::m_offset - rhs.m_offset : -(difference_type)(rhs.m_offset - base_type::m_offset);

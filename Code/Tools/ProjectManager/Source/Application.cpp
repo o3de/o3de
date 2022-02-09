@@ -70,7 +70,7 @@ namespace O3DE::ProjectManager
         }
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
-        AZ_Assert(m_pythonBindings, "Failed to create PythonBindings");
+
         if (!m_pythonBindings->PythonStarted())
         {
             if (!interactive)
@@ -111,6 +111,8 @@ namespace O3DE::ProjectManager
                 return false;
             }
         }
+
+        m_settings = AZStd::make_unique<Settings>();
 
         if (!RegisterEngine(interactive))
         {
@@ -196,9 +198,7 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool forceRegistration = false;
-
-        // check if an engine with this name is already registered
+        // check if an engine with this name is already registered and has a valid engine.json
         auto existingEngineResult = m_pythonBindings->GetEngineInfo(engineInfo.m_name);
         if (existingEngineResult)
         {
@@ -230,10 +230,11 @@ namespace O3DE::ProjectManager
                 // user elected not to change the name or force registration
                 return false;
             }
-
-            forceRegistration = true;
         }
 
+        // always force register in case there is an engine registered in o3de_manifest.json, but
+        // the engine.json is missing or corrupt in which case GetEngineInfo() fails
+        constexpr bool forceRegistration = true;
         auto registerOutcome = m_pythonBindings->SetEngineInfo(engineInfo, forceRegistration);
         if (!registerOutcome)
         {

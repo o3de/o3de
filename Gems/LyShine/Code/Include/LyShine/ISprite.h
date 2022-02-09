@@ -11,6 +11,15 @@
 #include <smartptr.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <AzCore/Math/Vector2.h>
+#include <AtomCore/Instance/Instance.h>
+
+namespace AZ
+{
+    namespace RPI
+    {
+        class Image;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! A sprite is a texture with extra information about how it behaves for 2D drawing
@@ -135,4 +144,6 @@ public: // member functions
     
     //! Returns true if this sprite is configured as a sprite-sheet, false otherwise
     virtual bool IsSpriteSheet() const = 0;
+
+    virtual AZ::Data::Instance<AZ::RPI::Image> GetImage() = 0;
 };

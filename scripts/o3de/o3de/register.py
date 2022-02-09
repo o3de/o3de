@@ -490,7 +490,7 @@ def register_repo(json_data: dict,
     repo_sha256 = hashlib.sha256(url.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
 
-    result = utils.download_file(parsed_uri, cache_file, True)
+    result = utils.download_file(url, cache_file, True)
     if result == 0:
         json_data.setdefault('repos', []).insert(0, repo_uri)
 
@@ -570,7 +570,7 @@ def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
     result = 0
 
     for project in json_data.get('projects', []):
-        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
+        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json', generate_uuid=True):
             logger.warning(f"Project path {project} is invalid.")
             # Attempt to unregister all invalid projects even if previous projects failed to unregister
             # but combine the result codes of each command.
@@ -793,9 +793,6 @@ def register(engine_path: pathlib.Path = None,
 
 
 def _run_register(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
     if args.update:
         remove_invalid_o3de_objects()
         return repo.refresh_repos()
@@ -891,8 +888,6 @@ def add_parser_args(parser):
                        default=False,
                        help='Refresh the repo cache.')
 
-    parser.add_argument('-ohf', '--override-home-folder', type=pathlib.Path, required=False,
-                        help='By default the home folder is the user folder, override it to this folder.')
     parser.add_argument('-r', '--remove', action='store_true', required=False,
                         default=False,
                         help='Remove entry.')

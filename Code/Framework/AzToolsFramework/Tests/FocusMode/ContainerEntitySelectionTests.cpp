@@ -8,12 +8,12 @@
 
 #include <Tests/FocusMode/EditorFocusModeSelectionFixture.h>
 
-namespace AzToolsFramework
+namespace UnitTest
 {
-    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithNoContainers)
+    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionFindHighestSelectableEntityWithNoContainers)
     {
         // When no containers are in the way, the function will just return the entityId of the entity that was clicked.
-        
+
         // Click on Car Entity
         ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
@@ -23,7 +23,7 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
     }
 
-    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithClosedContainer)
+    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionFindHighestSelectableEntityWithClosedContainer)
     {
         // If a closed container is an ancestor of the queried entity, the closed container is selected.
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]); // Containers are closed by default
@@ -40,7 +40,7 @@ namespace AzToolsFramework
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
     }
 
-    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithOpenContainer)
+    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionFindHighestSelectableEntityWithOpenContainer)
     {
         // If a closed container is an ancestor of the queried entity, the closed container is selected.
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]);
@@ -58,7 +58,7 @@ namespace AzToolsFramework
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
     }
 
-    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithMultipleClosedContainers)
+    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionFindHighestSelectableEntityWithMultipleClosedContainers)
     {
         // If multiple closed containers are ancestors of the queried entity, the highest closed container is selected.
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]);
@@ -77,7 +77,7 @@ namespace AzToolsFramework
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[CityEntityName]);
     }
 
-    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionTests_FindHighestSelectableEntityWithMultipleContainers)
+    TEST_F(EditorFocusModeSelectionFixture, ContainerEntitySelectionFindHighestSelectableEntityWithMultipleContainers)
     {
         // If multiple containers are ancestors of the queried entity, the highest closed container is selected.
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]);
@@ -96,4 +96,4 @@ namespace AzToolsFramework
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[CityEntityName]);
     }
-}
+} // namespace UnitTest

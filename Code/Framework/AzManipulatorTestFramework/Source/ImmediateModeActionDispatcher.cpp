@@ -120,7 +120,8 @@ namespace AzManipulatorTestFramework
     void ImmediateModeActionDispatcher::MousePositionImpl(const AzFramework::ScreenPoint& position)
     {
         const auto cameraState = m_manipulatorViewportInteraction.GetViewportInteraction().GetCameraState();
-        GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick = BuildMousePick(position, cameraState);
+        GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick =
+            AzToolsFramework::ViewportInteraction::BuildMousePick(cameraState, position);
         GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Move;
         m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
     }

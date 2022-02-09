@@ -8,11 +8,10 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <CryCommon/CrySystemBus.h>
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <IConsole.h>
 #include <ISystem.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 
 namespace ModifierCpp
 {
@@ -145,6 +144,7 @@ namespace ScriptCanvasEditor
             }
 
             Idle();
+            RestoreSettings();
         }
 
         void Model::OnScanComplete()
@@ -161,6 +161,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
+            CacheSettings();
             m_state = State::Scanning;
             m_log.Activate();
             m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();

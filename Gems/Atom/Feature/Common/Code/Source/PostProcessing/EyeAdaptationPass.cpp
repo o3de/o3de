@@ -73,8 +73,6 @@ namespace AZ
                 return false;
             }
 
-            AZ_Assert(m_pipeline->GetScene(), "EyeAdaptationPass's Pipeline does not have a valid scene pointer");
-
             AZ::RPI::Scene* scene = GetScene();
             bool enabled = false;
 

@@ -96,7 +96,7 @@ namespace AzFramework
             AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
             {
                 AZStd::string commandLineResult;
-                Az::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
+                AZ::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
                 return commandLineResult;
             }
         };

@@ -37,7 +37,6 @@ namespace EMStudio
         m_renderer = AZStd::make_unique<AnimViewportRenderer>(GetViewportContext(), m_plugin->GetRenderOptions());
         SetScene(m_renderer->GetFrameworkScene(), false);
 
-        LoadRenderFlags();
         SetupCameras();
         SetupCameraController();
         Reinit();
@@ -48,7 +47,6 @@ namespace EMStudio
 
     AnimViewportWidget::~AnimViewportWidget()
     {
-        SaveRenderFlags();
         ViewportPluginRequestBus::Handler::BusDisconnect();
         AnimViewportRequestBus::Handler::BusDisconnect();
     }
@@ -56,17 +54,12 @@ namespace EMStudio
     void AnimViewportWidget::Reinit(bool resetCamera)
     {
         m_renderer->Reinit();
-        m_renderer->UpdateActorRenderFlag(m_renderFlags);
+        m_renderer->UpdateActorRenderFlag(m_plugin->GetRenderOptions()->GetRenderFlags());
 
         if (resetCamera)
         {
-            ResetCamera();
+            UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
         }
-    }
-
-    EMotionFX::ActorRenderFlagBitset AnimViewportWidget::GetRenderFlags() const
-    {
-        return m_renderFlags;
     }
 
     void AnimViewportWidget::SetupCameras()
@@ -134,48 +127,62 @@ namespace EMStudio
         GetControllerList()->Add(controller);
     }
 
-    void AnimViewportWidget::ResetCamera()
-    {
-        SetCameraViewMode(CameraViewMode::DEFAULT);
-    }
-
-    void AnimViewportWidget::SetCameraViewMode(CameraViewMode mode)
+    void AnimViewportWidget::UpdateCameraViewMode(RenderOptions::CameraViewMode mode)
     {
         // Set the camera view mode.
         const AZ::Vector3 targetPosition = m_renderer->GetCharacterCenter();
         AZ::Vector3 cameraPosition;
         switch (mode)
         {
-        case CameraViewMode::FRONT:
+        case RenderOptions::CameraViewMode::FRONT:
             cameraPosition.Set(targetPosition.GetX(), targetPosition.GetY() + CameraDistance, targetPosition.GetZ());
             break;
-        case CameraViewMode::BACK:
+        case RenderOptions::CameraViewMode::BACK:
             cameraPosition.Set(targetPosition.GetX(), targetPosition.GetY() - CameraDistance, targetPosition.GetZ());
             break;
-        case CameraViewMode::TOP:
+        case RenderOptions::CameraViewMode::TOP:
             cameraPosition.Set(targetPosition.GetX(), targetPosition.GetY(), CameraDistance + targetPosition.GetZ());
             break;
-        case CameraViewMode::BOTTOM:
+        case RenderOptions::CameraViewMode::BOTTOM:
             cameraPosition.Set(targetPosition.GetX(), targetPosition.GetY(), -CameraDistance + targetPosition.GetZ());
             break;
-        case CameraViewMode::LEFT:
+        case RenderOptions::CameraViewMode::LEFT:
             cameraPosition.Set(targetPosition.GetX() - CameraDistance, targetPosition.GetY(), targetPosition.GetZ());
             break;
-        case CameraViewMode::RIGHT:
+        case RenderOptions::CameraViewMode::RIGHT:
             cameraPosition.Set(targetPosition.GetX() + CameraDistance, targetPosition.GetY(), targetPosition.GetZ());
             break;
-        case CameraViewMode::DEFAULT:
+        case RenderOptions::CameraViewMode::DEFAULT:
             // The default view mode is looking from the top left of the character.
             cameraPosition.Set(
                 targetPosition.GetX() - CameraDistance, targetPosition.GetY() + CameraDistance, targetPosition.GetZ() + CameraDistance);
             break;
         }
+
         GetViewportContext()->SetCameraTransform(AZ::Transform::CreateLookAt(cameraPosition, targetPosition));
+
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+            GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+            AZ::Vector3::CreateAxisY(-CameraDistance));
     }
 
-    void AnimViewportWidget::SetFollowCharacter(bool follow)
+    void AnimViewportWidget::UpdateCameraFollowUp(bool followUp)
     {
-        m_followCharacter = follow;
+        if (followUp)
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+                AZ::Vector3::CreateAxisY(-CameraDistance));
+        }
+        else
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+                AZ::Vector3::CreateZero());
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+                GetViewportContext()->GetCameraTransform().GetTranslation());
+        }
     }
 
     void AnimViewportWidget::OnTick(float deltaTime, AZ::ScriptTimePoint time)
@@ -190,7 +197,7 @@ namespace EMStudio
     {
         auto viewportContext = GetViewportContext();
         auto windowSize = viewportContext->GetViewportSize();
-        // Prevent devided by zero
+        // Prevent division by zero
         const float height = AZStd::max<float>(aznumeric_cast<float>(windowSize.m_height), 1.0f);
         const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / height;
 
@@ -208,56 +215,23 @@ namespace EMStudio
         for (size_t i = 0; i < numPlugins; ++i)
         {
             EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
-            plugin->Render(m_renderFlags);
+            plugin->Render(m_plugin->GetRenderOptions()->GetRenderFlags());
         }
     }
 
     void AnimViewportWidget::FollowCharacter()
     {
-        if (m_followCharacter)
+        if (m_plugin->GetRenderOptions()->GetCameraFollowUp())
         {
-            // When follow charater move is enabled, we are adding the delta of the character movement to the camera per frame.
-            AZ::Vector3 camPos = GetViewportContext()->GetCameraTransform().GetTranslation();
-            camPos += m_renderer->GetCharacterCenter() - m_prevCharacterPos;
-            AZ::Transform newCamTransform = GetViewportContext()->GetCameraTransform();
-            newCamTransform.SetTranslation(camPos);
-            GetViewportContext()->SetCameraTransform(newCamTransform);
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+                m_renderer->GetCharacterCenter());
         }
-        m_prevCharacterPos = m_renderer->GetCharacterCenter();
     }
 
-    void AnimViewportWidget::ToggleRenderFlag(EMotionFX::ActorRenderFlag flag)
+    void AnimViewportWidget::UpdateRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags)
     {
-        m_renderFlags[flag] = !m_renderFlags[flag];
-        m_renderer->UpdateActorRenderFlag(m_renderFlags);
-    }
-
-    void AnimViewportWidget::LoadRenderFlags()
-    {
-        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
-        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
-        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
-
-        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
-        {
-            QString name = QString(i);
-            const bool isEnabled = settings.value(name).toBool();
-            m_renderFlags[i] = isEnabled;
-        }
-        m_renderer->UpdateActorRenderFlag(m_renderFlags);
-    }
-
-    void AnimViewportWidget::SaveRenderFlags()
-    {
-        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
-        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
-        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
-
-        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
-        {
-            QString name = QString(i);
-            settings.setValue(name, (bool)m_renderFlags[i]);
-        }
+        m_renderer->UpdateActorRenderFlag(renderFlags);
     }
 
     AZ::s32 AnimViewportWidget::GetViewportId() const

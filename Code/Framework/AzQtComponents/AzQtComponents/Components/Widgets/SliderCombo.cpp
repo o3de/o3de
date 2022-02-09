@@ -14,6 +14,7 @@
 
 #include <QHBoxLayout>
 #include <QSignalBlocker>
+#include <QTimer>
 
 namespace AzQtComponents
 {
@@ -243,7 +244,7 @@ SliderDoubleCombo::SliderDoubleCombo(QWidget* parent)
 
     InitialiseSliderCombo(this, layout, m_spinbox, m_slider);
 
-    connect(m_slider, &SliderDouble::valueChanged, this, &SliderDoubleCombo::setValue);
+    connect(m_slider, &SliderDouble::valueChanged, this, &SliderDoubleCombo::setValueSlider);
     connect(m_spinbox, QOverload<double>::of(&DoubleSpinBox::valueChanged), this, &SliderDoubleCombo::setValue);
     connect(m_slider, &SliderDouble::sliderReleased, this, &SliderDoubleCombo::editingFinished);
     connect(m_spinbox, &DoubleSpinBox::editingFinished, this, &SliderDoubleCombo::editingFinished);
@@ -254,17 +255,40 @@ SliderDoubleCombo::~SliderDoubleCombo()
 {
 }
 
+bool m_fromSlider{ false };
+
+void SliderDoubleCombo::setValueSlider(double value)
+{
+    const bool doEmit = m_value != value;
+    m_value = value;
+    updateSpinBox();
+    updateSlider();
+
+    if (doEmit)
+    {
+        // We don't want to update the slider from setValue as this
+        // causes rounding errors in the tooltip hint.
+        m_fromSlider = true;
+        QTimer::singleShot( 10, []() { m_fromSlider = false; });
+
+        Q_EMIT valueChanged();
+    }
+}
+
 void SliderDoubleCombo::setValue(double value)
 {
     const bool doEmit = m_value != value;
     m_value = value;
 
     updateSpinBox();
-    updateSlider();
-
-    if (doEmit)
+    if (!m_fromSlider)
     {
-        Q_EMIT valueChanged();
+        updateSlider();
+
+        if (doEmit)
+        {
+            Q_EMIT valueChanged();
+        }
     }
 }
 

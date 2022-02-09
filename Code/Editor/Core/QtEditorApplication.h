@@ -13,7 +13,6 @@
 #include <QMap>
 #include <QTranslator>
 #include <QSet>
-#include "IEventLoopHook.h"
 #include <unordered_map>
 
 #include <AzCore/PlatformDef.h>

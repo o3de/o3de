@@ -118,7 +118,7 @@ def clicked_launch_sub_builder():
         print(debug_msg)
         _LOGGER.debug(debug_msg)
 
-    _SUB_BUILDER_PATH = Path(settings.DCCSIG_PATH,
+    _SUB_BUILDER_PATH = Path(settings.PATH_DCCSIG,
                              'SDK',
                              'Substance',
                              'builder')

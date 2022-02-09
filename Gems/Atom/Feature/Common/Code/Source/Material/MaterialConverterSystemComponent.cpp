@@ -28,8 +28,7 @@ namespace AZ
                 serializeContext->Class<MaterialConverterSettings>()
                     ->Version(2)
                     ->Field("Enable", &MaterialConverterSettings::m_enable)
-                    ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial)
-                    ->Field("IncludeMaterialPropertyNames", &MaterialConverterSettings::m_includeMaterialPropertyNames);
+                    ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial);
             }
         }
 
@@ -70,11 +69,6 @@ namespace AZ
             return m_settings.m_enable;
         }
 
-        bool MaterialConverterSystemComponent::ShouldIncludeMaterialPropertyNames() const
-        {
-            return m_settings.m_includeMaterialPropertyNames;
-        }
-
         bool MaterialConverterSystemComponent::ConvertMaterial(
             const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& sourceData)
         {
@@ -88,9 +82,8 @@ namespace AZ
             // The source data for generating material asset
             sourceData.m_materialType = GetMaterialTypePath();
 
-            auto handleTexture = [&materialData, &sourceData](
-                                     const char* propertyTextureGroup, SceneAPI::DataTypes::IMaterialData::TextureMapType textureType) {
-                MaterialSourceData::PropertyMap& properties = sourceData.m_properties[propertyTextureGroup];
+            auto handleTexture = [&materialData, &sourceData](const char* propertyTextureGroup, SceneAPI::DataTypes::IMaterialData::TextureMapType textureType)
+            {
                 const AZStd::string& texturePath = materialData.GetTexture(textureType);
 
                 // Check to see if the image asset exists. If not, skip this texture map and just disable it.
@@ -107,7 +100,7 @@ namespace AZ
 
                 if (assetFound)
                 {
-                    properties["textureMap"].m_value = texturePath;
+                    sourceData.SetPropertyValue(MaterialPropertyId{propertyTextureGroup, "textureMap"}, texturePath);
                 }
                 else if (!texturePath.empty())
                 {
@@ -126,7 +119,7 @@ namespace AZ
             {
                 anyPBRInUse = true;
                 handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::BaseColor);
-                sourceData.m_properties["baseColor"]["textureBlendMode"].m_value = AZStd::string("Lerp");
+                sourceData.SetPropertyValue(Name{"baseColor.textureBlendMode"}, AZStd::string("Lerp"));
             }
             else
             {
@@ -141,10 +134,10 @@ namespace AZ
             if (baseColor.has_value())
             {
                 anyPBRInUse = true;
-                sourceData.m_properties["baseColor"]["color"].m_value = toColor(baseColor.value());
+                sourceData.SetPropertyValue(Name{"baseColor.color"}, toColor(baseColor.value()));
             }
 
-            sourceData.m_properties["opacity"]["factor"].m_value = materialData.GetOpacity();
+            sourceData.SetPropertyValue(Name{"opacity.factor"}, materialData.GetOpacity());
 
             auto applyOptionalPropertiesFunc = [&sourceData, &anyPBRInUse](const auto& propertyGroup, const auto& propertyName, const auto& propertyOptional)
             {
@@ -153,7 +146,7 @@ namespace AZ
                 if (propertyOptional.has_value())
                 {
                     anyPBRInUse = true;
-                    sourceData.m_properties[propertyGroup][propertyName].m_value = propertyOptional.value();
+                    sourceData.SetPropertyValue(MaterialPropertyId{propertyGroup, propertyName}, propertyOptional.value());
                 }
             };
 
@@ -166,7 +159,7 @@ namespace AZ
             applyOptionalPropertiesFunc("roughness", "useTexture", materialData.GetUseRoughnessMap());
 
             handleTexture("emissive", SceneAPI::DataTypes::IMaterialData::TextureMapType::Emissive);
-            sourceData.m_properties["emissive"]["color"].m_value = toColor(materialData.GetEmissiveColor());
+            sourceData.SetPropertyValue(Name{"emissive.color"}, toColor(materialData.GetEmissiveColor()));
             applyOptionalPropertiesFunc("emissive", "intensity", materialData.GetEmissiveIntensity());
             applyOptionalPropertiesFunc("emissive", "useTexture", materialData.GetUseEmissiveMap());
 
@@ -177,7 +170,7 @@ namespace AZ
             {
                 // If it doesn't have the useColorMap property, then it's a non-PBR material and the baseColor
                 // texture needs to be set to the diffuse color.
-                sourceData.m_properties["baseColor"]["color"].m_value = toColor(materialData.GetDiffuseColor());
+                sourceData.SetPropertyValue(Name{"baseColor.color"}, toColor(materialData.GetDiffuseColor()));
             }
             return true;
         }

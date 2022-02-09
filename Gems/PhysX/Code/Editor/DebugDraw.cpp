@@ -56,9 +56,9 @@ namespace PhysX
         bool IsDrawColliderReadOnly()
         {
             bool helpersVisible = false;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(helpersVisible,
-                &AzToolsFramework::EditorRequests::DisplayHelpersVisible);
-            // if helpers are visible, draw colliders is NOT read only and can be changed.
+            AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::BroadcastResult(
+                helpersVisible, &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::HelpersVisible);
+            // if helpers are visible, draw colliders is not read only and can be changed
             return !helpersVisible;
         }
 
@@ -687,14 +687,19 @@ namespace PhysX
             [[maybe_unused]] const AZ::Vector3& colliderScale,
             [[maybe_unused]] const bool forceUniformScaling) const
         {
+            auto heights = heightfieldShapeConfig.GetSamples();
+
+            if (heights.empty())
+            {
+                return;
+            }
+
             const int numColumns = heightfieldShapeConfig.GetNumColumns();
             const int numRows = heightfieldShapeConfig.GetNumRows();
 
             const float minXBounds = -(numColumns * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
             const float minYBounds = -(numRows * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
 
-            auto heights = heightfieldShapeConfig.GetSamples();
-            
             for (int xIndex = 0; xIndex < numColumns - 1; xIndex++)
             {
                 for (int yIndex = 0; yIndex < numRows - 1; yIndex++)

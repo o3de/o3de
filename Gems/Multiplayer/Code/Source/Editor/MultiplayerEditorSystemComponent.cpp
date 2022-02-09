@@ -277,22 +277,25 @@ namespace Multiplayer
         }
 
         // BeginGameMode and Prefab Processing have completed at this point
-        const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
+        const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
         
         AZStd::vector<uint8_t> buffer;
         AZ::IO::ByteContainerStream byteStream(&buffer);
 
         // Serialize Asset information and AssetData into a potentially large buffer
-        for (const auto& asset : assetData)
+        for (auto& [spawnableName, spawnableAssetData] : allAssetData)
         {
-            AZ::Data::AssetId assetId = asset.GetId();
-            AZStd::string assetHint = asset.GetHint();
-            uint32_t hintSize = aznumeric_cast<uint32_t>(assetHint.size());
+            for (auto& asset : spawnableAssetData.m_assets)
+            {
+                AZ::Data::AssetId assetId = asset.GetId();
+                AZStd::string assetHint = asset.GetHint();
+                uint32_t hintSize = aznumeric_cast<uint32_t>(assetHint.size());
 
-            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-            byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-            byteStream.Write(assetHint.size(), assetHint.data());
-            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
+                byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
+                byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+                byteStream.Write(assetHint.size(), assetHint.data());
+                AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
+            }
         }
 
         const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
@@ -364,24 +367,27 @@ namespace Multiplayer
 
         AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
-        const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
+        const auto& allAssetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
         AZStd::vector<uint8_t> buffer;
         AZ::IO::ByteContainerStream byteStream(&buffer);
 
         // Serialize Asset information and AssetData into a potentially large buffer
-        for (const auto& asset : assetData)
+        for (auto& [spawnableName, spawnableAssetData] : allAssetData)
         {
-            AZ::Data::AssetId assetId = asset.GetId();
-            AZStd::string assetHint = asset.GetHint();
-            auto hintSize = aznumeric_cast<uint32_t>(assetHint.size());
+            for (auto& asset : spawnableAssetData.m_assets)
+            {
+                AZ::Data::AssetId assetId = asset.GetId();
+                AZStd::string assetHint = asset.GetHint();
+                auto hintSize = aznumeric_cast<uint32_t>(assetHint.size());
 
-            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-            byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-            byteStream.Write(assetHint.size(), assetHint.data());
-            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
+                byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
+                byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+                byteStream.Write(assetHint.size(), assetHint.data());
+                AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
+            }
         }
-
+        
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 

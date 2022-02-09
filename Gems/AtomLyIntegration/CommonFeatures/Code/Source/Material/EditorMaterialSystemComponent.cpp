@@ -143,7 +143,7 @@ namespace AZ
                 arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
             }
 
-            AtomToolsFramework::LaunchTool("MaterialEditor", AZ_TRAIT_OS_EXECUTABLE_EXTENSION, arguments);
+            AtomToolsFramework::LaunchTool("MaterialEditor", arguments);
         }
 
         void EditorMaterialSystemComponent::OpenMaterialInspector(

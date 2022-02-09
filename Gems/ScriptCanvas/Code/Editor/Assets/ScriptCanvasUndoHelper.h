@@ -21,13 +21,13 @@ namespace ScriptCanvasEditor
     public:
 
         UndoHelper();
-        UndoHelper(Graph* source);
+        UndoHelper(EditorGraph* source);
         ~UndoHelper();
 
         UndoCache* GetSceneUndoCache()  override;
         UndoData CreateUndoData() override;
 
-        void SetSource(Graph* source);
+        void SetSource(EditorGraph* source);
 
         void BeginUndoBatch(AZStd::string_view label) override;
         void EndUndoBatch() override;
@@ -58,6 +58,6 @@ namespace ScriptCanvasEditor
 
         Status m_status = Status::Idle;
         SceneUndoState m_undoState;
-        Graph* m_graph = nullptr;
+        EditorGraph* m_graph = nullptr;
     };
 }

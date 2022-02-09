@@ -381,7 +381,7 @@ namespace AzToolsFramework
         EntityIdContainer& selectedEntityIdsBeforeBoxSelect,
         EntityIdContainer& potentialSelectedEntityIds,
         EntityIdContainer& potentialDeselectedEntityIds,
-        const EditorVisibleEntityDataCache& entityDataCache,
+        const EditorVisibleEntityDataCacheInterface& entityDataCache,
         const int viewportId,
         const ViewportInteraction::KeyboardModifiers currentKeyboardModifiers,
         const ViewportInteraction::KeyboardModifiers& previousKeyboardModifiers)
@@ -958,7 +958,7 @@ namespace AzToolsFramework
     // (useful in the context of drawing when we only care about entities we can see)
     // note: return the index if it is selectable, nullopt otherwise
     static AZStd::optional<size_t> SelectableInVisibleViewportCache(
-        const EditorVisibleEntityDataCache& entityDataCache, const AZ::EntityId entityId)
+        const EditorVisibleEntityDataCacheInterface& entityDataCache, const AZ::EntityId entityId)
     {
         if (auto entityIndex = entityDataCache.GetVisibleEntityIndexFromId(entityId))
         {
@@ -1002,7 +1002,7 @@ namespace AzToolsFramework
         }
     }
 
-    EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCacheInterface* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
         const AzFramework::EntityContextId entityContextId = GetEntityContextId();
@@ -2504,6 +2504,28 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+        // do not create manipulators for the container entity of the focused prefab.
+        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
+        {
+            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                focusRoot.IsValid())
+            {
+                m_selectedEntityIds.erase(focusRoot);
+            }
+        }
+
+        // do not create manipulators for any entities marked as read only
+        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+        {
+            AZStd::erase_if(
+                m_selectedEntityIds,
+                [readOnlyEntityPublicInterface](auto entityId)
+                {
+                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
+                });
+        }
+
         // note: create/destroy pattern to be addressed
         DestroyManipulators(m_entityIdManipulators);
         CreateEntityIdManipulators();
@@ -3262,9 +3284,9 @@ namespace AzToolsFramework
             QObject::connect(
                 action, &QAction::triggered, action,
                 [this]
-            {
-                ToggleCenterPivotSelection();
-            });
+                {
+                    ToggleCenterPivotSelection();
+                });
         }
     }
 
@@ -3586,10 +3608,9 @@ namespace AzToolsFramework
         debugDisplay.SetLineWidth(1.0f);
 
         const float labelOffset = ed_viewportGizmoAxisLabelOffset;
-        const float screenScale = GetScreenDisplayScaling(viewportId);
-        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
-        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
-        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
+        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize;
 
         // draw the label of of each axis for the gizmo
         const float labelSize = ed_viewportGizmoAxisLabelSize;
@@ -3636,29 +3657,6 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         m_selectedEntityIds.reserve(selectedEntityIds.size());
         AZStd::copy(selectedEntityIds.begin(), selectedEntityIds.end(), AZStd::inserter(m_selectedEntityIds, m_selectedEntityIds.end()));
-
-        // Do not create manipulators for the container entity of the focused prefab.
-        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
-        {
-            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
-            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
-                focusRoot.IsValid())
-            {
-                m_selectedEntityIds.erase(focusRoot);
-            }
-        }
-
-        // Do not create manipulators for any entities marked as read only
-        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
-        {
-            AZStd::erase_if(
-                m_selectedEntityIds,
-                [readOnlyEntityPublicInterface](auto entityId)
-                {
-                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
-                }
-            );
-        }
     }
 
     void EditorTransformComponentSelection::OnTransformChanged(

@@ -262,6 +262,10 @@ namespace LyShine
         void StartChildrenForMask() override;
         void EndMask() override;
 
+        void BeginRenderToTexture(AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,
+            const AZ::Vector2& viewportTopLeft,
+            const AZ::Vector2& viewportSize,
+            const AZ::Color& clearColor) override;
         void EndRenderToTexture() override;
 
         LyShine::UiPrimitive* GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor) override;
@@ -273,25 +277,19 @@ namespace LyShine
         void PushOverrideAlphaFade(float alphaFadeValue) override;
         void PopAlphaFade() override;
         float GetAlphaFade() const override;
+
+        void AddPrimitive(LyShine::UiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode) override;
         // ~IRenderGraph
 
-        // LYSHINE_ATOM_TODO - this can be renamed back to AddPrimitive after removal of IRenderer from all UI components
-        void AddPrimitiveAtom(LyShine::UiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
-            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode);
-
         //! Add an indexed triangle list primitive to the render graph which will use maskTexture as an alpha (gradient) mask
-        void AddAlphaMaskPrimitiveAtom(LyShine::UiPrimitive* primitive,
+        void AddAlphaMaskPrimitive(LyShine::UiPrimitive* primitive,
             AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage,
             AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage,
             bool isClampTextureMode,
             bool isTextureSRGB,
             bool isTexturePremultipliedAlpha,
-            BlendMode blendMode);
-
-        void BeginRenderToTexture(AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,
-            const AZ::Vector2& viewportTopLeft,
-            const AZ::Vector2& viewportSize,
-            const AZ::Color& clearColor);
+            BlendMode blendMode) override;
 
         //! Render the display graph
         void Render(UiRenderer* uiRenderer, const AZ::Vector2& viewportSize);

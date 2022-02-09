@@ -26,6 +26,7 @@ namespace UnitTest
         using IndirectCallManipulatorViewportInteraction = AzManipulatorTestFramework::IndirectCallManipulatorViewportInteraction;
         using ImmediateModeActionDispatcher = AzManipulatorTestFramework::ImmediateModeActionDispatcher;
 
+    public:
         void SetUpEditorFixtureImpl() override
         {
             ToolsApplicationFixtureT::SetUpEditorFixtureImpl();
@@ -43,7 +44,6 @@ namespace UnitTest
             ToolsApplicationFixtureT::TearDownEditorFixtureImpl();
         }
 
-    public:
         AzFramework::CameraState m_cameraState;
         AZStd::unique_ptr<ImmediateModeActionDispatcher> m_actionDispatcher;
         AZStd::unique_ptr<IndirectCallManipulatorViewportInteraction> m_viewportManipulatorInteraction;

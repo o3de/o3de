@@ -41,6 +41,12 @@ namespace Multiplayer
         // Automated testing listens for these logs
         if (editorsv_isDedicated)
         {
+            // Server logs will be piped to the editor so turn off buffering,
+            // otherwise it'll take a lot of logs to fill up the buffer before stdout is finally flushed.
+            // This isn't optimal, but will only affect editor-servers (used when testing multiplayer levels in Editor gameplay mode) and not production servers.
+            // Note: _IOLBF (flush on newlines) won't work for Automated Testing which uses a headless server app and will fall back to _IOFBF (full buffering)
+            setvbuf(stdout, NULL, _IONBF, 0);
+
             // If the settings registry is not available at this point,
             // then something catastrophic has happened in the application startup.
             // That should have been caught and messaged out earlier in startup.
@@ -52,7 +58,7 @@ namespace Multiplayer
                     {
                         ActivateDedicatedEditorServer();
                     },
-                    "LegacySystemInterfaceCreated");
+                    "CriticalAssetsCompiled");
             }
         }
     }
@@ -81,7 +87,7 @@ namespace Multiplayer
         else
         {
             m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForLevelData());
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.")
+            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.\n")
         }
     }
 
@@ -235,5 +241,4 @@ namespace Multiplayer
     {
         return MultiplayerEditorPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
-    
 }

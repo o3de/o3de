@@ -40,10 +40,14 @@ namespace AzToolsFramework
     void FocusModeSystemComponent::Activate()
     {
         AZ::Interface<FocusModeInterface>::Register(this);
+        EditorEntityInfoNotificationBus::Handler::BusConnect();
+        Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
     }
 
     void FocusModeSystemComponent::Deactivate()
     {
+        Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+        EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         AZ::Interface<FocusModeInterface>::Unregister(this);
     }
 
@@ -89,6 +93,9 @@ namespace AzToolsFramework
 
         AZ::EntityId previousFocusEntityId = m_focusRoot;
         m_focusRoot = entityId;
+
+        RefreshFocusedEntityIdList();
+
         FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, previousFocusEntityId, m_focusRoot);
     }
 
@@ -102,6 +109,11 @@ namespace AzToolsFramework
         return m_focusRoot;
     }
 
+    EntityIdList FocusModeSystemComponent::GetFocusedEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    {
+        return m_focusedEntityIdList;
+    }
+
     bool FocusModeSystemComponent::IsInFocusSubTree(AZ::EntityId entityId) const
     {
         if (m_focusRoot == AZ::EntityId())
@@ -110,6 +122,56 @@ namespace AzToolsFramework
         }
 
         return AzToolsFramework::IsInFocusSubTree(entityId, m_focusRoot);
+    }
+
+    void FocusModeSystemComponent::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
+    {
+        // If the parent's entityId is in the list, add the child.
+        if (auto iter = AZStd::find(m_focusedEntityIdList.begin(), m_focusedEntityIdList.end(), parentId);
+            iter != m_focusedEntityIdList.end())
+        {
+            m_focusedEntityIdList.push_back(childId);
+        }
+    }
+
+    void FocusModeSystemComponent::OnEntityInfoUpdatedRemoveChildEnd([[maybe_unused]] AZ::EntityId parentId, AZ::EntityId childId)
+    {
+        // If the removed entityId is in the list, remove it.
+        if (auto iter = AZStd::find(m_focusedEntityIdList.begin(), m_focusedEntityIdList.end(), childId);
+            iter != m_focusedEntityIdList.end())
+        {
+            m_focusedEntityIdList.erase(iter);
+        }
+    }
+
+    void FocusModeSystemComponent::OnPrefabInstancePropagationEnd()
+    {
+        // Can't rely on any of the entities in the list to still exist, refresh the whole thing.
+        RefreshFocusedEntityIdList();
+    }
+
+    void FocusModeSystemComponent::RefreshFocusedEntityIdList()
+    {
+        m_focusedEntityIdList.clear();
+
+        AZStd::queue<AZ::EntityId> entityIdQueue;
+        entityIdQueue.push(m_focusRoot);
+
+        while (!entityIdQueue.empty())
+        {
+            AZ::EntityId entityId = entityIdQueue.front();
+            entityIdQueue.pop();
+
+            m_focusedEntityIdList.push_back(entityId);
+
+            EntityIdList children;
+            EditorEntityInfoRequestBus::EventResult(children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
+
+            for (AZ::EntityId childEntityId : children)
+            {
+                entityIdQueue.push(childEntityId);
+            }
+        }
     }
 
 } // namespace AzToolsFramework
