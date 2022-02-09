@@ -309,12 +309,12 @@ namespace SurfaceData
 
     bool SurfacePointList::IsEmpty(size_t inputPositionIndex) const
     {
-        return (m_numSurfacePointsPerInput[inputPositionIndex] == 0);
+        return (m_inputPositionSize == 0) || (m_numSurfacePointsPerInput[inputPositionIndex] == 0);
     }
 
     size_t SurfacePointList::GetSize(size_t inputPositionIndex) const
     {
-        return (m_numSurfacePointsPerInput[inputPositionIndex]);
+        return (m_inputPositionSize == 0) ? 0 : (m_numSurfacePointsPerInput[inputPositionIndex]);
     }
 
     void SurfacePointList::EnumeratePoints(
