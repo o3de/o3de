@@ -10,7 +10,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/fixed_vector.h>
 
 namespace AzFramework::SurfaceData
 {
