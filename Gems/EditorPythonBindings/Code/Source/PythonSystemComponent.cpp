@@ -414,10 +414,10 @@ namespace EditorPythonBindings
         EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPreInitialize);
         if (StartPythonInterpreter(pythonPathStack))
         {
-            EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostInitialize);
             // initialize internal base module and bootstrap scripts
             ExecuteByString("import azlmbr", false);
             ExecuteBootstrapScripts(pythonPathStack);
+            EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostInitialize);
             return true;
         }
         return false;

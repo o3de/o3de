@@ -23,6 +23,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainRaycast/TerrainRaycastContext.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
 namespace Terrain
@@ -53,8 +54,8 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
-        AZ::Vector2 GetTerrainHeightQueryResolution() const override;
-        void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) override;
+        float GetTerrainHeightQueryResolution() const override;
+        void SetTerrainHeightQueryResolution(float queryResolution) override;
 
         AZ::Aabb GetTerrainAabb() const override;
         void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
@@ -163,6 +164,11 @@ namespace Terrain
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
+        //! Returns the number of samples for a given region and step size. The first and second
+        //! elements of the pair correspond to the X and Y sample counts respectively.
+        virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize) const override;
+
         //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
         //! coordinates in the region.
         virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
@@ -182,6 +188,9 @@ namespace Terrain
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
+        AzFramework::EntityContextId GetTerrainRaycastEntityContextId() const override;
+        AzFramework::RenderGeometry::RayResult GetClosestIntersection(
+            const AzFramework::RenderGeometry::RayRequest& ray) const override;
 
     private:
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
@@ -198,13 +207,45 @@ namespace Terrain
         float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;
         AZ::Vector3 GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
 
+        typedef AZStd::function<void(
+            const AZStd::span<AZ::Vector3> inPositions,
+            AZStd::span<AZ::Vector3> outPositions,
+            AZStd::span<bool> outTerrainExists,
+            AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
+            AZ::EntityId areaId)> BulkQueriesCallback;
+
+        void GetHeightsSynchronous(
+            const AZStd::span<AZ::Vector3>& inPositions,
+            Sampler sampler, AZStd::span<float> heights,
+            AZStd::span<bool> terrainExists) const;
+        void GetNormalsSynchronous(
+            const AZStd::span<AZ::Vector3>& inPositions,
+            Sampler sampler, AZStd::span<AZ::Vector3> normals,
+            AZStd::span<bool> terrainExists) const;
+        void GetOrderedSurfaceWeightsFromList(
+            const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler,
+            AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
+            AZStd::span<bool> terrainExists) const;
+        void MakeBulkQueries(
+            const AZStd::span<AZ::Vector3> inPositions,
+            AZStd::span<AZ::Vector3> outPositions,
+            AZStd::span<bool> outTerrainExists,
+            AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWieghts,
+            BulkQueriesCallback queryCallback) const;
+        void GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPositions, 
+            AZStd::vector<AZ::Vector3>& outPositions,
+            Sampler sampler) const;
+        AZStd::vector<AZ::Vector3> GenerateInputPositionsFromRegion(
+            const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize) const;
+
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         struct TerrainSystemSettings
         {
             AZ::Aabb m_worldBounds;
-            AZ::Vector2 m_heightQueryResolution{ 1.0f };
+            float m_heightQueryResolution{ 1.0f };
             bool m_systemActive{ false };
         };
 
@@ -225,5 +266,7 @@ namespace Terrain
 
         mutable AZStd::shared_mutex m_areaMutex;
         AZStd::map<AZ::EntityId, TerrainAreaData, TerrainLayerPriorityComparator> m_registeredAreas;
+
+        mutable TerrainRaycastContext m_terrainRaycastContext;
     };
 } // namespace Terrain

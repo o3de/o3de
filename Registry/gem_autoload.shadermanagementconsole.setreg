@@ -28,6 +28,9 @@
             "ScriptCanvas.Editor": {
                 "AutoLoad": false
             },
+            "ScriptCanvasDeveloper.Editor": {
+                "AutoLoad": false
+            },
             "ScriptCanvasPhysics": {
                 "AutoLoad": false
             },

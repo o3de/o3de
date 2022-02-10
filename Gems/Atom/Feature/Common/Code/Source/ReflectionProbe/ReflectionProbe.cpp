@@ -7,7 +7,7 @@
  */
 
 #include <ReflectionProbe/ReflectionProbe.h>
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
+#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>

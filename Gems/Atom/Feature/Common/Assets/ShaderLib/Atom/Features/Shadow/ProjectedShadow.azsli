@@ -274,8 +274,9 @@ float ProjectedShadow::GetThickness()
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
             /*LOD=*/0
             ).r;
-            
-        const float viewSpaceThickness = abs(UnprojectDepth(m_shadowIndex, m_shadowPosition.z) - UnprojectDepth(m_shadowIndex, depthValue)); 
+        
+        // Denormalized thickness (avoid negative values given by precision errors or shrinking offsets)
+        const float viewSpaceThickness = max(UnprojectDepth(m_shadowIndex, depthValue) - UnprojectDepth(m_shadowIndex, m_shadowPosition.z), 0.0); 
         return viewSpaceThickness;    
     }
 

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RHI.Reflect/Format.h>
 
@@ -23,6 +23,9 @@ namespace AZ
             UnsupportedFormat
         };
 
+        //! Calculates the maximum difference of the rgb channels between two image buffers.
+        int16_t CalcMaxChannelDifference(AZStd::span<const uint8_t> bufferA, AZStd::span<const uint8_t> bufferB, size_t index);
+
         //! Compares two images and returns the RMS (root mean square) of the difference.
         //! @param buffer[A|B] the raw buffer of image data
         //! @param size[A|B] the dimensions of the image in the buffer
@@ -31,8 +34,8 @@ namespace AZ
         //! @param filteredDiff [out] an alternate RMS value calculated after removing any diffs less than @minDiffFilter.
         //! @param minDiffFilter diff values less than this will be filtered out before calculating @filteredDiff.
         ImageDiffResultCode CalcImageDiffRms(
-            AZStd::array_view<uint8_t> bufferA, const RHI::Size& sizeA, RHI::Format formatA,
-            AZStd::array_view<uint8_t> bufferB, const RHI::Size& sizeB, RHI::Format formatB,
+            AZStd::span<const uint8_t> bufferA, const RHI::Size& sizeA, RHI::Format formatA,
+            AZStd::span<const uint8_t> bufferB, const RHI::Size& sizeB, RHI::Format formatB,
             float* diffScore = nullptr,
             float* filteredDiffScore = nullptr,
             float minDiffFilter = 0.0);

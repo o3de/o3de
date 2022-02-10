@@ -42,7 +42,7 @@ namespace AZ::IO::ZipDir
                 AZ_Error("Archive", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
                 return {};
             }
-            AZ::IAllocatorAllocate* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
+            AZ::IAllocator* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
             AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
             auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
             {
@@ -142,14 +142,14 @@ namespace AZ::IO::ZipDir
     {
     }
 
-    Cache::Cache(AZ::IAllocatorAllocate* allocator)
+    Cache::Cache(AZ::IAllocator* allocator)
         : m_fileHandle(AZ::IO::InvalidHandle)
         , m_nFlags(0)
         , m_lCDROffset(0)
         , m_encryptedHeaders(ZipFile::HEADERS_NOT_ENCRYPTED)
         , m_allocator{ allocator }
     {
-        AZ_Assert(allocator, "IAllocatorAllocate object is required in order to allocated memory for the ZipDir Cache operations");
+        AZ_Assert(allocator, "IAllocator object is required in order to allocated memory for the ZipDir Cache operations");
     }
 
     void Cache::Close()
@@ -383,7 +383,7 @@ namespace AZ::IO::ZipDir
             if (!AZ::IO::FileIOBase::GetDirectInstance()->Write(m_fileHandle, ptr, sizeToWrite))
             {
                 char error[1024];
-                azstrerror_s(error, AZ_ARRAY_SIZE(error), errno);
+                [[maybe_unused]] auto azStrErrorResult = azstrerror_s(error, AZ_ARRAY_SIZE(error), errno);
                 AZ_Warning("Archive", false, "Cannot write to zip file!! error = (%d): %s", errno, error);
                 return ZD_ERROR_IO_FAILED;
             }
@@ -531,7 +531,7 @@ namespace AZ::IO::ZipDir
         if (!WriteCompressedData((uint8_t*)pUncompressed, nSegmentSize, encrypt))
         {
             char error[1024];
-            azstrerror_s(error, AZ_ARRAY_SIZE(error), errno);
+            [[maybe_unused]] auto azStrErrorResult = azstrerror_s(error, AZ_ARRAY_SIZE(error), errno);
             AZ_Warning("Archive", false, "Cannot write to zip file!! error = (%d): %s", errno, error);
             return ZD_ERROR_IO_FAILED;
         }

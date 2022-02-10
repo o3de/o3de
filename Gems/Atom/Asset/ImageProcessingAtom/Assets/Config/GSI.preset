@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+            "Name": "GSI",
+            "OutputTypeHandling": "UseInputFormat",
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+                "Name": "GSI",
+                "OutputTypeHandling": "UseInputFormat",
+                "MaxTextureSize": 2048,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+                "Name": "GSI",
+                "OutputTypeHandling": "UseInputFormat",
+                "MaxTextureSize": 2048,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+                "Name": "GSI",
+                "OutputTypeHandling": "UseInputFormat",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+                "Name": "GSI",
+                "OutputTypeHandling": "UseInputFormat",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

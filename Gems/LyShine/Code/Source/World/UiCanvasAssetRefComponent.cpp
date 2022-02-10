@@ -8,6 +8,7 @@
 #include "UiCanvasAssetRefComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/LyShineBus.h>
@@ -106,11 +107,11 @@ AZ::EntityId UiCanvasAssetRefComponent::LoadCanvas()
         // Check if we already have a referenced UI canvas, if so release it
         if (m_canvasEntityId.IsValid())
         {
-            gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
+            AZ::Interface<ILyShine>::Get()->ReleaseCanvasDeferred(m_canvasEntityId);
             m_canvasEntityId.SetInvalid();
         }
 
-        m_canvasEntityId = gEnv->pLyShine->LoadCanvas(canvasPath.c_str());
+        m_canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvas(canvasPath.c_str());
 
         EBUS_EVENT_ID(GetEntityId(), UiCanvasAssetRefNotificationBus, OnCanvasLoadedIntoEntity, m_canvasEntityId);
         EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
@@ -124,7 +125,7 @@ void UiCanvasAssetRefComponent::UnloadCanvas()
 {
     if (m_canvasEntityId.IsValid())
     {
-        gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
+        AZ::Interface<ILyShine>::Get()->ReleaseCanvasDeferred(m_canvasEntityId);
         m_canvasEntityId.SetInvalid();
 
         EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), m_canvasEntityId);
@@ -243,7 +244,7 @@ void UiCanvasAssetRefComponent::Deactivate()
     {
         if (m_canvasEntityId.IsValid())
         {
-            gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
+            AZ::Interface<ILyShine>::Get()->ReleaseCanvasDeferred(m_canvasEntityId);
             m_canvasEntityId.SetInvalid();
         }
 

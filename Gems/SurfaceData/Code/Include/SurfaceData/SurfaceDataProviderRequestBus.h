@@ -30,6 +30,10 @@ namespace SurfaceData
         //! allows multiple threads to call
         using MutexType = AZStd::recursive_mutex;
 
+        //! Get all of the surface points that this provider has at the given input position.
+        //! @param inPosition - The input position to query. Only XY are guaranteed to be valid, Z should be ignored.
+        //! @param surfacePointList - The output list of surface points generated, if any. Each provider is expected to
+        //! append to this list, not overwrite it.
         virtual void GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const = 0;
     };
 

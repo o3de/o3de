@@ -10,6 +10,7 @@
 
 #include "./Transform2DFunctor.h"
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
+#include <Atom/Utils/MaterialUtils.h>
 
 namespace AZ
 {
@@ -30,7 +31,7 @@ namespace AZ
 
         private:
 
-            AZStd::vector<Transform2DFunctor::TransformType> m_transformOrder; //!< Controls the order in which Scale, Translate, Rotate are performed
+            AZStd::vector<TransformType> m_transformOrder; //!< Controls the order in which Scale, Translate, Rotate are performed
 
             // Material property inputs...
             AZStd::string m_center;        //!< material property for center of scaling and rotation
