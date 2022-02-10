@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{BDB82830-F695-0ED2-7FED-9F687BA7C657}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Spawn Ticket Id",
+                "category": "Spawning",
+                "tooltip": "Gets spawn ticket id"
+            },
+            "slots": [
+                {
+                    "base": "Input_Get Ticket Id_0",
+                    "details": {
+                        "name": "Get Ticket Id"
+                    }
+                },
+                {
+                    "base": "DataInput_SpawnTicket_0",
+                    "details": {
+                        "name": "SpawnTicket"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataOutput_TicketId_0",
+                    "details": {
+                        "name": "TicketId"
+                    }
+                }
+            ]
+        }
+    ]
+}

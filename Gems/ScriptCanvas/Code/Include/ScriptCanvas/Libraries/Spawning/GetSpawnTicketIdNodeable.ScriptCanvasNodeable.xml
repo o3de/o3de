@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/GetSpawnTicketIdNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Class Name="GetSpawnTicketIdNodeable"
+         QualifiedName="Nodeables::Spawning::GetSpawnTicketIdNodeable"
+         PreferredClassName="GetSpawnTicketId"
+         Base="ScriptCanvas::Nodeable"
+         Icon="Icons/ScriptCanvas/Placeholder.png"
+         Category="Spawning"
+         Version="0"
+         GeneratePropertyFriend="True"
+         Namespace="ScriptCanvas"
+         Description="Gets spawn ticket id">
+
+    <Input Name="Get Ticket Id" OutputName="Out">
+        <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Data containing required spawning information."/>
+		<Return Name="TicketId" Type="AzFramework::EntitySpawnTicket::Id" Shared="true"/>
+    </Input>
+  </Class>
+</ScriptCanvas>
+

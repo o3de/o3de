@@ -252,8 +252,16 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.h
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/Spawning.h
+    Include/ScriptCanvas/Libraries/Spawning/SpawnableAsset.h
+    Include/ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h
+    Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h
+    Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Spawning/GetSpawnTicketIdNodeable.h
+    Include/ScriptCanvas/Libraries/Spawning/GetSpawnTicketIdNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h
+    Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/String/Contains.h
     Include/ScriptCanvas/Libraries/String/Contains.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/Format.h
