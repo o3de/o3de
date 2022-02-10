@@ -326,7 +326,7 @@ namespace EMotionFX
 
                 // JointId's are padded on sub-mesh boundaries to ensure each sub-mesh view is 16 byte aligned
                 AZ::u32 jointIdCount = meshVertexCount * maxSkinInfluences;
-                totalJointIdPadding += AZ::RPI::CalculateExtraJointIdCount(jointIdCount);
+                totalJointIdPadding += AZ::RPI::CalculateJointIdPaddingCount(jointIdCount);
             }
         }
 

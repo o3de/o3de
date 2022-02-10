@@ -104,7 +104,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(32);  // [ATOM-14975]
+                    ->Version(31);  // [ATOM-14975]
             }
         }
 
@@ -1360,7 +1360,7 @@ namespace AZ
                     uint32_t newJointIdCount = aznumeric_cast<uint32_t>(mesh.m_skinJointIndices.size());
 
                     // Pad the joint id buffer if it ends too soon, so the next view can start aligned
-                    uint32_t extraIdCount = CalculateExtraJointIdCount(newJointIdCount);
+                    uint32_t extraIdCount = CalculateJointIdPaddingCount(newJointIdCount);
 
                     // Pad the buffer
                     AZStd::vector<uint16_t> extraIds(extraIdCount, 0);

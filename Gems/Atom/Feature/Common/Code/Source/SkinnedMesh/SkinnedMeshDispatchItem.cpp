@@ -195,7 +195,7 @@ namespace AZ
             m_instanceSrg->SetConstant(morphDeltaIntegerEncodingIndex, 1.0f / m_morphTargetDeltaIntegerEncoding);
             
             // Set the vertex count
-            const uint32_t vertexCount = aznumeric_cast<uint32_t>(GetVertexCount());
+            const uint32_t vertexCount = GetVertexCount();
 
             RHI::ShaderInputConstantIndex numVerticesIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_numVertices" });
             AZ_Error("SkinnedMeshInputBuffers", numVerticesIndex.IsValid(), "Failed to find shader input index for m_numVerticies in the skinning compute shader per-instance SRG.");
