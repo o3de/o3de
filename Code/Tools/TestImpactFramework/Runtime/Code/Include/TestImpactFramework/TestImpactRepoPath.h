@@ -24,13 +24,13 @@ namespace TestImpact
         using value_type = AZ::IO::Path::value_type;
 
         constexpr RepoPath() = default;
-        constexpr RepoPath(const RepoPath&) = default;
-        constexpr RepoPath(RepoPath&&) noexcept = default;
-        constexpr RepoPath(const string_type& path) noexcept;
-        constexpr RepoPath(const string_view_type& path) noexcept;
-        constexpr RepoPath(const value_type* path) noexcept;
-        constexpr RepoPath(const AZ::IO::PathView& path);
-        constexpr RepoPath(const AZ::IO::Path& path);
+        RepoPath(const RepoPath&) = default;
+        RepoPath(RepoPath&&) noexcept = default;
+        RepoPath(const string_type& path) noexcept;
+        RepoPath(const string_view_type& path) noexcept;
+        RepoPath(const value_type* path) noexcept;
+        RepoPath(const AZ::IO::PathView& path);
+        RepoPath(const AZ::IO::Path& path);
 
         RepoPath& operator=(const RepoPath&) noexcept = default;
         RepoPath& operator=(const string_type&) noexcept;
@@ -67,27 +67,27 @@ namespace TestImpact
         AZ::IO::Path m_path;
     };
 
-    constexpr RepoPath::RepoPath(const string_type& path) noexcept
+    inline RepoPath::RepoPath(const string_type& path) noexcept
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    constexpr RepoPath::RepoPath(const string_view_type& path) noexcept
+    inline RepoPath::RepoPath(const string_view_type& path) noexcept
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    constexpr RepoPath::RepoPath(const value_type* path) noexcept
+    inline RepoPath::RepoPath(const value_type* path) noexcept
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    constexpr RepoPath::RepoPath(const AZ::IO::PathView& path)
+    inline RepoPath::RepoPath(const AZ::IO::PathView& path)
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    constexpr RepoPath::RepoPath(const AZ::IO::Path& path)
+    inline RepoPath::RepoPath(const AZ::IO::Path& path)
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
