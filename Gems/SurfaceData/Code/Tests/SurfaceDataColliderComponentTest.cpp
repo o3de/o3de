@@ -137,10 +137,10 @@ namespace UnitTest
             SurfaceData::SurfacePointList pointList;
             AZStd::vector<AZ::Vector3> queryPoints;
             queryPoints.emplace_back(queryPoint);
-            pointList.StartListQuery(queryPoints, 1);
+            pointList.StartListConstruction(queryPoints, 1);
             SurfaceData::SurfaceDataProviderRequestBus::Event(providerHandle, &SurfaceData::SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
                                                               queryPoint, pointList);
-            pointList.EndListQuery();
+            pointList.EndListConstruction();
 
             constexpr size_t inPositionIndex = 0;
             if (pointOnProvider)
@@ -191,10 +191,11 @@ namespace UnitTest
             // Call ModifySurfacePoints and verify the results
             // Add the surface point with a different entity ID than the entity doing the modification, so that the point doesn't get
             // filtered out.
-            SurfaceData::SurfacePointList pointList = { input };
+            SurfaceData::SurfacePointList pointList;
+            pointList.StartListConstruction({ input });
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
-            constexpr size_t inPositionIndex = 0;
-            ASSERT_EQ(pointList.GetSize(inPositionIndex), 1);
+            pointList.EndListConstruction();
+            ASSERT_EQ(pointList.GetSize(), 1);
             pointList.EnumeratePoints([this, expectedOutput](
                     [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
                     const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool

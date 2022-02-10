@@ -193,6 +193,17 @@ namespace SurfaceData
     };
 
     //! SurfacePointList stores a collection of surface point data, which consists of positions, normals, and surface tag weights.
+    //! This class is specifically designed to be used in the following ways.
+    //!
+    //! List construction:
+    //!   StartListConstruction() - This clears the structure, temporarily holds on to the list of input positions, and preallocates the data.
+    //!   AddSurfacePoint() - Add surface points to the list. They're expected to get added in input position order.
+    //!   ModifySurfaceWeights() - Modify the surface weights for the set of input points.
+    //!   FilterPoints() - Remove any generated surface points that don't fit the filter criteria
+    //!   EndListConstruction() - "Freeze" and compact the data.
+    //!
+    //! List usage:
+    //!   
     class SurfacePointList
     {
     public:
@@ -207,24 +218,42 @@ namespace SurfaceData
         //! @param surfacePoints - An initial set of SurfacePoint points to store in the SurfacePointList.
         SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints);
 
+        //! Clear the surface point list.
+        void Clear();
+
+        //! Constructor for creating a SurfacePointList from a list of SurfacePoint data.
+        //! Primarily used as a convenience for unit tests.
+        //! @param surfacePoints - An initial set of SurfacePoint points to store in the SurfacePointList.
+        void StartListConstruction(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints);
+
+        void StartListConstruction(AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput);
+
         //! Add a surface point to the list.
         //! @param entityId - The entity creating the surface point.
-        //! @param inPosition - The input position used to query for the point.
+        //! @param inPosition - The input position that produced this surface point.
         //! @param position - The position of the surface point.
         //! @param normal - The normal for the surface point.
         //! @param weights - The surface tags and weights for this surface point.
         void AddSurfacePoint(const AZ::EntityId& entityId, const AZ::Vector3& inPosition,
             const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& weights);
 
-        //! Clear the surface point list.
-        void Clear();
+        //! Modify the surface weights for each surface point in the list.
+        void ModifySurfaceWeights(
+            const AZ::EntityId& currentEntityId,
+            AZStd::function<void(const AZ::Vector3& position, SurfaceTagWeights& surfaceWeights)> modificationWeightCallback);
 
-        void StartListQuery(AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput);
-        void EndListQuery();
+        //! Remove any points that don't contain any of the provided surface tags.
+        void FilterPoints(const SurfaceTagVector& desiredTags);
+
+        void EndListConstruction();
+
+        bool IsEmpty() const;
 
         //! Check if the surface point list is empty.
         //! @return - true if empty, false if it contains points.
         bool IsEmpty(size_t inputPositionIndex) const;
+
+        size_t GetSize() const;
 
         //! Get the size of the surface point list.
         //! @return - The number of valid points in the list.
@@ -247,16 +276,8 @@ namespace SurfaceData
                 size_t inputPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& surfaceWeights)>
                 pointCallback) const;
 
-        //! Modify the surface weights for each surface point in the list.
-        void ModifySurfaceWeights(
-            const AZ::EntityId& currentEntityId,
-            AZStd::function<void(const AZ::Vector3& position, SurfaceTagWeights& surfaceWeights)> modificationWeightCallback);
-
         //! Get the surface point with the highest Z value.
         AzFramework::SurfaceData::SurfacePoint GetHighestSurfacePoint(size_t inputPositionIndex) const;
-
-        //! Remove any points that don't contain any of the provided surface tags.
-        void FilterPoints(const SurfaceTagVector& desiredTags);
 
         AZ::Aabb GetSurfacePointAabb() const
         {
@@ -286,6 +307,8 @@ namespace SurfaceData
         AZ::Aabb m_surfacePointBounds = AZ::Aabb::CreateNull();
         size_t m_inputPositionSize = 0;
         size_t m_maxSurfacePointsPerInput = 0;
+
+        bool m_listIsBeingConstructed = false;
     };
 
     struct SurfaceDataRegistryEntry

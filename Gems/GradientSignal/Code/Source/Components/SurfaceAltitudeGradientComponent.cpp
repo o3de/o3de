@@ -225,29 +225,24 @@ namespace GradientSignal
         }
 
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
-        bool valuesFound = false;
 
-        // Rather than calling GetSurfacePoints on the EBus repeatedly in a loop, we instead pass a lambda into the EBus that contains
-        // the loop within it so that we can avoid the repeated EBus-calling overhead.
+        SurfaceData::SurfacePointList points;
         SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            [this, positions, &outValues, &valuesFound](SurfaceData::SurfaceDataSystemRequestBus::Events* surfaceDataRequests)
-            {
-                // It's possible that there's nothing connected to the EBus, so keep track of the fact that we have valid results.
-                valuesFound = true;
-                SurfaceData::SurfacePointList points;
+            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
+            points);
 
-                surfaceDataRequests->GetSurfacePointsFromList(positions, m_configuration.m_surfaceTagsToSample, points);
-                // For each position, call GetSurfacePoints() and turn the height into a 0-1 value based on our min/max altitudes.
-                for (size_t index = 0; index < positions.size(); index++)
-                {
-                    outValues[index] = CalculateAltitudeRatio(points, index, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
-                }
-            });
-
-        if (!valuesFound)
+        if (points.IsEmpty())
         {
             // No surface data, so no output values.
             AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
+        }
+        else
+        {
+            // For each position, turn the height into a 0-1 value based on our min/max altitudes.
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                outValues[index] = CalculateAltitudeRatio(points, index, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
+            }
         }
     }
 

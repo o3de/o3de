@@ -334,9 +334,9 @@ namespace UnitTest
         {
             ++m_count;
             surfacePointList.Clear();
-            surfacePointList.StartListQuery(AZStd::span<const AZ::Vector3>(&inPosition, &inPosition+1), 1);
+            surfacePointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&inPosition, &inPosition+1), 1);
             surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, m_outPosition, m_outNormal, m_outMasks);
-            surfacePointList.EndListQuery();
+            surfacePointList.EndListConstruction();
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,

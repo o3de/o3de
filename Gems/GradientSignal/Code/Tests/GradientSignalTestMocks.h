@@ -170,7 +170,14 @@ namespace UnitTest
 
             if (surfacePoints != m_surfacePoints.end())
             {
-                surfacePointList = surfacePoints->second;
+                surfacePoints->second.EnumeratePoints(
+                    [inPosition, &surfacePointList](
+                        [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal,
+                        const SurfaceData::SurfaceTagWeights& weights) -> bool
+                    {
+                        surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, position, normal, weights);
+                        return true;
+                    });
             }
         }
 

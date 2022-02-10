@@ -286,7 +286,7 @@ namespace SurfaceData
 
         // Notify our output structure that we're starting to build up the list of output points.
         // This will reserve memory and allocate temporary structures to help build up the list efficiently.
-        surfacePointLists.StartListQuery(inPositions, maxPointsCreatedPerInput);
+        surfacePointLists.StartListConstruction(inPositions, maxPointsCreatedPerInput);
 
         // Loop through each data provider and generate surface points from the set of input positions.
         // Any generated points that have the same XY coordinates and extremely similar Z values will get combined together.
@@ -323,7 +323,7 @@ namespace SurfaceData
 
         // Notify the output structure that we're done building up the list.
         // This will compact the memory and free any temporary structures.
-        surfacePointLists.EndListQuery();
+        surfacePointLists.EndListConstruction();
     }
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataProviderInternal(const SurfaceDataRegistryEntry& entry)
