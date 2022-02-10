@@ -37,8 +37,8 @@ namespace UnitTest
         // min/max need to be substantially different to return a useful t value
 
         // Float
-        const float epsilonF = std::numeric_limits<float>::epsilon();
-        const float doesntMatterF = std::numeric_limits<float>::signaling_NaN();
+        const float epsilonF = AZStd::numeric_limits<float>::epsilon();
+        const float doesntMatterF = AZStd::numeric_limits<float>::signaling_NaN();
         float lowerF = 2.3f, upperF = 2.3f;
         EXPECT_EQ(0.0f, AZ::LerpInverse(lowerF, upperF, doesntMatterF));
         EXPECT_EQ(0.0f, AZ::LerpInverse(0.0f, 0.5f * epsilonF, doesntMatterF));
@@ -48,8 +48,8 @@ namespace UnitTest
         EXPECT_NEAR(1.0f, AZ::LerpInverse(1.0f, 1.0f + 5.0f * epsilonF, 1.0f + 5.0f * epsilonF), epsilonF);
 
         // Double
-        const double epsilonD = std::numeric_limits<double>::epsilon();
-        const double doesntMatterD = std::numeric_limits<double>::signaling_NaN();
+        const double epsilonD = AZStd::numeric_limits<double>::epsilon();
+        const double doesntMatterD = AZStd::numeric_limits<double>::signaling_NaN();
         double lowerD = 2.3, upperD = 2.3;
         EXPECT_EQ(0.0, AZ::LerpInverse(lowerD, upperD, doesntMatterD));
         EXPECT_EQ(0.0, AZ::LerpInverse(0.0, 0.5 * epsilonD, doesntMatterD));
@@ -95,9 +95,9 @@ namespace UnitTest
         EXPECT_EQ(RoundUpToMultiple(static_cast<T>(26), static_cast<T>(13)), 26);
         EXPECT_EQ(RoundUpToMultiple(static_cast<T>(27), static_cast<T>(13)), 39);
 
-        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(0), std::numeric_limits<T>::max()), 0);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(0), AZStd::numeric_limits<T>::max()), 0);
 
-        T aVeryLargeNumberThatStillWontOverflow = std::numeric_limits<T>::max() - 4;
+        T aVeryLargeNumberThatStillWontOverflow = AZStd::numeric_limits<T>::max() - 4;
         EXPECT_EQ(RoundUpToMultiple(static_cast<T>(1), aVeryLargeNumberThatStillWontOverflow), aVeryLargeNumberThatStillWontOverflow);
         EXPECT_EQ(RoundUpToMultiple(aVeryLargeNumberThatStillWontOverflow, static_cast<T>(1)), aVeryLargeNumberThatStillWontOverflow);
     }
@@ -128,9 +128,9 @@ namespace UnitTest
         EXPECT_EQ(DivideAndRoundUp(static_cast<T>(7), static_cast<T>(3)), 3);
         EXPECT_EQ(DivideAndRoundUp(static_cast<T>(8), static_cast<T>(3)), 3);
 
-        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(0), std::numeric_limits<T>::max()), 0);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(0), AZStd::numeric_limits<T>::max()), 0);
 
-        T aVeryLargeNumberThatStillWontOverflow = std::numeric_limits<T>::max() - 4;
+        T aVeryLargeNumberThatStillWontOverflow = AZStd::numeric_limits<T>::max() - 4;
         EXPECT_EQ(DivideAndRoundUp(static_cast<T>(1), aVeryLargeNumberThatStillWontOverflow), static_cast<T>(1));
         EXPECT_EQ(DivideAndRoundUp(aVeryLargeNumberThatStillWontOverflow, static_cast<T>(1)), aVeryLargeNumberThatStillWontOverflow);
 
@@ -169,8 +169,8 @@ namespace UnitTest
     {
         AZ_TEST_START_TRACE_SUPPRESSION;
         DivideAndRoundUp(
-            static_cast<uint32_t>((std::numeric_limits<uint32_t>::max() / 2) + 1),
-            static_cast<uint32_t>((std::numeric_limits<uint32_t>::max() / 2) + 1));
+            static_cast<uint32_t>((AZStd::numeric_limits<uint32_t>::max() / 2) + 1),
+            static_cast<uint32_t>((AZStd::numeric_limits<uint32_t>::max() / 2) + 1));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
@@ -178,8 +178,8 @@ namespace UnitTest
     {
         AZ_TEST_START_TRACE_SUPPRESSION;
         DivideAndRoundUp(
-            static_cast<uint64_t>((std::numeric_limits<uint64_t>::max() / 2) + 1),
-            static_cast<uint64_t>((std::numeric_limits<uint64_t>::max() / 2) + 1));
+            static_cast<uint64_t>((AZStd::numeric_limits<uint64_t>::max() / 2) + 1),
+            static_cast<uint64_t>((AZStd::numeric_limits<uint64_t>::max() / 2) + 1));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 }
