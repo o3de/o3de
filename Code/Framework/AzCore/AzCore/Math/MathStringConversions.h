@@ -14,6 +14,7 @@
 
 namespace AZ
 {
+    class Aabb;
     class Matrix4x4;
     class Quaternion;
     class Transform;
@@ -42,10 +43,14 @@ namespace AZStd
     //! Prints a transform as a 3x4 matrix in row major order over four lines with precision to 8 decimal points
     void to_string(string& str, const AZ::Transform& value);
 
+    //! Prints an AABB as a pair of Vector3s with precision to 8 decimal points
+    void to_string(string& str, const AZ::Aabb& value);
+
     inline AZStd::string to_string(const AZ::Vector2& val) { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(const AZ::Vector3& val) { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(const AZ::Vector4& val) { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(const AZ::Quaternion& val) { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(const AZ::Matrix4x4& val) { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(const AZ::Transform& val) { AZStd::string str; to_string(str, val); return str; }
+    inline AZStd::string to_string(const AZ::Aabb& val) { AZStd::string str; to_string(str, val); return str; }
 }

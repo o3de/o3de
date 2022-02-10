@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Math/MathStringConversions.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Transform.h>
@@ -67,5 +68,14 @@ namespace AZStd
             static_cast<float>(matrix3x4(0, 1)), static_cast<float>(matrix3x4(1, 1)), static_cast<float>(matrix3x4(2, 1)),
             static_cast<float>(matrix3x4(0, 2)), static_cast<float>(matrix3x4(1, 2)), static_cast<float>(matrix3x4(2, 2)),
             static_cast<float>(matrix3x4(0, 3)), static_cast<float>(matrix3x4(1, 3)), static_cast<float>(matrix3x4(2, 3)));
+    }
+
+    void to_string(string& str, const AZ::Aabb& value)
+    {
+        str = AZStd::string::format(
+            "%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f",
+            static_cast<float>(value.GetMin().GetX()), static_cast<float>(value.GetMin().GetY()),
+            static_cast<float>(value.GetMin().GetZ()), static_cast<float>(value.GetMax().GetX()),
+            static_cast<float>(value.GetMax().GetY()), static_cast<float>(value.GetMax().GetZ()));
     }
 }
