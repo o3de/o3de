@@ -892,7 +892,7 @@ def drag_and_drop(source, target, source_point = QtCore.QPoint(), target_point =
     # over the intended target.
     delay = -1
     if docking:
-        delay = 400
+        delay = 200
     QtTest.QTest.mouseRelease(target_widget, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier, target_point, delay)
 
     # Some drag/drop events have extra processing on the following event tick, so let those processEvents
