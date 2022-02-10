@@ -12,6 +12,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
@@ -82,7 +83,7 @@ namespace AZ
                     loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!loadOutcome.IsSuccess())
                     {
-                        AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());
+                        AZ_Error("MaterialUtils", false, "%s", loadOutcome.GetError().c_str());
                         return AZ::Failure();
                     }
 
@@ -112,6 +113,46 @@ namespace AZ
                 else
                 {
                     return AZ::Success(AZStd::move(materialType));
+                }
+            }
+            
+            AZ::Outcome<MaterialSourceData> LoadMaterialSourceData(const AZStd::string& filePath, const rapidjson::Value* document, bool warningsAsErrors)
+            {
+                AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
+                if (document == nullptr)
+                {
+                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
+                    if (!loadOutcome.IsSuccess())
+                    {
+                        AZ_Error("MaterialUtils", false, "%s", loadOutcome.GetError().c_str());
+                        return AZ::Failure();
+                    }
+
+                    document = &loadOutcome.GetValue();
+                }
+
+                MaterialSourceData material;
+
+                JsonDeserializerSettings settings;
+
+                JsonReportingHelper reportingHelper;
+                reportingHelper.Attach(settings);
+
+                JsonSerialization::Load(material, *document, settings);
+                material.ConvertToNewDataFormat();
+
+                if (reportingHelper.ErrorsReported())
+                {
+                    return AZ::Failure();
+                }
+                else if (warningsAsErrors && reportingHelper.WarningsReported())
+                {
+                    AZ_Error("MaterialUtils", false, "Warnings reported while loading '%s'", filePath.c_str());
+                    return AZ::Failure();
+                }
+                else
+                {
+                    return AZ::Success(AZStd::move(material));
                 }
             }
 
