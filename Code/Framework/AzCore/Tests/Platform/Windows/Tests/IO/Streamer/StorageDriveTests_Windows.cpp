@@ -1248,7 +1248,7 @@ namespace Benchmark
 
             AZStd::unique_ptr<char[]> buffer(new char[FileSize]);
     
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 AZStd::binary_semaphore waitForReads;
                 AZStd::atomic<system_clock::time_point> end;
