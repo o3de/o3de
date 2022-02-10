@@ -118,7 +118,7 @@ namespace LmbrCentral
 
     TEST_F(EditorBoxShapeComponentManipulatorFixture, BoxShapeNonUniformScaleManipulatorsScaleCorrectly)
     {
-        // a rotation which should map (1, 0, 0) to (0.8, 0.6, 0)
+        // a rotation which rotates the x-axis to (0.8, 0.6, 0)
         const AZ::Quaternion boxRotation(0.0f, 0.0f, 0.316228f, 0.948683f);
         AZ::Transform boxTransform = AZ::Transform::CreateFromQuaternionAndTranslation(boxRotation, AZ::Vector3(2.0f, 3.0f, 4.0f));
         boxTransform.SetUniformScale(1.5f);
@@ -132,7 +132,6 @@ namespace LmbrCentral
 
         // enter the box shape component's component mode
         AzToolsFramework::SelectEntity(m_entity->GetId());
-
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
             &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
             EditorBoxShapeComponentTypeId);
