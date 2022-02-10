@@ -293,11 +293,11 @@ namespace Multiplayer
                 AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
             }
 
-            AZ::CVarFixedString internalCertPath = AZ::CVarFixedString(
-                AZ::Interface<ISessionHandlingProviderRequests>::Get()->GetInternalSessionCertificate().c_str());
-            if (!internalCertPath.empty())
+            AZ::CVarFixedString externalKeyPath = AZ::CVarFixedString(
+                AZ::Interface<ISessionHandlingProviderRequests>::Get()->GetExternalSessionPrivateKey().c_str());
+            if (!externalKeyPath.empty())
             {
-                AZ::CVarFixedString commandString = "net_SslInternalCertificateFile " + internalCertPath;
+                AZ::CVarFixedString commandString = "net_SslExternalPrivateKeyFile " + externalKeyPath;
                 AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
             }
         }
