@@ -239,8 +239,7 @@ namespace TestImpact
         const RepoPath& testRunnerBinary,
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
-        : m_maxConcurrentRuns(maxConcurrentRuns)
-        , m_testJobInfoGenerator(AZStd::make_unique<TestJobInfoGenerator>(
+        : m_testJobInfoGenerator(AZStd::make_unique<TestJobInfoGenerator>(
             sourceDir, targetBinaryDir, cacheDir, artifactDir, testRunnerBinary, instrumentBinary))
         , m_testEnumerator(AZStd::make_unique<TestEnumerator>(maxConcurrentRuns))
         , m_instrumentedTestRunner(AZStd::make_unique<InstrumentedTestRunner>(maxConcurrentRuns))
