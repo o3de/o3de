@@ -162,7 +162,7 @@ namespace TestImpact
             {
             }
 
-            [[nodiscard]] ProcessCallbackResult operator()(const typename JobInfo& jobInfo, const TestImpact::JobMeta& meta)
+            [[nodiscard]] ProcessCallbackResult operator()(const JobInfo& jobInfo, const TestImpact::JobMeta& meta)
             {
                 const auto id = jobInfo.GetId().m_value;
                 const auto& args = jobInfo.GetCommand().m_args;
@@ -189,7 +189,7 @@ namespace TestImpact
 
         private:
             const AZStd::vector<const TestTarget*>& m_testTargets;
-            TestEngineJobMap<typename IdType>* m_engineJobs;
+            TestEngineJobMap<IdType>* m_engineJobs;
             Policy::ExecutionFailure m_executionFailurePolicy;
             Policy::TestFailure m_testFailurePolicy;
             AZStd::optional<TestEngineJobCompleteCallback>* m_callback;

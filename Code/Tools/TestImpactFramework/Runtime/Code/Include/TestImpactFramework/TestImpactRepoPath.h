@@ -52,11 +52,11 @@ namespace TestImpact
         // Wrappers around the AZ::IO::Path concatenation operator
         friend RepoPath operator/(const RepoPath& lhs, const AZ::IO::PathView& rhs);
         friend RepoPath operator/(const RepoPath& lhs, AZStd::string_view rhs);
-        friend RepoPath operator/(const RepoPath& lhs, const typename value_type* rhs);
+        friend RepoPath operator/(const RepoPath& lhs, const value_type* rhs);
         friend RepoPath operator/(const RepoPath& lhs, const RepoPath& rhs);
         RepoPath& operator/=(const AZ::IO::PathView& rhs);
         RepoPath& operator/=(AZStd::string_view rhs);
-        RepoPath& operator/=(const typename value_type* rhs);
+        RepoPath& operator/=(const value_type* rhs);
         RepoPath& operator/=(const RepoPath& rhs);
 
         friend bool operator==(const RepoPath& lhs, const RepoPath& rhs) noexcept;

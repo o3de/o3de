@@ -775,7 +775,7 @@ namespace TestImpact
             serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::MaxConcurrency]].GetUint64(),
             testTargetTimeout ? AZStd::optional<AZStd::chrono::milliseconds>{ testTargetTimeout } : AZStd::nullopt,
             globalTimeout ? AZStd::optional<AZStd::chrono::milliseconds>{ globalTimeout } : AZStd::nullopt,
-            DeserializePolicyStateType<SequenceReportBaseType::PolicyState>(serialSequenceReportBase),
+            DeserializePolicyStateType<typename SequenceReportBaseType::PolicyState>(serialSequenceReportBase),
             SuiteTypeFromString(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::Suite]].GetString()),
             DeserializeTestSelection(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::SelectedTestRuns]]),
             DeserializeTestRunReport(serialSequenceReportBase[SequenceReportFields::Keys[SequenceReportFields::SelectedTestRunReport]]));
