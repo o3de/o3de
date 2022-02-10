@@ -146,7 +146,7 @@ namespace SurfaceData
     {
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
-        if (m_shapeBoundsIsValid && m_shapeBounds.Contains(inPosition))
+        if (m_shapeBoundsIsValid && SurfaceData::AabbContains2D(m_shapeBounds, inPosition))
         {
             const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_shapeBounds.GetMax().GetZ());
             const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
