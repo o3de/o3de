@@ -189,8 +189,9 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
+        const bool enableSourceControl = GetSettingOrDefault("/O3DE/AtomToolsFramework/Application/EnableSourceControl", true);
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
-            &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
+            &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
 
         if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
         {

@@ -106,7 +106,7 @@ typedef uint8               byte;
 #ifdef _RELEASE
     #define __debugbreak()
 #else
-    #define __debugbreak() "_asm int 3"
+    #define __debugbreak() asm("int3")
 #endif
 
 #define __assume(x)

@@ -15,7 +15,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/std/chrono/clocks.h>
-#include <SurfaceDataSystemComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
 #include <SurfaceDataModule.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <SurfaceData/SurfaceDataModifierRequestBus.h>
@@ -169,7 +169,7 @@ class MockSurfaceProvider
 
                     if (surfacePoints != m_GetSurfacePoints.end())
                     {
-                        weights.AddSurfaceWeightsIfGreater(m_tags, 1.0f);
+                        weights.AddSurfaceTagWeights(m_tags, 1.0f);
                     }
                 });
         }

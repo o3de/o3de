@@ -18,7 +18,18 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         COMPILATION
             -fPIC
             -msse4.1
+        LINK_NON_STATIC
+            -Wl,-undefined,error
+            -fpie
+            -Wl,-z,relro,-z,now
+            -Wl,-z,noexecstack
+        LINK_EXE
+            -pie
+            -fpie
+            -Wl,-z,relro,-z,now
+            -Wl,-z,noexecstack
     )
+
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 

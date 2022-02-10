@@ -8,11 +8,17 @@
 
 
 #include <Tests/GradientSignalTestFixtures.h>
+#include <Tests/GradientSignalTestHelpers.h>
 
+#include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <GradientSignal/Components/GradientTransformComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
 
 // Base gradient components
 #include <GradientSignal/Components/ConstantGradientComponent.h>
@@ -40,7 +46,7 @@ namespace UnitTest
 {
     void GradientSignalTestEnvironment::AddGemsAndComponents()
     {
-        AddDynamicModulePaths({ "LmbrCentral" });
+        AddDynamicModulePaths({ "LmbrCentral", "SurfaceData" });
 
         AddComponentDescriptors({
             AzFramework::TransformComponent::CreateDescriptor(),
@@ -65,50 +71,24 @@ namespace UnitTest
             GradientSignal::ThresholdGradientComponent::CreateDescriptor(),
 
             MockShapeComponent::CreateDescriptor(),
+            MockSurfaceProviderComponent::CreateDescriptor(),
         });
     }
 
     void GradientSignalBaseFixture::SetupCoreSystems()
     {
-        m_mockHandler = new UnitTest::ImageAssetMockAssetHandler();
-        AZ::Data::AssetManager::Instance().RegisterHandler(m_mockHandler, azrtti_typeid<GradientSignal::ImageAsset>());
+        // Using the AZ::RPI::MakeAssetHandler will both create the asset handlers,
+        // and register them with the AssetManager
+        m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
+        m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
     }
 
     void GradientSignalBaseFixture::TearDownCoreSystems()
     {
-        AZ::Data::AssetManager::Instance().UnregisterHandler(m_mockHandler);
-        delete m_mockHandler; // delete after removing from the asset manager
+        // This will delete the asset handlers, which will unregister themselves on deletion
+        m_assetHandlers.clear();
 
         AzFramework::LegacyAssetEventBus::ClearQueuedEvents();
-    }
-
-    AZStd::unique_ptr<MockSurfaceDataSystem> GradientSignalBaseFixture::CreateMockSurfaceDataSystem(const AZ::Aabb& spawnerBox)
-    {
-        AzFramework::SurfaceData::SurfacePoint point;
-        AZStd::unique_ptr<MockSurfaceDataSystem> mockSurfaceDataSystem = AZStd::make_unique<MockSurfaceDataSystem>();
-
-        // Give the mock surface data a bunch of fake point values to return.
-        for (float y = spawnerBox.GetMin().GetY(); y < spawnerBox.GetMax().GetY(); y+= 1.0f)
-        {
-            for (float x = spawnerBox.GetMin().GetX(); x < spawnerBox.GetMax().GetX(); x += 1.0f)
-            {
-                // Use our x distance into the spawnerBox as an arbitrary percentage value that we'll use to calculate
-                // our other arbitrary values below.
-                float arbitraryPercentage = AZStd::abs(x / spawnerBox.GetExtents().GetX());
-
-                // Create a position that's between min and max Z of the box.
-                point.m_position = AZ::Vector3(x, y, AZ::Lerp(spawnerBox.GetMin().GetZ(), spawnerBox.GetMax().GetZ(), arbitraryPercentage));
-                // Create an arbitrary normal value.
-                point.m_normal = point.m_position.GetNormalized();
-                // Create an arbitrary surface value.
-                point.m_surfaceTags.clear();
-                point.m_surfaceTags.emplace_back(AZ_CRC_CE("test_mask"), arbitraryPercentage);
-
-                mockSurfaceDataSystem->m_GetSurfacePoints[AZStd::make_pair(x, y)] = { { point } };
-            }
-        }
-
-        return mockSurfaceDataSystem;
     }
 
     AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::CreateTestEntity(float shapeHalfBounds)
@@ -120,10 +100,27 @@ namespace UnitTest
         auto boxComponent = testEntity->CreateComponent(LmbrCentral::AxisAlignedBoxShapeComponentTypeId);
         boxComponent->SetConfiguration(boxConfig);
 
-        // Create a transform that locates our gradient in the center of our desired mock Shape.
+        // Create a transform that locates our gradient in the center of our desired Shape.
         auto transform = testEntity->CreateComponent<AzFramework::TransformComponent>();
         transform->SetLocalTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
         transform->SetWorldTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
+
+        return testEntity;
+    }
+
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::CreateTestSphereEntity(float shapeRadius)
+    {
+        // Create the base entity
+        AZStd::unique_ptr<AZ::Entity> testEntity = CreateEntity();
+
+        LmbrCentral::SphereShapeConfig sphereConfig(shapeRadius);
+        auto sphereComponent = testEntity->CreateComponent(LmbrCentral::SphereShapeComponentTypeId);
+        sphereComponent->SetConfiguration(sphereConfig);
+
+        // Create a transform that locates our gradient in the center of our desired Shape.
+        auto transform = testEntity->CreateComponent<AzFramework::TransformComponent>();
+        transform->SetLocalTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeRadius)));
+        transform->SetWorldTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeRadius)));
 
         return testEntity;
     }
@@ -147,7 +144,7 @@ namespace UnitTest
         GradientSignal::ImageGradientConfig config;
         const uint32_t imageSize = 4096;
         const int32_t imageSeed = 12345;
-        config.m_imageAsset = ImageAssetMockAssetHandler::CreateImageAsset(imageSize, imageSize, imageSeed);
+        config.m_imageAsset = UnitTest::CreateImageAsset(imageSize, imageSize, imageSeed);
         config.m_tilingX = 1.0f;
         config.m_tilingY = 1.0f;
         entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);
@@ -349,11 +346,17 @@ namespace UnitTest
     AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestSurfaceAltitudeGradient(float shapeHalfBounds)
     {
         // Create a Surface Altitude Gradient Component with arbitrary parameters.
-        auto entity = CreateTestEntity(shapeHalfBounds);
+        auto entity = CreateTestSphereEntity(shapeHalfBounds);
         GradientSignal::SurfaceAltitudeGradientConfig config;
         config.m_altitudeMin = -5.0f;
-        config.m_altitudeMax = 15.0f;
+        config.m_altitudeMax = 15.0f + (shapeHalfBounds * 2.0f);
         entity->CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(config);
+
+        // Create a SurfaceDataShape component to provide surface points from this component.
+        SurfaceData::SurfaceDataShapeConfig shapeConfig;
+        shapeConfig.m_providerTags.emplace_back("test_mask");
+        auto surfaceShapeComponent = entity->CreateComponent(azrtti_typeid<SurfaceData::SurfaceDataShapeComponent>());
+        surfaceShapeComponent->SetConfiguration(shapeConfig);
 
         ActivateEntity(entity.get());
         return entity;
@@ -362,10 +365,16 @@ namespace UnitTest
     AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestSurfaceMaskGradient(float shapeHalfBounds)
     {
         // Create a Surface Mask Gradient Component with arbitrary parameters.
-        auto entity = CreateTestEntity(shapeHalfBounds);
+        auto entity = CreateTestSphereEntity(shapeHalfBounds);
         GradientSignal::SurfaceMaskGradientConfig config;
         config.m_surfaceTagList.push_back(AZ_CRC_CE("test_mask"));
         entity->CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(config);
+
+        // Create a SurfaceDataShape component to provide surface points from this component.
+        SurfaceData::SurfaceDataShapeConfig shapeConfig;
+        shapeConfig.m_providerTags.emplace_back("test_mask");
+        auto surfaceShapeComponent = entity->CreateComponent(azrtti_typeid<SurfaceData::SurfaceDataShapeComponent>());
+        surfaceShapeComponent->SetConfiguration(shapeConfig);
 
         ActivateEntity(entity.get());
         return entity;
@@ -374,7 +383,7 @@ namespace UnitTest
     AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestSurfaceSlopeGradient(float shapeHalfBounds)
     {
         // Create a Surface Slope Gradient Component with arbitrary parameters.
-        auto entity = CreateTestEntity(shapeHalfBounds);
+        auto entity = CreateTestSphereEntity(shapeHalfBounds);
         GradientSignal::SurfaceSlopeGradientConfig config;
         config.m_slopeMin = 5.0f;
         config.m_slopeMax = 50.0f;
@@ -383,6 +392,12 @@ namespace UnitTest
         config.m_smoothStep.m_falloffRange = 0.125f;
         config.m_smoothStep.m_falloffStrength = 0.25f;
         entity->CreateComponent<GradientSignal::SurfaceSlopeGradientComponent>(config);
+
+        // Create a SurfaceDataShape component to provide surface points from this component.
+        SurfaceData::SurfaceDataShapeConfig shapeConfig;
+        shapeConfig.m_providerTags.emplace_back("test_mask");
+        auto surfaceShapeComponent = entity->CreateComponent(azrtti_typeid<SurfaceData::SurfaceDataShapeComponent>());
+        surfaceShapeComponent->SetConfiguration(shapeConfig);
 
         ActivateEntity(entity.get());
         return entity;

@@ -11,8 +11,6 @@ set(FILES
     Source/Document/ShaderManagementConsoleDocument.cpp
     Source/Document/ShaderManagementConsoleDocument.h
 
-    Source/Window/ShaderManagementConsoleBrowserInteractions.h
-    Source/Window/ShaderManagementConsoleBrowserInteractions.cpp
     Source/Window/ShaderManagementConsoleWindow.h
     Source/Window/ShaderManagementConsoleWindow.cpp
     Source/Window/ShaderManagementConsole.qrc
