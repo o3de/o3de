@@ -10,6 +10,8 @@
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/DDSHeader.h>
 
+#include <AzCore/Math/MathUtils.h>
+
 namespace ImageProcessingAtom
 {
     CPixelFormats* CPixelFormats::s_instance = nullptr;
@@ -370,11 +372,11 @@ namespace ImageProcessingAtom
         {
             if (outWidth % pFormatInfo->blockWidth != 0)
             {
-                outWidth = RoundUpToMultiple(outWidth, pFormatInfo->blockWidth);
+                outWidth = AZ::RoundUpToMultiple(outWidth, pFormatInfo->blockWidth);
             }
             if (outHeight % pFormatInfo->blockHeight != 0)
             {
-                outHeight = RoundUpToMultiple(outHeight, pFormatInfo->blockHeight);
+                outHeight = AZ::RoundUpToMultiple(outHeight, pFormatInfo->blockHeight);
             }
         }
     }
@@ -392,8 +394,8 @@ namespace ImageProcessingAtom
 
         // get number of blocks and multiply with bits per block. Divided by 8 to get
         // final byte size
-        return (DivideAndRoundUp(imageWidth, pFormatInfo->blockWidth) *
-                DivideAndRoundUp(imageHeight, pFormatInfo->blockHeight) *
+        return (AZ::DivideAndRoundUp(imageWidth, pFormatInfo->blockWidth) *
+                AZ::DivideAndRoundUp(imageHeight, pFormatInfo->blockHeight) *
                 pFormatInfo->bitsPerBlock) / 8;
     }
 

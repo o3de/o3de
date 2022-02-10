@@ -472,7 +472,7 @@ namespace AZ
         AZ_Assert(alignment != 0, "0 is an invalid multiple to round to.");
         AZ_Assert(
             AZStd::numeric_limits<uint32_t>::max() - value >= alignment,
-            "value '%" PRIu32 "' and alignment '%" PRIu32 "' will overflow when added together during DivideAndRoundUp.");
+            "value '%" PRIu32 "' and alignment '%" PRIu32 "' will overflow when added together during DivideAndRoundUp.", value, alignment);
         return (value + alignment - 1) / alignment;
     }
 
@@ -481,7 +481,7 @@ namespace AZ
         AZ_Assert(alignment != 0, "0 is an invalid multiple to round to.");
         AZ_Assert(
             AZStd::numeric_limits<uint64_t>::max() - value >= alignment,
-            "value '%" PRIu64 "' and alignment '%" PRIu64 "' will overflow when added together during DivideAndRoundUp.");
+            "value '%" PRIu64 "' and alignment '%" PRIu64 "' will overflow when added together during DivideAndRoundUp.", value, alignment);
         return (value + alignment - 1) / alignment;
     }
     
