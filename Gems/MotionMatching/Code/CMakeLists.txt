@@ -121,27 +121,27 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME Gem::MotionMatching.Tests
     )
-endif()
 
-# If we are a host platform we want to add tools test like editor tests here
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_add_target(
-        NAME MotionMatching.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            motionmatching_editor_tests_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Tests
-                Source
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzTest
-                Gem::MotionMatching.Editor
-    )
+    # If we are a host platform we want to add tools test like editor tests here
+    if(PAL_TRAIT_BUILD_HOST_TOOLS)
+        ly_add_target(
+            NAME MotionMatching.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                motionmatching_editor_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    Source
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+                    Gem::MotionMatching.Editor
+        )
 
-    # Add MotionMatching.Editor.Tests to googletest
-    ly_add_googletest(
-        NAME Gem::MotionMatching.Editor.Tests
-    )
+        # Add MotionMatching.Editor.Tests to googletest
+        ly_add_googletest(
+            NAME Gem::MotionMatching.Editor.Tests
+        )
+    endif()
 endif()

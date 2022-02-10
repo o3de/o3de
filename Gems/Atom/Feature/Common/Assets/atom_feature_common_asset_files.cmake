@@ -10,12 +10,24 @@ set(FILES
     Materials/Special/ShadowCatcher.azsl
     Materials/Special/ShadowCatcher.materialtype
     Materials/Special/ShadowCatcher.shader
+    Materials/Types/MaterialFunctions/EnhancedParallaxDepth.azsli
+    Materials/Types/MaterialFunctions/EvaluateEnhancedSurface.azsli
+    Materials/Types/MaterialFunctions/EvaluateStandardSurface.azsli
+    Materials/Types/MaterialFunctions/EvaluateTangentFrame.azsli
+    Materials/Types/MaterialFunctions/MultilayerParallaxDepth.azsli
+    Materials/Types/MaterialFunctions/ParallaxDepth.azsli
+    Materials/Types/MaterialFunctions/StandardGetAlphaAndClip.azsli
+    Materials/Types/MaterialFunctions/StandardGetNormalToWorld.azsli
+    Materials/Types/MaterialFunctions/StandardGetObjectToWorld.azsli
+    Materials/Types/MaterialFunctions/StandardTransformDetailUvs.azsli
+    Materials/Types/MaterialFunctions/StandardTransformUvs.azsli
     Materials/Types/BasePBR.materialtype
     Materials/Types/BasePBR_Common.azsli
     Materials/Types/BasePBR_ForwardPass.azsl
     Materials/Types/BasePBR_ForwardPass.shader
     Materials/Types/BasePBR_LowEndForward.azsl
     Materials/Types/BasePBR_LowEndForward.shader
+    Materials/Types/DepthPass_WithPS.azsli
     Materials/Types/EnhancedPBR.materialtype
     Materials/Types/EnhancedPBR_Common.azsli
     Materials/Types/EnhancedPBR_DepthPass_WithPS.azsl
@@ -26,6 +38,7 @@ set(FILES
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.azsl
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
+    Materials/Types/EnhancedSurface_ForwardPass.azsli
     Materials/Types/Skin.azsl
     Materials/Types/Skin.materialtype
     Materials/Types/Skin.shader
@@ -56,7 +69,6 @@ set(FILES
     Materials/Types/StandardPBR_ForwardPass_EDS.shader
     Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua
     Materials/Types/StandardPBR_HandleOpacityMode.lua
-    Materials/Types/StandardPBR_LowEndForward.azsl
     Materials/Types/StandardPBR_LowEndForward.shader
     Materials/Types/StandardPBR_LowEndForward_EDS.shader
     Materials/Types/StandardPBR_Metallic.lua
@@ -65,6 +77,7 @@ set(FILES
     Materials/Types/StandardPBR_ShaderEnable.lua
     Materials/Types/StandardPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardPBR_Shadowmap_WithPS.shader
+    Materials/Types/StandardSurface_ForwardPass.azsli
     Materials/Types/MaterialInputs/AlphaInput.azsli
     Materials/Types/MaterialInputs/BaseColorInput.azsli
     Materials/Types/MaterialInputs/ClearCoatInput.azsli
