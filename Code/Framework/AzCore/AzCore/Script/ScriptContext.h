@@ -212,6 +212,10 @@ namespace AZ
 
         ~ScriptDataContext() { Reset(); }
 
+        //! Retrieve a string representing the current version of the interpreter.
+        //! Example of use: To signal incompatibility with previously emitted bytecode, to invalidate
+        static const char* GetInterpreterVersion();
+
         ScriptContext* GetScriptContext() const;
         lua_State* GetNativeContext() const { return m_nativeContext; }
 

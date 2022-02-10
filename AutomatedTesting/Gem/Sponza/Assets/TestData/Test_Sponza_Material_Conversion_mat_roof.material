@@ -1,44 +1,26 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
     "materialTypeVersion": 3,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "Textures/roof_1k_basecolor.png"
-        },
-        "general": {
-            "applySpecularAA": true
-        },
-        "metallic": {
-            "useTexture": false
-        },
-        "normal": {
-            "factor": 0.5,
-            "flipY": true,
-            "textureMap": "Textures/roof_1k_normal.jpg"
-        },
-        "occlusion": {
-            "diffuseTextureMap": "Textures/roof_1k_ao.png"
-        },
-        "opacity": {
-            "factor": 1.0
-        },
-        "parallax": {
-            "algorithm": "ContactRefinement",
-            "factor": 0.019999999552965165,
-            "quality": "Medium",
-            "useTexture": false
-        },
-        "roughness": {
-            "textureMap": "Textures/roof_1k_roughness.png"
-        }
+    "propertyValues": {
+        "baseColor.color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "Textures/roof_1k_basecolor.png",
+        "general.applySpecularAA": true,
+        "metallic.useTexture": false,
+        "normal.factor": 0.5,
+        "normal.flipY": true,
+        "normal.textureMap": "Textures/roof_1k_normal.jpg",
+        "occlusion.diffuseTextureMap": "Textures/roof_1k_ao.png",
+        "opacity.factor": 1.0,
+        "parallax.algorithm": "ContactRefinement",
+        "parallax.factor": 0.019999999552965164,
+        "parallax.quality": "Medium",
+        "parallax.useTexture": false,
+        "roughness.textureMap": "Textures/roof_1k_roughness.png"
     }
 }

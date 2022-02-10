@@ -8,6 +8,8 @@
 
 #include "GraphToLuaUtility.h"
 
+#include <clocale>
+
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -23,6 +25,23 @@
 
 namespace GraphToLuaUtilityCpp
 {
+    class ScopedLocale
+    {
+    public:
+        ScopedLocale()
+        {
+            m_previousLocale = std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+        }
+
+        ~ScopedLocale()
+        {
+            std::setlocale(LC_NUMERIC, m_previousLocale);
+        }
+
+    private:
+        char* m_previousLocale = nullptr;
+    };
+
     AZStd::string EqualSigns(size_t numEqualSignsRequired)
     {
         AZStd::string equalSigns = "";
@@ -183,6 +202,8 @@ namespace ScriptCanvas
 
         AZStd::string ToValueString(const Datum& datum, const Configuration& config)
         {
+            GraphToLuaUtilityCpp::ScopedLocale scopedLocal;
+
             switch (datum.GetType().GetType())
             {
             case Data::eType::AABB:

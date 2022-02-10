@@ -1,16 +1,10 @@
 {
-    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "",
     "materialTypeVersion": 3,
-    "properties": {
-        "baseColor": {
-            "textureMap": "TestData/Textures/Foliage_Leaves_0_BaseColor.dds"
-        },
-        "opacity": {
-            "doubleSided": true,
-            "mode": "Cutout",
-            "textureMap": "TestData/Textures/checker8x8_512.png"
-        }
+    "propertyValues": {
+        "baseColor.textureMap": "TestData/Textures/Foliage_Leaves_0_BaseColor.dds",
+        "opacity.doubleSided": true,
+        "opacity.mode": "Cutout",
+        "opacity.textureMap": "TestData/Textures/checker8x8_512.png"
     }
 }

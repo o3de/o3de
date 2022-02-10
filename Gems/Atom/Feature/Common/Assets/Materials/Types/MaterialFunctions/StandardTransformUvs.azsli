@@ -6,8 +6,9 @@
  *
  */
 
-// NOTE: This file is a temporary workaround until .shader files can #define macros for their .azsl files
-
-#define QUALITY_LOW_END 1
-
-#include "StandardPBR_ForwardPass.azsl"
+void TransformUvs(in float2 IN[UvSetCount], out float2 OUT[UvSetCount])
+{
+    // By design, only UV0 is allowed to apply transforms.
+    OUT[0] = mul(MaterialSrg::m_uvMatrix, float3(IN[0], 1.0)).xy;
+    OUT[1] = IN[1];
+}

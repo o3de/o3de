@@ -9,7 +9,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #endif
@@ -30,11 +29,7 @@ namespace MaterialEditor
         void Populate();
 
     private:
-        void AddDocumentSystemSettingsGroup();
-
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
-
-        AZStd::intrusive_ptr<AtomToolsFramework::AtomToolsDocumentSystemSettings> m_documentSystemSettings;
     };
 } // namespace MaterialEditor
