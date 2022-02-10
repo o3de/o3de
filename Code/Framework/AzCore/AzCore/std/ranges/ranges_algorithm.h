@@ -77,8 +77,8 @@ namespace AZStd::ranges
                 bool_constant<indirectly_copyable_storable<iterator_t<R>, range_value_t<R>*>>>, range_value_t<R>>
             {
                 AZ_Assert(ranges::distance(r) > 0, "ranges::min cannot be invoked with an empty range");
-                auto it = ranges::begin(AZStd::forward<R>(r));
-                auto last = ranges::end(AZStd::forward<R>(r));
+                auto it = ranges::begin(r);
+                auto last = ranges::end(r);
                 range_value_t<R> result{ *it };
                 for (; it != last; ++it)
                 {
@@ -136,8 +136,8 @@ namespace AZStd::ranges
                 bool_constant<indirectly_copyable_storable<iterator_t<R>, range_value_t<R>*>>>, range_value_t<R>>
             {
                 AZ_Assert(ranges::distance(r) > 0, "ranges::max cannot be invoked with an empty range");
-                auto it = ranges::begin(AZStd::forward<R>(r));
-                auto last = ranges::end(AZStd::forward<R>(r));
+                auto it = ranges::begin(r);
+                auto last = ranges::end(r);
                 range_value_t<R> result{ *it };
                 for (; it != last; ++it)
                 {
@@ -241,9 +241,9 @@ namespace AZStd::ranges
                 minmax_result<range_value_t<R>>>
             {
                 AZ_Assert(ranges::distance(r) > 0, "ranges::minmax cannot be invoked with an empty range");
-                auto first = ranges::begin(AZStd::forward<R>(r));
+                auto first = ranges::begin(r);
                 minmax_result<range_value_t<R>> result{ *first, *first };
-                auto last = ranges::end(AZStd::forward<R>(r));
+                auto last = ranges::end(r);
                 for (; first != last; ++first)
                 {
                     // Algorithm requires at most (3/2 * ranges::distance(r)) comparisons
@@ -333,8 +333,8 @@ namespace AZStd::ranges
                 bool_constant<indirect_strict_weak_order<Comp, projected<iterator_t<R>, Proj>>>
                 >, borrowed_iterator_t<R>>
             {
-                auto it = ranges::begin(AZStd::forward<R>(r));
-                auto last = ranges::end(AZStd::forward<R>(r));
+                auto it = ranges::begin(r);
+                auto last = ranges::end(r);
                 borrowed_iterator_t<R> result{ it };
                 for (; it != last; ++it)
                 {
@@ -382,8 +382,8 @@ namespace AZStd::ranges
                 bool_constant<indirect_strict_weak_order<Comp, projected<iterator_t<R>, Proj>>>
                 >, borrowed_iterator_t<R>>
             {
-                auto first = ranges::begin(AZStd::forward<R>(r));
-                auto last = ranges::end(AZStd::forward<R>(r));
+                auto first = ranges::begin(r);
+                auto last = ranges::end(r);
                 borrowed_iterator_t<R> result{ first };
                 for (; first != last; ++first)
                 {
@@ -483,9 +483,9 @@ namespace AZStd::ranges
                 bool_constant<indirect_strict_weak_order<Comp, projected<iterator_t<R>, Proj>>>
                 >, minmax_element_result<borrowed_iterator_t<R>>>
             {
-                auto first = ranges::begin(AZStd::forward<R>(r));
+                auto first = ranges::begin(r);
                 minmax_element_result<borrowed_iterator_t<R>> result{ first, first };
-                auto last = ranges::end(AZStd::forward<R>(r));
+                auto last = ranges::end(r);
                 for (; first != last; ++first)
                 {
                     // Algorithm requires at most (3/2 * ranges::distance(r)) comparisons
@@ -574,7 +574,7 @@ namespace AZStd::ranges
                 >>>
             constexpr borrowed_iterator_t<R> operator()(R&& r, const T& value, Proj proj = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R>(r)), ranges::end(AZStd::forward<R>(r)),
+                return operator()(ranges::begin(r), ranges::end(r),
                     value, AZStd::move(proj));
             }
         };
@@ -611,7 +611,7 @@ namespace AZStd::ranges
                 >>>
             constexpr borrowed_iterator_t<R> operator()(R&& r, Pred pred, Proj proj = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R>(r)), ranges::end(AZStd::forward<R>(r)),
+                return operator()(ranges::begin(r), ranges::end(r),
                     AZStd::move(pred), AZStd::move(proj));
             }
         };
@@ -649,7 +649,7 @@ namespace AZStd::ranges
             constexpr borrowed_iterator_t<R>
                 operator()(R&& r, Pred pred, Proj proj = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R>(r)), ranges::end(AZStd::forward<R>(r)),
+                return operator()(ranges::begin(r), ranges::end(r),
                     AZStd::move(pred), AZStd::move(proj));
             }
         };
@@ -697,8 +697,8 @@ namespace AZStd::ranges
             constexpr borrowed_iterator_t<R1> operator()(R1&& r1, R2&& r2,
                     Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
-                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                return operator()(ranges::begin(r1), ranges::end(r1),
+                    ranges::begin(r2), ranges::end(r2),
                         AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
             }
         };
@@ -747,8 +747,8 @@ namespace AZStd::ranges
             constexpr mismatch_result<borrowed_iterator_t<R1>, borrowed_iterator_t<R2>> operator()(R1&& r1, R2&& r2,
                 Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
-                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                return operator()(ranges::begin(r1), ranges::end(r1),
+                    ranges::begin(r2), ranges::end(r2),
                     AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
             }
         };
@@ -802,8 +802,8 @@ namespace AZStd::ranges
                 constexpr bool operator()(R1&& r1, R2&& r2, Pred pred = {},
                     Proj1 proj1 = {}, Proj2 proj2 = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
-                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                return operator()(ranges::begin(r1), ranges::end(r1),
+                    ranges::begin(r2), ranges::end(r2),
                     AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
             }
         };
@@ -866,8 +866,8 @@ namespace AZStd::ranges
                 operator()(R1&& r1, R2&& r2, Pred pred = {},
                     Proj1 proj1 = {}, Proj2 proj2 = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
-                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                return operator()(ranges::begin(r1), ranges::end(r1),
+                    ranges::begin(r2), ranges::end(r2),
                         AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
             }
 
@@ -924,7 +924,7 @@ namespace AZStd::ranges
                 constexpr borrowed_subrange_t<R> operator()(R&& r, range_difference_t<R> count,
                     const T& value, Pred pred = {}, Proj proj = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R>(r)), ranges::end(AZStd::forward<R>(r)),
+                return operator()(ranges::begin(r), ranges::end(r),
                     AZStd::move(count), value, AZStd::move(pred), AZStd::move(proj));
             }
         };
@@ -982,8 +982,8 @@ namespace AZStd::ranges
                 constexpr borrowed_subrange_t<R1> operator()(R1&& r1, R2&& r2, Pred pred = {},
                     Proj1 proj1 = {}, Proj2 proj2 = {}) const
             {
-                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
-                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                return operator()(ranges::begin(r1), ranges::end(r1),
+                    ranges::begin(r2), ranges::end(r2),
                         AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
             }
         };
