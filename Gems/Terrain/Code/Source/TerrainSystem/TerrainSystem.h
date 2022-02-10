@@ -234,7 +234,7 @@ namespace Terrain
             BulkQueriesCallback queryCallback) const;
         void GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPositions, 
             AZStd::vector<AZ::Vector3>& outPositions,
-            Sampler sampler, size_t indexStepSize) const;
+            Sampler sampler) const;
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromRegion(
             const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize) const;

@@ -180,7 +180,7 @@ bool TerrainSystem::InWorldBounds(float x, float y) const
 // Generate positions to be queried based on the sampler type.
 void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPositions,
     AZStd::vector<AZ::Vector3>& outPositions,
-    Sampler sampler, size_t indexStepSize) const
+    Sampler sampler) const
 {
     const float minHeight = m_currentSettings.m_worldBounds.GetMin().GetZ();
     for (auto& position : inPositions)
@@ -312,7 +312,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
     outPositions.reserve(inPositions.size() * indexStepSize);
     outTerrainExists.resize(inPositions.size() * indexStepSize);
 
-    GenerateQueryPositions(inPositions, outPositions, sampler, indexStepSize);
+    GenerateQueryPositions(inPositions, outPositions, sampler);
 
     auto callback = [](const AZStd::span<AZ::Vector3> inPositions,
                         AZStd::span<AZ::Vector3> outPositions,
