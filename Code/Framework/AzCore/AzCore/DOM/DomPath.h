@@ -47,6 +47,10 @@ namespace AZ::Dom
         bool operator!=(const AZ::Name& key) const;
         bool operator!=(AZStd::string_view key) const;
 
+        //! Comparison operator used for storage in map structures
+        //! Compares hash order and not lexigraphic order, so not suitable for UI purposes
+        bool operator<(const PathEntry& rhs) const;
+
         void SetEndOfArray();
 
         bool IsEndOfArray() const;

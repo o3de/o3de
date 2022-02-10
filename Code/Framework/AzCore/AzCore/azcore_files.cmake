@@ -130,6 +130,8 @@ set(FILES
     DOM/DomVisitor.h
     DOM/DomComparison.cpp
     DOM/DomComparison.h
+    DOM/DomPrefixTree.h
+    DOM/DomPrefixTree.inl
     DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h

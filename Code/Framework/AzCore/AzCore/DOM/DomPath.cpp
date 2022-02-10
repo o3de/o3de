@@ -7,9 +7,9 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzCore/DOM/DomPath.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/Console/ConsoleTypeHelpers.h>
 
 namespace AZ::Dom
 {
@@ -87,6 +87,26 @@ namespace AZ::Dom
     bool PathEntry::operator!=(AZStd::string_view key) const
     {
         return !operator==(key);
+    }
+
+    bool PathEntry::operator<(const PathEntry& rhs) const
+    {
+        return AZStd::visit(
+            [&](auto&& lhsValue)
+            {
+                using CurrentType = AZStd::decay_t<decltype(lhsValue)>;
+                if constexpr (AZStd::is_same_v<CurrentType, size_t>)
+                {
+                    const size_t* rhsValue = AZStd::get_if<size_t>(&rhs.m_value);
+                    return rhsValue == nullptr ? true : lhsValue < *rhsValue;
+                }
+                else if constexpr (AZStd::is_same_v<CurrentType, AZ::Name>)
+                {
+                    const AZ::Name* rhsValue = AZStd::get_if<Name>(&rhs.m_value);
+                    return rhsValue == nullptr ? false : lhsValue.GetStringView() < rhsValue->GetStringView();
+                }
+            },
+            m_value);
     }
 
     void PathEntry::SetEndOfArray()
