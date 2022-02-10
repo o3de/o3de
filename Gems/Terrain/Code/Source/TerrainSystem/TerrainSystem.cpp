@@ -505,15 +505,16 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 void TerrainSystem::GetNormalsSynchronous(const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
-    AZStd::vector<AZ::Vector3> directionVectors(inPositions.size() * 4);
+    AZStd::vector<AZ::Vector3> directionVectors;
+    directionVectors.reserve(inPositions.size() * 4);
     const AZ::Vector2 range(m_currentSettings.m_heightQueryResolution / 2.0f, m_currentSettings.m_heightQueryResolution / 2.0f);
     size_t indexStepSize = 4;
-    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
+    for (auto& position : inPositions)
     {
-        directionVectors[iteratorIndex].Set(inPositions[i].GetX(), inPositions[i].GetY() - range.GetY(), 0.0f);
-        directionVectors[iteratorIndex + 1].Set(inPositions[i].GetX() - range.GetX(), inPositions[i].GetY(), 0.0f);
-        directionVectors[iteratorIndex + 2].Set(inPositions[i].GetX() + range.GetX(), inPositions[i].GetY(), 0.0f);
-        directionVectors[iteratorIndex + 3].Set(inPositions[i].GetX(), inPositions[i].GetY() + range.GetY(), 0.0f);
+        directionVectors.emplace_back(position.GetX(), position.GetY() - range.GetY(), 0.0f);
+        directionVectors.emplace_back(position.GetX() - range.GetX(), position.GetY(), 0.0f);
+        directionVectors.emplace_back(position.GetX() + range.GetX(), position.GetY(), 0.0f);
+        directionVectors.emplace_back(position.GetX(), position.GetY() + range.GetY(), 0.0f);
     }
 
     AZStd::vector<float> heights(directionVectors.size());
