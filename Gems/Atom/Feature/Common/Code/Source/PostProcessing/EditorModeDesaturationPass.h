@@ -5,23 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
+
+#include <PostProcessing/EditorModeFeedbackDepthTransition.h>
 
 #include <AzCore/Console/IConsole.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <PostProcess/EditorModeFeedback/EditorModeFeedbackSettings.h>
-
-#define AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, NAME, INITIAL_VALUE)                                                                           \
-    AZ_CVAR(float, ##NAMESPACE##_##NAME, INITIAL_VALUE, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
-#define AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(NAMESPACE, MIN_VALUE, START, DURATION, FINAL_BLEND)                                           \
-    AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, MinDepthTransitionValue, MIN_VALUE);                                                               \
-    AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, DepthTransitionStart, START);                                                                      \
-    AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, DepthTransitionDuration, MIN_VALUE);                                                               \
-    AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, FinalBlendAmount, FINAL_BLEND);
 
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeDesaturationPass, 0.5f, 5.0f, 10.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(cl_editorModeDesaturationPass, DesaturationAmount, 1.0f);
@@ -57,11 +49,7 @@ namespace AZ
         private:
             void SetSrgConstants();
 
-            RHI::ShaderInputNameIndex m_minDepthTransitionValueIndex = "m_minDepthTransitionValue";
-            RHI::ShaderInputNameIndex m_depthTransitionStartIndex = "m_depthTransitionStart";
-            RHI::ShaderInputNameIndex m_depthTransitionDurationIndex = "m_depthTransitionDuration";
-            RHI::ShaderInputNameIndex m_finalBlendAmountIndex = "m_finalBlendAmount";
-
+            EditorModeFeedbackDepthTransition m_depthTransition;
             RHI::ShaderInputNameIndex m_desaturationAmountIndex = "m_desaturationAmount";
         };
     }   // namespace Render
