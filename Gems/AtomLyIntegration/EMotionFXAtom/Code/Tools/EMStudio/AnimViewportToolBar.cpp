@@ -158,7 +158,7 @@ namespace EMStudio
     }
 
     void AnimViewportToolBar::CreateViewOptionEntry(
-        QMenu* menu, const char* menuEntryName, uint32_t actionIndex, bool visible, const char* iconFileName)
+        QMenu* menu, const char* menuEntryName, AZ::u8 actionIndex, bool visible, const char* iconFileName)
     {
         QAction* action = menu->addAction(
             menuEntryName,
