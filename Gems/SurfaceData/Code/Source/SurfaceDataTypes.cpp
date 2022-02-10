@@ -42,7 +42,7 @@ namespace SurfaceData
     AzFramework::SurfaceData::SurfaceTagWeightList SurfaceTagWeights::GetSurfaceTagWeightList() const
     {
         AzFramework::SurfaceData::SurfaceTagWeightList weights;
-        weights.reserve(m_weights.size());
+
         for (auto& weight : m_weights)
         {
             weights.emplace_back(weight);
