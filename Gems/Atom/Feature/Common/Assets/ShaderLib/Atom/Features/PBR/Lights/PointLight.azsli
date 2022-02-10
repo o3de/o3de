@@ -67,6 +67,7 @@ uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
+    float posToLightDist = length(posToLight);
     float d2 = dot(posToLight, posToLight); // light distance squared
     float falloff = d2 * light.m_invAttenuationRadiusSquared;
     
@@ -84,8 +85,11 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // shadow
         float litRatio = 1.0;
 
-        // How much is back face shadowed, it's set to the reverse of litRatio to share the same default value with thickness, which should be 0 if no shadow map available
-        float backShadowRatio = 0.0;
+        // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
+        // - If transmission mode is thick object -> use transmission thickness parameter instead
+        // - If transmission mode is thin object -> ignore back lighting
+        float transmissionDistance = -1.0f;
+
         if (o_enableShadows)
         {
             const float3 lightDir = normalize(light.m_position - surface.position);
@@ -96,16 +100,17 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
                     surface.position,
                     lightDir,
                     surface.vertexNormal);
-                        
-            // Use backShadowRatio to carry thickness from shadow map for thick mode
-            backShadowRatio = 1.0 - litRatio;
+
 #if ENABLE_TRANSMISSION
+            // o_transmission_mode == NONE is not taken into account because GetBackLighting already ignores this case
             if (o_transmission_mode == TransmissionMode::ThickObject)
             {
-                backShadowRatio = ProjectedShadow::GetThickness(
-                    shadowIndex,
-                    surface.position);
-            }                   
+                transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position);
+            }
+            else if (o_transmission_mode == TransmissionMode::ThinObject)
+            {
+                transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position - lightingData.shrinkFactor * surface.vertexNormal);
+            }
 #endif
         }
 
@@ -113,7 +118,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
 
         // Transmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), backShadowRatio);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance, posToLightDist);
 
         // Adjust the light direcion for specular based on bulb size
 

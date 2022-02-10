@@ -14,7 +14,7 @@ import azlmbr.math as math
 import azlmbr.asset as asset
 
 # Open a level (any level should work)
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'WaterSample')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'Base')
 
 def GetSetCompareTest(component, path, assetId):
     # Test Get/Set (get old value, set new value, check that new value was set correctly)

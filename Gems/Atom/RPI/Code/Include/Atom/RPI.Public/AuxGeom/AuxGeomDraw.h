@@ -184,8 +184,8 @@ namespace AZ
             virtual void DrawDisk(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
 
             //! Draw a cone.
-            //! @param center        The center of the base circle.
-            //! @param direction     The direction vector. The tip of the cone will point along this vector.
+            //! @param center        The center of the cone base.
+            //! @param direction     The direction vector. This is the vector from the center of the base to the point at the tip.
             //! @param radius        The radius.
             //! @param height        The height of the cone (the distance from the base center to the tip).
             //! @param color         The color to draw the cone.

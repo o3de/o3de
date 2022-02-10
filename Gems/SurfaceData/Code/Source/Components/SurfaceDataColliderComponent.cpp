@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceDataColliderComponent.h"
+#include <SurfaceData/Components/SurfaceDataColliderComponent.h>
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>

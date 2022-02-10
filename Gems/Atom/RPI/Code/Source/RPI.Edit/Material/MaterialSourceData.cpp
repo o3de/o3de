@@ -44,7 +44,7 @@ namespace AZ
         {
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
             {
-                jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialSourceData::Property>();
+                jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialPropertyValue>();
             }
             else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
@@ -54,15 +54,12 @@ namespace AZ
                     ->Field("materialType", &MaterialSourceData::m_materialType)
                     ->Field("materialTypeVersion", &MaterialSourceData::m_materialTypeVersion)
                     ->Field("parentMaterial", &MaterialSourceData::m_parentMaterial)
-                    ->Field("properties", &MaterialSourceData::m_properties)
+                    ->Field("properties", &MaterialSourceData::m_propertiesOld)
+                    ->Field("propertyValues", &MaterialSourceData::m_propertyValues)
                     ;
 
-                serializeContext->RegisterGenericType<PropertyMap>();
+                serializeContext->RegisterGenericType<PropertyValueMap>();
                 serializeContext->RegisterGenericType<PropertyGroupMap>();
-
-                serializeContext->Class<MaterialSourceData::Property>()
-                    ->Version(1)
-                    ;
             }
         }
 
@@ -77,6 +74,55 @@ namespace AZ
             }
         }
         
+        void MaterialSourceData::SetPropertyValue(const Name& propertyId, const MaterialPropertyValue& value)
+        {
+            if (!propertyId.IsEmpty())
+            {
+                m_propertyValues[propertyId] = value;
+            }
+        }
+
+        const MaterialPropertyValue& MaterialSourceData::GetPropertyValue(const Name& propertyId) const
+        {
+            auto iter = m_propertyValues.find(propertyId);
+            if (iter == m_propertyValues.end())
+            {
+                return m_invalidValue;
+            }
+            else
+            {
+                return iter->second;
+            }
+        }
+        
+        void MaterialSourceData::RemovePropertyValue(const Name& propertyId)
+        {
+            m_propertyValues.erase(propertyId);
+        }
+        
+        const MaterialSourceData::PropertyValueMap& MaterialSourceData::GetPropertyValues() const
+        {
+            return m_propertyValues;
+        }
+
+        bool MaterialSourceData::HasPropertyValue(const Name& propertyId) const
+        {
+            return m_propertyValues.find(propertyId) != m_propertyValues.end();
+        }
+        
+        void MaterialSourceData::ConvertToNewDataFormat()
+        {
+            for (const auto& [groupName, propertyList] : m_propertiesOld)
+            {
+                for (const auto& [propertyName, propertyValue] : propertyList)
+                {
+                    SetPropertyValue(MaterialPropertyId{groupName, propertyName}, propertyValue);
+                }
+            }
+
+            m_propertiesOld.clear();
+        }
+
         Outcome<Data::Asset<MaterialAsset>> MaterialSourceData::CreateMaterialAsset(
             Data::AssetId assetId, AZStd::string_view materialSourceFilePath, MaterialAssetProcessingMode processingMode, bool elevateWarnings) const
         {
@@ -254,12 +300,14 @@ namespace AZ
                     return Failure();
                 }
 
-                MaterialSourceData parentSourceData;
-                if (!AZ::RPI::JsonUtils::LoadObjectFromFile(parentSourceAbsPath, parentSourceData))
+                auto loadParentResult = MaterialUtils::LoadMaterialSourceData(parentSourceAbsPath);
+                if (!loadParentResult)
                 {
                     AZ_Error("MaterialSourceData", false, "Failed to load MaterialSourceData for parent material: '%s'.", parentSourceAbsPath.c_str());
                     return Failure();
                 }
+                
+                MaterialSourceData parentSourceData = loadParentResult.TakeValue();
 
                 // Make sure that all materials in the hierarchy share the same material type
                 const auto parentTypeAssetId = AssetUtils::MakeAssetId(parentSourceAbsPath, parentSourceData.m_materialType, 0);
@@ -318,30 +366,29 @@ namespace AZ
         void MaterialSourceData::ApplyPropertiesToAssetCreator(
             AZ::RPI::MaterialAssetCreator& materialAssetCreator, const AZStd::string_view& materialSourceFilePath) const
         {
-            for (auto& group : m_properties)
+            for (auto& [propertyId, propertyValue] : m_propertyValues)
             {
-                for (auto& property : group.second)
+                if (!propertyValue.IsValid())
                 {
-                    MaterialPropertyId propertyId{ group.first, property.first };
-                    if (!property.second.m_value.IsValid())
-                    {
-                        materialAssetCreator.ReportWarning("Source data for material property value is invalid.");
-                    }
+                    materialAssetCreator.ReportWarning("Source data for material property value is invalid.");
+                }
+                else
+                {
                     // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
                     // the string (for the extension) we assume it's an Image and look up the referenced Asset. Otherwise, we can assume
                     // it's an Enum value and just preserve the original string.
-                    else if (property.second.m_value.Is<AZStd::string>() && AzFramework::StringFunc::Contains(property.second.m_value.GetValue<AZStd::string>(), "."))
+                    if (propertyValue.Is<AZStd::string>() && AzFramework::StringFunc::Contains(propertyValue.GetValue<AZStd::string>(), "."))
                     {
                         Data::Asset<ImageAsset> imageAsset;
 
                         MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
-                            imageAsset, materialSourceFilePath, property.second.m_value.GetValue<AZStd::string>());
+                            imageAsset, materialSourceFilePath, propertyValue.GetValue<AZStd::string>());
                                     
                         if (result == MaterialUtils::GetImageAssetResult::Missing)
                         {
                             materialAssetCreator.ReportWarning(
                                 "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
-                                property.second.m_value.GetValue<AZStd::string>().data());
+                                propertyValue.GetValue<AZStd::string>().data());
                         }
                                     
                         imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
@@ -349,7 +396,7 @@ namespace AZ
                     }
                     else
                     {
-                        materialAssetCreator.SetPropertyValue(propertyId, property.second.m_value);
+                        materialAssetCreator.SetPropertyValue(propertyId, propertyValue);
                     }
                 }
             }
