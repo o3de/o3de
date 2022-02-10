@@ -215,6 +215,16 @@ namespace GradientSignal
         m_dependencyMonitor.ConnectDependency(m_configuration.m_imageAsset.GetId());
     }
 
+    void ImageGradientComponent::GetSubImageData()
+    {
+        if (!m_configuration.m_imageAsset || !m_configuration.m_imageAsset.IsReady())
+        {
+            return;
+        }
+
+        m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
+    }
+
     void ImageGradientComponent::Activate()
     {
         // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
@@ -224,10 +234,13 @@ namespace GradientSignal
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
         GradientRequestBus::Handler::BusConnect(GetEntityId());
-        AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
 
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        // Invoke the QueueLoad before connecting to the AssetBus, so that
+        // if the asset is already ready, then OnAssetReady will be triggered immediately
+        m_imageData = AZStd::span<const uint8_t>();
         m_configuration.m_imageAsset.QueueLoad();
+
+        AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
     }
 
     void ImageGradientComponent::Deactivate()
@@ -267,18 +280,24 @@ namespace GradientSignal
     {
         AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
+
+        GetSubImageData();
     }
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
         AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
+
+        GetSubImageData();
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
+
+        GetSubImageData();
     }
 
     void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
@@ -292,6 +311,12 @@ namespace GradientSignal
         AZ::Vector3 uvw = sampleParams.m_position;
         bool wasPointRejected = false;
 
+        // Return immediately if our cached image data hasn't been retrieved yet
+        if (m_imageData.empty())
+        {
+            return 0.0f;
+        }
+
         {
             AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
 
@@ -300,7 +325,7 @@ namespace GradientSignal
             if (!wasPointRejected)
             {
                 return GetValueFromImageAsset(
-                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+                    m_imageData, m_configuration.m_imageAsset->GetImageDescriptor(), uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
             }
         }
 
@@ -312,6 +337,12 @@ namespace GradientSignal
         if (positions.size() != outValues.size())
         {
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        // Return immediately if our cached image data hasn't been retrieved yet
+        if (m_imageData.empty())
+        {
             return;
         }
 
@@ -327,7 +358,7 @@ namespace GradientSignal
             if (!wasPointRejected)
             {
                 outValues[index] = GetValueFromImageAsset(
-                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+                    m_imageData, m_configuration.m_imageAsset->GetImageDescriptor(), uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
             }
             else
             {
@@ -353,6 +384,10 @@ namespace GradientSignal
 
             {
                 AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+                // Clear our cached image data
+                m_imageData = AZStd::span<const uint8_t>();
+
                 m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<AZ::RPI::StreamingImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
             }
 
