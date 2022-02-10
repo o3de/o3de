@@ -140,7 +140,7 @@ namespace AZ {
     SymRegisterCallback64_t     g_SymRegisterCallback64;
     HMODULE                     g_dbgHelpDll;
 
-#define LOAD_FUNCTION(A)    { g_##A = (A##_t)GetProcAddress(g_dbgHelpDll, #A); AZ_Assert(g_##A != 0, ("Can not load %s function!",#A)); }
+#define LOAD_FUNCTION(A)    { g_##A = (A##_t)GetProcAddress(g_dbgHelpDll, #A); AZ_Assert(g_##A != 0, "Can not load %s function!",#A); }
 
     using namespace AZ::Debug;
 
