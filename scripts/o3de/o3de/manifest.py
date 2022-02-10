@@ -491,6 +491,40 @@ def get_project_json_data(project_name: str = None,
 
     return None
 
+def get_json_data_file(object_json: pathlib.Path,
+                       object_typename: str,
+                       object_validator: callable) -> dict or None:
+    if not object_typename:
+        logger.error('Missing object typename.')
+        return None    
+    if not object_json or not object_json.is_file():
+        logger.error(f'Invalid {object_typename} json {object_json} supplied or file missing.')
+        return None    
+    if not object_validator or not object_validator(object_json):
+        logger.error(f'{object_typename} json {object_json} is not valid or could not be validated.')
+        return None    
+    with object_json.open('r') as f:
+        try:
+            object_json_data = json.load(f)
+        except json.JSONDecodeError as e:
+            logger.warning(f'{object_json} failed to load: {e}')
+        else:
+            return object_json_data    
+    return None
+
+def get_repo_json_data(repo_uri: str) -> dict or None:
+    if not repo_uri:
+        logger.error('Must specify a Repo Uri.')
+        return None    
+    repo_json = get_repo_path(repo_uri=repo_uri)    
+    return get_json_data_file(repo_json, "Repo", validation.valid_o3de_repo_json)
+
+def get_repo_path(repo_uri: str, cache_folder: str = None) -> pathlib.Path:
+    if not cache_folder:
+        cache_folder = get_o3de_cache_folder()
+    repo_manifest = f'{repo_uri}/repo.json'
+    repo_sha256 = hashlib.sha256(repo_manifest.encode())
+    return cache_folder / str(repo_sha256.hexdigest() + '.json')
 
 def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
                       project_path: pathlib.Path = None) -> dict or None:
@@ -506,7 +540,10 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
         return None
 
     gem_path = pathlib.Path(gem_path).resolve()
-    gem_json = gem_path / 'gem.json'
+    if gem_path.suffix == '.json':
+        gem_json = gem_path
+    else:
+        gem_json = gem_path / 'gem.json'
     if not gem_json.is_file():
         logger.error(f'Gem json {gem_json} is not present.')
         return None
