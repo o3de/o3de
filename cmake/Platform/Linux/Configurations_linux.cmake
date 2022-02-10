@@ -24,6 +24,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -Wl,-z,relro,-z,now
             -Wl,-z,noexecstack
         LINK_EXE
+            -fpie
             -Wl,-z,relro,-z,now
             -Wl,-z,noexecstack
     )
