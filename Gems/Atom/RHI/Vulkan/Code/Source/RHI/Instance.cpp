@@ -9,6 +9,7 @@
 #include <RHI/Instance.h>
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzTest/Utils.h>
 
 namespace AZ
 {
@@ -45,8 +46,22 @@ namespace AZ
 
         bool Instance::Init(const Descriptor& descriptor)
         {
-            m_descriptor = descriptor;   
+            m_descriptor = descriptor;
+            if (GetValidationMode() != RHI::ValidationMode::Disabled)
+            {
+                //This env var (VK_LAYER_PATH) is used by the drivers to look for VkLayer_khronos_validation.dll
+                AZStd::string exeFolder = AZ::Test::GetCurrentExecutablePath().c_str();
+                AZ::Test::SetEnv("VK_LAYER_PATH", exeFolder.c_str(), 1);
 
+                RawStringList validationLayers = Debug::GetValidationLayers();
+                m_descriptor.m_optionalLayers.insert(m_descriptor.m_requiredLayers.end(), validationLayers.begin(), validationLayers.end());
+                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            }
+#if defined(AZ_VULKAN_USE_DEBUG_LABELS)
+            m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+            
             m_functionLoader = FunctionLoader::Create();
             if (!m_functionLoader->Init())
             {
@@ -88,17 +103,6 @@ namespace AZ
             instanceCreateInfo.pApplicationInfo = &appInfo;
 
             StringList instanceLayerNames = GetInstanceLayerNames();
-            if (GetValidationMode() != RHI::ValidationMode::Disabled)
-            {
-                RawStringList validationLayers = Debug::GetValidationLayers();
-                m_descriptor.m_optionalLayers.insert(m_descriptor.m_requiredLayers.end(), validationLayers.begin(), validationLayers.end());
-                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-            }
-#if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-            m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
-
             RawStringList optionalLayers = FilterList(m_descriptor.m_optionalLayers, instanceLayerNames);
             m_descriptor.m_requiredLayers.insert(m_descriptor.m_requiredLayers.end(), optionalLayers.begin(), optionalLayers.end());
 
