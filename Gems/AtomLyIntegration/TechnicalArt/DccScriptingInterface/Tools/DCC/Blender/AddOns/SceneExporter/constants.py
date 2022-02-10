@@ -15,6 +15,14 @@ EXPORT_LIST_OPTIONS = ( ( ('0', 'Selected with in texture folder',
         'Export selected meshes with textures in the same folder'),
     ('2', 'Only Meshes', 'Only export the selected meshes, no textures')
     ))
+NO_ANIMATION = 'No Animation'
+KEY_FRAME_ANIMATION = 'Keyframe Animation'
+MESH_AND_RIG = 'Just Mesh with Rig'
+ANIMATION_LIST_OPTIONS = ( (
+    ('0', NO_ANIMATION, 'Export with no keyframe Animation.'),
+    ('1', KEY_FRAME_ANIMATION, 'Mesh needs to be parented to Armature with weights in order for O3DE to detect Entity as an Actor.'),
+    ('2', MESH_AND_RIG, 'Key All Bones, Force exporting at least one key of animation for all bones')
+    ))
 TAG_O3DE = '.o3de'
 USER_HOME = Path.home()
 DEFAULT_SDK_MANIFEST_PATH = Path.home().joinpath(f'{TAG_O3DE}','o3de_manifest.json')

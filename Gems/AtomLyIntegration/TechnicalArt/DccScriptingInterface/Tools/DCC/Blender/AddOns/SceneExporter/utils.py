@@ -24,6 +24,46 @@ def check_selected():
     else:
         return True, selections
 
+def selected_hierarchy_and_rig_animation():
+    """!
+    This function will check to see if an animation armature rig has been selected.
+    """
+    ob = bpy.ops.object
+    
+    for selected_obj in bpy.context.selected_objects:
+        if selected_obj is not []:
+            ob.select_grouped(extend=True, type='SIBLINGS')
+            ob.select_grouped(extend=True, type='PARENT')
+            ob.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
+            ob.select_grouped(extend=True, type='PARENT')
+
+def valid_animation_selection():
+    """!
+    This function will check to see if user has selected a valid level in
+    the hierarchy for exporting the selected mesh, armature rig and animation.
+    """
+    object_selections = [obj for obj in bpy.context.selected_objects]
+    obj = object_selections[0]
+
+    if obj.type == 'ARMATURE':
+        bpy.types.Scene.export_good = False
+        ui.message_box("You must select lowest level mesh of Armature.", "O3DE Tools", "ERROR")
+    elif obj.children:
+        bpy.types.Scene.export_good = False
+        ui.message_box("You need to select base mesh level.", "O3DE Tools", "ERROR")
+    else:
+        bpy.types.Scene.export_good = True
+        selected_hierarchy_and_rig_animation()
+
+def check_if_valid_path(file_path):
+    """!
+    This function will check to see if a file path exist and return a bool
+    """
+    if Path(file_path).exists():
+        return True
+    else:
+        return False
+
 def get_selected_materials(selected):
     """!
     This function will check the selected mesh and find material are connected

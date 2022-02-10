@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 bl_info = {
     "name": "O3DE_DCCSI_BLENDER_SCENE_EXPORTER",
     "author": "shawstar@amazon",
-    "version": (1, 0),
+    "version": (1, 1),
     "blender": (3, 00, 0),
     "location": "",
     "description": "Export Scene Assets to O3DE",
@@ -60,35 +60,43 @@ from . import constants
 def register():
     """! This is the function that will register Classes and Global Vars for this plugin
     """
-    #auto_load.register()
     bpy.utils.register_class(ui.O3deTools)
     bpy.utils.register_class(ui.WikiButton)
     bpy.utils.register_class(ui.ExportFiles)
     bpy.utils.register_class(ui.ProjectsListDropDown)
     bpy.utils.register_class(ui.SceneExporterFileMenu)
     bpy.utils.register_class(ui.ExportOptionsListDropDown)
+    bpy.utils.register_class(ui.AnimationOptionsListDropDown)
     bpy.types.TOPBAR_MT_file_export.append(ui.file_export_menu_add) # Blender Specific Class and Naming Convention. 
     bpy.types.Scene.selected_o3de_project_path = ''
     bpy.types.Scene.export_textures_folder = True
+    bpy.types.Scene.animation_export = constants.NO_ANIMATION
+    bpy.types.Scene.file_menu_animation_export = False
+    bpy.types.Scene.export_good = False
     bpy.types.Scene.stored_image_source_paths = {}
     bpy.types.Scene.o3de_projects_list = EnumProperty(items=o3de_utils.build_projects_list(), name='')
-    bpy.types.Scene.export_options_list = EnumProperty(items=constants.EXPORT_LIST_OPTIONS, name='', default='0')
+    bpy.types.Scene.texture_options_list = EnumProperty(items=constants.EXPORT_LIST_OPTIONS, name='', default='0')
+    bpy.types.Scene.animation_options_list = EnumProperty(items=constants.ANIMATION_LIST_OPTIONS, name='', default='0')
 
 def unregister():
     """! This is the function that will unregister Classes and Global Vars for this plugin
     """
-    #auto_load.unregister()
     bpy.utils.unregister_class(ui.O3deTools)
     bpy.utils.unregister_class(ui.WikiButton)
     bpy.utils.unregister_class(ui.ExportFiles)
     bpy.utils.unregister_class(ui.ProjectsListDropDown)
     bpy.utils.unregister_class(ui.SceneExporterFileMenu)
     bpy.utils.unregister_class(ui.ExportOptionsListDropDown)
+    bpy.utils.unregister_class(ui.AnimationOptionsListDropDown)
     bpy.types.TOPBAR_MT_file_export.remove(ui.file_export_menu_add) # Blender Specific Class and Naming Convention. 
     del bpy.types.Scene.selected_o3de_project_path
     del bpy.types.Scene.o3de_projects_list
-    del bpy.types.Scene.export_options_list
+    del bpy.types.Scene.texture_options_list
+    del bpy.types.Scene.animation_options_list
+    del bpy.types.Scene.export_good
     del bpy.types.Scene.export_textures_folder
+    del bpy.types.Scene.animation_export
+    del bpy.types.Scene.file_menu_animation_export
     del bpy.types.Scene.stored_image_source_paths
 
 if __name__ == "__main__":
