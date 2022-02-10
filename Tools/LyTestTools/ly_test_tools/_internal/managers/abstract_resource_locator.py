@@ -175,12 +175,19 @@ class AbstractResourceLocator(object):
         return os.path.join(self.build_directory(), 'AssetProcessor')
 
     def asset_processor_batch(self):
-        """"
+        """
         Return path for the AssetProcessorBatch compatible with this build platform and configuration
         ex. engine_root/dev/mac/bin/profile/AssetProcessorBatch
         :return: path to AssetProcessorBatch
         """
         return os.path.join(self.build_directory(), 'AssetProcessorBatch')
+
+    def ap_job_logs(self):
+        """
+        Return path to the Asset Processor JobLogs directory.
+        :return: path to <project>/user/log/JobLogs
+        """
+        return os.path.join(self.project_log(), 'JobLogs')
 
     def editor(self):
         """
