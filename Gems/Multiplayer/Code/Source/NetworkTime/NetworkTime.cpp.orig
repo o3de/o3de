@@ -113,7 +113,7 @@ namespace Multiplayer
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();
         AzFramework::IEntityBoundsUnion* entityBoundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
         AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(expandedVolume,
-            [this, debugDisplay, networkEntityTracker, entityBoundsUnion, rewindVolume](const AzFramework::IVisibilityScene::NodeData& nodeData)
+            [this, debugDisplay, networkEntityTracker, entityBoundsUnion, expandedVolume](const AzFramework::IVisibilityScene::NodeData& nodeData)
         {
             m_rewoundEntities.reserve(m_rewoundEntities.size() + nodeData.m_entries.size());
             for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
@@ -133,6 +133,12 @@ namespace Multiplayer
                             debugDisplay->DrawWireBox(currentBounds.GetMin(), currentBounds.GetMax());
                         }
 
+<<<<<<< Updated upstream
+                        if (AZ::ShapeIntersection::Overlaps(rewoundAabb, expandedVolume)) // Validate the rewound aabb intersects our rewind volume
+                        {
+                            m_rewoundEntities.push_back(entityHandle);
+                            entityHandle.GetNetBindComponent()->NotifySyncRewindState();
+=======
                         if (networkTransform != nullptr)
                         {
                             // Get the rewound position for target host frame ID plus the one preceding it for potential lerp
@@ -157,6 +163,7 @@ namespace Multiplayer
                                 m_rewoundEntities.push_back(entityHandle);
                                 entityHandle.GetNetBindComponent()->NotifySyncRewindState();
                             }
+>>>>>>> Stashed changes
                         }
                     }
                 }
