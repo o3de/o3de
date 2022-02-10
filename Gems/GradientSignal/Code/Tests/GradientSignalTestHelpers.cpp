@@ -8,16 +8,194 @@
 
 
 #include <Tests/GradientSignalTestHelpers.h>
+#include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <AzCore/Math/Aabb.h>
 #include <GradientSignal/GradientSampler.h>
 
 namespace UnitTest
 {
-    void GradientSignalTestHelpers::CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float shapeHalfBounds)
+    AZ::RHI::ImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize)
+    {
+        AZ::RHI::ImageSubresourceLayout layout;
+        layout.m_size = AZ::RHI::Size{ width, height, 1 };
+        layout.m_rowCount = width;
+        layout.m_bytesPerRow = width * pixelSize;
+        layout.m_bytesPerImage = width * height * pixelSize;
+        return layout;
+    }
+
+    AZStd::vector<uint8_t> BuildBasicImageData(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::s32 seed)
+    {
+        const size_t imageSize = width * height * pixelSize;
+
+        AZStd::vector<uint8_t> image;
+        image.reserve(imageSize);
+
+        size_t value = 0;
+        AZStd::hash_combine(value, seed);
+
+        for (AZ::u32 x = 0; x < width; ++x)
+        {
+            for (AZ::u32 y = 0; y < height; ++y)
+            {
+                AZStd::hash_combine(value, x);
+                AZStd::hash_combine(value, y);
+                image.push_back(static_cast<AZ::u8>(value));
+            }
+        }
+
+        EXPECT_EQ(image.size(), imageSize);
+        return image;
+    }
+
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::s32 seed)
+    {
+        using namespace AZ;
+
+        RPI::ImageMipChainAssetCreator assetCreator;
+
+        assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
+
+        RHI::ImageSubresourceLayout layout = BuildSubImageLayout(width, height, pixelSize);
+
+        assetCreator.BeginMip(layout);
+
+        for (AZ::u32 arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)
+        {
+            AZStd::vector<uint8_t> data = BuildBasicImageData(width, height, pixelSize, seed);
+            assetCreator.AddSubImage(data.data(), data.size());
+        }
+
+        assetCreator.EndMip();
+
+        Data::Asset<RPI::ImageMipChainAsset> asset;
+        EXPECT_TRUE(assetCreator.End(asset));
+        EXPECT_TRUE(asset.IsReady());
+        EXPECT_NE(asset.Get(), nullptr);
+
+        return asset;
+    }
+
+    AZStd::vector<uint8_t> BuildSpecificPixelImageData(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY)
+    {
+        const size_t imageSize = width * height * pixelSize;
+
+        AZStd::vector<uint8_t> image;
+        image.reserve(imageSize);
+
+        const AZ::u8 pixelValue = 255;
+
+        // Image data should be stored inverted on the y axis relative to our engine, so loop backwards through y.
+        for (int y = static_cast<int>(height) - 1; y >= 0; --y)
+        {
+            for (AZ::u32 x = 0; x < width; ++x)
+            {
+                if ((x == static_cast<int>(pixelX)) && (y == static_cast<int>(pixelY)))
+                {
+                    image.push_back(pixelValue);
+                }
+                else
+                {
+                    image.push_back(0);
+                }
+            }
+        }
+
+        EXPECT_EQ(image.size(), imageSize);
+        return image;
+    }
+
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY)
+    {
+        using namespace AZ;
+
+        RPI::ImageMipChainAssetCreator assetCreator;
+
+        assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
+
+        RHI::ImageSubresourceLayout layout = BuildSubImageLayout(width, height, pixelSize);
+
+        assetCreator.BeginMip(layout);
+
+        for (AZ::u32 arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)
+        {
+            AZStd::vector<uint8_t> data = BuildSpecificPixelImageData(width, height, pixelSize, pixelX, pixelY);
+            assetCreator.AddSubImage(data.data(), data.size());
+        }
+
+        assetCreator.EndMip();
+
+        Data::Asset<RPI::ImageMipChainAsset> asset;
+        EXPECT_TRUE(assetCreator.End(asset));
+        EXPECT_TRUE(asset.IsReady());
+        EXPECT_NE(asset.Get(), nullptr);
+
+        return asset;
+    }
+
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed)
+    {
+        auto randomAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
+        auto imageAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::RPI::StreamingImageAsset>(
+            randomAssetId, AZ::Data::AssetLoadBehavior::Default);
+
+        const AZ::u32 arraySize = 1;
+        const AZ::u32 mipCountTotal = 1;
+        const auto format = AZ::RHI::Format::R8_UNORM;
+        const AZ::u32 pixelSize = AZ::RHI::GetFormatComponentCount(format);
+
+        AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildBasicMipChainAsset(mipCountTotal, arraySize, width, height, pixelSize, seed);
+
+        AZ::RPI::StreamingImageAssetCreator assetCreator;
+        assetCreator.Begin(randomAssetId);
+
+        AZ::RHI::ImageDescriptor imageDesc = AZ::RHI::ImageDescriptor::Create2DArray(AZ::RHI::ImageBindFlags::ShaderRead, width, height, arraySize, format);
+        imageDesc.m_mipLevels = static_cast<AZ::u16>(mipCountTotal);
+
+        assetCreator.SetImageDescriptor(imageDesc);
+        assetCreator.AddMipChainAsset(*mipChain.Get());
+
+        EXPECT_TRUE(assetCreator.End(imageAsset));
+        EXPECT_TRUE(imageAsset.IsReady());
+        EXPECT_NE(imageAsset.Get(), nullptr);
+
+        return imageAsset;
+    }
+
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY)
+    {
+        auto randomAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
+        auto imageAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::RPI::StreamingImageAsset>(
+            randomAssetId, AZ::Data::AssetLoadBehavior::Default);
+
+        const AZ::u32 arraySize = 1;
+        const AZ::u32 mipCountTotal = 1;
+        const auto format = AZ::RHI::Format::R8_UNORM;
+        const AZ::u32 pixelSize = AZ::RHI::GetFormatComponentCount(format);
+
+        AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildSpecificPixelMipChainAsset(mipCountTotal, arraySize, width, height, pixelSize, pixelX, pixelY);
+
+        AZ::RPI::StreamingImageAssetCreator assetCreator;
+        assetCreator.Begin(randomAssetId);
+
+        AZ::RHI::ImageDescriptor imageDesc = AZ::RHI::ImageDescriptor::Create2DArray(AZ::RHI::ImageBindFlags::ShaderRead, width, height, arraySize, format);
+        imageDesc.m_mipLevels = static_cast<AZ::u16>(mipCountTotal);
+
+        assetCreator.SetImageDescriptor(imageDesc);
+        assetCreator.AddMipChainAsset(*mipChain.Get());
+
+        EXPECT_TRUE(assetCreator.End(imageAsset));
+        EXPECT_TRUE(imageAsset.IsReady());
+        EXPECT_NE(imageAsset.Get(), nullptr);
+        return imageAsset;
+    }
+
+    void GradientSignalTestHelpers::CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float queryMin, float queryMax)
     {
         // Create a gradient sampler and run through a series of points to see if they match expectations.
 
-        const AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-shapeHalfBounds), AZ::Vector3(shapeHalfBounds));
+        const AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(queryMin), AZ::Vector3(queryMax));
         const AZ::Vector2 stepSize(1.0f, 1.0f);
 
         GradientSignal::GradientSampler gradientSampler;
@@ -118,6 +296,7 @@ namespace UnitTest
             AZStd::vector<float> results(totalQueryPoints);
             GradientSignal::GradientRequestBus::Event(
                 gradientId, &GradientSignal::GradientRequestBus::Events::GetValues, positions, results);
+            benchmark::DoNotOptimize(results);
         }
     }
 
@@ -174,6 +353,7 @@ namespace UnitTest
             // Query and get the results.
             AZStd::vector<float> results(totalQueryPoints);
             gradientSampler.GetValues(positions, results);
+            benchmark::DoNotOptimize(results);
         }
     }
 

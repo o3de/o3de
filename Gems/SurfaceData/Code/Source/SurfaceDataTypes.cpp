@@ -42,7 +42,7 @@ namespace SurfaceData
     AzFramework::SurfaceData::SurfaceTagWeightList SurfaceTagWeights::GetSurfaceTagWeightList() const
     {
         AzFramework::SurfaceData::SurfaceTagWeightList weights;
-        weights.reserve(m_weights.size());
+
         for (auto& weight : m_weights)
         {
             weights.emplace_back(weight);
@@ -226,9 +226,7 @@ namespace SurfaceData
 
     void SurfacePointList::ReserveSpace(size_t maxPointsPerInput)
     {
-        AZ_Assert(
-            m_surfacePositionList.size() < maxPointsPerInput,
-            "Trying to reserve space on a list that is already using more points than requested.");
+        AZ_Assert(m_surfacePositionList.empty(), "Trying to reserve space on a list that is already being used.");
 
         m_surfaceCreatorIdList.reserve(maxPointsPerInput);
         m_surfacePositionList.reserve(maxPointsPerInput);

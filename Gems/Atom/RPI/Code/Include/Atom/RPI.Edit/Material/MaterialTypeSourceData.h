@@ -216,11 +216,11 @@ namespace AZ
                 //! This field is unused, and has been replaced by MaterialTypeSourceData::m_version below. It is kept for legacy file compatibility to suppress warnings and errors.
                 uint32_t m_versionOld = 0;
 
-                //! [Deprecated] Use m_propertyGroups instead
+                //! @deprecated: Use m_propertyGroups instead
                 //! List of groups that will contain the available properties
                 AZStd::vector<GroupDefinition> m_groupsOld;
 
-                //! [Deprecated] Use m_propertyGroups instead
+                //! @deprecated: Use m_propertyGroups instead
                 AZStd::map<AZStd::string /*group name*/, AZStd::vector<PropertyDefinition>> m_propertiesOld;
                 
                 //! Collection of all available user-facing properties

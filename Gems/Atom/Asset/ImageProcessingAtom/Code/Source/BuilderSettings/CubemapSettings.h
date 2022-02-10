@@ -11,7 +11,7 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Memory/Memory.h>
-#include <BuilderSettings/ImageProcessingDefines.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace ImageProcessingAtom
