@@ -43,8 +43,8 @@ namespace AzToolsFramework
             const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;
         bool OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        bool OnOutlinerItemDoubleClick(const QModelIndex& index) const override;
         void OnOutlinerItemCollapse(const QModelIndex& index) const override;
-        bool OnEntityDoubleClick(AZ::EntityId entityId) const override;
 
     protected:
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;

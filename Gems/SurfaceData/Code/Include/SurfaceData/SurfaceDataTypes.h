@@ -30,12 +30,6 @@ namespace SurfaceData
     class SurfaceTagWeights
     {
     public:
-        //! The maximum number of surface weights that we can store.
-        //! For performance reasons, we want to limit this so that we can preallocate the max size in advance.
-        //! The current number is chosen to be higher than expected needs, but small enough to avoid being excessively wasteful.
-        //! (Dynamic structures would end up taking more memory than what we're preallocating)
-        static inline constexpr size_t MaxSurfaceWeights = 16;
-
         SurfaceTagWeights() = default;
 
         //! Construct a collection of SurfaceTagWeights from the given SurfaceTagWeightList.
@@ -66,7 +60,7 @@ namespace SurfaceData
                 // early-out once we pass the location for the entry instead of always searching every entry.
                 if (weightItr->m_surfaceType > tag)
                 {
-                    if (m_weights.size() != MaxSurfaceWeights)
+                    if (m_weights.size() != AzFramework::SurfaceData::Constants::MaxSurfaceWeights)
                     {
                         // We didn't find the surface type, so add the new entry in sorted order.
                         m_weights.insert(weightItr, { tag, weight });
@@ -86,7 +80,7 @@ namespace SurfaceData
             }
 
             // We didn't find the surface weight, and the sort order for it is at the end, so add it to the back of the list.
-            if (m_weights.size() != MaxSurfaceWeights)
+            if (m_weights.size() != AzFramework::SurfaceData::Constants::MaxSurfaceWeights)
             {
                 m_weights.emplace_back(tag, weight);
             }
@@ -189,7 +183,7 @@ namespace SurfaceData
         //! @return The pointer to the tag that's found, or end() if it wasn't found.
         const AzFramework::SurfaceData::SurfaceTagWeight* FindTag(AZ::Crc32 tag) const;
 
-        AZStd::fixed_vector<AzFramework::SurfaceData::SurfaceTagWeight, MaxSurfaceWeights> m_weights;
+        AZStd::fixed_vector<AzFramework::SurfaceData::SurfaceTagWeight, AzFramework::SurfaceData::Constants::MaxSurfaceWeights> m_weights;
     };
 
     //! SurfacePointList stores a collection of surface point data, which consists of positions, normals, and surface tag weights.
