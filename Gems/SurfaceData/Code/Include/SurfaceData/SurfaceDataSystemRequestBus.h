@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/std/containers/span.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 
 namespace SurfaceData
 {

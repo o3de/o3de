@@ -132,6 +132,8 @@ namespace UnitTest
             providerRegistryEntry.m_bounds = m_bounds;
             providerRegistryEntry.m_tags = m_tags;
 
+            // Run through the set of surface points that have been set on this component to find out the maximum number
+            // that we'll return for any given input point.
             providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
             for (auto& pointEntry : m_surfacePoints)
             {
@@ -170,6 +172,7 @@ namespace UnitTest
 
             if (surfacePoints != m_surfacePoints.end())
             {
+                // If we have an entry for this input position, run through all of its points and add them to the passed-in list.
                 surfacePoints->second.EnumeratePoints(
                     [inPosition, &surfacePointList](
                         [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal,

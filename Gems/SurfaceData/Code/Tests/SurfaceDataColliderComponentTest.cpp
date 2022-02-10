@@ -135,17 +135,14 @@ namespace UnitTest
 
             // Call GetSurfacePoints and verify the results
             SurfaceData::SurfacePointList pointList;
-            AZStd::vector<AZ::Vector3> queryPoints;
-            queryPoints.emplace_back(queryPoint);
-            pointList.StartListConstruction(queryPoints, 1);
+            pointList.StartListConstruction({ { queryPoint } }, 1);
             SurfaceData::SurfaceDataProviderRequestBus::Event(providerHandle, &SurfaceData::SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
                                                               queryPoint, pointList);
             pointList.EndListConstruction();
 
-            constexpr size_t inPositionIndex = 0;
             if (pointOnProvider)
             {
-                ASSERT_EQ(pointList.GetSize(inPositionIndex), 1);
+                ASSERT_EQ(pointList.GetSize(), 1);
                 pointList.EnumeratePoints([this, expectedOutput](
                         [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
                         const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
@@ -156,7 +153,7 @@ namespace UnitTest
             }
             else
             {
-                EXPECT_TRUE(pointList.IsEmpty(inPositionIndex));
+                EXPECT_TRUE(pointList.IsEmpty());
             }
         }
 

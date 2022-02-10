@@ -1,0 +1,311 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <SurfaceData/SurfacePointList.h>
+
+namespace SurfaceData
+{
+    size_t SurfacePointList::GetInPositionIndexFromPosition(const AZ::Vector3& inPosition) const
+    {
+        size_t inPositionIndex = m_lastInputPositionIndex;
+        bool foundMatch = false;
+        for (size_t indexCounter = 0; indexCounter < m_inputPositions.size(); indexCounter++)
+        {
+            if (m_inputPositions[inPositionIndex] == inPosition)
+            {
+                foundMatch = true;
+                break;
+            }
+
+            inPositionIndex = (inPositionIndex + 1) % m_inputPositions.size();
+        }
+
+        AZ_Assert(foundMatch, "Couldn't find input position!");
+        m_lastInputPositionIndex = inPositionIndex;
+        return inPositionIndex;
+    }
+
+    size_t SurfacePointList::GetSurfacePointStartIndexFromInPositionIndex(size_t inPositionIndex) const
+    {
+        // Index to the first output surface point for this input position.
+        return inPositionIndex * m_maxSurfacePointsPerInput;
+    }
+
+    SurfacePointList::SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
+    {
+        StartListConstruction(surfacePoints);
+        EndListConstruction();
+    }
+
+    void SurfacePointList::StartListConstruction(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
+    {
+        StartListConstruction({ { surfacePoints.begin()->m_position } }, surfacePoints.size());
+
+        for (auto& point : surfacePoints)
+        {
+            SurfaceTagWeights weights(point.m_surfaceTags);
+            AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_position, point.m_normal, weights);
+        }
+    }
+
+    void SurfacePointList::StartListConstruction(AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput)
+    {
+        AZ_Assert(!m_listIsBeingConstructed, "Trying to start list construction on a list currently under construction.");
+        AZ_Assert(m_surfacePositionList.empty(), "Trying to reserve space on a list that is already being used.");
+
+        Clear();
+
+        m_listIsBeingConstructed = true;
+        m_inputPositions = inPositions;
+        m_inputPositionSize = inPositions.size();
+        m_maxSurfacePointsPerInput = maxPointsPerInput;
+
+        size_t outputReserveSize = inPositions.size() * m_maxSurfacePointsPerInput;
+
+        m_numSurfacePointsPerInput.resize(m_inputPositionSize);
+        m_indirectIndex.resize(outputReserveSize);
+        m_surfaceCreatorIdList.reserve(outputReserveSize);
+        m_surfacePositionList.reserve(outputReserveSize);
+        m_surfaceNormalList.reserve(outputReserveSize);
+        m_surfaceWeightsList.reserve(outputReserveSize);
+    }
+
+    void SurfacePointList::Clear()
+    {
+        m_listIsBeingConstructed = false;
+
+        m_lastInputPositionIndex = 0;
+        m_inputPositionSize = 0;
+        m_maxSurfacePointsPerInput = 0;
+
+        m_inputPositions = {};
+
+        m_indirectIndex.clear();
+        m_numSurfacePointsPerInput.clear();
+        m_surfacePositionList.clear();
+        m_surfaceNormalList.clear();
+        m_surfaceWeightsList.clear();
+        m_surfaceCreatorIdList.clear();
+
+        m_surfacePointBounds = AZ::Aabb::CreateNull();
+    }
+
+    void SurfacePointList::AddSurfacePoint(
+        const AZ::EntityId& entityId, const AZ::Vector3& inPosition,
+        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& masks)
+    {
+        AZ_Assert(m_listIsBeingConstructed, "Trying to add surface points to a SurfacePointList that isn't under construction.");
+
+        // Find the inPositionIndex that matches the inPosition.
+        size_t inPositionIndex = GetInPositionIndexFromPosition(inPosition);
+
+        // Find the first SurfacePoint that either matches the inPosition, or that starts the range for the next inPosition after this one.
+        size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inPositionIndex);
+
+        // When adding a surface point, we'll either merge it with a similar existing point, or else add it in order of
+        // decreasing Z, so that our final results are sorted.
+        size_t surfacePointInsertIndex = surfacePointStartIndex;
+
+        for (; surfacePointInsertIndex < (surfacePointStartIndex + m_numSurfacePointsPerInput[inPositionIndex]); ++surfacePointInsertIndex)
+        {
+            // (Someday we should add a configurable tolerance for comparison)
+            if (m_surfacePositionList[m_indirectIndex[surfacePointInsertIndex]].IsClose(position) &&
+                m_surfaceNormalList[m_indirectIndex[surfacePointInsertIndex]].IsClose(normal))
+            {
+                // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
+                m_surfaceWeightsList[m_indirectIndex[surfacePointInsertIndex]].AddSurfaceTagWeights(masks);
+                return;
+            }
+            else if (m_surfacePositionList[m_indirectIndex[surfacePointInsertIndex]].GetZ() < position.GetZ())
+            {
+                break;
+            }
+        }
+
+        AZ_Assert(m_numSurfacePointsPerInput[inPositionIndex] < m_maxSurfacePointsPerInput, "Adding too many surface points.");
+
+        m_surfacePointBounds.AddPoint(position);
+
+
+        if (m_numSurfacePointsPerInput[inPositionIndex] > 0)
+        {
+            size_t startIndex = surfacePointInsertIndex;
+            size_t endIndex = surfacePointStartIndex + m_numSurfacePointsPerInput[inPositionIndex];
+
+            AZStd::move_backward(
+                m_indirectIndex.begin() + startIndex, m_indirectIndex.begin() + endIndex, m_indirectIndex.begin() + endIndex + 1);
+        }
+
+        m_indirectIndex[surfacePointInsertIndex] = m_surfacePositionList.size();
+        m_surfacePositionList.emplace_back(position);
+        m_surfaceNormalList.emplace_back(normal);
+        m_surfaceWeightsList.emplace_back(masks);
+        m_surfaceCreatorIdList.emplace_back(entityId);
+        m_numSurfacePointsPerInput[inPositionIndex]++;
+    }
+
+    void SurfacePointList::ModifySurfaceWeights(
+        const AZ::EntityId& currentEntityId,
+        AZStd::function<void(const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& surfaceWeights)> modificationWeightCallback)
+    {
+        AZ_Assert(m_listIsBeingConstructed, "Trying to modify surface weights on a SurfacePointList that isn't under construction.");
+
+        for (size_t inputIndex = 0; (inputIndex < m_inputPositionSize); inputIndex++)
+        {
+            size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputIndex);
+            for (size_t index = surfacePointStartIndex; (index < (surfacePointStartIndex + m_numSurfacePointsPerInput[inputIndex]));
+                 index++)
+            {
+                if (m_surfaceCreatorIdList[m_indirectIndex[index]] != currentEntityId)
+                {
+                    modificationWeightCallback(m_surfacePositionList[m_indirectIndex[index]], m_surfaceWeightsList[m_indirectIndex[index]]);
+                }
+            }
+        }
+    }
+
+    void SurfacePointList::FilterPoints(const SurfaceTagVector& desiredTags)
+    {
+        AZ_Assert(m_listIsBeingConstructed, "Trying to filter a SurfacePointList that isn't under construction.");
+
+        // Filter out any points that don't match our search tags.
+        // This has to be done after the Surface Modifiers have processed the points, not at point insertion time, because
+        // Surface Modifiers add tags to existing points.
+        for (size_t inputIndex = 0; (inputIndex < m_inputPositionSize); inputIndex++)
+        {
+            size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputIndex);
+            size_t listSize = (surfacePointStartIndex + m_numSurfacePointsPerInput[inputIndex]);
+            size_t index = surfacePointStartIndex;
+            for (; index < listSize; index++)
+            {
+                if (!m_surfaceWeightsList[m_indirectIndex[index]].HasAnyMatchingTags(desiredTags))
+                {
+                    break;
+                }
+            }
+
+            if (index != listSize)
+            {
+                size_t next = index + 1;
+                for (; next < listSize; ++next)
+                {
+                    if (m_surfaceWeightsList[m_indirectIndex[index]].HasAnyMatchingTags(desiredTags))
+                    {
+                        m_indirectIndex[index] = AZStd::move(m_indirectIndex[next]);
+                        m_surfaceCreatorIdList[m_indirectIndex[index]] = AZStd::move(m_surfaceCreatorIdList[m_indirectIndex[next]]);
+                        m_surfacePositionList[m_indirectIndex[index]] = AZStd::move(m_surfacePositionList[m_indirectIndex[next]]);
+                        m_surfaceNormalList[m_indirectIndex[index]] = AZStd::move(m_surfaceNormalList[m_indirectIndex[next]]);
+                        m_surfaceWeightsList[m_indirectIndex[index]] = AZStd::move(m_surfaceWeightsList[m_indirectIndex[next]]);
+
+                        m_numSurfacePointsPerInput[inputIndex]--;
+
+                        ++index;
+                    }
+                }
+            }
+        }
+    }
+
+    void SurfacePointList::EndListConstruction()
+    {
+        AZ_Assert(m_listIsBeingConstructed, "Trying to end list construction on a SurfacePointList that isn't under construction.");
+
+        m_listIsBeingConstructed = false;
+        m_inputPositions = {};
+    }
+
+    bool SurfacePointList::IsEmpty() const
+    {
+        AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
+
+        return m_surfacePositionList.empty();
+    }
+
+    bool SurfacePointList::IsEmpty(size_t inputPositionIndex) const
+    {
+        AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
+
+        return (m_inputPositionSize == 0) || (m_numSurfacePointsPerInput[inputPositionIndex] == 0);
+    }
+
+    size_t SurfacePointList::GetSize() const
+    {
+        AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
+
+        return m_surfacePositionList.size();
+    }
+
+    size_t SurfacePointList::GetSize(size_t inputPositionIndex) const
+    {
+        AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
+
+        return (m_inputPositionSize == 0) ? 0 : (m_numSurfacePointsPerInput[inputPositionIndex]);
+    }
+
+    void SurfacePointList::EnumeratePoints(
+        size_t inputPositionIndex, 
+        AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeights&)>
+            pointCallback) const
+    {
+        AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
+
+        size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputPositionIndex);
+        for (size_t index = surfacePointStartIndex;
+             (index < (surfacePointStartIndex + m_numSurfacePointsPerInput[inputPositionIndex])); index++)
+        {
+            if (!pointCallback(
+                    m_surfacePositionList[m_indirectIndex[index]], m_surfaceNormalList[m_indirectIndex[index]],
+                    m_surfaceWeightsList[m_indirectIndex[index]]))
+            {
+                break;
+            }
+        }
+    }
+
+    void SurfacePointList::EnumeratePoints(
+        AZStd::function<bool(size_t inputPositionIndex, const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeights&)>
+            pointCallback) const
+    {
+        AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
+
+        for (size_t inputIndex = 0; (inputIndex < m_inputPositionSize); inputIndex++)
+        {
+            size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputIndex);
+            for (size_t index = surfacePointStartIndex; (index < (surfacePointStartIndex + m_numSurfacePointsPerInput[inputIndex]));
+                 index++)
+            {
+                if (!pointCallback(
+                        inputIndex, m_surfacePositionList[m_indirectIndex[index]], m_surfaceNormalList[m_indirectIndex[index]],
+                        m_surfaceWeightsList[m_indirectIndex[index]]))
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    AzFramework::SurfaceData::SurfacePoint SurfacePointList::GetHighestSurfacePoint([[maybe_unused]] size_t inputPositionIndex) const
+    {
+        AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
+
+        if (m_numSurfacePointsPerInput[inputPositionIndex] == 0)
+        {
+            return {};
+        }
+
+        size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputPositionIndex);
+        AzFramework::SurfaceData::SurfacePoint point;
+        point.m_position = m_surfacePositionList[m_indirectIndex[surfacePointStartIndex]];
+        point.m_normal = m_surfaceNormalList[m_indirectIndex[surfacePointStartIndex]];
+        point.m_surfaceTags = m_surfaceWeightsList[m_indirectIndex[surfacePointStartIndex]].GetSurfaceTagWeightList();
+
+        return point;
+    }
+
+}

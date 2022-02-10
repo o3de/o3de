@@ -114,6 +114,8 @@ class MockSurfaceProvider
 
             if (m_providerType == ProviderType::SURFACE_PROVIDER)
             {
+                // If the mock provider is generating points, examine the size of the points lists we've added to the mock provider
+                // to determine the maximum number of points that we will output from a single input position.
                 registryEntry.m_maxPointsCreatedPerInput = 1;
                 for (auto& entry : m_GetSurfacePoints)
                 {
@@ -227,7 +229,6 @@ public:
 
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPositions[inputIndex], testTags, tempSingleQueryPointList);
-            constexpr size_t inPositionIndex = 0;
             tempSingleQueryPointList.EnumeratePoints([&singleQueryResults](
                     [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
                     const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
@@ -537,10 +538,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingMas
 
     // We expect every entry in the output list to have no surface points, since the requested mask doesn't match
     // any of the masks from our mock surface provider.
-    for (size_t inPositionIndex = 0; inPositionIndex < availablePointsPerPosition.GetInputPositionSize(); inPositionIndex++)
-    {
-        EXPECT_TRUE(availablePointsPerPosition.IsEmpty(inPositionIndex));
-    }
+    EXPECT_TRUE(availablePointsPerPosition.IsEmpty());
 }
 
 TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingRegion)
@@ -565,10 +563,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingReg
 
     // We expect every entry in the output list to have no surface points, since the input points don't overlap with
     // our surface provider.
-    for (size_t inPositionIndex = 0; inPositionIndex < availablePointsPerPosition.GetInputPositionSize(); inPositionIndex++)
-    {
-        EXPECT_TRUE(availablePointsPerPosition.IsEmpty(inPositionIndex));
-    }
+    EXPECT_TRUE(availablePointsPerPosition.IsEmpty());
 }
 
 TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModifierMasksCombine)
