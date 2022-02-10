@@ -1,14 +1,11 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "010_OcclusionBase.material",
     "materialTypeVersion": 3,
-    "properties": {
-        "occlusion": {
-            "diffuseFactor": 2.0,
-            "diffuseTextureMap": "TestData/Textures/cc0/Tiles009_1K_AmbientOcclusion.jpg",
-            "specularFactor": 2.0,
-            "specularTextureMap": "TestData/Textures/cc0/Tiles009_1K_Displacement.jpg"
-        }
+    "parentMaterial": "010_OcclusionBase.material",
+    "propertyValues": {
+        "occlusion.diffuseFactor": 2.0,
+        "occlusion.diffuseTextureMap": "TestData/Textures/cc0/Tiles009_1K_AmbientOcclusion.jpg",
+        "occlusion.specularFactor": 2.0,
+        "occlusion.specularTextureMap": "TestData/Textures/cc0/Tiles009_1K_Displacement.jpg"
     }
 }

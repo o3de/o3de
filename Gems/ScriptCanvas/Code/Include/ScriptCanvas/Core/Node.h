@@ -1098,7 +1098,7 @@ protected:
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<ResultType>>());
                 slotConfiguration.SetConnectionType(ConnectionType::Output);
 
-                node.AddSlot(slotConfiguration);
+                AZ_VerifyError("ScriptCanvas", node.AddSlot(slotConfiguration).IsValid(), "Node failed to add a required Data Out slot");
             }
         };
 
@@ -1115,12 +1115,11 @@ protected:
             static void CreateDataSlot(Node& node, ConnectionType connectionType)
             {
                 DataSlotConfiguration slotConfiguration;
-
                 slotConfiguration.m_name = t_Traits::GetResultName(Index);
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<AZStd::tuple_element_t<Index, ResultType>>>());
-
                 slotConfiguration.SetConnectionType(connectionType);                
-                node.AddSlot(slotConfiguration);
+
+                AZ_VerifyError("ScriptCanvas", node.AddSlot(slotConfiguration).IsValid(), "Node failed to add a required Data Out slot");
             }
 
             template<AZStd::size_t... Is>

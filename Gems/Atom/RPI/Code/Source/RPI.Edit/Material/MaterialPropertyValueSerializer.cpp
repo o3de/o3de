@@ -47,61 +47,61 @@ namespace AZ
         {
             namespace JSR = JsonSerializationResult;
 
-            AZ_Assert(azrtti_typeid<MaterialSourceData::Property>() == outputValueTypeId,
+            AZ_Assert(azrtti_typeid<MaterialPropertyValue>() == outputValueTypeId,
                 "Unable to deserialize material property value to json because the provided type is %s",
                 outputValueTypeId.ToString<AZStd::string>().c_str());
             AZ_UNUSED(outputValueTypeId);
 
-            MaterialSourceData::Property* property = reinterpret_cast<MaterialSourceData::Property*>(outputValue);
+            MaterialPropertyValue* property = reinterpret_cast<MaterialPropertyValue*>(outputValue);
             AZ_Assert(property, "Output value for JsonMaterialPropertyValueSerializer can't be null.");
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
             if (inputValue.IsBool())
             {
-                result.Combine(LoadVariant<bool>(property->m_value, false, inputValue, context));
+                result.Combine(LoadVariant<bool>(*property, false, inputValue, context));
             }
             else if (inputValue.IsInt() || inputValue.IsInt64())
             {
-                result.Combine(LoadVariant<int32_t>(property->m_value, 0, inputValue, context));
+                result.Combine(LoadVariant<int32_t>(*property, 0, inputValue, context));
             }
             else if (inputValue.IsUint() || inputValue.IsUint64())
             {
-                result.Combine(LoadVariant<uint32_t>(property->m_value, 0u, inputValue, context));
+                result.Combine(LoadVariant<uint32_t>(*property, 0u, inputValue, context));
             }
             else if (inputValue.IsFloat() || inputValue.IsDouble())
             {
-                result.Combine(LoadVariant<float>(property->m_value, 0.0f, inputValue, context));
+                result.Combine(LoadVariant<float>(*property, 0.0f, inputValue, context));
             }
             else if (inputValue.IsArray() && inputValue.Size() == 4)
             {
-                result.Combine(LoadVariant<Vector4>(property->m_value, Vector4{0.0f, 0.0f, 0.0f, 0.0f}, inputValue, context));
+                result.Combine(LoadVariant<Vector4>(*property, Vector4{0.0f, 0.0f, 0.0f, 0.0f}, inputValue, context));
             }
             else if (inputValue.IsArray() && inputValue.Size() == 3)
             {
-                result.Combine(LoadVariant<Vector3>(property->m_value, Vector3{0.0f, 0.0f, 0.0f}, inputValue, context));
+                result.Combine(LoadVariant<Vector3>(*property, Vector3{0.0f, 0.0f, 0.0f}, inputValue, context));
             }
             else if (inputValue.IsArray() && inputValue.Size() == 2)
             {
-                result.Combine(LoadVariant<Vector2>(property->m_value, Vector2{0.0f, 0.0f}, inputValue, context));
+                result.Combine(LoadVariant<Vector2>(*property, Vector2{0.0f, 0.0f}, inputValue, context));
             }
             else if (inputValue.IsObject())
             {
-                JsonSerializationResult::ResultCode resultCode = LoadVariant<Color>(property->m_value, Color::CreateZero(), inputValue, context);
+                JsonSerializationResult::ResultCode resultCode = LoadVariant<Color>(*property, Color::CreateZero(), inputValue, context);
                 
                 if(resultCode.GetProcessing() != JsonSerializationResult::Processing::Completed)
                 {
-                    resultCode = LoadVariant<Vector4>(property->m_value, Vector4::CreateZero(), inputValue, context);
+                    resultCode = LoadVariant<Vector4>(*property, Vector4::CreateZero(), inputValue, context);
                 }
                 
                 if(resultCode.GetProcessing() != JsonSerializationResult::Processing::Completed)
                 {
-                    resultCode = LoadVariant<Vector3>(property->m_value, Vector3::CreateZero(), inputValue, context);
+                    resultCode = LoadVariant<Vector3>(*property, Vector3::CreateZero(), inputValue, context);
                 }
                 
                 if(resultCode.GetProcessing() != JsonSerializationResult::Processing::Completed)
                 {
-                    resultCode = LoadVariant<Vector2>(property->m_value, Vector2::CreateZero(), inputValue, context);
+                    resultCode = LoadVariant<Vector2>(*property, Vector2::CreateZero(), inputValue, context);
                 }
 
                 if(resultCode.GetProcessing() == JsonSerializationResult::Processing::Completed)
@@ -115,7 +115,7 @@ namespace AZ
             }
             else if (inputValue.IsString())
             {
-                result.Combine(LoadVariant<AZStd::string>(property->m_value, AZStd::string{}, inputValue, context));
+                result.Combine(LoadVariant<AZStd::string>(*property, AZStd::string{}, inputValue, context));
             }
             else
             {
@@ -137,51 +137,51 @@ namespace AZ
         {
             namespace JSR = JsonSerializationResult;
 
-            AZ_Assert(azrtti_typeid<MaterialSourceData::Property>() == valueTypeId,
+            AZ_Assert(azrtti_typeid<MaterialPropertyValue>() == valueTypeId,
                 "Unable to serialize material property value to json because the provided type is %s",
                 valueTypeId.ToString<AZStd::string>().c_str());
             AZ_UNUSED(valueTypeId);
 
-            const MaterialSourceData::Property* property = reinterpret_cast<const MaterialSourceData::Property*>(inputValue);
+            const MaterialPropertyValue* property = reinterpret_cast<const MaterialPropertyValue*>(inputValue);
             AZ_Assert(property, "Input value for JsonMaterialPropertyValueSerializer can't be null.");
             
             JSR::ResultCode result(JSR::Tasks::WriteValue);
 
-            if (property->m_value.Is<bool>())
+            if (property->Is<bool>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<bool>(), nullptr, azrtti_typeid<bool>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<bool>(), nullptr, azrtti_typeid<bool>(), context));
             }
-            else if (property->m_value.Is<int32_t>())
+            else if (property->Is<int32_t>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<int32_t>(), nullptr, azrtti_typeid<int32_t>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<int32_t>(), nullptr, azrtti_typeid<int32_t>(), context));
             }
-            else if (property->m_value.Is<uint32_t>())
+            else if (property->Is<uint32_t>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<uint32_t>(), nullptr, azrtti_typeid<uint32_t>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<uint32_t>(), nullptr, azrtti_typeid<uint32_t>(), context));
             }
-            else if (property->m_value.Is<float>())
+            else if (property->Is<float>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<float>(), nullptr, azrtti_typeid<float>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<float>(), nullptr, azrtti_typeid<float>(), context));
             }
-            else if (property->m_value.Is<Vector2>())
+            else if (property->Is<Vector2>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<Vector2>(), nullptr, azrtti_typeid<Vector2>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<Vector2>(), nullptr, azrtti_typeid<Vector2>(), context));
             }
-            else if (property->m_value.Is<Vector3>())
+            else if (property->Is<Vector3>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<Vector3>(), nullptr, azrtti_typeid<Vector3>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<Vector3>(), nullptr, azrtti_typeid<Vector3>(), context));
             }
-            else if (property->m_value.Is<Vector4>())
+            else if (property->Is<Vector4>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<Vector4>(), nullptr, azrtti_typeid<Vector4>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<Vector4>(), nullptr, azrtti_typeid<Vector4>(), context));
             }
-            else if (property->m_value.Is<Color>())
+            else if (property->Is<Color>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<Color>(), nullptr, azrtti_typeid<Color>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<Color>(), nullptr, azrtti_typeid<Color>(), context));
             }
-            else if (property->m_value.Is<AZStd::string>())
+            else if (property->Is<AZStd::string>())
             {
-                result.Combine(ContinueStoring(outputValue, &property->m_value.GetValue<AZStd::string>(), nullptr, azrtti_typeid<AZStd::string>(), context));
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<AZStd::string>(), nullptr, azrtti_typeid<AZStd::string>(), context));
             }
 
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)

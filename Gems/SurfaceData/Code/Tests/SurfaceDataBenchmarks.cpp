@@ -21,8 +21,8 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
-#include <SurfaceDataSystemComponent.h>
-#include <Components/SurfaceDataShapeComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
 
 namespace UnitTest
 {
@@ -275,7 +275,7 @@ namespace UnitTest
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZ::Crc32 tags[SurfaceData::SurfaceTagWeights::MaxSurfaceWeights];
+        AZ::Crc32 tags[AzFramework::SurfaceData::Constants::MaxSurfaceWeights];
         AZ::SimpleLcgRandom randomGenerator(1234567);
 
         // Declare this outside the loop so that we aren't benchmarking creation and destruction.
@@ -316,7 +316,7 @@ namespace UnitTest
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZ::Crc32 tags[SurfaceData::SurfaceTagWeights::MaxSurfaceWeights];
+        AZ::Crc32 tags[AzFramework::SurfaceData::Constants::MaxSurfaceWeights];
         AZ::SimpleLcgRandom randomGenerator(1234567);
 
         // Declare this outside the loop so that we aren't benchmarking creation and destruction.

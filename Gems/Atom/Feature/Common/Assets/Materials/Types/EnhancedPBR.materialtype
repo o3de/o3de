@@ -1154,7 +1154,7 @@
                 {
                     "name": "thickness",
                     "displayName": "    Thickness",
-                    "description": "Normalized global thickness, the maxima between this value (multiplied by thickness map if enabled) and thickness from shadow map (if applicable) will be used as final thickness of pixel",
+                    "description": "In thick transmission mode: Normalized global thickness, the maxima between this value (multiplied by thickness map if enabled) and thickness from shadow map (if applicable) will be used as final thickness of pixel\n\nIn thin transmission mode: This value modulates the distance traversed by light inside an object.",
                     "type": "float",
                     "defaultValue": 0.5,
                     "min": 0.0,
@@ -1224,13 +1224,40 @@
                     "softMax": 20.0
                 },
                 {
+                    "name": "shrinkFactor",
+                    "displayName": "    Shrink Factor",
+                    "description": "Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection",
+                    "type": "float",
+                    "defaultValue": 0.005,
+                    "min": 0.0,
+                    "softMax": 0.05
+                },
+                {
+                    "name": "transmissionNdLBias",
+                    "displayName": "    Angle Bias",
+                    "description": "cosine of angle to extend below (N . L = 0) in scattering through thin objects",
+                    "type": "float",
+                    "defaultValue": 0.1,
+                    "min": -1.0,
+                    "softMax": 1.0
+                },
+                {
+                    "name": "distanceAttenuation",
+                    "displayName": "    Distance Attenuation",
+                    "description": "Attenuation of the transmission effect, used to hide artifacts due to low-res shadow maps\nFor directional lights: attenuation proportional to the distance from the object to the camera.\nFor other light sources: attenuation proportional to the distance from the object to the light source.",
+                    "type": "float",
+                    "defaultValue": 0.5,
+                    "min": 0.0,
+                    "softMax": 4.0
+                },
+                {
                     "name": "transmissionScale",
                     "displayName": "    Scale",
                     "description": "Strength of transmission",
                     "type": "float",
-                    "defaultValue": 3.0,
+                    "defaultValue": 1.0,
                     "min": 0.0,
-                    "softMax": 20.0
+                    "softMax": 5.0
                 }
             ],
             "detailLayerGroup": [
@@ -1555,6 +1582,9 @@
                 "power": "subsurfaceScattering.transmissionPower",
                 "distortion": "subsurfaceScattering.transmissionDistortion",
                 "attenuation": "subsurfaceScattering.transmissionAttenuation",
+                "shrinkFactor": "subsurfaceScattering.shrinkFactor",
+                "transmissionNdLBias": "subsurfaceScattering.transmissionNdLBias",
+                "distanceAttenuation": "subsurfaceScattering.distanceAttenuation",
                 "tintColor": "subsurfaceScattering.transmissionTint",
                 "thickness": "subsurfaceScattering.thickness",
                 "enabled": "subsurfaceScattering.enableSubsurfaceScattering",
