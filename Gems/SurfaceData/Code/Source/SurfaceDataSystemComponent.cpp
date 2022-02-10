@@ -12,7 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
 
-#include "SurfaceDataSystemComponent.h"
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
 #include <SurfaceData/SurfaceDataConstants.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/SurfaceDataSystemNotificationBus.h>
@@ -173,6 +173,34 @@ namespace SurfaceData
     void SurfaceDataSystemComponent::RefreshSurfaceData(const AZ::Aabb& dirtyBounds)
     {
         SurfaceDataSystemNotificationBus::Broadcast(&SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, AZ::EntityId(), dirtyBounds, dirtyBounds);
+    }
+
+    SurfaceDataRegistryHandle SurfaceDataSystemComponent::GetSurfaceDataProviderHandle(const AZ::EntityId& providerEntityId)
+    {
+        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+
+        for (auto& [providerHandle, providerEntry] : m_registeredSurfaceDataProviders)
+        {
+            if (providerEntry.m_entityId == providerEntityId)
+            {
+                return providerHandle;
+            }
+        }
+        return {};
+    }
+
+    SurfaceDataRegistryHandle SurfaceDataSystemComponent::GetSurfaceDataModifierHandle(const AZ::EntityId& modifierEntityId)
+    {
+        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+
+        for (auto& [modifierHandle, modifierEntry] : m_registeredSurfaceDataModifiers)
+        {
+            if (modifierEntry.m_entityId == modifierEntityId)
+            {
+                return modifierHandle;
+            }
+        }
+        return {};
     }
 
     void SurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const

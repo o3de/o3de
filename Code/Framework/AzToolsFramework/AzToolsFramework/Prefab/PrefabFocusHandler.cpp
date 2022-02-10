@@ -292,7 +292,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        const InstanceOptionalConstReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         if (!instance.has_value())
         {
             return false;
@@ -308,7 +308,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        InstanceOptionalConstReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         while (instance.has_value())
         {
             if (instance->get().GetAbsoluteInstanceAliasPath() == m_rootAliasFocusPath)

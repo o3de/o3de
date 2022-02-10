@@ -100,9 +100,9 @@ namespace AZ
 
                 serializeContext->Class<PropertyLayout>()
                     ->Version(3) // Added propertyGroups
-                    ->Field("version", &PropertyLayout::m_versionOld)       //< Deprecated, preserved for backward compatibility, replaced by MaterialTypeSourceData::version
-                    ->Field("groups", &PropertyLayout::m_groupsOld)         //< Deprecated, preserved for backward compatibility, replaced by propertyGroups
-                    ->Field("properties", &PropertyLayout::m_propertiesOld) //< Deprecated, preserved for backward compatibility, replaced by propertyGroups
+                    ->Field("version", &PropertyLayout::m_versionOld)       //< @deprecated: preserved for backward compatibility, replaced by MaterialTypeSourceData::version
+                    ->Field("groups", &PropertyLayout::m_groupsOld)         //< @deprecated: preserved for backward compatibility, replaced by propertyGroups
+                    ->Field("properties", &PropertyLayout::m_propertiesOld) //< @deprecated: preserved for backward compatibility, replaced by propertyGroups
                     ->Field("propertyGroups", &PropertyLayout::m_propertyGroups)
                     ;
 

@@ -1,25 +1,17 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
     "materialTypeVersion": 3,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.5093766450881958,
-                0.5093766450881958,
-                0.5093766450881958,
-                1.0
-            ]
-        },
-        "metallic": {
-            "factor": 1.0
-        },
-        "roughness": {
-            "factor": 0.5353534817695618,
-            "upperBound": 0.20202019810676576,
-            "lowerBound": 0.6464645862579346,
-            "textureMap": "TestData/Textures/checker8x8_gray_512.png"
-        }
+    "propertyValues": {
+        "baseColor.color": [
+            0.5093766450881958,
+            0.5093766450881958,
+            0.5093766450881958,
+            1.0
+        ],
+        "metallic.factor": 1.0,
+        "roughness.factor": 0.5353534817695618,
+        "roughness.lowerBound": 0.6464645862579346,
+        "roughness.textureMap": "TestData/Textures/checker8x8_gray_512.png",
+        "roughness.upperBound": 0.20202019810676575
     }
 }

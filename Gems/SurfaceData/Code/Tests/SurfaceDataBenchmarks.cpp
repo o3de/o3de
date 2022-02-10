@@ -21,8 +21,8 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
-#include <SurfaceDataSystemComponent.h>
-#include <Components/SurfaceDataShapeComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
 
 namespace UnitTest
 {
