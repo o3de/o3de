@@ -256,12 +256,7 @@ namespace EMStudio
         settings->setValue("cameraFollowUp", m_cameraFollowUp);
 
         // Save render flags
-        settings->beginGroup("renderFlags");
-        for (uint8 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
-        {
-            settings->setValue(QString(i), AZ::RHI::CheckBit((uint32_t)m_renderFlags, i));
-        }
-        settings->endGroup();
+        settings->setValue("renderFlags", static_cast<AZ::u32>(m_renderFlags));
     }
 
     RenderOptions RenderOptions::Load(QSettings* settings)
@@ -334,17 +329,8 @@ namespace EMStudio
         options.m_cameraFollowUp = settings->value("CameraFollowUp", options.m_cameraFollowUp).toBool();
 
         // Read render flags
-        settings->beginGroup("renderFlags");
-        options.m_renderFlags = EMotionFX::ActorRenderFlags::Default;
-        for (uint8 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
-        {
-            const bool isEnabled = settings->value(QString(i), false).toBool();
-            if (isEnabled)
-            {
-                options.m_renderFlags |= EMotionFX::ActorRenderFlags(i);
-            }
-        }
-        settings->endGroup();
+        options.m_renderFlags =
+            EMotionFX::ActorRenderFlags(settings->value("RenderFlags", static_cast<int>(EMotionFX::ActorRenderFlags::Default)).toInt());
 
         options.CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
 
@@ -1110,7 +1096,7 @@ namespace EMStudio
 
     void RenderOptions::ToggerRenderFlag(uint8 index)
     {
-        m_renderFlags ^= EMotionFX::ActorRenderFlags(index);
+        m_renderFlags ^= EMotionFX::ActorRenderFlags(AZ_BIT(index));
     }
 
     void RenderOptions::SetRenderFlags(EMotionFX::ActorRenderFlags renderFlags)

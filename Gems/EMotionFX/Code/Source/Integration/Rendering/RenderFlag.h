@@ -107,6 +107,15 @@ namespace EMotionFX
         (SimulatedJoints, AZ_BIT(static_cast<uint8>(ActorRenderFlag::SIMULATEJOINTS))),
         (EmfxDebug, AZ_BIT(static_cast<uint8>(ActorRenderFlag::EMFX_DEBUG))));
     */
+
+    class ActorRenderFlagUtil
+    {
+    public:
+        static bool CheckBit(ActorRenderFlags flags, AZ::u8 index)
+        {
+            return (flags & ActorRenderFlags(AZ_BIT(index))) != ActorRenderFlags(0);
+        }
+    };
 }
 
 namespace AZ

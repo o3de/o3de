@@ -200,7 +200,7 @@ namespace EMStudio
             QAction* action = m_renderActions[i];
             if (action)
             {
-                action->setChecked((renderFlags & EMotionFX::ActorRenderFlags(i)) != EMotionFX::ActorRenderFlags(0));
+                action->setChecked(EMotionFX::ActorRenderFlagUtil::CheckBit(renderFlags, i));
             }
         }
     }
