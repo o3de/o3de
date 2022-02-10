@@ -63,7 +63,6 @@ namespace AzToolsFramework
         void mouseMoveEvent(QMouseEvent* event) override;
         void focusInEvent(QFocusEvent* event) override;
         void focusOutEvent(QFocusEvent* event) override;
-        void startDrag(Qt::DropActions supportedActions) override;
         void dragMoveEvent(QDragMoveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
         void leaveEvent(QEvent* event) override;
@@ -84,14 +83,12 @@ namespace AzToolsFramework
         void recursiveCheckExpandedStates(const QModelIndex& parent);
         void checkExpandedState(const QModelIndex& current);
 
-        void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
 
         void PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const;
         void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
         
         QMouseEvent* m_queuedMouseEvent;
         QPoint m_mousePosition;
-        bool m_draggingUnselectedItem; // This is set when an item is dragged outside its bounding box.
 
         int m_expandOnlyDelay = -1;
         QBasicTimer m_expandTimer;
@@ -106,11 +103,14 @@ namespace AzToolsFramework
 
         void SelectAllEntitiesInSelectionRect();
 
+        void HandleDrag();
+        void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
+        QAbstractItemView::SelectionMode m_startSelectionMode;
+
         enum class DragState
         {
             NO_DRAG = 0,
-            SELECT,
-            ENTITY
+            SELECT
         };
 
         DragState m_currentDragState = DragState::NO_DRAG;

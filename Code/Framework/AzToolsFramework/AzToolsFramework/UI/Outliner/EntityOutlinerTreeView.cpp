@@ -30,7 +30,6 @@ namespace AzToolsFramework
     EntityOutlinerTreeView::EntityOutlinerTreeView(QWidget* pParent)
         : AzQtComponents::StyledTreeView(pParent)
         , m_queuedMouseEvent(nullptr)
-        , m_draggingUnselectedItem(false)
     {
         setUniformRowHeights(true);
         setHeaderHidden(true);
@@ -49,6 +48,8 @@ namespace AzToolsFramework
             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
         FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
+
+        m_startSelectionMode = selectionMode();
 
         viewport()->setMouseTracking(true);
     }
@@ -134,7 +135,8 @@ namespace AzToolsFramework
         QModelIndex previousHoveredIndex = m_currentHoveredIndex;
         m_mousePosition = event->pos();
 
-        if (QModelIndex hoveredIndex = indexAt(m_mousePosition); hoveredIndex.column() != EntityOutlinerListModel::ColumnSpacing &&  m_currentHoveredIndex != hoveredIndex)
+        if (QModelIndex hoveredIndex = indexAt(m_mousePosition);
+            hoveredIndex.column() != EntityOutlinerListModel::ColumnSpacing &&  m_currentHoveredIndex != hoveredIndex)
         {
             m_currentHoveredIndex = hoveredIndex;
         }
@@ -147,7 +149,7 @@ namespace AzToolsFramework
                 {
                     if (m_currentHoveredIndex.isValid() && m_currentHoveredIndex.column() != EntityOutlinerListModel::ColumnSpacing)
                     {
-                        m_currentDragState = DragState::ENTITY;
+                        HandleDrag();
                     }
                     else
                     {
@@ -155,10 +157,6 @@ namespace AzToolsFramework
                         update();
                     }
 
-                    break;
-                }
-            case DragState::ENTITY:
-                {
                     break;
                 }
             case DragState::SELECT:
@@ -172,30 +170,18 @@ namespace AzToolsFramework
                     break;
                 }
             }
-
-            // disable selection for the pending click if the mouse moved so selection is maintained for dragging
-            QAbstractItemView::SelectionMode selectionModeBefore = selectionMode();
-            setSelectionMode(QAbstractItemView::NoSelection);
-
-            // treat this as a mouse pressed event to process everything but selection, but use the position data from the mousePress
-            // message
-            processQueuedMousePressedEvent(m_queuedMouseEvent);
-
-            // restore selection state
-            setSelectionMode(selectionModeBefore);
         }
 
         if (previousHoveredIndex != m_currentHoveredIndex)
         {
             update();
         }
-
-        // process mouse movement as normal, potentially triggering drag and drop
-        // QTreeView::mouseMoveEvent(event);
     }
 
     void EntityOutlinerTreeView::mouseReleaseEvent(QMouseEvent* event)
     {
+        AZ_TracePrintf("MOUSE", "RELEASE");
+
         if (m_currentDragState == DragState::SELECT)
         {
             SelectAllEntitiesInSelectionRect();
@@ -203,30 +189,41 @@ namespace AzToolsFramework
         }
         else
         {
-            if (m_queuedMouseEvent && !m_draggingUnselectedItem)
-            {
-                // mouseMoveEvent will set the state to be DraggingState, which will make Qt ignore
-                // mousePressEvent in QTreeViewPrivate::expandOrCollapseItemAtPos. So we manually
-                // and temporarily set it to EditingState.
-                QAbstractItemView::State stateBefore = QAbstractItemView::state();
-                QAbstractItemView::setState(QAbstractItemView::State::EditingState);
-
-                // treat this as a mouse pressed event to process selection etc
-                processQueuedMousePressedEvent(m_queuedMouseEvent);
-
-                QAbstractItemView::setState(stateBefore);
-            }
+            processQueuedMousePressedEvent(m_queuedMouseEvent);
         }
 
         ClearQueuedMouseEvent();
-        m_draggingUnselectedItem = false;
         m_currentDragState = DragState::NO_DRAG;
 
         QTreeView::mouseReleaseEvent(event);
     }
 
+    void EntityOutlinerTreeView::HandleDrag()
+    {
+        // Prevent selection changes
+        setSelectionMode(QAbstractItemView::NoSelection);
+
+        // Retrieve the index at the click position
+        QModelIndex indexAtClick = indexAt(m_queuedMouseEvent->pos()).siblingAtColumn(EntityOutlinerListModel::ColumnName);
+
+        // If the index is selected, we should move the whole selection.
+        if (selectionModel()->isSelected(indexAtClick))
+        {
+            StartCustomDrag(selectionModel()->selectedIndexes(), defaultDropAction());
+        }
+        else
+        {
+            StartCustomDrag({ indexAtClick }, defaultDropAction());
+        }
+    }
+
     void EntityOutlinerTreeView::SelectAllEntitiesInSelectionRect()
     {
+        if (!m_queuedMouseEvent)
+        {
+            return;
+        }
+
         QPoint point1 = (m_queuedMouseEvent->pos());
         QPoint point2 = (m_mousePosition);
 
@@ -284,61 +281,24 @@ namespace AzToolsFramework
         QTreeView::focusOutEvent(event);
     }
 
-    void EntityOutlinerTreeView::startDrag([[maybe_unused]] Qt::DropActions supportedActions)
-    {
-        /*
-        QModelIndex index = indexAt(m_queuedMouseEvent->pos());
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
-
-        AZ::EntityId parentEntityId;
-        EditorEntityInfoRequestBus::EventResult(parentEntityId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-        // If the entity is parented to a read-only entity, cancel the drag operation.
-        if (m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
-        {
-            return;
-        }
-
-        //if we are attempting to drag an unselected item then we must special case drag and drop logic
-        //QAbstractItemView::startDrag only supports selected items
-        if (m_queuedMouseEvent)
-        {
-            if (!index.isValid() || index.column() != 0)
-            {
-                return;
-            }
-
-            if (!selectionModel()->isSelected(index))
-            {
-                StartCustomDrag({ index }, supportedActions);
-                return;
-            }
-        }
-
-        StyledTreeView::startDrag(supportedActions);
-        */
-    }
-
     void EntityOutlinerTreeView::dragMoveEvent([[maybe_unused]] QDragMoveEvent* event)
     {
-        /*
         if (m_expandOnlyDelay >= 0)
         {
             m_expandTimer.start(m_expandOnlyDelay, this);
         }
 
         QTreeView::dragMoveEvent(event);
-        */
     }
 
     void EntityOutlinerTreeView::dropEvent([[maybe_unused]] QDropEvent* event)
     {
-        /*
         emit ItemDropped();
         QTreeView::dropEvent(event);
 
-        m_draggingUnselectedItem = false;
-        */
+        // Restore selection state
+        setSelectionMode(m_startSelectionMode);
+        ClearQueuedMouseEvent();
     }
 
     void EntityOutlinerTreeView::ClearQueuedMouseEvent()
@@ -366,7 +326,7 @@ namespace AzToolsFramework
     {
         AzQtComponents::StyledTreeView::paintEvent(event);
 
-        if (m_currentDragState == DragState::SELECT)
+        if (m_currentDragState == DragState::SELECT && m_queuedMouseEvent)
         {
             QPainter painter(viewport());
 
@@ -486,8 +446,6 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions)
     {
-        m_draggingUnselectedItem = true;
-
         //sort by container entity depth and order in hierarchy for proper drag image and drop order
         QModelIndexList indexListSorted = indexList;
         AZStd::unordered_map<AZ::EntityId, AZStd::list<AZ::u64>> locations;
