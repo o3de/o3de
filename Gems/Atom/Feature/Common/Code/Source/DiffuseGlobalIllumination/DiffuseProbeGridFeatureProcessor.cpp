@@ -92,21 +92,24 @@ namespace AZ
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
             }
 
-            // initialize the buffer pools for the DiffuseProbeGrid visualization
-            m_visualizationBufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
-            m_visualizationBufferPools->Init(device);
-
-            // load probe visualization model, the BLAS will be created in OnAssetReady()
-            m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-                "Models/DiffuseProbeSphere.azmodel",
-                AZ::RPI::AssetUtils::TraceLevel::Assert);
-
-            if (!m_visualizationModelAsset.IsReady())
+            if (device->GetFeatures().m_rayTracing)
             {
-                m_visualizationModelAsset.QueueLoad();
-            }
+                // initialize the buffer pools for the DiffuseProbeGrid visualization
+                m_visualizationBufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
+                m_visualizationBufferPools->Init(device);
 
-            Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+                // load probe visualization model, the BLAS will be created in OnAssetReady()
+                m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
+                    "Models/DiffuseProbeSphere.azmodel",
+                    AZ::RPI::AssetUtils::TraceLevel::Assert);
+
+                if (!m_visualizationModelAsset.IsReady())
+                {
+                    m_visualizationModelAsset.QueueLoad();
+                }
+
+                Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+            }
 
             EnableSceneNotification();
         }
