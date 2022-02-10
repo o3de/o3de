@@ -712,4 +712,105 @@ namespace UnitTest
 
         EXPECT_NEAR(newSphereRadius, 0.9f, ManipulatorTolerance);
     }
+
+    TEST_F(PhysXEditorColliderComponentManipulatorFixture, CapsuleColliderScaleManipulatorsCorrectlyLocatedRelativeToColliderWithNonUniformScale)
+    {
+        const float capsuleRadius = 0.2f;
+        const float capsuleHeight = 1.0f;
+        const AZ::Quaternion capsuleRotation(-0.2f, -0.8f, -0.4f, 0.4f);
+        const AZ::Vector3 capsuleOffset(1.0f, -2.0f, 1.0f);
+        SetupCollider(Physics::CapsuleShapeConfiguration(capsuleHeight, capsuleRadius), capsuleRotation, capsuleOffset);
+        const AZ::Quaternion entityRotation(0.7f, -0.1f, -0.1f, 0.7f);
+        const AZ::Vector3 entityTranslation(-2.0f, 1.0f, -3.0f);
+        const float uniformScale = 2.0f;
+        SetupTransform(entityRotation, entityTranslation, uniformScale);
+        const AZ::Vector3 nonUniformScale(1.0f, 0.5f, 1.5f);
+        SetupNonUniformScale(nonUniformScale);
+        EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
+
+        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        const AZ::Vector3 expectedColliderPosition(-0.92f, -2.44f, -5.0f);
+
+        // the expected position of the height manipulator relative to the centre of the collider, based on collider
+        // rotation, entity scale and non-uniform scale
+        const AZ::Vector3 heightManipulatorDelta(-0.3096f, 0.6528f, 0.4f);
+
+        // position the camera to look at the collider along the y-z diagonal
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi), expectedColliderPosition + AZ::Vector3(0.0f, -1.0f, 1.0f)));
+
+        const AZ::Vector3 worldStart = expectedColliderPosition + heightManipulatorDelta;
+        const AZ::Vector3 worldEnd = worldStart + 0.2f * heightManipulatorDelta;
+
+        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
+        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
+
+        m_actionDispatcher
+            ->CameraState(m_cameraState)
+            // move the mouse to the position of the height manipulator
+            ->MousePosition(screenStart)
+            // drag to move the manipulator
+            ->MouseLButtonDown()
+            ->MousePosition(screenEnd)
+            ->MouseLButtonUp();
+
+        float newCapsuleHeight = 0.0f;
+        PhysX::EditorColliderComponentRequestBus::EventResult(
+            newCapsuleHeight, m_idPair, &PhysX::EditorColliderComponentRequests::GetCapsuleHeight);
+
+        EXPECT_NEAR(newCapsuleHeight, 1.2f, ManipulatorTolerance);
+    }
+
+    TEST_F(PhysXEditorColliderComponentManipulatorFixture, ColliderRotationManipulatorsCorrectlyLocatedRelativeToColliderWithNonUniformScale)
+    {
+        const float capsuleRadius = 1.2f;
+        const float capsuleHeight = 4.0f;
+        const AZ::Quaternion capsuleRotation(0.7f, 0.7f, -0.1f, 0.1f);
+        const AZ::Vector3 capsuleOffset(-2.0f, -2.0f, 1.0f);
+        SetupCollider(Physics::CapsuleShapeConfiguration(capsuleHeight, capsuleRadius), capsuleRotation, capsuleOffset);
+        const AZ::Quaternion entityRotation(0.8f, -0.4f, -0.4f, 0.2f);
+        const AZ::Vector3 entityTranslation(1.0f, -1.5f, 2.0f);
+        const float uniformScale = 1.5f;
+        SetupTransform(entityRotation, entityTranslation, uniformScale);
+        const AZ::Vector3 nonUniformScale(1.5f, 1.5f, 2.0f);
+        SetupNonUniformScale(nonUniformScale);
+        EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode::Rotation);
+
+        // the expected position of the collider centre based on the combination of entity transform, collider offset and non-uniform scale
+        const AZ::Vector3 expectedColliderPosition(-0.86f, 4.8f, -0.52f);
+
+        // the y and z axes of the collider's frame in world space, used to locate points on the x rotation manipulator arc to interact with
+        const AZ::Vector3 yDirection(0.36f, -0.8f, -0.48f);
+        const AZ::Vector3 zDirection(0.9024f, 0.168f, 0.3968f);
+
+        // position the camera to look at the collider along the world y axis
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateTranslation(expectedColliderPosition - AZ::Vector3(0.0f, 10.0f, 0.0f)));
+
+        const float screenToWorldMultiplier = AzToolsFramework::CalculateScreenToWorldMultiplier(expectedColliderPosition, m_cameraState);
+        const float manipulatorViewRadius = 2.0f;
+        const AZ::Vector3 worldStart = expectedColliderPosition + screenToWorldMultiplier * manipulatorViewRadius * yDirection;
+        const AZ::Vector3 worldEnd = expectedColliderPosition + screenToWorldMultiplier * manipulatorViewRadius * zDirection;
+
+        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
+        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
+
+        m_actionDispatcher
+            ->CameraState(m_cameraState)
+            // move the mouse to a position on the angular manipulator
+            ->MousePosition(screenStart)
+            // drag to move the manipulator
+            ->MouseLButtonDown()
+            ->MousePosition(screenEnd)
+            ->MouseLButtonUp();
+
+        AZ::Quaternion newColliderRotation = AZ::Quaternion::CreateIdentity();
+        PhysX::EditorColliderComponentRequestBus::EventResult(
+            newColliderRotation, m_idPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
+
+        EXPECT_THAT(newColliderRotation, testing::Not(IsCloseTolerance(capsuleRotation, ManipulatorTolerance)));
+    }
 } // namespace UnitTest
