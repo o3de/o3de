@@ -32,6 +32,12 @@
                     }
                 }
             ],
+            "FallbackConnections": [
+                {
+                    "Input" : "InputColor",
+                    "Output" : "Output"
+                }
+            ],
             "PassRequests": [
                 // Generates the mask for entities of interest
                 {

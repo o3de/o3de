@@ -12,6 +12,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
 
 namespace AZ
 {
@@ -40,7 +41,12 @@ namespace AZ
 
         bool EditorModeFeedbackParentPass::IsEnabled() const
         {
-            return true;
+            if (const auto editorModeFeedback = AZ::Interface<EditorModeFeedbackInterface>::Get())
+            {
+                return editorModeFeedback->IsEnabled();
+            }
+
+            return false;
         }
     } // namespace Render
 } // namespace AZ
