@@ -486,45 +486,37 @@ namespace UnitTest
 
         struct EnumeratePropertyGroupsResult
         {
-            const MaterialTypeSourceData::PropertyGroup* m_propertyGroup;
-            MaterialNameContext m_groupNameContext;
-            MaterialNameContext m_parentNameContext;
+            MaterialNameContext m_nameContext;
 
-            void Check(AZStd::string expectedIdContext, const MaterialTypeSourceData::PropertyGroup* expectedPropertyGroup)
+            void Check(AZStd::string expectedGroupId)
             {
-                Name groupFullId{m_propertyGroup->GetName()};
-                m_parentNameContext.ContextualizeProperty(groupFullId);
+                Name imaginaryProperty{"someChildProperty"};
+                m_nameContext.ContextualizeProperty(imaginaryProperty);
 
-                AZStd::string expectedPropertyId = expectedIdContext + expectedPropertyGroup->GetName();
-
-                EXPECT_EQ(expectedPropertyId, groupFullId.GetStringView());
-                EXPECT_EQ(expectedPropertyGroup, m_propertyGroup);
-
-                Name imaginaryPropertyName{"someChildProperty"};
-                m_groupNameContext.ContextualizeProperty(imaginaryPropertyName);
-                EXPECT_EQ(AZStd::string(groupFullId.GetStringView()) + ".someChildProperty", imaginaryPropertyName.GetStringView());
+                EXPECT_EQ(expectedGroupId + ".someChildProperty", imaginaryProperty.GetStringView());
             }
         };
         AZStd::vector<EnumeratePropertyGroupsResult> enumeratePropertyGroupsResults;
 
         sourceData.EnumeratePropertyGroups([&enumeratePropertyGroupsResults](
-            const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& groupNameContext, const MaterialNameContext& parentNameContext)
+            const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
             {
-                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{propertyGroup, groupNameContext, parentNameContext});
+                MaterialNameContext nameContext = MaterialTypeSourceData::MakeMaterialNameContext(propertyGroupStack);
+                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{nameContext});
                 return true;
             });
 
         int resultIndex = 0;
-        enumeratePropertyGroupsResults[resultIndex++].Check("", layer1);
-        enumeratePropertyGroupsResults[resultIndex++].Check("layer1.", layer1_baseColor);
-        enumeratePropertyGroupsResults[resultIndex++].Check("layer1.", layer1_roughness);
-        enumeratePropertyGroupsResults[resultIndex++].Check("", layer2);
-        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.", layer2_baseColor);
-        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.", layer2_roughness);
-        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.", layer2_clearCoat);
-        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.clearCoat.", layer2_clearCoat_roughness);
-        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.clearCoat.", layer2_clearCoat_normal);
-        enumeratePropertyGroupsResults[resultIndex++].Check("", blend);
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer1");
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer1.baseColor");
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer1.roughness");
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2");
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.baseColor");
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.roughness");
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.clearCoat");
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.clearCoat.roughness");
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.clearCoat.normal");
+        enumeratePropertyGroupsResults[resultIndex++].Check("blend");
         EXPECT_EQ(resultIndex, enumeratePropertyGroupsResults.size());
 
         // Check EnumerateProperties
