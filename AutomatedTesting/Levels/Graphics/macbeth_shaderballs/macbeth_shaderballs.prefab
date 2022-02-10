@@ -38,7 +38,10 @@
             },
             "Component_[7874177159288365422]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 7874177159288365422
+                "Id": 7874177159288365422,
+                "Child Entity Order": [
+                    "Entity_[471076350497]"
+                ]
             },
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
