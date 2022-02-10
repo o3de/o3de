@@ -57,8 +57,7 @@
                 "$type": "RasterPassData",
                 "DrawListTag": "editormodemask",
                 "PipelineViewTag": "MainCamera"
-            },
-            "PipelineViewTag": "MainCamera"
+            }
         }
     }
 }

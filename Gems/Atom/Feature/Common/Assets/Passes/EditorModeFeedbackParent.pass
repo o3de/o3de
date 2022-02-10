@@ -77,6 +77,34 @@
                     ]
                 },
                 {
+                    "Name": "UnmaskedGrayscalePass",
+                    "TemplateName": "EditorModeGrayscaleTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputEntityMask",
+                            "AttachmentRef": {
+                                "Pass": "EntityMaskPass",
+                                "Attachment": "OutputEntityMask"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "UnmaskedDesaturationPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "UnmaskedBlurPass",
                     "TemplateName": "EditorModeBlurTemplate",
                     "Enabled": true,
@@ -98,7 +126,7 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "UnmaskedDesaturationPass",
+                                "Pass": "UnmaskedGrayscalePass",
                                 "Attachment": "Output"
                             }
                         }

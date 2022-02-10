@@ -23,8 +23,8 @@
     AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, DepthTransitionDuration, MIN_VALUE);                                                               \
     AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, FinalBlendAmount, FINAL_BLEND);
 
-AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeDesaturationPass, 0.5f, 5.0f, 10.0f, 1.0f);
-AZ_EDITOR_MODE_PASS_CVAR(cl_editorModeDesaturationPass, DesaturationAmount, 1.0f);
+AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeGrayscalePass, 0.5f, 5.0f, 10.0f, 1.0f);
+AZ_EDITOR_MODE_PASS_CVAR(cl_editorModeGrayscalePass, GrayscaleAmount, 0.5f);
 
 namespace AZ
 {
@@ -33,21 +33,21 @@ namespace AZ
         /**
          *  The color grading pass.
          */
-        class EditorModeDesaturationPass
+        class EditorModeGrayscalePass
             : public AZ::RPI::FullscreenTrianglePass
             //TODO: , public PostProcessingShaderOptionBase
         {
         public:
-            AZ_RTTI(EditorModeDesaturationPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(EditorModeDesaturationPass, SystemAllocator, 0);
+            AZ_RTTI(EditorModeGrayscalePass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", AZ::RPI::FullscreenTrianglePass);
+            AZ_CLASS_ALLOCATOR(EditorModeGrayscalePass, SystemAllocator, 0);
 
-            virtual ~EditorModeDesaturationPass() = default;
+            virtual ~EditorModeGrayscalePass() = default;
 
-            //! Creates a EditorModeDesaturationPass
-            static RPI::Ptr<EditorModeDesaturationPass> Create(const RPI::PassDescriptor& descriptor);
+            //! Creates a EditorModeGrayscalePass
+            static RPI::Ptr<EditorModeGrayscalePass> Create(const RPI::PassDescriptor& descriptor);
 
         protected:
-            EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor);
+            EditorModeGrayscalePass(const RPI::PassDescriptor& descriptor);
             
             //! Pass behavior overrides
             void InitializeInternal() override;
@@ -62,7 +62,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_depthTransitionDurationIndex = "m_depthTransitionDuration";
             RHI::ShaderInputNameIndex m_finalBlendAmountIndex = "m_finalBlendAmount";
 
-            RHI::ShaderInputNameIndex m_desaturationAmountIndex = "m_desaturationAmount";
+            RHI::ShaderInputNameIndex m_grayscaleAmountIndex = "m_grayscaleAmount";
         };
     }   // namespace Render
 }   // namespace AZ

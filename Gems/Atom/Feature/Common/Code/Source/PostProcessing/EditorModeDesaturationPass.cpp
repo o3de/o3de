@@ -36,9 +36,9 @@
             m_minDepthTransitionValueIndex.Reset();
             m_depthTransitionStartIndex.Reset();
             m_depthTransitionDurationIndex.Reset();
+            m_finalBlendAmountIndex.Reset();
 
             m_desaturationAmountIndex.Reset();
-            m_grayscaleAmountIndex.Reset();
         }
         
         void EditorModeDesaturationPass::FrameBeginInternal(FramePrepareParams params)
@@ -64,9 +64,9 @@
             m_shaderResourceGroup->SetConstant(m_minDepthTransitionValueIndex, static_cast<float>(cl_editorModeDesaturationPass_MinDepthTransitionValue));
             m_shaderResourceGroup->SetConstant(m_depthTransitionStartIndex, static_cast<float>(cl_editorModeDesaturationPass_DepthTransitionStart));
             m_shaderResourceGroup->SetConstant(m_depthTransitionDurationIndex, static_cast<float>(cl_editorModeDesaturationPass_DepthTransitionDuration));
+            m_shaderResourceGroup->SetConstant(m_finalBlendAmountIndex, static_cast<float>(cl_editorModeDesaturationPass_FinalBlendAmount));
 
             m_shaderResourceGroup->SetConstant(m_desaturationAmountIndex, static_cast<float>(cl_editorModeDesaturationPass_DesaturationAmount));
-            m_shaderResourceGroup->SetConstant(m_grayscaleAmountIndex, static_cast<float>(cl_editorModeDesaturationPass_GrayscaleAmount));
         }
     }
 }

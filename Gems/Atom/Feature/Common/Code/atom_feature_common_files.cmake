@@ -230,6 +230,8 @@ set(FILES
     Source/PostProcessing/EditorModeMaskPass.h
     Source/PostProcessing/EditorModeDesaturationPass.cpp
     Source/PostProcessing/EditorModeDesaturationPass.h
+    Source/PostProcessing/EditorModeGrayscalePass.cpp
+    Source/PostProcessing/EditorModeGrayscalePass.h
     Source/PostProcessing/EditorModeBlurPass.cpp
     Source/PostProcessing/EditorModeBlurPass.h
     Source/PostProcessing/EditorModeOutlinePass.cpp
