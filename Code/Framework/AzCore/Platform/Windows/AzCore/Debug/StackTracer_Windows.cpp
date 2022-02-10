@@ -624,43 +624,6 @@ namespace AZ {
                     }
                 }
 
-                // Retrive some additional-infos about the module
-                IMAGEHLP_MODULE64 Module;
-                const char* szSymType = "-unknown-";
-                if (GetModuleInfo(hProcess, baseAddr, &Module) != FALSE)
-                {
-                    switch (Module.SymType)
-                    {
-                    case SymNone:
-                        szSymType = "-nosymbols-";
-                        break;
-                    case SymCoff:
-                        szSymType = "COFF";
-                        break;
-                    case SymCv:
-                        szSymType = "CV";
-                        break;
-                    case SymPdb:
-                        szSymType = "PDB";
-                        break;
-                    case SymExport:
-                        szSymType = "-exported-";
-                        break;
-                    case SymDeferred:
-                        szSymType = "-deferred-";
-                        break;
-                    case SymSym:
-                        szSymType = "SYM";
-                        break;
-                    case 8: //SymVirtual:
-                        szSymType = "Virtual";
-                        break;
-                    case 9: // SymDia:
-                        szSymType = "DIA";
-                        break;
-                    }
-                }
-
                 // find insert position
                 if (g_moduleInfo.size() <  g_moduleInfo.capacity())
                 {
