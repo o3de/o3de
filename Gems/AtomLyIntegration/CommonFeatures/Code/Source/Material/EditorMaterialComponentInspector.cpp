@@ -275,7 +275,7 @@ namespace AZ
 
             void MaterialPropertyInspector::AddPropertiesGroup()
             {
-                // Copy all of the properties from the material asset to the source data that will be exported
+                // Copy all of the properties from the material asset to the populate the inspector
                 m_editData.m_materialTypeSourceData.EnumeratePropertyGroups(
                     [this](const AZ::RPI::MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
                     {
@@ -290,10 +290,10 @@ namespace AZ
                         AZStd::vector<AZStd::string> groupNameVector;
                         AZStd::vector<AZStd::string> groupDisplayNameVector;
 
-                        for (auto& group : propertyGroupStack)
+                        for (auto& nextGroup : propertyGroupStack)
                         {
-                            groupNameVector.push_back(group->GetName());
-                            groupDisplayNameVector.push_back(!group->GetDisplayName().empty() ? group->GetDisplayName() : group->GetName());
+                            groupNameVector.push_back(nextGroup->GetName());
+                            groupDisplayNameVector.push_back(!nextGroup->GetDisplayName().empty() ? nextGroup->GetDisplayName() : nextGroup->GetName());
                         }
 
                         AZStd::string groupId;

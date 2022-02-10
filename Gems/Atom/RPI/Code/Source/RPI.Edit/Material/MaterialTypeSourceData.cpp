@@ -427,13 +427,13 @@ namespace AZ
             return parts;
         }
 
-        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, PropertyGroupStack* propertyGroupStack, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
+        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, PropertyGroupStack& propertyGroupStack, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
             for (auto& propertyGroup : inPropertyGroupList)
             {
-                propertyGroupStack->push_back(propertyGroup.get());
+                propertyGroupStack.push_back(propertyGroup.get());
 
-                if (!callback(*propertyGroupStack))
+                if (!callback(propertyGroupStack))
                 {
                     return false;  // Stop processing
                 }
@@ -443,7 +443,7 @@ namespace AZ
                     return false; // Stop processing
                 }
 
-                propertyGroupStack->pop_back();
+                propertyGroupStack.pop_back();
             }
 
             return true;
@@ -457,7 +457,7 @@ namespace AZ
             }
 
             PropertyGroupStack propertyGroupStack;
-            return EnumeratePropertyGroups(callback, &propertyGroupStack, m_propertyLayout.m_propertyGroups);
+            return EnumeratePropertyGroups(callback, propertyGroupStack, m_propertyLayout.m_propertyGroups);
         }
 
         bool MaterialTypeSourceData::EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
