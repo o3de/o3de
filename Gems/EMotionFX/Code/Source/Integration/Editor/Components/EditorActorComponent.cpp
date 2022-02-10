@@ -587,7 +587,7 @@ namespace EMotionFX
             }
             if (m_renderSkeleton)
             {
-                m_renderFlags |= ActorRenderFlags::Skeleton;
+                m_renderFlags |= ActorRenderFlags::LineSkeleton;
             }
         }
 

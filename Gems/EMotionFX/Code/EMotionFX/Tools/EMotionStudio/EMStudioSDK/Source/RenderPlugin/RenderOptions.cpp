@@ -18,7 +18,6 @@
 #include <QColor>
 #include <QSettings>
 
-#pragma optimize("", off)
 namespace EMStudio
 {
     const char* RenderOptions::s_gridUnitSizeOptionName = "gridUnitSize";

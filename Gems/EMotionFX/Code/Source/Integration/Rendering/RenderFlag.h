@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/std/containers/bitset.h>
 #include <AzCore/Preprocessor/Enum.h>
 #include <Atom/RHI.Reflect/Bits.h>
 
@@ -44,7 +43,7 @@ namespace EMotionFX
 
     //! A set of combinable flags which inform the system how an image is to be
     //! bound to the pipeline at all stages of its lifetime.
-    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(ActorRenderFlags, uint32_t,
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(ActorRenderFlags, AZ::u32,
         (None, 0),
         (Solid, AZ_BIT(ActorRenderFlag::SOLID)),
         (Wireframe, AZ_BIT(ActorRenderFlag::WIREFRAME)),
@@ -78,9 +77,11 @@ namespace EMotionFX
     class ActorRenderFlagUtil
     {
     public:
-        static bool CheckBit(ActorRenderFlags flags, AZ::u8 index)
+        // Check the bit value with the offset start at 0 from the right.
+        // CheckBit(flags, 0) means check the last digit of the flags, CheckBit(flags, 1) means the second digit from right, etc.
+        static bool CheckBit(ActorRenderFlags flags, AZ::u8 offset)
         {
-            return (flags & ActorRenderFlags(AZ_BIT(index))) != ActorRenderFlags(0);
+            return (flags & ActorRenderFlags(AZ_BIT(offset))) != ActorRenderFlags(0);
         }
     };
 }

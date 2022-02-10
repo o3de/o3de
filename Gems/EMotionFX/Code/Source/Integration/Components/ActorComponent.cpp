@@ -375,11 +375,11 @@ namespace EMotionFX
         {
             if (enable)
             {
-                AZ::RHI::SetBits(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
+                m_configuration.m_renderFlags |= ActorRenderFlags::Solid;
             }
             else
             {
-                AZ::RHI::ResetBits(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
+                m_configuration.m_renderFlags &= ~ActorRenderFlags::Solid;
             }
 
             if (m_renderActorInstance)
@@ -590,16 +590,17 @@ namespace EMotionFX
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
+                const bool renderActorSolid = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
 
                 // Optimization: Set the actor instance invisible when character is out of camera view. This will stop the joint transforms update, except the root joint.
                 // Calling it after the bounds on the render actor updated.
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
                     const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                    m_actorInstance->SetIsVisible(isInCameraFrustum && AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && renderActorSolid);
                 }
 
-                m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
+                m_renderActorInstance->SetIsVisible(renderActorSolid);
                 m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
             }
         }
