@@ -92,7 +92,7 @@ _CONFIG = get_dccsi_config()
 settings = _CONFIG.get_config_settings(enable_o3de_python=False,
                                         enable_o3de_pyside2=True)
 # we don't init the O3DE python env settings!
-# that will cause conflicts with python enabled DCC tools!!!
+# that will cause conflicts with the DCC tools python!!!
 # we are enabling the O3DE PySide2 (aka QtForPython) access
 
 _DCCSI_PATH_BLENDER = Path(sys.prefix)

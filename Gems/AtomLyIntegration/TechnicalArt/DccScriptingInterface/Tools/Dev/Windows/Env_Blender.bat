@@ -7,50 +7,52 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-:: Sets up extended DCCsi environment for Maya
+:: Sets up extended DCCsi environment for Blender
 
 :: Set up window
-TITLE O3DE DCCsi Autodesk Maya Environment
+TITLE O3DE DCCsi Blender Environment
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
 
 :: Skip initialization if already completed
-IF "%DCCSI_ENV_MAYA_INIT%"=="1" GOTO :END_OF_FILE
+IF "%DCCSI_ENV_BLENDER_INIT%"=="1" GOTO :END_OF_FILE
 
 :: Store current dir
 %~d0
 cd %~dp0
 PUSHD %~dp0
 
-:: Maya 2022: 3.7.7 (tags/v3.7.7:d7c567b08f, Mar 10 2020, 10:41:24) [MSC v.1900 64 bit (AMD64)]
+:: Consider experimental, only tested with Blender 3.0 during initial development
+:: Blender 3.0 :: Python 3.9.7 (default, Oct 11 2021, 19:31:28) [MSC v.1916 64 bit (AMD64)] on win32
 IF "%DCCSI_PY_VERSION_MAJOR%"=="" (set DCCSI_PY_VERSION_MAJOR=3)
-IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=7)
+IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=9)
 IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=7)
 
-:: Default Maya Version
-IF "%MAYA_VERSION%"=="" (set MAYA_VERSION=2022)
+:: Default Blender Version
+IF "%BLENDER_VERSION%"=="" (set BLENDER_VERSION=3.0)
 
 :: Initialize env
 CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
+CALL %~dp0\Env_Qt.bat
 
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    O3DE DCCsi Autodesk Maya Environment ...
+echo ~    O3DE DCCsi Blender Environment ...
 echo _____________________________________________________________________
 echo.
 
 echo     DCCSI_PY_VERSION_MAJOR = %DCCSI_PY_VERSION_MAJOR%
 echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
 echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
-echo     MAYA_VERSION = %MAYA_VERSION%
+echo     BLENDER_VERSION = %BLENDER_VERSION%
 
-:::: Set Maya native project acess to this project
-IF "%MAYA_PROJECT%"=="" (set MAYA_PROJECT=%PATH_O3DE_PROJECT%)
-echo     MAYA_PROJECT = %MAYA_PROJECT%
+:::: Set Blender native project acess to this project
+IF "%BLENDER_PROJECT%"=="" (set BLENDER_PROJECT=%PATH_O3DE_PROJECT%)
+echo     BLENDER_PROJECT = %BLENDER_PROJECT%
 
-:: Set dccsi maya tools path
+:: set dccsi blender tools path
 set "DCCSI_TOOLS_MAYA_PATH=%PATH_DCCSI_TOOLS%\DCC\Maya"
 echo     DCCSI_TOOLS_MAYA_PATH = %DCCSI_TOOLS_MAYA_PATH%
 
@@ -60,7 +62,7 @@ echo     MAYA_MODULE_PATH = %MAYA_MODULE_PATH%
 :: Maya File Paths, etc
 :: https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2015/ENU/Maya/files/Environment-Variables-File-path-variables-htm.html
 :::: Set Maya native project acess to this project
-IF "%MAYA_LOCATION%"=="" (set "MAYA_LOCATION=%ProgramFiles%\Autodesk\Maya%MAYA_VERSION%")
+IF "%MAYA_LOCATION%"=="" (set "MAYA_LOCATION=%ProgramFiles%\Autodesk\Maya%BLENDER_VERSION%")
 echo     MAYA_LOCATION = %MAYA_LOCATION%
 
 IF "%MAYA_BIN_PATH%"=="" (set "MAYA_BIN_PATH=%MAYA_LOCATION%\bin")
@@ -139,7 +141,7 @@ echo     MAYA_VP2_DEVICE_OVERRIDE = %MAYA_VP2_DEVICE_OVERRIDE%
 ::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice
-SET DCCSI_ENV_MAYA_INIT=1
+SET DCCSI_ENV_BLENDER_INIT=1
 GOTO END_OF_FILE
 
 :: Return to starting directory

@@ -7,16 +7,16 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# -------------------------------------------------------------------------
 
-"""
+"""!
 Module Documentation:
     DccScriptingInterface:: azpy//constants.py
 
 This module is mainly a bunch of commony used constants, and default strings
 So we can make an update here once that is used elsewhere.
 
-< To Do: Further document module here>
+< To Do: Further document module here >
 """
 # -------------------------------------------------------------------------
 #  built-ins
@@ -110,7 +110,7 @@ TAG_QT_PLUGIN_PATH = str('QT_PLUGIN_PATH')
 
 TAG_O3DE_FOLDER = str('.o3de')
 TAG_O3DE_BOOTSTRAP = str('bootstrap.setreg')
-TAG_DCCSI_CONFIG = str('dccsiconfiguration.setreg')
+TAG_DCCSI_CONFIG = str('dccsi_configuration.setreg')
 
 # filesystem markers, stub file names.
 STUB_O3DE_DEV = str('engine.json')
