@@ -18,7 +18,7 @@ cd %~dp0
 PUSHD %~dp0
 
 :: version Major
-SET PYCHARM_VERSION_YEAR=2020
+SET PYCHARM_VERSION_YEAR=2021
 :: version Major
 SET PYCHARM_VERSION_MAJOR=2
 
@@ -40,7 +40,7 @@ echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 :: ide and debugger plug
 set DCCSI_PY_DEFAULT=%DCCSI_PY_IDE%\python.exe
 
-SET PYCHARM_PROJ=%DCCSIG_PATH%\Solutions
+SET PYCHARM_PROJ=%DCCSIG_PATH%
 
 echo.
 echo _____________________________________________________________________
