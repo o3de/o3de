@@ -81,7 +81,7 @@ namespace O3DE::ProjectManager
         m_rightPanelStack = new QStackedWidget(this);
         m_rightPanelStack->setFixedWidth(sidePanelWidth);
 
-        m_gemInspector = new GemInspector(m_gemModel, this);
+        m_gemInspector = new GemInspector(m_gemModel, m_rightPanelStack);
 
         connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);

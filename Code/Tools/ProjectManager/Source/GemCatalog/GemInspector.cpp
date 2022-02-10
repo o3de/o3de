@@ -30,7 +30,10 @@ namespace O3DE::ProjectManager
         setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         m_mainWidget = new QWidget();
-        m_mainWidget->setFixedWidth(240);
+        if (parent)
+        {
+            m_mainWidget->setFixedWidth(parent->width());
+        }
         setWidget(m_mainWidget);
 
         m_mainLayout = new QVBoxLayout();
