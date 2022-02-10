@@ -219,7 +219,7 @@ namespace Terrain
             
             if (!wasPreviouslyActive && !defaultMaterial.m_active)
             {
-                // A material has been assigned but has not yet completed loading.
+                // A material has not been assigned or has not yet completed loading.
             }
             else if (!wasPreviouslyActive && defaultMaterial.m_active)
             {
@@ -378,6 +378,11 @@ namespace Terrain
     const AZStd::vector<TerrainSurfaceMaterialMapping>& TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings() const
     {
         return m_configuration.m_surfaceMaterials;
+    }
+
+    const TerrainSurfaceMaterialMapping& TerrainSurfaceMaterialsListComponent::GetDefaultMaterial() const
+    {
+        return m_configuration.m_defaultSurfaceMaterial;
     }
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)

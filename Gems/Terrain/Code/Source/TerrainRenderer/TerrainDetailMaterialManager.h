@@ -58,6 +58,7 @@ namespace Terrain
 
         enum DetailTextureFlags : uint32_t
         {
+            None                =  0b0000'0000'0000'0000'0000'0000'0000'0000,
             UseTextureBaseColor =  0b0000'0000'0000'0000'0000'0000'0000'0001,
             UseTextureNormal =     0b0000'0000'0000'0000'0000'0000'0000'0010,
             UseTextureMetallic =   0b0000'0000'0000'0000'0000'0000'0000'0100,
@@ -69,11 +70,11 @@ namespace Terrain
             FlipNormalX =          0b0000'0000'0000'0001'0000'0000'0000'0000,
             FlipNormalY =          0b0000'0000'0000'0010'0000'0000'0000'0000,
 
-            BlendModeMask =        0b0000'0000'0000'1100'0000'0000'0000'0000,
-            BlendModeLerp =        0b0000'0000'0000'0000'0000'0000'0000'0000,
-            BlendModeLinearLight = 0b0000'0000'0000'0100'0000'0000'0000'0000,
-            BlendModeMultiply =    0b0000'0000'0000'1000'0000'0000'0000'0000,
-            BlendModeOverlay =     0b0000'0000'0000'1100'0000'0000'0000'0000,
+            BlendModeMask =        0b0000'0000'0001'1100'0000'0000'0000'0000,
+            BlendModeLerp =        0b0000'0000'0000'0100'0000'0000'0000'0000,
+            BlendModeLinearLight = 0b0000'0000'0000'1000'0000'0000'0000'0000,
+            BlendModeMultiply =    0b0000'0000'0000'1100'0000'0000'0000'0000,
+            BlendModeOverlay =     0b0000'0000'0001'0000'0000'0000'0000'0000,
         };
         
         struct DetailMaterialShaderData
@@ -94,11 +95,11 @@ namespace Terrain
             float m_baseColorFactor{ 1.0f };
 
             float m_normalFactor{ 1.0f };
-            float m_metalFactor{ 1.0f };
+            float m_metalFactor{ 0.0f };
             float m_roughnessScale{ 1.0f };
             float m_roughnessBias{ 0.0f };
 
-            float m_specularF0Factor{ 1.0f };
+            float m_specularF0Factor{ 0.5f };
             float m_occlusionFactor{ 1.0f };
             float m_heightFactor{ 1.0f };
             float m_heightOffset{ 0.0f };
@@ -152,9 +153,9 @@ namespace Terrain
             AZ::EntityId m_entityId;
             AZ::Aabb m_region{AZ::Aabb::CreateNull()};
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
-            uint16_t m_defaultDetailMaterialId;
+            uint16_t m_defaultDetailMaterialId{ 0xFFFF };
         };
-
+        
         using DetailMaterialContainer = AZ::Render::IndexedDataVector<DetailMaterialData>;
         static constexpr auto InvalidDetailMaterailId = DetailMaterialContainer::NoFreeSlot;
         

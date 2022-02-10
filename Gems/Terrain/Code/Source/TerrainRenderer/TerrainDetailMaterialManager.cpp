@@ -131,6 +131,11 @@ namespace Terrain
                     DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
                     materialRegion.m_region = bounds;
 
+                    if (handler->GetDefaultMaterial().m_materialInstance)
+                    {
+                        OnTerrainDefaultSurfaceMaterialCreated(entityId, handler->GetDefaultMaterial().m_materialInstance);
+                    }
+
                     for (const auto& materialMapping : materialMappings)
                     {
                         if (materialMapping.m_materialInstance)
@@ -294,6 +299,11 @@ namespace Terrain
         if (materialRegion == nullptr)
         {
             AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialDestroyed() called for region that doesn't exist.");
+            return;
+        }
+        if (materialRegion->m_defaultDetailMaterialId == InvalidDetailMaterailId)
+        {
+            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialDestroyed() called for a region without a default material");
             return;
         }
 
@@ -487,6 +497,7 @@ namespace Terrain
         materialData.m_assetId = material->GetAssetId();
             
         DetailTextureFlags& flags = shaderData.m_flags;
+        flags = DetailTextureFlags::None;
             
         auto getIndex = [&](const char* const indexName) -> AZ::RPI::MaterialPropertyIndex
         {
@@ -697,17 +708,19 @@ namespace Terrain
                 UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
             }
 
-            m_dirtyDetailRegion = m_dirtyDetailRegion.GetClamped(untouchedRegion);
-
             if (m_dirtyDetailRegion.IsValid())
             {
-                ClipmapBounds::ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_dirtyDetailRegion);
-                for (auto& region : updateRegions)
+                m_dirtyDetailRegion = m_dirtyDetailRegion.GetClamped(untouchedRegion);
+                if (m_dirtyDetailRegion.IsValid())
                 {
-                    UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
+                    ClipmapBounds::ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_dirtyDetailRegion);
+                    for (auto& region : updateRegions)
+                    {
+                        UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
+                    }
                 }
+                m_dirtyDetailRegion = AZ::Aabb::CreateNull();
             }
-            m_dirtyDetailRegion = AZ::Aabb::CreateNull();
         }
     }
     
@@ -764,20 +777,29 @@ namespace Terrain
                             pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
                             firstWeight = surfaceTagWeight.m_weight;
                             isFirstMaterial = false;
-                            static constexpr float MaxValueBeforeRounding = 254.5f / 255.0f;
-                            if (firstWeight >= MaxValueBeforeRounding)
-                            {
-                                break;
-                            }
                         }
                         else
                         {
                             // Second material is valid, weight is relative based on first material's weight.
-                            pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
-                            float totalWeight = firstWeight + surfaceTagWeight.m_weight;
-                            float blendWeight = 1.0f - (firstWeight / totalWeight);
-                            pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
-                            break;
+                            if (surfaceTagWeight.m_weight < 1.0 - firstWeight)
+                            {
+                                // If the second material is less weight than what the default material would be, use
+                                // the default material instead
+                                uint8_t defaultMaterial = region->m_defaultDetailMaterialId == InvalidDetailMaterailId ? m_passthroughMaterialId :
+                                    aznumeric_cast<uint8_t>(m_detailMaterials.GetData(region->m_defaultDetailMaterialId).m_detailMaterialBufferIndex);
+
+                                pixels.at(index).m_material2 = defaultMaterial;
+                                float blendWeight = 1.0f - AZStd::clamp<float>(firstWeight, 0.0f, 1.0f);
+                                pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                            }
+                            else
+                            {
+                                float totalWeight = firstWeight + surfaceTagWeight.m_weight;
+                                pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
+                                float blendWeight = 1.0f - (firstWeight / totalWeight);
+                                pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                                break;
+                            }
                         }
                     }
                     continue; // search for second material

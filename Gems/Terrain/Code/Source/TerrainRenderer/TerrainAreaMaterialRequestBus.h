@@ -29,8 +29,11 @@ namespace Terrain
         //! Get the Aabb for the region where a TerrainSurfaceMaterialMapping exists
         virtual const AZ::Aabb& GetTerrainSurfaceMaterialRegion() const = 0;
 
-        //! Get the Material asset assigned to a particular surface tag.
+        //! Get the Materials assigned to a various surface tags.
         virtual const AZStd::vector<struct TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings() const = 0;
+
+        //! Get the default material
+        virtual const TerrainSurfaceMaterialMapping& GetDefaultMaterial() const = 0;
     };
 
     using TerrainAreaMaterialRequestBus = AZ::EBus<TerrainAreaMaterialRequests>;
