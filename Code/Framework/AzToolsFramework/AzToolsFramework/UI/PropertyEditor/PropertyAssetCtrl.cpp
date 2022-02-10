@@ -1214,7 +1214,7 @@ namespace AzToolsFramework
     void PropertyAssetCtrl::UpdateEditButton()
     {
         // if Edit button is in use (shown), enable/disable it depending on the current asset id.
-        if (m_showEditButton && m_disableEditButtonWheNoAssetSelected)
+        if (m_showEditButton && m_disableEditButtonWhenNoAssetSelected)
         {
             m_editButton->setEnabled(GetCurrentAssetID().IsValid());
         }
@@ -1251,15 +1251,15 @@ namespace AzToolsFramework
         return m_hideProductFilesInAssetPicker;
     }
 
-    void PropertyAssetCtrl::SetDisableEditButtonWheNoAssetSelected(bool disableEditButtonWheNoAssetSelected)
+    void PropertyAssetCtrl::SetDisableEditButtonWhenNoAssetSelected(bool disableEditButtonWhenNoAssetSelected)
     {
-        m_disableEditButtonWheNoAssetSelected = disableEditButtonWheNoAssetSelected;
+        m_disableEditButtonWhenNoAssetSelected = disableEditButtonWhenNoAssetSelected;
         UpdateEditButton();
     }
 
-    bool PropertyAssetCtrl::GetDisableEditButtonWheNoAssetSelected() const
+    bool PropertyAssetCtrl::GetDisableEditButtonWhenNoAssetSelected() const
     {
-        return m_disableEditButtonWheNoAssetSelected;
+        return m_disableEditButtonWhenNoAssetSelected;
     }
 
     void PropertyAssetCtrl::SetShowThumbnail(bool enable)
@@ -1375,11 +1375,11 @@ namespace AzToolsFramework
                 GUI->SetEditButtonTooltip(tr(buttonTooltip.c_str()));
             }
         }
-        else if (attrib == AZ_CRC_CE("DisableEditButtonWheNoAssetSelected"))
+        else if (attrib == AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"))
         {
-            bool disableEditButtonWheNoAssetSelected = false;
-            attrValue->Read<bool>(disableEditButtonWheNoAssetSelected);
-            GUI->SetDisableEditButtonWheNoAssetSelected(disableEditButtonWheNoAssetSelected);
+            bool disableEditButtonWhenNoAssetSelected = false;
+            attrValue->Read<bool>(disableEditButtonWhenNoAssetSelected);
+            GUI->SetDisableEditButtonWhenNoAssetSelected(disableEditButtonWhenNoAssetSelected);
         }
         else if (attrib == AZ::Edit::Attributes::DefaultAsset)
         {
@@ -1629,11 +1629,11 @@ namespace AzToolsFramework
                 GUI->SetEditButtonTooltip(tr(buttonTooltip.c_str()));
             }
         }
-        else if (attrib == AZ_CRC_CE("DisableEditButtonWheNoAssetSelected"))
+        else if (attrib == AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"))
         {
-            bool disableEditButtonWheNoAssetSelected = false;
-            attrValue->Read<bool>(disableEditButtonWheNoAssetSelected);
-            GUI->SetDisableEditButtonWheNoAssetSelected(disableEditButtonWheNoAssetSelected);
+            bool disableEditButtonWhenNoAssetSelected = false;
+            attrValue->Read<bool>(disableEditButtonWhenNoAssetSelected);
+            GUI->SetDisableEditButtonWhenNoAssetSelected(disableEditButtonWhenNoAssetSelected);
         }
     }
 

@@ -160,7 +160,7 @@ namespace AzToolsFramework
         bool m_hideProductFilesInAssetPicker = false;
 
         //! True to disable the edit button when there is no asset currently selected.
-        bool m_disableEditButtonWheNoAssetSelected = false;
+        bool m_disableEditButtonWhenNoAssetSelected = false;
 
         bool m_showEditButton = false;
         bool m_showThumbnail = false;
@@ -224,8 +224,8 @@ namespace AzToolsFramework
         void SetHideProductFilesInAssetPicker(bool hide);
         bool GetHideProductFilesInAssetPicker() const;
 
-        void SetDisableEditButtonWheNoAssetSelected(bool disableEditButtonWheNoAssetSelected);
-        bool GetDisableEditButtonWheNoAssetSelected() const;
+        void SetDisableEditButtonWhenNoAssetSelected(bool disableEditButtonWhenNoAssetSelected);
+        bool GetDisableEditButtonWhenNoAssetSelected() const;
 
         // Enable and configure a thumbnail widget that displays an asset preview and dropdown arrow for a dropdown menu
         void SetShowThumbnail(bool enable);
