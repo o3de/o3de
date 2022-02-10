@@ -596,7 +596,7 @@ namespace AZ {
                 result = GetLastError();
             }
             ULONGLONG fileVersion = 0;
-            if (szImg != NULL)
+            if (szImg[0]) // !szImg.empty()
             {
                 // try to retrieve the file-version:
                 VS_FIXEDFILEINFO* fInfo = NULL;
