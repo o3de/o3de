@@ -314,7 +314,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
 
     GenerateQueryPositions(inPositions, outPositions, sampler);
 
-    auto callback = [](const AZStd::span<AZ::Vector3> inPositions,
+    auto callback = []([[maybe_unused]] const AZStd::span<AZ::Vector3> inPositions,
                         AZStd::span<AZ::Vector3> outPositions,
                         AZStd::span<bool> outTerrainExists,
                         [[maybe_unused]] AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
