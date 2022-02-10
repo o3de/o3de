@@ -110,6 +110,16 @@ void TerrainSystem::Activate()
 
 void TerrainSystem::Deactivate()
 {
+    {
+        // Cancel all active terrain jobs, and wait until they have completed.
+        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+        for (auto activeTerrainJobContext : m_activeTerrainJobContexts)
+        {
+            activeTerrainJobContext->Cancel();
+        }
+        m_activeTerrainJobContextMutexConditionVariable.wait(lock, [this]{ return m_activeTerrainJobContexts.empty(); });
+    }
+
     // Stop listening to the bus even before we signal DestroyBegin so that way any calls to the terrain system as a *result* of
     // calling DestroyBegin will fail to reach the terrain system.
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();

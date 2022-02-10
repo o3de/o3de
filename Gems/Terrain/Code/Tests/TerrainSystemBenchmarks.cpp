@@ -14,7 +14,7 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/std/parallel/condition_variable.h>
+#include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -398,14 +398,10 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
                 };
 
-                AZStd::mutex completionMutex;
-                AZStd::condition_variable completionVariable;
-                AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
+                AZStd::binary_semaphore completionEvent;
+                auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
-                    completionFlag = true;
-                    completionVariable.notify_one();
+                    completionEvent.release();
                 };
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
@@ -416,8 +412,7 @@ namespace UnitTest
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegionAsync, worldBounds, stepSize, perPositionCallback, sampler, asyncParams);
 
-                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
-                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+                completionEvent.acquire();
             }
         );
     }
@@ -484,14 +479,10 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
                 };
 
-                AZStd::mutex completionMutex;
-                AZStd::condition_variable completionVariable;
-                AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
+                AZStd::binary_semaphore completionEvent;
+                auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
-                    completionFlag = true;
-                    completionVariable.notify_one();
+                    completionEvent.release();
                 };
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
@@ -500,8 +491,7 @@ namespace UnitTest
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
 
-                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
-                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+                completionEvent.acquire();
             }
         );
     }
@@ -593,14 +583,10 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_normal);
                 };
 
-                AZStd::mutex completionMutex;
-                AZStd::condition_variable completionVariable;
-                AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
+                AZStd::binary_semaphore completionEvent;
+                auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
-                    completionFlag = true;
-                    completionVariable.notify_one();
+                    completionEvent.release();
                 };
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
@@ -611,8 +597,7 @@ namespace UnitTest
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromRegionAsync, worldBounds, stepSize, perPositionCallback, sampler, asyncParams);
 
-                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
-                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+                completionEvent.acquire();
             }
         );
     }
@@ -673,14 +658,10 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_normal);
                 };
 
-                AZStd::mutex completionMutex;
-                AZStd::condition_variable completionVariable;
-                AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
+                AZStd::binary_semaphore completionEvent;
+                auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
-                    completionFlag = true;
-                    completionVariable.notify_one();
+                    completionEvent.release();
                 };
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
@@ -689,8 +670,7 @@ namespace UnitTest
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
 
-                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
-                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+                completionEvent.acquire();
             }
         );
     }
@@ -780,14 +760,10 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
                 };
 
-                AZStd::mutex completionMutex;
-                AZStd::condition_variable completionVariable;
-                AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
+                AZStd::binary_semaphore completionEvent;
+                auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
-                    completionFlag = true;
-                    completionVariable.notify_one();
+                    completionEvent.release();
                 };
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
@@ -798,8 +774,7 @@ namespace UnitTest
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegionAsync, worldBounds, stepSize, perPositionCallback, sampler, asyncParams);
 
-                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
-                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+                completionEvent.acquire();
             }
         );
     }
@@ -860,14 +835,10 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
                 };
 
-                AZStd::mutex completionMutex;
-                AZStd::condition_variable completionVariable;
-                AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
+                AZStd::binary_semaphore completionEvent;
+                auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
-                    completionFlag = true;
-                    completionVariable.notify_one();
+                    completionEvent.release();
                 };
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
@@ -876,8 +847,7 @@ namespace UnitTest
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
 
-                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
-                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+                completionEvent.acquire();
             }
         );
     }
@@ -967,14 +937,10 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint);
                 };
 
-                AZStd::mutex completionMutex;
-                AZStd::condition_variable completionVariable;
-                AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
+                AZStd::binary_semaphore completionEvent;
+                auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
-                    completionFlag = true;
-                    completionVariable.notify_one();
+                    completionEvent.release();
                 };
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
@@ -985,8 +951,7 @@ namespace UnitTest
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegionAsync, worldBounds, stepSize, perPositionCallback, sampler, asyncParams);
 
-                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
-                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+                completionEvent.acquire();
             }
         );
     }
@@ -1047,14 +1012,10 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint);
                 };
 
-                AZStd::mutex completionMutex;
-                AZStd::condition_variable completionVariable;
-                AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
+                AZStd::binary_semaphore completionEvent;
+                auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
-                    completionFlag = true;
-                    completionVariable.notify_one();
+                    completionEvent.release();
                 };
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
@@ -1063,8 +1024,7 @@ namespace UnitTest
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
 
-                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
-                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+                completionEvent.acquire();
             }
         );
     }

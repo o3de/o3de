@@ -12,6 +12,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/parallel/condition_variable.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/span.h>
@@ -320,6 +321,9 @@ namespace Terrain
         mutable TerrainRaycastContext m_terrainRaycastContext;
 
         AZ::JobManager* m_terrainJobManager = nullptr;
+        mutable AZStd::mutex m_activeTerrainJobContextMutex;
+        mutable AZStd::condition_variable m_activeTerrainJobContextMutexConditionVariable;
+        mutable AZStd::deque<AZStd::shared_ptr<TerrainJobContext>> m_activeTerrainJobContexts;
     };
 
     template<typename SynchronousFunctionType, typename VectorType>
@@ -345,12 +349,13 @@ namespace Terrain
             return nullptr;
         }
 
-        // Create a terrain job context to return so the jobs can be cancelled.
-        AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager);
-
-        // Split the work across multiple jobs.
+        // Create a terrain job context, track it, and split the work across multiple jobs.
+        AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, numJobs);
+        {
+            AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+            m_activeTerrainJobContexts.push_back(jobContext);
+        }
         const int32_t numPositionsPerJob = numPositionsToProcess / numJobs;
-        AZStd::shared_ptr<AZStd::atomic_int> numJobCompletionsRemaining = AZStd::make_shared<AZStd::atomic_int>(numJobs);
         for (int32_t i = 0; i < numJobs; ++i)
         {
             // If the number of positions can't be divided evenly by the number of jobs,
@@ -360,16 +365,31 @@ namespace Terrain
 
             // Define the job function using the sub span of positions to process.
             const AZStd::span<VectorType>& positionsToProcess = inPositions.subspan(subSpanOffset, subSpanCount);
-            auto jobFunction = [=]()
+            auto jobFunction = [this, synchronousFunction, positionsToProcess, perPositionCallback, sampleFilter, jobContext, params]()
             {
-                // Process the sub span of positions, decrement the number of completions remaining,
-                // and invoke the completion callback if this happens to be the final job completed.
-                synchronousFunction(positionsToProcess, perPositionCallback, sampleFilter);
-                if (--(*numJobCompletionsRemaining) == 0 &&
-                    params && params->m_completionCallback &&
-                    !jobContext->IsCancelled())
+                // Process the sub span of positions, unless the associated job context has been cancelled.
+                if (!jobContext->IsCancelled())
                 {
-                    params->m_completionCallback();
+                    synchronousFunction(positionsToProcess, perPositionCallback, sampleFilter);
+                }
+
+                // Decrement the number of completions remaining, invoke the completion callback if this happens
+                // to be the final job completed, and remove this TerrainJobContext from the list of active ones.
+                const bool wasLastJobCompleted = jobContext->OnJobCompleted();
+                if (wasLastJobCompleted)
+                {
+                    if (params && params->m_completionCallback)
+                    {
+                        params->m_completionCallback(jobContext);
+                    }
+
+                    {
+                        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+                        m_activeTerrainJobContexts.erase(AZStd::find(m_activeTerrainJobContexts.begin(),
+                                                                     m_activeTerrainJobContexts.end(),
+                                                                     jobContext));
+                        m_activeTerrainJobContextMutexConditionVariable.notify_one();
+                    }
                 }
             };
 
@@ -415,25 +435,41 @@ namespace Terrain
             numJobs = 1;
         }
 
-        // Create a terrain job context to return so the jobs can be cancelled.
-        AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager);
-
-        // Split the work across multiple jobs.
-        AZStd::shared_ptr<AZStd::atomic_int> numJobCompletionsRemaining = AZStd::make_shared<AZStd::atomic_int>(numJobs);
+        // Create a terrain job context and split the work across multiple jobs.
+        AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, numJobs);
+        {
+            AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+            m_activeTerrainJobContexts.push_back(jobContext);
+        }
         for (int32_t i = 0; i < numJobs; ++i)
         {
             // Define the job function using the sub region of positions to process.
             const AZ::Aabb& subRegion = inRegion; // ToDo: Figure out how to break up the region.
-            auto jobFunction = [=]()
+            auto jobFunction = [this, synchronousFunction, subRegion, stepSize, perPositionCallback, sampleFilter, jobContext, params]()
             {
-                // Process the sub region of positions, decrement the number of completions remaining,
-                // and invoke the completion callback if this happens to be the final job completed.
-                synchronousFunction(subRegion, stepSize, perPositionCallback, sampleFilter);
-                if (--(*numJobCompletionsRemaining) == 0 &&
-                    params && params->m_completionCallback &&
-                    !jobContext->IsCancelled())
+                // Process the sub region of positions, unless the associated job context has been cancelled.
+                if (!jobContext->IsCancelled())
                 {
-                    params->m_completionCallback();
+                    synchronousFunction(subRegion, stepSize, perPositionCallback, sampleFilter);
+                }
+
+                // Decrement the number of completions remaining, invoke the completion callback if this happens
+                // to be the final job completed, and remove this TerrainJobContext from the list of active ones.
+                const bool wasLastJobCompleted = jobContext->OnJobCompleted();
+                if (wasLastJobCompleted)
+                {
+                    if (params && params->m_completionCallback)
+                    {
+                        params->m_completionCallback(jobContext);
+                    }
+
+                    {
+                        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+                        m_activeTerrainJobContexts.erase(AZStd::find(m_activeTerrainJobContexts.begin(),
+                                                                     m_activeTerrainJobContexts.end(),
+                                                                     jobContext));
+                        m_activeTerrainJobContextMutexConditionVariable.notify_one();
+                    }
                 }
             };
 

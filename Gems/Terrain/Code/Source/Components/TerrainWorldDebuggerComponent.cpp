@@ -90,18 +90,12 @@ namespace Terrain
 
     void TerrainWorldDebuggerComponent::Activate()
     {
-        // Given the AuxGeom vertex limits, MaxSectorsToDraw is the max number of wireframe sectors we can draw without exceeding the
-        // limits.  Since we want an N x N sector grid, take the square root to get the number of sectors in each direction.
-        m_sectorGridSize = aznumeric_cast<int32_t>(sqrtf(MaxSectorsToDraw));
-
-        // We're always going to keep the camera in the center square, so "round" downwards to an odd number of sectors if we currently
-        // have an even number.  (If we added a sector, we'll go above the max sectors that we can draw with our vertex limits)
-        m_sectorGridSize = (m_sectorGridSize & 0x01) ? m_sectorGridSize : m_sectorGridSize - 1;
-
-        // Create our fixed set of sectors that we'll draw.  By default, they'll all be constructed as dirty, so they'll get refreshed
+        // Init our fixed set of sectors that we'll draw.  By default, they'll all be set as dirty, so they'll get refreshed
         // the first time we try to draw them.  (If wireframe drawing is disabled, we'll never refresh them)
-        m_wireframeSectors.clear();
-        m_wireframeSectors.resize(m_sectorGridSize * m_sectorGridSize);
+        for (WireframeSector& wireframeSector : m_wireframeSectors)
+        {
+            wireframeSector.Reset();
+        }
 
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
@@ -119,8 +113,6 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
-
-        m_wireframeSectors.clear();
     }
 
     bool TerrainWorldDebuggerComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -170,9 +162,10 @@ namespace Terrain
         // they'll get refreshed the next time we need to draw them.
         for (auto& sector : m_wireframeSectors)
         {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
             if (!dirtyRegion2D.IsValid() || dirtyRegion2D.Overlaps(sector.m_aabb))
             {
-                sector.m_isDirty = true;
+                sector.SetDirty();
             }
         }
     }
@@ -206,7 +199,7 @@ namespace Terrain
          * recalculations we need to do on each camera movement, we divide the world into a conceptual grid of sectors, where each sector
          * contains a fixed number of terrain height points. So for example, if the terrain has height data at 1 m spacing, the sectors
          * might be 10 m x 10 m in size. If the height data is spaced at 0.5 m, the sectors might be 5 m x 5 m in size. The wireframe
-         * draws N x N sectors centered around the camera, as determined by m_sectorGridSize. So a gridSize of 7 with a sector size of
+         * draws N x N sectors centered around the camera, as determined by SectorGridSize. So a gridSize of 7 with a sector size of
          * 10 m means that we'll be drawing 7 x 7 sectors, or 70 m x 70 m, centered around the camera. Each time the camera moves into
          * a new sector, we refresh the changed sectors before drawing them.
          *
@@ -253,9 +246,9 @@ namespace Terrain
         // Loop through each sector that we *want* to draw, based on camera position.  If the current sector at that index in
         // m_wireframeSectors doesn't match the world position we want, update its world position and mark it as dirty.
         // (We loop from -gridSize/2 to gridSize/2 so that the camera is always in the center sector.)
-        for (int32_t sectorY = cameraSectorY - (m_sectorGridSize / 2); sectorY <= cameraSectorY + (m_sectorGridSize / 2); sectorY++)
+        for (int32_t sectorY = cameraSectorY - (SectorGridSize / 2); sectorY <= cameraSectorY + (SectorGridSize / 2); sectorY++)
         {
-            for (int32_t sectorX = cameraSectorX - (m_sectorGridSize / 2); sectorX <= cameraSectorX + (m_sectorGridSize / 2); sectorX++)
+            for (int32_t sectorX = cameraSectorX - (SectorGridSize / 2); sectorX <= cameraSectorX + (SectorGridSize / 2); sectorX++)
             {
 
                 // Calculate the index in m_wireframeSectors for this sector.  Our indices should rotate through 0 - gridSize, but just
@@ -268,9 +261,9 @@ namespace Terrain
                 //              0   1  2  3  4
                 //              5   6  7  8  9
                 // For -9, (-9 % 5) = -4, then (-4 + 5) % 5 = 1.  If we used abs(), we'd get 4, which is backwards from what we want.
-                int32_t sectorYIndex = ((sectorY % m_sectorGridSize) + m_sectorGridSize) % m_sectorGridSize;
-                int32_t sectorXIndex = ((sectorX % m_sectorGridSize) + m_sectorGridSize) % m_sectorGridSize;
-                int32_t sectorIndex = (sectorYIndex * m_sectorGridSize) + sectorXIndex;
+                int32_t sectorYIndex = ((sectorY % SectorGridSize) + SectorGridSize) % SectorGridSize;
+                int32_t sectorXIndex = ((sectorX % SectorGridSize) + SectorGridSize) % SectorGridSize;
+                int32_t sectorIndex = (sectorYIndex * SectorGridSize) + sectorXIndex;
 
                 WireframeSector& sector = m_wireframeSectors[sectorIndex];
 
@@ -283,10 +276,13 @@ namespace Terrain
                 sectorAabb.Clamp(worldBounds);
 
                 // If the world space box for the sector doesn't match, set it and mark the sector as dirty so we refresh the height data.
-                if (sector.m_aabb != sectorAabb)
                 {
-                    sector.m_aabb = sectorAabb;
-                    sector.m_isDirty = true;
+                    AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
+                    if (sector.m_aabb != sectorAabb)
+                    {
+                        sector.m_aabb = sectorAabb;
+                        sector.SetDirty();
+                    }
                 }
             }
         }
@@ -295,12 +291,18 @@ namespace Terrain
         // (Sectors that are outside the world bounds won't have any valid data, so they'll get skipped)
         for (auto& sector : m_wireframeSectors)
         {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
+            if (sector.m_jobContext)
+            {
+                // The previous async request for this sector has yet to complete.
+                continue;
+            }
+
             if (sector.m_isDirty)
             {
                 RebuildSectorWireframe(sector, heightDataResolution);
             }
-
-            if (!sector.m_lineVertices.empty())
+            else if (!sector.m_lineVertices.empty())
             {
                 const AZ::Color primaryColor = AZ::Color(0.25f, 0.25f, 0.25f, 1.0f);
                 debugDisplay.DrawLines(sector.m_lineVertices, primaryColor);
@@ -319,6 +321,7 @@ namespace Terrain
 
     void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, float gridResolution)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
         if (!sector.m_isDirty)
         {
             return;
@@ -346,16 +349,24 @@ namespace Terrain
         sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
 
         // This keeps track of the height from the previous point for the _ line.
-        float previousHeight = 0.0f;
+        sector.m_previousHeight = 0.0f;
 
         // This keeps track of the heights from the previous row for the | line.
-        AZStd::vector<float> rowHeights(numSamplesX);
+        sector.m_rowHeights.clear();
+        sector.m_rowHeights.resize(numSamplesX);
 
         // For each terrain height value in the region, create the _| grid lines for that point and cache off the height value
         // for use with subsequent grid line calculations.
-        auto ProcessHeightValue = [gridResolution, &previousHeight, &rowHeights, &sector]
+        auto ProcessHeightValue = [gridResolution, &sector]
             (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
+            if (sector.m_isDirty)
+            {
+                // Bail out if this sector has become dirty again since the async request started.
+                return;
+            }
+
             // Don't add any vertices for the first column or first row.  These grid lines will be handled by an adjacent sector, if
             // there is one.
             if ((xIndex > 0) && (yIndex > 0))
@@ -363,21 +374,39 @@ namespace Terrain
                 float x = surfacePoint.m_position.GetX() - gridResolution;
                 float y = surfacePoint.m_position.GetY() - gridResolution;
 
-                sector.m_lineVertices.emplace_back(AZ::Vector3(x, surfacePoint.m_position.GetY(), previousHeight));
+                sector.m_lineVertices.emplace_back(AZ::Vector3(x, surfacePoint.m_position.GetY(), sector.m_previousHeight));
                 sector.m_lineVertices.emplace_back(surfacePoint.m_position);
 
-                sector.m_lineVertices.emplace_back(AZ::Vector3(surfacePoint.m_position.GetX(), y, rowHeights[xIndex]));
+                sector.m_lineVertices.emplace_back(AZ::Vector3(surfacePoint.m_position.GetX(), y, sector.m_rowHeights[xIndex]));
                 sector.m_lineVertices.emplace_back(surfacePoint.m_position);
             }
 
             // Save off the heights so that we can use them to draw subsequent columns and rows.
-            previousHeight = surfacePoint.m_position.GetZ();
-            rowHeights[xIndex] = surfacePoint.m_position.GetZ();
+            sector.m_previousHeight = surfacePoint.m_position.GetZ();
+            sector.m_rowHeights[xIndex] = surfacePoint.m_position.GetZ();
         };
-        
+
+        auto completionCallback = [&sector](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+        {
+            // Reset the job context once the async request has completed,
+            // clearing the way for future requests to be made for this sector.
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
+            sector.m_jobContext.reset();
+        };
+
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
+            = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+        asyncParams->m_completionCallback = completionCallback;
+
         AZ::Vector2 stepSize = AZ::Vector2(gridResolution);
-        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-            region, stepSize, ProcessHeightValue, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            sector.m_jobContext,
+            &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegionAsync,
+            region,
+            stepSize,
+            ProcessHeightValue,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
+            asyncParams);
     }
 
     void TerrainWorldDebuggerComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
@@ -395,5 +424,27 @@ namespace Terrain
         }
     }
 
+    void TerrainWorldDebuggerComponent::WireframeSector::Reset()
+    {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_sectorStateMutex);
+        if (m_jobContext)
+        {
+            m_jobContext->Cancel();
+            m_jobContext.reset();
+        }
+        m_aabb = AZ::Aabb::CreateNull();
+        m_lineVertices.clear();
+        m_rowHeights.clear();
+        m_previousHeight = 0.0f;
+        m_isDirty = true;
+    }
 
+    void TerrainWorldDebuggerComponent::WireframeSector::SetDirty()
+    {
+        m_isDirty = true;
+        if (m_jobContext)
+        {
+            m_jobContext->Cancel();
+        }
+    }
 } // namespace Terrain

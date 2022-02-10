@@ -9,7 +9,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/std/parallel/condition_variable.h>
+#include <AzCore/std/parallel/binary_semaphore.h>
 
 #include <AzTest/AzTest.h>
 
@@ -1055,5 +1055,71 @@ namespace UnitTest
         };
 
         terrainSystem->ProcessSurfacePointsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainProcessAsyncCancellation)
+    {
+        // Tests cancellation of the asynchronous terrain API.
+
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [](AZ::Vector3& position, bool& terrainExists)
+            {
+                // Our generated height will be X + Y.
+                position.SetZ(position.GetX() + position.GetY());
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        auto terrainSystem = CreateAndActivateTerrainSystem();
+
+        // Generate some input positions.
+        AZStd::vector<AZ::Vector3> inPositions;
+        for (int i = 0; i < 16; ++i)
+        {
+            inPositions.push_back({1.0f, 1.0f, 1.0f});
+        }
+
+        // Setup the per position callback so that we can cancel the entire request when it is first invoked.
+        AZStd::atomic_bool asyncRequestCancelled = false;
+        AZStd::binary_semaphore asyncRequestStartedEvent;
+        AZStd::binary_semaphore asyncRequestCancelledEvent;
+        auto perPositionCallback = [&asyncRequestCancelled, &asyncRequestStartedEvent, &asyncRequestCancelledEvent]([[maybe_unused]] const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
+            if (!asyncRequestCancelled)
+            {
+                // Indicate that the async request has started.
+                asyncRequestStartedEvent.release();
+
+                // Wait until the async request has been cancelled before allowing it to continue.
+                asyncRequestCancelledEvent.acquire();
+                asyncRequestCancelled = true;
+            }
+        };
+
+        // Setup the completion callback so we can check that the entire request was cancelled.
+        AZStd::binary_semaphore asyncRequestCompletedEvent;
+        auto completionCallback = [&asyncRequestCompletedEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> terrainJobContext)
+        {
+            EXPECT_TRUE(terrainJobContext->IsCancelled());
+            asyncRequestCompletedEvent.release();
+        };
+
+        // Invoke the async request.
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
+            = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+        asyncParams->m_completionCallback = completionCallback;
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> terrainJobContext
+            = terrainSystem->ProcessHeightsFromListAsync(inPositions, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, asyncParams);
+
+        // Wait until the async request has started before cancelling it.
+        asyncRequestStartedEvent.acquire();
+        terrainJobContext->Cancel();
+        asyncRequestCancelled = true;
+        asyncRequestCancelledEvent.release();
+
+        // Now wait until the async request has completed after being cancelled.
+        asyncRequestCompletedEvent.acquire();
     }
 } // namespace UnitTest

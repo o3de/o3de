@@ -88,8 +88,17 @@ namespace Terrain
         // the wireframe representation in each direction.
         struct WireframeSector
         {
+            void Reset();
+
+            // This should only be called within the scope of a lock on m_sectorStateMutex.
+            void SetDirty();
+
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> m_jobContext;
+            AZStd::recursive_mutex m_sectorStateMutex;
             AZ::Aabb m_aabb{ AZ::Aabb::CreateNull() };
             AZStd::vector<AZ::Vector3> m_lineVertices;
+            AZStd::vector<float> m_rowHeights;
+            float m_previousHeight = 0.0f;
             bool m_isDirty{ true };
         };
 
@@ -112,10 +121,15 @@ namespace Terrain
         static constexpr int32_t MaxVerticesToDraw = 500000;
         static constexpr int32_t MaxSectorsToDraw = MaxVerticesToDraw / VerticesPerSector;
 
-        // Structure to keep track of all our current wireframe sectors, so that we don't have to recalculate them every frame.
-        AZStd::vector<WireframeSector> m_wireframeSectors;
-
         // The size in sectors of our wireframe grid in each direction (i.e. a 5 x 5 sector grid has a sectorGridSize of 5)
-        int32_t m_sectorGridSize{ 0 };
+        // Given the AuxGeom vertex limits, MaxSectorsToDraw is the max number of wireframe sectors we can draw without exceeding the
+        // limits.  Since we want an N x N sector grid, take the square root to get the number of sectors in each direction.
+        // We're always going to keep the camera in the center square, so "round" downwards to an odd number of sectors if we currently
+        // have an even number.  (If we added a sector, we'll go above the max sectors that we can draw with our vertex limits)
+        static constexpr int32_t SqrtMaxSectorsToDraw = 35; // = aznumeric_cast<int32_t>(sqrtf(MaxSectorsToDraw)); (sqrtf is not constexpr)
+        static constexpr int32_t SectorGridSize = (SqrtMaxSectorsToDraw & 0x01) ? SqrtMaxSectorsToDraw : SqrtMaxSectorsToDraw - 1;
+
+        // Structure to keep track of all our current wireframe sectors, so that we don't have to recalculate them every frame.
+        AZStd::array<WireframeSector, SectorGridSize * SectorGridSize> m_wireframeSectors;
     };
 }

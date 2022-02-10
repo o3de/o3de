@@ -199,21 +199,42 @@ namespace AzFramework
             class TerrainJobContext : public AZ::JobContext
             {
             public:
-                TerrainJobContext(AZ::JobManager& jobManager)
+                TerrainJobContext(AZ::JobManager& jobManager,
+                                  int numJobsToComplete)
                     : JobContext(jobManager)
+                    , m_numJobsToComplete(numJobsToComplete)
                 {
-                    SetCancelGroup(&m_terrainJobCancelGroup);
                 }
 
-                void Cancel() { m_terrainJobCancelGroup.Cancel(); }
-                bool IsCancelled() const { return m_terrainJobCancelGroup.IsCancelled(); }
+                // When a terrain job context is cancelled, all associated
+                // jobs are still guaranteed to at least begin processing,
+                // and if any ProcessAsyncParams::m_completionCallback was
+                // set it's guaranteed to be called even in the event of a
+                // cancellation. If a job only begins processing after its
+                // associated job context has been cancelle, no processing
+                // will occur and the callback will be invoked immediately,
+                // otherwise the job may either run to completion or cease
+                // processing early; the callback is invoked in all cases,
+                // provided one was specified with the original request.
+                void Cancel() { m_isCancelled = true; }
+
+                // Was this TerrainJobContext cancelled?
+                bool IsCancelled() const { return m_isCancelled; }
+
+                // Called by the TerrainSystem when a job associated with
+                // this TerrainJobContext completes. Returns true if this
+                // was the final job to be completed, or false otherwise.
+                bool OnJobCompleted() { return (--m_numJobsToComplete == 0); }
 
             private:
-                AZ::JobCancelGroup m_terrainJobCancelGroup;
+                AZStd::atomic_int m_numJobsToComplete = 0;
+                AZStd::atomic_bool m_isCancelled = false;
             };
 
             //! Alias for an optional callback function to invoke when the various Process*Async functions complete.
-            typedef AZStd::function<void()> ProcessAsyncCompleteCallback;
+            //! The TerrainJobContext, returned from the original Process*Async function call, is passed as a param
+            //! to the callback function so it can be queried to see if the job was cancelled or completed normally.
+            typedef AZStd::function<void(AZStd::shared_ptr<TerrainJobContext>)> ProcessAsyncCompleteCallback;
 
             //! A parameter group struct that can optionally be passed to the various Process*Async API functions.
             struct ProcessAsyncParams
