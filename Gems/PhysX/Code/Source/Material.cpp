@@ -7,9 +7,10 @@
  */
 
 #include "Material.h"
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <PxPhysicsAPI.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <PxPhysicsAPI.h>
 #include <PhysX/MeshAsset.h>
 
 namespace PhysX

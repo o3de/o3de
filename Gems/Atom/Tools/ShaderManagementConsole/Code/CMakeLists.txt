@@ -19,49 +19,10 @@ if(NOT PAL_TRAIT_ATOM_SHADER_MANAGEMENT_CONSOLE_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME ShaderManagementConsole.Document STATIC
-    NAMESPACE Gem
-    FILES_CMAKE
-        shadermanagementconsoledocument_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            Source
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PUBLIC
-            Gem::AtomToolsFramework.Static
-            Gem::AtomToolsFramework.Editor
-            Gem::Atom_RPI.Edit
-            Gem::Atom_RPI.Public
-            Gem::Atom_RHI.Reflect
-)
-
-ly_add_target(
-    NAME ShaderManagementConsole.Window STATIC
-    NAMESPACE Gem
-    AUTOMOC
-    AUTOUIC
-    AUTORCC
-    FILES_CMAKE
-        shadermanagementconsolewindow_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            Source
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PUBLIC
-            Gem::AtomToolsFramework.Static
-            Gem::AtomToolsFramework.Editor
-            Gem::Atom_RPI.Public
-)
-
-ly_add_target(
     NAME ShaderManagementConsole EXECUTABLE
     NAMESPACE Gem
+    AUTOMOC
+    AUTORCC
     FILES_CMAKE
         shadermanagementconsole_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -78,8 +39,9 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
             Gem::AtomToolsFramework.Editor
-            Gem::ShaderManagementConsole.Window
-            Gem::ShaderManagementConsole.Document
+            Gem::Atom_RPI.Edit
+            Gem::Atom_RPI.Public
+            Gem::Atom_RHI.Reflect
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
         Gem::EditorPythonBindings.Editor

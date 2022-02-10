@@ -181,7 +181,7 @@ def main(args):
                         default=-1)
 
     parser.add_argument(ANDROID_NATIVE_API_LEVEL,
-                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_ANDROID_SDK_PLATFORM})',
+                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_NATIVE_API_LEVEL})',
                         type=int,
                         default=-1)
 

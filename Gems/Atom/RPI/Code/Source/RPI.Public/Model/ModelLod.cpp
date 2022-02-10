@@ -28,7 +28,7 @@ namespace AZ
                 &modelAssetAny);
         }
 
-        AZStd::array_view<ModelLod::Mesh> ModelLod::GetMeshes() const
+        AZStd::span<const ModelLod::Mesh> ModelLod::GetMeshes() const
         {
             return m_meshes;
         }

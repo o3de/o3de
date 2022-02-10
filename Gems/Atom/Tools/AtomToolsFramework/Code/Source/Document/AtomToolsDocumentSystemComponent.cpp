@@ -10,7 +10,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -35,8 +34,6 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AtomToolsDocumentSystemSettings::Reflect(context);
-
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<AtomToolsDocumentSystemComponent, AZ::Component>()
@@ -69,6 +66,7 @@ namespace AtomToolsFramework
                 ->Event("SaveDocumentAsCopy", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy)
                 ->Event("SaveDocumentAsChild", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild)
                 ->Event("SaveAllDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments)
+                ->Event("GetDocumentCount", &AtomToolsDocumentSystemRequestBus::Events::GetDocumentCount)
                 ;
 
             behaviorContext->EBus<AtomToolsDocumentRequestBus>("AtomToolsDocumentRequestBus")
@@ -76,9 +74,6 @@ namespace AtomToolsFramework
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "atomtools")
                 ->Event("GetAbsolutePath", &AtomToolsDocumentRequestBus::Events::GetAbsolutePath)
-                ->Event("GetRelativePath", &AtomToolsDocumentRequestBus::Events::GetRelativePath)
-                ->Event("GetPropertyValue", &AtomToolsDocumentRequestBus::Events::GetPropertyValue)
-                ->Event("SetPropertyValue", &AtomToolsDocumentRequestBus::Events::SetPropertyValue)
                 ->Event("Open", &AtomToolsDocumentRequestBus::Events::Open)
                 ->Event("Reopen", &AtomToolsDocumentRequestBus::Events::Reopen)
                 ->Event("Close", &AtomToolsDocumentRequestBus::Events::Close)
@@ -115,7 +110,6 @@ namespace AtomToolsFramework
     void AtomToolsDocumentSystemComponent::Activate()
     {
         m_documentMap.clear();
-        m_settings = AZ::UserSettings::CreateFind<AtomToolsDocumentSystemSettings>(AZ_CRC_CE("AtomToolsDocumentSystemSettings"), AZ::UserSettings::CT_GLOBAL);
         AtomToolsDocumentSystemRequestBus::Handler::BusConnect();
         AtomToolsDocumentNotificationBus::Handler::BusConnect();
     }
@@ -180,6 +174,17 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::ReopenDocuments()
     {
+        const bool enableHotReload = GetSettingOrDefault<bool>("/O3DE/AtomToolsFramework/DocumentSystem/EnableHotReload", true);
+        if (!enableHotReload)
+        {
+            m_documentIdsWithDependencyChanges.clear();
+            m_documentIdsWithExternalChanges.clear();
+            m_queueReopenDocuments = false;
+        }
+
+        const bool enableHotReloadPrompts =
+            GetSettingOrDefault<bool>("/O3DE/AtomToolsFramework/DocumentSystem/EnableHotReloadPrompts", true);
+
         for (const AZ::Uuid& documentId : m_documentIdsWithExternalChanges)
         {
             m_documentIdsWithDependencyChanges.erase(documentId);
@@ -187,7 +192,7 @@ namespace AtomToolsFramework
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
-            if (m_settings->m_showReloadDocumentPrompt &&
+            if (enableHotReloadPrompts &&
                 (QMessageBox::question(QApplication::activeWindow(),
                 QString("Document was externally modified"),
                 QString("Would you like to reopen the document:\n%1?").arg(documentPath.c_str()),
@@ -214,7 +219,7 @@ namespace AtomToolsFramework
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
-            if (m_settings->m_showReloadDocumentPrompt &&
+            if (enableHotReloadPrompts &&
                 (QMessageBox::question(QApplication::activeWindow(),
                 QString("Document dependencies have changed"),
                 QString("Would you like to update the document with these changes:\n%1?").arg(documentPath.c_str()),
@@ -455,6 +460,11 @@ namespace AtomToolsFramework
         }
 
         return result;
+    }
+
+    AZ::u32 AtomToolsDocumentSystemComponent::GetDocumentCount() const
+    {
+        return aznumeric_cast<AZ::u32>(m_documentMap.size());
     }
 
     AZ::Uuid AtomToolsDocumentSystemComponent::OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen)

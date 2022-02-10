@@ -183,7 +183,7 @@ namespace AZ
         {
             if (GetScopeId().IsEmpty())
             {
-                SetScopeId(RHI::ScopeId(GetPathName()));
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);

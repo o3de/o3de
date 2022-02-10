@@ -28,7 +28,7 @@ namespace ScriptCanvasEditor
     // if CompleteDescription() succeeds, sets the handle to the result, else does nothing
     bool CompleteDescriptionInPlace(SourceHandle& source);
 
-    class Graph;
+    class EditorGraph;
     class NodePaletteModel;
 
     class NodeIdentifierFactory
@@ -48,7 +48,7 @@ namespace ScriptCanvasEditor
 
         virtual ~GraphStatisticsHelper() = default;
 
-        void PopulateStatisticData(const Graph* editorGraph);
+        void PopulateStatisticData(const EditorGraph* editorGraph);
         
         AZStd::unordered_map< ScriptCanvas::NodeTypeIdentifier, int > m_nodeIdentifierCount;
 

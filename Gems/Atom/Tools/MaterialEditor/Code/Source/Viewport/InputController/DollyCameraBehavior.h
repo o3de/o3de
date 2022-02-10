@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Source/Viewport/InputController/Behavior.h>
+#include <Viewport/InputController/Behavior.h>
 
 namespace MaterialEditor
 {

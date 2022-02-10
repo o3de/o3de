@@ -8,6 +8,7 @@
 
 #include "AudioAreaEnvironmentComponent.h"
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Transform.h>

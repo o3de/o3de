@@ -1,15 +1,14 @@
 """
 Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
 class Tests:
-    slice_instantiated = (
-        "Slice instantiated successfully",
-        "Failed to instantiate slice"
+    prefab_instantiated = (
+        "Prefab instantiated successfully",
+        "Failed to instantiate prefab"
     )
     lc_entity_found = (
         "LandscapeCanvas entity found",
@@ -24,7 +23,7 @@ class Tests:
         "Failed to find Distribution Filter component on BushSpawner entity"
     )
     existing_graph_opened = (
-        "Opened existing graph from slice",
+        "Opened existing graph from prefab",
         "Failed to open existing graph"
     )
     dist_filter_node_found = (
@@ -66,10 +65,8 @@ def ComponentUpdates_UpdateGraph():
     Summary:
     This test verifies that the Landscape Canvas graphs update properly when components are added/removed outside of
     Landscape Canvas.
-
     Expected Behavior:
     Graphs properly reflect component changes made to entities outside of Landscape Canvas.
-
     Test Steps:
         1. Open Level
         2. Find LandscapeCanvas named entity
@@ -83,41 +80,36 @@ def ComponentUpdates_UpdateGraph():
         9. Add a new entity with unique name as a child of the Landscape Canvas entity
         10. Add a Box Shape component to the new child entity
         11. Ensure Box Shape node is present on the open graph
-
     Note:
     - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
-
     :return: None
     """
 
     import os
 
-    import azlmbr.asset as asset
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import azlmbr.entity as entity
     import azlmbr.legacy.general as general
     import azlmbr.landscapecanvas as landscapecanvas
     import azlmbr.math as math
-    import azlmbr.slice as slice
+    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
-    # Open a simple level and instantiate LC_BushFlowerBlender.slice
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    # Open a simple level and instantiate BushFlowerBlender.prefab
+    hydra.open_base_level()
     transform = math.Transform_CreateIdentity()
     position = math.Vector3(64.0, 64.0, 32.0)
     transform.invoke('SetPosition', position)
-    test_slice_path = os.path.join("Slices", "LC_BushFlowerBlender.slice")
-    test_slice_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", test_slice_path, math.Uuid(),
-                                                 False)
-    test_slice = slice.SliceRequestBus(bus.Broadcast, 'InstantiateSliceFromAssetId', test_slice_id, transform)
-    Report.critical_result(Tests.slice_instantiated, test_slice.IsValid())
+    test_prefab_path = os.path.join("Assets", "Prefabs", "BushFlowerBlender.prefab")
+    prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'InstantiatePrefab', test_prefab_path,
+                                                  entity.EntityId(), position)
+    Report.critical_result(Tests.prefab_instantiated, prefab_result.IsSuccess())
 
     # Find root entity in the loaded level
     search_filter = entity.SearchFilter()
@@ -126,8 +118,8 @@ def ComponentUpdates_UpdateGraph():
     # Allow a few seconds for matching entity to be found
     helper.wait_for_condition(lambda: len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)) > 0, 5.0)
     lc_matching_entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
-    slice_root_id = lc_matching_entities[0]         #Entity with Landscape Canvas component
-    Report.critical_result(Tests.lc_entity_found, slice_root_id.IsValid())
+    prefab_root_id = lc_matching_entities[0]         #Entity with Landscape Canvas component
+    Report.critical_result(Tests.lc_entity_found, prefab_root_id.IsValid())
 
     # Find the BushSpawner entity
     search_filter.names = ["BushSpawner"]
@@ -147,7 +139,7 @@ def ComponentUpdates_UpdateGraph():
 
     # Open Landscape Canvas and the existing graph
     general.open_pane('Landscape Canvas')
-    open_graph = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', slice_root_id)
+    open_graph = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', prefab_root_id)
     Report.critical_result(Tests.existing_graph_opened, open_graph.IsValid())
 
     # Verify that Distribution Filter node is present on the graph

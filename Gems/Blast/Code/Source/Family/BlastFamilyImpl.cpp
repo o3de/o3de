@@ -10,6 +10,7 @@
 #include <Family/BlastFamilyImpl.h>
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Debug/Profiler.h>
 #include <Blast/BlastSystemBus.h>
 #include <Family/ActorTracker.h>
 #include <Family/BlastFamily.h>

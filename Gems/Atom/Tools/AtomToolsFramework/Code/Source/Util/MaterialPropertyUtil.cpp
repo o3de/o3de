@@ -33,11 +33,13 @@ namespace AtomToolsFramework
     {
         if (value.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
         {
-            const AZ::Data::Asset<AZ::RPI::ImageAsset>& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(
-                imageAsset.GetId(),
-                azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-                imageAsset.GetHint()));
+            const auto& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
+            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(imageAsset.GetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), imageAsset.GetHint()));
+        }
+        else if (value.Is<AZ::Data::Instance<AZ::RPI::Image>>())
+        {
+            const auto& image = value.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
+            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(image->GetAssetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>()));
         }
 
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
@@ -76,7 +78,7 @@ namespace AtomToolsFramework
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
     {
         propertyConfig.m_dataType = ConvertToEditableType(propertyDefinition.m_dataType);
-        propertyConfig.m_name = propertyDefinition.m_name;
+        propertyConfig.m_name = propertyDefinition.GetName();
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
         propertyConfig.m_description = propertyDefinition.m_description;
         propertyConfig.m_defaultValue = ConvertToEditableType(propertyDefinition.m_value);

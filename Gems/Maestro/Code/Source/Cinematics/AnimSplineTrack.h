@@ -13,7 +13,6 @@
 #pragma once
 
 #include "IMovieSystem.h"
-#include "TCBSpline.h"
 #include "2DSpline.h"
 
 #define MIN_TIME_PRECISION 0.01f
@@ -409,7 +408,7 @@ private:
 
     unsigned int m_id = 0;
 
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) {};
+    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) { return false; };
 };
 
 //////////////////////////////////////////////////////////////////////////

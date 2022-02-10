@@ -1126,7 +1126,7 @@ namespace Multiplayer
                 netBindComponent->NotifyServerMigration(GetRemoteHostId());
             }
 
-            bool didSucceed = true;
+            [[maybe_unused]] bool didSucceed = true;
             EntityMigrationMessage message;
             message.m_netEntityId = replicator->GetEntityHandle().GetNetEntityId();
             message.m_prefabEntityId = netBindComponent->GetPrefabEntityId();

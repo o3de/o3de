@@ -168,13 +168,13 @@ namespace AtomToolsFramework
         return duplicateFileInfo;
     }
 
-    bool LaunchTool(const QString& baseName, const QString& extension, const QStringList& arguments)
+    bool LaunchTool(const QString& baseName, const QStringList& arguments)
     {
         AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
         AZ_Assert(!engineRoot.empty(), "Cannot query Engine Path");
 
-        AZ::IO::FixedMaxPath launchPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory())
-            / (baseName + extension).toUtf8().constData();
+        AZ::IO::FixedMaxPath launchPath =
+            AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / (baseName + AZ_TRAIT_OS_EXECUTABLE_EXTENSION).toUtf8().constData();
 
         return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }

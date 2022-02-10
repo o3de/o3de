@@ -90,6 +90,61 @@ namespace UnitTest
         return AZStd::string(keyText.toUtf8().data());
     }
 
+    bool ViewportSettingsTestImpl::GridSnappingEnabled() const
+    {
+        return m_gridSnapping;
+    }
+
+    float ViewportSettingsTestImpl::GridSize() const
+    {
+        return m_gridSize;
+    }
+
+    bool ViewportSettingsTestImpl::ShowGrid() const
+    {
+        return false;
+    }
+
+    bool ViewportSettingsTestImpl::AngleSnappingEnabled() const
+    {
+        return m_angularSnapping;
+    }
+
+    float ViewportSettingsTestImpl::AngleStep() const
+    {
+        return m_angularStep;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorLineBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorCircleBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    bool ViewportSettingsTestImpl::StickySelectEnabled() const
+    {
+        return m_stickySelect;
+    }
+
+    bool ViewportSettingsTestImpl::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportSettingsTestImpl::HelpersVisible() const
+    {
+        return m_helpersVisible;
+    }
+
+    AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
+    {
+        return {};
+    }
+
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
     {
         AZ_UNUSED(watched);

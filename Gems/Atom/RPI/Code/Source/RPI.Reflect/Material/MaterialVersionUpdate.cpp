@@ -77,18 +77,14 @@ namespace AZ
         {
             bool changesWereApplied = false;
 
-            for (auto& propertyName : materialAsset.m_propertyNames)
+            for (auto& [name, value] : materialAsset.m_rawPropertyValues)
             {
-                for (const auto& action : m_actions)
+                if (ApplyPropertyRenames(name))
                 {
-                    if (propertyName == action.m_fromPropertyId)
-                    {
-                        propertyName = action.m_toPropertyId;
-                        changesWereApplied = true;
-                    }
+                    changesWereApplied = true;
                 }
             }
-
+            
             return changesWereApplied;
         }
 
