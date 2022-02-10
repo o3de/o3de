@@ -50,8 +50,7 @@ namespace AZ
             if (GetValidationMode() != RHI::ValidationMode::Disabled)
             {
                 //This env var (VK_LAYER_PATH) is used by the drivers to look for VkLayer_khronos_validation.dll
-                AZStd::string exeFolder = AZ::Test::GetCurrentExecutablePath().c_str();
-                AZ::Test::SetEnv("VK_LAYER_PATH", exeFolder.c_str(), 1);
+                AZ::Test::SetEnv("VK_LAYER_PATH", AZ::Test::GetCurrentExecutablePath().c_str(), 1);
 
                 RawStringList validationLayers = Debug::GetValidationLayers();
                 m_descriptor.m_optionalLayers.insert(m_descriptor.m_requiredLayers.end(), validationLayers.begin(), validationLayers.end());
