@@ -20,6 +20,7 @@ class Tests:
         "Found an unexpected number of instances"
     )
 
+
 def ImageGradient_ModifiesSurfaces():
     """
     Summary:
@@ -100,9 +101,10 @@ def ImageGradient_ModifiesSurfaces():
 
     # Set the Image Gradient entity's Gradient Surface Tag Emitter component to modify the "terrain" tag
     # NOTE: This requires a disable/re-enable of the component to force a refresh as assigning a tag via script does not
-    image_gradient_entity.components[3].add_container_item("Configuration|Extended Tags", 0, surface_tags["terrain"])
-    image_gradient_entity.components[3].set_enabled(False)
-    image_gradient_entity.components[3].set_enabled(True)
+    grad_surf_tag_emitter_component = image_gradient_entity.components[3]
+    grad_surf_tag_emitter_component.add_container_item("Configuration|Extended Tags", 0, surface_tags["terrain"])
+    grad_surf_tag_emitter_component.set_enabled(False)
+    grad_surf_tag_emitter_component.set_enabled(True)
 
     # 5) Validate the expected number of vegetation instances. Instances should only spawn on the modified
     num_expected_instances = 168
