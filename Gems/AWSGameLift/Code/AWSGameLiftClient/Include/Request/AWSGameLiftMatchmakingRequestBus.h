@@ -10,7 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Matchmaking/IMatchmakingRequests.h>
+#include <Multiplayer/Session/IMatchmakingRequests.h>
 
 namespace AWSGameLift
 {
@@ -23,7 +23,7 @@ namespace AWSGameLift
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
-    using AWSGameLiftMatchmakingAsyncRequestBus = AZ::EBus<AzFramework::IMatchmakingAsyncRequests, AWSGameLiftMatchmakingAsyncRequests>;
+    using AWSGameLiftMatchmakingAsyncRequestBus = AZ::EBus<Multiplayer::IMatchmakingAsyncRequests, AWSGameLiftMatchmakingAsyncRequests>;
 
     // IMatchmakingRequests EBus wrapper
     class AWSGameLiftMatchmakingRequests
@@ -34,7 +34,7 @@ namespace AWSGameLift
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
-    using AWSGameLiftMatchmakingRequestBus = AZ::EBus<AzFramework::IMatchmakingRequests, AWSGameLiftMatchmakingRequests>;
+    using AWSGameLiftMatchmakingRequestBus = AZ::EBus<Multiplayer::IMatchmakingRequests, AWSGameLiftMatchmakingRequests>;
 
     //! IAWSGameLiftMatchmakingEventRequests
     //! GameLift Gem matchmaking event interfaces which is used to track matchmaking ticket event

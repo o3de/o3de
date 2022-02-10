@@ -111,7 +111,7 @@ namespace AtomToolsFramework
 
         AZStd::unique_ptr<AzQtComponents::StyleManager> m_styleManager;
 
-        //! Local user settings are used to store material browser tree expansion state
+        //! Local user settings are used to store asset browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;
 
         //! Are local settings loaded

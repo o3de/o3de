@@ -239,7 +239,7 @@ namespace GradientSignal
 
                 for (size_t index = 0; index < positions.size(); index++)
                 {
-                    points.clear();
+                    points.Clear();
                     surfaceDataRequests->GetSurfacePoints(positions[index], m_configuration.m_surfaceTagsToSample, points);
                     outValues[index] = GetSlopeRatio(points, angleMin, angleMax);
                 }

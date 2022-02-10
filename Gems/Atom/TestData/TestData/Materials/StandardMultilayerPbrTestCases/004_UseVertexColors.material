@@ -1,14 +1,9 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
-    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/002_ParallaxPdo.material",
     "materialTypeVersion": 3,
-    "properties": {
-        "blend": {
-            "blendSource": "BlendMaskVertexColors"
-        },
-        "parallax": {
-            "quality": "Medium"
-        }
+    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/002_ParallaxPdo.material",
+    "propertyValues": {
+        "blend.blendSource": "BlendMaskVertexColors",
+        "parallax.quality": "Medium"
     }
 }

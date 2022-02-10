@@ -116,6 +116,8 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
+    DOM/DomPatch.cpp
+    DOM/DomPatch.h
     DOM/DomPath.cpp
     DOM/DomPath.h
     DOM/DomUtils.cpp
@@ -126,6 +128,8 @@ set(FILES
     DOM/DomValueWriter.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
+    DOM/DomComparison.cpp
+    DOM/DomComparison.h
     DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h

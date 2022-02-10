@@ -208,7 +208,7 @@ class Launcher(object):
 
         :return None:
         """
-        self.kill()
+        self._kill()
         self.ensure_stopped()
         self.teardown()
 
@@ -228,7 +228,7 @@ class Launcher(object):
         """
         raise NotImplementedError("Launch is not implemented")
 
-    def kill(self):
+    def _kill(self):
         """
         Force stop the launcher.
 
@@ -274,7 +274,7 @@ class Launcher(object):
                 timeout=timeout
             )
         except ly_test_tools.launchers.exceptions.TeardownError:
-            self.kill()
+            self._kill()
 
     def get_device_config(self, config_file, device_section, device_key):
         """
