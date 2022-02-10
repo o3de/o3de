@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <EditorSurfaceTagListProvider.h>
 #include <AzCore/std/sort.h>
 
