@@ -53,6 +53,9 @@ namespace AZ
             //! Returns whether the group is currently queued for compilation.
             bool IsQueuedForCompile() const;
 
+            //! Checks all the resource types to see if the latency check is fulfilled and reset it's mask
+            void DisableCompilationForAllResourceTypes();
+            
         protected:
             ShaderResourceGroup() = default;
 

@@ -399,6 +399,8 @@ namespace AZ
         {
             for (uint32_t i = 0; i < static_cast<uint32_t>(ResourceType::Count); i++)
             {
+                //This is to ensure that a SRG update is alive for 3 frames
+                //as SRGs are triple buffered
                 if (m_resourceTypeIteration[i] == m_updateMaskResetLatency)
                 {
                     m_updateMask = RHI::ResetBits(m_updateMask, AZ_BIT(i));

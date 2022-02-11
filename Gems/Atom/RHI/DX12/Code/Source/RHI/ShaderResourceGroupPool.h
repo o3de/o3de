@@ -50,7 +50,7 @@ namespace AZ
             void OnFrameEnd() override;
             //////////////////////////////////////////////////////////////////////////
 
-            void UpdateViewsDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
+            void UpdateViewsDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData, bool forceUpdate = false);
             void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
             void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
 
@@ -86,7 +86,7 @@ namespace AZ
 
             //Cache all the gpu handles for the Descriptor tables related to all the views
             void CacheGpuHandlesForViews(ShaderResourceGroup& group);
-
+            
             DescriptorTable GetBufferTable(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
             DescriptorTable GetBufferTableUnbounded(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
             DescriptorTable GetImageTable(DescriptorTable descriptorTable, RHI::ShaderInputImageIndex imageIndex) const;

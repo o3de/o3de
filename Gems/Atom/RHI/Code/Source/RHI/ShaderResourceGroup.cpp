@@ -50,6 +50,11 @@ namespace AZ
             return static_cast<ShaderResourceGroupPool*>(Resource::GetPool());
         }
 
+        void ShaderResourceGroup::DisableCompilationForAllResourceTypes()
+        {
+            m_data.DisableCompilationForAllResourceTypes();
+        }
+    
         const ShaderResourceGroupData& ShaderResourceGroup::GetData() const
         {
             return m_data;
