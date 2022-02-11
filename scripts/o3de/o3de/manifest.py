@@ -22,17 +22,13 @@ logger = logging.getLogger('o3de.manifest')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
 # Directory methods
-override_home_folder = None
 
 def get_this_engine_path() -> pathlib.Path:
     return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
 
 
 def get_home_folder() -> pathlib.Path:
-    if override_home_folder:
-        return pathlib.Path(override_home_folder).resolve()
-    else:
-        return pathlib.Path(os.path.expanduser("~")).resolve()
+    return pathlib.Path(os.path.expanduser("~")).resolve()
 
 
 def get_o3de_folder() -> pathlib.Path:
