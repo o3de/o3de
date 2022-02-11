@@ -48,6 +48,7 @@ CALL %~dp0\..\Env_Core.bat
 CALL %~dp0\..\Env_Python.bat
 CALL %~dp0\..\Env_Qt.bat
 CALL %~dp0\..\Env_Maya.bat
+CALL %~dp0\..\Env_Blender.bat
 CALL %~dp0\..\Env_Substance.bat
 CALL %~dp0\..\Env_WingIDE.bat
 echo.
