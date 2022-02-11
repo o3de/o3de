@@ -14,6 +14,9 @@ set(FILES
     Buses/ShortcutDispatch.h
     DragAndDrop/MainWindowDragAndDrop.h
     DragAndDrop/ViewportDragAndDrop.h
+    Components/ComponentReflectionSpecialization.h
+    Components/ComponentReflection.h
+    Components/ComponentReflection.cpp
     Components/AutoCustomWindowDecorations.cpp
     Components/AutoCustomWindowDecorations.h
     Components/ButtonDivider.cpp

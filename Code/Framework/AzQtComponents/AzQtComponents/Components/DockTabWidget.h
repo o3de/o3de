@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/RTTI/ReflectContext.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
@@ -27,9 +28,15 @@ namespace AzQtComponents
     {
         Q_OBJECT
     public:
+        AZ_CLASS_ALLOCATOR(DockTabWidget, AZ::SystemAllocator, 0);
+        AZ_RTTI(DockTabWidget, "{E61BD035-5914-4FFB-881F-FFEBFC6C0B0E}");
+
         explicit DockTabWidget(QWidget* mainEditorWindow, QWidget* parent = nullptr);
+
+        static void Reflect(AZ::ReflectContext* context);
+
         int addTab(QDockWidget* page);
-        void removeTab(int index);
+        void removeTabIndex(int index);
         void removeTab(QDockWidget* page);
         bool closeTabs();
         void moveTab(int from, int to);

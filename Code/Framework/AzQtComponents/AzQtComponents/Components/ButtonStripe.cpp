@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 #include <AzQtComponents/Components/ButtonStripe.h>
 
 #include <QGridLayout>
@@ -21,6 +23,21 @@ namespace AzQtComponents
         , m_buttonGroup(new QButtonGroup(this))
     {
         m_gridLayout->setSpacing(0);
+    }
+
+    void ButtonStripe::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<ButtonStripe>("ButtonStripe")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "azqtcomponents")
+                ->Attribute(AZ::Script::Attributes::Category, "azqtcomponents")
+                ->Constructor()
+                ->Constructor<QWidget*>()
+                ->Method("addButtons", &ButtonStripe::addButtons)
+                ->Method("setCurrent", &ButtonStripe::setCurrent);
+        }
     }
 
     void ButtonStripe::addButtons(const QStringList& buttonNames, int current)

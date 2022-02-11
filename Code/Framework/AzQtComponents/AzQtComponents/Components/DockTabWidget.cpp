@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzQtComponents/Components/DockTabWidget.h>
 #include <AzQtComponents/Components/DockTabBar.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
@@ -42,6 +43,30 @@ namespace AzQtComponents
 
         // Enable spacing of the overflow button to allow dragging even when the TabBar gets crowded
         setOverflowButtonSpacing(true);
+    }
+
+    void DockTabWidget::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<DockTabWidget>("DockTabWidget")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "azqtcomponents")
+                ->Attribute(AZ::Script::Attributes::Category, "azqtcomponents")
+                ->Constructor<QWidget*>()
+                ->Constructor<QWidget*, QWidget*>()
+                ->Method("addTab", &DockTabWidget::addTab)
+                ->Method("removeTabIndex", &DockTabWidget::removeTabIndex)
+                ->Method("removeTab", &DockTabWidget::removeTab)
+                ->Method("closeTabs", &DockTabWidget::closeTabs)
+                ->Method("moveTab", &DockTabWidget::moveTab)
+                ->Method("mousePressEvent", &DockTabWidget::mousePressEvent)
+                ->Method("mouseMoveEvent", &DockTabWidget::mouseMoveEvent)
+                ->Method("mouseReleaseEvent", &DockTabWidget::mouseReleaseEvent)
+                ->Method("mouseDoubleClickEvent", &DockTabWidget::mouseDoubleClickEvent)
+                ->Method("finishDrag", &DockTabWidget::finishDrag)
+            ;
+        }
     }
 
     /**
@@ -90,7 +115,7 @@ namespace AzQtComponents
      * title bar back on the dock widget since we stripped it off when adding the tab
      * and unparent it
      */
-    void DockTabWidget::removeTab(int index)
+    void DockTabWidget::removeTabIndex(int index)
     {
         AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(widget(index));
         if (dockWidget)
@@ -127,7 +152,7 @@ namespace AzQtComponents
         int index = indexOf(page);
         if (index != -1)
         {
-            removeTab(index);
+            removeTabIndex(index);
         }
     }
 

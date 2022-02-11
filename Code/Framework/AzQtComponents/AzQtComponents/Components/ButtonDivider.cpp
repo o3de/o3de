@@ -8,12 +8,25 @@
 
 #include <AzQtComponents/Components/ButtonDivider.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AzQtComponents
 {
     ButtonDivider::ButtonDivider(QWidget* parent)
         : QFrame(parent)
     {
 
+    }
+
+    void ButtonDivider::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<ButtonDivider>("ButtonDivider")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "azqtcomponents")
+                ->Attribute(AZ::Script::Attributes::Category, "azqtcomponents");
+        }
     }
 
 } // namespace AzQtComponents

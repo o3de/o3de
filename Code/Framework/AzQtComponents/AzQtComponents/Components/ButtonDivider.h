@@ -9,7 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzQtComponents/AzQtComponentsAPI.h>
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzQtComponents/Components/ComponentReflectionSpecialization.h>
 #include <QFrame>
 #endif
 
@@ -23,7 +24,12 @@ namespace AzQtComponents
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(ButtonDivider, AZ::SystemAllocator, 0);
+        AZ_RTTI(ButtonDivider, "{C59F781E-50D2-474E-B87C-D690E661C172}");
+
         explicit ButtonDivider(QWidget* parent = nullptr);
+
+        static void Reflect(AZ::ReflectContext* context);
     };
 } // namespace AzQtComponents
 

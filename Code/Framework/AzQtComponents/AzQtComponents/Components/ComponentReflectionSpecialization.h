@@ -1,0 +1,47 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+
+#include <QByteArray>
+#include <QColor>
+#include <QContextMenuEvent>
+#include <QDockWidget>
+#include <QMainWindow>
+#include <QMouseEvent>
+#include <QObject>
+#include <QPixmap>
+#include <QRect>
+#include <QScreen>
+#include <QSize>
+#include <QString>
+#include <QTimer>
+#include <QToolButton>
+
+
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(QByteArray, "{116DB9DC-B2A3-4D12-9003-42EF7731989C}")
+    AZ_TYPE_INFO_SPECIALIZE(QColor, "{0C687F46-35FB-471F-AC49-E01BB38DA312}")
+    AZ_TYPE_INFO_SPECIALIZE(QContextMenuEvent, "{E4AF0EDE-ED96-46AF-B401-D4B368C592D6}")
+    AZ_TYPE_INFO_SPECIALIZE(QDockWidget, "{E4FE47B2-BF5E-401A-AFEA-E5B27D6B2985}")
+    AZ_TYPE_INFO_SPECIALIZE(QMainWindow, "{0BB4D950-0DA0-417A-AD5F-FECC4C262140}")
+    AZ_TYPE_INFO_SPECIALIZE(QMouseEvent, "{2ACEC863-18DC-4409-807E-A82EFF2F324E}")
+    AZ_TYPE_INFO_SPECIALIZE(QRect, "{092F08F8-5A7D-4597-9AA1-D5E27BD40CD3}")
+    AZ_TYPE_INFO_SPECIALIZE(QObject, "{CC59B77A-212A-4AA8-818E-439E5377EF99}")
+    AZ_TYPE_INFO_SPECIALIZE(QPixmap, "{9118C8E1-70A9-46BE-8DC1-D749DAE7C5D3}")
+    AZ_TYPE_INFO_SPECIALIZE(QScreen, "{B806DE74-DF01-4BB5-BF91-7304E7247B28}")
+    AZ_TYPE_INFO_SPECIALIZE(QSize, "{91CD012C-384D-47A2-8680-D2ABEC324FE9}")
+    AZ_TYPE_INFO_SPECIALIZE(QString, "{7D68C487-15A9-4256-A24F-0E87E3A35A3E}")
+    AZ_TYPE_INFO_SPECIALIZE(QStringList, "{2B198BEE-72A7-4702-82D8-D5AA62CCEBDF}")
+    AZ_TYPE_INFO_SPECIALIZE(QTimer, "{9C2BB0D7-4E07-4863-BDD1-7FAD26CD84C6}")
+    AZ_TYPE_INFO_SPECIALIZE(QToolButton, "{CA2360E4-DC83-4AF8-9279-D1B5A8712D9F}")
+    AZ_TYPE_INFO_SPECIALIZE(QWidget, "{E4F1CFF0-9CE2-4ED4-8732-55FD65D722BA}")
+    AZ_TYPE_INFO_SPECIALIZE(Qt::WindowFlags, "{E07FB7C6-F827-4671-90A8-A81D6C9D1C72}")
+} // namespace AZ

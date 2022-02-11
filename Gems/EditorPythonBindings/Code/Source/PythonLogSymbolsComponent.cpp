@@ -230,6 +230,37 @@ namespace EditorPythonBindings
             AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, buffer.c_str(), buffer.size());
             buffer.clear();
 
+            if (!behaviorClass->m_constructors.empty())
+            {
+                for (const auto& constructor : behaviorClass->m_constructors)
+                {
+                    if (behaviorClass->m_constructors.size() > 1)
+                    {
+                        AzFramework::StringFunc::Append(buffer, "    @typing.overload\n");
+                        AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, buffer.c_str(), buffer.size());
+                        buffer.clear();
+                    }
+
+                    WriteMethod(fileHandle, "__init__", *constructor, behaviorClass);
+                    /* 
+
+                    AzFramework::StringFunc::Append(buffer, "    def __init__(self ");
+                        for (int argIndex = 0; argIndex <= constructor->GetNumArguments(); argIndex++)
+                        {
+                            const auto& arg = constructor->GetArgument(argIndex);
+                            {
+                                AzFramework::StringFunc::Append(buffer, arg->m_name);
+                                AzFramework::StringFunc::Append(buffer, ": ");
+                                AzFramework::StringFunc::Append(buffer, arg->m_name);
+                                
+                            }
+                        }
+                    }
+                AzFramework::StringFunc::Append(buffer, "): ...\n");*/
+
+                }
+            }
+
             if (behaviorClass->m_methods.empty() && behaviorClass->m_properties.empty())
             {
                 AZStd::string body{ "    # behavior class type with no methods or properties \n" };

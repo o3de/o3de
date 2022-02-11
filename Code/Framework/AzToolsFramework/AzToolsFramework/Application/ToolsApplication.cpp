@@ -75,6 +75,8 @@
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 
+#include <AzQtComponents/Components/ComponentReflection.h>
+
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
 #include <QDir>
@@ -386,6 +388,9 @@ namespace AzToolsFramework
         QWidgetSavedState::Reflect(context);
         SliceUtilities::Reflect(context);
         Prefab::PrefabIntegrationManager::Reflect(context);
+
+
+        AzQtComponents::ComponentReflection::Reflect(context, AZ::Environment::GetInstance());
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
 

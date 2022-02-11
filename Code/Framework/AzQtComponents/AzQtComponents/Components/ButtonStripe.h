@@ -9,6 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/RTTI/ReflectContext.h>
+
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QWidget>
@@ -28,7 +30,13 @@ namespace AzQtComponents
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(ButtonStripe, AZ::SystemAllocator, 0);
+        AZ_RTTI(ButtonStripe, "{A2551A0B-FB22-46ED-9485-3FC8A22E31AD}");
+
         explicit ButtonStripe(QWidget* parent = nullptr);
+
+        static void Reflect(AZ::ReflectContext* context);
+
         void addButtons(const QStringList& buttonNames, int current = 0);
         void setCurrent(int index);
 
