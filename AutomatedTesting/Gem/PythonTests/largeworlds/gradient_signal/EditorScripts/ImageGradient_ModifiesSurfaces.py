@@ -90,23 +90,19 @@ def ImageGradient_ModifiesSurfaces():
     image_gradient_entity.components[2].set_component_property_value("Configuration|Shape Entity Id", spawner_entity.id)
 
     # 4) Assign surface tags to the required components
-    tag_list = [surface_data.SurfaceTag()]
-    surface_tags = {"terrain": 3363197873}
+    tag_list = [surface_data.SurfaceTag("terrain")]
 
     # Set the Veg Spawner entity's Surface Tag Mask Filter component to include the "terrain" tag
-    hydra.get_property_tree(spawner_entity.components[3])
     hydra.get_set_test(spawner_entity, 3, "Configuration|Inclusion|Surface Tags", tag_list)
-    hydra.get_set_test(spawner_entity, 3, "Configuration|Inclusion|Surface Tags|[0]|Surface Tag",
-                       surface_tags["terrain"])
 
     # Set the Image Gradient entity's Gradient Surface Tag Emitter component to modify the "terrain" tag
     # NOTE: This requires a disable/re-enable of the component to force a refresh as assigning a tag via script does not
     grad_surf_tag_emitter_component = image_gradient_entity.components[3]
-    grad_surf_tag_emitter_component.add_container_item("Configuration|Extended Tags", 0, surface_tags["terrain"])
+    grad_surf_tag_emitter_component.add_container_item("Configuration|Extended Tags", 0, tag_list[0])
     grad_surf_tag_emitter_component.set_enabled(False)
     grad_surf_tag_emitter_component.set_enabled(True)
 
-    # 5) Validate the expected number of vegetation instances. Instances should only spawn on the modified
+    # 5) Validate the expected number of vegetation instances. Instances should only spawn on the modified surface
     num_expected_instances = 168
     success = helper.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(
         spawner_entity.id, num_expected_instances), 5.0)
