@@ -12,10 +12,10 @@ endif()
 
 ly_add_pytest(
     NAME AutomatedTesting::EditorLevelLoadingPerfTests_DX12
-    TEST_SUITE main
+    TEST_SUITE periodic
     TEST_REQUIRES gpu
     TEST_SERIAL
-    PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_DX12.py
+    PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_DX12.py
     RUNTIME_DEPENDENCIES
         Legacy::Editor
         AZ::AssetProcessor
@@ -26,10 +26,10 @@ ly_add_pytest(
 
 ly_add_pytest(
     NAME AutomatedTesting::EditorLevelLoadingPerfTests_Vulkan
-    TEST_SUITE main
+    TEST_SUITE periodic
     TEST_REQUIRES gpu
     TEST_SERIAL
-    PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Vulkan.py
+    PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_Vulkan.py
     RUNTIME_DEPENDENCIES
         Legacy::Editor
         AZ::AssetProcessor
