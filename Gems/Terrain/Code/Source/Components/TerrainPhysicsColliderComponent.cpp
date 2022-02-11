@@ -22,6 +22,7 @@
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
+
 namespace Terrain
 {
     void TerrainPhysicsSurfaceMaterialMapping::Reflect(AZ::ReflectContext* context)
@@ -32,26 +33,9 @@ namespace Terrain
                 ->Version(1)
                 ->Field("Surface", &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag)
                 ->Field("Material", &TerrainPhysicsSurfaceMaterialMapping::m_materialId);
-
-            if (auto edit = serialize->GetEditContext())
-            {
-                edit->Class<TerrainPhysicsSurfaceMaterialMapping>(
-                        "Terrain Surface Material Mapping", "Mapping between a surface and a physics material.")
-
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag, "Surface Tag",
-                        "Surface type to map to a physics material.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsSurfaceMaterialMapping::m_materialId, "Material ID", "")
-                    ->ElementAttribute(Physics::Attributes::MaterialLibraryAssetId, &TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true);
-            }
         }
     }
+
 
     AZ::Data::AssetId TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId()
     {
@@ -72,23 +56,10 @@ namespace Terrain
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainPhysicsColliderConfig, AZ::ComponentConfig>()
-                ->Version(2)->Field(
-                "Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
+                ->Version(3)
+                ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_defaultMaterialSelection)
+                ->Field("Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
             ;
-
-            if (auto edit = serialize->GetEditContext())
-            {
-                edit->Class<TerrainPhysicsColliderConfig>(
-                        "Terrain Physics Collider Component",
-                        "Provides terrain data to a physics collider with configurable surface mappings.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings,
-                        "Surface to Material Mappings", "Maps surfaces to physics materials")
-                ;
-            }
         }
     }
 
@@ -321,7 +292,7 @@ namespace Terrain
         }
 
         // If this surface isn't mapped, use the default material.
-        return Physics::MaterialId();
+        return m_configuration.m_defaultMaterialSelection.GetMaterialId();
     }
 
     void TerrainPhysicsColliderComponent::GenerateHeightsAndMaterialsInBounds(
@@ -380,11 +351,11 @@ namespace Terrain
 
     AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
     {
-        AZ::Vector2 gridResolution = AZ::Vector2(1.0f);
+        float gridResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             gridResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
-        return gridResolution;
+        return AZ::Vector2(gridResolution);
     }
 
     void TerrainPhysicsColliderComponent::GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const
@@ -419,7 +390,7 @@ namespace Terrain
         AZStd::vector<Physics::MaterialId> materialList;
 
         // Ensure the list contains the default material as the first entry.
-        materialList.emplace_back(Physics::MaterialId());
+        materialList.emplace_back(m_configuration.m_defaultMaterialSelection.GetMaterialId());
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {

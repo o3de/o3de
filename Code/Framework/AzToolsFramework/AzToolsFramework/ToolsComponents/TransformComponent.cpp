@@ -29,7 +29,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentSerializer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
@@ -963,18 +963,22 @@ namespace AzToolsFramework
 
             if (!m_parentEntityId.IsValid())
             {
-                // If Prefabs are enabled, reroute the invalid id to the level root
+                // If Prefabs are enabled, reroute the invalid id to the focused prefab container entity id
                 bool isPrefabSystemEnabled = false;
                 AzFramework::ApplicationRequests::Bus::BroadcastResult(
                     isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
                 if (isPrefabSystemEnabled)
                 {
-                    auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+                    auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
 
-                    if (prefabPublicInterface)
+                    if (prefabFocusPublicInterface)
                     {
-                        m_parentEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
+                        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+                        EditorEntityContextRequestBus::BroadcastResult(
+                            editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+                        m_parentEntityId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
                         refreshLevel = AZ::Edit::PropertyRefreshLevels::ValuesOnly;
                     }
                 }

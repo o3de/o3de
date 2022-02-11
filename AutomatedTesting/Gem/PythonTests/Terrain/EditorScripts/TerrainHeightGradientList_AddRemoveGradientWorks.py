@@ -4,6 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+
 class HeightTests:
     single_gradient_height_correct = (
         "Successfully retrieved height for gradient1.",
@@ -22,6 +23,7 @@ class HeightTests:
         "OnTerrainDataChanged call count incorrect."
     )
 
+
 def TerrainHeightGradientList_AddRemoveGradientWorks():
     """
     Summary:
@@ -29,22 +31,16 @@ def TerrainHeightGradientList_AddRemoveGradientWorks():
     :return: None
     """
 
-    import os
     import math as sys_math
 
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.math as math
     import azlmbr.terrain as terrain
-    import azlmbr.editor as editor
-    import azlmbr.vegetation as vegetation
-    import azlmbr.entity as EntityId
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-    import editor_python_test_tools.pyside_utils as pyside_utils
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
 
     terrain_changed_call_count = 0
     expected_terrain_changed_calls = 0
@@ -87,11 +83,8 @@ def TerrainHeightGradientList_AddRemoveGradientWorks():
 
         Report.result(test_results, sys_math.isclose(height, expected_height, abs_tol=test_tolerance))
 
-    helper.init_idle()
-
     # Open a level.
-    helper.open_level("Physics", "Base")
-    helper.wait_for_condition(lambda: general.get_current_level_name() == "Base", 2.0)
+    hydra.open_base_level()
     
     general.idle_wait_frames(1)
 
@@ -101,7 +94,7 @@ def TerrainHeightGradientList_AddRemoveGradientWorks():
     aabb_height = 1024.0
     box_dimensions = math.Vector3(1.0, 1.0, aabb_height);
 
-     # Create a main entity with a LayerSpawner, AAbb and HeightGradientList.
+    # Create a main entity with a LayerSpawner, AAbb and HeightGradientList.
     main_entity = create_entity_at("entity2", [layerspawner_component_name, gradientlist_component_name, aabb_component_name], 0.0, 0.0, aabb_height/2.0)
 
     # Create three gradient entities.
@@ -137,6 +130,7 @@ def TerrainHeightGradientList_AddRemoveGradientWorks():
 
     # Add gradient3, the  height should still be the second value, as that was the highest.
     set_gradients_check_height(main_entity, [gradient_entity1.id, gradient_entity2.id, gradient_entity3.id], aabb_height * gradient_values[1], HeightTests.triple_gradient_height_correct)
+
 
 if __name__ == "__main__":
 

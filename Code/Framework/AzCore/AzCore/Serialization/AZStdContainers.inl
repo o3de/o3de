@@ -11,6 +11,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/stack.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/tuple.h>
 
@@ -47,9 +48,6 @@ namespace AZStd
     class intrusive_ptr;
     template<class T>
     class shared_ptr;
-
-    template<class T>
-    class optional;
 }
 
 namespace AZ
@@ -74,7 +72,7 @@ namespace AZ
              * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
              * created within then this will return this .dll/.exe module allocator
              */
-            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
 
             // Flag the field with the EnumType attribute if we're an enumeration type aliased by RemoveEnum
             const bool isSpecializedEnum = AZStd::is_enum<ValueType>::value && !AzTypeInfo<ValueType>::Uuid().IsNull();
@@ -650,7 +648,7 @@ namespace AZ
                 * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
                 * created within then this will return this .dll/.exe module allocator
                 */
-                m_classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+                m_classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
 
                 m_classElement.m_attributes.emplace_back(AZ_CRC("KeyType", 0x15bc5303), CreateModuleAttribute(AZStd::move(uuid)));
             }

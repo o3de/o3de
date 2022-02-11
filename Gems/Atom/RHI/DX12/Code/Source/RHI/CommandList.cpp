@@ -129,14 +129,14 @@ namespace AZ
             const RHI::Viewport* viewports,
             uint32_t count)
         {
-            m_state.m_viewportState.Set(AZStd::array_view<RHI::Viewport>(viewports, count));            
+            m_state.m_viewportState.Set(AZStd::span<const RHI::Viewport>(viewports, count));
         }
 
         void CommandList::SetScissors(
             const RHI::Scissor* scissors,
             uint32_t count)
         {
-            m_state.m_scissorState.Set(AZStd::array_view<RHI::Scissor>(scissors, count));            
+            m_state.m_scissorState.Set(AZStd::span<const RHI::Scissor>(scissors, count));
         }
 
         void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)

@@ -11,6 +11,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>

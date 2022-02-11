@@ -59,7 +59,7 @@ namespace AZ
             //! Returns the number of Lods in the model
             size_t GetLodCount() const;
 
-            AZStd::array_view<Data::Asset<ModelLodAsset>> GetLodAssets() const;
+            AZStd::span<const Data::Asset<ModelLodAsset>> GetLodAssets() const;
 
             //! Checks a ray for intersection against this model. The ray must be in the same coordinate space as the model.
             //! Important: only to be used in the Editor, it may kick off a job to calculate spatial information.

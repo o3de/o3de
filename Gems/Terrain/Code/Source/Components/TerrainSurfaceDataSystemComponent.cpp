@@ -146,41 +146,26 @@ namespace Terrain
     void TerrainSurfaceDataSystemComponent::GetSurfacePoints(
         const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const
     {
-        if (m_terrainBoundsIsValid)
+        if (!m_terrainBoundsIsValid)
         {
-            auto enumerationCallback = [&](AzFramework::Terrain::TerrainDataRequests* terrain) -> bool
-            {
-                if (terrain->GetTerrainAabb().Contains(inPosition))
-                {
-                    bool isTerrainValidAtPoint = false;
-                    AzFramework::SurfaceData::SurfacePoint terrainSurfacePoint;
-                    terrain->GetSurfacePoint(
-                        inPosition, terrainSurfacePoint, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
-                        &isTerrainValidAtPoint);
-
-                    const bool isHole = !isTerrainValidAtPoint;
-
-                    SurfaceData::SurfacePoint point;
-                    point.m_entityId = GetEntityId();
-                    point.m_position = terrainSurfacePoint.m_position;
-                    point.m_normal = terrainSurfacePoint.m_normal;
-
-                    // Always add a "terrain" or "terrainHole" tag.
-                    const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
-                    SurfaceData::AddMaxValueForMasks(point.m_masks, terrainTag, 1.0f);
-
-                    // Add all of the surface tags that the terrain has at this point.
-                    for (auto& tag : terrainSurfacePoint.m_surfaceTags)
-                    {
-                        SurfaceData::AddMaxValueForMasks(point.m_masks, tag.m_surfaceType, tag.m_weight);
-                    }
-                    surfacePointList.push_back(point);
-                }
-                // Only one handler should exist.
-                return false;
-            };
-            AzFramework::Terrain::TerrainDataRequestBus::EnumerateHandlers(enumerationCallback);
+            return;
         }
+
+        bool isTerrainValidAtPoint = false;
+        AzFramework::SurfaceData::SurfacePoint terrainSurfacePoint;
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePoint,
+            inPosition, terrainSurfacePoint, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
+            &isTerrainValidAtPoint);
+
+        const bool isHole = !isTerrainValidAtPoint;
+
+        SurfaceData::SurfaceTagWeights weights(terrainSurfacePoint.m_surfaceTags);
+
+        // Always add a "terrain" or "terrainHole" tag.
+        const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
+        weights.AddSurfaceTagWeight(terrainTag, 1.0f);
+
+        surfacePointList.AddSurfacePoint(GetEntityId(), terrainSurfacePoint.m_position, terrainSurfacePoint.m_normal, weights);
     }
 
     AZ::Aabb TerrainSurfaceDataSystemComponent::GetSurfaceAabb() const

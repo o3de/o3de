@@ -316,7 +316,7 @@ namespace UnitTest
 
             const auto ValidateFloat4Values = [&]()
             {
-                AZStd::array_view<float> float4ValueResult = srgData.GetConstantArray<float>(float4ValueIndex);
+                AZStd::span<const float> float4ValueResult = srgData.GetConstantArray<float>(float4ValueIndex);
                 EXPECT_EQ(float4ValueResult.size(), 4);
                 EXPECT_EQ(float4ValueResult[0], float4Values[0]);
                 EXPECT_EQ(float4ValueResult[1], float4Values[1]);
@@ -324,13 +324,13 @@ namespace UnitTest
                 EXPECT_EQ(float4ValueResult[3], float4Values[3]);
             };
 
-            AZStd::array_view<uint32_t> uintValuesResult = srgData.GetConstantArray<uint32_t>(uintValueIndex);
+            AZStd::span<const uint32_t> uintValuesResult = srgData.GetConstantArray<uint32_t>(uintValueIndex);
             EXPECT_EQ(uintValuesResult.size(), 3);
             EXPECT_EQ(uintValuesResult[0], uintValues[0]);
             EXPECT_EQ(uintValuesResult[1], uintValues[1]);
             EXPECT_EQ(uintValuesResult[2], uintValues[2]);
 
-            AZStd::array_view<NestedData> nestedDataResult = srgData.GetConstantArray<NestedData>(nestedDataIndex);
+            AZStd::span<const NestedData> nestedDataResult = srgData.GetConstantArray<NestedData>(nestedDataIndex);
             EXPECT_EQ(nestedDataResult.size(), 16);
 
             ValidateFloat4Values();
@@ -484,17 +484,17 @@ namespace UnitTest
         const Vector4 vector4 = Vector4::CreateFromFloat4(vector4values);
 
         EXPECT_TRUE(srgData.SetConstant(vector2index, vector2));
-        AZStd::array_view<uint8_t> resultVector2 = srgData.GetConstantRaw(vector2index);
+        AZStd::span<const uint8_t> resultVector2 = srgData.GetConstantRaw(vector2index);
         const Vector2 vector2result = *reinterpret_cast<const Vector2*>(resultVector2.data());
         EXPECT_EQ(vector2result, vector2);
 
         EXPECT_TRUE(srgData.SetConstant(vector3index, vector3));
-        AZStd::array_view<uint8_t> resutVector3 = srgData.GetConstantRaw(vector3index);
+        AZStd::span<const uint8_t> resutVector3 = srgData.GetConstantRaw(vector3index);
         const Vector3 vector3result = *reinterpret_cast<const Vector3*>(resutVector3.data());
         EXPECT_EQ(vector3result, vector3);
 
         EXPECT_TRUE(srgData.SetConstant(vector4index, vector4));
-        AZStd::array_view<uint8_t> resutVector4 = srgData.GetConstantRaw(vector4index);
+        AZStd::span<const uint8_t> resutVector4 = srgData.GetConstantRaw(vector4index);
         const Vector4 vector4result = *reinterpret_cast<const Vector4*>(resutVector4.data());
         EXPECT_EQ(vector4result, vector4);
     }
@@ -524,7 +524,7 @@ namespace UnitTest
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(srgData.SetConstant(vector2index, vector3));
         AZ_TEST_STOP_ASSERTTEST(1);
-        AZStd::array_view<uint8_t> resutV3 = srgData.GetConstantRaw(vector2index);
+        AZStd::span<const uint8_t> resutV3 = srgData.GetConstantRaw(vector2index);
         const Vector3 v3result = *reinterpret_cast<const Vector3*>(resutV3.data());
         EXPECT_NE(v3result, vector3);
 
@@ -534,7 +534,7 @@ namespace UnitTest
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(srgData.SetConstant(vector3index, vector4));
         AZ_TEST_STOP_ASSERTTEST(1);
-        AZStd::array_view<uint8_t> resutV4 = srgData.GetConstantRaw(vector3index);
+        AZStd::span<const uint8_t> resutV4 = srgData.GetConstantRaw(vector3index);
         const Vector4 v4result = *reinterpret_cast<const Vector4*>(resutV4.data());
         EXPECT_NE(v4result, vector4);
 
@@ -544,7 +544,7 @@ namespace UnitTest
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(srgData.SetConstant(vector4index, vector3));
         AZ_TEST_STOP_ASSERTTEST(1);
-        AZStd::array_view<uint8_t> resutV3FromIndex4 = srgData.GetConstantRaw(vector4index);
+        AZStd::span<const uint8_t> resutV3FromIndex4 = srgData.GetConstantRaw(vector4index);
         const Vector4 v4resultFromIndex4 = *reinterpret_cast<const Vector4*>(resutV3FromIndex4.data());
         EXPECT_NE(v4resultFromIndex4, vector4);
     }

@@ -20,7 +20,7 @@ from editor_python_test_tools.utils import TestHelper as helper
 
 def open_base_level():
     helper.init_idle()
-    helper.open_level("Prefab", "Base")
+    helper.open_level("", "Base")
 
 
 def find_entity_by_name(entity_name):

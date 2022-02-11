@@ -13,6 +13,7 @@
 #include <AzCore/ScriptCanvas/ScriptCanvasOnDemandNames.h>
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflectionLuaFunctions.inl>
+#include <AzCore/std/optional.h>
 
 #ifndef AZ_USE_CUSTOM_SCRIPT_BIND
 struct lua_State;
@@ -47,10 +48,6 @@ namespace AZStd
     class intrusive_ptr;
     template<class T>
     class shared_ptr;
-
-    // Wrapper types
-    template <typename T>
-    class optional;
 }
 
 namespace AZ

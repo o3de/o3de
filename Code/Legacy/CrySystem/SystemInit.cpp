@@ -51,7 +51,7 @@
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 
-#include <LoadScreenBus.h>
+#include <CryCommon/LoadScreenBus.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzCore/Interface/Interface.h>
@@ -75,7 +75,6 @@
 #include <ILog.h>
 #include <IAudioSystem.h>
 #include <ICmdLine.h>
-#include <IProcess.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
@@ -1047,7 +1046,7 @@ AZ_POP_DISABLE_WARNING
         // LEVEL SYSTEM
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
         if (usePrefabSystemForLevels)
         {

@@ -206,7 +206,9 @@ set(FILES
     AZStd/Optional.cpp
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
+    AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
+    AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp
     AZStd/SmartPtr.cpp
@@ -224,6 +226,8 @@ set(FILES
     DOM/DomJsonBenchmarks.cpp
     DOM/DomPathTests.cpp
     DOM/DomPathBenchmarks.cpp
+    DOM/DomPatchTests.cpp
+    DOM/DomPatchBenchmarks.cpp
     DOM/DomValueTests.cpp
     DOM/DomValueBenchmarks.cpp
 )

@@ -6,11 +6,9 @@
  *
  */
 
-
-#include "ColorUtils.h"
-
 // Qt
 #include <QColor>
+#include <CryCommon/Cry_Color.h>
 
 //////////////////////////////////////////////////////////////////////////
 QColor ColorLinearToGamma(ColorF col)

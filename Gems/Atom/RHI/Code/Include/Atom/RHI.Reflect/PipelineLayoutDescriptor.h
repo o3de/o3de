@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/SerializeContext.h>

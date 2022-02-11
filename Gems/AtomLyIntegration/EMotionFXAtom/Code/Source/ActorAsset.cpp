@@ -59,7 +59,7 @@ namespace AZ
             lodVertexCount = 0;
 
             const Data::Asset<RPI::ModelLodAsset>& lodAsset = actor->GetMeshAsset()->GetLodAssets()[lodIndex];
-            const AZStd::array_view<RPI::ModelLodAsset::Mesh> modelMeshes = lodAsset->GetMeshes();
+            const AZStd::span<const RPI::ModelLodAsset::Mesh> modelMeshes = lodAsset->GetMeshes();
             for (const RPI::ModelLodAsset::Mesh& modelMesh : modelMeshes)
             {
                 const size_t subMeshIndexCount = modelMesh.GetIndexCount();

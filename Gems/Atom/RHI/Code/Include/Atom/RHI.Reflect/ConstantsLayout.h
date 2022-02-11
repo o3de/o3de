@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Utils/TypeHash.h>
 
@@ -72,7 +72,7 @@ namespace AZ
 
             //! Returns the full lists of shader input added to the layout. Inputs
             //! maintain their original order with respect to AddShaderInput.
-            AZStd::array_view<ShaderInputConstantDescriptor> GetShaderInputList() const;
+            AZStd::span<const ShaderInputConstantDescriptor> GetShaderInputList() const;
 
             //! Returns the total size in bytes used by the constants.
             uint32_t GetDataSize() const;
@@ -84,7 +84,7 @@ namespace AZ
 
             //! Prints to the console the shader input names specified by input list of indices
             //! Will ignore any indices outside of the inputs array bounds
-            void DebugPrintNames(AZStd::array_view<ShaderInputConstantIndex> constantList) const;
+            void DebugPrintNames(AZStd::span<const ShaderInputConstantIndex> constantList) const;
 
         protected:
             ConstantsLayout() = default;

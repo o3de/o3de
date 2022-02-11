@@ -16,7 +16,6 @@ set(FILES
     Source/GraphCanvas.h
     Source/GraphCanvasModule.h
     Source/GraphCanvasEditorModule.cpp
-    Source/tools.cpp
     Source/Components/BookmarkManagerComponent.cpp
     Source/Components/BookmarkManagerComponent.h
     Source/Components/GeometryComponent.cpp

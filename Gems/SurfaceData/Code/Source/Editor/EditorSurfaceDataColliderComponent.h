@@ -11,7 +11,7 @@
 #include <AzCore/Module/Module.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
-#include <Components/SurfaceDataColliderComponent.h>
+#include <SurfaceData/Components/SurfaceDataColliderComponent.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 
 namespace SurfaceData
