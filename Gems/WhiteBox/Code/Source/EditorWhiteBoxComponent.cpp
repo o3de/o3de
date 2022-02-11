@@ -309,7 +309,7 @@ namespace WhiteBox
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
-        m_worldFromLocal = AzToolsFramework::TransformUniformScale(worldFromLocal);
+        m_worldFromLocal = worldFromLocal;
 
         m_editorMeshAsset->Associate(entityComponentIdPair);
 
@@ -482,12 +482,11 @@ namespace WhiteBox
         m_worldAabb.reset();
         m_localAabb.reset();
 
-        const AZ::Transform worldUniformScale = AzToolsFramework::TransformUniformScale(world);
-        m_worldFromLocal = worldUniformScale;
+        m_worldFromLocal = world;
 
         if (m_renderMesh.has_value())
         {
-            (*m_renderMesh)->UpdateTransform(worldUniformScale);
+            (*m_renderMesh)->UpdateTransform(world);
         }
     }
 
@@ -725,13 +724,13 @@ namespace WhiteBox
         }
 
         // transform ray into local space
-        const AZ::Transform worldFromLocalUniform = AzToolsFramework::TransformUniformScale(m_worldFromLocal);
-        const AZ::Transform localFromWorldUniform = worldFromLocalUniform.GetInverse();
+        const AZ::Transform worldFromLocal = m_worldFromLocal;
+        const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
 
         // setup beginning/end of segment
         const float rayLength = 1000.0f;
-        const AZ::Vector3 localRayOrigin = localFromWorldUniform.TransformPoint(src);
-        const AZ::Vector3 localRayDirection = localFromWorldUniform.TransformVector(dir);
+        const AZ::Vector3 localRayOrigin = localFromWorld.TransformPoint(src);
+        const AZ::Vector3 localRayDirection = localFromWorld.TransformVector(dir);
         const AZ::Vector3 localRayEnd = localRayOrigin + localRayDirection * rayLength;
 
         bool intersection = false;
