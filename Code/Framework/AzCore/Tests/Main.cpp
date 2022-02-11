@@ -8,6 +8,7 @@
 
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzTest/AzTest.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 
 #if defined(HAVE_BENCHMARK)

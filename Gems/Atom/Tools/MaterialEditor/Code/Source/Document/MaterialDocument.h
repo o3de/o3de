@@ -82,7 +82,8 @@ namespace MaterialEditor
         void RestorePropertyValues(const PropertyValueMap& propertyValues);
 
         bool AddEditorMaterialFunctors(
-            const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders);
+            const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders,
+            const AZ::RPI::MaterialNameContext& nameContext);
 
         // Run editor material functor to update editor metadata.
         // @param dirtyFlags indicates which properties have changed, and thus which MaterialFunctors need to be run.
