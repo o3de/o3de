@@ -1104,7 +1104,7 @@ namespace AZStd::ranges
             return ranges::begin(derived()) == ranges::end(derived());
         }
 
-        template <class Derived = D, class = void_t<decltype(ranges::empty(declval<Derived>()))>>
+        template <class Derived = D>
         constexpr explicit operator bool() const noexcept(noexcept(ranges::empty(static_cast<const Derived&>(*this))))
         {
             return !ranges::empty(derived());
