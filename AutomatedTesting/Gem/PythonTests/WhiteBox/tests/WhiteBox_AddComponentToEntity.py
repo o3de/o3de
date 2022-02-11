@@ -18,21 +18,19 @@ class Tests():
 
 
 def C28798177_WhiteBox_AddComponentToEntity():
-    import os
-    import sys
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
 
+    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
     from editor_python_test_tools.utils import Report
-    
     from editor_python_test_tools.utils import TestHelper as helper
 
     # open level
     helper.init_idle()
-    helper.open_level("WhiteBox", "EmptyLevel", no_prompt=False)
+    hydra.open_base_level()
 
     # create white box entity and attach component
     white_box_entity = init.create_white_box_entity()
@@ -45,10 +43,6 @@ def C28798177_WhiteBox_AddComponentToEntity():
 
     component_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', white_box_mesh_component)
     Report.result(Tests.white_box_component_enabled, component_enabled)
-
-    # close editor
-    helper.close_editor()
-
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
