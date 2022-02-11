@@ -36,6 +36,8 @@ namespace ImGui::LYImGuiUtils
 
         void SetHistogramBinCount(int count) { m_histogramBinCount = count; }
 
+        ImGui::LYImGuiUtils::HistogramContainer* FindContainerByName(const char* name);
+
         //! Needs to be public for l-value access for ImGui::MenuItem()
         bool m_show = true;
 

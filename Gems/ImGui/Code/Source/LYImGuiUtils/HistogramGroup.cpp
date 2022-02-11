@@ -77,6 +77,17 @@ namespace ImGui::LYImGuiUtils
             }
         }
     }
+
+    ImGui::LYImGuiUtils::HistogramContainer* HistogramGroup::FindContainerByName(const char* name)
+    {
+        const auto iterator = m_histogramIndexByName.find(name);
+        if (iterator != m_histogramIndexByName.end())
+        {
+            return &m_histograms[iterator->second];
+        }
+
+        return nullptr;
+    }
 } // namespace ImGui::LYImGuiUtils
 
 #endif // IMGUI_ENABLED

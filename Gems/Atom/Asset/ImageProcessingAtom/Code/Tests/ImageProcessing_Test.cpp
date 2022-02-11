@@ -32,6 +32,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/ImageConvert.h>
 #include <Processing/ImageToProcess.h>
@@ -45,7 +46,6 @@
 
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <BuilderSettings/CubemapSettings.h>
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/PresetSettings.h>
 
 #include <Editor/EditorCommon.h>

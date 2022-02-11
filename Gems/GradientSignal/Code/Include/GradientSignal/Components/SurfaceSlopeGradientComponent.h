@@ -125,7 +125,7 @@ namespace GradientSignal
     private:
         float GetSlopeRatio(const SurfaceData::SurfacePointList& points, float angleMin, float angleMax) const
         {
-            if (points.empty())
+            if (points.IsEmpty())
             {
                 return 0.0f;
             }
@@ -133,9 +133,9 @@ namespace GradientSignal
             // Assuming our surface normal vector is actually normalized, we can get the slope
             // by just grabbing the Z value.  It's the same thing as normal.Dot(AZ::Vector3::CreateAxisZ()).
             AZ_Assert(
-                points.front().m_normal.GetNormalized().IsClose(points.front().m_normal),
+                points.GetHighestSurfacePoint().m_normal.GetNormalized().IsClose(points.GetHighestSurfacePoint().m_normal),
                 "Surface normals are expected to be normalized");
-            const float slope = points.front().m_normal.GetZ();
+            const float slope = points.GetHighestSurfacePoint().m_normal.GetZ();
             // Convert slope back to an angle so that we can lerp in "angular space", not "slope value space".
             // (We want our 0-1 range to be linear across the range of angles)
             const float slopeAngle = acosf(slope);
