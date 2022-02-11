@@ -22,7 +22,7 @@ from o3de import manifest, engine_properties, register, cmake, engine_template, 
 # manifest interface
 def test_get_engine_json_data():
     sig = signature(manifest.get_engine_json_data)
-    assert sig.parameters.__len__() >= 2
+    assert len(sig.parameters) >= 2
 
     engine_path = list(sig.parameters.values())[1]
     assert engine_path.name == 'engine_path'
@@ -72,7 +72,7 @@ def test_get_this_engine_path():
 
 def test_get_registered():
     sig = signature(manifest.get_registered)
-    assert sig.parameters.__len__() >= 1
+    assert len(sig.parameters) >= 1
 
     engine_name = list(sig.parameters.values())[0]
     assert engine_name.name == 'engine_name'
@@ -87,7 +87,7 @@ def test_get_engine_gems():
 
 def test_get_all_gems():
     sig = signature(manifest.get_all_gems)
-    assert sig.parameters.__len__() >= 1
+    assert len(sig.parameters) >= 1
 
     project_path = list(sig.parameters.values())[0]
     assert project_path.name == 'project_path'
@@ -97,7 +97,7 @@ def test_get_all_gems():
 
 def test_get_gem_json_data():
     sig = signature(manifest.get_gem_json_data)
-    assert sig.parameters.__len__() >= 3
+    assert len(sig.parameters) >= 3
 
     parameters = list(sig.parameters.values())
     gem_path = parameters[1]
@@ -111,7 +111,7 @@ def test_get_gem_json_data():
 
 def test_get_project_json_data():
     sig = signature(manifest.get_project_json_data)
-    assert sig.parameters.__len__() >= 2
+    assert len(sig.parameters) >= 2
 
     project_path = list(sig.parameters.values())[1]
     assert project_path.name == 'project_path'
@@ -131,7 +131,7 @@ def test_get_engine_projects():
 
 def test_get_template_json_data():
     sig = signature(manifest.get_template_json_data)
-    assert sig.parameters.__len__() >= 3
+    assert len(sig.parameters) >= 3
 
     parameters = list(sig.parameters.values())
     template_path = parameters[1]
@@ -153,7 +153,7 @@ def test_get_repo_json_data():
     return
 
     sig = signature(manifest.get_repo_json_data)
-    assert sig.parameters.__len__() >= 1
+    assert len(sig.parameters) >= 1
 
     repo_uri = list(sig.parameters.values())[0]
     assert repo_uri.name == 'repo_uri'
@@ -166,7 +166,7 @@ def test_get_repo_path():
     return
 
     sig = signature(manifest.get_repo_path)
-    assert sig.parameters.__len__() >= 1
+    assert len(sig.parameters) >= 1
 
     repo_uri = list(sig.parameters.values())[0]
     assert repo_uri.name == 'repo_uri'
@@ -182,7 +182,7 @@ def test_get_manifest_repos():
 # engine_properties interface
 def test_edit_engine_props():
     sig = signature(engine_properties.edit_engine_props)
-    assert sig.parameters.__len__() >= 4
+    assert len(sig.parameters) >= 4
 
     parameters = list(sig.parameters.values())
     engine_path = parameters[0]
@@ -200,7 +200,7 @@ def test_edit_engine_props():
 # register interface
 def test_register():
     sig = signature(register.register)
-    assert sig.parameters.__len__() >= 17
+    assert len(sig.parameters) >= 17
 
     parameters = list(sig.parameters.values())
     engine_path = parameters[0]
@@ -247,7 +247,7 @@ def test_remove_invalid_o3de_projects():
 # cmake interface
 def test_get_enabled_gem_cmake_file():
     sig = signature(cmake.get_enabled_gem_cmake_file)
-    assert sig.parameters.__len__() >= 2
+    assert len(sig.parameters) >= 2
 
     project_path = list(sig.parameters.values())[1]
     assert project_path.name == 'project_path'
@@ -257,7 +257,7 @@ def test_get_enabled_gem_cmake_file():
 
 def test_get_enabled_gems():
     sig = signature(cmake.get_enabled_gems)
-    assert sig.parameters.__len__() >= 1
+    assert len(sig.parameters) >= 1
 
     cmake_file = list(sig.parameters.values())[0]
     assert cmake_file.name == 'cmake_file'
@@ -268,7 +268,7 @@ def test_get_enabled_gems():
 # engine_template interface
 def test_create_project():
     sig = signature(engine_template.create_project)
-    assert sig.parameters.__len__() >= 3
+    assert len(sig.parameters) >= 3
 
     parameters = list(sig.parameters.values())
     project_path = parameters[0]
@@ -286,7 +286,7 @@ def test_create_project():
 # enable_gem interface
 def test_enable_gem():
     sig = signature(enable_gem.enable_gem_in_project)
-    assert sig.parameters.__len__() >= 4
+    assert len(sig.parameters) >= 4
 
     parameters = list(sig.parameters.values())
     gem_path = parameters[1]
@@ -301,7 +301,7 @@ def test_enable_gem():
 # disable_gem interface
 def test_disable_gem():
     sig = signature(disable_gem.disable_gem_in_project)
-    assert sig.parameters.__len__() >= 4
+    assert len(sig.parameters) >= 4
 
     parameters = list(sig.parameters.values())
     gem_path = parameters[1]
@@ -316,7 +316,7 @@ def test_disable_gem():
 # project_properties interface
 def test_edit_project_properties():
     sig = signature(project_properties.edit_project_props)
-    assert sig.parameters.__len__() >= 11
+    assert len(sig.parameters) >= 11
 
     parameters = list(sig.parameters.values())
     proj_path = parameters[0]
@@ -349,7 +349,7 @@ def test_edit_project_properties():
 # manifest interface
 def test_refresh_repo():
     sig = signature(repo.refresh_repo)
-    assert sig.parameters.__len__() >= 1
+    assert len(sig.parameters) >= 1
 
     repo_uri = list(sig.parameters.values())[0]
     assert repo_uri.name == 'repo_uri'
@@ -364,7 +364,7 @@ def test_refresh_repos():
 
 def test_get_gem_json_paths_from_cached_repo():
     sig = signature(repo.get_gem_json_paths_from_cached_repo)
-    assert sig.parameters.__len__() >= 1
+    assert len(sig.parameters) >= 1
 
     repo_uri = list(sig.parameters.values())[0]
     assert repo_uri.name == 'repo_uri'
@@ -380,7 +380,7 @@ def test_get_gem_json_paths_from_all_cached_repos():
 # download interface
 def test_download_gem():
     sig = signature(download.download_gem)
-    assert sig.parameters.__len__() >= 5
+    assert len(sig.parameters) >= 5
 
     parameters = list(sig.parameters.values())
     gem_name = parameters[0]
@@ -400,7 +400,7 @@ def test_download_gem():
 
 def test_is_o3de_gem_update_available():
     sig = signature(download.is_o3de_gem_update_available)
-    assert sig.parameters.__len__() >= 2
+    assert len(sig.parameters) >= 2
 
     parameters = list(sig.parameters.values())
     gem_name = parameters[0]
