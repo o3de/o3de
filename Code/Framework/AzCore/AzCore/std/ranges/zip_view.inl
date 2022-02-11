@@ -297,4 +297,12 @@ namespace AZStd::ranges
 
         return minDistance;
     }
+    
+    template<class... Views>
+    template<bool Const>
+    template<bool OtherConst>
+    constexpr auto zip_view<Views...>::sentinel<Const>::iterator_accessor(const iterator<OtherConst>& it)
+    {
+        return it.m_current;
+    }
 } // namespace AZStd::ranges

@@ -322,10 +322,7 @@ namespace AZStd::ranges
         // of the friend functions
         // So a shim is added to provide access to the iterator m_current member
         template<bool OtherConst>
-        static constexpr auto iterator_tuple_accessor(const iterator<OtherConst>& it)
-        {
-            return it.m_current;
-        }
+        static constexpr auto iterator_accessor(const iterator<OtherConst>& it);
     public:
         sentinel() = default;
         template<bool Enable = Const && conjunction_v<
@@ -347,7 +344,7 @@ namespace AZStd::ranges
                 anyIteratorEqual = anyIteratorEqual || AZStd::forward<decltype(lhs)>(lhs) == AZStd::forward<decltype(rhs)>(rhs);
             };
             ZipViewInternal::tuple_zip(AZStd::move(CompareIterator), AZStd::index_sequence_for<Views...>{},
-                iterator_tuple_accessor(x), y.m_end);
+                iterator_accessor(x), y.m_end);
 
             return anyIteratorEqual;
         }
