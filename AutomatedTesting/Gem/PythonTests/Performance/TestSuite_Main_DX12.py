@@ -12,23 +12,20 @@ import pytest
 import os
 import sys
 
-from ly_test_tools import LAUNCHERS
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
+from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
 
-from base import TestAutomationBase
-
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(TestAutomationBase):
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+class TestAutomation(EditorTestSuite):
 
-    use_null_renderer = False  # needs renderer to validate test
-    cmdline_args = ['-rhi=dx12']
+    class Time_EditorLevelLoading_10KEntityCpuPerfTest(EditorSingleTest):
+        extra_cmdline_args = ['-rhi=dx12']
+        use_null_renderer = False  # needs renderer to validate test
 
-    def test_EditorLevelLoading_10KEntityCpuPerfTest(self, request, workspace, editor, launcher_platform):
         from .tests import EditorLevelLoading_10KEntityCpuPerfTest as test_module
-        self._run_test(request, workspace, editor, test_module, extra_cmdline_args=self.cmdline_args, use_null_renderer=self.use_null_renderer)
 
-    def test_EditorLevelLoading_10kVegInstancesTest(self, request, workspace, editor, launcher_platform):
+    class Time_EditorLevelLoading_10kVegInstancesTest(EditorSingleTest):
+        extra_cmdline_args = ['-rhi=dx12']
+        use_null_renderer = False  # needs renderer to validate test
+
         from .tests import EditorLevelLoading_10kVegInstancesTest as test_module
-        self._run_test(request, workspace, editor, test_module, extra_cmdline_args=self.cmdline_args, use_null_renderer=self.use_null_renderer)
