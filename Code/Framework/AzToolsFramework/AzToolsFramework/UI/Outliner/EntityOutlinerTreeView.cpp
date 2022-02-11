@@ -135,15 +135,11 @@ namespace AzToolsFramework
         m_mousePosition = event->pos();
 
         if (QModelIndex hoveredIndex = indexAt(m_mousePosition);
-            hoveredIndex.column() != EntityOutlinerListModel::ColumnSpacing && m_currentHoveredIndex != hoveredIndex)
+            m_currentHoveredIndex != hoveredIndex)
         {
             m_currentHoveredIndex = hoveredIndex;
         }
-        else
-        {
-            m_currentHoveredIndex = QModelIndex();
-        }
-
+        
         if (m_queuedMouseEvent)
         {
             if (!m_isDragSelectActive)
