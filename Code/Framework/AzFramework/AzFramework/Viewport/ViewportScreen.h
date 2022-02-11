@@ -39,7 +39,7 @@ namespace AzFramework
     //! screen space position (in the range [0-viewportSize.x, 0-viewportSize.y]).
     inline AZ::Vector2 NdcFromScreenPoint(const ScreenPoint& screenPoint, const ScreenSize& viewportSize)
     {
-        return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), aznumeric_cast<float>(viewportSize.m_height - screenPoint.m_y)) /
+        return Vector2FromScreenPoint(ScreenPoint(screenPoint.m_x, viewportSize.m_height - screenPoint.m_y)) /
             Vector2FromScreenSize(viewportSize);
     }
 
