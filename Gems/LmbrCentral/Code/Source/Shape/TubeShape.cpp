@@ -259,9 +259,7 @@ namespace LmbrCentral
 
     bool TubeShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
-        AZ::Transform transform = m_currentTransform;
-
-        const auto splineQueryResult = IntersectSpline(transform, src, dir, *m_spline);
+        const auto splineQueryResult = IntersectSpline(m_currentTransform, src, dir, *m_spline);
         const float variableRadius = m_variableRadius.GetElementInterpolated(
             splineQueryResult.m_splineAddress, Lerpf);
 

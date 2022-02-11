@@ -307,9 +307,8 @@ namespace WhiteBox
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorWhiteBoxComponent, EditorWhiteBoxComponentMode>(
             entityComponentIdPair, this);
 
-        AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
-        m_worldFromLocal = worldFromLocal;
+        m_worldFromLocal = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(m_worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         m_editorMeshAsset->Associate(entityComponentIdPair);
 
@@ -724,8 +723,7 @@ namespace WhiteBox
         }
 
         // transform ray into local space
-        const AZ::Transform worldFromLocal = m_worldFromLocal;
-        const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
+        const AZ::Transform localFromWorld = m_worldFromLocal.GetInverse();
 
         // setup beginning/end of segment
         const float rayLength = 1000.0f;
