@@ -256,11 +256,8 @@ namespace SurfaceData
         // Clear our output structure.
         surfacePointLists.Clear();
 
-        // Gather up the subset of surface providers that overlap the input positions.
-        AZStd::vector<AZStd::pair<SurfaceDataRegistryHandle, SurfaceDataRegistryEntry>> relevantProviders;
-        size_t maxPointsCreatedPerInput = 0;
-        relevantProviders.reserve(m_registeredSurfaceDataProviders.size());
-        for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
+        auto ProviderIsApplicable = [useTagFilters, hasModifierTags, &desiredTags, &inPositionBounds]
+            (const SurfaceDataRegistryEntry& provider) -> bool
         {
             bool hasInfiniteBounds = !provider.m_bounds.IsValid();
 
@@ -272,9 +269,20 @@ namespace SurfaceData
                 // Only allow surface providers that overlap the input position area.
                 if (hasInfiniteBounds || AabbOverlaps2D(provider.m_bounds, inPositionBounds))
                 {
-                    maxPointsCreatedPerInput += provider.m_maxPointsCreatedPerInput;
-                    relevantProviders.emplace_back(providerHandle, provider);
+                    return true;
                 }
+            }
+
+            return false;
+        };
+
+        // Gather up the subset of surface providers that overlap the input positions.
+        size_t maxPointsCreatedPerInput = 0;
+        for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
+        {
+            if (ProviderIsApplicable(provider))
+            {
+                maxPointsCreatedPerInput += provider.m_maxPointsCreatedPerInput;
             }
         }
 
@@ -295,10 +303,13 @@ namespace SurfaceData
 
         // Loop through each data provider and generate surface points from the set of input positions.
         // Any generated points that have the same XY coordinates and extremely similar Z values will get combined together.
-        for (const auto& [providerHandle, provider] : relevantProviders)
+        for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
         {
-            SurfaceDataProviderRequestBus::Event(
-                providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePointsFromList, inPositions, surfacePointLists);
+            if (ProviderIsApplicable(provider))
+            {
+                SurfaceDataProviderRequestBus::Event(
+                    providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePointsFromList, inPositions, surfacePointLists);
+            }
         }
 
         // Once we have our list of surface points created, run through the list of surface data modifiers to potentially add
@@ -306,15 +317,14 @@ namespace SurfaceData
         // create new surface points, but surface data *modifiers* simply annotate points that have already been created.  The modifiers
         // are used to annotate points that occur within a volume.  A common example is marking points as "underwater" for points that occur
         // within a water volume.
-        for (const auto& entryPair : m_registeredSurfaceDataModifiers)
+        for (const auto& [modifierHandle, modifier] : m_registeredSurfaceDataModifiers)
         {
-            const SurfaceDataRegistryEntry& entry = entryPair.second;
-            bool hasInfiniteBounds = !entry.m_bounds.IsValid();
+            bool hasInfiniteBounds = !modifier.m_bounds.IsValid();
 
-            if (hasInfiniteBounds || AabbOverlaps2D(entry.m_bounds, surfacePointLists.GetSurfacePointAabb()))
+            if (hasInfiniteBounds || AabbOverlaps2D(modifier.m_bounds, surfacePointLists.GetSurfacePointAabb()))
             {
                 SurfaceDataModifierRequestBus::Event(
-                    entryPair.first, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints,
+                    modifierHandle, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints,
                     surfacePointLists);
             }
         }
