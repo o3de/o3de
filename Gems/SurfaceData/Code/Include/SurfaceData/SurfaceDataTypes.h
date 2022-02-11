@@ -167,7 +167,7 @@ namespace SurfaceData
         //! Check to see if the collection contains any of the given tags.
         //! @param sampleTags - The tags to look for.
         //! @return True if any of the tags is found, false if none are found.
-        bool HasAnyMatchingTags(const SurfaceTagVector& sampleTags) const;
+        bool HasAnyMatchingTags(AZStd::span<const SurfaceTag> sampleTags) const;
 
         //! Check to see if the collection contains the given tag with the given weight range.
         //! The range check is inclusive on both sides of the range: [weightMin, weightMax]
@@ -175,7 +175,7 @@ namespace SurfaceData
         //! @param weightMin - The minimum weight for this tag.
         //! @param weightMax - The maximum weight for this tag.
         //! @return True if any of the tags is found, false if none are found.
-        bool HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const;
+        bool HasAnyMatchingTags(AZStd::span<const SurfaceTag> sampleTags, float weightMin, float weightMax) const;
 
     private:
         //! Search for the given tag entry.

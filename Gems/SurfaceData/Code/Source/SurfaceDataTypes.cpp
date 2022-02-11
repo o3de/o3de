@@ -117,7 +117,7 @@ namespace SurfaceData
         return FindTag(sampleTag) != m_weights.end();
     }
 
-    bool SurfaceTagWeights::HasAnyMatchingTags(const SurfaceTagVector& sampleTags) const
+    bool SurfaceTagWeights::HasAnyMatchingTags(AZStd::span<const SurfaceTag> sampleTags) const
     {
         for (const auto& sampleTag : sampleTags)
         {
@@ -136,7 +136,7 @@ namespace SurfaceData
         return weightEntry != m_weights.end() && weightMin <= weightEntry->m_weight && weightMax >= weightEntry->m_weight;
     }
 
-    bool SurfaceTagWeights::HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const
+    bool SurfaceTagWeights::HasAnyMatchingTags(AZStd::span<const SurfaceTag> sampleTags, float weightMin, float weightMax) const
     {
         for (const auto& sampleTag : sampleTags)
         {

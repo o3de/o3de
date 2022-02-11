@@ -286,7 +286,12 @@ namespace SurfaceData
 
         // Notify our output structure that we're starting to build up the list of output points.
         // This will reserve memory and allocate temporary structures to help build up the list efficiently.
-        surfacePointLists.StartListConstruction(inPositions, maxPointsCreatedPerInput);
+        AZStd::span<const SurfaceTag> tagFilters;
+        if (useTagFilters)
+        {
+            tagFilters = desiredTags;
+        }
+        surfacePointLists.StartListConstruction(inPositions, maxPointsCreatedPerInput, tagFilters);
 
         // Loop through each data provider and generate surface points from the set of input positions.
         // Any generated points that have the same XY coordinates and extremely similar Z values will get combined together.
@@ -314,15 +319,10 @@ namespace SurfaceData
             }
         }
 
-        // Finally, filter out any remaining points that don't match the desired tag list. This can happen when a surface provider
-        // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
-        if (useTagFilters)
-        {
-            surfacePointLists.FilterPoints(desiredTags);
-        }
-
         // Notify the output structure that we're done building up the list.
-        // This will compact the memory and free any temporary structures.
+        // This will filter out any remaining points that don't match the desired tag list. This can happen when a surface provider
+        // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
+        // It may also compact the memory and free any temporary structures.
         surfacePointLists.EndListConstruction();
     }
 

@@ -65,7 +65,11 @@ namespace SurfaceData
         //! valid until EndListConstruction() is called.
         //! @param maxPointsPerInput - the maximum number of potential surface points that will be generated for each input. This is used
         //! for allocating internal structures during list construction and is enforced to be correct.
-        void StartListConstruction(AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput);
+        //! @param filterTags - optional list of tags to filter the generated surface points by. If this list is provided, every surface
+        //! point remaining in the list after construction will contain at least one of these tags. The list is expected to remain
+        //! valid until EndListConstruction() is called.
+        void StartListConstruction(AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput,
+            AZStd::span<const SurfaceTag> filterTags);
 
         //! Add a surface point to the list.
         //! To use this method optimally, the points should get added in increasing inPosition index order.
@@ -81,9 +85,6 @@ namespace SurfaceData
         void ModifySurfaceWeights(
             const AZ::EntityId& currentEntityId,
             AZStd::function<void(const AZ::Vector3& position, SurfaceTagWeights& surfaceWeights)> modificationWeightCallback);
-
-        //! Remove any points that don't contain any of the provided surface tags.
-        void FilterPoints(const SurfaceTagVector& desiredTags);
 
         //! End construction of the SurfacePointList.
         //! After this is called, surface points can no longer be added or modified, and all of the query APIs can start getting used.
@@ -129,8 +130,13 @@ namespace SurfaceData
         }
 
     protected:
+        //! Remove any points that don't contain any of the provided surface tags.
+        void FilterPoints(AZStd::span<const SurfaceTag> desiredTags);
+
         size_t GetInPositionIndexFromPosition(const AZ::Vector3& inPosition) const;
         size_t GetSurfacePointStartIndexFromInPositionIndex(size_t inPositionIndex) const;
+
+        AZStd::span<const SurfaceTag> m_filterTags;
 
         AZStd::span<const AZ::Vector3> m_inputPositions;
         mutable size_t m_lastInputPositionIndex = 0;

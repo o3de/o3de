@@ -135,7 +135,7 @@ namespace UnitTest
 
             // Call GetSurfacePoints and verify the results
             SurfaceData::SurfacePointList pointList;
-            pointList.StartListConstruction({ { queryPoint } }, 1);
+            pointList.StartListConstruction({ { queryPoint } }, 1, {});
             SurfaceData::SurfaceDataProviderRequestBus::Event(providerHandle, &SurfaceData::SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
                                                               queryPoint, pointList);
             pointList.EndListConstruction();

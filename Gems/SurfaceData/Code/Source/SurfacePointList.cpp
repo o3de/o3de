@@ -13,6 +13,12 @@ namespace SurfaceData
 {
     size_t SurfacePointList::GetInPositionIndexFromPosition(const AZ::Vector3& inPosition) const
     {
+        // Given an input position, find the input position index that's associated with it.
+        // We'll bias towards always having a position that's the same or further in our input list than before,
+        // so we'll do a linear search that starts with the last input position we used, and goes forward (and wraps around)
+        // until we've searched them all.
+        // Our expectation is that most of the time, we'll only have to compare 0-1 input positions.
+
         size_t inPositionIndex = m_lastInputPositionIndex;
         bool foundMatch = false;
         for (size_t indexCounter = 0; indexCounter < m_inputPositions.size(); indexCounter++)
@@ -45,7 +51,7 @@ namespace SurfaceData
 
     void SurfacePointList::StartListConstruction(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
     {
-        StartListConstruction({ { surfacePoints.begin()->m_position } }, surfacePoints.size());
+        StartListConstruction({ { surfacePoints.begin()->m_position } }, surfacePoints.size(), {});
 
         for (auto& point : surfacePoints)
         {
@@ -54,7 +60,8 @@ namespace SurfaceData
         }
     }
 
-    void SurfacePointList::StartListConstruction(AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput)
+    void SurfacePointList::StartListConstruction(
+        AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput, AZStd::span<const SurfaceTag> filterTags)
     {
         AZ_Assert(!m_listIsBeingConstructed, "Trying to start list construction on a list currently under construction.");
         AZ_Assert(m_surfacePositionList.empty(), "Trying to reserve space on a list that is already being used.");
@@ -65,6 +72,7 @@ namespace SurfaceData
         m_inputPositions = inPositions;
         m_inputPositionSize = inPositions.size();
         m_maxSurfacePointsPerInput = maxPointsPerInput;
+        m_filterTags = filterTags;
 
         size_t outputReserveSize = inPositions.size() * m_maxSurfacePointsPerInput;
 
@@ -84,6 +92,7 @@ namespace SurfaceData
         m_inputPositionSize = 0;
         m_maxSurfacePointsPerInput = 0;
 
+        m_filterTags = {};
         m_inputPositions = {};
 
         m_indirectIndex.clear();
@@ -170,7 +179,7 @@ namespace SurfaceData
         }
     }
 
-    void SurfacePointList::FilterPoints(const SurfaceTagVector& desiredTags)
+    void SurfacePointList::FilterPoints(AZStd::span<const SurfaceTag> desiredTags)
     {
         AZ_Assert(m_listIsBeingConstructed, "Trying to filter a SurfacePointList that isn't under construction.");
 
@@ -214,10 +223,16 @@ namespace SurfaceData
 
     void SurfacePointList::EndListConstruction()
     {
+        if (!m_filterTags.empty())
+        {
+            FilterPoints(m_filterTags);
+        }
+
         AZ_Assert(m_listIsBeingConstructed, "Trying to end list construction on a SurfacePointList that isn't under construction.");
 
         m_listIsBeingConstructed = false;
         m_inputPositions = {};
+        m_filterTags = {};
     }
 
     bool SurfacePointList::IsEmpty() const
