@@ -13,7 +13,7 @@ import azlmbr.math
 import azlmbr.legacy.general as general
 
 # Open a level (any level should work)
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'WaterSample')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'Base')
 
 general.idle_wait(0.5)
 

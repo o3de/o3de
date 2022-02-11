@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import time
 import logging
+import re
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
@@ -151,3 +152,41 @@ def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTestBase
         else:
             index += 1
     return index
+
+def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
+    """
+    Checks all asset logs in the JobLogs directory to see if the asset has any warnings or errors. If so, the asset is
+    saved via ArtifactManager.
+
+    :param workspace: The AbstractWorkspace to access the JobLogs path
+    :return: None
+    """
+    for walk_tuple in os.walk(workspace.paths.ap_job_logs()):
+        for log_file in walk_tuple[2]:
+            full_log_path = os.path.join(walk_tuple[0], log_file)
+            # Only save asset logs that contain errors or warnings
+            if _check_log_errors_warnings(full_log_path):
+                try:
+                    workspace.artifact_manager.save_artifact(full_log_path)
+                except Exception as e:  # Purposefully broad
+                    logger.warning(f"Error when saving log at path:{full_log_path}\n{e}")
+
+def _check_log_errors_warnings(log_path: str) -> bool:
+    """
+    Checks to see if the asset log contains any errors or warnings. Also returns True is no regex is found because
+    something probably went wrong.
+    Example log lines: ~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 1 warnings
+
+    :param log_path: The full path to the asset log file to read
+    :return: True if the regex finds an error or warning, else False
+    """
+    log_regex = "(\\d+) errors, (\\d+) warnings"
+    with open(log_path, 'r') as opened_asset_log:
+        for log_line in opened_asset_log:
+            regex_match = re.search(log_regex, log_line)
+            if regex_match is not None:
+                break
+    # If we match any non zero numbers in: n error, n warnings
+    if regex_match is None or (int)(regex_match.group(1)) != 0 or (int)(regex_match.group(2)) != 0:
+        return True
+    return False

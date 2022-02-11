@@ -3543,11 +3543,9 @@ namespace ScriptCanvasEditor
 
             GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::SignalLoadStart);
 
-            auto saveDataIter = m_graphCanvasSaveData.find(GetEntityId());
-
-            if (saveDataIter != m_graphCanvasSaveData.end())
+            for (auto& saveDataIter : m_graphCanvasSaveData)
             {
-                GraphCanvas::EntitySaveDataRequestBus::Event(graphCanvasGraphId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, (*saveDataIter->second));
+                GraphCanvas::EntitySaveDataRequestBus::Event(graphCanvasGraphId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, (*saveDataIter.second));
             }
 
             ScriptCanvas::NodeIdList nodeList = GetNodes();

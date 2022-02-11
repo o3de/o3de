@@ -14,13 +14,13 @@
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
-#include <AzCore/Script/lua/lua.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/FileFunc/FileFunc.h>
+#include <AzCore/Script/lua/lua.h> // for lua_tostring
 
 namespace LuaBuilder
 {
@@ -36,8 +36,15 @@ namespace LuaBuilder
 
         static const AZ::u32 s_BuildTypeKey = AZ_CRC("BuildType", 0xd01cbdd7);
         static const char* s_BuildTypeCompiled = "Compiled";
-        static const char* s_BuildTypeText = "Text";    }
+        static const char* s_BuildTypeText = "Text";
+    }
 
+    AZStd::string LuaBuilderWorker::GetAnalysisFingerprint()
+    {
+        // mutating the Analysis Fingerprint will cause the CreateJobs function to run even
+        // on files which have not changed.
+        return AZ::ScriptDataContext::GetInterpreterVersion();
+    }
     //////////////////////////////////////////////////////////////////////////
     // CreateJobs
     void LuaBuilderWorker::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
@@ -57,6 +64,11 @@ namespace LuaBuilder
             descriptor.m_jobKey = "Lua Compile";
             descriptor.SetPlatformIdentifier(info.m_identifier.c_str());
             descriptor.m_critical = true;
+            // mutating the AdditionalFingerprintInfo will cause the job to run even if
+            // nothing else has changed (ie, files are the same, version of this builder didnt change)
+            // by doing this, changing the version of the interpreter is enough to cause the files to rebuild
+            // automatically.
+            descriptor.m_additionalFingerprintInfo = GetAnalysisFingerprint();
             descriptor.m_jobParameters[s_BuildTypeKey] = info.HasTag("android") ? s_BuildTypeText : s_BuildTypeCompiled;
             response.m_createJobOutputs.push_back(descriptor);
         }
