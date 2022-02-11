@@ -69,10 +69,10 @@ namespace AtomToolsFramework
         m_styleManager.reset(new AzQtComponents::StyleManager(this));
         m_styleManager->initialize(this, engineRootPath);
 
-        const AZ::u64 updateIntervalWhenActive =
-            GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1);
-        const AZ::u64 updateIntervalWhenNotActive =
-            GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 64);
+        const int updateIntervalWhenActive =
+            aznumeric_cast<int>(GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1));
+        const int updateIntervalWhenNotActive =
+            aznumeric_cast<int>(GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 64));
 
         m_timer.setInterval(updateIntervalWhenActive);
         connect(&m_timer, &QTimer::timeout, this, [this]()
