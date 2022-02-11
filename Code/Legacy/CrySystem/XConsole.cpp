@@ -1682,11 +1682,12 @@ void CXConsole::DisplayHelp(const char* help, const char* name)
     else
     {
         char* start, * pos;
-        for (pos = strstr((char*)help, "\n"), start = (char*)help; pos; start = ++pos)
+        for (pos = strstr((char*)help, "\n"), start = (char*)help; pos; )
         {
             AZStd::string s = start;
             s.resize(pos - start);
             ConsoleLogInputResponse("    $3%s", s.c_str());
+            start = ++pos;
             pos = strstr(pos, "\n");
         }
         ConsoleLogInputResponse("    $3%s", start);
