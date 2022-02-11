@@ -331,7 +331,8 @@ namespace AZ
 
             //! Recursively populates a material type asset with properties from the tree of material property groups.
             //! @param materialTypeSourceFilePath path to the material type file that is being processed, used to look up relative paths
-            //! @param propertyIdContext the accumulated prefix that should be applied to any property names encountered in the current @propertyGroup
+            //! @param materialTypeAssetCreator properties will be added to this creator
+            //! @param materialNameContext the accumulated name context that should be applied to any property names or connection names encountered in the current @propertyGroup
             //! @param propertyGroup the current PropertyGroup that is being processed
             //! @return false if errors are detected and processing should abort
             bool BuildPropertyList(

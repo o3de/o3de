@@ -273,6 +273,8 @@ namespace UnitTest
             using AZ::RPI::MaterialFunctor::Process;
             void Process(AZ::RPI::MaterialFunctor::RuntimeContext&) override
             {
+                // Intentionally empty, this is where the functor would do it's normal processing,
+                // but all this test functor does is store the MaterialNameContext.
             }
             
             MaterialNameContext m_nameContext;

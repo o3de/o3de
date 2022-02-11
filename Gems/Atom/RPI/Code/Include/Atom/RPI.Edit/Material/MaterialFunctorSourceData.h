@@ -112,7 +112,7 @@ namespace AZ
                 //! Returns the name context for the functor.
                 //! It acts like a namespace for any names that the MaterialFunctorSourceData might reference. The namespace
                 //! is automatically applied by the other relevant functions of this RuntimeContext class.
-                //! Not that by default the MaterialNameContext is not saved as part of the final MaterialFunctor class
+                //! Note that by default the MaterialNameContext is not saved as part of the final MaterialFunctor class
                 //! (most CreateFunctor() implementations should convert names to indexes anyway) but CreateFunctor() can
                 //! copy it to the created MaterialFunctor for use at runtime if needed.
                 const MaterialNameContext* GetNameContext() const { return m_materialNameContext; }
@@ -148,7 +148,7 @@ namespace AZ
                 //! Returns the name context for the functor.
                 //! It acts like a namespace for any names that the MaterialFunctorSourceData might reference. The namespace
                 //! is automatically applied by the other relevant functions of this RuntimeContext class.
-                //! Not that by default the MaterialNameContext is not saved as part of the final MaterialFunctor class
+                //! Note that by default the MaterialNameContext is not saved as part of the final MaterialFunctor class
                 //! (most CreateFunctor() implementations should convert names to indexes anyway) but CreateFunctor() can
                 //! copy it to the created MaterialFunctor for use at runtime if needed.
                 const MaterialNameContext* GetNameContext() const { return m_materialNameContext; }

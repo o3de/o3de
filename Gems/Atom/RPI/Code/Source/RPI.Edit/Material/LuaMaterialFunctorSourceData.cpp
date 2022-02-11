@@ -198,7 +198,7 @@ namespace AZ
 
             for (const Name& materialProperty : materialPropertyDependencies.GetValue())
             {
-                Name propertyName{materialProperty.GetCStr()};
+                Name propertyName{materialProperty};
                 functor->m_materialNameContext.ContextualizeProperty(propertyName);
 
                 MaterialPropertyIndex index = propertiesLayout->FindPropertyIndex(propertyName);

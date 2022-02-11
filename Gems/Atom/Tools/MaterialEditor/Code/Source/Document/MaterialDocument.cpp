@@ -566,6 +566,9 @@ namespace MaterialEditor
 
                 AZStd::vector<AZStd::string> groupNameVector;
                 AZStd::vector<AZStd::string> groupDisplayNameVector;
+                
+                groupNameVector.reserve(propertyGroupStack.size());
+                groupDisplayNameVector.reserve(propertyGroupStack.size());
 
                 for (auto& group : propertyGroupStack)
                 {

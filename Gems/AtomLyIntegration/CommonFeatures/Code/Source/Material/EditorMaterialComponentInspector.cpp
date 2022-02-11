@@ -289,6 +289,9 @@ namespace AZ
 
                         AZStd::vector<AZStd::string> groupNameVector;
                         AZStd::vector<AZStd::string> groupDisplayNameVector;
+                        
+                        groupNameVector.reserve(propertyGroupStack.size());
+                        groupDisplayNameVector.reserve(propertyGroupStack.size());
 
                         for (auto& nextGroup : propertyGroupStack)
                         {
