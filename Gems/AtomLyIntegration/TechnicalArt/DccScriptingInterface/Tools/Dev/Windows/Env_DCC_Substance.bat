@@ -17,8 +17,8 @@ IF "%DCCSI_ENV_SUBSTANCE_INIT%"=="1" GOTO :END_OF_FILE
 cd %~dp0
 PUSHD %~dp0
 
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
+CALL %~dp0\Env_O3DE_Core.bat
+CALL %~dp0\Env_O3DE_Python.bat
 
 ::SETLOCAL ENABLEDELAYEDEXPANSION
 

@@ -32,9 +32,9 @@ IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=7)
 IF "%BLENDER_VERSION%"=="" (set BLENDER_VERSION=3.0)
 
 :: Initialize env
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Qt.bat
+CALL %~dp0\Env_O3DE_Core.bat
+CALL %~dp0\Env_O3DE_Python.bat
+CALL %~dp0\Env_O3DE_Qt.bat
 
 echo.
 echo _____________________________________________________________________

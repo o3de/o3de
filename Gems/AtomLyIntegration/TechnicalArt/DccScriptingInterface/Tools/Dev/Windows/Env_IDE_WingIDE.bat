@@ -23,9 +23,9 @@ IF "%DCCSI_WING_VERSION_MAJOR%"=="" (set DCCSI_WING_VERSION_MAJOR=7)
 IF "%DCCSI_WING_VERSION_MINOR%"=="" (set DCCSI_WING_VERSION_MINOR=1)
 
 :: Initialize env
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Qt.bat
+CALL %~dp0\Env_O3DE_Core.bat
+CALL %~dp0\Env_O3DE_Python.bat
+CALL %~dp0\Env_O3DE_Qt.bat
 
 echo.
 echo _____________________________________________________________________
