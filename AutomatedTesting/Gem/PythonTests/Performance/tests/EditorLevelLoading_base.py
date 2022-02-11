@@ -7,11 +7,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import time
 
-# fmt: off
-class Tests():
-    enter_game_mode = ("Entered game mode", "Failed to enter game mode")
-    exit_game_mode  = ("Exited game mode",  "Couldn't exit game mode")
-# fmt: on
+ENTER_MSG = ("Entered game mode", "Failed to enter game mode")
+EXIT_MSG = ("Exited game mode",  "Couldn't exit game mode")
 
 class Timer:
     unit_divisor = 60
@@ -63,12 +60,12 @@ def time_editor_level_loading(level_dir, level_name):
 
     # 2) Time how long it takes to enter game mode
     timer.start()
-    helper.enter_game_mode(Tests.enter_game_mode)
+    helper.enter_game_mode(ENTER_MSG)
     timer.log_time('Enter game mode')
 
     # 3) Exit game mode
     timer.start()
-    helper.exit_game_mode(Tests.exit_game_mode)
+    helper.exit_game_mode(EXIT_MSG)
     timer.log_time('Exit game mode')
 
     # 4) Close the editor
