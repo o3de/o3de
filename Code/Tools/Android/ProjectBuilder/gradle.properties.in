@@ -19,8 +19,8 @@ org.gradle.parallel=true
 # there are a large number of sub-projects
 org.gradle.configureondemand=false
 
-# bump the JVM memory limits due to the size of Lumberyard. Defaults: -Xmx1280m -XX:MaxPermSize=256m
-org.gradle.jvmargs=
+# bump the JVM memory limits due to the size of O3DE. Defaults: -Xmx1280m -XX:MaxPermSize=256m
+org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
 
 # required to use Android X libraries
 android.useAndroidX=true
