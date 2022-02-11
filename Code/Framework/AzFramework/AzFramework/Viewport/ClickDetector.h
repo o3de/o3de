@@ -8,10 +8,9 @@
 
 #pragma once
 
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
-
-#include <chrono>
 
 namespace AzFramework
 {

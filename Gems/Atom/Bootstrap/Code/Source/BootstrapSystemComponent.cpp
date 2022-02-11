@@ -318,10 +318,8 @@ namespace AZ
                 RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
                 renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
-                // Make sure non-msaa super variant is used for non-msaa pipeline
-                bool isNonMsaaPipeline = (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_samples == 1);
-                const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
-                AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
+                // The default pipeline determines the initial MSAA state for the application
+                AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor.m_renderSettings.m_multisampleState);
 
                 if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                 {
