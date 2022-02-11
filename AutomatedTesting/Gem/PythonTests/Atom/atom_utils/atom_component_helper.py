@@ -82,7 +82,6 @@ def compare_screenshot_similarity(
         result = 'You must specify a screenshot_directory in order to create a zip archive.\n'
 
     mean_similarity = compare_screenshots(test_screenshot, golden_image)
-    print(f"MEAN_SIMILARITY = {mean_similarity}")
     if not mean_similarity > similarity_threshold:
         if create_zip_archive:
             create_screenshots_archive(screenshot_directory)
