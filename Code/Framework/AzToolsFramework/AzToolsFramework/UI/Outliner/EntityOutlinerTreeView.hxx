@@ -78,10 +78,15 @@ namespace AzToolsFramework
         void timerEvent(QTimerEvent* event) override;
     private:
         void ClearQueuedMouseEvent();
+        void ProcessQueuedMousePressedEvent(QMouseEvent* event);
 
-        void processQueuedMousePressedEvent(QMouseEvent* event);
-        void recursiveCheckExpandedStates(const QModelIndex& parent);
-        void checkExpandedState(const QModelIndex& current);
+        void SelectAllEntitiesInSelectionRect();
+
+        void HandleDrag();
+        void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
+
+        void RecursiveCheckExpandedStates(const QModelIndex& parent);
+        void CheckExpandedState(const QModelIndex& current);
 
         void PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const;
         void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
@@ -90,6 +95,7 @@ namespace AzToolsFramework
         QModelIndex m_currentHoveredIndex;
         QPoint m_mousePosition;
 
+        bool m_isDragSelectActive = false;
         int m_expandOnlyDelay = -1;
         QBasicTimer m_expandTimer;
 
@@ -98,19 +104,6 @@ namespace AzToolsFramework
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
-
-        void SelectAllEntitiesInSelectionRect();
-
-        void HandleDrag();
-        void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
-
-        enum class DragState
-        {
-            NO_DRAG = 0,
-            SELECT
-        };
-
-        DragState m_currentDragState = DragState::NO_DRAG;
     };
 
 }

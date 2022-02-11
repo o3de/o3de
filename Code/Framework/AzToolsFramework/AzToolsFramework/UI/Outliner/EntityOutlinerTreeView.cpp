@@ -76,7 +76,7 @@ namespace AzToolsFramework
                 auto modelRow = topLeft.sibling(i, EntityOutlinerListModel::ColumnName);
                 if (modelRow.isValid())
                 {
-                    checkExpandedState(modelRow);
+                    CheckExpandedState(modelRow);
                 }
             }
         }
@@ -91,15 +91,15 @@ namespace AzToolsFramework
                 auto modelRow = model()->index(i, EntityOutlinerListModel::ColumnName, parent);
                 if (modelRow.isValid())
                 {
-                    checkExpandedState(modelRow);
-                    recursiveCheckExpandedStates(modelRow);
+                    CheckExpandedState(modelRow);
+                    RecursiveCheckExpandedStates(modelRow);
                 }
             }
         }
         AzQtComponents::StyledTreeView::rowsInserted(parent, start, end);
     }
 
-    void EntityOutlinerTreeView::recursiveCheckExpandedStates(const QModelIndex& current)
+    void EntityOutlinerTreeView::RecursiveCheckExpandedStates(const QModelIndex& current)
     {
         const int rowCount = model()->rowCount(current);
         for (int i = 0; i < rowCount; i++)
@@ -107,13 +107,13 @@ namespace AzToolsFramework
             auto modelRow = model()->index(i, EntityOutlinerListModel::ColumnName, current);
             if (modelRow.isValid())
             {
-                checkExpandedState(modelRow);
-                recursiveCheckExpandedStates(modelRow);
+                CheckExpandedState(modelRow);
+                RecursiveCheckExpandedStates(modelRow);
             }
         }
     }
 
-    void EntityOutlinerTreeView::checkExpandedState(const QModelIndex& current)
+    void EntityOutlinerTreeView::CheckExpandedState(const QModelIndex& current)
     {
         const bool expandState = current.data(EntityOutlinerListModel::ExpandedRole).template value<bool>();
         setExpanded(current, expandState);
@@ -129,6 +129,8 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::mouseMoveEvent(QMouseEvent* event)
     {
+        bool forceUpdate = false;
+
         QModelIndex previousHoveredIndex = m_currentHoveredIndex;
         m_mousePosition = event->pos();
 
@@ -140,37 +142,32 @@ namespace AzToolsFramework
 
         if (m_queuedMouseEvent)
         {
-            switch (m_currentDragState)
+            if (!m_isDragSelectActive)
             {
-                case DragState::NO_DRAG:
+                QModelIndex clickedIndex = indexAt(m_queuedMouseEvent->pos());
+                if (clickedIndex.isValid() && clickedIndex.column() != EntityOutlinerListModel::ColumnSpacing)
                 {
-                    QModelIndex clickedIndex = indexAt(m_queuedMouseEvent->pos());
-                    if (clickedIndex.isValid() && clickedIndex.column() != EntityOutlinerListModel::ColumnSpacing)
-                    {
-                        HandleDrag();
-                    }
-                    else
-                    {
-                        m_currentDragState = DragState::SELECT;
-                        update();
-                    }
-
-                    break;
+                    HandleDrag();
                 }
-            case DragState::SELECT:
+                else
                 {
-                    SelectAllEntitiesInSelectionRect();
-                    update();
-                    break;
+                    m_isDragSelectActive = true;
+                    forceUpdate = true;
                 }
-            default:
-                {
-                    break;
-                }
+            }
+            else
+            {
+                SelectAllEntitiesInSelectionRect();
+                forceUpdate = true;
             }
         }
 
         if (previousHoveredIndex != m_currentHoveredIndex)
+        {
+            forceUpdate = true;
+        }
+
+        if (forceUpdate)
         {
             update();
         }
@@ -178,7 +175,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::mouseReleaseEvent(QMouseEvent* event)
     {
-        if (m_currentDragState == DragState::SELECT)
+        if (m_isDragSelectActive)
         {
             SelectAllEntitiesInSelectionRect();
             update();
@@ -187,14 +184,53 @@ namespace AzToolsFramework
         {
             if (m_queuedMouseEvent)
             {
-                processQueuedMousePressedEvent(m_queuedMouseEvent);
+                ProcessQueuedMousePressedEvent(m_queuedMouseEvent);
             }
         }
 
         ClearQueuedMouseEvent();
-        m_currentDragState = DragState::NO_DRAG;
+        m_isDragSelectActive = false;
 
         QTreeView::mouseReleaseEvent(event);
+    }
+
+    void EntityOutlinerTreeView::mouseDoubleClickEvent(QMouseEvent* event)
+    {
+        //cancel pending mouse press
+        ClearQueuedMouseEvent();
+        QTreeView::mouseDoubleClickEvent(event);
+    }
+
+    void EntityOutlinerTreeView::focusInEvent(QFocusEvent* event)
+    {
+        //cancel pending mouse press
+        ClearQueuedMouseEvent();
+        QTreeView::focusInEvent(event);
+    }
+
+    void EntityOutlinerTreeView::focusOutEvent(QFocusEvent* event)
+    {
+        //cancel pending mouse press
+        ClearQueuedMouseEvent();
+        QTreeView::focusOutEvent(event);
+    }
+
+    void EntityOutlinerTreeView::dragMoveEvent([[maybe_unused]] QDragMoveEvent* event)
+    {
+        if (m_expandOnlyDelay >= 0)
+        {
+            m_expandTimer.start(m_expandOnlyDelay, this);
+        }
+
+        QTreeView::dragMoveEvent(event);
+    }
+
+    void EntityOutlinerTreeView::dropEvent([[maybe_unused]] QDropEvent* event)
+    {
+        emit ItemDropped();
+        QTreeView::dropEvent(event);
+
+        ClearQueuedMouseEvent();
     }
 
     void EntityOutlinerTreeView::HandleDrag()
@@ -266,45 +302,6 @@ namespace AzToolsFramework
         selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
     }
 
-    void EntityOutlinerTreeView::mouseDoubleClickEvent(QMouseEvent* event)
-    {
-        //cancel pending mouse press
-        ClearQueuedMouseEvent();
-        QTreeView::mouseDoubleClickEvent(event);
-    }
-
-    void EntityOutlinerTreeView::focusInEvent(QFocusEvent* event)
-    {
-        //cancel pending mouse press
-        ClearQueuedMouseEvent();
-        QTreeView::focusInEvent(event);
-    }
-
-    void EntityOutlinerTreeView::focusOutEvent(QFocusEvent* event)
-    {
-        //cancel pending mouse press
-        ClearQueuedMouseEvent();
-        QTreeView::focusOutEvent(event);
-    }
-
-    void EntityOutlinerTreeView::dragMoveEvent([[maybe_unused]] QDragMoveEvent* event)
-    {
-        if (m_expandOnlyDelay >= 0)
-        {
-            m_expandTimer.start(m_expandOnlyDelay, this);
-        }
-
-        QTreeView::dragMoveEvent(event);
-    }
-
-    void EntityOutlinerTreeView::dropEvent([[maybe_unused]] QDropEvent* event)
-    {
-        emit ItemDropped();
-        QTreeView::dropEvent(event);
-
-        ClearQueuedMouseEvent();
-    }
-
     void EntityOutlinerTreeView::ClearQueuedMouseEvent()
     {
         if (m_queuedMouseEvent)
@@ -332,7 +329,7 @@ namespace AzToolsFramework
     {
         AzQtComponents::StyledTreeView::paintEvent(event);
 
-        if (m_currentDragState == DragState::SELECT && m_queuedMouseEvent)
+        if (m_isDragSelectActive && m_queuedMouseEvent)
         {
             QPainter painter(viewport());
 
@@ -435,7 +432,7 @@ namespace AzToolsFramework
         QTreeView::timerEvent(event);
     }
 
-    void EntityOutlinerTreeView::processQueuedMousePressedEvent(QMouseEvent* event)
+    void EntityOutlinerTreeView::ProcessQueuedMousePressedEvent(QMouseEvent* event)
     {
         //interpret the mouse event as a button press
         QMouseEvent mousePressedEvent(
