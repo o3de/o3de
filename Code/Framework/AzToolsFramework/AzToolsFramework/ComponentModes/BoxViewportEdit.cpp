@@ -44,15 +44,15 @@ namespace AzToolsFramework
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
-            nonUniformScale, m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+            nonUniformScale, m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequestBus::Events::GetScale);
 
         AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
         BoxManipulatorRequestBus::EventResult(
-            boxDimensions, m_entityComponentIdPair, &BoxManipulatorRequests::GetDimensions);
+            boxDimensions, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetDimensions);
 
         AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
         BoxManipulatorRequestBus::EventResult(
-            boxLocalTransform, m_entityComponentIdPair, &BoxManipulatorRequests::GetCurrentLocalTransform);
+            boxLocalTransform, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentLocalTransform);
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
         {
@@ -98,7 +98,7 @@ namespace AzToolsFramework
                 {
                     AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
                     BoxManipulatorRequestBus::EventResult(
-                        boxLocalTransform, entityComponentIdPair, &BoxManipulatorRequests::GetCurrentLocalTransform);
+                        boxLocalTransform, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentLocalTransform);
 
                     const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(transformScale, boxLocalTransform, action);
 
@@ -110,12 +110,12 @@ namespace AzToolsFramework
 
                     AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
                     BoxManipulatorRequestBus::EventResult(
-                        boxDimensions, entityComponentIdPair, &BoxManipulatorRequests::GetDimensions);
+                        boxDimensions, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetDimensions);
 
                     // update dimensions - preserve dimensions not effected by this
                     // axis, and update current axis displacement
                     BoxManipulatorRequestBus::Event(
-                        entityComponentIdPair, &BoxManipulatorRequests::SetDimensions,
+                        entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions,
                         (NotAxis(action.m_fixed.m_axis) * boxDimensions).GetMax(axisDisplacement));
 
                     UpdateManipulators();
