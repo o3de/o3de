@@ -119,9 +119,7 @@ namespace Audio
 
         UpdateSharedData();
 
-        m_oAudioEventMgr.Update(elapsedMs);
         m_oAudioObjectMgr.Update(elapsedMs, m_oSharedData.m_oActiveListenerPosition);
-        m_oAudioListenerMgr.Update(elapsedMs);
         m_oFileCacheMgr.Update();
 
         AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::Update, elapsedMs);
@@ -584,29 +582,9 @@ namespace Audio
                 else if constexpr (AZStd::is_same_v<T, Audio::ListenerRequest::SetWorldTransform>)
                 {
                     TAudioObjectID listenerId = INVALID_AUDIO_OBJECT_ID;
-                    // Check for an audio listener override
-                    TAudioObjectID overrideListenerId = m_oAudioListenerMgr.GetOverrideListenerID();
-                    if (overrideListenerId != INVALID_AUDIO_OBJECT_ID)
-                    {
-                        if (request.m_audioObjectId == overrideListenerId)
-                        {
-                            // Have an override set, and the ID in the request matches the override.
-                            // Reroute to the default listener.
-                            listenerId = m_oAudioListenerMgr.GetDefaultListenerID();
-                        }
-                        else if (request.m_audioObjectId != INVALID_AUDIO_OBJECT_ID)
-                        {
-                            // Override is set, but the request specified a different listener ID, allow it.
-                            listenerId = request.m_audioObjectId;
-                        }
-                        else
-                        {
-                            // Override is set, but no listener ID specified.  Typically this would go
-                            // to the default listener, but with overrides we explicitly ignore this.
-                            return EAudioRequestStatus::FailureInvalidObjectId;
-                        }
-                    }
-                    else if (request.m_audioObjectId == INVALID_AUDIO_OBJECT_ID)
+                    TAudioObjectID overrideId = m_oAudioListenerMgr.GetOverrideListenerID();
+                    if (request.m_audioObjectId == overrideId
+                        || request.m_audioObjectId == INVALID_AUDIO_OBJECT_ID)
                     {
                         listenerId = m_oAudioListenerMgr.GetDefaultListenerID();
                     }
@@ -842,27 +820,30 @@ namespace Audio
         if (eResult == EAudioRequestStatus::Success)
         {
             IATLAudioObjectData* pGlobalObjectData = nullptr;
-            AudioSystemImplementationRequestBus::BroadcastResult(pGlobalObjectData, &AudioSystemImplementationRequestBus::Events::NewGlobalAudioObjectData, m_nGlobalAudioObjectID);
+            AudioSystemImplementationRequestBus::BroadcastResult(
+                pGlobalObjectData, &AudioSystemImplementationRequestBus::Events::NewGlobalAudioObjectData, m_nGlobalAudioObjectID);
 
-            m_pGlobalAudioObject = azcreate(CATLGlobalAudioObject, (m_nGlobalAudioObjectID, pGlobalObjectData), Audio::AudioSystemAllocator, "ATLGlobalAudioObject");
+            m_pGlobalAudioObject = azcreate(
+                CATLGlobalAudioObject, (m_nGlobalAudioObjectID, pGlobalObjectData), Audio::AudioSystemAllocator, "ATLGlobalAudioObject");
 
+            m_oAudioListenerMgr.Initialize();
             m_oAudioObjectMgr.Initialize();
             m_oAudioEventMgr.Initialize();
-            m_oAudioListenerMgr.Initialize();
-            m_oXmlProcessor.Initialize();
             m_oFileCacheMgr.Initialize();
 
             SetImplLanguage();
 
             // Update the implementation subpath for locating ATL controls...
-            AudioSystemImplementationRequestBus::BroadcastResult(m_implSubPath, &AudioSystemImplementationRequestBus::Events::GetImplSubPath);
+            AudioSystemImplementationRequestBus::BroadcastResult(
+                m_implSubPath, &AudioSystemImplementationRequestBus::Events::GetImplSubPath);
         }
 
 #if !defined(AUDIO_RELEASE)
         else
         {
             const char* implementationName = nullptr;
-            AudioSystemImplementationRequestBus::BroadcastResult(implementationName, &AudioSystemImplementationRequestBus::Events::GetImplementationNameString);
+            AudioSystemImplementationRequestBus::BroadcastResult(
+                implementationName, &AudioSystemImplementationRequestBus::Events::GetImplementationNameString);
             g_audioLogger.Log(LogType::Error, "Failed to Initialize the AudioSystemImplementationComponent '%s'\n", implementationName);
         }
 #endif // !AUDIO_RELEASE
@@ -881,16 +862,16 @@ namespace Audio
 
         if (m_pGlobalAudioObject)
         {
-            AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DeleteAudioObjectData, m_pGlobalAudioObject->GetImplDataPtr());
+            AudioSystemImplementationRequestBus::Broadcast(
+                &AudioSystemImplementationRequestBus::Events::DeleteAudioObjectData, m_pGlobalAudioObject->GetImplDataPtr());
             azdestroy(m_pGlobalAudioObject, Audio::AudioSystemAllocator);
             m_pGlobalAudioObject = nullptr;
         }
 
-        m_oAudioObjectMgr.Release();
         m_oAudioListenerMgr.Release();
+        m_oAudioObjectMgr.Release();
         m_oAudioEventMgr.Release();
         m_oFileCacheMgr.Release();
-        m_oXmlProcessor.Release();
 
         m_implSubPath.clear();
 

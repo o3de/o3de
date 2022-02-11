@@ -94,7 +94,12 @@ namespace Audio
         void UncacheFile(CATLAudioFileEntry* const audioFileEntry);
         void TryToUncacheFiles();
         void UpdateLocalizedFileEntryData(CATLAudioFileEntry* const audioFileEntry);
-        bool TryCacheFileCacheEntryInternal(CATLAudioFileEntry* const audioFileEntry, const TAudioFileEntryID fileID, const bool loadSynchronously, const bool overrideUseCount = false, const size_t useCount = 0);
+        bool TryCacheFileCacheEntryInternal(
+            CATLAudioFileEntry* const audioFileEntry,
+            const TAudioFileEntryID fileID,
+            const bool loadSynchronously,
+            const bool overrideUseCount = false,
+            const AZ::u32 useCount = 0);
 
         // Internal members
         TATLPreloadRequestLookup& m_preloadRequests;

@@ -49,12 +49,10 @@ namespace Audio
         CAudioEventManager();
         ~CAudioEventManager();
 
-        CAudioEventManager(const CAudioEventManager&) = delete;         // not defined; calls will fail at compile time
-        CAudioEventManager& operator=(const CAudioEventManager&) = delete; // not defined; calls will fail at compile time
+        AZ_DISABLE_COPY_MOVE(CAudioEventManager);
 
         void Initialize();
         void Release();
-        void Update(const float fUpdateIntervalMS);
 
         CATLEvent* GetEvent(const EATLSubsystem eSender);
         CATLEvent* LookupID(const TAudioEventID nID) const;
@@ -121,8 +119,7 @@ namespace Audio
         CAudioObjectManager(CAudioEventManager& refAudioEventManager);
         ~CAudioObjectManager();
 
-        CAudioObjectManager(const CAudioObjectManager&) = delete;           // not defined; calls will fail at compile time
-        CAudioObjectManager& operator=(const CAudioObjectManager&) = delete; // not defined; calls will fail at compile time
+        AZ_DISABLE_COPY_MOVE(CAudioObjectManager);
 
         void Initialize();
         void Release();
@@ -135,24 +132,7 @@ namespace Audio
         //void ReportEventStarted(const CATLEvent* atlEvent);  // needed?
         void ReportEventFinished(const CATLEvent* atlEvent);
 
-
         using TActiveObjectMap = ATLMapLookupType<TAudioObjectID, CATLAudioObject*>;
-
-    #if !defined(AUDIO_RELEASE)
-        void SetDebugNameStore(CATLDebugNameStore* const pDebugNameStore);
-        size_t GetNumAudioObjects() const;
-        size_t GetNumActiveAudioObjects() const;
-        const TActiveObjectMap& GetActiveAudioObjects() const
-        {
-            return m_cAudioObjects;
-        }
-        void DrawPerObjectDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& rListenerPos) const;
-        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float posX, float posY) const;
-
-    private:
-        CATLDebugNameStore* m_pDebugNameStore;
-
-    #endif // !AUDIO_RELEASE
 
     private:
         static float s_fVelocityUpdateIntervalMS;
@@ -165,6 +145,23 @@ namespace Audio
         float m_fTimeSinceLastVelocityUpdateMS;
 
         AudioRaycastManager m_raycastManager;
+
+#if !defined(AUDIO_RELEASE)
+    public:
+        void SetDebugNameStore(CATLDebugNameStore* const pDebugNameStore);
+        size_t GetNumAudioObjects() const;
+        size_t GetNumActiveAudioObjects() const;
+        const TActiveObjectMap& GetActiveAudioObjects() const
+        {
+            return m_cAudioObjects;
+        }
+        void DrawPerObjectDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& rListenerPos) const;
+        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float posX, float posY) const;
+
+    private:
+        CATLDebugNameStore* m_pDebugNameStore;
+#endif // !AUDIO_RELEASE
+
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -174,12 +171,10 @@ namespace Audio
         CAudioListenerManager();
         ~CAudioListenerManager();
 
-        CAudioListenerManager(const CAudioListenerManager&) = delete;           // not defined; calls will fail at compile time
-        CAudioListenerManager& operator=(const CAudioListenerManager&) = delete; // not defined; calls will fail at compile time
+        AZ_DISABLE_COPY_MOVE(CAudioListenerManager);
 
         void Initialize();
         void Release();
-        void Update(const float fUpdateIntervalMS);
 
         bool ReserveID(TAudioObjectID& rAudioObjectID);
         bool ReleaseID(const TAudioObjectID nAudioObjectID);
@@ -197,10 +192,6 @@ namespace Audio
             return m_listenerOverrideID;
         }
 
-#if !defined(AUDIO_RELEASE)
-        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay) const;
-#endif // !AUDIO_RELEASE
-
     private:
         using TListenerPtrContainer = AZStd::vector<CATLListenerObject*, Audio::AudioSystemStdAllocator>;
         using TActiveListenerMap = ATLMapLookupType<TAudioObjectID, CATLListenerObject*>;
@@ -215,6 +206,11 @@ namespace Audio
         // No longer have a maximum, but we can create a number of additional listeners at startup.
         // TODO: Control this by a cvar
         const size_t m_numReservedListeners = 8;
+
+#if !defined(AUDIO_RELEASE)
+    public:
+        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay) const;
+#endif // !AUDIO_RELEASE
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -228,11 +224,6 @@ namespace Audio
             TATLEnvironmentLookup& rEnvironments,
             TATLPreloadRequestLookup& rPreloadRequests,
             CFileCacheManager& rFileCacheMgr);
-
-        ~CATLXmlProcessor();
-
-        void Initialize();
-        void Release();
 
         void ParseControlsData(const char* const sFolderPath, const EATLDataScope eDataScope);
         void ClearControlsData(const EATLDataScope eDataScope);
@@ -284,9 +275,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SATLSharedData
     {
-        SATLSharedData();
-        ~SATLSharedData();
-
         SATLWorldPosition m_oActiveListenerPosition;
     };
+
 } // namespace Audio

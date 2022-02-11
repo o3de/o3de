@@ -111,11 +111,7 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::Activate()
     {
-        if (IsAudioSystemInitialized())
-        {
-            AudioSystemComponentRequestBus::Handler::BusConnect();
-            CrySystemEventBus::Handler::BusConnect();
-        }
+        CrySystemEventBus::Handler::BusConnect();
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -288,6 +284,10 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
     {
+        if (IsAudioSystemInitialized())
+        {
+            AudioSystemComponentRequestBus::Handler::BusConnect();
+        }
         system.GetILevelSystem()->AddListener(this);
     }
 

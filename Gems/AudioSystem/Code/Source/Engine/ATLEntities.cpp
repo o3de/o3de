@@ -288,12 +288,13 @@ namespace Audio
     }
 
 #endif // !AUDIO_RELEASE
+
     CATLAudioFileEntry::CATLAudioFileEntry(const char* const filePath, IATLAudioFileEntryData* const implData)
         : m_filePath(filePath)
         , m_fileSize(0)
         , m_useCount(0)
         , m_memoryBlockAlignment(AUDIO_MEMORY_ALIGNMENT)
-        , m_flags(eAFF_NOTFOUND)
+        , m_flags(0)
         , m_dataScope(eADS_ALL)
         , m_memoryBlock(nullptr)
         , m_implData(implData)

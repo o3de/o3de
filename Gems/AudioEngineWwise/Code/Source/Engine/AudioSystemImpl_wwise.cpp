@@ -793,16 +793,11 @@ namespace Audio
 
         if (implObjectData && implTriggerData && implEventData)
         {
-            AkGameObjectID akObjectId = AK_INVALID_GAME_OBJECT;
+            AkGameObjectID akObjectId = (implObjectData->bHasPosition ? implObjectData->nAKID : m_globalGameObjectID);
 
             if (implObjectData->bHasPosition)
             {
-                akObjectId = implObjectData->nAKID;
                 PostEnvironmentAmounts(implObjectData);
-            }
-            else
-            {
-                akObjectId = m_globalGameObjectID;
             }
 
             AkPlayingID akPlayingId = AK_INVALID_PLAYING_ID;
@@ -1154,7 +1149,7 @@ namespace Audio
             {
                 case eWST_SWITCH:
                 {
-                    const AkGameObjectID akObjectId = implObjectData->bHasPosition ? implObjectData->nAKID : m_globalGameObjectID;
+                    const AkGameObjectID akObjectId = (implObjectData->bHasPosition ? implObjectData->nAKID : m_globalGameObjectID);
 
                     const AKRESULT akResult = AK::SoundEngine::SetSwitch(
                             implSwitchStateData->nAKSwitchID,

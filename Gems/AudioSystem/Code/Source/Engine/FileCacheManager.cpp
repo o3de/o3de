@@ -33,6 +33,19 @@ namespace Audio
 {
     extern CAudioLogger g_audioLogger;
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    enum EAudioFileFlags : TATLEnumFlagsType
+    {
+        eAFF_NOTFOUND                       = AUDIO_BIT(0),
+        eAFF_CACHED                         = AUDIO_BIT(1),
+        eAFF_MEMALLOCFAIL                   = AUDIO_BIT(2),
+        eAFF_REMOVABLE                      = AUDIO_BIT(3),
+        eAFF_LOADING                        = AUDIO_BIT(4),
+        eAFF_USE_COUNTED                    = AUDIO_BIT(5),
+        eAFF_NEEDS_RESET_TO_MANUAL_LOADING  = AUDIO_BIT(6),
+        eAFF_LOCALIZED                      = AUDIO_BIT(7),
+    };
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     CFileCacheManager::CFileCacheManager(TATLPreloadRequestLookup& preloadRequests)
         : m_preloadRequests(preloadRequests)
@@ -190,8 +203,8 @@ namespace Audio
                 if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED | eAFF_LOADING))
                 {
                     // The file needs to be unloaded first.
-                    const size_t useCount = audioFileEntry->m_useCount;
-                    audioFileEntry->m_useCount = 0;// Needed to uncache without an error.
+                    const AZ::u32 useCount = audioFileEntry->m_useCount;
+                    audioFileEntry->m_useCount = 0; // Needed to uncache without an error.
                     UncacheFile(audioFileEntry);
 
                     UpdateLocalizedFileEntryData(audioFileEntry);
@@ -446,7 +459,7 @@ namespace Audio
 
                     // Format: "relative/path/filename.ext (230 KiB) [2]"
                     str = AZStd::string::format(
-                        "%s (%zu %s) [%zu]", audioFileEntry->m_filePath.c_str(), fileSize, kiloBytes ? "KiB" : "Bytes",
+                        "%s (%zu %s) [%u]", audioFileEntry->m_filePath.c_str(), fileSize, kiloBytes ? "KiB" : "Bytes",
                         audioFileEntry->m_useCount);
                     debugDisplay.SetColor(color);
                     debugDisplay.Draw2dTextLabel(positionX, positionY, entryDrawSize, str.c_str());
@@ -783,7 +796,7 @@ namespace Audio
         [[maybe_unused]] const TAudioFileEntryID fileEntryId,
         [[maybe_unused]] const bool loadSynchronously,
         const bool overrideUseCount /* = false */,
-        const size_t useCount /* = 0 */)
+        const AZ::u32 useCount /* = 0 */)
     {
         AZ_PROFILE_FUNCTION(Audio);
 

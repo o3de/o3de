@@ -52,7 +52,7 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class CAudioSystem
-        : public IAudioSystem
+        : public AZ::Interface<Audio::IAudioSystem>::Registrar
     {
         friend class CAudioThread;
 

@@ -124,12 +124,6 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventManager::Update([[maybe_unused]] float fUpdateIntervalMS)
-    {
-        //TODO: implement
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     CATLEvent* CAudioEventManager::GetEvent(const EATLSubsystem eSender)
     {
         CATLEvent* pATLEvent = nullptr;
@@ -598,7 +592,7 @@ namespace Audio
     void AudioRaycastManager::PushAudioRaycastRequest(const AudioRaycastRequest& request)
     {
         // [Audio Thread]
-        AZStd::lock_guard<AZStd::mutex> lock(m_raycastRequestsMutex);
+        AZStd::scoped_lock lock(m_raycastRequestsMutex);
         m_raycastRequests.push_back(request);
     }
 
@@ -640,7 +634,7 @@ namespace Audio
 
         // Lock and swap the main request container with a local one for processing...
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_raycastRequestsMutex);
+            AZStd::scoped_lock lock(m_raycastRequestsMutex);
             processingQueue.swap(m_raycastRequests);
         }
 
@@ -667,7 +661,7 @@ namespace Audio
 
         // Lock and swap the local results into the target container (or move-append if necessary)...
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_raycastResultsMutex);
+            AZStd::scoped_lock lock(m_raycastResultsMutex);
             if (m_raycastResults.empty())
             {
                 m_raycastResults.swap(resultsQueue);
@@ -683,7 +677,7 @@ namespace Audio
     void AudioRaycastManager::ProcessRaycastResults([[maybe_unused]] float updateIntervalMs)
     {
         // [Audio Thread]
-        AZStd::scoped_lock<AZStd::mutex> lock(m_raycastResultsMutex);
+        AZStd::scoped_lock lock(m_raycastResultsMutex);
         for (const AudioRaycastResult& result : m_raycastResults)
         {
             AudioRaycastNotificationBus::Event(result.m_audioObjectId, &AudioRaycastNotificationBus::Events::OnAudioRaycastResults, result);
@@ -761,11 +755,6 @@ namespace Audio
         }
 
         m_cListenerPool.clear();
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioListenerManager::Update([[maybe_unused]] const float fUpdateIntervalMS)
-    {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -879,21 +868,6 @@ namespace Audio
     #if !defined(AUDIO_RELEASE)
         , m_pDebugNameStore(nullptr)
     #endif // !AUDIO_RELEASE
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CATLXmlProcessor::~CATLXmlProcessor()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLXmlProcessor::Initialize()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLXmlProcessor::Release()
     {
     }
 
@@ -1646,23 +1620,6 @@ namespace Audio
             azdestroy(pOldEnvironment, Audio::AudioSystemAllocator);
         }
     }
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //  SATLSharedData
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    SATLSharedData::SATLSharedData()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    SATLSharedData::~SATLSharedData()
-    {
-    }
-
 
 
 #if !defined(AUDIO_RELEASE)

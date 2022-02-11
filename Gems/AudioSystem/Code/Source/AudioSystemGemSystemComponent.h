@@ -17,6 +17,8 @@
     #include <AzCore/std/smart_ptr/unique_ptr.h>
     #include <Include/IPlugin.h>
     #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
+    #include <Atom/RPI.Public/ViewportContextBus.h>
 #endif // AUDIO_SYSTEM_EDITOR
 
 
@@ -29,6 +31,7 @@ namespace AudioSystemGem
         , protected Audio::Gem::AudioSystemGemRequestBus::Handler
     #if defined(AUDIO_SYSTEM_EDITOR)
         , private AzToolsFramework::EditorEvents::Bus::Handler
+        , public AZ::RPI::ViewportContextNotificationBus::Handler
     #endif // AUDIO_SYSTEM_EDITOR
     {
     public:
@@ -74,6 +77,11 @@ namespace AudioSystemGem
         void NotifyRegisterViews() override;
         void NotifyIEditorAvailable(IEditor*) override;
         ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // AZ::RPI::ViewportContextNotificationBus::Handler interface implementation
+        void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view) override;
+        ////////////////////////////////////////////////////////////////////////
     #endif // AUDIO_SYSTEM_EDITOR
 
     private:
@@ -87,6 +95,7 @@ namespace AudioSystemGem
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AZStd::unique_ptr<IPlugin> m_editorPlugin;
+        AZ::RPI::MatrixChangedEvent::Handler m_cameraTransformHandler;
     #endif // AUDIO_SYSTEM_EDITOR
     };
 

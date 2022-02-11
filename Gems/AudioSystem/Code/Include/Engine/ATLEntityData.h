@@ -118,9 +118,6 @@ namespace Audio
         size_t nSize = 0;                               // file size
         size_t nMemoryBlockAlignment = 0;               // alignment to be used when allocating memory for this file's contents
         bool bLocalized = false;                        // is the file localized?
-
-        SATLAudioFileEntryInfo() = default;
-        ~SATLAudioFileEntryInfo() = default;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

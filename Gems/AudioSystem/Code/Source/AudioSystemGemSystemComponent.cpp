@@ -24,6 +24,9 @@
     #include <AzToolsFramework/API/ToolsApplicationAPI.h>
     #include <AudioControlsEditorPlugin.h>
     struct IEditor;
+
+    #include <Atom/RPI.Public/View.h>
+    #include <Atom/RPI.Public/ViewportContext.h>
 #endif // AUDIO_SYSTEM_EDITOR
 
 
@@ -99,6 +102,20 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::Init()
     {
+        m_cameraTransformHandler = AZ::RPI::MatrixChangedEvent::Handler(
+            []([[maybe_unused]] const AZ::Matrix4x4& matrix)
+            {
+                auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+                auto viewportContext = atomViewportRequests->GetDefaultViewportContext();
+
+                if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+                    audioSystem != nullptr && viewportContext != nullptr)
+                {
+                    Audio::ListenerRequest::SetWorldTransform setWorldTM;
+                    setWorldTM.m_transform = viewportContext->GetCameraTransform();
+                    audioSystem->PushRequest(AZStd::move(setWorldTM));
+                }
+            });
     }
 
     void AudioSystemGemSystemComponent::Activate()
@@ -108,6 +125,10 @@ namespace AudioSystemGem
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        auto defaultContextName = atomViewportRequests->GetDefaultViewportContextName();
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(defaultContextName);
     #endif // AUDIO_SYSTEM_EDITOR
     }
 
@@ -118,6 +139,9 @@ namespace AudioSystemGem
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+        m_cameraTransformHandler.Disconnect();
     #endif // AUDIO_SYSTEM_EDITOR
     }
 
@@ -170,22 +194,19 @@ namespace AudioSystemGem
         AZ_Assert(!AZ::Interface<Audio::IAudioSystem>::Get(), "The IAudioSystem interface is already registered!");
 
         m_audioSystem = AZStd::make_unique<Audio::NullAudioSystem>();
-        AZ::Interface<Audio::IAudioSystem>::Register(m_audioSystem.get());
 
         return (m_audioSystem != nullptr);
     }
 
     void AudioSystemGemSystemComponent::Release()
     {
-        using namespace Audio;
-        AZ_Assert(AZ::Interface<IAudioSystem>::Get() != nullptr, "The IAudioSystem interface has already been unregistered!");
-        AZ::Interface<IAudioSystem>::Get()->Release();
+        AZ_Assert(AZ::Interface<Audio::IAudioSystem>::Get() != nullptr, "The IAudioSystem interface has already been unregistered!");
+        AZ::Interface<Audio::IAudioSystem>::Get()->Release();
 
-        Gem::AudioEngineGemRequestBus::Broadcast(&Gem::AudioEngineGemRequestBus::Events::Release);
+        Audio::Gem::AudioEngineGemRequestBus::Broadcast(&Audio::Gem::AudioEngineGemRequestBus::Events::Release);
 
         // Delete the Audio System
         // It should be the last object that is freed from the audio system memory pool before the allocator is destroyed.
-        AZ::Interface<Audio::IAudioSystem>::Unregister(m_audioSystem.get());
         m_audioSystem.reset();
 
         GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
@@ -244,6 +265,18 @@ namespace AudioSystemGem
             m_editorPlugin.reset(new CAudioControlsEditorPlugin(g_editor));
         }
     }
+
+    void AudioSystemGemSystemComponent::OnViewportDefaultViewChanged([[maybe_unused]] AZ::RPI::ViewPtr view)
+    {
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        auto viewportContext = atomViewportRequests->GetDefaultViewportContext();
+
+        if (viewportContext != nullptr)
+        {
+            m_cameraTransformHandler.Disconnect();
+            viewportContext->ConnectViewMatrixChangedHandler(m_cameraTransformHandler);
+        }
+    }
 #endif // AUDIO_SYSTEM_EDITOR
 
     bool AudioSystemGemSystemComponent::CreateAudioSystem()
@@ -254,7 +287,6 @@ namespace AudioSystemGem
         m_audioSystem = AZStd::make_unique<Audio::CAudioSystem>();
         if (m_audioSystem)
         {
-            AZ::Interface<Audio::IAudioSystem>::Register(m_audioSystem.get());
             success = AZ::Interface<Audio::IAudioSystem>::Get()->Initialize();
         }
         else

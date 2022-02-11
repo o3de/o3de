@@ -200,6 +200,7 @@ namespace LmbrCentral
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
             Audio::ListenerRequest::SetWorldTransform setListenerTransform;
+            setListenerTransform.m_transform = transform;
             setListenerTransform.m_audioObjectId = m_listenerObjectId;
             // TODO:
             // request.pOwner = this;

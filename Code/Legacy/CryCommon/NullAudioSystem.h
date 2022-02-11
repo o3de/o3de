@@ -41,7 +41,7 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class NullAudioSystem
-        : public IAudioSystem
+        : public AZ::Interface<Audio::IAudioSystem>::Registrar
     {
     public:
         AZ_CLASS_ALLOCATOR(Audio::NullAudioSystem, AZ::SystemAllocator, 0)

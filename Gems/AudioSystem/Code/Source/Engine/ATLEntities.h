@@ -49,19 +49,6 @@ namespace Audio
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioFileFlags : TATLEnumFlagsType
-    {
-        eAFF_NOTFOUND                       = AUDIO_BIT(0),
-        eAFF_CACHED                         = AUDIO_BIT(1),
-        eAFF_MEMALLOCFAIL                   = AUDIO_BIT(2),
-        eAFF_REMOVABLE                      = AUDIO_BIT(3),
-        eAFF_LOADING                        = AUDIO_BIT(4),
-        eAFF_USE_COUNTED                    = AUDIO_BIT(5),
-        eAFF_NEEDS_RESET_TO_MANUAL_LOADING  = AUDIO_BIT(6),
-        eAFF_LOCALIZED                      = AUDIO_BIT(7),
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     template <typename IDType>
     class CATLEntity
     {
@@ -371,16 +358,16 @@ namespace Audio
         ~CATLAudioFileEntry();
 
         AZStd::string m_filePath;
-        size_t m_fileSize;
-        size_t m_useCount;
-        size_t m_memoryBlockAlignment;
-        Flags<TATLEnumFlagsType> m_flags;
-        EATLDataScope m_dataScope;
-        void* m_memoryBlock;
 
         AZ::IO::FileRequestPtr m_asyncStreamRequest;
-
+        void* m_memoryBlock;
         IATLAudioFileEntryData* m_implData;
+
+        size_t m_fileSize;
+        size_t m_memoryBlockAlignment;
+        AZ::u32 m_useCount;
+        Flags<TATLEnumFlagsType> m_flags;
+        EATLDataScope m_dataScope;
 
 #if !defined(AUDIO_RELEASE)
         AZStd::chrono::system_clock::time_point m_timeCached;
