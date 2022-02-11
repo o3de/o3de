@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Math/ToString.h>
@@ -110,15 +111,12 @@ namespace PhysX
     void ColliderSphereMode::OnManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair)
     {
         // manipulator offsets do not take transform scale into account, need to handle it here
-        AZ::Transform colliderWorldTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(colliderWorldTransform, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
-        const float transformScale = AZ::GetMax(AZ::MinTransformScale, colliderWorldTransform.GetUniformScale());
-        const AZ::Vector3 localPosition = colliderLocalTransform.GetInverse().TransformPoint(
-            action.m_start.m_localPosition + action.m_current.m_localPositionOffset / transformScale);
+        const AZ::Vector3 manipulatorPosition = AzToolsFramework::GetPositionInManipulatorFrame(
+            m_radiusManipulator->GetSpace().GetUniformScale(), colliderLocalTransform, action);
 
         // Get the distance the manipulator has moved along the axis.
-        float extent = localPosition.Dot(action.m_fixed.m_axis);
+        float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
 
         // Clamp the distance to a small value to prevent it going negative.
         extent = AZ::GetMax(extent, MinSphereRadius);

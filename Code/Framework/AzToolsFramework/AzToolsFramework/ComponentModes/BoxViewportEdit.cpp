@@ -93,29 +93,20 @@ namespace AzToolsFramework
                 linearManipulator->SetViews(AZStd::move(views));
 
                 linearManipulator->InstallMouseMoveCallback(
-                    [this, entityComponentIdPair](
-                        const LinearManipulator::Action& action)
+                    [this, entityComponentIdPair,
+                     transformScale{ linearManipulator->GetSpace().GetUniformScale() }](const LinearManipulator::Action& action)
                 {
                     AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
                     BoxManipulatorRequestBus::EventResult(
                         boxLocalTransform, entityComponentIdPair, &BoxManipulatorRequests::GetCurrentLocalTransform);
 
-                    AZ::Transform boxWorldTransform = AZ::Transform::CreateIdentity();
-                    AZ::TransformBus::EventResult(
-                        boxWorldTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-                    float boxScale = AZ::GetMax(AZ::MinTransformScale, boxWorldTransform.GetUniformScale());
-
-                    // calculate the position of the manipulator in the reference frame of the box
-                    // the local position offset of the manipulator does not take the transform scale into account
-                    // so need to apply it here
-                    const AZ::Vector3 localPosition = boxLocalTransform.GetInverse().TransformPoint(
-                        action.m_start.m_localPosition + action.m_current.m_localPositionOffset / boxScale);
+                    const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(transformScale, boxLocalTransform, action);
 
                     // calculate the amount of displacement along an axis this manipulator has moved
                     // clamp movement so it cannot go negative based on axis direction
                     const AZ::Vector3 axisDisplacement =
-                        localPosition.GetAbs() * 2.0f
-                        * AZ::GetMax(0.0f, localPosition.GetNormalized().Dot(action.m_fixed.m_axis));
+                        manipulatorPosition.GetAbs() * 2.0f
+                        * AZ::GetMax(0.0f, manipulatorPosition.GetNormalized().Dot(action.m_fixed.m_axis));
 
                     AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
                     BoxManipulatorRequestBus::EventResult(
@@ -147,5 +138,13 @@ namespace AzToolsFramework
                 linearManipulator.reset();
             }
         }
+    }
+
+    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
+        const LinearManipulator::Action& action)
+    {
+        return manipulatorLocalTransform.GetInverse().TransformPoint(
+            action.m_start.m_localPosition +
+            action.m_current.m_localPositionOffset / AZ::GetClamp(worldUniformScale, AZ::MinTransformScale, AZ::MaxTransformScale));
     }
 } // namespace AzToolsFramework

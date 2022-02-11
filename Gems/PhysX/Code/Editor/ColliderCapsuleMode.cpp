@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzFramework/Viewport/ViewportColors.h>
@@ -175,15 +176,12 @@ namespace PhysX
     void ColliderCapsuleMode::OnRadiusManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair)
     {
         // manipulator action offsets do not take entity transform scale into account, so need to apply it here
-        float transformScale = 1.0f;
         const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
-        AZ::TransformBus::EventResult(transformScale, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldUniformScale);
-        transformScale = AZ::GetMax(AZ::MinTransformScale, transformScale);
-        const AZ::Vector3 localPosition = colliderLocalTransform.GetInverse().TransformPoint(
-            action.m_start.m_localPosition + action.m_current.m_localPositionOffset / transformScale);
+        const AZ::Vector3 manipulatorPosition = AzToolsFramework::GetPositionInManipulatorFrame(
+            m_radiusManipulator->GetSpace().GetUniformScale(), colliderLocalTransform, action);
 
         // Get the distance the manipulator has moved along the axis.
-        float extent = localPosition.Dot(action.m_fixed.m_axis);
+        float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
 
         // Clamp radius to a small value.
         extent = AZ::GetMax(extent, MinCapsuleRadius);
@@ -201,15 +199,12 @@ namespace PhysX
     void ColliderCapsuleMode::OnHeightManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair)
     {
         // manipulator action offsets do not take entity transform scale into account, so need to apply it here
-        float transformScale = 1.0f;
         const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
-        AZ::TransformBus::EventResult(transformScale, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldUniformScale);
-        transformScale = AZ::GetMax(AZ::MinTransformScale, transformScale);
-        const AZ::Vector3 localPosition = colliderLocalTransform.GetInverse().TransformPoint(
-            action.m_start.m_localPosition + action.m_current.m_localPositionOffset / transformScale);
+        const AZ::Vector3 manipulatorPosition = AzToolsFramework::GetPositionInManipulatorFrame(
+            m_heightManipulator->GetSpace().GetUniformScale(), colliderLocalTransform, action);
 
         // Get the distance the manipulator has moved along the axis.
-        float extent = localPosition.Dot(action.m_fixed.m_axis);
+        float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
 
         // Ensure capsule's half height is always greater than the radius.
         extent = AZ::GetMax(extent, MinCapsuleHeight);
