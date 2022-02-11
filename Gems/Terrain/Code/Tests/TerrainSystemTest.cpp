@@ -9,7 +9,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzCore/std/parallel/semaphore.h>
 
 #include <AzTest/AzTest.h>
 
@@ -1105,8 +1105,8 @@ namespace UnitTest
 
         // Setup the per position callback so that we can cancel the entire request when it is first invoked.
         AZStd::atomic_bool asyncRequestCancelled = false;
-        AZStd::binary_semaphore asyncRequestStartedEvent;
-        AZStd::binary_semaphore asyncRequestCancelledEvent;
+        AZStd::semaphore asyncRequestStartedEvent;
+        AZStd::semaphore asyncRequestCancelledEvent;
         auto perPositionCallback = [&asyncRequestCancelled, &asyncRequestStartedEvent, &asyncRequestCancelledEvent]([[maybe_unused]] const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             if (!asyncRequestCancelled)
@@ -1121,7 +1121,7 @@ namespace UnitTest
         };
 
         // Setup the completion callback so we can check that the entire request was cancelled.
-        AZStd::binary_semaphore asyncRequestCompletedEvent;
+        AZStd::semaphore asyncRequestCompletedEvent;
         auto completionCallback = [&asyncRequestCompletedEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> terrainJobContext)
         {
             EXPECT_TRUE(terrainJobContext->IsCancelled());

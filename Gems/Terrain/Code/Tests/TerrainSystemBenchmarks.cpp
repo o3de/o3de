@@ -14,7 +14,7 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -398,7 +398,7 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
                 };
 
-                AZStd::binary_semaphore completionEvent;
+                AZStd::semaphore completionEvent;
                 auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
                     completionEvent.release();
@@ -479,7 +479,7 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
                 };
 
-                AZStd::binary_semaphore completionEvent;
+                AZStd::semaphore completionEvent;
                 auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
                     completionEvent.release();
@@ -583,7 +583,7 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_normal);
                 };
 
-                AZStd::binary_semaphore completionEvent;
+                AZStd::semaphore completionEvent;
                 auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
                     completionEvent.release();
@@ -658,7 +658,7 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_normal);
                 };
 
-                AZStd::binary_semaphore completionEvent;
+                AZStd::semaphore completionEvent;
                 auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
                     completionEvent.release();
@@ -760,7 +760,7 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
                 };
 
-                AZStd::binary_semaphore completionEvent;
+                AZStd::semaphore completionEvent;
                 auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
                     completionEvent.release();
@@ -835,7 +835,7 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
                 };
 
-                AZStd::binary_semaphore completionEvent;
+                AZStd::semaphore completionEvent;
                 auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
                     completionEvent.release();
@@ -937,7 +937,7 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint);
                 };
 
-                AZStd::binary_semaphore completionEvent;
+                AZStd::semaphore completionEvent;
                 auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
                     completionEvent.release();
@@ -1012,7 +1012,7 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint);
                 };
 
-                AZStd::binary_semaphore completionEvent;
+                AZStd::semaphore completionEvent;
                 auto completionCallback = [&completionEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
                 {
                     completionEvent.release();

@@ -412,7 +412,7 @@ namespace Terrain
             = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
         asyncParams->m_completionCallback = completionCallback;
 
-        sector.m_jobCompletionEvent = AZStd::make_unique<AZStd::binary_semaphore>();
+        sector.m_jobCompletionEvent = AZStd::make_unique<AZStd::semaphore>();
         AZ::Vector2 stepSize = AZ::Vector2(gridResolution);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             sector.m_jobContext,

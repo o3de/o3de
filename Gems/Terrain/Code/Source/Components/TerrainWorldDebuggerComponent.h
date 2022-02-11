@@ -101,7 +101,7 @@ namespace Terrain
             void SetDirty();
 
             AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> m_jobContext;
-            AZStd::unique_ptr<AZStd::binary_semaphore> m_jobCompletionEvent;
+            AZStd::unique_ptr<AZStd::semaphore> m_jobCompletionEvent;
             AZStd::recursive_mutex m_sectorStateMutex;
             AZ::Aabb m_aabb{ AZ::Aabb::CreateNull() };
             AZStd::vector<AZ::Vector3> m_lineVertices;
