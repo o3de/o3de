@@ -14,6 +14,7 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceMaskGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace LmbrCentral

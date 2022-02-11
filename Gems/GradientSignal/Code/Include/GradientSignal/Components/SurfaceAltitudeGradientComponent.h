@@ -13,6 +13,7 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceAltitudeGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <GradientSignal/Util.h>

@@ -13,6 +13,7 @@
 #include <GradientSignal/Ebuses/SmoothStepRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceSlopeGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <GradientSignal/SmoothStep.h>
 #include <GradientSignal/Util.h>
 

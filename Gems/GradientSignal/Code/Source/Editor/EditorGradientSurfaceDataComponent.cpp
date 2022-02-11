@@ -12,6 +12,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
+#include <SurfaceData/SurfacePointList.h>
 
 namespace GradientSignal
 {
