@@ -242,22 +242,6 @@ namespace EditorPythonBindings
                     }
 
                     WriteMethod(fileHandle, "__init__", *constructor, behaviorClass);
-                    /* 
-
-                    AzFramework::StringFunc::Append(buffer, "    def __init__(self ");
-                        for (int argIndex = 0; argIndex <= constructor->GetNumArguments(); argIndex++)
-                        {
-                            const auto& arg = constructor->GetArgument(argIndex);
-                            {
-                                AzFramework::StringFunc::Append(buffer, arg->m_name);
-                                AzFramework::StringFunc::Append(buffer, ": ");
-                                AzFramework::StringFunc::Append(buffer, arg->m_name);
-                                
-                            }
-                        }
-                    }
-                AzFramework::StringFunc::Append(buffer, "): ...\n");*/
-
                 }
             }
 
