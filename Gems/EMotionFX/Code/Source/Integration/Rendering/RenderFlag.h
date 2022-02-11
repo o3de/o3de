@@ -12,7 +12,9 @@
 
 namespace EMotionFX
 {
-    enum ActorRenderFlag
+    // The index of the render flag which is 0, 1, 2, 3.. based. 
+    // Do not confuse this with the actual ActorRenderFlags::Type which is 1, 2, 4, 8.. based.
+    enum ActorRenderFlagIndex : AZ::u8
     {
         SOLID = 0,
         WIREFRAME = 1,
@@ -38,38 +40,37 @@ namespace EMotionFX
         SIMULATEDOBJECT_COLLIDERS = 21,
         SIMULATEJOINTS = 22,
         EMFX_DEBUG = 23,
-        NUM_RENDERFLAGS = 24
+        NUM_RENDERFLAGINDEXES = 24
     };
 
-    //! A set of combinable flags which inform the system how an image is to be
-    //! bound to the pipeline at all stages of its lifetime.
+    //! A set of combinable flags which indicate which render option in turned on for the actor.
     AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(ActorRenderFlags, AZ::u32,
         (None, 0),
-        (Solid, AZ_BIT(ActorRenderFlag::SOLID)),
-        (Wireframe, AZ_BIT(ActorRenderFlag::WIREFRAME)),
-        (Lighting, AZ_BIT(ActorRenderFlag::LIGHTING)),
+        (Solid, AZ_BIT(ActorRenderFlagIndex::SOLID)),
+        (Wireframe, AZ_BIT(ActorRenderFlagIndex::WIREFRAME)),
+        (Lighting, AZ_BIT(ActorRenderFlagIndex::LIGHTING)),
         (Default, Solid | Lighting),
-        (Shadows, AZ_BIT(ActorRenderFlag::SHADOWS)),
-        (FaceNormals, AZ_BIT(ActorRenderFlag::FACENORMALS)),
-        (VertexNormals, AZ_BIT(ActorRenderFlag::VERTEXNORMALS)),
-        (Tangents, AZ_BIT(ActorRenderFlag::TANGENTS)),
-        (AABB, AZ_BIT(ActorRenderFlag::AABB)),
-        (Skeleton, AZ_BIT(ActorRenderFlag::SKELETON)),
-        (LineSkeleton, AZ_BIT(ActorRenderFlag::LINESKELETON)),
-        (NodeOrientation, AZ_BIT(ActorRenderFlag::NODEORIENTATION)),
-        (NodeNames, AZ_BIT(ActorRenderFlag::NODENAMES)),
-        (Grid, AZ_BIT(ActorRenderFlag::GRID)),
-        (BackfaceCulling, AZ_BIT(ActorRenderFlag::BACKFACECULLING)),
-        (ActorBindPose, AZ_BIT(ActorRenderFlag::ACTORBINDPOSE)),
-        (RagdollColliders, AZ_BIT(ActorRenderFlag::RAGDOLL_COLLIDERS)),
-        (RagdollJointLimits, AZ_BIT(ActorRenderFlag::RAGDOLL_JOINTLIMITS)),
-        (HitDetectionColliders, AZ_BIT(ActorRenderFlag::HITDETECTION_COLLIDERS)),
-        (UseGradientBackground, AZ_BIT(ActorRenderFlag::USE_GRADIENTBACKGROUND)),
-        (MotionExtraction, AZ_BIT(ActorRenderFlag::MOTIONEXTRACTION)),
-        (ClothColliders, AZ_BIT(ActorRenderFlag::CLOTH_COLLIDERS)),
-        (SimulatedObjectColliders, AZ_BIT(ActorRenderFlag::SIMULATEDOBJECT_COLLIDERS)),
-        (SimulatedJoints, AZ_BIT(ActorRenderFlag::SIMULATEJOINTS)),
-        (EmfxDebug, AZ_BIT(ActorRenderFlag::EMFX_DEBUG))
+        (Shadows, AZ_BIT(ActorRenderFlagIndex::SHADOWS)),
+        (FaceNormals, AZ_BIT(ActorRenderFlagIndex::FACENORMALS)),
+        (VertexNormals, AZ_BIT(ActorRenderFlagIndex::VERTEXNORMALS)),
+        (Tangents, AZ_BIT(ActorRenderFlagIndex::TANGENTS)),
+        (AABB, AZ_BIT(ActorRenderFlagIndex::AABB)),
+        (Skeleton, AZ_BIT(ActorRenderFlagIndex::SKELETON)),
+        (LineSkeleton, AZ_BIT(ActorRenderFlagIndex::LINESKELETON)),
+        (NodeOrientation, AZ_BIT(ActorRenderFlagIndex::NODEORIENTATION)),
+        (NodeNames, AZ_BIT(ActorRenderFlagIndex::NODENAMES)),
+        (Grid, AZ_BIT(ActorRenderFlagIndex::GRID)),
+        (BackfaceCulling, AZ_BIT(ActorRenderFlagIndex::BACKFACECULLING)),
+        (ActorBindPose, AZ_BIT(ActorRenderFlagIndex::ACTORBINDPOSE)),
+        (RagdollColliders, AZ_BIT(ActorRenderFlagIndex::RAGDOLL_COLLIDERS)),
+        (RagdollJointLimits, AZ_BIT(ActorRenderFlagIndex::RAGDOLL_JOINTLIMITS)),
+        (HitDetectionColliders, AZ_BIT(ActorRenderFlagIndex::HITDETECTION_COLLIDERS)),
+        (UseGradientBackground, AZ_BIT(ActorRenderFlagIndex::USE_GRADIENTBACKGROUND)),
+        (MotionExtraction, AZ_BIT(ActorRenderFlagIndex::MOTIONEXTRACTION)),
+        (ClothColliders, AZ_BIT(ActorRenderFlagIndex::CLOTH_COLLIDERS)),
+        (SimulatedObjectColliders, AZ_BIT(ActorRenderFlagIndex::SIMULATEDOBJECT_COLLIDERS)),
+        (SimulatedJoints, AZ_BIT(ActorRenderFlagIndex::SIMULATEJOINTS)),
+        (EmfxDebug, AZ_BIT(ActorRenderFlagIndex::EMFX_DEBUG))
     );
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ActorRenderFlags);

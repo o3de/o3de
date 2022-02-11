@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
@@ -131,7 +132,10 @@ namespace EMotionFX
             return AZ::Edit::PropertyVisibility::Show;
         }
 
+
         //////////////////////////////////////////////////////////////////////////
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(ActorRenderFlags);
+
         void ActorComponent::Configuration::Reflect(AZ::ReflectContext* context)
         {
             BoundingBoxConfiguration::Reflect(context);
@@ -139,32 +143,7 @@ namespace EMotionFX
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                serializeContext->Enum<ActorRenderFlags>()
-                    ->Value("Solid", ActorRenderFlags::Solid)
-                    ->Value("Wireframe", ActorRenderFlags::Wireframe)
-                    ->Value("Lighting", ActorRenderFlags::Lighting)
-                    ->Value("Shadows", ActorRenderFlags::Shadows)
-                    ->Value("FaceNormals", ActorRenderFlags::FaceNormals)
-                    ->Value("VertexNormals", ActorRenderFlags::VertexNormals)
-                    ->Value("Tangents", ActorRenderFlags::Tangents)
-                    ->Value("AABB", ActorRenderFlags::AABB)
-                    ->Value("Skeleton", ActorRenderFlags::Skeleton)
-                    ->Value("LineSkeleton", ActorRenderFlags::LineSkeleton)
-                    ->Value("NodeOrientation", ActorRenderFlags::NodeOrientation)
-                    ->Value("NodeNames", ActorRenderFlags::NodeNames)
-                    ->Value("Grid", ActorRenderFlags::Grid)
-                    ->Value("BackfaceCulling", ActorRenderFlags::BackfaceCulling)
-                    ->Value("ActorBindPose", ActorRenderFlags::ActorBindPose)
-                    ->Value("RagdollColliders", ActorRenderFlags::RagdollColliders)
-                    ->Value("RagdollJointLimits", ActorRenderFlags::RagdollJointLimits)
-                    ->Value("HitDetectionColliders", ActorRenderFlags::HitDetectionColliders)
-                    ->Value("UseGradientBackground", ActorRenderFlags::UseGradientBackground)
-                    ->Value("MotionExtraction", ActorRenderFlags::MotionExtraction)
-                    ->Value("ClothColliders", ActorRenderFlags::ClothColliders)
-                    ->Value("SimulatedObjectColliders", ActorRenderFlags::SimulatedObjectColliders)
-                    ->Value("SimulatedJoints", ActorRenderFlags::SimulatedJoints)
-                    ->Value("EmfxDebug", ActorRenderFlags::EmfxDebug)
-                    ;
+                ActorRenderFlagsReflect(*serializeContext);
 
                 serializeContext->Class<Configuration>()
                     ->Version(5)

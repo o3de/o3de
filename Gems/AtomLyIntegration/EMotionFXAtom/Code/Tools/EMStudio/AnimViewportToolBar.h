@@ -34,7 +34,7 @@ namespace EMStudio
 
         AtomRenderPlugin* m_plugin = nullptr;
         QAction* m_manipulatorActions[RenderOptions::ManipulatorMode::NUM_MODES] = { nullptr };
-        QAction* m_renderActions[EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS] = { nullptr };
+        QAction* m_renderActions[EMotionFX::ActorRenderFlagIndex::NUM_RENDERFLAGINDEXES] = { nullptr };
         QAction* m_followCharacterAction = nullptr;
     };
 }
