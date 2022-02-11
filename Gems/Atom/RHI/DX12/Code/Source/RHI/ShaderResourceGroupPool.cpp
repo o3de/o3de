@@ -200,13 +200,13 @@ namespace AZ
             RHI::ShaderResourceGroup& groupBase,
             const RHI::ShaderResourceGroupData& groupData)
         {
-            typedef AZ::RHI::ShaderResourceGroupData::ResourceTypeMask ResourceMask;
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
             auto& device = static_cast<Device&>(GetDevice());
 
             group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
             
-            if (m_constantBufferSize && groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::ConstantDataMask)))
+            if (m_constantBufferSize &&
+                groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ConstantDataMask)))
             {
                 memcpy(group.GetCompiledData().m_cpuConstantAddress, groupData.GetConstantData().data(), groupData.GetConstantData().size());
             }
@@ -347,7 +347,7 @@ namespace AZ
 
         void ShaderResourceGroupPool::UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData)
         {
-            if(!groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::SamplerMask)))
+            if (!groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
             {
                 return;
             }
@@ -368,10 +368,10 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             uint32_t shaderInputIndex = 0;
 
-            if(groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::BufferViewUnboundedArrayMask)))
+            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask)))
             {
                 // process buffer unbounded arrays
-                for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& BufferViewUnboundedArrayMask : groupLayout.GetShaderInputListForBufferUnboundedArrays())
+                for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
                 {
                     const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
                     AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
@@ -410,7 +410,7 @@ namespace AZ
                 }
             }
 
-            if(groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::ImageViewUnboundedArrayMask)))
+            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask)))
             {
                 // process image unbounded arrays
                 for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : groupLayout.GetShaderInputListForImageUnboundedArrays())
