@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzFramework
