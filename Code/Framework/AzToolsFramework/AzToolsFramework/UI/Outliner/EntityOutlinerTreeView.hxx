@@ -83,11 +83,11 @@ namespace AzToolsFramework
         void recursiveCheckExpandedStates(const QModelIndex& parent);
         void checkExpandedState(const QModelIndex& current);
 
-
         void PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const;
         void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
         
         QMouseEvent* m_queuedMouseEvent;
+        QModelIndex m_currentHoveredIndex;
         QPoint m_mousePosition;
 
         int m_expandOnlyDelay = -1;
@@ -96,8 +96,6 @@ namespace AzToolsFramework
         const QColor m_selectedColor = QColor(255, 255, 255, 45);
         const QColor m_hoverColor = QColor(255, 255, 255, 30);
 
-        QModelIndex m_currentHoveredIndex;
-
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
@@ -105,7 +103,6 @@ namespace AzToolsFramework
 
         void HandleDrag();
         void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
-        QAbstractItemView::SelectionMode m_startSelectionMode;
 
         enum class DragState
         {

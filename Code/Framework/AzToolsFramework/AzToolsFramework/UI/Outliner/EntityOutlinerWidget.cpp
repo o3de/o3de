@@ -193,7 +193,6 @@ namespace AzToolsFramework
         m_listModel->SetSortMode(m_sortMode);
 
         const int autoExpandDelayMilliseconds = 2500;
-        m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         SetDefaultTreeViewEditTriggers();
         m_gui->m_objectTree->setAutoExpandDelay(autoExpandDelayMilliseconds);
         m_gui->m_objectTree->setDragEnabled(true);
