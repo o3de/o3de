@@ -152,9 +152,9 @@ namespace AZStd::ranges
     template<class R>
     join_view(R&&) -> join_view<views::all_t<R>>;
 
-    template<class View, class Enable>
+    template<class View, class ViewEnable>
     template<bool Const>
-    struct join_view<View, Enable>::iterator
+    struct join_view<View, ViewEnable>::iterator
         : enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
@@ -361,9 +361,9 @@ namespace AZStd::ranges
         struct requirements_fulfilled {};
     }
 
-    template<class View, class Enable>
+    template<class View, class ViewEnable>
     template<bool Const>
-    struct join_view<View, Enable>::sentinel
+    struct join_view<View, ViewEnable>::sentinel
         : enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,

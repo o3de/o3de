@@ -185,9 +185,9 @@ namespace AZStd::ranges
                 IterCategory>>;
     };
 
-    template<class View, size_t N, class Enable>
+    template<class View, size_t N, class ViewEnable>
     template<bool Const>
-    struct elements_view<View, N, Enable>::iterator
+    struct elements_view<View, N, ViewEnable>::iterator
         : enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
@@ -211,7 +211,7 @@ namespace AZStd::ranges
                 conditional_t<forward_range<Base>,
                     forward_iterator_tag,
                     input_iterator_tag>>>;
-        
+
         using value_type = remove_cvref_t<tuple_element_t<N, range_value_t<Base>>>;
         using difference_type = range_difference_t<Base>;
 
@@ -263,7 +263,7 @@ namespace AZStd::ranges
                 return tmp;
             }
         }
-        
+
         template<bool Enable = bidirectional_range<Base>, class = enable_if_t<Enable>>
         constexpr iterator& operator--() const
         {
@@ -384,9 +384,9 @@ namespace AZStd::ranges
         struct requirements_fulfilled {};
     }
 
-    template<class View, size_t N, class Enable>
+    template<class View, size_t N, class ViewEnable>
     template<bool Const>
-    struct elements_view<View, N, Enable>::sentinel
+    struct elements_view<View, N, ViewEnable>::sentinel
         : enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
