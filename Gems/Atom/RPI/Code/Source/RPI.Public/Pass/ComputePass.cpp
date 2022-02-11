@@ -58,6 +58,12 @@ namespace AZ
                 return;
             }
 
+            // Hardware Queue Class
+            if (passData->m_useAsyncCompute)
+            {
+                m_hardwareQueueClass = RHI::HardwareQueueClass::Compute;
+            }
+
             // Load Shader
             Data::Asset<ShaderAsset> shaderAsset;
             if (passData->m_shaderReference.m_assetId.IsValid())

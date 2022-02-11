@@ -23,7 +23,6 @@ set(FILES
     Include/ScriptCanvas/Core/NodeBus.h
     Include/ScriptCanvas/Core/EBusNodeBus.h
     Include/ScriptCanvas/Core/NodelingBus.h
-    Include/ScriptCanvas/Core/ContractBus.h
     Include/ScriptCanvas/Core/Attributes.h
     Include/ScriptCanvas/Core/Connection.h
     Include/ScriptCanvas/Core/ConnectionBus.h
@@ -55,9 +54,7 @@ set(FILES
     Include/ScriptCanvas/Core/SlotNames.h
     Include/ScriptCanvas/Core/SubgraphInterface.h
     Include/ScriptCanvas/Core/SubgraphInterfaceUtility.h
-    Include/ScriptCanvas/Translation/AbstractModelTranslator.h
     Include/ScriptCanvas/Translation/Configuration.h
-    Include/ScriptCanvas/Translation/GraphToCPlusPlus.h
     Include/ScriptCanvas/Translation/GraphToLua.h
     Include/ScriptCanvas/Translation/GraphToLuaUtility.h
     Include/ScriptCanvas/Translation/GraphToX.h
@@ -101,8 +98,6 @@ set(FILES
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.h
     Include/ScriptCanvas/Execution/ExecutionState.h
     Include/ScriptCanvas/Execution/ExecutionStateDeclarations.h
-    Include/ScriptCanvas/Execution/NativeHostDeclarations.h
-    Include/ScriptCanvas/Execution/NativeHostDefinitions.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.h
@@ -114,7 +109,6 @@ set(FILES
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPure.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h
-    Include/ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h
     Include/ScriptCanvas/Grammar/AbstractCodeModel.h
     Include/ScriptCanvas/Grammar/DebugMap.h
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.h
@@ -127,8 +121,6 @@ set(FILES
     Include/ScriptCanvas/Execution/ErrorBus.h
     Include/ScriptCanvas/Execution/ExecutionContext.h
     Include/ScriptCanvas/Execution/ExecutionBus.h
-    Include/ScriptCanvas/Execution/NativeHostDeclarations.h
-    Include/ScriptCanvas/Execution/NativeHostDefinitions.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.ScriptCanvasNodeable.xml
@@ -152,7 +144,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.h
     Include/ScriptCanvas/Libraries/Core/ForEach.h
     Include/ScriptCanvas/Libraries/Core/ForEach.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Core/FunctionBus.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNode.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNode.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.h
@@ -162,7 +153,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/GetVariable.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/Method.h
     Include/ScriptCanvas/Libraries/Core/MethodOverloaded.h
-    Include/ScriptCanvas/Libraries/Core/MethodUtility.h
     Include/ScriptCanvas/Libraries/Core/Nodeling.h
     Include/ScriptCanvas/Libraries/Core/Nodeling.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h
@@ -236,7 +226,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector3Nodes.h
     Include/ScriptCanvas/Libraries/Math/Vector4Nodes.h
     Include/ScriptCanvas/Libraries/Comparison/Comparison.h
-    Include/ScriptCanvas/Libraries/Comparison/ComparisonFunctions.h
     Include/ScriptCanvas/Libraries/Comparison/EqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/NotEqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/Less.h
@@ -307,9 +296,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTesting.h
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h
     Include/ScriptCanvas/Libraries/UnitTesting/Auxiliary/Auxiliary.h
-    Include/ScriptCanvas/Libraries/UnitTesting/Auxiliary/AuxiliaryGenerics.h
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBusSender.h
-    Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBusSenderMacros.h
     Include/ScriptCanvas/Libraries/Operators/Operators.h
     Include/ScriptCanvas/Libraries/Operators/Operator.h
     Include/ScriptCanvas/Libraries/Operators/Operator.ScriptCanvasGrammar.xml

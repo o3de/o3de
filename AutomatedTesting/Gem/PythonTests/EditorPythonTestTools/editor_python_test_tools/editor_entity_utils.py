@@ -34,6 +34,7 @@ class EditorComponent:
         EditorEntity.add_component() or Entity.add_components() or EditorEntity.get_components_of_type()
     which also assigns self.id and self.type_id to the EditorComponent object.
     self.type_id is the UUID for the component type as provided by an ebus call.
+    self.id is an azlmbr.entity.EntityComponentIdPair which contains both entity and component id's
     """
 
     def __init__(self, type_id: uuid):
@@ -269,6 +270,13 @@ class EditorComponent:
         """
         warnings.warn("disable_component is deprecated, use set_enabled(False) instead.", DeprecationWarning)
         editor.EditorComponentAPIBus(bus.Broadcast, "DisableComponents", [self.id])
+
+    def remove(self):
+        """
+        Removes the component from its associated entity. Essentially a delete since only UNDO can return it.
+        :return: None
+        """
+        editor.EditorComponentAPIBus(bus.Broadcast, "RemoveComponents", [self.id])
 
     @staticmethod
     def get_type_ids(component_names: list, entity_type: EditorEntityType = EditorEntityType.GAME) -> list:

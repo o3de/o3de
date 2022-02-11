@@ -120,7 +120,7 @@ namespace UnitTest
         // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
         // on a test-by-test basis.
         AZStd::unique_ptr<Terrain::TerrainSystem> CreateAndActivateTerrainSystem(
-            AZ::Vector2 queryResolution = AZ::Vector2(1.0f),
+            float queryResolution = 1.0f,
             AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f)))
         {
             // Create the terrain system and give it one tick to fully initialize itself.
@@ -158,6 +158,15 @@ namespace UnitTest
                         // Let the test function modify these values based on the needs of the specific test.
                         mockHeights(outPosition, terrainExists);
                     });
+            ON_CALL(*m_terrainAreaHeightRequests, GetHeights)
+                .WillByDefault(
+                    [mockHeights](AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList)
+                    {
+                        for (int i = 0; i < inOutPositionList.size(); i++)
+                        {
+                            mockHeights(inOutPositionList[i], terrainExistsList[i]);
+                        }
+                    });
 
             ActivateEntity(entity.get());
             return entity;
@@ -184,9 +193,9 @@ namespace UnitTest
             tagWeight3.m_weight = 0.3f;
             expectedTags.push_back(tagWeight3);
 
-            m_terrainAreaSurfaceRequests = AZStd::make_unique<NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus>>(entity->GetId());
-            ON_CALL(*m_terrainAreaSurfaceRequests, GetSurfaceWeights).WillByDefault(
-                [tagWeight1, tagWeight2, tagWeight3](const AZ::Vector3& position, AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
+            auto mockGetSurfaceWeights = [tagWeight1, tagWeight2, tagWeight3](
+                const AZ::Vector3& position,
+                AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
                 {
                     surfaceWeights.clear();
                     float absYPos = fabsf(position.GetY());
@@ -201,6 +210,19 @@ namespace UnitTest
                     else
                     {
                         surfaceWeights.push_back(tagWeight3);
+                    }
+                };
+
+            m_terrainAreaSurfaceRequests = AZStd::make_unique<NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus>>(entity->GetId());
+            ON_CALL(*m_terrainAreaSurfaceRequests, GetSurfaceWeights).WillByDefault(mockGetSurfaceWeights);
+            ON_CALL(*m_terrainAreaSurfaceRequests, GetSurfaceWeightsFromList).WillByDefault(
+                [mockGetSurfaceWeights](
+                    AZStd::span<const AZ::Vector3> inPositionList,
+                    AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList)
+                {
+                    for (size_t i = 0; i < inPositionList.size(); i++)
+                    {
+                        mockGetSurfaceWeights(inPositionList[i], outSurfaceWeightsList[i]);
                     }
                 }
             );
@@ -363,8 +385,7 @@ namespace UnitTest
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution that exactly matches
         // the frequency of our sine wave.  If our height queries rely on the query resolution, we should always get a value of 0.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test an arbitrary set of points that should all produce non-zero heights with the EXACT sampler.  They're not aligned with the
         // query resolution, or with the 0 points on the sine wave.
@@ -414,7 +435,7 @@ namespace UnitTest
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 0.25 meter
         // intervals.
-        const AZ::Vector2 queryResolution(0.25f);
+        const float queryResolution = 0.25f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         // Test some points and verify that the results always go "downward", whether they're in positive or negative space.
@@ -476,8 +497,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test some points and verify that the results are the expected bilinear filtered result,
         // whether they're in positive or negative space.
@@ -664,8 +684,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test some points and verify that the results are the expected bilinear filtered result,
         // whether they're in positive or negative space.
@@ -762,8 +781,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const NormalTestPoint testPoints[] = {
 
@@ -852,8 +870,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
         const AZ::Vector2 stepSize(1.0f);
@@ -911,8 +928,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
         const AZ::Vector2 stepSize(1.0f);
@@ -960,7 +976,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(1.0f);
+        const float queryResolution = 1.0f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
@@ -1006,7 +1022,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(1.0f);
+        const float queryResolution = 1.0f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);

@@ -10,8 +10,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <Document/ShaderManagementConsoleDocument.h>
 
 namespace ShaderManagementConsole
@@ -20,28 +18,32 @@ namespace ShaderManagementConsole
         : AtomToolsFramework::AtomToolsDocument()
     {
         ShaderManagementConsoleDocumentRequestBus::Handler::BusConnect(m_id);
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentCreated, m_id);
     }
 
     ShaderManagementConsoleDocument::~ShaderManagementConsoleDocument()
     {
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
         ShaderManagementConsoleDocumentRequestBus::Handler::BusDisconnect();
-        Clear();
     }
 
-    size_t ShaderManagementConsoleDocument::GetShaderOptionCount() const
+    void ShaderManagementConsoleDocument::SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& sourceData)
     {
-        auto layout = m_shaderAsset->GetShaderOptionGroupLayout();
-        auto& shaderOptionDescriptors = layout->GetShaderOptions();
-        return shaderOptionDescriptors.size();
+        m_shaderVariantListSourceData = sourceData;
+        AZStd::string shaderPath = m_shaderVariantListSourceData.m_shaderFilePath;
+        AzFramework::StringFunc::Path::ReplaceExtension(shaderPath, AZ::RPI::ShaderAsset::Extension);
+
+        m_shaderAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::ShaderAsset>(shaderPath.c_str());
+        if (!m_shaderAsset)
+        {
+            AZ_Error("ShaderManagementConsoleDocument", false, "Could not load shader asset: %s.", shaderPath.c_str());
+        }
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
     }
 
-    const AZ::RPI::ShaderOptionDescriptor& ShaderManagementConsoleDocument::GetShaderOptionDescriptor(size_t index) const
+    const AZ::RPI::ShaderVariantListSourceData& ShaderManagementConsoleDocument::GetShaderVariantListSourceData() const
     {
-        auto layout = m_shaderAsset->GetShaderOptionGroupLayout();
-        auto& shaderOptionDescriptors = layout->GetShaderOptions();
-        return shaderOptionDescriptors[index];
+        return m_shaderVariantListSourceData;
     }
 
     size_t ShaderManagementConsoleDocument::GetShaderVariantCount() const
@@ -54,92 +56,143 @@ namespace ShaderManagementConsole
         return m_shaderVariantListSourceData.m_shaderVariants[index];
     }
 
-    bool ShaderManagementConsoleDocument::Open(AZStd::string_view loadPath)
+    size_t ShaderManagementConsoleDocument::GetShaderOptionCount() const
     {
-        Clear();
-
-        m_absolutePath = loadPath;
-        if (!AzFramework::StringFunc::Path::Normalize(m_absolutePath))
+        if (IsOpen())
         {
-            AZ_Error("ShaderManagementConsoleDocument", false, "Document path could not be normalized: '%s'.", m_absolutePath.c_str());
-            return false;
+            const auto& layout = m_shaderAsset->GetShaderOptionGroupLayout();
+            const auto& shaderOptionDescriptors = layout->GetShaderOptions();
+            return shaderOptionDescriptors.size();
         }
-
-        if (AzFramework::StringFunc::Path::IsRelative(m_absolutePath.c_str()))
-        {
-            AZ_Error("ShaderManagementConsoleDocument", false, "Document path must be absolute: '%s'.", m_absolutePath.c_str());
-            return false;
-        }
-
-        if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
-        {
-            // Load the shader config data and create a shader config asset from it
-            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_absolutePath, m_shaderVariantListSourceData))
-            {
-                AZ_Error("ShaderManagementConsoleDocument", false, "Failed loading shader variant list data: '%s.'", m_absolutePath.c_str());
-                return false;
-            }
-        }
-
-        bool result = false;
-        AZ::Data::AssetInfo sourceAssetInfo;
-        AZStd::string watchFolder;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, m_absolutePath.c_str(), sourceAssetInfo,
-            watchFolder);
-        if (!result)
-        {
-            AZ_Error("ShaderManagementConsoleDocument", false, "Could not find source data: '%s'.", m_absolutePath.c_str());
-            return false;
-        }
-
-        m_relativePath = m_shaderVariantListSourceData.m_shaderFilePath;
-        if (!AzFramework::StringFunc::Path::Normalize(m_relativePath))
-        {
-            AZ_Error("ShaderManagementConsoleDocument", false, "Shader path could not be normalized: '%s'.", m_relativePath.c_str());
-            return false;
-        }
-
-        AZStd::string shaderPath = m_relativePath;
-        AzFramework::StringFunc::Path::ReplaceExtension(shaderPath, AZ::RPI::ShaderAsset::Extension);
-
-        m_shaderAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::ShaderAsset>(shaderPath.c_str());
-        if (!m_shaderAsset)
-        {
-            AZ_Error("ShaderManagementConsoleDocument", false, "Could not load shader asset: %s.", shaderPath.c_str());
-            return false;
-        }
-
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
-
-        AZ_TracePrintf("ShaderManagementConsoleDocument", "Document opened: '%s'\n", m_absolutePath.c_str());
-        return true;
+        return 0;
     }
 
-    bool ShaderManagementConsoleDocument::Close()
+    const AZ::RPI::ShaderOptionDescriptor& ShaderManagementConsoleDocument::GetShaderOptionDescriptor(size_t index) const
+    {
+        if (IsOpen())
+        {
+            const auto& layout = m_shaderAsset->GetShaderOptionGroupLayout();
+            const auto& shaderOptionDescriptors = layout->GetShaderOptions();
+            return shaderOptionDescriptors.at(index);
+        }
+        return m_invalidDescriptor;
+    }
+
+    AZStd::vector<AtomToolsFramework::DocumentObjectInfo> ShaderManagementConsoleDocument::GetObjectInfo() const
     {
         if (!IsOpen())
         {
-            AZ_Error("ShaderManagementConsoleDocument", false, "Document is not open");
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document is not open.");
+            return {};
+        }
+
+        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> objects;
+
+        AtomToolsFramework::DocumentObjectInfo objectInfo;
+        objectInfo.m_visible = true;
+        objectInfo.m_name = "Shader Variant List";
+        objectInfo.m_displayName = "Shader Variant List";
+        objectInfo.m_description = "Shader Variant List";
+        objectInfo.m_objectType = azrtti_typeid<AZ::RPI::ShaderVariantListSourceData>();
+        objectInfo.m_objectPtr = const_cast<AZ::RPI::ShaderVariantListSourceData*>(&m_shaderVariantListSourceData);
+        objects.push_back(AZStd::move(objectInfo));
+
+        return objects;
+    }
+
+    bool ShaderManagementConsoleDocument::Open(AZStd::string_view loadPath)
+    {
+        if (!AtomToolsDocument::Open(loadPath))
+        {
             return false;
         }
 
-        Clear();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentClosed, m_id);
-        AZ_TracePrintf("ShaderManagementConsoleDocument", "Document closed\n");
-        return true;
+        if (!AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
+        {
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document extension is not supported: '%s.'", m_absolutePath.c_str());
+            return OpenFailed();
+        }
+
+        // Load the shader config data and create a shader config asset from it
+        AZ::RPI::ShaderVariantListSourceData sourceData;
+        if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_absolutePath, sourceData))
+        {
+            AZ_Error("ShaderManagementConsoleDocument", false, "Failed loading shader variant list data: '%s.'", m_absolutePath.c_str());
+            return OpenFailed();
+        }
+
+        SetShaderVariantListSourceData(sourceData);
+        return IsOpen() ? OpenSucceeded() : OpenFailed();
+    }
+
+    bool ShaderManagementConsoleDocument::Save()
+    {
+        if (!AtomToolsDocument::Save())
+        {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
+            return false;
+        }
+
+        return SaveSourceData();
+    }
+
+    bool ShaderManagementConsoleDocument::SaveAsCopy(AZStd::string_view savePath)
+    {
+        if (!AtomToolsDocument::SaveAsCopy(savePath))
+        {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
+            return false;
+        }
+
+        return SaveSourceData();
+    }
+
+    bool ShaderManagementConsoleDocument::SaveAsChild(AZStd::string_view savePath)
+    {
+        if (!AtomToolsDocument::SaveAsChild(savePath))
+        {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
+            return false;
+        }
+
+        return SaveSourceData();
     }
 
     bool ShaderManagementConsoleDocument::IsOpen() const
     {
-        return !m_absolutePath.empty() && !m_relativePath.empty();
+        return AtomToolsDocument::IsOpen() && m_shaderAsset.IsReady();
+    }
+
+    bool ShaderManagementConsoleDocument::IsModified() const
+    {
+        return false;
+    }
+
+    bool ShaderManagementConsoleDocument::IsSavable() const
+    {
+        return true;
     }
 
     void ShaderManagementConsoleDocument::Clear()
     {
-        m_absolutePath.clear();
-        m_relativePath.clear();
+        AtomToolsFramework::AtomToolsDocument::Clear();
+
         m_shaderVariantListSourceData = {};
         m_shaderAsset = {};
+    }
+
+    bool ShaderManagementConsoleDocument::SaveSourceData()
+    {
+        if (!AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, m_shaderVariantListSourceData))
+        {
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document could not be saved: '%s'.", m_savePathNormalized.c_str());
+            return SaveFailed();
+        }
+
+        m_absolutePath = m_savePathNormalized;
+        return SaveSucceeded();
     }
 } // namespace ShaderManagementConsole

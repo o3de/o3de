@@ -9,7 +9,8 @@
   },
   "profile_nounity_pipe": {
     "TAGS": [
-      "default"
+      "default",
+      "snapshot"
     ],
     "steps": [
       "profile_nounity",

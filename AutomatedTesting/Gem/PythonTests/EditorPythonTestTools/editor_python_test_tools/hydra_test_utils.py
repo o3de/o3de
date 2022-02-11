@@ -61,7 +61,7 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
         from os import path
         editor.args.extend([
             "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-            f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"])
+            f"--regset-file={os.path.join(editor.workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"])
     else:
         editor.args.extend(["--regset=/Amazon/Preferences/EnablePrefabSystem=false"])
 

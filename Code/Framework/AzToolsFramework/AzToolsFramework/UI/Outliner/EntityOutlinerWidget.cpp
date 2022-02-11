@@ -224,7 +224,6 @@ namespace AzToolsFramework
         connect(m_gui->m_objectTree, &QTreeView::expanded, this, &EntityOutlinerWidget::OnTreeItemExpanded);
         connect(m_gui->m_objectTree, &QTreeView::collapsed, this, &EntityOutlinerWidget::OnTreeItemCollapsed);
         connect(m_gui->m_objectTree, &EntityOutlinerTreeView::ItemDropped, this, &EntityOutlinerWidget::OnDropEvent);
-        connect(m_listModel, &EntityOutlinerListModel::ExpandEntity, this, &EntityOutlinerWidget::OnExpandEntity);
         connect(m_listModel, &EntityOutlinerListModel::SelectEntity, this, &EntityOutlinerWidget::OnSelectEntity);
         connect(m_listModel, &EntityOutlinerListModel::EnableSelectionUpdates, this, &EntityOutlinerWidget::OnEnableSelectionUpdates);
         connect(m_listModel, &EntityOutlinerListModel::ResetFilter, this, &EntityOutlinerWidget::ClearFilter);
@@ -946,7 +945,7 @@ namespace AzToolsFramework
     {
         if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
         {
-            entityUiHandler->OnEntityDoubleClick(entityId);
+            entityUiHandler->OnOutlinerItemDoubleClick(index);
         }
     }
 
@@ -972,10 +971,6 @@ namespace AzToolsFramework
         m_listModel->OnEntityCollapsed(entityId);
     }
 
-    void EntityOutlinerWidget::OnExpandEntity(const AZ::EntityId& entityId, bool expand)
-    {
-        m_gui->m_objectTree->setExpanded(GetIndexFromEntityId(entityId), expand);
-    }
 
     void EntityOutlinerWidget::OnSelectEntity(const AZ::EntityId& entityId, bool selected)
     {
