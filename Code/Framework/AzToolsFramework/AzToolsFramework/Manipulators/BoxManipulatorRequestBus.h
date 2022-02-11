@@ -26,6 +26,7 @@ namespace AzToolsFramework
         virtual AZ::Vector3 GetDimensions() = 0;
         //! Set the X/Y/Z dimensions of the box shape/collider.
         virtual void SetDimensions(const AZ::Vector3& dimensions) = 0;
+        // O3DE_DEPRECATION_NOTICE(GHI-7572)
         //! @deprecated Because non-uniform scale effects can be complex, it is recommended to separately use
         //! AZ::TransformBus::Events::GetWorldTM, AZ::NonUniformScaleRequests::GetScale and GetCurrentLocalTransform
         //! and combine their effects.
@@ -36,6 +37,7 @@ namespace AzToolsFramework
         virtual AZ::Transform GetCurrentTransform() = 0;
         //! Get the transform of the box relative to the entity.
         virtual AZ::Transform GetCurrentLocalTransform() = 0;
+        // O3DE_DEPRECATION_NOTICE(GHI-7572)
         //! @deprecated Because non-uniform scale effects can be complex, it is recommended to separately use
         //! AZ::TransformBus::Events::GetWorldTM, AZ::NonUniformScaleRequests::GetScale and GetCurrentLocalTransform
         //! and combine their effects.
