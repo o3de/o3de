@@ -177,7 +177,7 @@ namespace AzToolsFramework
             QTimer::singleShot(0, this, [this]() {
                 RestoreState();
 
-                // The selection doesn't propogate immediately, so we need to delay
+                // The selection doesn't propagate immediately, so we need to delay
                 // it as well so that the OK button can be updated appropriately.
                 // Otherwise, it will always be disabled when you first launch
                 // the asset picker dialog.
