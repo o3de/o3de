@@ -14,7 +14,7 @@ namespace AZStd::ranges::views::Internal
 {
     // Call wrapping that performs perfecting forwarding of arguments
     // and take const and ref function qualifiers into account(rvalue functions will move)
-    template<class Inner, class Outer>
+    template<class Outer, class Inner>
     struct perfect_forwarding_call_wrapper
     {
         perfect_forwarding_call_wrapper(Outer&& outer, Inner&& inner)
@@ -101,18 +101,21 @@ namespace AZStd::ranges::views::Internal
             bool_constant<constructible_from<decay_t<U>, U>>,
             bool_constant<constructible_from<decay_t<Target>, Target>>>,
             decltype(range_adaptor_closure_forwarder{
-                perfect_forwarding_call_wrapper{AZStd::forward<U>(closure), AZStd::forward<Target>(outerClosure) }
+                perfect_forwarding_call_wrapper{AZStd::forward<Target>(outerClosure), AZStd::forward<U>(closure) }
                 })>
         {
             // Create a perfect_forwarding_wrapper that wraps the outer adaptor around the inner adaptor
             // and then pass that to the range_adaptor_closure_forward struct which inherits from
             // range_adaptor_closure class template so that it is_range_closure_t template succeeds
             return range_adaptor_closure_forwarder{
-                perfect_forwarding_call_wrapper{AZStd::forward<U>(closure), AZStd::forward<Target>(outerClosure) }
+                perfect_forwarding_call_wrapper{AZStd::forward<Target>(outerClosure), AZStd::forward<U>(closure) }
             };
         }
     };
+} // namespace AZStd::ranges::views::Internal
 
+namespace AZStd::ranges::Internal
+{
     // Copyable Wrapper - https://eel.is/c++draft/ranges#range.copy.wrap
     // Used to wrap a class that copy constructible, but not necessarily copy assignable
     // and implements a copy assignment operator using the optional emplace function
@@ -242,7 +245,7 @@ namespace AZStd::ranges::views::Internal
     template<class T>
     class non_propagating_cache<T, enable_if_t<is_object_v<T>>>
     {
-    private:
+    public:
         template<class U = T, class = enable_if_t<default_initializable<U>>>
         constexpr non_propagating_cache() noexcept(is_nothrow_constructible_v<T>)
             : non_propagating_cache{ in_place }
@@ -317,7 +320,7 @@ namespace AZStd::ranges::views::Internal
         template<class I>
         constexpr auto emplace_deref(const I& i) -> enable_if_t<constructible_from<T, decltype(*i)>, T&>
         {
-            return m_cache.emplace(in_place, *i);
+            return m_cache.emplace(*i);
         }
 
         constexpr void reset() noexcept
@@ -327,4 +330,4 @@ namespace AZStd::ranges::views::Internal
     private:
         optional<T> m_cache;
     };
-}
+}  // namespace AZStd::ranges::Internal
