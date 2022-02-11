@@ -60,9 +60,10 @@ namespace MaterialCanvas
 {
     static constexpr float DepthNear = 0.01f;
 
-    MaterialCanvasViewportWidget::MaterialCanvasViewportWidget(QWidget* parent)
+    MaterialCanvasViewportWidget::MaterialCanvasViewportWidget(const AZ::Crc32& toolId, QWidget* parent)
         : AtomToolsFramework::RenderViewportWidget(parent)
         , m_ui(new Ui::MaterialCanvasViewportWidget)
+        , m_toolId(toolId)
         , m_viewportController(AZStd::make_shared<MaterialCanvasViewportInputController>())
     {
         m_ui->setupUi(this);
@@ -252,7 +253,7 @@ namespace MaterialCanvas
         OnFieldOfViewChanged(viewportSettings->m_fieldOfView);
         OnDisplayMapperOperationTypeChanged(viewportSettings->m_displayMapperOperationType);
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
         MaterialCanvasViewportNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());

@@ -22,9 +22,9 @@ namespace MaterialCanvas
     public:
         AZ_RTTI(MaterialCanvasDocument, "{628858AB-4FE0-4284-BF40-BB38E7374F93}");
         AZ_CLASS_ALLOCATOR(MaterialCanvasDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(MaterialCanvasDocument);
+        AZ_DISABLE_COPY_MOVE(MaterialCanvasDocument);
 
-        MaterialCanvasDocument();
+        MaterialCanvasDocument(const AZ::Crc32& toolId);
         virtual ~MaterialCanvasDocument();
     };
 } // namespace MaterialCanvas

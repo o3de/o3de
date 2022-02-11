@@ -32,7 +32,7 @@ namespace MaterialCanvas
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        MaterialCanvasMainWindow(QWidget* parent = 0);
+        MaterialCanvasMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
 
     protected:
         void ResizeViewportRenderTarget(uint32_t width, uint32_t height) override;

@@ -14,8 +14,8 @@
 
 namespace MaterialCanvas
 {
-    MaterialCanvasDocument::MaterialCanvasDocument()
-        : AtomToolsFramework::AtomToolsDocument()
+    MaterialCanvasDocument::MaterialCanvasDocument(const AZ::Crc32& toolId)
+        : AtomToolsFramework::AtomToolsDocument(toolId)
     {
         MaterialCanvasDocumentRequestBus::Handler::BusConnect(m_id);
     }

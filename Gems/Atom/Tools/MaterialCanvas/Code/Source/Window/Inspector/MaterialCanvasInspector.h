@@ -29,7 +29,7 @@ namespace MaterialCanvas
     public:
         AZ_CLASS_ALLOCATOR(MaterialCanvasInspector, AZ::SystemAllocator, 0);
 
-        explicit MaterialCanvasInspector(QWidget* parent = nullptr);
+        MaterialCanvasInspector(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~MaterialCanvasInspector() override;
 
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
@@ -58,6 +58,8 @@ namespace MaterialCanvas
         void SealUndoStack() override {}
         void RequestPropertyContextMenu([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode, const QPoint&) override {}
         void PropertySelectionChanged([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode, bool) override {}
+
+        const AZ::Crc32 m_toolId = {};
 
         // Tracking the property that is activiley being edited in the inspector
         const AtomToolsFramework::DynamicProperty* m_activeProperty = {};

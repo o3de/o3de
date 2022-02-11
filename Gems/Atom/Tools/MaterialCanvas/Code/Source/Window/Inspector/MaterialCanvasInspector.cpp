@@ -15,13 +15,14 @@
 
 namespace MaterialCanvas
 {
-    MaterialCanvasInspector::MaterialCanvasInspector(QWidget* parent)
+    MaterialCanvasInspector::MaterialCanvasInspector(const AZ::Crc32& toolId, QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
+        , m_toolId(toolId)
     {
         m_windowSettings = AZ::UserSettings::CreateFind<MaterialCanvasMainWindowSettings>(
             AZ::Crc32("MaterialCanvasMainWindowSettings"), AZ::UserSettings::CT_GLOBAL);
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     MaterialCanvasInspector::~MaterialCanvasInspector()
