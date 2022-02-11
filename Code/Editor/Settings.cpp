@@ -634,12 +634,23 @@ void SEditorSettings::Save(bool isEditorClosing)
     // Prefab System UI
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
+    ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
+    if (bookmarkLoader)
+    {
+        bookmarkLoader->SaveBookmarkSettingsFile();
+    }
+
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
 
     if (!isEditorClosing)
     {
+        if (bookmarkLoader)
+        {
+            bookmarkLoader->SaveLastKnownLocationInLevel(ViewBookmark()); //TODO:Check why this is creating a null bookmark
+            bookmarkLoader->LoadViewBookmarks();
+        }
         SaveSettingsRegistryFile();
     }
 }

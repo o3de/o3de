@@ -7,19 +7,18 @@
  */
 
 // AzCore
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/Console/IConsole.h>
-#include <AzCore/IO/ByteContainerStream.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 
-#include <Prefab/ViewBookmarkLoader.h>
 #include <API/ComponentEntitySelectionBus.h>
-
+#include <Prefab/ViewBookmarkLoader.h>
 
 #pragma optimize("", off)
 
@@ -32,8 +31,7 @@ void ViewBookmarkLoader::Reflect(AZ::ReflectContext* context)
     {
         serializeContext->RegisterGenericType<ViewBookmark>();
 
-        serializeContext->Class<ViewBookmarkLoader>()
-            ->Version(0);
+        serializeContext->Class<ViewBookmarkLoader>()->Version(0);
     }
 }
 
@@ -65,28 +63,26 @@ bool ViewBookmarkLoader::SaveBookmark_Internal(ViewBookmark& bookmark, bool isLa
 
     AZ_Error("View Bookmark Loader ", levelEntityId.IsValid(), "Level Entity ID is invalid.");
 
-
-    // Create entry or if it already exists, add the bookmark
-    //TODO: Refactor this
-    auto existingBookmarkEntry = m_viewBookmarkMap.find(levelEntityId);
-    if (existingBookmarkEntry != m_viewBookmarkMap.end())
+    if (isLastKnownLocationInLevel)
     {
-        if (isLastKnownLocationInLevel)
+        // Create the entry, if it already exists then  add the bookmark to it.
+        auto existingBookmarkEntry = m_viewBookmarkMap.find(levelEntityId);
+        if (existingBookmarkEntry != m_viewBookmarkMap.end())
         {
             AZStd::vector<ViewBookmark>& bookmarks = existingBookmarkEntry->second;
             bookmarks.at(0) = bookmark;
         }
         else
         {
-            existingBookmarkEntry->second.push_back(bookmark);
+            m_viewBookmarkMap.insert(AZStd::make_pair(levelEntityId, AZStd::vector<ViewBookmark>{ bookmark }));
         }
     }
     else
     {
-        // Create first an empty bookmark that will hold the last Known Location of a level
-        if (isLastKnownLocationInLevel)
+        auto existingBookmarkEntry = m_viewBookmarkMap.find(levelEntityId);
+        if (existingBookmarkEntry != m_viewBookmarkMap.end())
         {
-            m_viewBookmarkMap.insert(AZStd::make_pair(levelEntityId, AZStd::vector<ViewBookmark>{ bookmark }));
+            existingBookmarkEntry->second.push_back(bookmark);
         }
         else
         {
@@ -94,13 +90,12 @@ bool ViewBookmarkLoader::SaveBookmark_Internal(ViewBookmark& bookmark, bool isLa
         }
     }
 
-    // Write to the settings registry (We might want to do this step somewhere else)
+    // Write to the settings registry
     if (auto registry = AZ::SettingsRegistry::Get())
     {
         size_t currentBookmarkIndex = isLastKnownLocationInLevel ? 0 : m_viewBookmarkMap.at(levelEntityId).size() - 1;
         AZStd::string finalPath = s_viewBookmarksRegistryPath + levelEntityId.ToString() + "/" + AZStd::to_string(currentBookmarkIndex);
 
-        //Don't store in memory if it is the last known location in the level.
         if (isLastKnownLocationInLevel)
         {
             AZStd::vector<ViewBookmark>& bookmarks = m_viewBookmarkMap.at(levelEntityId);
@@ -116,17 +111,11 @@ bool ViewBookmarkLoader::SaveBookmark_Internal(ViewBookmark& bookmark, bool isLa
 
 bool ViewBookmarkLoader::LoadViewBookmarks()
 {
-    struct ViewBookmarkData
-    {
-        AZStd::string m_levelId;
-        AZStd::vector<ViewBookmark> m_bookmarks;
-    };
-    struct ViewBookmarkVisitor
-        : AZ::SettingsRegistryInterface::Visitor
+
+    struct ViewBookmarkVisitor : AZ::SettingsRegistryInterface::Visitor
     {
         ViewBookmarkVisitor()
-            : m_viewBookmarksKey{ "/O3DE/ViewBookmarks" }
-        {};
+            : m_viewBookmarksKey{ "/O3DE/ViewBookmarks" } {};
 
         AZ::SettingsRegistryInterface::VisitResponse Traverse(
             AZStd::string_view path,
@@ -136,29 +125,19 @@ bool ViewBookmarkLoader::LoadViewBookmarks()
         {
             if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
             {
-                // Strip off the last JSON pointer key from the path and if it matches the gem module key then add an entry
-                // to the ViewBookmarkData array
+                // Strip off the last JSON pointer key from the path and if it matches the viewmark key then add an entry
+                // to the ViewBookmark Map
                 AZStd::optional<AZStd::string_view> levelId = AZ::StringFunc::TokenizeLast(path, "/");
                 if (path == m_viewBookmarksKey && levelId && !levelId->empty())
                 {
                     AZStd::string_view bookmarkKey = levelId.value();
-                    auto FindViewBookmarkLoadEntry = [bookmarkKey](const ViewBookmarkData& bookmarkLoadData)
-                    {
-                        return bookmarkKey == bookmarkLoadData.m_levelId;
-                    };
 
-                    if (auto foundIt = AZStd::find_if(m_viewBookmarkData.begin(), m_viewBookmarkData.end(), FindViewBookmarkLoadEntry);
-                        foundIt == m_viewBookmarkData.end())
+                    auto existingBookmarkEntry = m_bookmarkMap.find(bookmarkKey);
+                    if (existingBookmarkEntry == m_bookmarkMap.end())
                     {
-                        m_viewBookmarkData.emplace_back(ViewBookmarkData{ bookmarkKey });
                         m_bookmarkMap.insert(AZStd::make_pair(bookmarkKey, AZStd::vector<ViewBookmark>{}));
                     }
                 }
-            }
-            else if (action == AZ::SettingsRegistryInterface::VisitAction::Value)
-            {
-                
-
             }
 
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
@@ -166,20 +145,15 @@ bool ViewBookmarkLoader::LoadViewBookmarks()
 
         using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(
-            AZStd::string_view path, AZStd::string_view valueIndex, AZ::SettingsRegistryInterface::Type, [[maybe_unused]]double value) override
+            AZStd::string_view path,
+            AZStd::string_view valueIndex,
+            AZ::SettingsRegistryInterface::Type,
+            double value) override
         {
             AZ::StringFunc::TokenizeLast(path, "/");
             AZStd::optional<AZStd::string_view> dataType = AZ::StringFunc::TokenizeLast(path, "/");
             AZStd::optional<AZStd::string_view> bookmarkIndexStr = AZ::StringFunc::TokenizeLast(path, "/");
             AZStd::optional<AZStd::string_view> levelId = AZ::StringFunc::TokenizeLast(path, "/");
-
-            int bookmarkIndex = stoi(AZStd::string(bookmarkIndexStr->data()));
-            bool isCurrentBookmarkIndex = true;
-            if (bookmarkIndex != m_currentBookmarkIndex)
-            {
-                m_currentBookmarkIndex = bookmarkIndex;
-                isCurrentBookmarkIndex = false;
-            }
 
             if (path == m_viewBookmarksKey && levelId && !levelId->empty())
             {
@@ -187,7 +161,7 @@ bool ViewBookmarkLoader::LoadViewBookmarks()
                 if (existingBookmarkEntry != m_bookmarkMap.end())
                 {
                     AZStd::vector<ViewBookmark>& bookmarks = existingBookmarkEntry->second;
-                    //if it is the first bookmark and it is the Position data it means it is the first one
+                    // if it is the first bookmark and it is the Position data it means it is the first one
                     // and we have to create the Bookmark.
                     if (valueIndex == "0" && dataType == "Position")
                     {
@@ -197,53 +171,45 @@ bool ViewBookmarkLoader::LoadViewBookmarks()
                     }
                     else
                     {
+                        int bookmarkIndex = stoi(AZStd::string(bookmarkIndexStr->data()));
                         ViewBookmark& bookmark = bookmarks.at(bookmarkIndex);
                         int currentIndex = stoi(AZStd::string(valueIndex));
-                        if (dataType == "Position")
+
+                        auto setVec3 = [value, currentIndex](AZ::Vector3& inout)
                         {
                             switch (currentIndex)
                             {
                             case 0:
-                                bookmark.m_position.SetX(value);
+                                inout.SetX(value);
                                 break;
                             case 1:
-                                bookmark.m_position.SetY(value);
+                                inout.SetY(value);
                                 break;
                             case 2:
-                                bookmark.m_position.SetZ(value);
+                                inout.SetZ(value);
                                 break;
                             }
+                        };
+
+                        if (dataType == "Position")
+                        {
+                            setVec3(bookmark.m_position);
                         }
                         else if (dataType == "Rotation")
                         {
-                            switch (currentIndex)
-                            {
-                            case 0:
-                                bookmark.m_rotation.SetX(value);
-                                break;
-                            case 1:
-                                bookmark.m_rotation.SetY(value);
-                                break;
-                            case 2:
-                                bookmark.m_rotation.SetZ(value);
-                                break;
-                            }
+                            setVec3(bookmark.m_rotation);
                         }
                     }
                 }
             }
-
         };
 
         [[maybe_unused]] const AZ::SettingsRegistryInterface::FixedValueString m_viewBookmarksKey;
-        [[maybe_unused]] AZStd::vector<ViewBookmarkData> m_viewBookmarkData;
-        int m_currentBookmarkIndex = 0;
         AZStd::unordered_map<AZStd::string, AZStd::vector<ViewBookmark>> m_bookmarkMap;
     };
 
     using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-    auto viewBookmarkSettingsKey =
-        FixedValueString::format("/O3DE/ViewBookmarks");
+    auto viewBookmarkSettingsKey = FixedValueString::format("/O3DE/ViewBookmarks");
     ViewBookmarkVisitor viewBookmarkVisitor;
 
     auto registry = AZ::SettingsRegistry::Get();
@@ -252,9 +218,9 @@ bool ViewBookmarkLoader::LoadViewBookmarks()
         AZ_Warning("SEditorSettings", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
         return false;
     }
-    [[maybe_unused]] const bool visitedGemModules = registry->Visit(viewBookmarkVisitor, viewBookmarkSettingsKey);
+    [[maybe_unused]] const bool visitedViewBookmarks = registry->Visit(viewBookmarkVisitor, viewBookmarkSettingsKey);
 
-    return false;
+    return visitedViewBookmarks;
 }
 
 void ViewBookmarkLoader::SaveBookmarkSettingsFile()
@@ -297,10 +263,7 @@ void ViewBookmarkLoader::SaveBookmarkSettingsFile()
     }
 
     AZ_Warning(
-        "SEditorSettings",
-        saved,
-        R"(Unable to save Editor Preferences registry file to path "%s"\n)", editorBookmarkFilePath.c_str());
+        "SEditorSettings", saved, R"(Unable to save Editor Preferences registry file to path "%s"\n)", editorBookmarkFilePath.c_str());
 }
-
 
 #pragma optimize("", on)
