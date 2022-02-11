@@ -12,12 +12,76 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzTest/AzTest.h>
 
+#include <Atom/RHI.Reflect/ImageSubresource.h>
+#include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+
 namespace UnitTest
 {
+    //! Helper method to build a AZ::RHI::ImageSubresourceLayout
+    //! @param width The width of the image
+    //! @param height The height of the image
+    //! @param pixelSize Number of bytes per pixel
+    //! @return The AZ::RHI::ImageSubresourceLayout that has been filled out appropriately
+    AZ::RHI::ImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize);
+
+    //! Build a deterministic random set of image pixel data
+    //! @param width Width of the image
+    //! @param height Height of the image
+    //! @param pixelSize Number of bytes per pixel
+    //! @param seed The random seed for generating the data
+    //! @return A vector of bytes for the image data
+    AZStd::vector<uint8_t> BuildBasicImageData(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::s32 seed);
+
+    //! Build a mip chain asset that contains the basic image data from BuildBasicImageData
+    //! @param mipLevels Number of mip levels in the chain
+    //! @param arraySize Number of sub images within a mip level
+    //! @param width The width of the image
+    //! @param height The height of the image
+    //! @param pixelSize The number of bytes per pixel
+    //! @param seed The random seed for generating the data
+    //! @return A mip chain asset with the specified basic image data
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::s32 seed);
+
+    //! Construct an array of image data where all the pixels are 0 except for one at the given coordinate
+    //! @param width Width of the image
+    //! @param height Height of the image
+    //! @param pixelSize Number of bytes per pixel
+    //! @param pixelX The X coordinate of the pixel to set to 1
+    //! @param pixelY The Y coordinate of the pixel to set to 1
+    //! @return A vector of bytes for the image data
+    AZStd::vector<uint8_t> BuildSpecificPixelImageData(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY);
+
+    //! Build a mip chain asset that contains the specific image data from BuildSpecificPixelImageData
+    //! @param mipLevels Number of mip levels in the chain
+    //! @param arraySize Number of sub images within a mip level
+    //! @param width The width of the image
+    //! @param height The height of the image
+    //! @param pixelSize The number of bytes per pixel
+    //! @param pixelX The X coordinate of the pixel to set to 1
+    //! @param pixelY The Y coordinate of the pixel to set to 1
+    //! @return A mip chain asset with the specific pixel image data
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY);
+
+    //! Creates a deterministically random set of pixel data as an AZ::RPI::StreamingImageAsset.
+    //! \param width The width of the AZ::RPI::StreamingImageAsset
+    //! \param height The height of the AZ::RPI::StreamingImageAsset
+    //! \param seed The random seed to use for generating the random data
+    //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed);
+
+    //! Creates an AZ::RPI::StreamingImageAsset where all the pixels are 0 except for the one pixel at the given coordinates, which is set to 1.
+    //! \param width The width of the AZ::RPI::StreamingImageAsset
+    //! \param height The height of the AZ::RPI::StreamingImageAsset
+    //! \param pixelX The X coordinate of the pixel to set to 1
+    //! \param pixelY The Y coordinate of the pixel to set to 1
+    //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY);
+
     class GradientSignalTestHelpers
     {
     public:
-        static void CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float shapeHalfBounds);
+        static void CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float queryMin, float queryMax);
 
 #ifdef HAVE_BENCHMARK
         // We use an enum to list out the different types of GetValue() benchmarks to run so that way we can condense our test cases

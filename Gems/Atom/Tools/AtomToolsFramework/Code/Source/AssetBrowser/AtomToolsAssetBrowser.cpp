@@ -8,6 +8,7 @@
 
 #include <AssetBrowser/ui_AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -103,8 +104,12 @@ namespace AtomToolsFramework
     {
         const AZStd::vector<AssetBrowserEntry*> entries = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
 
-        const int multiSelectPromptThreshold = 10;
-        if (entries.size() >= multiSelectPromptThreshold)
+        const bool promptToOpenMultipleFiles =
+            GetSettingOrDefault<bool>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles", true);
+        const AZ::u64 promptToOpenMultipleFilesThreshold =
+            GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold", 10);
+
+        if (promptToOpenMultipleFiles && promptToOpenMultipleFilesThreshold <= entries.size())
         {
             QMessageBox::StandardButton result = QMessageBox::question(
                 QApplication::activeWindow(),

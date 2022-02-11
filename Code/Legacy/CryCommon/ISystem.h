@@ -1280,48 +1280,72 @@ namespace Detail
 
 #endif
 
-#define ASSERT_CONSOLE_EXISTS 0
-
 // the following macros allow the help text to be easily stripped out
 
 // Summary:
 //   Preferred way to register a CVar
-#define REGISTER_CVAR(_var, _def_val, _flags, _comment)                                                            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR(_var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a CVar with a callback
-#define REGISTER_CVAR_CB(_var, _def_val, _flags, _comment, _onchangefunction)                   (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_CVAR_CB(_var, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register a string CVar
-#define REGISTER_STRING(_name, _def_val, _flags, _comment)                                                     (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_STRING(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a string CVar with a callback
-#define REGISTER_STRING_CB(_name, _def_val, _flags, _comment, _onchangefunction)            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_STRING_CB(_name, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register an int CVar
-#define REGISTER_INT(_name, _def_val, _flags, _comment)                                                            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_INT(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register an int CVar with a callback
-#define REGISTER_INT_CB(_name, _def_val, _flags, _comment, _onchangefunction)                   (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_INT_CB(_name, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register a float CVar
-#define REGISTER_FLOAT(_name, _def_val, _flags, _comment)                                                      (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_FLOAT(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Offers more flexibility but more code is required
-#define REGISTER_CVAR2(_name, _var, _def_val, _flags, _comment)                                             (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR2(_name, _var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Offers more flexibility but more code is required
-#define REGISTER_CVAR2_CB(_name, _var, _def_val, _flags, _comment, _onchangefunction)    (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_CVAR2_CB(_name, _var, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Offers more flexibility but more code is required, explicit address taking of destination variable
-#define REGISTER_CVAR3(_name, _var, _def_val, _flags, _comment)                                             (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR3(_name, _var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a console command
-#define REGISTER_COMMAND(_name, _func, _flags, _comment)                                                           (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? false : gEnv->pConsole->AddCommand(_name, _func, (_flags), CVARHELP(_comment)))
+#define REGISTER_COMMAND(_name, _func, _flags, _comment) \
+    (gEnv->pConsole == 0 ? false : gEnv->pConsole->AddCommand(_name, _func, (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to unregister a CVar
-#define UNREGISTER_CVAR(_name)                                                      (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->UnregisterVariable(_name))
+#define UNREGISTER_CVAR(_name) \
+    (gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->UnregisterVariable(_name))
+
+// Summary:
 //   Preferred way to unregister a console command
-#define UNREGISTER_COMMAND(_name)                                                           (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->RemoveCommand(_name))
+#define UNREGISTER_COMMAND(_name) \
+    (gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->RemoveCommand(_name))
 
 ////////////////////////////////////////////////////////////////////////////////
 //

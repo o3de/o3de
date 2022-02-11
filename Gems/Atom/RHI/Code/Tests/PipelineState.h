@@ -23,7 +23,7 @@ namespace UnitTest
         AZStd::unordered_map<uint64_t, const AZ::RHI::PipelineState*> m_pipelineStates;
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const RHI::PipelineLibraryDescriptor&) override { return AZ::RHI::ResultCode::Success; }
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineLibraryDescriptor&) override { return AZ::RHI::ResultCode::Success; }
         void ShutdownInternal() override;
         AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::PipelineLibrary* const>) override;
         AZ::RHI::ConstPtr<AZ::RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr; }

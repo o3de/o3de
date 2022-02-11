@@ -1,19 +1,13 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
     "materialTypeVersion": 3,
-    "properties": {
-        "emissive": {
-            "color": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ]
-        },
-        "opacity": {
-            "factor": 1.0
-        }
+    "propertyValues": {
+        "emissive.color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "opacity.factor": 1.0
     }
 }
