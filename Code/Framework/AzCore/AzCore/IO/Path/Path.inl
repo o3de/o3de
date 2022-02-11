@@ -1536,3 +1536,13 @@ namespace AZ::IO
     extern template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
 }
+
+namespace AZStd::ranges
+{
+    // A PathView is a borrowed range, it does not own the content of the Path it is viewing
+    template<>
+    inline constexpr bool enable_borrowed_range<AZ::IO::PathView> = true;
+
+    template<>
+    inline constexpr bool enable_view<AZ::IO::PathView> = true;
+}
