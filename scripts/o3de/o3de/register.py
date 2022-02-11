@@ -225,7 +225,7 @@ def remove_engine_name_to_path(json_data: dict,
 
     returns 0 to indicate no issues has occurred with removal
     """
-    if engine_path.is_dir() and validation.valid_o3de_engine_json(engine_path):
+    if engine_path.is_dir() and validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
         engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
         if 'engine_name' in engine_json_data and 'engines_path' in json_data:
             engine_name = engine_json_data['engine_name']
@@ -234,6 +234,9 @@ def remove_engine_name_to_path(json_data: dict,
             except KeyError:
                 # Attempting to remove a non-existent engine_name is fine
                 pass
+    else:
+        logger.warning(f'Unable to find engine.json file or file is invalid at path {engine_path.as_posix()}')
+
     return 0
 
 
@@ -354,8 +357,8 @@ def register_engine_path(json_data: dict,
 
     if remove:
         return remove_engine_name_to_path(json_data, engine_path)
-
-    return add_engine_name_to_path(json_data, engine_path, force)
+    else:
+        return add_engine_name_to_path(json_data, engine_path, force)
 
 
 def register_external_subdirectory(json_data: dict,
@@ -797,7 +800,7 @@ def _run_register(args: argparse) -> int:
         remove_invalid_o3de_objects()
         return repo.refresh_repos()
     elif args.this_engine:
-        ret_val = register(engine_path=manifest.get_this_engine_path(), force=args.force)
+        ret_val = register(engine_path=manifest.get_this_engine_path(), force=args.force, remove=args.remove)
         return ret_val
     elif args.all_engines_path:
         return register_all_engines_in_folder(args.all_engines_path, args.remove, args.force)
