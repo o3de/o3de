@@ -22,7 +22,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
 
-AZ_CVAR(bool, bg_AssertNetBindOnDeactrivationWithoutMarkForRemoval, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(bool, bg_AssertNetBindOnDeactivationWithoutMarkForRemoval, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If true, assert when a multiplayer entity is deactivated without first calling MarkForRemoval from NetworkEntityManager.");
 
 namespace Multiplayer
@@ -170,7 +170,7 @@ namespace Multiplayer
 
     void NetBindComponent::Deactivate()
     {
-        if (bg_AssertNetBindOnDeactrivationWithoutMarkForRemoval)
+        if (bg_AssertNetBindOnDeactivationWithoutMarkForRemoval)
         {
             AZ_Assert(
                 m_needsToBeStopped == false,
