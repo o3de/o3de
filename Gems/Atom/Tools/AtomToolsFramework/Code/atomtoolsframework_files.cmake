@@ -15,6 +15,7 @@ set(FILES
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
     Include/AtomToolsFramework/Document/AtomToolsDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentSystem.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentApplication.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
@@ -38,7 +39,6 @@ set(FILES
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h
-    Include/AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
     Source/Application/AtomToolsApplication.cpp
     Source/AssetBrowser/AtomToolsAssetBrowser.cpp
@@ -53,8 +53,7 @@ set(FILES
     Source/Document/AtomToolsDocument.cpp
     Source/Document/AtomToolsDocumentApplication.cpp
     Source/Document/AtomToolsDocumentMainWindow.cpp
-    Source/Document/AtomToolsDocumentSystemComponent.cpp
-    Source/Document/AtomToolsDocumentSystemComponent.h
+    Source/Document/AtomToolsDocumentSystem.cpp
     Source/DynamicProperty/DynamicProperty.cpp
     Source/DynamicProperty/DynamicPropertyGroup.cpp
     Source/Inspector/InspectorWidget.cpp

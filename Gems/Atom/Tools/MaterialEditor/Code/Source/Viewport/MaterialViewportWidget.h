@@ -57,7 +57,7 @@ namespace MaterialEditor
         , public AZ::TransformNotificationBus::MultiHandler
     {
     public:
-        MaterialViewportWidget(QWidget* parent = nullptr);
+        MaterialViewportWidget(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~MaterialViewportWidget();
 
     private:
@@ -83,6 +83,8 @@ namespace MaterialEditor
 
         // AZ::TransformNotificationBus::MultiHandler overrides...
         void OnTransformChanged(const AZ::Transform&, const AZ::Transform&) override;
+
+        const AZ::Crc32 m_toolId = {};
 
         using DirectionalLightHandle = AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle;
 

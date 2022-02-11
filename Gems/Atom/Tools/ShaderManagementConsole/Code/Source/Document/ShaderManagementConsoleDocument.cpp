@@ -14,8 +14,8 @@
 
 namespace ShaderManagementConsole
 {
-    ShaderManagementConsoleDocument::ShaderManagementConsoleDocument()
-        : AtomToolsFramework::AtomToolsDocument()
+    ShaderManagementConsoleDocument::ShaderManagementConsoleDocument(const AZ::Crc32& toolId)
+        : AtomToolsFramework::AtomToolsDocument(toolId)
     {
         ShaderManagementConsoleDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -37,8 +37,8 @@ namespace ShaderManagementConsole
             AZ_Error("ShaderManagementConsoleDocument", false, "Could not load shader asset: %s.", shaderPath.c_str());
         }
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
     }
 
     const AZ::RPI::ShaderVariantListSourceData& ShaderManagementConsoleDocument::GetShaderVariantListSourceData() const
