@@ -8,9 +8,12 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/ranges/all_view.h>
+#include <AzCore/std/ranges/elements_view.h>
 #include <AzCore/std/ranges/empty_view.h>
+#include <AzCore/std/ranges/join_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
 #include <AzCore/std/ranges/single_view.h>
 #include <AzCore/std/ranges/split_view.h>
@@ -338,5 +341,143 @@ namespace UnitTest
             AZStd::array expectedValue{ 4, 5, 6, 7, 8, 9, 10 };
             EXPECT_TRUE(AZStd::ranges::equal(expectedValue, splitSubrange));
         }
+    }
+
+    TEST_F(RangesViewTestFixture, JoinView_IteratesOverInnerViews_Succeeds)
+    {
+        constexpr AZStd::string_view expectedString = "HelloWorldMoonSun";
+        using Rope = AZStd::fixed_vector<AZStd::string_view, 32>;
+        Rope rope{ "Hello", "World", "Moon", "Sun" };
+        AZStd::fixed_string<128> accumString;
+        for (auto&& charElement : AZStd::ranges::join_view(rope))
+        {
+            accumString.push_back(charElement);
+        }
+
+        EXPECT_EQ(expectedString, accumString);
+    }
+
+    TEST_F(RangesViewTestFixture, JoinView_IteratesCanIterateOverSplitView_Succeeds)
+    {
+        constexpr AZStd::string_view expectedString = "HelloWorldMoonSun";
+        constexpr AZStd::string_view splitExpression = "Hello,World,Moon,Sun";
+        AZStd::fixed_string<128> accumString;
+
+        for (auto&& charElement : AZStd::ranges::views::join(AZStd::ranges::views::split(splitExpression, ',')))
+        {
+            accumString.push_back(charElement);
+        }
+
+        EXPECT_EQ(expectedString, accumString);
+    }
+
+    TEST_F(RangesViewTestFixture, JoinView_IterSwapCustomization_Succeeds)
+    {
+        AZStd::fixed_vector<AZStd::string, 8> testVector1{ "World", "Hello" };
+        AZStd::fixed_vector<AZStd::string, 8> testVector2{ "Value", "First" };
+        auto joinView1 = AZStd::ranges::views::join(testVector1);
+        auto joinView2 = AZStd::ranges::views::join(testVector2);
+        auto joinViewIter1 = joinView1.begin();
+        auto joinViewIter2 = joinView2.begin();
+        // swaps the 'W' and 'V'
+        AZStd::ranges::iter_swap(joinViewIter1, joinViewIter2);
+        AZStd::ranges::advance(joinViewIter1, 5, joinView1.end());
+        AZStd::ranges::advance(joinViewIter2, 5, joinView2.end());
+        // swaps the 'H' and 'F' of the second string of each vector
+        AZStd::ranges::iter_swap(joinViewIter1, joinViewIter2);
+        EXPECT_EQ("Vorld", testVector1[0]);
+        EXPECT_EQ("Fello", testVector1[1]);
+        EXPECT_EQ("Walue", testVector2[0]);
+        EXPECT_EQ("Hirst", testVector2[1]);
+    }
+
+    TEST_F(RangesViewTestFixture, JoinView_IterMoveCustomization_Succeeds)
+    {
+        using StringWrapper = AZStd::ranges::single_view<AZStd::string>;
+
+        AZStd::fixed_vector<StringWrapper, 8> testVector1{ StringWrapper{"5"}, StringWrapper{"10"} };
+        AZStd::fixed_vector<StringWrapper, 8> testVector2{ StringWrapper{"15"}, StringWrapper{"20"} };
+        auto joinView1 = AZStd::ranges::views::join(testVector1);
+        auto joinView2 = AZStd::ranges::views::join(testVector2);
+        auto joinViewIter1 = joinView1.begin();
+        auto joinViewIter2 = joinView2.begin();
+        AZStd::string value = AZStd::ranges::iter_move(joinViewIter1);
+
+        EXPECT_EQ("5", value);
+        EXPECT_TRUE((*joinViewIter1).empty());
+        ++joinViewIter2;
+        value = AZStd::ranges::iter_move(joinViewIter2);
+        EXPECT_EQ("20", value);
+        EXPECT_TRUE((*joinViewIter2).empty());
+    }
+
+    TEST_F(RangesViewTestFixture, ElementsView_CanIterateVectorOfTuple_Succeeds)
+    {
+        using TestTuple = AZStd::tuple<int, AZStd::string, bool>;
+        AZStd::vector testVector{ TestTuple{1, "hello", false}, TestTuple{2, "world", true},
+            TestTuple{3, "Moon", false} };
+
+        auto firstElementView = AZStd::ranges::views::elements<0>(testVector);
+        auto firstElementBegin = AZStd::ranges::begin(firstElementView);
+        auto firstElementEnd = AZStd::ranges::end(firstElementView);
+        EXPECT_NE(firstElementEnd, firstElementBegin);
+        ASSERT_EQ(3, firstElementView.size());
+        EXPECT_EQ(1, firstElementView[0]);
+        EXPECT_EQ(2, firstElementView[1]);
+        EXPECT_EQ(3, firstElementView[2]);
+
+        auto secondElementView = AZStd::ranges::views::elements<1>(testVector);
+        ASSERT_EQ(3, secondElementView.size());
+        EXPECT_EQ("hello", secondElementView[0]);
+        EXPECT_EQ("world", secondElementView[1]);
+        EXPECT_EQ("Moon", secondElementView[2]);
+
+        auto thirdElementView = AZStd::ranges::views::elements<2>(testVector);
+        ASSERT_EQ(3, thirdElementView.size());
+        EXPECT_FALSE(thirdElementView[0]);
+        EXPECT_TRUE(thirdElementView[1]);
+        EXPECT_FALSE(thirdElementView[2]);
+
+        using TestPair = AZStd::pair<AZStd::string, int>;
+        AZStd::vector testPairVector{ TestPair{"hello", 5}, TestPair{"world", 10}, TestPair{"Sun", 15} };
+        using ElementsViewBase = AZStd::ranges::views::all_t<decltype((testPairVector))>;
+        using ElementsViewType = AZStd::ranges::elements_view<ElementsViewBase, 0>;
+
+        constexpr AZStd::string_view expectedString = "helloworldSun";
+        AZStd::string accumString;
+        for (auto&& stringValue : ElementsViewType(testPairVector))
+        {
+            accumString += stringValue;
+        }
+
+        EXPECT_EQ(expectedString, accumString);
+    }
+
+    TEST_F(RangesViewTestFixture, ElementsView_KeysAlias_CanIterateAssociativeContainerKeyType)
+    {
+        using PairType = AZStd::pair<int, const char*>;
+        AZStd::map testMap{ PairType{1, "Hello"}, PairType{2, "World"}, PairType{3, "Sun"}, PairType{45, "RandomText"} };
+
+        int accumResult{};
+        for (int key : AZStd::ranges::views::keys(testMap))
+        {
+            accumResult += key;
+        }
+
+        EXPECT_EQ(51, accumResult);
+    }
+
+    TEST_F(RangesViewTestFixture, ElementsView_ValuesAlias_CanIterateAssociativeContainerMappedType)
+    {
+        using PairType = AZStd::pair<int, const char*>;
+        AZStd::map testMap{ PairType{1, "Hello"}, PairType{2, "World"}, PairType{3, "Sun"}, PairType{45, "RandomText"} };
+
+        AZStd::string accumResult{};
+        for (const char* value : AZStd::ranges::views::values(testMap))
+        {
+            accumResult += value;
+        }
+
+        EXPECT_EQ("HelloWorldSunRandomText", accumResult);
     }
 }
