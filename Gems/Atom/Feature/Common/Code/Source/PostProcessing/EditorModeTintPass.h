@@ -23,8 +23,8 @@
     AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, DepthTransitionDuration, MIN_VALUE);                                                               \
     AZ_EDITOR_MODE_PASS_CVAR(NAMESPACE, FinalBlendAmount, FINAL_BLEND);
 
-AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeGrayscalePass, 0.5f, 5.0f, 10.0f, 1.0f);
-AZ_EDITOR_MODE_PASS_CVAR(cl_editorModeGrayscalePass, GrayscaleAmount, 0.5f);
+AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeTintPass, 0.5f, 5.0f, 10.0f, 1.0f);
+AZ_EDITOR_MODE_PASS_CVAR(cl_editorModeTintPass, TintAmount, 0.5f);
 
 namespace AZ
 {
@@ -33,21 +33,21 @@ namespace AZ
         /**
          *  The color grading pass.
          */
-        class EditorModeGrayscalePass
+        class EditorModeTintPass
             : public AZ::RPI::FullscreenTrianglePass
             //TODO: , public PostProcessingShaderOptionBase
         {
         public:
-            AZ_RTTI(EditorModeGrayscalePass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(EditorModeGrayscalePass, SystemAllocator, 0);
+            AZ_RTTI(EditorModeTintPass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", AZ::RPI::FullscreenTrianglePass);
+            AZ_CLASS_ALLOCATOR(EditorModeTintPass, SystemAllocator, 0);
 
-            virtual ~EditorModeGrayscalePass() = default;
+            virtual ~EditorModeTintPass() = default;
 
-            //! Creates a EditorModeGrayscalePass
-            static RPI::Ptr<EditorModeGrayscalePass> Create(const RPI::PassDescriptor& descriptor);
+            //! Creates a EditorModeTintPass
+            static RPI::Ptr<EditorModeTintPass> Create(const RPI::PassDescriptor& descriptor);
 
         protected:
-            EditorModeGrayscalePass(const RPI::PassDescriptor& descriptor);
+            EditorModeTintPass(const RPI::PassDescriptor& descriptor);
             
             //! Pass behavior overrides
             void InitializeInternal() override;
@@ -62,7 +62,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_depthTransitionDurationIndex = "m_depthTransitionDuration";
             RHI::ShaderInputNameIndex m_finalBlendAmountIndex = "m_finalBlendAmount";
 
-            RHI::ShaderInputNameIndex m_grayscaleAmountIndex = "m_grayscaleAmount";
+            RHI::ShaderInputNameIndex m_tintAmountIndex = "m_TintAmount";
         };
     }   // namespace Render
 }   // namespace AZ

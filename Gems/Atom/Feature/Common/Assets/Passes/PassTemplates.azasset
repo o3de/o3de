@@ -577,8 +577,8 @@
                 "Path": "Passes/EditorModeDesaturation.pass"
             },
             {
-                "Name": "EditorModeGrayscaleTemplate",
-                "Path": "Passes/EditorModeGrayscale.pass"
+                "Name": "EditorModeTintTemplate",
+                "Path": "Passes/EditorModeTint.pass"
             },
             {
                 "Name": "EditorModeBlurTemplate",

@@ -108,7 +108,7 @@ set(FILES
     Passes/EditorModeFeedbackParent.pass
     Passes/EditorModeMask.pass
     Passes/EditorModeDesaturation.pass
-    Passes/EditorModeGrayscale.pass
+    Passes/EditorModeTint.pass
     Passes/EditorModeBlur.pass
     Passes/EditorModeOutline.pass
     Passes/ContrastAdaptiveSharpening.pass
@@ -465,8 +465,8 @@ set(FILES
     Shaders/PostProcessing/EditorModeMask.shader
     Shaders/PostProcessing/EditorModeDesaturation.azsl
     Shaders/PostProcessing/EditorModeDesaturation.shader
-    Shaders/PostProcessing/EditorModeGrayscale.azsl
-    Shaders/PostProcessing/EditorModeGrayscale.shader
+    Shaders/PostProcessing/EditorModeTint.azsl
+    Shaders/PostProcessing/EditorModeTint.shader
     Shaders/PostProcessing/EditorModeBlur.azsl
     Shaders/PostProcessing/EditorModeBlur.shader
     Shaders/PostProcessing/EditorModeOutline.azsl

@@ -4,8 +4,8 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeGrayscaleTemplate",
-            "PassClass": "EditorModeGrayscalePass",
+            "Name": "EditorModeTintTemplate",
+            "PassClass": "EditorModeTintPass",
             "Slots": [
                 {
                     "Name": "InputDepth",
@@ -67,7 +67,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeGrayscale.shader"
+                    "FilePath": "Shaders/PostProcessing/EditorModeTint.shader"
                 },
                 "PipelineViewTag": "MainCamera"
             }

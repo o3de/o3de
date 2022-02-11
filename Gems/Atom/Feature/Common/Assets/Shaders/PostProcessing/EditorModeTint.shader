@@ -1,5 +1,5 @@
 {
-    "Source" : "EditorModeGrayscale.azsl",
+    "Source" : "EditorModeTint.azsl",
  
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

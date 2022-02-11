@@ -47,7 +47,7 @@
 #include <PostProcessing/EditorModeFeedbackParentPass.h>
 #include <PostProcessing/EditorModeMaskPass.h>
 #include <PostProcessing/EditorModeDesaturationPass.h>
-#include <PostProcessing/EditorModeGrayscalePass.h>
+#include <PostProcessing/EditorModeTintPass.h>
 #include <PostProcessing/EditorModeBlurPass.h>
 #include <PostProcessing/EditorModeOutlinePass.h>
 #include <PostProcessing/DepthUpsamplePass.h>
@@ -235,7 +235,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);
             passSystem->AddPassCreator(Name("EditorModeMaskPass"), &EditorModeMaskPass::Create);
             passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeGrayscalePass"), &EditorModeGrayscalePass::Create);
+            passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
             passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
             passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);

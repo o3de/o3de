@@ -83,8 +83,8 @@
                     ]
                 },
                 {
-                    "Name": "UnmaskedGrayscalePass",
-                    "TemplateName": "EditorModeGrayscaleTemplate",
+                    "Name": "UnmaskedTintPass",
+                    "TemplateName": "EditorModeTintTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -132,7 +132,7 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "UnmaskedGrayscalePass",
+                                "Pass": "UnmaskedTintPass",
                                 "Attachment": "Output"
                             }
                         }
