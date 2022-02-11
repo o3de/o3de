@@ -15,8 +15,8 @@ if(file_ext STREQUAL .app)
         DESTINATION ${file_path}/Contents/MacOS/Registry
     )
 
-    if(EXISTS "${file_path}/Contents/Frameworks/Python.framework")
-        codesign_python_framework_binaries("${file_path}/Contents/Frameworks/Python.framework")
+    if(EXISTS "${file_path}/Contents/Engine/python/runtime/@LY_PYTHON_PACKAGE_NAME@/python")
+        codesign_python_binaries("${file_path}/Contents/Engine/python/runtime/@LY_PYTHON_PACKAGE_NAME@/python")
     endif()
 
 else()
