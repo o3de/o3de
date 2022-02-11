@@ -109,12 +109,4 @@ namespace AzFramework
 
     //! Returns a structure representing frustum attributes for the current camera state.
     AZ::ViewFrustumAttributes ViewFrustumAttributesFromCameraState(const CameraState& cameraState);
-
-    //! Returns the aspect ratio of the viewport dimensions.
-    //! @note Ensure a valid viewport size is provided to this function.
-    inline float AspectRatio(const ScreenSize& viewportSize)
-    {
-        AZ_Assert(viewportSize.m_height > 0.0f, "AspectRatio called with invalid viewport size");
-        return aznumeric_cast<float>(viewportSize.m_width) / aznumeric_cast<float>(viewportSize.m_height);
-    }
 } // namespace AzFramework

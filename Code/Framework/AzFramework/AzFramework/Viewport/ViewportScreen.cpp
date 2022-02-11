@@ -61,7 +61,7 @@ namespace AzFramework
     AZ::Matrix4x4 CameraProjection(const CameraState& cameraState)
     {
         return AZ::Matrix4x4::CreateProjection(
-            cameraState.VerticalFovRadian(), AspectRatio(cameraState.m_viewportSize), cameraState.m_nearClip, cameraState.m_farClip);
+            cameraState.VerticalFovRadian(), cameraState.m_viewportSize.AspectRatio(), cameraState.m_nearClip, cameraState.m_farClip);
     }
 
     AZ::Matrix4x4 InverseCameraProjection(const CameraState& cameraState)
@@ -90,7 +90,7 @@ namespace AzFramework
         const auto cameraWorldTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
             AZ::Matrix3x3::CreateFromMatrix3x4(worldFromView), worldFromView.GetTranslation());
         return AZ::ViewFrustumAttributes(
-            cameraWorldTransform, AspectRatio(cameraState.m_viewportSize), cameraState.m_fovOrZoom, cameraState.m_nearClip,
+            cameraWorldTransform, cameraState.m_viewportSize.AspectRatio(), cameraState.m_fovOrZoom, cameraState.m_nearClip,
             cameraState.m_farClip);
     }
 
