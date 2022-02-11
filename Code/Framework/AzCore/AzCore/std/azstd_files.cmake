@@ -20,6 +20,10 @@ set(FILES
     base.h
     config.h
     concepts/concepts.h
+    concepts/concepts_assignable.h
+    concepts/concepts_constructible.h
+    concepts/concepts_copyable.h
+    concepts/concepts_movable.h
     createdestroy.h
     docs.h
     exceptions.h
@@ -35,8 +39,10 @@ set(FILES
     math.h
     optional.h
     ranges/all_view.h
+    ranges/elements_view.h
     ranges/empty_view.h
     ranges/iter_move.h
+    ranges/iter_swap.h
     ranges/join_view.h
     ranges/owning_view.h
     ranges/ranges.h
@@ -47,6 +53,7 @@ set(FILES
     ranges/single_view.h
     ranges/subrange.h
     ranges/split_view.h
+    ranges/swap.h
     ranges/zip_view.h
     ranges/zip_view.inl
     ratio.h

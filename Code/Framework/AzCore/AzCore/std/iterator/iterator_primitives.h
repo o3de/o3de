@@ -9,6 +9,9 @@
 
 #include <AzCore/std/base.h>
 
+#include <AzCore/std/concepts/concepts_constructible.h>
+#include <AzCore/std/concepts/concepts_copyable.h>
+#include <AzCore/std/concepts/concepts_movable.h>
 #include <AzCore/std/ranges/iter_move.h>
 #include <AzCore/std/typetraits/common_reference.h>
 #include <AzCore/std/typetraits/conditional.h>
@@ -203,4 +206,98 @@ namespace AZStd
     template <typename T>
     using iter_common_reference_t = enable_if_t<Internal::indirectly_readable_impl<T>,
         common_reference_t<iter_reference_t<T>, iter_value_t<T>&>>;
+}
+
+namespace AZStd
+{
+    // indirectly readable
+    template <class In>
+    /*concept*/ constexpr bool indirectly_readable = Internal::indirectly_readable_impl<remove_cvref_t<In>>;
+}
+
+namespace AZStd::Internal
+{
+    // model the indirectly writable concept
+    template <class Out, class T, class = void>
+    constexpr bool indirectly_writable_impl = false;
+
+    template <class Out, class T>
+    constexpr bool indirectly_writable_impl<Out, T, void_t<
+        decltype(*declval<Out&>() = declval<T>()),
+        decltype(*declval<Out>() = declval<T>()),
+        decltype(const_cast<const iter_reference_t<Out>&&>(*declval<Out&>()) = declval<T>()),
+        decltype(const_cast<const iter_reference_t<Out>&&>(*declval<Out>()) = declval<T>())>
+    > = true;
+}
+namespace AZStd
+{
+    // indirectly writable
+    template <class Out, class T>
+    /*concept*/ constexpr bool indirectly_writable = Internal::indirectly_writable_impl<Out, T>;
+
+    // indirectly movable
+    template<class In, class Out>
+    /*concept*/ constexpr bool indirectly_movable = conjunction_v<bool_constant<indirectly_readable<In>>,
+        bool_constant<indirectly_writable<Out, iter_rvalue_reference_t<In>>>>;
+}
+
+namespace AZStd::Internal
+{
+    template<class In, class Out, class = void>
+    constexpr bool indirectly_movable_storage_impl = false;
+
+    template<class In, class Out>
+    constexpr bool indirectly_movable_storage_impl<In, Out, enable_if_t<conjunction_v<
+        bool_constant<indirectly_movable<In, Out>>,
+        bool_constant<indirectly_writable<Out, iter_value_t<In>>>,
+        bool_constant<movable<iter_value_t<In>>>,
+        bool_constant<constructible_from<iter_value_t<In>, iter_rvalue_reference_t<In>>>,
+        bool_constant<assignable_from<iter_value_t<In>&, iter_rvalue_reference_t<In>>> >>> = true;
+}
+
+namespace AZStd
+{
+    template<class In, class Out>
+    /*concept*/ constexpr bool indirectly_movable_storable = Internal::indirectly_movable_storage_impl<In, Out>;
+}
+
+namespace AZStd::Internal
+{
+    template<class In, class Out, class = void>
+    constexpr bool indirectly_copyable_impl = false;
+
+    template<class In, class Out>
+    constexpr bool indirectly_copyable_impl<In, Out, enable_if_t<conjunction_v<
+        bool_constant<indirectly_readable<In>>,
+        bool_constant<indirectly_writable<Out, iter_reference_t<In>>> >>> = true;
+}
+
+namespace AZStd
+{
+    // indirectly copyable
+    template<class In, class Out>
+    /*concept*/ constexpr bool indirectly_copyable = Internal::indirectly_copyable_impl<In, Out>;
+}
+namespace AZStd::Internal
+{
+    template<class In, class Out, class = void>
+    constexpr bool indirectly_copyable_storable_impl = false;
+
+    template<class In, class Out>
+    constexpr bool indirectly_copyable_storable_impl<In, Out, enable_if_t < conjunction_v <
+        bool_constant<indirectly_copyable<In, Out>>,
+        bool_constant<indirectly_writable<Out, iter_value_t<In>&>>,
+        bool_constant<indirectly_writable<Out, const iter_value_t<In>&>>,
+        bool_constant<indirectly_writable<Out, iter_value_t<In>&&>>,
+        bool_constant<indirectly_writable<Out, const iter_value_t<In>&&>>,
+        bool_constant<copyable<iter_value_t<In>>>,
+        bool_constant<constructible_from<iter_value_t<In>, iter_reference_t<In>>>,
+        bool_constant<assignable_from<iter_value_t<In>&, iter_reference_t<In>>>
+        >>> = true;
+}
+
+namespace AZStd
+{
+    template<class In, class Out>
+    /*concept*/ constexpr bool indirectly_copyable_storable = Internal::indirectly_copyable_storable_impl<In, Out>;
 }

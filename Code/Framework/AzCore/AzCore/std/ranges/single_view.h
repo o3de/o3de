@@ -81,7 +81,7 @@ namespace AZStd::ranges
             return m_value.operator->();
         }
     private:
-        views::Internal::copyable_box<T> m_value;
+        Internal::copyable_box<T> m_value;
     };
 
     template<class T>
