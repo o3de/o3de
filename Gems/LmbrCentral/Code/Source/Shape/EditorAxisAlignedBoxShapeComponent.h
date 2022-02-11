@@ -38,7 +38,7 @@ namespace LmbrCentral
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
