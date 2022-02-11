@@ -5,13 +5,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from Performance.utils.perf_timer import time_editor_level_loading
 
 def EditorLevelLoading_10KEntityCpuPerfTest():
-    from EditorLevelLoading_base import time_editor_level_loading
-
     time_editor_level_loading('Performance', '10KEntityCpuPerfTest')
 
 if __name__ == "__main__":
