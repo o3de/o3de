@@ -135,9 +135,13 @@ namespace AzToolsFramework
         m_mousePosition = event->pos();
 
         if (QModelIndex hoveredIndex = indexAt(m_mousePosition);
-            hoveredIndex.column() != EntityOutlinerListModel::ColumnSpacing &&  m_currentHoveredIndex != hoveredIndex)
+            hoveredIndex.column() != EntityOutlinerListModel::ColumnSpacing && m_currentHoveredIndex != hoveredIndex)
         {
             m_currentHoveredIndex = hoveredIndex;
+        }
+        else
+        {
+            m_currentHoveredIndex = QModelIndex();
         }
 
         if (m_queuedMouseEvent)
@@ -434,17 +438,21 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::ProcessQueuedMousePressedEvent(QMouseEvent* event)
     {
-        //interpret the mouse event as a button press
-        QMouseEvent mousePressedEvent(
-            QEvent::MouseButtonPress,
-            event->localPos(),
-            event->windowPos(),
-            event->screenPos(),
-            event->button(),
-            event->buttons(),
-            event->modifiers(),
-            event->source());
-        QTreeView::mousePressEvent(&mousePressedEvent);
+        QModelIndex clickedIndex = indexAt(m_queuedMouseEvent->pos());
+        if (!clickedIndex.isValid() || clickedIndex.column() != EntityOutlinerListModel::ColumnSpacing)
+        {
+            //interpret the mouse event as a button press
+            QMouseEvent mousePressedEvent(
+                QEvent::MouseButtonPress,
+                event->localPos(),
+                event->windowPos(),
+                event->screenPos(),
+                event->button(),
+                event->buttons(),
+                event->modifiers(),
+                event->source());
+            QTreeView::mousePressEvent(&mousePressedEvent);
+        }
     }
 
     void EntityOutlinerTreeView::StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions)

@@ -2098,7 +2098,7 @@ namespace AzToolsFramework
         }
 
         // Retrieve the Entity UI Handler
-        auto firstColumnIndex = index.siblingAtColumn(0);
+        auto firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
 
