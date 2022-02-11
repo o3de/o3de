@@ -256,31 +256,7 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
     // Address of
     //////////////////////////////////////////////////////////////////////////
-    namespace Internal
-    {
-        template<class T>
-        struct addr_impl_ref
-        {
-            T& m_v;
-            constexpr addr_impl_ref(T& v)
-                : m_v(v) {}
-            constexpr addr_impl_ref& operator=(const addr_impl_ref& v) { m_v = v; return *this; }
-            constexpr operator T& () const { return m_v; }
-        };
-
-        template<class T>
-        struct addressof_impl
-        {
-            static AZ_FORCE_INLINE T* f(T& v, long) { return reinterpret_cast<T*>(&const_cast<char&>(reinterpret_cast<const volatile char&>(v))); }
-            static constexpr T* f(T* v, int)  { return v; }
-        };
-    }
-
-    template<class T>
-    T* addressof(T& v)
-    {
-        return Internal::addressof_impl<T>::f(Internal::addr_impl_ref<T>(v), 0);
-    }
+    using std::addressof;
     // End addressof
     //////////////////////////////////////////////////////////////////////////
 
