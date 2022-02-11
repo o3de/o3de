@@ -8,36 +8,8 @@
  
 #include <EditorModeCommon.azsli>
  
-#include <Atom/Features/SrgSemantics.azsli>
-#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
-#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
- 
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2D<float4> m_framebuffer;
-    Texture2D<float4> m_depth;
-    Texture2D<float4> m_entityMask;
-    
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
- 
+{    
     float m_desaturationAmount;
 }
 

@@ -5,31 +5,60 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
 #include <viewsrg.srgi>
+
+#include <Atom/Features/SrgSemantics.azsli> 
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    // The minimum blend about that will be calculated through depth transitioning
-    float m_minDepthTransitionValue;
-    
-    // Start of depth transtion for unmasked effect blending
-    float m_depthTransitionStart;
-
-    // The duration of the depth transition band (0.0 = no depth transitioning will be applied)
-    float m_depthTransitionDuration;
+    Texture2D<float4> m_framebuffer;
+    Texture2D<float4> m_depth;
+    Texture2D<float4> m_entityMask;
 
     // The final blend amount level that is used to scale the calculated blend values
     float m_finalBlendAmount;
+    
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
 
-    float GetLinearDepth(float zDepth)
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    float CalculateLinearDepth(float zDepth)
     {
         return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
     }
 
-    float GetDepthTransitionBlendAmount(const float linearDepth, const float maskValue)
+    float CalculateFinalBlendAmount(float t)
     {
-        const float depthTransition = clamp((linearDepth - m_depthTransitionStart) / (m_depthTransitionDuration), m_minDepthTransitionValue, 1.0);
-        return 1.0 - clamp(maskValue * depthTransition, 0.0, 1.0);
+        // Apply the final blend amount modifier
+        return lerp(0.0, t, m_finalBlendAmount);
+    }
+
+    float4 CalculateOutputColor(float3 inColor, float3 finalEffect, float t)
+    {
+        OUT.m_color.rgb = lerp(inColor, finalEffect, t);
+        OUT.m_color.a = 1.0;
+    }
+
+    float4 CalculateFinalBlendAmountAndOutputColor(float3 inColor, float3 finalEffect, float t)
+    {
+        CalculateOutputColor(inColor, finalEffect, CalculateFinalBlendAmount(t));
     }
 }

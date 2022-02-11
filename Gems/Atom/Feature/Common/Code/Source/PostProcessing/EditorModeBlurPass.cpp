@@ -12,7 +12,9 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
+
+AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeBlurPass, 0.0f, 0.0f, 0.0f, 1.0f);
+AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernalWidth, 1.0f);
 
  namespace AZ
 {
@@ -25,29 +27,42 @@
         }
         
         EditorModeBlurPass::EditorModeBlurPass(const RPI::PassDescriptor& descriptor)
-            : AZ::RPI::FullscreenTrianglePass(descriptor)
+            : EditorModeFeedbackDepthTransitionPass(descriptor)
         {
         }
         
         void EditorModeBlurPass::InitializeInternal()
         {
-            FullscreenTrianglePass::InitializeInternal();
+            EditorModeFeedbackDepthTransitionPass::InitializeInternal();
+            m_kernalWidthIndex.Reset();
         }
         
         void EditorModeBlurPass::FrameBeginInternal(FramePrepareParams params)
         {
-            FullscreenTrianglePass::FrameBeginInternal(params);
+            SetSrgConstants();
+            EditorModeFeedbackDepthTransitionPass::FrameBeginInternal(params);
         }
 
         bool EditorModeBlurPass::IsEnabled() const
         {
-            // move this to parent
-            if (const auto editorModeFeedback = AZ::Interface<EditorModeFeedbackInterface>::Get())
-            {
-                return editorModeFeedback->IsEnabled();
-            }
+            return true;
+        }
 
-            return false;
+        void EditorModeBlurPass::SetKernalWidth(float width)
+        {
+            m_kernalWidth = width;
+        }
+
+        void EditorModeBlurPass::SetSrgConstants()
+        {
+            // THIS IS TEMP
+            SetMinDepthTransitionValue(cl_editorModeBlurPass_MinDepthTransitionValue);
+            SetDepthTransitionStart(cl_editorModeBlurPass_DepthTransitionStart);
+            SetDepthTransitionDuration(cl_editorModeBlurPass_DepthTransitionDuration);
+            SetFinalBlendAmount(cl_editorModeBlurPass_FinalBlendAmount);
+
+            SetKernalWidth(cl_editorModeBlurPass_KernalWidth);
+            m_shaderResourceGroup->SetConstant(m_kernalWidthIndex, m_kernalWidth);
         }
     }
 }

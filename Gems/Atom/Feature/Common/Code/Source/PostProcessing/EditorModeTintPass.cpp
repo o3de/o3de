@@ -12,7 +12,6 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
 
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeTintPass, 0.0f, 0.0f, 0.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeTintPass, TintAmount, 0.5f);
@@ -47,13 +46,7 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeTintPass, TintColor, AZ::Color(
 
         bool EditorModeTintPass::IsEnabled() const
         {
-            // move this to parent
-            if (const auto editorModeFeedback = AZ::Interface<EditorModeFeedbackInterface>::Get())
-            {
-                return editorModeFeedback->IsEnabled();
-            }
-
-            return false;
+            return true;
         }
 
         void EditorModeTintPass::SetTintAmount(float value)

@@ -7,11 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
-#include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
-#include <Atom/RPI.Public/Shader/Shader.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <PostProcess/EditorModeFeedback/EditorModeFeedbackSettings.h>
+#include <PostProcessing/EditorModeFeedbackDepthTransitionPass.h>
 
 namespace AZ
 {
@@ -21,17 +17,19 @@ namespace AZ
          *  The color grading pass.
          */
         class EditorModeBlurPass
-            : public AZ::RPI::FullscreenTrianglePass
+            : public EditorModeFeedbackDepthTransitionPass
             //TODO: , public PostProcessingShaderOptionBase
         {
         public:
-            AZ_RTTI(EditorModeBlurPass, "{D907D0ED-61E4-4E46-A682-A849676CF48A}", AZ::RPI::FullscreenTrianglePass);
+            AZ_RTTI(EditorModeBlurPass, "{D907D0ED-61E4-4E46-A682-A849676CF48A}", EditorModeFeedbackDepthTransitionPass);
             AZ_CLASS_ALLOCATOR(EditorModeBlurPass, SystemAllocator, 0);
 
             virtual ~EditorModeBlurPass() = default;
 
             //! Creates a EditorModeBlurPass
             static RPI::Ptr<EditorModeBlurPass> Create(const RPI::PassDescriptor& descriptor);
+
+            void SetKernalWidth(float width);
 
         protected:
             EditorModeBlurPass(const RPI::PassDescriptor& descriptor);
@@ -40,6 +38,13 @@ namespace AZ
             void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             bool IsEnabled() const override;
+
+        private:
+            void SetSrgConstants();
+
+            RHI::ShaderInputNameIndex m_kernalWidthIndex = "m_kernalWidth";
+
+            float m_kernalWidth = 1.0f;
         };
     }   // namespace Render
 }   // namespace AZ

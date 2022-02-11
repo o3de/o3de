@@ -6,39 +6,12 @@
  *
  */
  
-#include <viewsrg.srgi>
-#include <Atom/Features/SrgSemantics.azsli>
+#include <EditorModeCommon.azsli>
+#include <EditorModeDepthTransition.azsli>
  
-#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
-#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
- 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    Texture2D<float4> m_framebuffer;
-    Texture2D<float4> m_depth;
-    Texture2D<float4> m_entityMask;
-    
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
- 
-    float m_desaturationAmount;
+    float m_kernalWidth;
 }
 
 static float2 maskSize;
@@ -47,9 +20,6 @@ float2 normalizedUV(float2 uv)
 {
     return uv/maskSize;
 }
-
-static float offset[5] = {0.0, 1.0, 2.0, 3.0, 4.0};
-static float weight[5] = {0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162};
  
 float3 Blur(float2 unormalizedUv, const float boxRadius)
 {
@@ -69,34 +39,6 @@ float3 Blur(float2 unormalizedUv, const float boxRadius)
     return outColor / weights;
 }
 
-float3 VerticalGaussianBlur(float2 unormalizedUv)
-{
-    float3 output = float3(0., 0., 0.);
-
-    for (int i=1; i<5; i++) {
-        output +=
-            PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(0.0, offset[i]))).rgb * weight[i];
-        output +=
-            PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv - float2(0.0, offset[i]))).rgb * weight[i];
-    }
-
-    return output;
-}
-
-float3 HorizontalGaussianBlur(float2 unormalizedUv)
-{
-    float3 output = float3(0., 0., 0.);
-
-    for (int i=1; i<5; i++) {
-        output +=
-            PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(offset[i], 0.0))).rgb * weight[i];
-        output +=
-            PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv - float2(offset[i], 0.0))).rgb * weight[i];
-    }
-
-    return output;
-}
-
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
@@ -107,31 +49,19 @@ PSOutput MainPS(VSOutput IN)
     maskSize.x = float(uMaskSize.x);
     maskSize.y = float(uMaskSize.y);
 
-    float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
- 
-    // Fetch the pixel color from the input texture
-    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
+    const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
-    // Get the mask value at this point
-    float4 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
-
-    // 
-    float3 unmasked = Blur(unnormalizedUV, 1.);
-    //float3 unmasked = VerticalGaussianBlur(unnormalizedUV);
-    //unmasked += HorizontalGaussianBlur(unnormalizedUV);
-    //unmasked *= 0.5;
+    // Blur effect
+    float3 finalEffect = Blur(unnormalizedUV, PassSrg::m_kernalWidth);
+  
+    // Apply the depth transition to the blend amount
+    const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
     
-    float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r * 15.;
-    //float linearDepth = 
-    //    abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
-//
-    //unmasked = lerp(color, unmasked, clamp(linearDepth, 0., 1.));
-
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
-    OUT.m_color.rgb = lerp(unmasked.rgb, color.rgb, mask.a);
-    OUT.m_color.a = 1.0;
-
-    //OUT.m_color.rgb = float3(linearDepth, linearDepth, linearDepth);
+    OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, finalEffect, t);
 
     return OUT;
 }

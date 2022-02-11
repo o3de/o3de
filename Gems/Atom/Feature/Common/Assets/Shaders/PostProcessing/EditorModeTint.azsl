@@ -7,37 +7,10 @@
  */
  
 #include <EditorModeCommon.azsli>
-
-#include <Atom/Features/SrgSemantics.azsli> 
-#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
-#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <EditorModeDepthTransition.azsli>
  
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    Texture2D<float4> m_framebuffer;
-    Texture2D<float4> m_depth;
-    Texture2D<float4> m_entityMask;
-    
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
- 
     float m_tintAmount;
     float4 m_tintColor;
 }
@@ -49,28 +22,15 @@ PSOutput MainPS(VSOutput IN)
     const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
-    // Grayscale effect
+    // Tint effect
     const float3 finalEffect = lerp(inColor, PassSrg::m_tintColor.rgb, PassSrg::m_tintAmount);
 
-    // Blend amount between the masked and unmasked entity texels
-    // 0.0 = 100% masked entity color
-    // 1.0 = 100% unmasked entity color
-    float t = 1.0 - mask;
-
-    if(PassSrg::m_depthTransitionDuration > 0.0)
-    {
-        // Apply the depth transition to the blend amount
-        const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
-        const float linearDepth = PassSrg::GetLinearDepth(zDepth);
-        t = PassSrg::GetDepthTransitionBlendAmount(linearDepth, mask);
-    }
+    // Apply the depth transition to the blend amount
+    const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
     
-    // Apply the final blend amount modifier
-    t = lerp(0.0, t, PassSrg::m_finalBlendAmount);
-
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
-    OUT.m_color.rgb = lerp(inColor, finalEffect, t);
-    OUT.m_color.a = 1.0;
+    OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, finalEffect, t);
 
     return OUT;
 }

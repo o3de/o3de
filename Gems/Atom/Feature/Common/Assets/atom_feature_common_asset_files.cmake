@@ -461,6 +461,8 @@ set(FILES
     Shaders/PostProcessing/FullscreenCopy.shader
     Shaders/PostProcessing/HDRColorGrading.azsl
     Shaders/PostProcessing/HDRColorGrading.shader
+    Shaders/PostProcessing/EditorModeCommon.azsli
+    Shaders/PostProcessing/EditorModeDepthTransition.azsli
     Shaders/PostProcessing/EditorModeMask.azsl
     Shaders/PostProcessing/EditorModeMask.shader
     Shaders/PostProcessing/EditorModeDesaturation.azsl
