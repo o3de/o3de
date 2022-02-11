@@ -99,7 +99,7 @@ namespace AzToolsFramework
             return;
         }
 
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
@@ -183,7 +183,7 @@ namespace AzToolsFramework
             return;
         }
 
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
@@ -283,7 +283,7 @@ namespace AzToolsFramework
 
     void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const QPoint offset = QPoint(-18, 3);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         const int iconSize = 16;
@@ -385,7 +385,7 @@ namespace AzToolsFramework
 
     bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const QPoint offset = QPoint(-18, 3);
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
@@ -411,7 +411,7 @@ namespace AzToolsFramework
 
     void PrefabUiHandler::OnOutlinerItemCollapse(const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
@@ -420,8 +420,10 @@ namespace AzToolsFramework
         }
     }
 
-    bool PrefabUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
+    bool PrefabUiHandler::OnOutlinerItemDoubleClick(const QModelIndex& index) const
     {
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+
         if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             // Focus on this prefab

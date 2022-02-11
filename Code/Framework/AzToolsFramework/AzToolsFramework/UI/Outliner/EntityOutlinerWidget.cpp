@@ -945,7 +945,7 @@ namespace AzToolsFramework
     {
         if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
         {
-            entityUiHandler->OnEntityDoubleClick(entityId);
+            entityUiHandler->OnOutlinerItemDoubleClick(index);
         }
     }
 
