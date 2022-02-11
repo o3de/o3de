@@ -38,24 +38,26 @@ void InitMaterialCanvasResources()
 
 namespace MaterialCanvas
 {
+    static const char* GetBuildTargetName()
+    {
+#if !defined(LY_CMAKE_TARGET)
+#error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
+#endif
+        return LY_CMAKE_TARGET;
+    }
+
     MaterialCanvasApplication::MaterialCanvasApplication(int* argc, char*** argv)
-        : Base(argc, argv)
+        : Base(GetBuildTargetName(), argc, argv)
     {
         InitMaterialCanvasResources();
 
         QApplication::setApplicationName("O3DE Material Canvas");
 
-        // The settings registry has been created at this point, so add the CMake target
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
-            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
-
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusConnect();
     }
 
     MaterialCanvasApplication::~MaterialCanvasApplication()
     {
-        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         m_window.reset();
     }
@@ -96,29 +98,14 @@ namespace MaterialCanvas
     {
         Base::StartCommon(systemEntity);
 
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
-            []() { return aznew MaterialCanvasDocument(); });
-    }
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
+            [](const AZ::Crc32& toolId) { return aznew MaterialCanvasDocument(toolId); });
 
-    AZStd::string MaterialCanvasApplication::GetBuildTargetName() const
-    {
-#if !defined(LY_CMAKE_TARGET)
-#error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
-#endif
-        //! Returns the build system target name of "MaterialCanvas"
-        return AZStd::string{ LY_CMAKE_TARGET };
-    }
+        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId));
 
-    AZStd::vector<AZStd::string> MaterialCanvasApplication::GetCriticalAssetFilters() const
-    {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/" });
-    }
-
-    void MaterialCanvasApplication::CreateMainWindow()
-    {
-        m_window.reset(aznew MaterialCanvasMainWindow);
         m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+
         m_assetBrowserInteractions->RegisterContextMenuActions(
             [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
             {
@@ -131,12 +118,17 @@ namespace MaterialCanvas
                         QDesktopServices::openUrl(QUrl::fromLocalFile(entries.front()->GetFullPath().c_str()));
                     });
             });
-
     }
 
-    void MaterialCanvasApplication::DestroyMainWindow()
+    void MaterialCanvasApplication::Destroy()
     {
         m_window.reset();
+        Base::Destroy();
+    }
+
+    AZStd::vector<AZStd::string> MaterialCanvasApplication::GetCriticalAssetFilters() const
+    {
+        return AZStd::vector<AZStd::string>({ "passes/", "config/" });
     }
 
     QWidget* MaterialCanvasApplication::GetAppMainWindow()
