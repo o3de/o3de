@@ -211,7 +211,7 @@ namespace AzFramework
                 // and if any ProcessAsyncParams::m_completionCallback was
                 // set it's guaranteed to be called even in the event of a
                 // cancellation. If a job only begins processing after its
-                // associated job context has been cancelle, no processing
+                // associated job context has been cancelled, no processing
                 // will occur and the callback will be invoked immediately,
                 // otherwise the job may either run to completion or cease
                 // processing early; the callback is invoked in all cases,
@@ -239,6 +239,9 @@ namespace AzFramework
             //! A parameter group struct that can optionally be passed to the various Process*Async API functions.
             struct ProcessAsyncParams
             {
+                //! The default minimum  number ofpositions per async terrain request job.
+                static constexpr int32_t MinPositionsPerJobDefault = 8;
+
                 //! The default number of jobs which async terrain requests will be split into.
                 static constexpr int32_t NumJobsDefault = 1;
 
@@ -257,6 +260,9 @@ namespace AzFramework
                 //! call because it is just as quick and prevents the main thread from blocking.
                 //! This note should be removed once the mutex contention issues have been addressed.
                 int32_t m_desiredNumberOfJobs = NumJobsDefault;
+
+                //! The minimum number of positions per async terrain request job.
+                int32_t m_minPositionsPerJob = MinPositionsPerJobDefault;
 
                 //! The callback function that will be invoked when a call to a Process*Async function completes.
                 //! If the job is cancelled, the completion callback will not be invoked.

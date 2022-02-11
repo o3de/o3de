@@ -342,7 +342,8 @@ namespace Terrain
         const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
         const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
         const int32_t numPositionsToProcess = static_cast<int32_t>(inPositions.size());
-        const int32_t numJobs = AZStd::min(numJobsMax, numPositionsToProcess);
+        const int32_t minPositionsPerJob = params && (params->m_desiredNumberOfJobs > 0) ? params->m_desiredNumberOfJobs : ProcessAsyncParams::MinPositionsPerJobDefault;
+        const int32_t numJobs = AZStd::min(numJobsMax, numPositionsToProcess / minPositionsPerJob);
         if (numJobs <= 0)
         {
             AZ_Warning("TerrainSystem", false, "No positions to process.");
