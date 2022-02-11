@@ -8,15 +8,7 @@
 
 #pragma once
 
-#include <PostProcessing/EditorModeFeedbackDepthTransition.h>
-
-#include <AzCore/Console/IConsole.h>
-#include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
-#include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
-#include <Atom/RPI.Public/Shader/Shader.h>
-
-AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeDesaturationPass, 0.5f, 5.0f, 10.0f, 1.0f);
-AZ_EDITOR_MODE_PASS_CVAR(cl_editorModeDesaturationPass, DesaturationAmount, 1.0f);
+#include <PostProcessing/EditorModeFeedbackDepthTransitionPass.h>
 
 namespace AZ
 {
@@ -26,17 +18,19 @@ namespace AZ
          *  The color grading pass.
          */
         class EditorModeDesaturationPass
-            : public AZ::RPI::FullscreenTrianglePass
+            : public EditorModeFeedbackDepthTransitionPass
             //TODO: , public PostProcessingShaderOptionBase
         {
         public:
-            AZ_RTTI(EditorModeDesaturationPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", AZ::RPI::FullscreenTrianglePass);
+            AZ_RTTI(EditorModeDesaturationPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", EditorModeFeedbackDepthTransitionPass);
             AZ_CLASS_ALLOCATOR(EditorModeDesaturationPass, SystemAllocator, 0);
 
             virtual ~EditorModeDesaturationPass() = default;
 
             //! Creates a EditorModeDesaturationPass
             static RPI::Ptr<EditorModeDesaturationPass> Create(const RPI::PassDescriptor& descriptor);
+
+            void SetDesaturationAmount(float value);
 
         protected:
             EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor);
@@ -49,8 +43,9 @@ namespace AZ
         private:
             void SetSrgConstants();
 
-            EditorModeFeedbackDepthTransition m_depthTransition;
             RHI::ShaderInputNameIndex m_desaturationAmountIndex = "m_desaturationAmount";
+
+            float m_desaturationAmount = 1.0f;
         };
     }   // namespace Render
 }   // namespace AZ

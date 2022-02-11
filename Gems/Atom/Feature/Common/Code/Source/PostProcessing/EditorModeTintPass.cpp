@@ -14,6 +14,10 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
 
+AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeTintPass, 0.0f, 0.0f, 0.0f, 1.0f);
+AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeTintPass, TintAmount, 0.5f);
+AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeTintPass, TintColor, AZ::Color(0.0f, 0.0f, 0.0f, 0.0f));
+
  namespace AZ
 {
     namespace Render
@@ -25,27 +29,20 @@
         }
         
         EditorModeTintPass::EditorModeTintPass(const RPI::PassDescriptor& descriptor)
-            : AZ::RPI::FullscreenTrianglePass(descriptor)
+            : EditorModeFeedbackDepthTransitionPass(descriptor)
         {
         }
         
         void EditorModeTintPass::InitializeInternal()
         {
-            FullscreenTrianglePass::InitializeInternal();
-
-            m_minDepthTransitionValueIndex.Reset();
-            m_depthTransitionStartIndex.Reset();
-            m_depthTransitionDurationIndex.Reset();
-            m_finalBlendAmountIndex.Reset();
-
+            EditorModeFeedbackDepthTransitionPass::InitializeInternal();
             m_tintAmountIndex.Reset();
         }
         
         void EditorModeTintPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-
-            FullscreenTrianglePass::FrameBeginInternal(params);
+            EditorModeFeedbackDepthTransitionPass::FrameBeginInternal(params);
         }
 
         bool EditorModeTintPass::IsEnabled() const
@@ -59,14 +56,28 @@
             return false;
         }
 
+        void EditorModeTintPass::SetTintAmount(float value)
+        {
+            m_tintAmount = value;
+        }
+
+        void EditorModeTintPass::SetTintColor(AZ::Color color)
+        {
+            m_tintColor = color;
+        }
+
         void EditorModeTintPass::SetSrgConstants()
         {
-            m_shaderResourceGroup->SetConstant(m_minDepthTransitionValueIndex, static_cast<float>(cl_editorModeTintPass_MinDepthTransitionValue));
-            m_shaderResourceGroup->SetConstant(m_depthTransitionStartIndex, static_cast<float>(cl_editorModeTintPass_DepthTransitionStart));
-            m_shaderResourceGroup->SetConstant(m_depthTransitionDurationIndex, static_cast<float>(cl_editorModeTintPass_DepthTransitionDuration));
-            m_shaderResourceGroup->SetConstant(m_finalBlendAmountIndex, static_cast<float>(cl_editorModeTintPass_FinalBlendAmount));
+            // THIS IS TEMP
+            SetMinDepthTransitionValue(cl_editorModeTintPass_MinDepthTransitionValue);
+            SetDepthTransitionStart(cl_editorModeTintPass_DepthTransitionStart);
+            SetDepthTransitionDuration(cl_editorModeTintPass_DepthTransitionDuration);
+            SetFinalBlendAmount(cl_editorModeTintPass_FinalBlendAmount);
 
-            m_shaderResourceGroup->SetConstant(m_tintAmountIndex, static_cast<float>(cl_editorModeTintPass_TintAmount));
+            SetTintAmount(cl_editorModeTintPass_TintAmount);
+            SetTintColor(cl_editorModeTintPass_TintColor);
+            m_shaderResourceGroup->SetConstant(m_tintAmountIndex, m_tintAmount);
+            m_shaderResourceGroup->SetConstant(m_tintColorIndex, m_tintColor);
         }
     }
 }

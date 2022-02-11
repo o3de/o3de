@@ -13,6 +13,9 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
+AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeDesaturationPass, 0.0f, 0.0f, 0.0f, 1.0f);
+AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmount, 1.0f);
+
  namespace AZ
 {
     namespace Render
@@ -24,22 +27,20 @@
         }
         
         EditorModeDesaturationPass::EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor)
-            : AZ::RPI::FullscreenTrianglePass(descriptor)
+            : EditorModeFeedbackDepthTransitionPass(descriptor)
         {
         }
         
         void EditorModeDesaturationPass::InitializeInternal()
         {
-            FullscreenTrianglePass::InitializeInternal();
-            m_depthTransition.InitializeInputNameIndices();
+            EditorModeFeedbackDepthTransitionPass::InitializeInternal();
             m_desaturationAmountIndex.Reset();
         }
         
         void EditorModeDesaturationPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-
-            FullscreenTrianglePass::FrameBeginInternal(params);
+            EditorModeFeedbackDepthTransitionPass::FrameBeginInternal(params);
         }
 
         bool EditorModeDesaturationPass::IsEnabled() const
@@ -47,15 +48,21 @@
             return true;
         }
 
+        void EditorModeDesaturationPass::SetDesaturationAmount(float value)
+        {
+            m_desaturationAmount = value;
+        }
+
         void EditorModeDesaturationPass::SetSrgConstants()
         {
-            m_depthTransition.SetMinDepthTransitionValue(cl_editorModeDesaturationPass_MinDepthTransitionValue);
-            m_depthTransition.SetDepthTransitionStart(cl_editorModeDesaturationPass_DepthTransitionStart);
-            m_depthTransition.SetDepthTransitionDuration(cl_editorModeDesaturationPass_DepthTransitionDuration);
-            m_depthTransition.SetFinalBlendAmount(cl_editorModeDesaturationPass_FinalBlendAmount);
+            // THIS IS TEMP
+            SetMinDepthTransitionValue(cl_editorModeDesaturationPass_MinDepthTransitionValue);
+            SetDepthTransitionStart(cl_editorModeDesaturationPass_DepthTransitionStart);
+            SetDepthTransitionDuration(cl_editorModeDesaturationPass_DepthTransitionDuration);
+            SetFinalBlendAmount(cl_editorModeDesaturationPass_FinalBlendAmount);
 
-            m_depthTransition.SetSrgConstants(m_shaderResourceGroup);
-            m_shaderResourceGroup->SetConstant(m_desaturationAmountIndex, static_cast<float>(cl_editorModeDesaturationPass_DesaturationAmount));
+            SetDesaturationAmount(cl_editorModeDesaturationPass_DesaturationAmount);
+            m_shaderResourceGroup->SetConstant(m_desaturationAmountIndex, m_desaturationAmount);
         }
     }
 }

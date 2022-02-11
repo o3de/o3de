@@ -38,7 +38,8 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressW = Clamp;
     };
  
-    float m_grayscaleAmount;
+    float m_tintAmount;
+    float4 m_tintColor;
 }
 
 PSOutput MainPS(VSOutput IN)
@@ -49,7 +50,7 @@ PSOutput MainPS(VSOutput IN)
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
     // Grayscale effect
-    const float3 finalEffect = lerp(inColor, float3(0.0, 0.0, 0.0), PassSrg::m_grayscaleAmount);
+    const float3 finalEffect = lerp(inColor, PassSrg::m_tintColor.rgb, PassSrg::m_tintAmount);
 
     // Blend amount between the masked and unmasked entity texels
     // 0.0 = 100% masked entity color
