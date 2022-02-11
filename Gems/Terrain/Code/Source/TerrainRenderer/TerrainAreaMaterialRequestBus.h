@@ -45,6 +45,27 @@ namespace Terrain
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
+        //! The default surface material has been assigned and loaded
+        virtual void OnTerrainDefaultSurfaceMaterialCreated(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
+        {
+        }
+
+        //! The default surface material has been unassigned
+        virtual void OnTerrainDefaultSurfaceMaterialDestroyed(
+            [[maybe_unused]] AZ::EntityId entityId)
+        {
+        }
+
+        //! The default surface material has been changed to a different material
+        virtual void OnTerrainDefaultSurfaceMaterialChanged(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> newMaterial)
+        {
+        }
+
+        //! A loaded material mapped to a valid surface tag has been created
         virtual void OnTerrainSurfaceMaterialMappingCreated(
             [[maybe_unused]] AZ::EntityId entityId,
             [[maybe_unused]] SurfaceData::SurfaceTag surface,
@@ -52,19 +73,30 @@ namespace Terrain
         {
         }
 
+        //! Either the material or surface tag was unassigned, making this mapping invalid
         virtual void OnTerrainSurfaceMaterialMappingDestroyed(
             [[maybe_unused]] AZ::EntityId entityId,
             [[maybe_unused]] SurfaceData::SurfaceTag surface)
         {
         }
 
-        virtual void OnTerrainSurfaceMaterialMappingChanged(
+        //! The surface tag has changed to tag for an existing material
+        virtual void OnTerrainSurfaceMaterialMappingTagChanged(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] SurfaceData::SurfaceTag oldSurface,
+            [[maybe_unused]] SurfaceData::SurfaceTag newSurface)
+        {
+        }
+        
+        //! The material has changed for an existing surface tag
+        virtual void OnTerrainSurfaceMaterialMappingMaterialChanged(
             [[maybe_unused]] AZ::EntityId entityId,
             [[maybe_unused]] SurfaceData::SurfaceTag surface,
             [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
         {
         }
 
+        //! The bounds of this set of surface material mappings has changed
         virtual void OnTerrainSurfaceMaterialMappingRegionChanged(
             [[maybe_unused]] AZ::EntityId entityId,
             [[maybe_unused]] const AZ::Aabb& oldRegion,
