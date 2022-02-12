@@ -7,7 +7,7 @@
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "Minimal Project Template",
+    "display_name": "Minimal",
     "summary": "Use this project template to create project that is the absolute minimum needed to get started in O3DE.",
     "canonical_tags": [
         "Template",

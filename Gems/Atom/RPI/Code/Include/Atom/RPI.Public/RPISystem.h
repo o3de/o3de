@@ -86,6 +86,8 @@ namespace AZ
             const RPISystemDescriptor& GetDescriptor() const override;
             Name GetRenderApiName() const override;
             uint64_t GetCurrentTick() const override;
+            void SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState) override;
+            const RHI::MultisampleState& GetApplicationMultisampleState() const override;
 
             // AZ::Debug::TraceMessageBus::Handler overrides...
             bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
@@ -136,6 +138,9 @@ namespace AZ
             bool m_systemAssetsInitialized = false;
 
             uint64_t m_renderTick = 0;
+
+            // Application multisample state
+            RHI::MultisampleState m_multisampleState;
         };
 
     } // namespace RPI
