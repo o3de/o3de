@@ -112,7 +112,7 @@ namespace AZ
             bool isQueuedForCompile = shaderResourceGroup.IsQueuedForCompile();
             AZ_Warning(
                 "ShaderResourceGroupPool", !isQueuedForCompile,
-                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
+                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");
 
             if (!isQueuedForCompile)
             {
@@ -153,7 +153,7 @@ namespace AZ
         {
             CalculateGroupDataDiff(group, groupData);
             group.SetData(groupData);
-            CompileGroupInternal(group, group.GetData());
+            CompileGroup(group, group.GetData());
         }
 
         void ShaderResourceGroupPool::CalculateGroupDataDiff(ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData)
@@ -246,6 +246,21 @@ namespace AZ
             return static_cast<uint32_t>(m_groupsToCompile.size());
         }
 
+        ResultCode ShaderResourceGroupPool::CompileGroup(ShaderResourceGroup& shaderResourceGroup,
+                                                         const ShaderResourceGroupData& shaderResourceGroupData)
+        {
+            //Check if any part of the Srg was updated before trying to compile it
+            if (shaderResourceGroup.IsAnyResourceTypeUpdated())
+            {
+                ResultCode resultCode = CompileGroupInternal(shaderResourceGroup, shaderResourceGroupData);
+                
+                //Reset update mask if the latency check has been fulfilled
+                shaderResourceGroup.DisableCompilationForAllResourceTypes();
+                return resultCode;
+            }
+            return ResultCode::Success;
+        }
+    
         void ShaderResourceGroupPool::CompileGroupsForInterval(Interval interval)
         {
             AZ_Assert(m_isCompiling, "You must call CompileGroupsBegin() first!");
@@ -259,7 +274,7 @@ namespace AZ
                 ShaderResourceGroup* group = m_groupsToCompile[i];
                 AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval %s", group->GetName().GetCStr());
 
-                CompileGroupInternal(*group, group->GetData());
+                CompileGroup(*group, group->GetData());
                 group->m_isQueuedForCompile = false;
             }
         }

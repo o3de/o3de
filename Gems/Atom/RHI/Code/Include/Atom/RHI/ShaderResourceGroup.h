@@ -53,6 +53,15 @@ namespace AZ
             //! Returns whether the group is currently queued for compilation.
             bool IsQueuedForCompile() const;
 
+            //! Resets the update mask after m_updateMaskResetLatency number of compiles
+            void DisableCompilationForAllResourceTypes();
+
+            //! Returns true if any of the resource type has been enabled for compilation.
+            bool IsAnyResourceTypeUpdated() const;
+
+            //! Returns true if a specific resource type has been enabled for compilation.
+            bool IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const;
+            
         protected:
             ShaderResourceGroup() = default;
 
@@ -62,10 +71,18 @@ namespace AZ
             ShaderResourceGroupData m_data;
 
             // The binding slot cached from the layout.
-            uint32_t m_bindingSlot = (uint32_t)-1;
+            uint32_t m_bindingSlot = aznumeric_cast<uint32_t>(-1);
 
             // Gates the Compile() function so that the SRG is only queued once.
             bool m_isQueuedForCompile = false;
+            
+            // Mask used to check whether to compile a specific resource type
+            uint32_t m_rhiUpdateMask = 0;
+
+            // Track iteration for each resource type in order to keep compiling it for m_updateMaskResetLatency number of times
+            uint32_t m_resourceTypeIteration[static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count)] = { 0 };
+            uint32_t m_updateMaskResetLatency = RHI::Limits::Device::FrameCountMax - 1; //we do -1 because we update after compile
+            
         };
     }
 }

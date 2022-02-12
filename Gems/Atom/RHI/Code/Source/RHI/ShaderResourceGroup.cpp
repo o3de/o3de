@@ -58,8 +58,46 @@ namespace AZ
         void ShaderResourceGroup::SetData(const ShaderResourceGroupData& data)
         {
             m_data = data;
+            uint32_t sourceUpdateMask = data.GetUpdateMask();
+            
+            //RHI has it's own copy of update mask that is reset after Compile is called m_updateMaskResetLatency times.
+            m_rhiUpdateMask |= sourceUpdateMask;
+            for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
+            {
+                if (RHI::CheckBit(sourceUpdateMask, i))
+                {
+                    m_resourceTypeIteration[i] = 0;
+                }
+            }
         }
 
+        void ShaderResourceGroup::DisableCompilationForAllResourceTypes()
+        {
+            for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
+            {
+                if(RHI::CheckBit(m_rhiUpdateMask, i))
+                {
+                    //Ensure that a SRG update is alive for m_updateMaskResetLatency times
+                    //after SRG compile is called. This is because SRGs are triple buffered
+                    if (m_resourceTypeIteration[i] >= m_updateMaskResetLatency)
+                    {
+                        m_rhiUpdateMask = RHI::ResetBits(m_rhiUpdateMask, AZ_BIT(i));
+                    }
+                    m_resourceTypeIteration[i]++;
+                }
+            }
+        }
+    
+        bool ShaderResourceGroup::IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const
+        {
+            return RHI::CheckBitsAny(m_rhiUpdateMask, resourceTypeMask);
+        }
+
+        bool ShaderResourceGroup::IsAnyResourceTypeUpdated() const
+        {
+            return m_rhiUpdateMask != 0;
+        }
+    
         void ShaderResourceGroup::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
         {
             AZ_UNUSED(builder);

@@ -36,6 +36,10 @@ namespace AZ
             //! Initializes the resource group and associates it with the pool. The resource
             //! group must be updated on this pool.
             ResultCode InitGroup(ShaderResourceGroup& srg);
+            
+            //! Compile Shader Resource Group with the associated ShaderResourceGroupData
+            ResultCode CompileGroup(ShaderResourceGroup& shaderResourceGroup,
+                                    const ShaderResourceGroupData& shaderResourceGroupData);
 
             //! Returns the descriptor passed at initialization time.
             const ShaderResourceGroupPoolDescriptor& GetDescriptor() const override;
