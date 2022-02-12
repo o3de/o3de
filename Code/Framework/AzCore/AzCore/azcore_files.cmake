@@ -298,6 +298,8 @@ set(FILES
     Math/MathUtils.h
     Math/MathMatrixSerializer.h
     Math/MathMatrixSerializer.cpp
+    Math/MathStringConversions.h
+    Math/MathStringConversions.cpp
     Math/MathVectorSerializer.h
     Math/MathVectorSerializer.cpp
     Math/Matrix3x3.cpp
@@ -364,8 +366,6 @@ set(FILES
     Math/Color.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
-    Math/ToString.h
-    Math/ToString.cpp
     Memory/AllocationRecords.cpp
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp

@@ -13,7 +13,6 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Math/ToString.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
 

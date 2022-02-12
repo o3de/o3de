@@ -16,7 +16,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/SimdMath.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -222,7 +222,7 @@ namespace PhysX
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
             {
                 AZ_Error("PhysX Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
-                    ToString(shapeConfiguration.m_scale).c_str());
+                    AZStd::to_string(shapeConfiguration.m_scale).c_str());
                 return false;
             }
 
@@ -247,7 +247,7 @@ namespace PhysX
                 if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
                 {
                     AZ_Error("PhysX Utils", false, "Negative or zero values are invalid for box dimensions %s",
-                        ToString(boxConfig.m_dimensions).c_str());
+                        AZStd::to_string(boxConfig.m_dimensions).c_str());
                     return false;
                 }
                 pxGeometry.storeAny(physx::PxBoxGeometry(PxMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale)));
