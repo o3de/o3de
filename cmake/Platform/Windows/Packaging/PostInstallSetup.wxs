@@ -65,7 +65,7 @@
         <CustomAction Id="UnRegisterEngine"
             ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C @&quot;[root.scripts]o3de.bat&quot; register --remove --this-engine"
             Directory="INSTALL_ROOT"
-            Execute="deferred"
+            Execute="immediate"
             Return="ignore"
             Impersonate="no"/>
 
