@@ -50,22 +50,10 @@ function(ly_copy source_file target_directory)
             string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
             get_filename_component(source_file_folder "${source_file}" DIRECTORY)
 
-            # Python.framework produces a bug in BundleUtilities so it needs manual handling
-            # https://gitlab.kitware.com/cmake/cmake/-/issues/20165
-            if("${source_file}" MATCHES "Python.framework")
-                # fixup the destination so it ends up in Contents/Frameworks
-                string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/Frameworks" target_directory "${target_directory}")
-                set(local_plugin_dirs ${plugin_dirs})
-                list(APPEND local_plugin_dirs "${target_directory}/Python.framework")
-                set(target_filename Python.framework)
-                set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
-                set(depends_on_python TRUE PARENT_SCOPE)
-            else()
-                set(local_plugin_dirs ${plugin_dirs})
-                list(APPEND local_plugin_dirs "${source_file_folder}")
-                set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
-                return()
-            endif()
+            set(local_plugin_dirs ${plugin_dirs})
+            list(APPEND local_plugin_dirs "${source_file_folder}")
+            set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+            return()
 
         elseif("${source_file}" MATCHES "qt/plugins")
 
@@ -170,44 +158,7 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         if(EXISTS ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
             list(APPEND fixup_bundle_ignore dxc-3.7)
         endif()
-        # LYN-4502: Patch python bundle, it contains some windows executables, some files that fixup_bundle doesnt like and has
-        # other issues that produce signature problems
-        if(depends_on_python)
-            message(STATUS "Fixing ${bundle_path}/Contents/Frameworks/Python.framework...")
-            list(APPEND fixup_bundle_ignore Python python3.7m python3.7)
-            file(REMOVE_RECURSE
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Headers"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/Python"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/test"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/scipy/io/tests"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Python"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Resources"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Headers"
-            )
-            file(GLOB_RECURSE exe_file_list "${bundle_path}/Contents/Frameworks/Python.framework/**/*.exe")
-            if(exe_file_list)
-                file(REMOVE_RECURSE ${exe_file_list})
-            endif()
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink include/python3.7m Headers
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7"
-            )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink 3.7 Current
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework/Versions/"
-            )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Python Python
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework"
-            )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Headers Headers
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework"
-            )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Resources Resources
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework"
-            )
-            file(CHMOD "${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current/Python"
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
-            )
-        endif()
+
         list(REMOVE_DUPLICATES plugin_libs)
         list(REMOVE_DUPLICATES plugin_dirs)
         fixup_bundle("${bundle_path}" "${plugin_libs}" "${plugin_dirs}" IGNORE_ITEM ${fixup_bundle_ignore})
@@ -235,7 +186,7 @@ else() # Non-bundle case
 
     if(depends_on_python)
         # RPATH fix python
-        execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}" -change @rpath/Python @rpath/Python.framework/Versions/Current/Python "@target_file@")
+        execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}" -change @rpath/Python @rpath/.. "@target_file@")
     endif()
 
 endif()
