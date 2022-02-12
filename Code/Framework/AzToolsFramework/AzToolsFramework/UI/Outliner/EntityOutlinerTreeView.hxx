@@ -101,6 +101,8 @@ namespace AzToolsFramework
 
         const QColor m_selectedColor = QColor(255, 255, 255, 45);
         const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        const QColor m_dragSelectRectColor = QColor(255, 255, 255, 20);
+        const QColor m_dragSelectBorderColor = QColor(255, 255, 255);
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;

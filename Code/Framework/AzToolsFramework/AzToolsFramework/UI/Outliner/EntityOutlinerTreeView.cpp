@@ -339,8 +339,8 @@ namespace AzToolsFramework
             QPoint topLeft(AZStd::min(point1.x(), point2.x()), AZStd::min(point1.y(), point2.y()));
             QPoint bottomRight(AZStd::max(point1.x(), point2.x()), AZStd::max(point1.y(), point2.y()));
 
-            painter.setBrush(Qt::cyan);
-            painter.setPen(Qt::darkCyan);
+            painter.setBrush(m_dragSelectRectColor);
+            painter.setPen(m_dragSelectBorderColor);
             painter.drawRect(QRect(topLeft, bottomRight));
         }
     }
