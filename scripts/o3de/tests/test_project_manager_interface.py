@@ -149,9 +149,6 @@ def test_get_templates_for_project_creation():
     assert sig.return_annotation == list
 
 def test_get_repo_json_data():
-    # Interface temporarily removed
-    return
-
     sig = signature(manifest.get_repo_json_data)
     assert len(sig.parameters) >= 1
 
@@ -162,9 +159,6 @@ def test_get_repo_json_data():
     assert sig.return_annotation == dict
 
 def test_get_repo_path():
-    # Interface temporarily removed
-    return
-
     sig = signature(manifest.get_repo_path)
     assert len(sig.parameters) >= 1
 
