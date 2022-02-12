@@ -121,7 +121,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::mousePressEvent(QMouseEvent* event)
     {
-        // Postponing normal mouse pressed logic until mouse is released or dragged.
+        // Postponing normal mouse press logic until mouse is released or dragged.
         // This allows drag/drop of non-selected items.
         ClearQueuedMouseEvent();
         m_queuedMouseEvent = new QMouseEvent(*event);
@@ -129,6 +129,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::mouseMoveEvent(QMouseEvent* event)
     {
+        // Prevent multiple updates throughout the function for changing UIs.
         bool forceUpdate = false;
 
         QModelIndex previousHoveredIndex = m_currentHoveredIndex;
@@ -144,7 +145,10 @@ namespace AzToolsFramework
         {
             if (!m_isDragSelectActive)
             {
+                // Determine whether the mouse move should trigger a rect selection or an entity drag.
                 QModelIndex clickedIndex = indexAt(m_queuedMouseEvent->pos());
+                // Even though the drag started on an index, we want to trigger a drag select from the last column.
+                // This is to allow drag selection to be triggered from anywhere in the hierarchy.
                 if (clickedIndex.isValid() && clickedIndex.column() != EntityOutlinerListModel::ColumnSpacing)
                 {
                     HandleDrag();
@@ -180,12 +184,9 @@ namespace AzToolsFramework
             SelectAllEntitiesInSelectionRect();
             update();
         }
-        else
+        else if (m_queuedMouseEvent)
         {
-            if (m_queuedMouseEvent)
-            {
-                ProcessQueuedMousePressedEvent(m_queuedMouseEvent);
-            }
+            ProcessQueuedMousePressedEvent(m_queuedMouseEvent);
         }
 
         ClearQueuedMouseEvent();
@@ -196,21 +197,21 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::mouseDoubleClickEvent(QMouseEvent* event)
     {
-        //cancel pending mouse press
+        // Cancel pending mouse press.
         ClearQueuedMouseEvent();
         QTreeView::mouseDoubleClickEvent(event);
     }
 
     void EntityOutlinerTreeView::focusInEvent(QFocusEvent* event)
     {
-        //cancel pending mouse press
+        // Cancel pending mouse press.
         ClearQueuedMouseEvent();
         QTreeView::focusInEvent(event);
     }
 
     void EntityOutlinerTreeView::focusOutEvent(QFocusEvent* event)
     {
-        //cancel pending mouse press
+        // Cancel pending mouse press.
         ClearQueuedMouseEvent();
         QTreeView::focusOutEvent(event);
     }
@@ -235,7 +236,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::HandleDrag()
     {
-        // Retrieve the index at the click position
+        // Retrieve the index at the click position.
         QModelIndex indexAtClick = indexAt(m_queuedMouseEvent->pos()).siblingAtColumn(EntityOutlinerListModel::ColumnName);
 
         AZ::EntityId entityId(indexAtClick.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
@@ -255,7 +256,7 @@ namespace AzToolsFramework
         }
         else
         {
-            StartCustomDrag({ indexAtClick }, defaultDropAction());
+            StartCustomDrag(QModelIndexList{ indexAtClick }, defaultDropAction());
         }
     }
 
@@ -266,23 +267,30 @@ namespace AzToolsFramework
             return;
         }
 
-        QPoint point1 = (m_queuedMouseEvent->pos());
-        QPoint point2 = (m_mousePosition);
+        // Retrieve the two opposing corners of the rect.
+        const QPoint point1 = (m_queuedMouseEvent->pos());  // The position the drag operation started at.
+        const QPoint point2 = (m_mousePosition);            // The current mouse position.
 
-        float top(AZStd::min(point1.y(), point2.y()));
-        float bottom(AZStd::max(point1.y(), point2.y()));
-        float middle(viewport()->rect().center().x());
+        // Determine which point's y is the top and which is the bottom.
+        const float top(AZStd::min(point1.y(), point2.y()));
+        const float bottom(AZStd::max(point1.y(), point2.y()));
+        // We don't really need the x values for the rect, just use the center of the viewport.
+        const float middle(viewport()->rect().center().x());
 
+        // Find the extremes of the range of indices that are in the selection rect.
         QModelIndex topIndex = indexAt(QPoint(middle, top));
-        QModelIndex bottomIndex = indexAt(QPoint(middle, bottom));
+        const QModelIndex bottomIndex = indexAt(QPoint(middle, bottom));
 
-        QModelIndex firstIndex = indexAt(QPoint(middle, 10));
+        // If we have no top index, the mouse may have been dragged above the top item. Let's try to course correct.
+        const int topDistanceForFirstItem = 10; // A reasonable distance from the top we're sure to encounter the first item.
+        const QModelIndex firstIndex = indexAt(QPoint(middle, topDistanceForFirstItem));
 
-        if (!topIndex.isValid() && top < 10)
+        if (!topIndex.isValid() && top < topDistanceForFirstItem)
         {
             topIndex = firstIndex;
         }
 
+        // We can assume that if topIndex is still invalid, it was below the last item in the hierarchy, hence no selection is made.
         if (!topIndex.isValid())
         {
             return;
@@ -290,6 +298,8 @@ namespace AzToolsFramework
 
         QItemSelection selection;
 
+        // Starting from the top index, traverse all visible elements of the list and select them until the bottom index is hit.
+        // If the bottom index is undefined, just keep going to the end.
         QModelIndex iter = topIndex;
         selection.select(iter, iter);
 
@@ -329,16 +339,22 @@ namespace AzToolsFramework
     {
         AzQtComponents::StyledTreeView::paintEvent(event);
 
+        // Draw the drag selection rect.
         if (m_isDragSelectActive && m_queuedMouseEvent)
         {
+            // Create a painter to draw on the viewport.
             QPainter painter(viewport());
 
-            QPoint point1 = (m_queuedMouseEvent->pos());
-            QPoint point2 = (m_mousePosition);
+            // Retrieve the two corners of the rect.
+            const QPoint point1 = (m_queuedMouseEvent->pos());  // The position the drag operation started at.
+            const QPoint point2 = (m_mousePosition);            // The current mouse position.
 
-            QPoint topLeft(AZStd::min(point1.x(), point2.x()), AZStd::min(point1.y(), point2.y()));
-            QPoint bottomRight(AZStd::max(point1.x(), point2.x()), AZStd::max(point1.y(), point2.y()));
+            // We need the top left and bottom right corners, which may not be the two corners we got above.
+            // So we composite the corners based on the coordinates of the points.
+            const QPoint topLeft(AZStd::min(point1.x(), point2.x()), AZStd::min(point1.y(), point2.y()));
+            const QPoint bottomRight(AZStd::max(point1.x(), point2.x()), AZStd::max(point1.y(), point2.y()));
 
+            // Paint the rect.
             painter.setBrush(m_dragSelectRectColor);
             painter.setPen(m_dragSelectBorderColor);
             painter.drawRect(QRect(topLeft, bottomRight));
