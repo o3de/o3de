@@ -9,8 +9,10 @@
 #include <AssetDatabase/AssetDatabaseConnection.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -31,9 +33,10 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleDocumentRequestBus::Handler::BusDisconnect();
     }
 
-    void ShaderManagementConsoleDocument::SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& sourceData)
+    void ShaderManagementConsoleDocument::SetShaderVariantListSourceData(
+        const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData)
     {
-        m_shaderVariantListSourceData = sourceData;
+        m_shaderVariantListSourceData = shaderVariantListSourceData;
         AZStd::string shaderPath = m_shaderVariantListSourceData.m_shaderFilePath;
         AzFramework::StringFunc::Path::ReplaceExtension(shaderPath, AZ::RPI::ShaderAsset::Extension);
 
@@ -110,94 +113,14 @@ namespace ShaderManagementConsole
             return false;
         }
 
-        if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
-        {
-            // Load the shader config data and create a shader config asset from it
-            AZ::RPI::ShaderVariantListSourceData sourceData;
-            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_absolutePath, sourceData))
-            {
-                AZ_Error(
-                    "ShaderManagementConsoleDocument", false, "Failed loading shader variant list data: '%s.'", m_absolutePath.c_str());
-                return OpenFailed();
-            }
-
-            SetShaderVariantListSourceData(sourceData);
-            return IsOpen() ? OpenSucceeded() : OpenFailed();
-        }
-
         if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::ShaderSourceData::Extension))
         {
-            // Get info such as relative path of the file and asset id
-            bool result = false;
-            AZ::Data::AssetInfo shaderAssetInfo;
-            AZStd::string watchFolder;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, m_absolutePath.c_str(),
-                shaderAssetInfo, watchFolder);
+            return LoadShaderSourceData();
+        }
 
-            if (!result)
-            {
-                AZ_Error(
-                    "ShaderManagementConsoleDocument", false, "Failed to get the asset info for the file: %s.", m_absolutePath.c_str());
-                return OpenFailed();
-            }
-
-            // retrieves a list of all material source files that use the shader. Note that materials inherit from materialtype files, which
-            // are actual files that refer to shader files.
-            const auto& materialAssetIds = FindMaterialAssetsUsingShader(shaderAssetInfo.m_relativePath);
-
-            // This loop collects all uniquely-identified shader items used by the materials based on its shader variant id.
-            AZStd::set<AZ::RPI::ShaderVariantId> shaderVariantIds;
-            AZStd::vector<AZ::RPI::ShaderOptionGroup> shaderVariantListShaderOptionGroups;
-            for (const auto& materialAssetId : materialAssetIds)
-            {
-                const auto& materialInstanceShaderItems = GetMaterialInstanceShaderItems(materialAssetId);
-                for (const auto& shaderItem : materialInstanceShaderItems)
-                {
-                    const auto& shaderAssetId = shaderItem.GetShaderAsset().GetId();
-                    if (shaderAssetInfo.m_assetId == shaderAssetId)
-                    {
-                        const auto& shaderVariantId = shaderItem.GetShaderVariantId();
-                        if (!shaderVariantId.IsEmpty() && shaderVariantIds.insert(shaderVariantId).second)
-                        {
-                            shaderVariantListShaderOptionGroups.push_back(shaderItem.GetShaderOptionGroup());
-                        }
-                    }
-                }
-            }
-
-            // Generate the shader variant list data by collecting shader option name-value pairs.s
-            AZ::RPI::ShaderVariantListSourceData shaderVariantList;
-            shaderVariantList.m_shaderFilePath = shaderAssetInfo.m_relativePath;
-            int stableId = 1;
-            for (const auto& shaderOptionGroup : shaderVariantListShaderOptionGroups)
-            {
-                AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-                variantInfo.m_stableId = stableId;
-
-                const auto& shaderOptionDescriptors = shaderOptionGroup.GetShaderOptionDescriptors();
-                for (const auto& shaderOptionDescriptor : shaderOptionDescriptors)
-                {
-                    const auto& optionName = shaderOptionDescriptor.GetName();
-                    const auto& optionValue = shaderOptionGroup.GetValue(optionName);
-                    if (!optionValue.IsValid())
-                    {
-                        continue;
-                    }
-
-                    const auto& valueName = shaderOptionDescriptor.GetValueName(optionValue);
-                    variantInfo.m_options[optionName.GetStringView()] = valueName.GetStringView();
-                }
-
-                if (!variantInfo.m_options.empty())
-                {
-                    shaderVariantList.m_shaderVariants.push_back(variantInfo);
-                    stableId++;
-                }
-            }
-
-            SetShaderVariantListSourceData(shaderVariantList);
-            return IsOpen() ? OpenSucceeded() : OpenFailed();
+        if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
+        {
+            return LoadShaderVariantListSourceData();
         }
 
         AZ_Error("ShaderManagementConsoleDocument", false, "Document extension is not supported: '%s.'", m_absolutePath.c_str());
@@ -276,29 +199,115 @@ namespace ShaderManagementConsole
         return SaveSucceeded();
     }
 
+    bool ShaderManagementConsoleDocument::LoadShaderSourceData()
+    {
+        // Get info such as relative path of the file and asset id
+        bool result = false;
+        AZ::Data::AssetInfo shaderAssetInfo;
+        AZStd::string watchFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, m_absolutePath.c_str(), shaderAssetInfo,
+            watchFolder);
+
+        if (!result)
+        {
+            AZ_Error("ShaderManagementConsoleDocument", false, "Failed to get the asset info for the file: %s.", m_absolutePath.c_str());
+            return OpenFailed();
+        }
+
+        // retrieves a list of all material source files that use the shader. Note that materials inherit from materialtype files, which
+        // are actual files that refer to shader files.
+        const auto& materialAssetIds = FindMaterialAssetsUsingShader(shaderAssetInfo.m_relativePath);
+
+        // This loop collects all uniquely-identified shader items used by the materials based on its shader variant id.
+        AZStd::set<AZ::RPI::ShaderVariantId> shaderVariantIds;
+        AZStd::vector<AZ::RPI::ShaderOptionGroup> shaderVariantListShaderOptionGroups;
+        for (const auto& materialAssetId : materialAssetIds)
+        {
+            const auto& materialInstanceShaderItems = GetMaterialInstanceShaderItems(materialAssetId);
+            for (const auto& shaderItem : materialInstanceShaderItems)
+            {
+                const auto& shaderAssetId = shaderItem.GetShaderAsset().GetId();
+                if (shaderAssetInfo.m_assetId == shaderAssetId)
+                {
+                    const auto& shaderVariantId = shaderItem.GetShaderVariantId();
+                    if (!shaderVariantId.IsEmpty() && shaderVariantIds.insert(shaderVariantId).second)
+                    {
+                        shaderVariantListShaderOptionGroups.push_back(shaderItem.GetShaderOptionGroup());
+                    }
+                }
+            }
+        }
+
+        // Generate the shader variant list data by collecting shader option name-value pairs.s
+        AZ::RPI::ShaderVariantListSourceData shaderVariantListSourceData;
+        shaderVariantListSourceData.m_shaderFilePath = shaderAssetInfo.m_relativePath;
+        int stableId = 1;
+        for (const auto& shaderOptionGroup : shaderVariantListShaderOptionGroups)
+        {
+            AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
+            variantInfo.m_stableId = stableId;
+
+            const auto& shaderOptionDescriptors = shaderOptionGroup.GetShaderOptionDescriptors();
+            for (const auto& shaderOptionDescriptor : shaderOptionDescriptors)
+            {
+                const auto& optionName = shaderOptionDescriptor.GetName();
+                const auto& optionValue = shaderOptionGroup.GetValue(optionName);
+                if (!optionValue.IsValid())
+                {
+                    continue;
+                }
+
+                const auto& valueName = shaderOptionDescriptor.GetValueName(optionValue);
+                variantInfo.m_options[optionName.GetStringView()] = valueName.GetStringView();
+            }
+
+            if (!variantInfo.m_options.empty())
+            {
+                shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
+                stableId++;
+            }
+        }
+
+        SetShaderVariantListSourceData(shaderVariantListSourceData);
+        return IsOpen() ? OpenSucceeded() : OpenFailed();
+    }
+
+    bool ShaderManagementConsoleDocument::LoadShaderVariantListSourceData()
+    {
+        // Load previously generated shader variant list source data 
+        AZ::RPI::ShaderVariantListSourceData shaderVariantListSourceData;
+        if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_absolutePath, shaderVariantListSourceData))
+        {
+            AZ_Error("ShaderManagementConsoleDocument", false, "Failed loading shader variant list data: '%s.'", m_absolutePath.c_str());
+            return OpenFailed();
+        }
+
+        SetShaderVariantListSourceData(shaderVariantListSourceData);
+        return IsOpen() ? OpenSucceeded() : OpenFailed();
+    }
+
     AZStd::vector<AZ::Data::AssetId> ShaderManagementConsoleDocument::FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath)
     {
-        // Collect the material types referencing the shader
-        AZStd::vector<AZStd::string> materialTypeSources;
-
         AzToolsFramework::AssetDatabase::AssetDatabaseConnection assetDatabaseConnection;
         assetDatabaseConnection.OpenDatabase();
+
+        // Find all material types that reference shaderFilePath
+        AZStd::vector<AZStd::string> materialTypeSources;
 
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
             shaderFilePath.c_str(), nullptr, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
-                AZStd::string assetExtension;
-                if (AzFramework::StringFunc::Path::GetExtension(sourceFileDependencyEntry.m_source.c_str(), assetExtension, false))
+                if (AzFramework::StringFunc::Path::IsExtension(
+                        sourceFileDependencyEntry.m_source.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
                 {
-                    if (assetExtension == "materialtype")
-                    {
-                        materialTypeSources.push_back(sourceFileDependencyEntry.m_source);
-                    }
+                    materialTypeSources.push_back(sourceFileDependencyEntry.m_source);
                 }
                 return true;
             });
 
+        // Find all materials that reference any of the material types using this shader 
         AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productDependencies;
         for (const auto& materialTypeSource : materialTypeSources)
         {
@@ -313,13 +322,9 @@ namespace ShaderManagementConsole
                 materialTypeSourceAssetInfo.m_assetId.m_guid, materialTypeSourceAssetInfo.m_assetId.m_subId,
                 [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
                 {
-                    AZStd::string assetExtension;
-                    if (AzFramework::StringFunc::Path::GetExtension(entry.m_productName.c_str(), assetExtension, false))
+                    if (AzFramework::StringFunc::Path::IsExtension(entry.m_productName.c_str(), AZ::RPI::MaterialAsset::Extension))
                     {
-                        if (assetExtension == "azmaterial")
-                        {
-                            productDependencies.push_back(entry);
-                        }
+                        productDependencies.push_back(entry);
                     }
                     return true;
                 });
@@ -338,18 +343,20 @@ namespace ShaderManagementConsole
                 },
                 nullptr);
         }
+
         return results;
     }
 
     AZStd::vector<AZ::RPI::ShaderCollection::Item> ShaderManagementConsoleDocument::GetMaterialInstanceShaderItems(
-        const AZ::Data::AssetId& assetId)
+        const AZ::Data::AssetId& materialAssetId)
     {
-        auto materialAsset = AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(assetId, AZ::RPI::AssetUtils::TraceLevel::Error);
+        auto materialAsset =
+            AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(materialAssetId, AZ::RPI::AssetUtils::TraceLevel::Error);
         if (!materialAsset.IsReady())
         {
             AZ_Error(
                 "ShaderManagementConsoleDocument", false, "Failed to load material asset from asset id: %s",
-                assetId.ToString<AZStd::string>().c_str());
+                materialAssetId.ToString<AZStd::string>().c_str());
             return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
         }
 

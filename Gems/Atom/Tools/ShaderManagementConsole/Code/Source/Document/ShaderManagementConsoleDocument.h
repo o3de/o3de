@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
@@ -42,7 +43,7 @@ namespace ShaderManagementConsole
         bool IsSavable() const override;
 
         // ShaderManagementConsoleDocumentRequestBus::Handler overridfes...
-        void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& sourceData) override;
+        void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;
         const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const override;
         size_t GetShaderVariantCount() const override;
         const AZ::RPI::ShaderVariantListSourceData::VariantInfo& GetShaderVariantInfo(size_t index) const override;
@@ -53,9 +54,20 @@ namespace ShaderManagementConsole
         // AtomToolsFramework::AtomToolsDocument overrides...
         void Clear() override;
 
+        // Write shader variant list source data to JSON
         bool SaveSourceData();
+
+        // Read shader variant list source data from JSON and initialize the document
+        bool LoadShaderSourceData();
+
+        // Read shader source data from JSON then find all references to to populate the shader variant list and initialize the document
+        bool LoadShaderVariantListSourceData();
+
+        // Find all material assets that reference material types using shaderFilePath
         AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath);
-        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& assetId);
+
+        // Retrieve all of the shader collection items from a material instance created from materialAssetId
+        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& materialAssetId);
 
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;
