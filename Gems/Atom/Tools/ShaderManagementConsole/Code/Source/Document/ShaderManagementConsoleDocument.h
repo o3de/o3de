@@ -8,17 +8,17 @@
 #pragma once
 
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
 #include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
 namespace ShaderManagementConsole
 {
-    /**
-     * ShaderManagementConsoleDocument provides an API for modifying and saving document properties.
-     */
+    //! ShaderManagementConsoleDocument provides an API for modifying and saving document properties.
     class ShaderManagementConsoleDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public ShaderManagementConsoleDocumentRequestBus::Handler
@@ -54,6 +54,8 @@ namespace ShaderManagementConsole
         void Clear() override;
 
         bool SaveSourceData();
+        AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath);
+        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& assetId);
 
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;

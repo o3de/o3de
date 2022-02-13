@@ -18,6 +18,5 @@ set(FILES
     Source/main.cpp
     Source/ShaderManagementConsoleApplication.cpp
     Source/ShaderManagementConsoleApplication.h
-    Source/ShaderManagementConsoleRequestBus.h
     ../Scripts/GenerateShaderVariantListForMaterials.py
 )

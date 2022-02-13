@@ -9,10 +9,10 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <Window/ShaderManagementConsoleWindow.h>
-#include <AzCore/Utils/Utils.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QDesktopServices>
@@ -41,15 +41,17 @@ namespace ShaderManagementConsole
 
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
         m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
-            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
             {
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                    m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
-                return;
-            }
+                if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderSourceData::Extension) ||
+                    AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
+                {
+                    AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                        m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                    return;
+                }
 
-            QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
-        });
+                QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
+            });
 
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();
@@ -66,7 +68,12 @@ namespace ShaderManagementConsole
     bool ShaderManagementConsoleWindow::GetOpenDocumentParams(AZStd::string& openPath)
     {
         openPath = QFileDialog::getOpenFileName(
-            this, tr("Open Document"), AZ::Utils::GetProjectPath().c_str(), tr("Files (*.%1)").arg(AZ::RPI::ShaderVariantListSourceData::Extension)).toUtf8().constData();
+            this, tr("Open Document"), AZ::Utils::GetProjectPath().c_str(),
+            tr("Shader Files (*.%1);;Shader Variant List Files (*.%2)")
+                .arg(AZ::RPI::ShaderSourceData::Extension)
+                .arg(AZ::RPI::ShaderVariantListSourceData::Extension))
+            .toUtf8()
+            .constData();
         return !openPath.empty();
     }
 
@@ -83,9 +90,7 @@ namespace ShaderManagementConsole
             AZ::RPI::ShaderOptionDescriptor shaderOptionDesc;
             ShaderManagementConsoleDocumentRequestBus::EventResult(
                 shaderOptionDesc, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor, optionIndex);
-
-            const char* optionName = shaderOptionDesc.GetName().GetCStr();
-            optionNames.insert(optionName);
+            optionNames.insert(shaderOptionDesc.GetName().GetCStr());
         }
 
         size_t shaderVariantCount = 0;

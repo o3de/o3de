@@ -6,27 +6,17 @@
  *
  */
 
-#include <AssetDatabase/AssetDatabaseConnection.h>
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/JsonUtils.h>
-#include <Atom/RPI.Public/Material/Material.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 #include <Document/ShaderManagementConsoleDocument.h>
 #include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <ShaderManagementConsoleApplication.h>
-#include <ShaderManagementConsoleRequestBus.h>
 #include <ShaderManagementConsole_Traits_Platform.h>
 
 #include <QDesktopServices>
@@ -62,13 +52,11 @@ namespace ShaderManagementConsole
 
         QApplication::setApplicationName("O3DE Shader Management Console");
 
-        ShaderManagementConsoleRequestBus::Handler::BusConnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
     }
 
     ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
     {
-        ShaderManagementConsoleRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         m_window.reset();
     }
@@ -79,15 +67,6 @@ namespace ShaderManagementConsole
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<ShaderManagementConsoleRequestBus>("ShaderManagementConsoleRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "shadermanagementconsole")
-                ->Event("GetSourceAssetInfo", &ShaderManagementConsoleRequestBus::Events::GetSourceAssetInfo)
-                ->Event("FindMaterialAssetsUsingShader", &ShaderManagementConsoleRequestBus::Events::FindMaterialAssetsUsingShader )
-                ->Event("GetMaterialInstanceShaderItems", &ShaderManagementConsoleRequestBus::Events::GetMaterialInstanceShaderItems)
-                ;
-
             behaviorContext->EBus<ShaderManagementConsoleDocumentRequestBus>("ShaderManagementConsoleDocumentRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
@@ -145,8 +124,11 @@ namespace ShaderManagementConsole
                                 pythonArgs);
                         });
                 }
-                else if (AzFramework::StringFunc::Path::IsExtension(
-                             entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
+
+                if (AzFramework::StringFunc::Path::IsExtension(
+                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderSourceData::Extension) ||
+                    AzFramework::StringFunc::Path::IsExtension(
+                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
                 {
                     menu->addAction(QObject::tr("Open"), [entries, this]()
                         {
@@ -179,101 +161,5 @@ namespace ShaderManagementConsole
     QWidget* ShaderManagementConsoleApplication::GetAppMainWindow()
     {
         return m_window.get();
-    }
-
-    AZ::Data::AssetInfo ShaderManagementConsoleApplication::GetSourceAssetInfo(const AZStd::string& sourceAssetFileName)
-    {
-        bool result = false;
-        AZ::Data::AssetInfo assetInfo;
-        AZStd::string watchFolder;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, sourceAssetFileName.c_str(), assetInfo,
-            watchFolder);
-        AZ_Error(nullptr, result, "Failed to get the asset info for the file: %s.", sourceAssetFileName.c_str());
-
-        return assetInfo;
-    }
-
-    AZStd::vector<AZ::Data::AssetId> ShaderManagementConsoleApplication::FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath)
-    {
-        // Collect the material types referencing the shader
-        AZStd::vector<AZStd::string> materialTypeSources;
-
-        AzToolsFramework::AssetDatabase::AssetDatabaseConnection assetDatabaseConnection;
-        assetDatabaseConnection.OpenDatabase();
-
-        assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
-            shaderFilePath.c_str(), nullptr, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
-            [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
-            {
-                AZStd::string assetExtension;
-                if (AzFramework::StringFunc::Path::GetExtension(sourceFileDependencyEntry.m_source.c_str(), assetExtension, false))
-                {
-                    if (assetExtension == "materialtype")
-                    {
-                        materialTypeSources.push_back(sourceFileDependencyEntry.m_source);
-                    }
-                }
-                return true;
-            });
-
-        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productDependencies;
-        for (const auto& materialTypeSource : materialTypeSources)
-        {
-            bool result = false;
-            AZ::Data::AssetInfo materialTypeSourceAssetInfo;
-            AZStd::string watchFolder;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, materialTypeSource.c_str(),
-                materialTypeSourceAssetInfo, watchFolder);
-
-            assetDatabaseConnection.QueryDirectReverseProductDependenciesBySourceGuidSubId(
-                materialTypeSourceAssetInfo.m_assetId.m_guid, materialTypeSourceAssetInfo.m_assetId.m_subId,
-                [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
-                {
-                    AZStd::string assetExtension;
-                    if (AzFramework::StringFunc::Path::GetExtension(entry.m_productName.c_str(), assetExtension, false))
-                    {
-                        if (assetExtension == "azmaterial")
-                        {
-                            productDependencies.push_back(entry);
-                        }
-                    }
-                    return true;
-                });
-        }
-
-        AZStd::vector<AZ::Data::AssetId> results;
-        results.reserve(productDependencies.size());
-        for (auto product : productDependencies)
-        {
-            assetDatabaseConnection.QueryCombinedByProductID(
-                product.m_productID,
-                [&](AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& combined)
-                {
-                    results.push_back({ combined.m_sourceGuid, combined.m_subID });
-                    return false;
-                },
-                nullptr);
-        }
-        return results;
-    }
-
-    AZStd::vector<AZ::RPI::ShaderCollection::Item> ShaderManagementConsoleApplication::GetMaterialInstanceShaderItems(
-        const AZ::Data::AssetId& assetId)
-    {
-        auto materialAsset = AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(assetId, AZ::RPI::AssetUtils::TraceLevel::Error);
-
-        auto materialInstance = AZ::RPI::Material::Create(materialAsset);
-        AZ_Error(
-            nullptr, materialAsset, "Failed to get a material instance from product asset id: %s",
-            assetId.ToString<AZStd::string>().c_str());
-
-        if (materialInstance != nullptr)
-        {
-            return AZStd::vector<AZ::RPI::ShaderCollection::Item>(
-                materialInstance->GetShaderCollection().begin(), materialInstance->GetShaderCollection().end());
-        }
-        return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
     }
 } // namespace ShaderManagementConsole
