@@ -8,16 +8,15 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    class MaterialEditorViewportInputControllerRequests
-        : public AZ::EBusTraits
+    class ViewportInputBehaviorControllerInterface
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        virtual ~ViewportInputBehaviorControllerInterface() = default;
 
         //! Get entityId of viewport camera
         virtual const AZ::EntityId& GetCameraEntityId() const = 0;
@@ -26,7 +25,7 @@ namespace MaterialEditor
         virtual const AZ::EntityId& GetTargetEntityId() const = 0;
 
         //! Get entityId of scene's IBL entity
-        virtual const AZ::EntityId& GetIblEntityId() const = 0;
+        virtual const AZ::EntityId& GetEnvironmentEntityId() const = 0;
 
         //! Get actual position where the camera is facing
         virtual const AZ::Vector3& GetTargetPosition() const = 0;
@@ -34,6 +33,10 @@ namespace MaterialEditor
         //! Set camera target position
         //! @param targetPosition world space position to point camera at
         virtual void SetTargetPosition(const AZ::Vector3& targetPosition) = 0;
+
+        //! Set camera target bounds
+        //! @param targetBounds AABB of target
+        virtual void SetTargetBounds(const AZ::Aabb& targetBounds) = 0;
 
         //! Get distance between camera and its target
         virtual float GetDistanceToTarget() const = 0;
@@ -56,6 +59,4 @@ namespace MaterialEditor
         //! Check if camera is looking directly at a model
         virtual bool IsCameraCentered() const = 0;
     };
-
-    using MaterialEditorViewportInputControllerRequestBus = AZ::EBus<MaterialEditorViewportInputControllerRequests>;
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework
