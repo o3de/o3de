@@ -32,12 +32,9 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Qt.bat
-CALL %~dp0\Env_Maya.bat
-CALL %~dp0\Env_Substance.bat
-CALL %~dp0\Env_WingIDE.bat
+CALL %~dp0\Env_O3DE_Core.bat
+CALL %~dp0\Env_O3DE_Python.bat
+CALL %~dp0\Env_O3DE_Qt.bat
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%

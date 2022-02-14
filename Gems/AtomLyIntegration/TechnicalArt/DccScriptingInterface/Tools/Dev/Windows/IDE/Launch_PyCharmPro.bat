@@ -41,7 +41,7 @@ echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 :: Initialize env
-CALL %~dp0\..\Env_PyCharm.bat
+CALL %~dp0\..\Env_IDE_PyCharm.bat
 
 echo.
 echo _____________________________________________________________________

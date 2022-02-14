@@ -38,9 +38,9 @@ IF "%PYCHARM_VERSION_MINOR%"=="" (set PYCHARM_VERSION_MINOR=2)
 IF "%PYCHARM_HOME%"=="" (set "PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%")
 
 :: Initialize env
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Qt.bat
+CALL %~dp0\Env_O3DE_Core.bat
+CALL %~dp0\Env_O3DE_Python.bat
+CALL %~dp0\Env_O3DE_Qt.bat
 
 IF "%PYCHARM_PROJ%"=="" (SET "PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions")
 

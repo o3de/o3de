@@ -18,9 +18,9 @@ cd %~dp0
 PUSHD %~dp0
 
 :: Initialize env
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Qt.bat
+CALL %~dp0\Env_O3DE_Core.bat
+CALL %~dp0\Env_O3DE_Python.bat
+CALL %~dp0\Env_O3DE_Qt.bat
 
 ::SETLOCAL ENABLEDELAYEDEXPANSION
 

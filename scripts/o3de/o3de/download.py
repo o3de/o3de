@@ -261,19 +261,19 @@ def is_o3de_object_update_available(object_name: str, downloadable_kwarg_key, lo
 
     return repo_copy_updated_date > local_last_updated_time
 
-def is_o3de_engine_update_available(engine_name: str, local_last_updated: str):
+def is_o3de_engine_update_available(engine_name: str, local_last_updated: str) -> bool:
     return is_o3de_object_update_available(engine_name, 'engine_name', local_last_updated)
 
-def is_o3de_project_update_available(project_name: str, local_last_updated: str):
+def is_o3de_project_update_available(project_name: str, local_last_updated: str) -> bool:
     return is_o3de_object_update_available(project_name, 'project_name', local_last_updated)
 
-def is_o3de_gem_update_available(gem_name: str, local_last_updated: str):
+def is_o3de_gem_update_available(gem_name: str, local_last_updated: str) -> bool:
     return is_o3de_object_update_available(gem_name, 'gem_name', local_last_updated)
 
-def is_o3de_template_update_available(template_name: str, local_last_updated: str):
+def is_o3de_template_update_available(template_name: str, local_last_updated: str) -> bool:
     return is_o3de_object_update_available(template_name, 'template_name', local_last_updated)
 
-def is_o3de_restricted_update_available(restricted_name: str, local_last_updated: str):
+def is_o3de_restricted_update_available(restricted_name: str, local_last_updated: str) -> bool:
     return is_o3de_object_update_available(restricted_name, 'restricted_name', local_last_updated)
 
 def _run_download(args: argparse) -> int:

@@ -61,6 +61,10 @@ TerrainSystem::TerrainSystem()
 
     m_requestedSettings = m_currentSettings;
     m_requestedSettings.m_worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-512.0f), AZ::Vector3(512.0f));
+
+    // Use the global JobManager for terrain jobs (we could create our own dedicated terrain JobManager if needed).
+    AZ::JobManagerBus::BroadcastResult(m_terrainJobManager, &AZ::JobManagerEvents::GetManager);
+    AZ_Assert(m_terrainJobManager, "No global JobManager found.");
 }
 
 TerrainSystem::~TerrainSystem()
@@ -106,6 +110,16 @@ void TerrainSystem::Activate()
 
 void TerrainSystem::Deactivate()
 {
+    {
+        // Cancel all active terrain jobs, and wait until they have completed.
+        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+        for (auto activeTerrainJobContext : m_activeTerrainJobContexts)
+        {
+            activeTerrainJobContext->Cancel();
+        }
+        m_activeTerrainJobContextMutexConditionVariable.wait(lock, [this]{ return m_activeTerrainJobContexts.empty(); });
+    }
+
     // Stop listening to the bus even before we signal DestroyBegin so that way any calls to the terrain system as a *result* of
     // calling DestroyBegin will fail to reach the terrain system.
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
@@ -668,6 +682,130 @@ AzFramework::RenderGeometry::RayResult TerrainSystem::GetClosestIntersection(
     const AzFramework::RenderGeometry::RayRequest& ray) const
 {
     return m_terrainRaycastContext.RayIntersect(ray);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromListAsync(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromListAsync(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromListAsync(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromListAsync(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromListOfVector2Async(
+    const AZStd::span<AZ::Vector2>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromListOfVector2Async(
+    const AZStd::span<AZ::Vector2>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromListOfVector2Async(
+    const AZStd::span<AZ::Vector2>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromListOfVector2Async(
+    const AZStd::span<AZ::Vector2>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromRegionAsync(
+    const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+        inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromRegionAsync(
+    const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+        inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromRegionAsync(
+    const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+        inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromRegionAsync(
+    const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            Sampler sampleFilter,
+            AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+        inRegion, stepSize, perPositionCallback, sampleFilter, params);
 }
 
 AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const

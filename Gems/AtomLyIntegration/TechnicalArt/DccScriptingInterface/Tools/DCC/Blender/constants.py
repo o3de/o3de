@@ -49,12 +49,12 @@ USER_HOME = Path.home()
 
 # Note: we've developed and tested with Blender 3.0 (experimental)
 # change at your own risk, we are just future proofing.
-DCCSI_BLENDER_VERSION = 3.0
-DCCSI_BLENDER_PATH =      f"C:/Program Files/Blender Foundation/Blender {DCCSI_BLENDER_VERSION}"
-DCCSI_BLENDER_EXE =       f"{DCCSI_BLENDER_PATH}/blender.exe"
-DCCSI_BLENDER_LAUNCHER =  f"{DCCSI_BLENDER_PATH}/blender-launcher.exe"
+DCCSI_BLENDER_VERSION =   3.0
+DCCSI_BLENDER_LOCATION =  f"C:/Program Files/Blender Foundation/Blender {DCCSI_BLENDER_VERSION}"
+DCCSI_BLENDER_EXE =       f"{DCCSI_BLENDER_LOCATION}/blender.exe"
+DCCSI_BLENDER_LAUNCHER =  f"{DCCSI_BLENDER_LOCATION}/blender-launcher.exe"
 
-DCCSI_BLENDER_PYTHON =    f"{DCCSI_BLENDER_PATH}/{DCCSI_BLENDER_VERSION}/python"
+DCCSI_BLENDER_PYTHON =    f"{DCCSI_BLENDER_LOCATION}/{DCCSI_BLENDER_VERSION}/python"
 DCCSI_BLENDER_PY_EXE =    f"{DCCSI_BLENDER_PYTHON}/bin/python.exe"
 
 DCCSI_BLENDER_WIKI_URL =  'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Blender'
