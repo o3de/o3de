@@ -42,15 +42,15 @@ def ImageGradient_ModifiesSurfaces():
 
     import os
 
-    import azlmbr.asset as asset
     import azlmbr.bus as bus
     import azlmbr.entity as EntityId
     import azlmbr.editor as editor
     import azlmbr.math as math
     import azlmbr.surface_data as surface_data
 
-    import editor_python_test_tools.editor_entity_utils as entity
     import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.asset_utils import Asset
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -66,13 +66,12 @@ def ImageGradient_ModifiesSurfaces():
         bus.Broadcast, "CreateNewEntityAtPosition", entity_position, EntityId.EntityId()
     )
     Report.critical_result(Tests.image_gradient_entity_created, new_entity_id.IsValid())
-    image_gradient_entity = entity.EditorEntity.create_editor_entity_at(entity_position, "Image Gradient")
+    image_gradient_entity = EditorEntity.create_editor_entity_at(entity_position, "Image Gradient")
     image_gradient_entity.add_components(components_to_add)
     test_img_gradient_path = os.path.join("Assets", "ImageGradients", "image_grad_test_gsi.png.streamingimage")
-    asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", test_img_gradient_path, math.Uuid(),
-                                            False)
-    image_gradient_entity.components[0].set_component_property_value("Configuration|Image Asset", asset_id)
-    success = image_gradient_entity.components[0].get_component_property_value("Configuration|Image Asset") == asset_id
+    asset = Asset.find_asset_by_path(test_img_gradient_path)
+    image_gradient_entity.components[0].set_component_property_value("Configuration|Image Asset", asset.id)
+    success = image_gradient_entity.components[0].get_component_property_value("Configuration|Image Asset") == asset.id
     Report.result(Tests.image_gradient_assigned, success)
 
     # 3) Create vegetation and planting surface entities, and assign the Image Gradient entity's Shape Reference
