@@ -5,19 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <Viewport/InputController/Behavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
     //! Moves(zooms) camera back and forth towards the target
-    class DollyCameraBehavior final
-        : public Behavior
+    class DollyCameraBehavior final : public ViewportInputBehavior
     {
     public:
-        DollyCameraBehavior() = default;
+        DollyCameraBehavior(ViewportInputBehaviorControllerInterface* controller);
         virtual ~DollyCameraBehavior() = default;
+
     protected:
         void TickInternal(float x, float y, float z) override;
         float GetSensitivityX() override;
@@ -27,4 +28,4 @@ namespace MaterialEditor
         static constexpr float SensitivityX = 0;
         static constexpr float SensitivityY = 0.005f;
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework
