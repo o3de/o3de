@@ -124,7 +124,9 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
     set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DPI_AWARE "OFF")
     if(LY_DEFAULT_PROJECT_PATH)
-        set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+        get_property(project_game_launcher_additional_args GLOBAL PROPERTY ${project_name}_GAMELAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+        set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS 
+            "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${project_game_launcher_additional_args}")
     endif()
 
     # Associate the Clients Gem Variant with each projects GameLauncher
@@ -173,7 +175,9 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             )
 
             if(LY_DEFAULT_PROJECT_PATH)
-                set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+                get_property(project_server_launcher_additional_args GLOBAL PROPERTY ${project_name}_SERVERLAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+                set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS 
+                    "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${project_server_launcher_additional_args}")
             endif()
 
             # Associate the Servers Gem Variant with each projects ServerLauncher
