@@ -206,7 +206,7 @@
                 {
                     "Name": "EditorModeFeedbackPassParent",
                     "TemplateName": "EditorModeFeedbackParentTemplate",
-                    "Enabled": true,
+                    "Enabled": false,
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",
