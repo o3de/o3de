@@ -23,7 +23,7 @@ namespace ShaderManagementConsole
     {
     public:
         AZ_CLASS_ALLOCATOR(ShaderManagementConsoleTableView, AZ::SystemAllocator, 0);
-        ShaderManagementConsoleTableView(const AZ::Uuid& documentId, QWidget* parent = 0);
+        ShaderManagementConsoleTableView(const AZ::Crc32& toolId, const AZ::Uuid& documentId, QWidget* parent);
         ~ShaderManagementConsoleTableView();
 
     protected:
@@ -33,8 +33,8 @@ namespace ShaderManagementConsole
 
         void RebuildTable();
 
-        AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
+        const AZ::Crc32 m_toolId = {};
+        const AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
         QStandardItemModel* m_model = {};
-
     };
 } // namespace ShaderManagementConsole

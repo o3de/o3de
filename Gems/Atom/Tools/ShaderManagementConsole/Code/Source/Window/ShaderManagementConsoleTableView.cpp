@@ -14,8 +14,10 @@
 
 namespace ShaderManagementConsole
 {
-    ShaderManagementConsoleTableView::ShaderManagementConsoleTableView(const AZ::Uuid& documentId, QWidget* parent)
+    ShaderManagementConsoleTableView::ShaderManagementConsoleTableView(
+        const AZ::Crc32& toolId, const AZ::Uuid& documentId, QWidget* parent)
         : QTableView(parent)
+        , m_toolId(toolId)
         , m_documentId(documentId)
         , m_model(new QStandardItemModel(this))
     {
@@ -23,7 +25,7 @@ namespace ShaderManagementConsole
         setModel(m_model);
 
         RebuildTable();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     ShaderManagementConsoleTableView::~ShaderManagementConsoleTableView()

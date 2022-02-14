@@ -36,7 +36,7 @@ namespace ShaderManagementConsole
         setObjectName("ShaderManagementConsoleWindow");
 
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
-        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
+        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath)
             {
                 if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderSourceData::Extension) ||
                     AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
@@ -75,7 +75,7 @@ namespace ShaderManagementConsole
 
     QWidget* ShaderManagementConsoleWindow::CreateDocumentTabView(const AZ::Uuid& documentId)
     {
-        return new ShaderManagementConsoleTableView(documentId, centralWidget());
+        return new ShaderManagementConsoleTableView(m_toolId, documentId, centralWidget());
     }
 } // namespace ShaderManagementConsole
 
