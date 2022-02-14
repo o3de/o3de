@@ -121,7 +121,7 @@ namespace Profiler
         // Cache the value to detect if it was changed by ImGui(user pressed 'x')
         const bool cachedShowCpuProfiler = keepDrawing;
 
-        const ImVec2 windowSize(900.0f, 600.0f);
+        const ImVec2 windowSize(1280.0f, 720.0f);
         ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
         if (ImGui::Begin("CPU Profiler", &keepDrawing, ImGuiWindowFlags_None))
         {
