@@ -288,7 +288,7 @@ namespace AZStd
 
     template<class Str, class BoolType>
     auto to_string(Str& str, BoolType value)
-        -> std::enable_if_t<AZStd::same_as<AZStd::remove_cvref_t<BoolType>, bool>>
+        -> enable_if_t<same_as<remove_cvref_t<BoolType>, bool>>
     {
         str = value ? "true" : "false";
     }
