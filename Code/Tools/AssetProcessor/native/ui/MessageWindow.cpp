@@ -19,6 +19,8 @@ MessageWindow::MessageWindow(QWidget* parent)
     m_ui->icon->setPixmap(standardIcon.pixmap(QSize(64, 64)));
     m_ui->messageList->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     connect(m_ui->messageList, &QListWidget::customContextMenuRequested, this, &MessageWindow::ShowLineContextMenu);
+    connect(m_ui->okButton, &QPushButton::clicked, this, &MessageWindow::accept);
+    connect(m_ui->logButton, &QPushButton::clicked, this, &MessageWindow::ViewLogsClicked);
 }
 
 MessageWindow::~MessageWindow()
@@ -63,4 +65,22 @@ void MessageWindow::ShowLineContextMenu(const QPoint& pos)
     });
 
     menu.exec(m_ui->messageList->viewport()->mapToGlobal(pos));
+}
+
+void MessageWindow::ViewLogsClicked()
+{
+    char resolvedDir[AZ_MAX_PATH_LEN * 2];
+    QString currentDir;
+    AZ::IO::FileIOBase::GetInstance()->ResolvePath("@log@", resolvedDir, sizeof(resolvedDir));
+
+    currentDir = QString::fromUtf8(resolvedDir);
+
+    if (QFile::exists(currentDir))
+    {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(currentDir));
+    }
+    else
+    {
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "[Error] Logs folder (%s) does not exist.\n", currentDir.toUtf8().constData());
+    }
 }

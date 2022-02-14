@@ -23,6 +23,7 @@ public:
     void SetMessageText(QStringList messageText);
     void SetTitleText(QString titleText);
     void ShowLineContextMenu(const QPoint& pos);
+    void ViewLogsClicked();
 
 private:
     Ui::MessageWindow* m_ui{};
