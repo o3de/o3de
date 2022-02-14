@@ -9,6 +9,8 @@
 #include <Translation/TranslationSerializer.h>
 #include <Translation/TranslationAsset.h>
 
+#pragma optimize("", off)
+
 namespace GraphCanvas
 {
     AZ_CLASS_ALLOCATOR_IMPL(TranslationFormatSerializer, AZ::SystemAllocator, 0);
@@ -80,6 +82,18 @@ namespace GraphCanvas
                     else
                     {
                         itemKey.append(AZStd::string::format(".%d", i));
+                    }
+
+                    rapidjson::Value::ConstMemberIterator innerContextItr = element.FindMember(Schema::Field::context);
+                    if (innerContextItr != element.MemberEnd())
+                    {
+                        itemKey.append(AZStd::string::format(".%s", innerContextItr->value.GetString()));
+                    }
+
+                    rapidjson::Value::ConstMemberIterator innerVariantItr = element.FindMember(Schema::Field::variant);
+                    if (innerVariantItr != element.MemberEnd())
+                    {
+                        itemKey.append(AZStd::string::format(".%s", innerVariantItr->value.GetString()));
                     }
                 }
 
@@ -178,3 +192,6 @@ namespace GraphCanvas
         return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Unsupported, "Storing a Translation asset is not currently supported");
     }
 }
+
+
+#pragma optimize("", on)
