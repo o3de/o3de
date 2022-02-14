@@ -146,7 +146,7 @@ namespace SurfaceData
     {
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
-        if (m_shapeBoundsIsValid)
+        if (m_shapeBoundsIsValid && SurfaceData::AabbContains2D(m_shapeBounds, inPosition))
         {
             const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_shapeBounds.GetMax().GetZ());
             const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
@@ -156,7 +156,7 @@ namespace SurfaceData
             if (hitShape)
             {
                 AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
-                surfacePointList.AddSurfacePoint(GetEntityId(), position, AZ::Vector3::CreateAxisZ(), m_newPointWeights);
+                surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, position, AZ::Vector3::CreateAxisZ(), m_newPointWeights);
             }
         }
     }
@@ -238,9 +238,11 @@ namespace SurfaceData
         providerRegistryEntry.m_entityId = GetEntityId();
         providerRegistryEntry.m_bounds = m_shapeBounds;
         providerRegistryEntry.m_tags = m_configuration.m_providerTags;
+        providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
 
         SurfaceDataRegistryEntry modifierRegistryEntry(providerRegistryEntry);
         modifierRegistryEntry.m_tags = m_configuration.m_modifierTags;
+        modifierRegistryEntry.m_maxPointsCreatedPerInput = 0;
 
         if (shapeValidBeforeUpdate && shapeValidAfterUpdate)
         {

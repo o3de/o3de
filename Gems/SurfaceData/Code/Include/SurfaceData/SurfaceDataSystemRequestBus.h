@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/std/containers/span.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 
 namespace SurfaceData
 {
@@ -40,13 +41,13 @@ namespace SurfaceData
         // The input positions are chosen by starting at the min sides of inRegion and incrementing by stepSize.  This method is inclusive
         // on the min sides of the AABB, and exclusive on the max sides (i.e. for a box of (0,0) - (4,4), the point (0,0) is included but (4,4) isn't).
         virtual void GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, const SurfaceTagVector& desiredTags,
-                                                SurfacePointLists& surfacePointLists) const = 0;
+                                                SurfacePointList& surfacePointLists) const = 0;
 
         // Get all surface points for every passed-in input position.  Only the XY dimensions of each position are used.
         virtual void GetSurfacePointsFromList(
             AZStd::span<const AZ::Vector3> inPositions,
             const SurfaceTagVector& desiredTags,
-            SurfacePointLists& surfacePointLists) const = 0;
+            SurfacePointList& surfacePointLists) const = 0;
 
         virtual SurfaceDataRegistryHandle RegisterSurfaceDataProvider(const SurfaceDataRegistryEntry& entry) = 0;
         virtual void UnregisterSurfaceDataProvider(const SurfaceDataRegistryHandle& handle) = 0;
