@@ -37,7 +37,6 @@ namespace AzToolsFramework
 
         using AliasPath = AZ::IO::Path;
         using AliasPathView = AZ::IO::PathView;
-        using RootAliasPath = AliasPath;
         using EntityAlias = AZStd::string;
         using EntityAliasView = AZStd::string_view;
         using InstanceAlias = AZStd::string;

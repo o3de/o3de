@@ -19,6 +19,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 
 namespace JsonSerializationTests
 {
@@ -256,13 +257,16 @@ namespace UnitTest
 
             JsonTestResult loadResult = LoadTestDataFromJson(*functorData, inputJson);
 
+            MaterialNameContext nameContext;
+
             // Where type resolving happens.
             MaterialFunctorSourceData::FunctorResult functorResult = functorData->CreateFunctor(
                 MaterialFunctorSourceData::RuntimeContext(
                     "Dummy.materialtype",
                     m_materialTypeCreator.GetMaterialPropertiesLayout(),
                     m_materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                    m_materialTypeCreator.GetShaderCollection()
+                    m_materialTypeCreator.GetShaderCollection(),
+                    &nameContext
                 )
             );
 

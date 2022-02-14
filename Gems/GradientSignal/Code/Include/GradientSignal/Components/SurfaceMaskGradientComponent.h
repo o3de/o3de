@@ -14,6 +14,7 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceMaskGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace LmbrCentral
@@ -84,14 +85,18 @@ namespace GradientSignal
         static float GetMaxSurfaceWeight(const SurfaceData::SurfacePointList& points)
         {
             float result = 0.0f;
-
-            for (const auto& point : points)
+            points.EnumeratePoints([&result](
+                [[maybe_unused]] size_t inPositionIndex, [[maybe_unused]] const AZ::Vector3& position,
+                [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
             {
-                for (const auto& [maskId, weight] : point.m_masks)
-                {
-                    result = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), result);
-                }
-            }
+                    masks.EnumerateWeights(
+                        [&result]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
+                        {
+                            result = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), result);
+                            return true;
+                        });
+                return true;
+            });
 
             return result;
         }

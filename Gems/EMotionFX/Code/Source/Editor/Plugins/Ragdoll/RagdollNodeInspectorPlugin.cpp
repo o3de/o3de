@@ -595,10 +595,10 @@ namespace EMotionFX
         renderInfo->m_renderUtil->RenderArrow(0.1f, jointChildWorldSpaceTransformNoScale.m_position, MCore::GetRight(jointChildWorldSpaceTransformNoScale.ToAZTransform()), color);
     }
 
-    void RagdollNodeInspectorPlugin::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void RagdollNodeInspectorPlugin::Render(EMotionFX::ActorRenderFlags renderFlags)
     {
-        const bool renderColliders = renderFlags[RENDER_RAGDOLL_COLLIDERS];
-        const bool renderJointLimits = renderFlags[RENDER_RAGDOLL_JOINTLIMITS];
+        const bool renderColliders = AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollColliders);
+        const bool renderJointLimits = AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollJointLimits);
         if (!renderColliders && !renderJointLimits)
         {
             return;

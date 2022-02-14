@@ -95,7 +95,7 @@ namespace SurfaceData
         m_refresh = false;
 
         // Update the cached mesh data and bounds, then register the surface data provider
-        AssignSurfaceTagWeights(m_configuration.m_tags, 1.0f, m_newPointWeights);
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_tags, 1.0f);
         UpdateMeshData();
     }
 
@@ -178,12 +178,7 @@ namespace SurfaceData
         AZ::Vector3 hitNormal;
         if (DoRayTrace(inPosition, hitPosition, hitNormal))
         {
-            SurfacePoint point;
-            point.m_entityId = GetEntityId();
-            point.m_position = hitPosition;
-            point.m_normal = hitNormal;
-            point.m_masks = m_newPointWeights;
-            surfacePointList.push_back(AZStd::move(point));
+            surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, hitPosition, hitNormal, m_newPointWeights);
         }
     }
 
@@ -260,6 +255,7 @@ namespace SurfaceData
         registryEntry.m_entityId = GetEntityId();
         registryEntry.m_bounds = GetSurfaceAabb();
         registryEntry.m_tags = GetSurfaceTags();
+        registryEntry.m_maxPointsCreatedPerInput = 1;
 
         if (!meshValidBeforeUpdate && !meshValidAfterUpdate)
         {

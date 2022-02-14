@@ -15,6 +15,8 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 
+#include <Atom/Utils/MaterialUtils.h>
+
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace Terrain
@@ -56,6 +58,13 @@ namespace Terrain
         static const char* const HeightFactor("parallax.factor");
         static const char* const HeightOffset("parallax.offset");
         static const char* const HeightBlendFactor("parallax.blendFactor");
+        static const char* const UvCenter("uv.center");
+        static const char* const UvScale("uv.scale");
+        static const char* const UvTileU("uv.tileU");
+        static const char* const UvTileV("uv.tileV");
+        static const char* const UvOffsetU("uv.offsetU");
+        static const char* const UvOffsetV("uv.offsetV");
+        static const char* const UvRotateDegrees("uv.rotateDegrees");
     }
     
     namespace TerrainSrgInputs
@@ -96,6 +105,8 @@ namespace Terrain
         {
             return;
         }
+
+        InitializePassthroughDetailMaterial();
 
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;
@@ -251,20 +262,73 @@ namespace Terrain
             m_dirtyDetailRegion.AddAabb(dirtyRegion);
         }
     }
+
+    bool TerrainDetailMaterialManager::ForSurfaceTag(DetailMaterialListRegion& materialRegion,
+        SurfaceData::SurfaceTag surfaceTag, DefaultMaterialSurfaceCallback callback)
+    {
+        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        {
+            if (surface.m_surfaceTag == surfaceTag)
+            {
+                callback(surface);
+                return true;
+            }
+        }
+        return false;
+    }
     
+    void TerrainDetailMaterialManager::OnTerrainDefaultSurfaceMaterialCreated(AZ::EntityId entityId, MaterialInstance material)
+    {
+        DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
+        AZ_Error("TerrainDetailMaterialManager", materialRegion.m_defaultDetailMaterialId == InvalidDetailMaterailId,
+            "Default detail material created but was already set for this region.");
+
+        materialRegion.m_defaultDetailMaterialId = CreateOrUpdateDetailMaterial(material);
+        m_detailMaterials.GetData(materialRegion.m_defaultDetailMaterialId).refCount++;
+        m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+    }
+
+    void TerrainDetailMaterialManager::OnTerrainDefaultSurfaceMaterialDestroyed(AZ::EntityId entityId)
+    {
+        DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
+        if (materialRegion == nullptr)
+        {
+            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialDestroyed() called for region that doesn't exist.");
+            return;
+        }
+
+        CheckDetailMaterialForDeletion(materialRegion->m_defaultDetailMaterialId);
+        materialRegion->m_defaultDetailMaterialId = InvalidDetailMaterailId;
+    }
+
+    void TerrainDetailMaterialManager::OnTerrainDefaultSurfaceMaterialChanged(AZ::EntityId entityId, MaterialInstance newMaterial)
+    {
+        DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
+        if (materialRegion == nullptr)
+        {
+            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialChanged() called for region that doesn't exist.");
+            return;
+        }
+
+        // Update existing entry or create a new material entry
+        uint16_t materialId = CreateOrUpdateDetailMaterial(newMaterial);
+        if (materialRegion->m_defaultDetailMaterialId != materialId)
+        {
+            ++m_detailMaterials.GetData(materialId).refCount;
+            CheckDetailMaterialForDeletion(materialRegion->m_defaultDetailMaterialId);
+            materialRegion->m_defaultDetailMaterialId = materialId;
+        }
+    }
+
     void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
     {
         DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
 
         // Validate that the surface tag is new
-        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        ForSurfaceTag(materialRegion, surfaceTag, [](DetailMaterialSurface&)
         {
-            if (surface.m_surfaceTag == surfaceTag)
-            {
-                AZ_Error(TerrainDetailMaterialManagerName, false, "Already have a surface material mapping for this surface tag.");
-                return;
-            }
-        }
+            AZ_Error(TerrainDetailMaterialManagerName, false, "Already have a surface material mapping for this surface tag.");
+        });
 
         uint16_t detailMaterialId = CreateOrUpdateDetailMaterial(material);
         materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, detailMaterialId });
@@ -275,52 +339,71 @@ namespace Terrain
     void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag)
     {
         DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
-
-        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        
+        [[maybe_unused]] bool found = ForSurfaceTag(materialRegion, surfaceTag,
+            [&](DetailMaterialSurface& surface)
         {
-            if (surface.m_surfaceTag == surfaceTag)
-            {
-                CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
+            CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
 
-                if (surface.m_surfaceTag != materialRegion.m_materialsForSurfaces.back().m_surfaceTag)
-                {
-                    AZStd::swap(surface, materialRegion.m_materialsForSurfaces.back());
-                }
-                materialRegion.m_materialsForSurfaces.pop_back();
-                m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
-                return;
+            if (surface.m_surfaceTag != materialRegion.m_materialsForSurfaces.back().m_surfaceTag)
+            {
+                AZStd::swap(surface, materialRegion.m_materialsForSurfaces.back());
             }
+            materialRegion.m_materialsForSurfaces.pop_back();
+            m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+            return;
+        });
+
+        AZ_Error(TerrainDetailMaterialManagerName, found, "Could not find surface tag to destroy for OnTerrainSurfaceMaterialMappingDestroyed().");
+    }
+    
+    void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingMaterialChanged(
+        AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
+    {
+        DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
+        if (materialRegion == nullptr)
+        {
+            AZ_Assert(false, "OnTerrainSurfaceMaterialMappingMaterialChanged() called for region that doesn't exist.");
+            return;
         }
-        AZ_Error(TerrainDetailMaterialManagerName, false, "Could not find surface tag to destroy for OnTerrainSurfaceMaterialMappingDestroyed().");
+
+        // Update existing entry or create a new material entry
+        uint16_t materialId = CreateOrUpdateDetailMaterial(material);
+        
+        [[maybe_unused]] bool found = ForSurfaceTag(*materialRegion, surfaceTag,
+            [&](DetailMaterialSurface& surface)
+        {
+            if (surface.m_detailMaterialId != materialId)
+            {
+                // Updated material was a different asset than the old material, decrement ref count and
+                // delete if no other surface tags are using it.
+                ++m_detailMaterials.GetData(materialId).refCount;
+                CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
+                surface.m_detailMaterialId = materialId;
+            }
+            m_dirtyDetailRegion.AddAabb(materialRegion->m_region);
+        });
+
+        AZ_Assert(found, "OnTerrainSurfaceMaterialMappingMaterialChanged() called for tag that doesn't exist.");
     }
 
-    void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
+    void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingTagChanged(
+        AZ::EntityId entityId, SurfaceData::SurfaceTag oldTag,  SurfaceData::SurfaceTag newTag)
     {
-        DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
-
-        bool found = false;
-        uint16_t materialId = CreateOrUpdateDetailMaterial(material);
-        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
+        if (materialRegion == nullptr)
         {
-            if (surface.m_surfaceTag == surfaceTag)
-            {
-                found = true;
-                if (surface.m_detailMaterialId != materialId)
-                {
-                    ++m_detailMaterials.GetData(materialId).refCount;
-                    CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
-                    surface.m_detailMaterialId = materialId;
-                }
-                break;
-            }
+            AZ_Assert(false, "OnTerrainSurfaceMaterialMappingTagChanged() called for region that doesn't exist.");
+            return;
         }
-
-        if (!found)
+        
+        [[maybe_unused]] bool found = ForSurfaceTag(*materialRegion, oldTag,
+            [&](DetailMaterialSurface& surface)
         {
-            ++m_detailMaterials.GetData(materialId).refCount;
-            materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, materialId });
-        }
-        m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+            surface.m_surfaceTag = newTag;
+            m_dirtyDetailRegion.AddAabb(materialRegion->m_region);
+        });
+        AZ_Assert(found, "OnTerrainSurfaceMaterialMappingTagChanged() called for tag that doesn't exist.");
     }
 
     void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
@@ -548,6 +631,36 @@ namespace Terrain
         applyProperty(HeightOffset, shaderData.m_heightOffset);
         applyProperty(HeightBlendFactor, shaderData.m_heightBlendFactor);
 
+        AZ::Render::UvTransformDescriptor transformDescriptor;
+        applyProperty(UvCenter, transformDescriptor.m_center);
+        applyProperty(UvScale, transformDescriptor.m_scale);
+        applyProperty(UvTileU, transformDescriptor.m_scaleX);
+        applyProperty(UvTileV, transformDescriptor.m_scaleY);
+        applyProperty(UvOffsetU, transformDescriptor.m_translateX);
+        applyProperty(UvOffsetV, transformDescriptor.m_translateY);
+        applyProperty(UvRotateDegrees, transformDescriptor.m_rotateDegrees);
+
+        AZStd::array<AZ::Render::TransformType, 3> order =
+        {
+            AZ::Render::TransformType::Rotate,
+            AZ::Render::TransformType::Translate,
+            AZ::Render::TransformType::Scale,
+        };
+
+        AZ::Matrix3x3 uvTransformMatrix = AZ::Render::CreateUvTransformMatrix(transformDescriptor, order);
+        uvTransformMatrix.GetRow(0).StoreToFloat3(&shaderData.m_uvTransform[0]);
+        uvTransformMatrix.GetRow(1).StoreToFloat3(&shaderData.m_uvTransform[4]);
+        uvTransformMatrix.GetRow(2).StoreToFloat3(&shaderData.m_uvTransform[8]);
+
+        // Store a hash of the matrix in element in an unused portion for quick comparisons in the shader
+        size_t hash64 = 0;
+        for (float value : shaderData.m_uvTransform)
+        {
+            AZStd::hash_combine(hash64, value);
+        }
+        uint32_t hash32 = uint32_t((hash64 ^ (hash64 >> 32)) & 0xFFFFFFFF);
+        shaderData.m_uvTransform[3] = *reinterpret_cast<float*>(&hash32);
+
         m_detailMaterialBufferNeedsUpdate = true;
     }
     
@@ -628,23 +741,38 @@ namespace Terrain
             bool isFirstMaterial = true;
             float firstWeight = 0.0f;
             AZ::Vector2 position(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY());
+            const DetailMaterialListRegion* region = FindRegionForPosition(position);
+
+            if (region == nullptr)
+            {
+                pixels.at(index).m_material1 = m_passthroughMaterialId;
+                ++index;
+                return;
+            }
+
             for (const auto& surfaceTagWeight : surfacePoint.m_surfaceTags)
             {
                 if (surfaceTagWeight.m_weight > 0.0f)
                 {
                     AZ::Crc32 surfaceType = surfaceTagWeight.m_surfaceType;
-                    uint16_t materialId = GetDetailMaterialForSurfaceTypeAndPosition(surfaceType, position);
-                    if (materialId != m_detailMaterials.NoFreeSlot && materialId < 255)
+                    uint16_t materialId = GetDetailMaterialForSurfaceType(*region, surfaceType);
+                    if (materialId < 255)
                     {
                         if (isFirstMaterial)
                         {
+                            // First material is valid. Save its weight to calculate blend later
                             pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
                             firstWeight = surfaceTagWeight.m_weight;
-                            // m_blend only needs to be calculated is material 2 is found, otherwise the initial value of 0 is correct.
                             isFirstMaterial = false;
+                            static constexpr float MaxValueBeforeRounding = 254.5f / 255.0f;
+                            if (firstWeight >= MaxValueBeforeRounding)
+                            {
+                                break;
+                            }
                         }
                         else
                         {
+                            // Second material is valid, weight is relative based on first material's weight.
                             pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
                             float totalWeight = firstWeight + surfaceTagWeight.m_weight;
                             float blendWeight = 1.0f - (firstWeight / totalWeight);
@@ -652,11 +780,37 @@ namespace Terrain
                             break;
                         }
                     }
+                    continue; // search for second material
                 }
                 else
                 {
-                    break; // since the list is ordered, no other materials are in the list with positive weights.
+                    // No more valid materials in list since surfaceTagWeight is ordered.
+
+                    uint8_t defaultMaterial = region->m_defaultDetailMaterialId == InvalidDetailMaterailId ? m_passthroughMaterialId :
+                        aznumeric_cast<uint8_t>(m_detailMaterials.GetData(region->m_defaultDetailMaterialId).m_detailMaterialBufferIndex);
+
+                    if (isFirstMaterial)
+                    {
+                        // Only one material and it's the default material.
+                        pixels.at(index).m_material1 = defaultMaterial;
+                    }
+                    else
+                    {
+                        // Second material is default, weight is exactly what the first material requested
+                        pixels.at(index).m_material2 = defaultMaterial;
+                        float blendWeight = 1.0f - AZStd::clamp<float>(firstWeight, 0.0f, 1.0f);
+                        pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                    }
                 }
+
+                if (pixels.at(index).m_material1 == pixels.at(index).m_material2)
+                {
+                    // If the materials are the same, then make the blend 100% on the first id so the shader
+                    // doesn't blend identical materials
+                    pixels.at(index).m_blend = 0;
+                }
+
+                break;
             }
             ++index;
         };
@@ -684,23 +838,37 @@ namespace Terrain
 
         m_detailTextureImage->UpdateImageContents(imageUpdateRequest);
     }
-
-    uint16_t TerrainDetailMaterialManager::GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position)
+    
+    uint16_t TerrainDetailMaterialManager::GetDetailMaterialForSurfaceType(const DetailMaterialListRegion& materialRegion, AZ::Crc32 surfaceType) const
+    {
+        for (const auto& materialSurface : materialRegion.m_materialsForSurfaces)
+        {
+            if (materialSurface.m_surfaceTag == surfaceType)
+            {
+                return m_detailMaterials.GetData(materialSurface.m_detailMaterialId).m_detailMaterialBufferIndex;
+            }
+        }
+        return InvalidDetailMaterailId;
+    }
+    
+    auto TerrainDetailMaterialManager::FindRegionForPosition(const AZ::Vector2& position) const -> const DetailMaterialListRegion*
     {
         for (const auto& materialRegion : m_detailMaterialRegions.GetDataVector())
         {
             if (materialRegion.m_region.Contains(AZ::Vector3(position.GetX(), position.GetY(), 0.0f)))
             {
-                for (const auto& materialSurface : materialRegion.m_materialsForSurfaces)
-                {
-                    if (materialSurface.m_surfaceTag == surfaceType)
-                    {
-                        return m_detailMaterials.GetData(materialSurface.m_detailMaterialId).m_detailMaterialBufferIndex;
-                    }
-                }
+                return &materialRegion;
             }
         }
-        return m_detailMaterials.NoFreeSlot;
+        return nullptr;
+    }
+
+    void TerrainDetailMaterialManager::InitializePassthroughDetailMaterial()
+    {
+        m_passthroughMaterialId = aznumeric_cast<uint8_t>(m_detailMaterialShaderData.Reserve());
+        DetailMaterialShaderData& materialShaderData = m_detailMaterialShaderData.GetElement(m_passthroughMaterialId);
+        // Material defaults to white (1.0, 1.0, 1.0), set the blend mode to multiply so it passes through to the macro material.
+        materialShaderData.m_flags = DetailTextureFlags::BlendModeMultiply;
     }
 
     auto TerrainDetailMaterialManager::FindByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container)
@@ -745,5 +913,5 @@ namespace Terrain
         }
         AZ_Assert(false, "Entity Id not found in container.")
     }
-    
+
 }

@@ -140,27 +140,18 @@ namespace UnitTest
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceAltitudeGradient)(benchmark::State& state)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceAltitudeGradient(TestShapeHalfBounds);
         GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceMaskGradient)(benchmark::State& state)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceMaskGradient(TestShapeHalfBounds);
         GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceSlopeGradient)(benchmark::State& state)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceSlopeGradient(TestShapeHalfBounds);
         GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }

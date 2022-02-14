@@ -59,24 +59,25 @@ namespace AZ
 
             uint32_t m_materialTypeVersion = 0; //!< The version of the material type that was used to configure this material
 
-            struct Property
-            {
-                AZ_TYPE_INFO(AZ::RPI::MaterialSourceData::Property, "{8D613464-3750-4122-AFFE-9238010D5AFC}");
-
-                MaterialPropertyValue m_value;
-            };
-
-            using PropertyMap = AZStd::map<AZStd::string, Property>;
-            using PropertyGroupMap = AZStd::map<AZStd::string, PropertyMap>;
-
-            PropertyGroupMap m_properties;
-
             enum class ApplyVersionUpdatesResult
             {
                 Failed,
                 NoUpdates,
                 UpdatesApplied
             };
+            
+            //! If the data was loaded from an old format file (i.e. where "properties" was a tree with property values nested under groups),
+            //! this converts to the new format where properties are stored in a flat list.
+            void ConvertToNewDataFormat();
+
+            // Note that even though we use an unordered map, the JSON serialization system is nice enough to sort the data when saving to JSON.
+            using PropertyValueMap = AZStd::unordered_map<Name, MaterialPropertyValue>;
+
+            void SetPropertyValue(const Name& propertyId, const MaterialPropertyValue& value);
+            const MaterialPropertyValue& GetPropertyValue(const Name& propertyId) const;
+            const PropertyValueMap& GetPropertyValues() const;
+            bool HasPropertyValue(const Name& propertyId) const;
+            void RemovePropertyValue(const Name& propertyId);
 
             //! Creates a MaterialAsset from the MaterialSourceData content.
             //! @param assetId ID for the MaterialAsset
@@ -103,8 +104,16 @@ namespace AZ
                 AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
 
         private:
+
             void ApplyPropertiesToAssetCreator(
                 AZ::RPI::MaterialAssetCreator& materialAssetCreator, const AZStd::string_view& materialSourceFilePath) const;
+
+            // @deprecated: Don't use "properties" in JSON, use "propertyValues" instead.
+            using PropertyGroupMap = AZStd::unordered_map<Name, PropertyValueMap>;
+            PropertyGroupMap m_propertiesOld;
+
+            PropertyValueMap m_propertyValues;
+            MaterialPropertyValue m_invalidValue;
         };
     } // namespace RPI
 } // namespace AZ

@@ -53,7 +53,11 @@ namespace AZ
 
         void ParentPass::AddChild(const Ptr<Pass>& child)
         {
-            AZ_Assert(child->m_parent == nullptr, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+            if (child->m_parent != nullptr)
+            {
+                AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+                return;
+            }
 
             m_children.push_back(child);
             child->m_parent = this;
@@ -69,6 +73,39 @@ namespace AZ
                 // Set child's pipeline if the parent has a owning pipeline
                 child->SetRenderPipeline(m_pipeline);
             }
+        }
+
+        bool ParentPass::InsertChild(const Ptr<Pass>& child, ChildPassIndex position)
+        {
+            if (child->m_parent != nullptr)
+            {
+                AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+                return false;
+            }
+
+            if (!position.IsValid() || position.GetIndex() > m_children.size())
+            {
+                AZ_Assert(false, "Can't insert a child pass with invalid position");
+                return false;
+            }
+
+            auto insertPos = m_children.cbegin() + position.GetIndex();
+            m_children.insert(insertPos, child);
+
+            child->m_parent = this;
+            child->OnHierarchyChange();
+
+            QueueForBuildAndInitialization();
+
+            // Notify pipeline
+            if (m_pipeline)
+            {
+                m_pipeline->SetPassModified();
+
+                // Set child's pipeline if the parent has a owning pipeline
+                child->SetRenderPipeline(m_pipeline);
+            }
+            return true;
         }
 
         void ParentPass::OnHierarchyChange()

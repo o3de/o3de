@@ -170,3 +170,59 @@ class TestEditorTestUtils(unittest.TestCase):
             mock_test_list.append(mock_test)
 
         assert 0 == editor_test_utils.retrieve_last_run_test_index_from_output(mock_test_list, mock_editor_output)
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils._check_log_errors_warnings')
+    @mock.patch('os.walk')
+    def test_SaveFailedAssetJoblogs_ManyValidLogs_SavesCorrectly(self, mock_walk, mock_check_log):
+        mock_workspace = mock.MagicMock()
+        mock_walk.return_value = [['MockDirectory', None, ['mock_log.log']],
+                                  ['MockDirectory2', None, ['mock_log2.log']]]
+        mock_check_log.return_value = True
+
+        editor_test_utils.save_failed_asset_joblogs(mock_workspace)
+
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 2
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils._check_log_errors_warnings')
+    @mock.patch('os.walk')
+    def test_SaveFailedAssetJoblogs_ManyInvalidLogs_NoSaves(self, mock_walk, mock_check_log):
+        mock_workspace = mock.MagicMock()
+        mock_walk.return_value = [['MockDirectory', None, ['mock_log.log']],
+                                  ['MockDirectory2', None, ['mock_log2.log']]]
+        mock_check_log.return_value = False
+
+        editor_test_utils.save_failed_asset_joblogs(mock_workspace)
+
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 0
+
+    def test_CheckLogErrorWarnings_ValidLine_ReturnsTrue(self):
+        mock_log = '~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 1 warnings'
+        mock_log_path = mock.MagicMock()
+
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
+            expected = editor_test_utils._check_log_errors_warnings(mock_log_path)
+        assert expected
+
+    def test_CheckLogErrorWarnings_MultipleValidLine_ReturnsTrue(self):
+        mock_log = 'foo\nfoo\n~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 1 errors, 1 warnings'
+        mock_log_path = mock.MagicMock()
+
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
+            expected = editor_test_utils._check_log_errors_warnings(mock_log_path)
+        assert expected
+
+    def test_CheckLogErrorWarnings_InvalidLine_ReturnsFalse(self):
+        mock_log = 'foo\n~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 0 warnings'
+        mock_log_path = mock.MagicMock()
+
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
+            expected = editor_test_utils._check_log_errors_warnings(mock_log_path)
+        assert not expected
+
+    def test_CheckLogErrorWarnings_InvalidRegex_ReturnsTrue(self):
+        mock_log = 'Invalid last line'
+        mock_log_path = mock.MagicMock()
+
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
+            expected = editor_test_utils._check_log_errors_warnings(mock_log_path)
+        assert expected
