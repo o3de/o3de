@@ -5,20 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <Viewport/InputController/Behavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
     //! Rotates camera around its own axis, allowing to look up/down/left/right
-    class PanCameraBehavior final
-        : public Behavior
+    class PanCameraBehavior final : public ViewportInputBehavior
     {
     public:
-        PanCameraBehavior() = default;
+        PanCameraBehavior(ViewportInputBehaviorControllerInterface* controller);
         virtual ~PanCameraBehavior() = default;
-        
+
         void End() override;
 
     protected:
@@ -30,4 +30,4 @@ namespace MaterialEditor
         static constexpr float SensitivityX = 0.005f;
         static constexpr float SensitivityY = 0.005f;
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework
