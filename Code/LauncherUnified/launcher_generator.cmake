@@ -124,9 +124,17 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
     set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DPI_AWARE "OFF")
     if(LY_DEFAULT_PROJECT_PATH)
+        if (TARGET ${project_name})
+            get_target_property(project_game_launcher_additional_args ${project_name} GAMELAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+            if (project_game_launcher_additional_args)
+                # Avoid pushing param-NOTFOUND into the argument in case this property wasn't found
+                set(additional_game_vs_debugger_args "${project_game_launcher_additional_args}")
+            endif()
+        endif()
+
         get_target_property(project_game_launcher_additional_args ${project_name} GAMELAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
         set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS 
-            "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${project_game_launcher_additional_args}")
+            "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${additional_game_vs_debugger_args}")
     endif()
 
     # Associate the Clients Gem Variant with each projects GameLauncher
@@ -175,9 +183,16 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             )
 
             if(LY_DEFAULT_PROJECT_PATH)
-                get_target_property(project_server_launcher_additional_args ${project_name} SERVERLAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+                if (TARGET ${project_name})
+                    get_target_property(project_server_launcher_additional_args ${project_name} SERVERLAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+                    if (project_server_launcher_additional_args)
+                        # Avoid pushing param-NOTFOUND into the argument in case this property wasn't found
+                        set(additional_server_vs_debugger_args "${project_server_launcher_additional_args}")
+                    endif()
+                endif()
+                
                 set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS 
-                    "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${project_server_launcher_additional_args}")
+                    "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${additional_server_vs_debugger_args}")
             endif()
 
             # Associate the Servers Gem Variant with each projects ServerLauncher
