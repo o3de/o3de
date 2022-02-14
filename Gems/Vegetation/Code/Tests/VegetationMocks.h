@@ -334,7 +334,7 @@ namespace UnitTest
         {
             ++m_count;
             surfacePointList.Clear();
-            surfacePointList.StartListConstruction({ { inPosition } }, 1, {});
+            surfacePointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&inPosition, 1), 1, {});
             surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, m_outPosition, m_outNormal, m_outMasks);
             surfacePointList.EndListConstruction();
         }

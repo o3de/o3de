@@ -205,7 +205,8 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const
     {
-        GetSurfacePointsFromListInternal({ { inPosition } }, AZ::Aabb::CreateFromPoint(inPosition), desiredTags, surfacePointList);
+        GetSurfacePointsFromListInternal(
+            AZStd::span<const AZ::Vector3>(&inPosition, 1), AZ::Aabb::CreateFromPoint(inPosition), desiredTags, surfacePointList);
     }
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize,
