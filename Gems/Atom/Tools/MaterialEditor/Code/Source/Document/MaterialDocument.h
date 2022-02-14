@@ -31,9 +31,9 @@ namespace MaterialEditor
     public:
         AZ_RTTI(MaterialDocument, "{DBA269AE-892B-415C-8FA1-166B94B0E045}");
         AZ_CLASS_ALLOCATOR(MaterialDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(MaterialDocument);
+        AZ_DISABLE_COPY_MOVE(MaterialDocument);
 
-        MaterialDocument();
+        MaterialDocument(const AZ::Crc32& toolId);
         virtual ~MaterialDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
@@ -82,7 +82,8 @@ namespace MaterialEditor
         void RestorePropertyValues(const PropertyValueMap& propertyValues);
 
         bool AddEditorMaterialFunctors(
-            const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders);
+            const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders,
+            const AZ::RPI::MaterialNameContext& nameContext);
 
         // Run editor material functor to update editor metadata.
         // @param dirtyFlags indicates which properties have changed, and thus which MaterialFunctors need to be run.
