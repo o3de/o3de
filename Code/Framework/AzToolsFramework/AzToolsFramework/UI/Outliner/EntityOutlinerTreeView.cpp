@@ -272,10 +272,10 @@ namespace AzToolsFramework
         const QPoint point2 = (m_mousePosition);            // The current mouse position.
 
         // Determine which point's y is the top and which is the bottom.
-        const float top(AZStd::min(point1.y(), point2.y()));
-        const float bottom(AZStd::max(point1.y(), point2.y()));
+        const int top(AZStd::min(point1.y(), point2.y()));
+        const int bottom(AZStd::max(point1.y(), point2.y()));
         // We don't really need the x values for the rect, just use the center of the viewport.
-        const float middle(viewport()->rect().center().x());
+        const int middle(viewport()->rect().center().x());
 
         // Find the extremes of the range of indices that are in the selection rect.
         QModelIndex topIndex = indexAt(QPoint(middle, top));
