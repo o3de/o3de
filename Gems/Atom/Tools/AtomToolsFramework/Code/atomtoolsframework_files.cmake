@@ -88,4 +88,21 @@ set(FILES
     Source/PreviewRenderer/PreviewRendererCaptureState.h
     Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
     Source/PreviewRenderer/PreviewRendererSystemComponent.h
+    Source/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h
+    Source/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/PanCameraBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/PanCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/RotateModelBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateModelBehavior.h
 )
