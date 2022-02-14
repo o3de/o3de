@@ -765,7 +765,9 @@ R"({
             .Times(1)
             .WillOnce(Return(Aws::GameLift::GetInstanceCertificateOutcome()));
 
+        AZ_TEST_START_TRACE_SUPPRESSION;
         auto actualResult = m_serverManager->GetExternalSessionCertificate();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_STREQ(actualResult.c_str(), "");
     }
 
@@ -790,7 +792,9 @@ R"({
             .Times(1)
             .WillOnce(Return(Aws::GameLift::GetInstanceCertificateOutcome()));
 
+        AZ_TEST_START_TRACE_SUPPRESSION;
         auto actualResult = m_serverManager->GetExternalSessionPrivateKey();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_STREQ(actualResult.c_str(), "");
     }
 

@@ -47,8 +47,7 @@ namespace AWSGameLift
             AZStd::string_view dnsName = createPlayerSessionResult.GetPlayerSession().GetDnsName().c_str();
             AZStd::string_view ipAddress = createPlayerSessionResult.GetPlayerSession().GetIpAddress().c_str();
             // When connecting to a game session that is running on a TLS-enabled fleet, you must use the DNS name, not the IP address.
-            // https://docs.aws.amazon.com/gamelift/latest/apireference/API_PlayerSession.html
-            if (dnsName.ends_with(".amazongamelift.com"))
+            if (dnsName.ends_with(AWSGameLiftTLSEnabledDNSSuffix))
             {
                 sessionConnectionConfig.m_dnsName = dnsName;
             }

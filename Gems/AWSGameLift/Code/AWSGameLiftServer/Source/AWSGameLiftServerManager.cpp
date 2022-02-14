@@ -413,7 +413,7 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_Warning(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstanceCertificateErrorMessage);
+            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstanceCertificateErrorMessage);
             return AZ::IO::Path();
         }
     }
@@ -427,7 +427,7 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_Warning(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstancePrivateKeyErrorMessage);
+            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstancePrivateKeyErrorMessage);
             return AZ::IO::Path();
         }
     }
@@ -565,7 +565,6 @@ namespace AWSGameLift
     {
         UpdateGameSessionData(gameSession);
         Multiplayer::SessionConfig sessionConfig = BuildSessionConfig(gameSession);
-        // Register server manager as handler once game session has been activated
         if (!AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get())
         {
             AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Register(this);
