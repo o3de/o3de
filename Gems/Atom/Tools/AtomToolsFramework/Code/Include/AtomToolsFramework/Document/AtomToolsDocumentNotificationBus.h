@@ -18,8 +18,9 @@ namespace AtomToolsFramework
         : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::Crc32 BusIdType;
 
         //! Signal that a document was created
         //! @param documentId unique id of document for which the notification is sent
