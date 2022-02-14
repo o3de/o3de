@@ -88,8 +88,25 @@ namespace Terrain
         // the wireframe representation in each direction.
         struct WireframeSector
         {
+            WireframeSector() = default;
+            ~WireframeSector() = default;
+            WireframeSector(const WireframeSector& other);
+            WireframeSector(WireframeSector&& other);
+            WireframeSector& operator=(const WireframeSector& other);
+            WireframeSector& operator=(WireframeSector&& other);
+
+            void Reset();
+
+            // This should only be called within the scope of a lock on m_sectorStateMutex.
+            void SetDirty();
+
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> m_jobContext;
+            AZStd::unique_ptr<AZStd::semaphore> m_jobCompletionEvent;
+            AZStd::recursive_mutex m_sectorStateMutex;
             AZ::Aabb m_aabb{ AZ::Aabb::CreateNull() };
             AZStd::vector<AZ::Vector3> m_lineVertices;
+            AZStd::vector<float> m_rowHeights;
+            float m_previousHeight = 0.0f;
             bool m_isDirty{ true };
         };
 

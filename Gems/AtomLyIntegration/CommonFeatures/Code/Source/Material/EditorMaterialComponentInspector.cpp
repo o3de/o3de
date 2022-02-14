@@ -15,6 +15,7 @@
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -80,7 +81,7 @@ namespace AZ
                         m_materialAssignmentId);
                 }
 
-               if (!materialAssetId.IsValid())
+                if (!materialAssetId.IsValid())
                 {
                     UnloadMaterial();
                     return false;
@@ -101,28 +102,10 @@ namespace AZ
                     UnloadMaterial();
                     return false;
                 }
+                
+                // Add material functors that are in the top-level functors list. Other functors are also added per-property-group elsewhere.
+                AddEditorMaterialFunctors(m_editData.m_materialTypeSourceData.m_materialFunctorSourceData, AZ::RPI::MaterialNameContext{});
 
-                // Get a list of all the editor functors to be used for property editor states
-                auto propertyLayout = m_editData.m_materialAsset->GetMaterialPropertiesLayout();
-                const AZ::RPI::MaterialFunctorSourceData::EditorContext editorContext =
-                    AZ::RPI::MaterialFunctorSourceData::EditorContext(m_editData.m_materialTypeSourcePath, propertyLayout);
-                for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : m_editData.m_materialTypeSourceData.m_materialFunctorSourceData)
-                {
-                    AZ::RPI::MaterialFunctorSourceData::FunctorResult createResult = functorData->CreateFunctor(editorContext);
-
-                    if (createResult.IsSuccess())
-                    {
-                        AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor = createResult.GetValue();
-                        if (functor != nullptr)
-                        {
-                            m_editorFunctors.push_back(functor);
-                        }
-                    }
-                    else
-                    {
-                        AZ_Error("AZ::Render::EditorMaterialComponentInspector", false, "Material functors were not created: '%s'.", m_editData.m_materialTypeSourcePath.c_str());
-                    }
-                }
 
                 Populate();
                 LoadOverridesFromEntity();
@@ -292,48 +275,77 @@ namespace AZ
 
             void MaterialPropertyInspector::AddPropertiesGroup()
             {
-                // Copy all of the properties from the material asset to the source data that will be exported
-                // TODO: Support populating the Material Editor with nested property groups, not just the top level.
-                for (const AZStd::unique_ptr<AZ::RPI::MaterialTypeSourceData::PropertyGroup>& propertyGroup : m_editData.m_materialTypeSourceData.GetPropertyLayout().m_propertyGroups)
-                {
-                    const AZStd::string& groupName = propertyGroup->GetName();
-                    const AZStd::string& groupDisplayName = !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : groupName;
-                    const AZStd::string& groupDescription = !propertyGroup->GetDescription().empty() ? propertyGroup->GetDescription() : groupDisplayName;
-                    auto& group = m_groups[groupName];
-                    
-                    group.m_properties.reserve(propertyGroup->GetProperties().size());
-                    for (const auto& propertyDefinition : propertyGroup->GetProperties())
+                // Copy all of the properties from the material asset to the populate the inspector
+                m_editData.m_materialTypeSourceData.EnumeratePropertyGroups(
+                    [this](const AZ::RPI::MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
                     {
-                        AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+                        using namespace AZ::RPI;
 
-                        // Assign id before conversion so it can be used in dynamic description
-                        propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition->GetName());
-
-                        AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition.get());
-
-                        const auto& propertyIndex = 
-                            m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+                        const MaterialTypeSourceData::PropertyGroup* propertyGroupDefinition = propertyGroupStack.back();
+                
+                        MaterialNameContext groupNameContext = MaterialTypeSourceData::MakeMaterialNameContext(propertyGroupStack);
                         
-                        propertyConfig.m_groupName = groupDisplayName;
-                        propertyConfig.m_showThumbnail = true;
-                        propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(
-                            m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                        
-                        // There is no explicit parent material here. Material instance property overrides replace the values from the
-                        // assigned material asset. Its values should be treated as parent, for comparison, in this case.
-                        propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(
-                            m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                        propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(
-                            m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
-                        group.m_properties.emplace_back(propertyConfig);
-                    }
+                        AddEditorMaterialFunctors(propertyGroupDefinition->GetFunctors(), groupNameContext);
 
-                    // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                        &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
-                        [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
-                    AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
-                }
+                        AZStd::vector<AZStd::string> groupNameVector;
+                        AZStd::vector<AZStd::string> groupDisplayNameVector;
+                        
+                        groupNameVector.reserve(propertyGroupStack.size());
+                        groupDisplayNameVector.reserve(propertyGroupStack.size());
+
+                        for (auto& nextGroup : propertyGroupStack)
+                        {
+                            groupNameVector.push_back(nextGroup->GetName());
+                            groupDisplayNameVector.push_back(!nextGroup->GetDisplayName().empty() ? nextGroup->GetDisplayName() : nextGroup->GetName());
+                        }
+
+                        AZStd::string groupId;
+                        AzFramework::StringFunc::Join(groupId, groupNameVector.begin(), groupNameVector.end(), ".");
+
+                        auto& group = m_groups[groupId];
+                        group.m_name = groupId;
+                        AzFramework::StringFunc::Join(group.m_displayName, groupDisplayNameVector.begin(), groupDisplayNameVector.end(), " | ");
+                        group.m_description = !propertyGroupDefinition->GetDescription().empty() ? propertyGroupDefinition->GetDescription() : group.m_displayName;
+                        
+                        group.m_properties.reserve(propertyGroupDefinition->GetProperties().size());
+                        for (const auto& propertyDefinition : propertyGroupDefinition->GetProperties())
+                        {
+                            AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+                            
+                            // Assign id before conversion so it can be used in dynamic description
+                            propertyConfig.m_id = propertyDefinition->GetName();
+                            groupNameContext.ContextualizeProperty(propertyConfig.m_id);
+                            
+                            AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
+
+                            const auto& propertyIndex = 
+                                m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+
+                            // (Does DynamicPropertyConfig really even need m_groupName? It doesn't seem to be used anywhere)
+                            propertyConfig.m_groupName = group.m_name;
+                            propertyConfig.m_groupDisplayName = group.m_displayName;
+                            propertyConfig.m_showThumbnail = true;
+                            
+                            propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
+                            
+                            // There is no explicit parent material here. Material instance property overrides replace the values from the
+                            // assigned material asset. Its values should be treated as parent, for comparison, in this case.
+                            propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
+                            propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
+                            group.m_properties.emplace_back(propertyConfig);
+                        }
+                        
+                        // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
+                        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(group.m_name), {},
+                            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
+                        AddGroup(group.m_name, group.m_displayName, group.m_description, propertyGroupWidget);
+
+                        return true;
+                    });
             }
 
             void MaterialPropertyInspector::Populate()
@@ -432,6 +444,37 @@ namespace AZ
 
                 // m_updatePreview should be set to true here for continuous preview updates as slider/color properties change but needs
                 // throttling
+            }
+            
+            bool MaterialPropertyInspector::AddEditorMaterialFunctors(
+                const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders,
+                const AZ::RPI::MaterialNameContext& nameContext)
+            {
+                // Copied from MaterialDocument::AddEditorMaterialFunctors, should be refactored at some point
+
+                const AZ::RPI::MaterialFunctorSourceData::EditorContext editorContext = AZ::RPI::MaterialFunctorSourceData::EditorContext(
+                    m_editData.m_materialTypeSourcePath, m_editData.m_materialAsset->GetMaterialPropertiesLayout(), &nameContext);
+
+                for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : functorSourceDataHolders)
+                {
+                    AZ::RPI::MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(editorContext);
+
+                    if (result.IsSuccess())
+                    {
+                        AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor = result.GetValue();
+                        if (functor != nullptr)
+                        {
+                            m_editorFunctors.push_back(functor);
+                        }
+                    }
+                    else
+                    {
+                        AZ_Error("MaterialDocument", false, "Material functors were not created: '%s'.", m_editData.m_materialTypeSourcePath.c_str());
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             void MaterialPropertyInspector::RunEditorMaterialFunctors()

@@ -3277,4 +3277,45 @@ namespace UnitTest
         const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
         EXPECT_THAT(finalEntityTransform.GetTranslation(), IsCloseTolerance(expectedWorldPosition, 0.01f));
     }
+
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, SurfaceManipulatorSelfIntersectsMeshWhenCtrlIsHeld)
+    {
+        // camera (go to position format) - 47.00, -52.00, 20.00, 0.00, -60.00
+        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        // position camera
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(-60.0f)), AZ::Vector3(47.0f, -52.0f, 20.0f)));
+        // position box
+        AzToolsFramework::SetWorldTransform(m_entityIdBox, AZ::Transform::CreateTranslation(AZ::Vector3(50.0f, -50.0f, 20.0f)));
+
+        // the initial starting position of the entity
+        const auto initialTransformWorld = AzToolsFramework::GetWorldTransform(m_entityIdBox);
+        // where the surface manipulator should end up (surface of the box)
+        const auto finalTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(49.5f, -49.6337357f, 19.5793953f));
+
+        // calculate the position in screen space of the initial position of the entity
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+        // calculate the position in screen space of the final position of the entity
+        const auto finalPositionScreen = AzFramework::WorldToScreen(finalTransformWorld.GetTranslation(), m_cameraState);
+
+        // select the entity (this will cause the manipulators to appear in EditorTransformComponentSelection)
+        AzToolsFramework::SelectEntity(m_entityIdBox);
+
+        // press and drag the mouse (starting where the surface manipulator is)
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(initialPositionScreen)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
+            ->MouseLButtonDown()
+            ->MousePosition(finalPositionScreen)
+            ->MouseLButtonUp();
+
+        // read back the position of the entity now
+        const AZ::Transform finalManipulatorTransform = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
+
+        // ensure final world positions match
+        EXPECT_THAT(finalManipulatorTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
+    }
 } // namespace UnitTest

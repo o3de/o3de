@@ -31,7 +31,7 @@ namespace ShaderManagementConsole
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        ShaderManagementConsoleWindow(QWidget* parent = 0);
+        ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~ShaderManagementConsoleWindow() = default;
 
     protected:
