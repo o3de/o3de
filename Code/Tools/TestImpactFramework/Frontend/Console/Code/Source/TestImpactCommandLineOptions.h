@@ -11,6 +11,7 @@
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactRepoPath.h>
 
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/containers/vector.h>

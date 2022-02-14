@@ -9,8 +9,11 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
+
+static constexpr char GraphicsDevModeSetting[] = "/Atom/GraphicsDevMode";
 
 namespace AZ
 {
@@ -133,6 +136,17 @@ namespace AZ
                 return commandLine->HasSwitch(commandLineOption);
             }
             return false;
+        }
+
+        bool IsGraphicsDevModeEnabled()
+        {
+            AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+            bool graphicsDevMode = false;
+            if (settingsRegistry)
+            {
+                settingsRegistry->Get(graphicsDevMode, GraphicsDevModeSetting);
+            }
+            return graphicsDevMode;
         }
     }
 }

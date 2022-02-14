@@ -14,16 +14,19 @@ namespace AtomToolsFramework
 {
     class AtomToolsDocument;
 
-    //! AtomToolsDocumentSystemRequestBus provides high level requests for menus, scripts, etc.
+    using AtomToolsDocumentFactoryCallback = AZStd::function<AtomToolsDocument*(const AZ::Crc32&)>;
+
+    //! AtomToolsDocumentSystemRequestBus is an interface that provides requests for high level user interactions with a system of documents
     class AtomToolsDocumentSystemRequests
         : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::Crc32 BusIdType;
 
         //! Register a document factory function used to create specific document types
-        virtual void RegisterDocumentType(AZStd::function<AtomToolsDocument*()> documentCreator) = 0;
+        virtual void RegisterDocumentType(const AtomToolsDocumentFactoryCallback& documentCreator) = 0;
 
         //! Create a document
         //! @return Uuid of new document, or null Uuid if failed

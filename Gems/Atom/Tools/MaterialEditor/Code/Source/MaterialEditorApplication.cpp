@@ -42,24 +42,26 @@ void InitMaterialEditorResources()
 
 namespace MaterialEditor
 {
+    static const char* GetBuildTargetName()
+    {
+#if !defined(LY_CMAKE_TARGET)
+#error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
+#endif
+        return LY_CMAKE_TARGET;
+    }
+
     MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
-        : Base(argc, argv)
+        : Base(GetBuildTargetName(), argc, argv)
     {
         InitMaterialEditorResources();
 
         QApplication::setApplicationName("O3DE Material Editor");
 
-        // The settings registry has been created at this point, so add the CMake target
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
-            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
-
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusConnect();
     }
 
     MaterialEditorApplication::~MaterialEditorApplication()
     {
-        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         m_window.reset();
     }
@@ -101,35 +103,20 @@ namespace MaterialEditor
     {
         Base::StartCommon(systemEntity);
 
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
-            []() { return aznew MaterialDocument(); });
-    }
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
+            [](const AZ::Crc32& toolId) { return aznew MaterialDocument(toolId); });
 
-    AZStd::string MaterialEditorApplication::GetBuildTargetName() const
-    {
-#if !defined(LY_CMAKE_TARGET)
-#error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
-#endif
-        //! Returns the build system target name of "MaterialEditor"
-        return AZStd::string{ LY_CMAKE_TARGET };
-    }
+        m_window.reset(aznew MaterialEditorWindow(m_toolId));
 
-    AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
-    {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/" });
-    }
-
-    void MaterialEditorApplication::CreateMainWindow()
-    {
-        m_window.reset(aznew MaterialEditorWindow);
         m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+
         m_assetBrowserInteractions->RegisterContextMenuActions(
             [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
             {
                 return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
             },
-            []([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
             {
                 const bool isMaterial = AzFramework::StringFunc::Path::IsExtension(
                     entries.front()->GetFullPath().c_str(), AZ::RPI::MaterialSourceData::Extension);
@@ -137,17 +124,17 @@ namespace MaterialEditor
                     entries.front()->GetFullPath().c_str(), AZ::RPI::MaterialTypeSourceData::Extension);
                 if (isMaterial || isMaterialType)
                 {
-                    menu->addAction(QObject::tr("Open"), [entries]()
+                    menu->addAction(QObject::tr("Open"), [entries, this]()
                         {
-                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument,
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument,
                                 entries.front()->GetFullPath());
                         });
 
                     const QString createActionName =
                         isMaterialType ? QObject::tr("Create Material...") : QObject::tr("Create Child Material...");
 
-                    menu->addAction(createActionName, [entries]()
+                    menu->addAction(createActionName, [entries, this]()
                         {
                             const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
                                 QString(AZ::Utils::GetProjectPath().c_str()) +
@@ -155,8 +142,8 @@ namespace MaterialEditor
                                 AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                                 AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 
-                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                                 entries.front()->GetFullPath(),
                                 AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
                         });
@@ -175,9 +162,9 @@ namespace MaterialEditor
             {
                 return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder;
             },
-            [](QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            [this](QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
             {
-                menu->addAction(QObject::tr("Create Material..."), [caller, entries]()
+                menu->addAction(QObject::tr("Create Material..."), [caller, entries, this]()
                     {
                         CreateMaterialDialog createDialog(entries.front()->GetFullPath().c_str(), caller);
                         createDialog.adjustSize();
@@ -186,8 +173,8 @@ namespace MaterialEditor
                             !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
                             !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
                         {
-                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                                 createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
                                 createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
                         }
@@ -195,9 +182,15 @@ namespace MaterialEditor
             });
     }
 
-    void MaterialEditorApplication::DestroyMainWindow()
+    void MaterialEditorApplication::Destroy()
     {
         m_window.reset();
+        Base::Destroy();
+    }
+
+    AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
+    {
+        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/" });
     }
 
     QWidget* MaterialEditorApplication::GetAppMainWindow()

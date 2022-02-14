@@ -14,6 +14,8 @@
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 
 namespace AzToolsFramework
 {
@@ -37,20 +39,20 @@ namespace AzToolsFramework
     void BoxViewportEdit::UpdateManipulators()
     {
         AZ::Transform boxWorldFromLocal = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            boxWorldFromLocal, m_entityComponentIdPair, &BoxManipulatorRequests::GetCurrentTransform);
+        AZ::TransformBus::EventResult(
+            boxWorldFromLocal, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
-        AZ::Vector3 boxScale = AZ::Vector3::CreateOne();
-        BoxManipulatorRequestBus::EventResult(
-            boxScale, m_entityComponentIdPair, &BoxManipulatorRequests::GetBoxScale);
+        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(
+            nonUniformScale, m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequestBus::Events::GetScale);
 
         AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
         BoxManipulatorRequestBus::EventResult(
-            boxDimensions, m_entityComponentIdPair, &BoxManipulatorRequests::GetDimensions);
+            boxDimensions, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetDimensions);
 
-        // ensure we apply the entity scale to the box dimensions so
-        // the manipulators appear in the correct location
-        boxDimensions *= boxScale;
+        AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
+        BoxManipulatorRequestBus::EventResult(
+            boxLocalTransform, m_entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentLocalTransform);
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
         {
@@ -58,7 +60,8 @@ namespace AzToolsFramework
             {
                 linearManipulator->SetSpace(boxWorldFromLocal);
                 linearManipulator->SetLocalTransform(
-                    AZ::Transform::CreateTranslation(s_boxAxes[manipulatorIndex] * 0.5f * boxDimensions));
+                    boxLocalTransform * AZ::Transform::CreateTranslation(s_boxAxes[manipulatorIndex] * 0.5f * boxDimensions));
+                linearManipulator->SetNonUniformScale(nonUniformScale);
                 linearManipulator->SetBoundsDirty();
             }
         }
@@ -69,8 +72,8 @@ namespace AzToolsFramework
         m_entityComponentIdPair = entityComponentIdPair;
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            worldFromLocal, entityComponentIdPair, &BoxManipulatorRequests::GetCurrentTransform);
+        AZ::TransformBus::EventResult(
+            worldFromLocal, entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
         {
@@ -85,36 +88,35 @@ namespace AzToolsFramework
 
                 ManipulatorViews views;
                 views.emplace_back(CreateManipulatorViewQuadBillboard(
-                    AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
+                    AzFramework::ViewportColors::DefaultManipulatorHandleColor,
+                    AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
                 linearManipulator->SetViews(AZStd::move(views));
 
                 linearManipulator->InstallMouseMoveCallback(
-                    [this, entityComponentIdPair](
-                        const LinearManipulator::Action& action)
+                    [this, entityComponentIdPair,
+                     transformScale{ linearManipulator->GetSpace().GetUniformScale() }](const LinearManipulator::Action& action)
                 {
+                    AZ::Transform boxLocalTransform = AZ::Transform::CreateIdentity();
+                    BoxManipulatorRequestBus::EventResult(
+                        boxLocalTransform, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetCurrentLocalTransform);
+
+                    const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(transformScale, boxLocalTransform, action);
+
                     // calculate the amount of displacement along an axis this manipulator has moved
                     // clamp movement so it cannot go negative based on axis direction
                     const AZ::Vector3 axisDisplacement =
-                        action.LocalPosition().GetAbs() * 2.0f
-                        * AZ::GetMax<float>(0.0f, action.LocalPosition().GetNormalized().Dot(action.m_fixed.m_axis));
-
-                    AZ::Vector3 boxScale = AZ::Vector3::CreateOne();
-                    BoxManipulatorRequestBus::EventResult(
-                        boxScale, entityComponentIdPair, &BoxManipulatorRequests::GetBoxScale);
+                        manipulatorPosition.GetAbs() * 2.0f
+                        * AZ::GetMax(0.0f, manipulatorPosition.GetNormalized().Dot(action.m_fixed.m_axis));
 
                     AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
                     BoxManipulatorRequestBus::EventResult(
-                        boxDimensions, entityComponentIdPair, &BoxManipulatorRequests::GetDimensions);
-
-                    // ensure we take into account the entity scale using the axis displacement
-                    const AZ::Vector3 scaledAxisDisplacement =
-                        axisDisplacement / boxScale;
+                        boxDimensions, entityComponentIdPair, &BoxManipulatorRequestBus::Events::GetDimensions);
 
                     // update dimensions - preserve dimensions not effected by this
                     // axis, and update current axis displacement
                     BoxManipulatorRequestBus::Event(
-                        entityComponentIdPair, &BoxManipulatorRequests::SetDimensions,
-                        (NotAxis(action.m_fixed.m_axis) * boxDimensions).GetMax(scaledAxisDisplacement));
+                        entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions,
+                        (NotAxis(action.m_fixed.m_axis) * boxDimensions).GetMax(axisDisplacement));
 
                     UpdateManipulators();
                 });
@@ -136,5 +138,13 @@ namespace AzToolsFramework
                 linearManipulator.reset();
             }
         }
+    }
+
+    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
+        const LinearManipulator::Action& action)
+    {
+        return manipulatorLocalTransform.GetInverse().TransformPoint(
+            action.m_start.m_localPosition +
+            action.m_current.m_localPositionOffset / AZ::GetClamp(worldUniformScale, AZ::MinTransformScale, AZ::MaxTransformScale));
     }
 } // namespace AzToolsFramework
