@@ -35,8 +35,15 @@ namespace AZ
             m_state = State::Failed;
         }
 
+        SharedThumbnail::~SharedThumbnail()
+        {
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusDisconnect();
+            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        }
+
         void SharedThumbnail::LoadThread()
         {
+            m_state = State::Loading;
             AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
                 m_assetInfo.m_assetType, &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key,
                 SharedThumbnailSize);
@@ -45,15 +52,10 @@ namespace AZ
             m_renderWait.acquire();
         }
 
-        SharedThumbnail::~SharedThumbnail()
-        {
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusDisconnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-        }
-
         void SharedThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
         {
             m_pixmap = thumbnailImage;
+            m_state = State::Ready;
             m_renderWait.release();
         }
 

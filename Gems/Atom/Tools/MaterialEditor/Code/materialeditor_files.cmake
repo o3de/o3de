@@ -17,28 +17,9 @@ set(FILES
 
     Source/Viewport/MaterialViewportModule.h
     Source/Viewport/MaterialViewportModule.cpp
-    Source/Viewport/InputController/MaterialEditorViewportInputControllerBus.h
     Source/Viewport/MaterialViewportSettings.h
     Source/Viewport/MaterialViewportRequestBus.h
     Source/Viewport/MaterialViewportNotificationBus.h
-    Source/Viewport/InputController/MaterialEditorViewportInputController.cpp
-    Source/Viewport/InputController/MaterialEditorViewportInputController.h
-    Source/Viewport/InputController/Behavior.cpp
-    Source/Viewport/InputController/Behavior.h
-    Source/Viewport/InputController/DollyCameraBehavior.cpp
-    Source/Viewport/InputController/DollyCameraBehavior.h
-    Source/Viewport/InputController/IdleBehavior.cpp
-    Source/Viewport/InputController/IdleBehavior.h
-    Source/Viewport/InputController/MoveCameraBehavior.cpp
-    Source/Viewport/InputController/MoveCameraBehavior.h
-    Source/Viewport/InputController/PanCameraBehavior.cpp
-    Source/Viewport/InputController/PanCameraBehavior.h
-    Source/Viewport/InputController/OrbitCameraBehavior.cpp
-    Source/Viewport/InputController/OrbitCameraBehavior.h
-    Source/Viewport/InputController/RotateEnvironmentBehavior.cpp
-    Source/Viewport/InputController/RotateEnvironmentBehavior.h
-    Source/Viewport/InputController/RotateModelBehavior.cpp
-    Source/Viewport/InputController/RotateModelBehavior.h
     Source/Viewport/MaterialViewportSettings.cpp
     Source/Viewport/MaterialViewportComponent.cpp
     Source/Viewport/MaterialViewportComponent.h
