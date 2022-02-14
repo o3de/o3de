@@ -288,7 +288,7 @@ namespace Benchmark
     public:
         void Benchmark(benchmark::State& state)
         {
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 state.PauseTiming();
 
@@ -335,7 +335,7 @@ namespace Benchmark
     public:
         void Benchmark(benchmark::State& state)
         {
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 state.PauseTiming();
                 AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
@@ -424,7 +424,7 @@ namespace Benchmark
 
         void Benchmark(benchmark::State& state)
         {
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 state.PauseTiming();
 

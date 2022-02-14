@@ -45,7 +45,7 @@ namespace EMStudio
         // AnimViewportRequestBus::Handler overrides
         void UpdateCameraViewMode(RenderOptions::CameraViewMode mode);
         void UpdateCameraFollowUp(bool follow);
-        void UpdateRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags);
+        void UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags);
 
         // ViewportPluginRequestBus::Handler overrides
         AZ::s32 GetViewportId() const;

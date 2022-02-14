@@ -12,6 +12,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
+#include <SurfaceData/SurfacePointList.h>
 
 namespace GradientSignal
 {
@@ -107,7 +108,7 @@ namespace GradientSignal
             // Create a fake surface point with the position we're sampling.
             AzFramework::SurfaceData::SurfacePoint point;
             point.m_position = params.m_position;
-            SurfaceData::SurfacePointList pointList = { { point } };
+            SurfaceData::SurfacePointList pointList = AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1);
 
             // Send it into the component, see what emerges
             m_component.ModifySurfacePoints(pointList);
@@ -117,8 +118,8 @@ namespace GradientSignal
             // the underlying logic ever changes to allow separate ranges per tag.
             float result = 0.0f;
             pointList.EnumeratePoints([&result](
-                    [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
-                    const SurfaceData::SurfaceTagWeights& masks) -> bool
+                [[maybe_unused]] size_t inPositionIndex, [[maybe_unused]] const AZ::Vector3& position,
+                [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
             {
                 masks.EnumerateWeights(
                     [&result]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
