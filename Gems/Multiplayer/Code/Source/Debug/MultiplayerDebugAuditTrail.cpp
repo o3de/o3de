@@ -82,11 +82,11 @@ namespace Multiplayer
         ImGui::BeginChild("DesyncEntriesScrollBox", ImVec2(0, -tableHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
         if (ImGui::BeginTable("", 5, flags))
         {
-            ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 2.0f);
             ImGui::TableSetupColumn("Input ID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, TEXT_BASE_WIDTH * 12.0f);
             ImGui::TableSetupColumn("HostFrame", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, TEXT_BASE_WIDTH * 12.0f);
-            ImGui::TableSetupColumn("Client Value", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("Server Value", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Client Value", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+            ImGui::TableSetupColumn("Server Value", ImGuiTableColumnFlags_WidthStretch, 1.0f);
 
             ImGui::TableHeadersRow();
 
