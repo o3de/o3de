@@ -40,7 +40,7 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressW = Clamp;
     };
 
-    float CalculateLinearDepth(float zDepth)
+    float CalculateLinearDepth(const float zDepth)
     {
         return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
     }
@@ -51,14 +51,16 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         return lerp(0.0, t, m_finalBlendAmount);
     }
 
-    float4 CalculateOutputColor(float3 inColor, float3 finalEffect, float t)
+    float4 CalculateOutputColor(const float3 inColor, const float3 finalEffect, float t)
     {
-        OUT.m_color.rgb = lerp(inColor, finalEffect, t);
-        OUT.m_color.a = 1.0;
+        float4 outColor;
+        outColor.rgb = lerp(inColor, finalEffect, t);
+        outColor.a = 1.0;
+        return outColor;
     }
 
-    float4 CalculateFinalBlendAmountAndOutputColor(float3 inColor, float3 finalEffect, float t)
+    float4 CalculateFinalBlendAmountAndOutputColor(const float3 inColor, const float3 finalEffect, float t)
     {
-        CalculateOutputColor(inColor, finalEffect, CalculateFinalBlendAmount(t));
+        return CalculateOutputColor(inColor, finalEffect, CalculateFinalBlendAmount(t));
     }
 }
