@@ -43,7 +43,7 @@ namespace SurfaceData
         return inPositionIndex * m_maxSurfacePointsPerInput;
     }
 
-    SurfacePointList::SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
+    SurfacePointList::SurfacePointList(AZStd::span<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
     {
         // Construct and finalize the list with the set of passed-in surface points.
         // This is primarily a convenience for unit tests. 
@@ -51,12 +51,13 @@ namespace SurfaceData
         EndListConstruction();
     }
 
-    void SurfacePointList::StartListConstruction(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
+    void SurfacePointList::StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
     {
         // Construct the list with the set of passed-in surface points but don't finalize it.
         // This is primarily a convenience for unit tests that want to test surface modifiers with specific inputs.
 
-        StartListConstruction({ { surfacePoints.begin()->m_position } }, surfacePoints.size(), {});
+        surfacePoints.begin();
+        StartListConstruction(AZStd::span<const AZ::Vector3>(&(surfacePoints.begin()->m_position), 1), surfacePoints.size(), {});
 
         for (auto& point : surfacePoints)
         {

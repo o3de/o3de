@@ -135,7 +135,7 @@ namespace UnitTest
 
             // Call GetSurfacePoints and verify the results
             SurfaceData::SurfacePointList pointList;
-            pointList.StartListConstruction({ { queryPoint } }, 1, {});
+            pointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&queryPoint, 1), 1, {});
             SurfaceData::SurfaceDataProviderRequestBus::Event(providerHandle, &SurfaceData::SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
                                                               queryPoint, pointList);
             pointList.EndListConstruction();
@@ -189,7 +189,7 @@ namespace UnitTest
             // Add the surface point with a different entity ID than the entity doing the modification, so that the point doesn't get
             // filtered out.
             SurfaceData::SurfacePointList pointList;
-            pointList.StartListConstruction({ input });
+            pointList.StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&input, 1));
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
             pointList.EndListConstruction();
             ASSERT_EQ(pointList.GetSize(), 1);

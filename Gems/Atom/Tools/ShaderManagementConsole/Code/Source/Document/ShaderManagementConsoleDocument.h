@@ -5,20 +5,21 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
 #include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
 namespace ShaderManagementConsole
 {
-    /**
-     * ShaderManagementConsoleDocument provides an API for modifying and saving document properties.
-     */
+    //! ShaderManagementConsoleDocument provides an API for modifying and saving document properties.
     class ShaderManagementConsoleDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public ShaderManagementConsoleDocumentRequestBus::Handler
@@ -42,7 +43,7 @@ namespace ShaderManagementConsole
         bool IsSavable() const override;
 
         // ShaderManagementConsoleDocumentRequestBus::Handler overridfes...
-        void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& sourceData) override;
+        void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;
         const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const override;
         size_t GetShaderVariantCount() const override;
         const AZ::RPI::ShaderVariantListSourceData::VariantInfo& GetShaderVariantInfo(size_t index) const override;
@@ -53,7 +54,20 @@ namespace ShaderManagementConsole
         // AtomToolsFramework::AtomToolsDocument overrides...
         void Clear() override;
 
+        // Write shader variant list source data to JSON
         bool SaveSourceData();
+
+        // Read shader variant list source data from JSON and initialize the document
+        bool LoadShaderSourceData();
+
+        // Read shader source data from JSON then find all references to to populate the shader variant list and initialize the document
+        bool LoadShaderVariantListSourceData();
+
+        // Find all material assets that reference material types using shaderFilePath
+        AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath);
+
+        // Retrieve all of the shader collection items from a material instance created from materialAssetId
+        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& materialAssetId);
 
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;

@@ -64,14 +64,14 @@ namespace SurfaceData
         //! @param surfacePoints - A set of SurfacePoint points to store in the SurfacePointList.
         //! Each point that's passed in will be treated as both the input and output position.
         //! The list will be fully constructed and queryable after this runs.
-        SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints);
+        SurfacePointList(AZStd::span<const AzFramework::SurfaceData::SurfacePoint> surfacePoints);
 
         //! Start construction of a SurfacePointList from a list of SurfacePoint data.
         //! Primarily used as a convenience for unit tests.
         //! @param surfacePoints - A set of SurfacePoint points to store in the SurfacePointList.
         //! The list will remain in the "constructing" state after this is called, so it will still be possible to add/modify
         //! points, and EndListConstruction() will still need to be called.
-        void StartListConstruction(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints);
+        void StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint> surfacePoints);
 
         //! Start construction of a SurfacePointList.
         //! @param inPositions - the list of input positions that will be used to generate this list. This list is expected to remain

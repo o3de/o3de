@@ -5,22 +5,24 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Math/Quaternion.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    //! Performs a single type of action for MaterialEditorViewportInputController based on input
+    class ViewportInputBehaviorControllerInterface;
+
+    //! Performs a single type of action for ViewportInputBehaviorController based on input
     //! See derived behaviors for specific details
-    class Behavior
-        : public AZ::TickBus::Handler
+    class ViewportInputBehavior : public AZ::TickBus::Handler
     {
     public:
-        Behavior();
-        virtual ~Behavior();
+        ViewportInputBehavior(ViewportInputBehaviorControllerInterface* controller);
+        virtual ~ViewportInputBehavior();
 
         virtual void Start();
         virtual void End();
@@ -45,20 +47,21 @@ namespace MaterialEditor
         //! If delta transform less than this, snap instantly
         static constexpr float SnapInterval = 0.01f;
         //! delta x movement accumulated during current frame
-        float m_x = 0;
+        float m_x = {};
         //! delta y movement accumulated during current frame
-        float m_y = 0;
+        float m_y = {};
         //! delta scroll wheel accumulated during current frame
-        float m_z = 0;
+        float m_z = {};
         //! Model radius
         float m_radius = 1.0f;
 
         AZ::EntityId m_cameraEntityId;
         AZ::Vector3 m_targetPosition = AZ::Vector3::CreateZero();
-        float m_distanceToTarget = 0;
+        float m_distanceToTarget = {};
+        ViewportInputBehaviorControllerInterface* m_controller = {};
 
     private:
         // AZ::TickBus::Handler interface overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

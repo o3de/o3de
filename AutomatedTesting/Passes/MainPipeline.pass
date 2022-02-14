@@ -461,6 +461,33 @@
                     ]
                 },
                 {
+                    "Name": "DiffuseProbeGridVisualizationCompositePass",
+                    "TemplateName": "DiffuseProbeGridVisualizationCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "VisualizationInput",
+                            "AttachmentRef": {
+                                "Pass": "OpaquePass",
+                                "Attachment": "DiffuseProbeGridVisualization"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "PostProcessPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "AuxGeomPass",
                     "TemplateName": "AuxGeomPassTemplate",
                     "Enabled": true,
@@ -468,8 +495,8 @@
                         {
                             "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
-                                "Pass": "PostProcessPass",
-                                "Attachment": "Output"
+                                "Pass": "DiffuseProbeGridVisualizationCompositePass",
+                                "Attachment": "ColorInputOutput"
                             }
                         },
                         {

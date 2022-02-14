@@ -79,7 +79,8 @@ namespace UnitTest
                 {
                     float angle = AZ::DegToRad(inputAngles[(y * dataSize) + x]);
                     point.m_normal = AZ::Vector3(sinf(angle), 0.0f, cosf(angle));
-                    mockSurface->m_surfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] = { { point } };
+                    mockSurface->m_surfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] =
+                        AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1);
                 }
             }
             ActivateEntity(surfaceEntity.get());
@@ -546,10 +547,22 @@ namespace UnitTest
         auto surfaceEntity = CreateEntity();
         auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
         mockSurface->m_bounds = mockShapeComponentHandler.m_GetEncompassingAabb;
-        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
-        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
-        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
-        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
+        AzFramework::SurfaceData::SurfacePoint mockOutputs[] =
+        {
+            { AZ::Vector3(0.0f, 0.0f,  0.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f,  2.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f,  5.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() },
+        };
+        
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[0], 1);
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[1], 1);
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[2], 1);
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[3], 1);
         ActivateEntity(surfaceEntity.get());
 
         // We set the min/max to values other than 0-10 to help validate that they aren't used in the case of the pinned shape.
@@ -583,10 +596,21 @@ namespace UnitTest
         auto surfaceEntity = CreateEntity();
         auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
         mockSurface->m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(1.0f));
-        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
-        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
-        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
-        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
+        AzFramework::SurfaceData::SurfacePoint mockOutputs[] = {
+            { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() },
+        };
+
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[0], 1);
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[1], 1);
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[2], 1);
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[3], 1);
         ActivateEntity(surfaceEntity.get());
 
         // We set the min/max to 0-10, but don't set a shape.
@@ -642,14 +666,25 @@ namespace UnitTest
         auto surfaceEntity = CreateEntity();
         auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
         mockSurface->m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(1.0f));
+        AzFramework::SurfaceData::SurfacePoint mockOutputs[] = {
+            { AZ::Vector3(0.0f, 0.0f, -10.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f,  -5.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f,  15.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f,  20.0f), AZ::Vector3::CreateZero() },
+        };
+
         // Altitude value below min - should result in 0.0f.
-        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, -10.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[0], 1);
         // Altitude value at exactly min - should result in 0.0f.
-        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, -5.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[1], 1);
         // Altitude value at exactly max - should result in 1.0f.
-        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 15.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[2], 1);
         // Altitude value above max - should result in 1.0f.
-        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 20.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] =
+            AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&mockOutputs[3], 1);
         ActivateEntity(surfaceEntity.get());
 
         // We set the min/max to -5 - 15.  By using a range without 0 at either end, and not having 0 as the midpoint, 
@@ -691,7 +726,8 @@ namespace UnitTest
             {
                 point.m_surfaceTags.clear();
                 point.m_surfaceTags.emplace_back(AZ_CRC_CE("test_mask"), expectedOutput[(y * dataSize) + x]);
-                mockSurface->m_surfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] = { { point } };
+                mockSurface->m_surfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] =
+                    AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1);
             }
         }
         ActivateEntity(surfaceEntity.get());

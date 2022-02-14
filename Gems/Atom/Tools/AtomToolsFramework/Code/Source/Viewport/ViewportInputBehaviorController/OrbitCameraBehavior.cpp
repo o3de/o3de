@@ -6,15 +6,20 @@
  *
  */
 
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h>
 #include <AzCore/Component/TransformBus.h>
-#include <Viewport/InputController/MaterialEditorViewportInputController.h>
-#include <Viewport/InputController/OrbitCameraBehavior.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
+    OrbitCameraBehavior::OrbitCameraBehavior(ViewportInputBehaviorControllerInterface* controller)
+        : ViewportInputBehavior(controller)
+    {
+    }
+
     void OrbitCameraBehavior::TickInternal(float x, float y, float z)
     {
-        Behavior::TickInternal(x, y, z);
+        ViewportInputBehavior::TickInternal(x, y, z);
 
         // don't align camera until a movement has been made so that accidental right-click doesn't reset camera
         if (!m_aligned)
@@ -27,12 +32,9 @@ namespace MaterialEditor
         AZ::Quaternion rotation = transform.GetRotation();
         AZ::Vector3 right = transform.GetBasisX();
         rotation =
-            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), -x) *
-            AZ::Quaternion::CreateFromAxisAngle(right, -y) *
-            rotation;
+            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), -x) * AZ::Quaternion::CreateFromAxisAngle(right, -y) * rotation;
         rotation.Normalize();
-        AZ::Vector3 position =
-            rotation.TransformVector(AZ::Vector3(0, -m_distanceToTarget, 0)) + m_targetPosition;
+        AZ::Vector3 position = rotation.TransformVector(AZ::Vector3(0, -m_distanceToTarget, 0)) + m_targetPosition;
         transform = AZ::Transform::CreateFromQuaternionAndTranslation(rotation, position);
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTM, transform);
     }
@@ -56,4 +58,4 @@ namespace MaterialEditor
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, targetRotation);
         m_aligned = true;
     }
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework
