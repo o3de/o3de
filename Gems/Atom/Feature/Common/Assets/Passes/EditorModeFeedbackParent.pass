@@ -43,7 +43,6 @@
                 {
                     "Name": "EntityMaskPass",
                     "TemplateName": "EditorModeMaskTemplate",
-                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",
@@ -57,7 +56,6 @@
                 {
                     "Name": "UnmaskedDesaturationPass",
                     "TemplateName": "EditorModeDesaturationTemplate",
-                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",
@@ -85,7 +83,6 @@
                 {
                     "Name": "UnmaskedTintPass",
                     "TemplateName": "EditorModeTintTemplate",
-                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",
@@ -113,7 +110,6 @@
                 {
                     "Name": "UnmaskedBlurPass",
                     "TemplateName": "EditorModeBlurTemplate",
-                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",
@@ -141,7 +137,6 @@
                 {
                     "Name": "EntityOutlinePass",
                     "TemplateName": "EditorModeOutlineTemplate",
-                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",
