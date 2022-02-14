@@ -28,20 +28,20 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeTintPass, TintColor, AZ::Color(
         }
         
         EditorModeTintPass::EditorModeTintPass(const RPI::PassDescriptor& descriptor)
-            : EditorModeFeedbackDepthTransitionPass(descriptor)
+            : EditorModeFeedbackPassBase(descriptor)
         {
         }
         
         void EditorModeTintPass::InitializeInternal()
         {
-            EditorModeFeedbackDepthTransitionPass::InitializeInternal();
+            EditorModeFeedbackPassBase::InitializeInternal();
             m_tintAmountIndex.Reset();
         }
         
         void EditorModeTintPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-            EditorModeFeedbackDepthTransitionPass::FrameBeginInternal(params);
+            EditorModeFeedbackPassBase::FrameBeginInternal(params);
         }
 
         bool EditorModeTintPass::IsEnabled() const

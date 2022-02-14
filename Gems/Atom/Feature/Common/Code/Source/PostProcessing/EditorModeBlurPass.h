@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <PostProcessing/EditorModeFeedbackDepthTransitionPass.h>
+#include <PostProcessing/EditorModeFeedbackPassBase.h>
 
 namespace AZ
 {
@@ -17,11 +17,11 @@ namespace AZ
          *  The color grading pass.
          */
         class EditorModeBlurPass
-            : public EditorModeFeedbackDepthTransitionPass
+            : public EditorModeFeedbackPassBase
             //TODO: , public PostProcessingShaderOptionBase
         {
         public:
-            AZ_RTTI(EditorModeBlurPass, "{D907D0ED-61E4-4E46-A682-A849676CF48A}", EditorModeFeedbackDepthTransitionPass);
+            AZ_RTTI(EditorModeBlurPass, "{D907D0ED-61E4-4E46-A682-A849676CF48A}", EditorModeFeedbackPassBase);
             AZ_CLASS_ALLOCATOR(EditorModeBlurPass, SystemAllocator, 0);
 
             virtual ~EditorModeBlurPass() = default;

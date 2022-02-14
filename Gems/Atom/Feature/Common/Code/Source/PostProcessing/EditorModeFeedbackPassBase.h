@@ -29,15 +29,15 @@ namespace AZ
     namespace Render
     {
         //!
-        class EditorModeFeedbackDepthTransitionPass
+        class EditorModeFeedbackPassBase
             : public AZ::RPI::FullscreenTrianglePass
         {
         public:
-            AZ_RTTI(EditorModeFeedbackDepthTransitionPass, "{F1F345E3-1396-47F7-9CA4-9AC87A2E9829}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(EditorModeFeedbackDepthTransitionPass, SystemAllocator, 0);
+            AZ_RTTI(EditorModeFeedbackPassBase, "{F1F345E3-1396-47F7-9CA4-9AC87A2E9829}", AZ::RPI::FullscreenTrianglePass);
+            AZ_CLASS_ALLOCATOR(EditorModeFeedbackPassBase, SystemAllocator, 0);
 
-            //! Creates a EditorModeFeedbackDepthTransitionPass
-            static RPI::Ptr<EditorModeFeedbackDepthTransitionPass> Create(const RPI::PassDescriptor& descriptor);
+            //! Creates a EditorModeFeedbackPassBase
+            static RPI::Ptr<EditorModeFeedbackPassBase> Create(const RPI::PassDescriptor& descriptor);
 
             using AZ::RPI::FullscreenTrianglePass::FullscreenTrianglePass;
 

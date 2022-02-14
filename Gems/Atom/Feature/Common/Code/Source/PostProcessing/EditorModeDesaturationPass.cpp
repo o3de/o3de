@@ -27,20 +27,20 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmoun
         }
         
         EditorModeDesaturationPass::EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor)
-            : EditorModeFeedbackDepthTransitionPass(descriptor)
+            : EditorModeFeedbackPassBase(descriptor)
         {
         }
         
         void EditorModeDesaturationPass::InitializeInternal()
         {
-            EditorModeFeedbackDepthTransitionPass::InitializeInternal();
+            EditorModeFeedbackPassBase::InitializeInternal();
             m_desaturationAmountIndex.Reset();
         }
         
         void EditorModeDesaturationPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-            EditorModeFeedbackDepthTransitionPass::FrameBeginInternal(params);
+            EditorModeFeedbackPassBase::FrameBeginInternal(params);
         }
 
         bool EditorModeDesaturationPass::IsEnabled() const

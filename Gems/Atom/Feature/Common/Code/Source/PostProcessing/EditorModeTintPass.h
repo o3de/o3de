@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <PostProcessing/EditorModeFeedbackDepthTransitionPass.h>
+#include <PostProcessing/EditorModeFeedbackPassBase.h>
 
 namespace AZ
 {
@@ -17,11 +17,11 @@ namespace AZ
          *  The color grading pass.
          */
         class EditorModeTintPass
-            : public EditorModeFeedbackDepthTransitionPass
+            : public EditorModeFeedbackPassBase
             //TODO: , public PostProcessingShaderOptionBase
         {
         public:
-            AZ_RTTI(EditorModeTintPass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", EditorModeFeedbackDepthTransitionPass);
+            AZ_RTTI(EditorModeTintPass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", EditorModeFeedbackPassBase);
             AZ_CLASS_ALLOCATOR(EditorModeTintPass, SystemAllocator, 0);
 
             virtual ~EditorModeTintPass() = default;

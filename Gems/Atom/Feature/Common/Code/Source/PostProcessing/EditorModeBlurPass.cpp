@@ -27,20 +27,20 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernalWidth, 1.0f);
         }
         
         EditorModeBlurPass::EditorModeBlurPass(const RPI::PassDescriptor& descriptor)
-            : EditorModeFeedbackDepthTransitionPass(descriptor)
+            : EditorModeFeedbackPassBase(descriptor)
         {
         }
         
         void EditorModeBlurPass::InitializeInternal()
         {
-            EditorModeFeedbackDepthTransitionPass::InitializeInternal();
+            EditorModeFeedbackPassBase::InitializeInternal();
             m_kernalWidthIndex.Reset();
         }
         
         void EditorModeBlurPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-            EditorModeFeedbackDepthTransitionPass::FrameBeginInternal(params);
+            EditorModeFeedbackPassBase::FrameBeginInternal(params);
         }
 
         bool EditorModeBlurPass::IsEnabled() const
