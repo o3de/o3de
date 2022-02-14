@@ -273,11 +273,7 @@ namespace AtomToolsFramework
     {
         AZ::TransformBus::EventResult(m_modelCenter, m_targetEntityId, &AZ::TransformBus::Events::GetLocalTranslation);
         m_targetBounds.GetAsSphere(m_modelCenter, m_radius);
-        m_distanceMin = DepthNear + 0.5f * AZ::GetMin(
-            AZ::GetMin(
-                m_targetBounds.GetExtents().GetX(),
-                m_targetBounds.GetExtents().GetY()),
-                m_targetBounds.GetExtents().GetZ());
+        m_distanceMin = m_targetBounds.GetExtents().GetMinElement() * 0.5f + DepthNear;
         m_distanceMax = m_radius * MaxDistanceMultiplier;
     }
 
