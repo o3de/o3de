@@ -26,7 +26,7 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "Output",
+                    "Name": "OutputColor",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
@@ -51,7 +51,7 @@
             ],
             "Connections": [
                 {
-                    "LocalSlot": "Output",
+                    "LocalSlot": "OutputColor",
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "OutputAttachment"
@@ -61,7 +61,7 @@
             "FallbackConnections": [
                 {
                     "Input" : "InputColor",
-                    "Output" : "Output"
+                    "Output" : "OutputColor"
                 }
             ],
             "PassData": {

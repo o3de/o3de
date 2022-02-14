@@ -19,23 +19,23 @@
                 },
                 // Swapchain data after feedback effects have been applied
                 {
-                    "Name": "Output",
+                    "Name": "OutputColor",
                     "SlotType": "Output"
                 }
             ],
             "Connections": [
                 {
-                    "LocalSlot": "Output",
+                    "LocalSlot": "OutputColor",
                     "AttachmentRef": {
                         "Pass": "EntityOutlinePass",
-                        "Attachment": "Output"
+                        "Attachment": "OutputColor"
                     }
                 }
             ],
             "FallbackConnections": [
                 {
                     "Input" : "InputColor",
-                    "Output" : "Output"
+                    "Output" : "OutputColor"
                 }
             ],
             "PassRequests": [
@@ -105,7 +105,7 @@
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
                                 "Pass": "UnmaskedDesaturationPass",
-                                "Attachment": "Output"
+                                "Attachment": "OutputColor"
                             }
                         }
                     ]
@@ -133,7 +133,7 @@
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
                                 "Pass": "UnmaskedTintPass",
-                                "Attachment": "Output"
+                                "Attachment": "OutputColor"
                             }
                         }
                     ]
@@ -161,7 +161,7 @@
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
                                 "Pass": "UnmaskedBlurPass",
-                                "Attachment": "Output"
+                                "Attachment": "OutputColor"
                             }
                         }
                     ]

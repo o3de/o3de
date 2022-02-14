@@ -45,7 +45,7 @@
                     "LocalSlot": "Output",
                     "AttachmentRef": {
                         "Pass": "EditorModeFeedbackPassParent",
-                        "Attachment": "Output"
+                        "Attachment": "OutputColor"
                     }
                 },
                 {
