@@ -24,3 +24,6 @@ org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryErro
 
 # required to use Android X libraries
 android.useAndroidX=true
+
+# set log level
+org.gradle.logging.level=info
