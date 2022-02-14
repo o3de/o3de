@@ -31,7 +31,7 @@ def message_box(message = "", title = "Message Box", icon = 'LIGHT'):
         """
         self.layout.label(text = message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
-    
+
 class WikiButton(bpy.types.Operator):
     """!
     This Class is for the UI Wiki Button
@@ -200,7 +200,6 @@ def file_export_menu_add(self, context):
     This Function will add the Export to O3DE to the file menu Export
     """
     self.layout.operator(SceneExporterFileMenu.bl_idname, text="Export to O3DE")
-
 class O3deTools(Panel):
     """!
     This is the Blender UI Panel O3DE Tools Tab
@@ -234,6 +233,11 @@ class O3deTools(Panel):
             else:
                 installed_lable.label(text='MESH(S): None')
 
+            file_name_lable = layout.row()
+            file_name_lable.label(text='Export File Name')
+            file_name_export_input = self.layout.column(align = True)
+            file_name_export_input.prop(context.scene, "export_file_name")
+
             project_path_lable = layout.row()
             if not bpy.types.Scene.selected_o3de_project_path == '':
                 project_path_lable.label(text=f'PROJECT: {Path(bpy.types.Scene.selected_o3de_project_path).name}')
@@ -264,20 +268,25 @@ class O3deTools(Panel):
             animation_export_options_panel = layout.row()
             animation_export_options_panel.operator('wm.animationoptions', text='Animation Export Options', icon="OUTPUT")
             # This checks to see if we should enable the export button
-            ExportFiles = layout.row()
-            if bpy.types.Scene.selected_o3de_project_path == '' or not bpy.types.Scene.export_good:
-                ExportFiles.enabled = False
-            elif utils.check_if_valid_path(bpy.types.Scene.selected_o3de_project_path):
-                ExportFiles.enabled = True
+            export_files_row = layout.row()
+            export_ready_row = layout.row()
+            if bpy.types.Scene.selected_o3de_project_path == '':
+                export_files_row.enabled = False
+                export_ready_row.label(text='No Project Selected.')
+            elif not utils.check_if_valid_path(bpy.types.Scene.selected_o3de_project_path):
+                export_files_row.enabled = False
+                export_ready_row.label(text='Project Path Not Found.')
+            elif not bpy.types.Scene.export_good:
+                export_files_row.enabled = False
+                export_ready_row.label(text='Not Ready for Export.')
             else:
-                ExportFiles.enabled = False
-                no_project_path = layout.row()
-                no_project_path.label(text='Project Path Not Found.')
+                export_files_row.enabled = True
                 
             # This is the export button
-            ExportFiles.operator('vin.o3defilexport', text='EXPORT TO O3DE', icon="BLENDER")
+            export_files_row.operator('vin.o3defilexport', text='EXPORT TO O3DE', icon="BLENDER")
         else:
             # If O3DE is not installed we tell the user
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")
             not_installed = layout.row()
             not_installed.label(text='O3DE Needs to be installed')
+

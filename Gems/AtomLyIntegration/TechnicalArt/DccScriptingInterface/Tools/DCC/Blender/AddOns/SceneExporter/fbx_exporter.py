@@ -34,7 +34,9 @@ def fbx_file_exporter(fbx_file_path):
     # Remove some nasty invalid char
     filename = re.sub(r'\W+', '', selected_name[0])
     # file ext
-    file_name = f'{filename}.fbx'
+    #file_name = f'{filename}.fbx'
+    file_name = f'{bpy.context.scene.export_file_name}.fbx'
+
     # FBX Exporter
     if valid_selection:
         if fbx_file_path == '':
