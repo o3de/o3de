@@ -31,6 +31,11 @@ namespace Profiler
     constexpr AZStd::sys_time_t ProfilerViewEdgePadding = 5000;
     constexpr size_t InitialCpuTimingStatsAllocation = 8;
 
+    constexpr int MinSavableFrameCount = 10;
+    constexpr int MaxSavableFrameCount = 2000;
+
+    constexpr int MaxUpdateFrequencyMs = 2000; // 2 seconds
+
     namespace CpuProfilerImGuiHelper
     {
         float TicksToMs(double ticks)
@@ -491,6 +496,7 @@ namespace Profiler
     }
 
     // -- CPU Visualizer --
+
     void ImGuiCpuProfiler::DrawVisualizer()
     {
         DrawCommonHeader();
@@ -499,7 +505,9 @@ namespace Profiler
         if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
         {
             ImGui::Columns(3, "Options", true);
-            ImGui::SliderInt("Saved Frames", &m_framesToCollect, 10, 20000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+
+            ImGui::SliderInt("Update Freq. (ms)", &m_updateFrequencyMs, 0, MaxUpdateFrequencyMs, "%d", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::SliderInt("Saved Frames", &m_framesToCollect, MinSavableFrameCount, MaxSavableFrameCount, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
             m_visualizerHighlightFilter.Draw("Find Region");
 
             ImGui::NextColumn();

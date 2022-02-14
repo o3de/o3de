@@ -101,6 +101,7 @@ namespace Profiler
     private:
         static constexpr float RowHeight = 35.0f;
         static constexpr int DefaultFramesToCollect = 50;
+        static constexpr int DefaultUpdateFrequencyMs = 1000; // 1 second
         static constexpr float MediumFrameTimeLimit = 16.6f; // 60 fps
         static constexpr float HighFrameTimeLimit = 33.3f; // 30 fps
 
@@ -168,6 +169,8 @@ namespace Profiler
         void OnSystemTick() override;
 
         //  --- Visualizer Members ---
+
+        int m_updateFrequencyMs = DefaultUpdateFrequencyMs;
 
         int m_framesToCollect = DefaultFramesToCollect;
 
