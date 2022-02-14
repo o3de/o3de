@@ -40,6 +40,13 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlBus.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/PanCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateModelBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
@@ -64,7 +71,6 @@ namespace MaterialCanvas
         : AtomToolsFramework::RenderViewportWidget(parent)
         , m_ui(new Ui::MaterialCanvasViewportWidget)
         , m_toolId(toolId)
-        , m_viewportController(AZStd::make_shared<MaterialCanvasViewportInputController>())
     {
         m_ui->setupUi(this);
 
@@ -117,31 +123,24 @@ namespace MaterialCanvas
             entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
 
         // Configure camera
-        AzFramework::EntityContextRequestBus::EventResult(
-            m_cameraEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "Cameraentity");
-        AZ_Assert(m_cameraEntity != nullptr, "Failed to create camera entity.");
+        m_cameraEntity =
+            CreateEntity("Cameraentity", { azrtti_typeid<AzFramework::TransformComponent>(), azrtti_typeid<AZ::Debug::CameraComponent>() });
 
-        // Add debug camera and controller components
         AZ::Debug::CameraComponentConfig cameraConfig(GetViewportContext()->GetWindowContext());
         cameraConfig.m_fovY = AZ::Constants::HalfPi;
         cameraConfig.m_depthNear = DepthNear;
-        m_cameraComponent = m_cameraEntity->CreateComponent(azrtti_typeid<AZ::Debug::CameraComponent>());
-        m_cameraComponent->SetConfiguration(cameraConfig);
-        m_cameraEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_cameraEntity->Deactivate();
+        m_cameraEntity->FindComponent(azrtti_typeid<AZ::Debug::CameraComponent>())->SetConfiguration(cameraConfig);
         m_cameraEntity->Activate();
 
         // Connect camera to pipeline's default view after camera entity activated
         m_renderPipeline->SetDefaultViewFromEntity(m_cameraEntity->GetId());
 
         // Configure tone mapper
-        AzFramework::EntityContextRequestBus::EventResult(
-            m_postProcessEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "postProcessEntity");
-        AZ_Assert(m_postProcessEntity != nullptr, "Failed to create post process entity.");
-
-        m_postProcessEntity->CreateComponent(AZ::Render::PostFxLayerComponentTypeId);
-        m_postProcessEntity->CreateComponent(AZ::Render::ExposureControlComponentTypeId);
-        m_postProcessEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        m_postProcessEntity->Activate();
+        m_postProcessEntity = CreateEntity(
+            "PostProcessEntity",
+            { AZ::Render::PostFxLayerComponentTypeId, AZ::Render::ExposureControlComponentTypeId,
+              azrtti_typeid<AzFramework::TransformComponent>() });
 
         // Init directional light processor
         m_directionalLightFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::DirectionalLightFeatureProcessorInterface>();
@@ -155,39 +154,25 @@ namespace MaterialCanvas
         m_skyboxFeatureProcessor->SetSkyboxMode(AZ::Render::SkyBoxMode::Cubemap);
 
         // Create IBL
-        AzFramework::EntityContextRequestBus::EventResult(
-            m_iblEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "IblEntity");
-        AZ_Assert(m_iblEntity != nullptr, "Failed to create ibl entity.");
-
-        m_iblEntity->CreateComponent(AZ::Render::ImageBasedLightComponentTypeId);
-        m_iblEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        m_iblEntity->Activate();
+        m_iblEntity =
+            CreateEntity("IblEntity", { AZ::Render::ImageBasedLightComponentTypeId, azrtti_typeid<AzFramework::TransformComponent>() });
 
         // Create model
-        AzFramework::EntityContextRequestBus::EventResult(
-            m_modelEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportModel");
-        AZ_Assert(m_modelEntity != nullptr, "Failed to create model entity.");
-
-        m_modelEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
-        m_modelEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
-        m_modelEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        m_modelEntity->Activate();
+        m_modelEntity = CreateEntity(
+            "ViewportModel",
+            { AZ::Render::MeshComponentTypeId, AZ::Render::MaterialComponentTypeId, azrtti_typeid<AzFramework::TransformComponent>() });
 
         // Create shadow catcher
-        AzFramework::EntityContextRequestBus::EventResult(
-            m_shadowCatcherEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportShadowCatcher");
-        AZ_Assert(m_shadowCatcherEntity != nullptr, "Failed to create shadow catcher entity.");
-        m_shadowCatcherEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
-        m_shadowCatcherEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
-        m_shadowCatcherEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        m_shadowCatcherEntity->CreateComponent(azrtti_typeid<AzFramework::NonUniformScaleComponent>());
-        m_shadowCatcherEntity->Activate();
+        m_shadowCatcherEntity = CreateEntity(
+            "ViewportShadowCatcher",
+            { AZ::Render::MeshComponentTypeId, AZ::Render::MaterialComponentTypeId, azrtti_typeid<AzFramework::TransformComponent>(),
+              azrtti_typeid<AzFramework::NonUniformScaleComponent>() });
 
         AZ::NonUniformScaleRequestBus::Event(
             m_shadowCatcherEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3{ 100, 100, 1.0 });
 
         AZ::Data::AssetId shadowCatcherModelAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(
-            "materialcanvas/viewportmodels/plane_1x1.azmodel", AZ::RPI::AssetUtils::TraceLevel::Error);
+            "materialeditor/viewportmodels/plane_1x1.azmodel", AZ::RPI::AssetUtils::TraceLevel::Error);
         AZ::Render::MeshComponentRequestBus::Event(
             m_shadowCatcherEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAssetId, shadowCatcherModelAssetId);
 
@@ -214,20 +199,18 @@ namespace MaterialCanvas
         }
 
         // Create grid
-        AzFramework::EntityContextRequestBus::EventResult(
-            m_gridEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportGrid");
-        AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
+        m_gridEntity = CreateEntity("ViewportGrid", { AZ::Render::GridComponentTypeId, azrtti_typeid<AzFramework::TransformComponent>() });
 
         AZ::Render::GridComponentConfig gridConfig;
         gridConfig.m_gridSize = 4.0f;
         gridConfig.m_axisColor = AZ::Color(0.1f, 0.1f, 0.1f, 1.0f);
         gridConfig.m_primaryColor = AZ::Color(0.1f, 0.1f, 0.1f, 1.0f);
         gridConfig.m_secondaryColor = AZ::Color(0.1f, 0.1f, 0.1f, 1.0f);
-        auto gridComponent = m_gridEntity->CreateComponent(AZ::Render::GridComponentTypeId);
-        gridComponent->SetConfiguration(gridConfig);
-
-        m_gridEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_gridEntity->Deactivate();
+        m_gridEntity->FindComponent(AZ::Render::GridComponentTypeId)->SetConfiguration(gridConfig);
         m_gridEntity->Activate();
+
+        SetupInputController();
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
 
@@ -240,8 +223,6 @@ namespace MaterialCanvas
         AZ::Render::ModelPresetPtr modelPreset;
         MaterialCanvasViewportRequestBus::BroadcastResult(modelPreset, &MaterialCanvasViewportRequestBus::Events::GetModelPresetSelection);
         OnModelPresetSelected(modelPreset);
-
-        m_viewportController->Init(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId());
 
         // Apply user settinngs restored since last run
         AZStd::intrusive_ptr<MaterialCanvasViewportSettings> viewportSettings =
@@ -257,8 +238,6 @@ namespace MaterialCanvas
         MaterialCanvasViewportNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
-
-        GetControllerList()->Add(m_viewportController);
     }
 
     MaterialCanvasViewportWidget::~MaterialCanvasViewportWidget()
@@ -269,33 +248,12 @@ namespace MaterialCanvas
         MaterialCanvasViewportNotificationBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
 
-        AzFramework::EntityContextId entityContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
-
-        AzFramework::EntityContextRequestBus::Event(
-            entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_iblEntity);
-        m_iblEntity = nullptr;
-
-        AzFramework::EntityContextRequestBus::Event(
-            entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_modelEntity);
-        m_modelEntity = nullptr;
-
-        AzFramework::EntityContextRequestBus::Event(
-            entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_shadowCatcherEntity);
-        m_shadowCatcherEntity = nullptr;
-
-        AzFramework::EntityContextRequestBus::Event(
-            entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_gridEntity);
-        m_gridEntity = nullptr;
-
-        AzFramework::EntityContextRequestBus::Event(
-            entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_cameraEntity);
-        m_cameraEntity = nullptr;
-
-        AzFramework::EntityContextRequestBus::Event(
-            entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_postProcessEntity);
-        m_postProcessEntity = nullptr;
+        DestroyEntity(m_iblEntity);
+        DestroyEntity(m_modelEntity);
+        DestroyEntity(m_shadowCatcherEntity);
+        DestroyEntity(m_gridEntity);
+        DestroyEntity(m_cameraEntity);
+        DestroyEntity(m_postProcessEntity);
 
         for (DirectionalLightHandle& handle : m_lightHandles)
         {
@@ -313,6 +271,76 @@ namespace MaterialCanvas
         m_swapChainPass = nullptr;
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
         m_scene = nullptr;
+    }
+
+    AZ::Entity* MaterialCanvasViewportWidget::CreateEntity(const AZStd::string& name, const AZStd::vector<AZ::Uuid>& componentTypeIds)
+    {
+        AzFramework::EntityContextId entityContextId;
+        AzFramework::GameEntityContextRequestBus::BroadcastResult(
+            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+
+        AZ::Entity* entity = {};
+        AzFramework::EntityContextRequestBus::EventResult(
+            entity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, name.c_str());
+        AZ_Assert(entity != nullptr, "Failed to create post process entity: %s.", name.c_str());
+
+        if (entity)
+        {
+            for (const auto& componentTypeId : componentTypeIds)
+            {
+                entity->CreateComponent(componentTypeId);
+            }
+            entity->Activate();
+        }
+
+        return entity;
+    }
+
+    void MaterialCanvasViewportWidget::DestroyEntity(AZ::Entity*& entity)
+    {
+        AzFramework::EntityContextId entityContextId;
+        AzFramework::GameEntityContextRequestBus::BroadcastResult(
+            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+
+        AzFramework::EntityContextRequestBus::Event(entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, entity);
+        entity = nullptr;
+    }
+
+    void MaterialCanvasViewportWidget::SetupInputController()
+    {
+        using namespace AtomToolsFramework;
+
+        // Create viewport input controller and regioster its behaviors
+        m_viewportController.reset(
+            aznew ViewportInputBehaviorController(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::None, AZStd::make_shared<IdleBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Lmb, AZStd::make_shared<PanCameraBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Mmb, AZStd::make_shared<MoveCameraBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Rmb, AZStd::make_shared<OrbitCameraBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Alt ^ ViewportInputBehaviorController::Lmb,
+            AZStd::make_shared<OrbitCameraBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Alt ^ ViewportInputBehaviorController::Mmb,
+            AZStd::make_shared<MoveCameraBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Alt ^ ViewportInputBehaviorController::Rmb,
+            AZStd::make_shared<DollyCameraBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Lmb ^ ViewportInputBehaviorController::Rmb,
+            AZStd::make_shared<DollyCameraBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Ctrl ^ ViewportInputBehaviorController::Lmb,
+            AZStd::make_shared<RotateModelBehavior>(m_viewportController.get()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::Shift ^ ViewportInputBehaviorController::Lmb,
+            AZStd::make_shared<RotateEnvironmentBehavior>(m_viewportController.get()));
+
+        GetControllerList()->Add(m_viewportController);
     }
 
     void MaterialCanvasViewportWidget::OnDocumentOpened(const AZ::Uuid& /*documentId*/)
@@ -426,8 +454,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasViewportWidget::OnFieldOfViewChanged(float fieldOfView)
     {
-        MaterialCanvasViewportInputControllerRequestBus::Broadcast(
-            &MaterialCanvasViewportInputControllerRequestBus::Handler::SetFieldOfView, fieldOfView);
+        m_viewportController->SetFieldOfView(fieldOfView);
     }
 
     void MaterialCanvasViewportWidget::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
@@ -441,7 +468,9 @@ namespace MaterialCanvas
     {
         if (m_modelAssetId == asset.GetId())
         {
-            MaterialCanvasViewportInputControllerRequestBus::Broadcast(&MaterialCanvasViewportInputControllerRequestBus::Handler::Reset);
+            AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset = asset;
+            m_viewportController->SetTargetBounds(modelAsset->GetAabb());
+            m_viewportController->Reset();
             AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
         }
     }
