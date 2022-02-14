@@ -74,23 +74,21 @@ namespace SandboxEditor
                 const auto* position = event.m_inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
                 AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
-                if (m_captureStart)
-                {
-                    m_virtualNormalizedPosition = position->m_normalizedPosition;
-                    m_captureStart = false;
-                }
-                else
-                {
-                    m_virtualNormalizedPosition += position->m_normalizedPositionDelta;
-                }
-
                 AzFramework::WindowSize windowSize;
                 AzFramework::WindowRequestBus::EventResult(
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                const auto screenPoint = AzFramework::ScreenPointFromVector2(AZ::Vector2(
-                    aznumeric_cast<int>(m_virtualNormalizedPosition.GetX() * windowSize.m_width),
-                    aznumeric_cast<int>(m_virtualNormalizedPosition.GetY() * windowSize.m_height)));
+                if (m_virtualNormalizedPosition) {
+                    (*m_virtualNormalizedPosition) += position->m_normalizedPositionDelta;
+                } else {
+                    m_virtualNormalizedPosition =
+                        AZStd::optional<AZ::Vector2>{position->m_normalizedPosition};
+                }
+                
+                const auto normalizedPosition = m_virtualNormalizedPosition.value_or(position->m_normalizedPosition);
+                auto screenPoint = AzFramework::ScreenPointFromVector2(AZ::Vector2(
+                    normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width),
+                    normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height))); 
 
                 ProjectedViewportRay ray{};
                 ViewportInteractionRequestBus::EventResult(
@@ -129,7 +127,7 @@ namespace SandboxEditor
                     eventType = MouseEvent::Down;
                 }
 
-                m_captureStart = true;
+                m_virtualNormalizedPosition = AZStd::nullopt;
                 if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
                 {
                     AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
@@ -151,7 +149,7 @@ namespace SandboxEditor
                     }
                     eventType = MouseEvent::Up;
                 }
-                if (SandboxEditor::ManipulatorMouseWrap())
+                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
                 {
                     AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
                         GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
