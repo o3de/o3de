@@ -162,8 +162,7 @@ namespace GradientSignal
     float SurfaceMaskGradientComponent::GetValue(const GradientSampleParams& params) const
     {
         float result = 0.0f;
-
-        GetValues({ { params.m_position } }, AZStd::span<float>(&result, 1));
+        GetValues(AZStd::span<const AZ::Vector3>(&params.m_position, 1), AZStd::span<float>(&result, 1));
         return result;
     }
 

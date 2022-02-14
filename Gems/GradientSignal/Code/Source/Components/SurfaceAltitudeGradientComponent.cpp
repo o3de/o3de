@@ -203,7 +203,7 @@ namespace GradientSignal
     float SurfaceAltitudeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
         float result = 0.0f;
-        GetValues({ { sampleParams.m_position } }, AZStd::span<float>(&result, 1));
+        GetValues(AZStd::span<const AZ::Vector3>(&sampleParams.m_position, 1), AZStd::span<float>(&result, 1));
         return result;
     }
 
