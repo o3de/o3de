@@ -6,27 +6,25 @@
  *
  */
 
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Vector3.h>
-#include <Viewport/InputController/MaterialEditorViewportInputControllerBus.h>
-#include <Viewport/InputController/MoveCameraBehavior.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
+    MoveCameraBehavior::MoveCameraBehavior(ViewportInputBehaviorControllerInterface* controller)
+        : ViewportInputBehavior(controller)
+    {
+    }
+
     void MoveCameraBehavior::End()
     {
-        float distanceToTarget;
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            distanceToTarget,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetDistanceToTarget);
+        float distanceToTarget = m_controller->GetDistanceToTarget();
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTM);
-        AZ::Vector3 targetPosition =
-            transform.GetTranslation() +
-            transform.GetBasisY() * distanceToTarget;
-        MaterialEditorViewportInputControllerRequestBus::Broadcast(
-            &MaterialEditorViewportInputControllerRequestBus::Handler::SetTargetPosition,
-            targetPosition);
+        AZ::Vector3 targetPosition = transform.GetTranslation() + transform.GetBasisY() * distanceToTarget;
+        m_controller->SetTargetPosition(targetPosition);
     }
 
     void MoveCameraBehavior::TickInternal(float x, float y, float z)
@@ -41,7 +39,7 @@ namespace MaterialEditor
         m_targetPosition += deltaPosition;
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTranslation, position);
 
-        Behavior::TickInternal(x, y, z);
+        ViewportInputBehavior::TickInternal(x, y, z);
     }
 
     float MoveCameraBehavior::GetSensitivityX()
@@ -53,4 +51,4 @@ namespace MaterialEditor
     {
         return SensitivityY;
     }
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

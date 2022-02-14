@@ -22,8 +22,8 @@
 
 namespace MaterialEditor
 {
-    MaterialDocument::MaterialDocument()
-        : AtomToolsFramework::AtomToolsDocument()
+    MaterialDocument::MaterialDocument(const AZ::Crc32& toolId)
+        : AtomToolsFramework::AtomToolsDocument(toolId)
     {
         MaterialDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -87,12 +87,12 @@ namespace MaterialEditor
                         }
                     }
 
-                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                        &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
+                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                        m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
                         GetObjectInfoFromDynamicPropertyGroup(group.get()), false);
 
-                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                        &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                        m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
                     return false;
                 }
             }
@@ -845,8 +845,8 @@ namespace MaterialEditor
 
             if (groupChange || groupRebuilt)
             {
-                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                    &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
                     GetObjectInfoFromDynamicPropertyGroup(group.get()), groupRebuilt);
             }
             return true;

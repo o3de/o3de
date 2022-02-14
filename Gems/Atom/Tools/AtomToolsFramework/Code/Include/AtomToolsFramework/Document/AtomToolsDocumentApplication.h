@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystem.h>
 
 namespace AtomToolsFramework
 {
@@ -16,13 +17,20 @@ namespace AtomToolsFramework
         : public AtomToolsApplication
     {
     public:
-        AZ_TYPE_INFO(AtomToolsDocumentApplication, "{F4B43677-EB95-4CBB-8B8E-9EF4247E6F0D}");
+        AZ_TYPE_INFO(AtomToolsDocumentApplication, "{AC892170-D353-404A-A3D8-BB039C717295}");
+        AZ_DISABLE_COPY_MOVE(AtomToolsDocumentApplication);
 
         using Base = AtomToolsApplication;
 
-        AtomToolsDocumentApplication(int* argc, char*** argv);
+        AtomToolsDocumentApplication(const AZStd::string& targetName, int* argc, char*** argv);
 
+    protected:
         // AtomToolsApplication overrides...
+        void Reflect(AZ::ReflectContext* context) override;
+        void StartCommon(AZ::Entity* systemEntity) override;
+        void Destroy() override;
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
+
+        AZStd::unique_ptr<AtomToolsDocumentSystem> m_documentSystem; 
     };
 } // namespace AtomToolsFramework
