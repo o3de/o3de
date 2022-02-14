@@ -66,6 +66,12 @@ namespace AzToolsFramework
     class GenericEnumPropertyComboBoxHandler
         : public GenericComboBoxHandler<ValueType>
     {
+        virtual void ConsumeParentAttribute(GenericComboBoxCtrlBase* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override
+        {
+            // Simply re-route to ConsumeAttribute since no special logic is needed.
+            ConsumeAttribute(GUI, attrib, attrValue, debugName);
+        }
+
         virtual void ConsumeAttribute(GenericComboBoxCtrlBase* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override
         {
             (void)debugName;

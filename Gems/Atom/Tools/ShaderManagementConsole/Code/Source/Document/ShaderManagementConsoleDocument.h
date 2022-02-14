@@ -24,11 +24,11 @@ namespace ShaderManagementConsole
         , public ShaderManagementConsoleDocumentRequestBus::Handler
     {
     public:
-        AZ_RTTI(ShaderManagementConsoleDocument, "{DBA269AE-892B-415C-8FA1-166B94B0E045}");
+        AZ_RTTI(ShaderManagementConsoleDocument, "{504A74BA-F5DD-49E0-BA5E-A381F61DD524}");
         AZ_CLASS_ALLOCATOR(ShaderManagementConsoleDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(ShaderManagementConsoleDocument);
+        AZ_DISABLE_COPY_MOVE(ShaderManagementConsoleDocument);
 
-        ShaderManagementConsoleDocument();
+        ShaderManagementConsoleDocument(const AZ::Crc32& toolId);
         ~ShaderManagementConsoleDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...

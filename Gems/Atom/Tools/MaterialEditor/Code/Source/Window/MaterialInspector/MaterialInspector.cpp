@@ -15,13 +15,14 @@
 
 namespace MaterialEditor
 {
-    MaterialInspector::MaterialInspector(QWidget* parent)
+    MaterialInspector::MaterialInspector(const AZ::Crc32& toolId, QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
+        , m_toolId(toolId)
     {
         m_windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
             AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     MaterialInspector::~MaterialInspector()

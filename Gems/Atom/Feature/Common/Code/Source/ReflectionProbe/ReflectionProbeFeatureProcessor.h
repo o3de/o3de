@@ -46,6 +46,7 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
+            void OnRenderEnd() override;
 
             // find the reflection probe volumes that contain the position
             using ReflectionProbeVector = AZStd::vector<AZStd::shared_ptr<ReflectionProbe>>;
