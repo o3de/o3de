@@ -110,6 +110,24 @@ namespace AZ
             ++value;
             return value;
         }
+
+        static_assert(AlignUpToPowerOfTwo(0) == 0);
+        static_assert(AlignUpToPowerOfTwo(1) == 1);
+        static_assert(AlignUpToPowerOfTwo(2) == 2);
+        static_assert(AlignUpToPowerOfTwo(3) == 4);
+        static_assert(AlignUpToPowerOfTwo(4) == 4);
+        static_assert(AlignUpToPowerOfTwo(5) == 8);
+        static_assert(AlignUpToPowerOfTwo(8) == 8);
+        static_assert(AlignUpToPowerOfTwo(10) == 16);
+        static_assert(AlignUpToPowerOfTwo(16) == 16);
+        static_assert(AlignUpToPowerOfTwo(24) == 32);
+        static_assert(AlignUpToPowerOfTwo(32) == 32);
+        static_assert(AlignUpToPowerOfTwo(45) == 64);
+        static_assert(AlignUpToPowerOfTwo(64) == 64);
+        static_assert(AlignUpToPowerOfTwo(112) == 128);
+        static_assert(AlignUpToPowerOfTwo(128) == 128);
+        static_assert(AlignUpToPowerOfTwo(136) == 256);
+        static_assert(AlignUpToPowerOfTwo(256) == 256);
     }
 
     //////////////////////////////////////////////////////////////////////////
