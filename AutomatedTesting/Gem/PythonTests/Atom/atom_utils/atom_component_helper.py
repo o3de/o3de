@@ -86,9 +86,8 @@ def compare_screenshot_similarity(
         if create_zip_archive:
             create_screenshots_archive(screenshot_directory)
         result = (
-            f"When comparing the test_screenshot: '{test_screenshot}' "
-            f"to golden_image: '{golden_image}'.\nThe mean similarity of '{mean_similarity}' "
-            f"was lower than the similarity threshold of '{similarity_threshold}'. ")
+            f"When comparing the test_screenshot: '{test_screenshot}' to golden_image: '{golden_image}'.\n"
+            f"The mean similarity ({mean_similarity}) was lower than the similarity threshold ({similarity_threshold})")
 
     return result
 
