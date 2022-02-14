@@ -80,23 +80,18 @@ namespace AzToolsFramework
         m_onMouseMoveCallback = onMouseMoveCallback;
     }
 
+    void SurfaceManipulator::InstallEntityIdsToIgnoreFn(EntityIdsToIgnoreFn entityIdsToIgnoreCallback)
+    {
+        m_entityIdsToIgnoreFn = AZStd::move(entityIdsToIgnoreCallback);
+    }
+
     void SurfaceManipulator::OnLeftMouseDownImpl(
         const ViewportInteraction::MouseInteraction& interaction, [[maybe_unused]] float rayIntersectionDistance)
     {
         const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
-
         const AzFramework::ViewportId viewportId = interaction.m_interactionId.m_viewportId;
 
-        const auto& entityComponentIdPairs = EntityComponentIdPairs();
-        m_rayRequest.m_entityFilter.m_ignoreEntities.clear();
-        m_rayRequest.m_entityFilter.m_ignoreEntities.reserve(entityComponentIdPairs.size());
-        AZStd::transform(
-            entityComponentIdPairs.begin(), entityComponentIdPairs.end(),
-            AZStd::inserter(m_rayRequest.m_entityFilter.m_ignoreEntities, m_rayRequest.m_entityFilter.m_ignoreEntities.begin()),
-            [](const AZ::EntityComponentIdPair& entityComponentIdPair)
-            {
-                return entityComponentIdPair.GetEntityId();
-            });
+        m_rayRequest.m_entityFilter.m_ignoreEntities = m_entityIdsToIgnoreFn(interaction);
 
         // calculate the start and end of the ray
         RefreshRayRequest(
@@ -139,6 +134,8 @@ namespace AzToolsFramework
         {
             const AzFramework::ViewportId viewportId = interaction.m_interactionId.m_viewportId;
 
+            m_rayRequest.m_entityFilter.m_ignoreEntities = m_entityIdsToIgnoreFn(interaction);
+
             // update the start and end of the ray
             RefreshRayRequest(
                 m_rayRequest, ViewportInteraction::ViewportScreenToWorldRay(viewportId, interaction.m_mousePick.m_screenCoordinates),
@@ -162,12 +159,12 @@ namespace AzToolsFramework
         const ManipulatorManagerState& managerState,
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AzFramework::CameraState& cameraState,
-        const ViewportInteraction::MouseInteraction& mouseInteraction)
+        const ViewportInteraction::MouseInteraction& interaction)
     {
         m_manipulatorView->Draw(
             GetManipulatorManagerId(), managerState, GetManipulatorId(),
             ManipulatorState{ TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalPosition(), MouseOver() }, debugDisplay,
-            cameraState, mouseInteraction);
+            cameraState, interaction);
     }
 
     void SurfaceManipulator::InvalidateImpl()
