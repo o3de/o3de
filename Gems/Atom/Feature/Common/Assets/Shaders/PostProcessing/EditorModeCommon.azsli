@@ -40,6 +40,13 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressW = Clamp;
     };
 
+    float2 GetImageSize(Texture2D<float4> image)
+    {
+        float3 size = float3(0., 0., 0.);
+        image.GetDimensions(size.x, size.y);
+        return size;
+    }
+
     float CalculateLinearDepth(const float zDepth)
     {
         return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 

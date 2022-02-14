@@ -13,7 +13,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeDesaturationPass, 0.0f, 0.0f, 0.0f, 1.0f);
+AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeDesaturationPass, 0.75f, 0.0f, 20.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmount, 1.0f);
 
  namespace AZ

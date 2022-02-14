@@ -21,7 +21,7 @@
 #define AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(NAMESPACE, MIN_VALUE, START, DURATION, FINAL_BLEND)                                 \
     AZ_EDITOR_MODE_PASS_CVAR(float, NAMESPACE, MinDepthTransitionValue, MIN_VALUE);                                                     \
     AZ_EDITOR_MODE_PASS_CVAR(float, NAMESPACE, DepthTransitionStart, START);                                                            \
-    AZ_EDITOR_MODE_PASS_CVAR(float, NAMESPACE, DepthTransitionDuration, MIN_VALUE);                                                     \
+    AZ_EDITOR_MODE_PASS_CVAR(float, NAMESPACE, DepthTransitionDuration, DURATION);                                                     \
     AZ_EDITOR_MODE_PASS_CVAR(float, NAMESPACE, FinalBlendAmount, FINAL_BLEND);
 
 namespace AZ

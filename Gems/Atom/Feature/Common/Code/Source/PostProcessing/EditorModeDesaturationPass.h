@@ -44,7 +44,6 @@ namespace AZ
             void SetSrgConstants();
 
             RHI::ShaderInputNameIndex m_desaturationAmountIndex = "m_desaturationAmount";
-
             float m_desaturationAmount = 1.0f;
         };
     }   // namespace Render

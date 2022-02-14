@@ -43,15 +43,10 @@ PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
-    uint2 uMaskSize;
-    PassSrg::m_entityMask.GetDimensions(uMaskSize.x, uMaskSize.y);
-
-    maskSize.x = float(uMaskSize.x);
-    maskSize.y = float(uMaskSize.y);
-
-    const float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
+    maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
     const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
+    float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
 
     // Blur effect
     float3 finalEffect = Blur(unnormalizedUV, PassSrg::m_kernalWidth);

@@ -11,7 +11,10 @@
  
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
+    //! Amount of tint to apply.
     float m_tintAmount;
+
+    //! Color of tint to apply.
     float4 m_tintColor;
 }
 
@@ -31,6 +34,8 @@ PSOutput MainPS(VSOutput IN)
     
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, finalEffect, t);
+
+    //OUT.m_color.rgb = float3(t,t,t);
 
     return OUT;
 }

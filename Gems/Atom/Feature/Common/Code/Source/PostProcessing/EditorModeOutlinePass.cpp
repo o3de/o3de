@@ -14,6 +14,10 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
 
+AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeOutlinePass, 0.0f, 0.0f, 1000.0f, 1.0f);
+AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeOutlinePass, LineThickness, 3.0f);
+AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Color(0.96f, 0.65f, 0.13f, 1.0f));
+
  namespace AZ
 {
     namespace Render
@@ -25,29 +29,50 @@
         }
         
         EditorModeOutlinePass::EditorModeOutlinePass(const RPI::PassDescriptor& descriptor)
-            : AZ::RPI::FullscreenTrianglePass(descriptor)
+            : EditorModeFeedbackPassBase(descriptor)
         {
         }
         
         void EditorModeOutlinePass::InitializeInternal()
         {
-            FullscreenTrianglePass::InitializeInternal();
+            EditorModeFeedbackPassBase::InitializeInternal();
+            m_lineThicknessIndex.Reset();
+            m_lineColorIndex.Reset();
         }
         
         void EditorModeOutlinePass::FrameBeginInternal(FramePrepareParams params)
         {
-            FullscreenTrianglePass::FrameBeginInternal(params);
+            SetSrgConstants();
+            EditorModeFeedbackPassBase::FrameBeginInternal(params);
         }
 
         bool EditorModeOutlinePass::IsEnabled() const
         {
-            // move this to parent
-            if (const auto editorModeFeedback = AZ::Interface<EditorModeFeedbackInterface>::Get())
-            {
-                return editorModeFeedback->IsEnabled();
-            }
+            return true;
+        }
 
-            return false;
+        void EditorModeOutlinePass::SetLineThickness(float width)
+        {
+            m_lineThickness = width;
+        }
+
+        void EditorModeOutlinePass::SetLineColor(AZ::Color color)
+        {
+            m_lineColor = color;
+        }
+
+        void EditorModeOutlinePass::SetSrgConstants()
+        {
+            // THIS IS TEMP
+            SetMinDepthTransitionValue(cl_editorModeOutlinePass_MinDepthTransitionValue);
+            SetDepthTransitionStart(cl_editorModeOutlinePass_DepthTransitionStart);
+            SetDepthTransitionDuration(cl_editorModeOutlinePass_DepthTransitionDuration);
+            SetFinalBlendAmount(cl_editorModeOutlinePass_FinalBlendAmount);
+
+            SetLineThickness(cl_editorModeOutlinePass_LineThickness);
+            SetLineColor(cl_editorModeOutlinePass_LineColor);
+            m_shaderResourceGroup->SetConstant(m_lineThicknessIndex, m_lineThickness);
+            m_shaderResourceGroup->SetConstant(m_lineColorIndex, m_lineColor);
         }
     }
 }

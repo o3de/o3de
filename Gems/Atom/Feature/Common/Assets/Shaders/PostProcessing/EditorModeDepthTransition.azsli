@@ -8,21 +8,22 @@
 
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    // The minimum blend about that will be calculated through depth transitioning
+    //! The minimum blend about that will be calculated through depth transitioning.
     float m_minDepthTransitionValue;
     
-    // Start of depth transtion for unmasked effect blending
+    //! Start of depth transtion for unmasked effect blending.
     float m_depthTransitionStart;
 
-    // The duration of the depth transition band (0.0 = no depth transitioning will be applied)
+    //! The duration (depth) of the depth transition band (0.0 = no depth transitioning will be applied).
     float m_depthTransitionDuration;
 
+    //! 0.0 = input color, 1.0 = final effect
     float CalculateTransitionBlendAmountFromLinearDepth(const float linearDepth, const float maskValue)
     {
         if(PassSrg::m_depthTransitionDuration > 0.0)
         {
             const float depthTransition = clamp((linearDepth - m_depthTransitionStart) / (m_depthTransitionDuration), m_minDepthTransitionValue, 1.0);
-            return 1.0 - clamp(maskValue * depthTransition, 0.0, 1.0);
+            return clamp((1.0 - maskValue) * depthTransition, 0.0, 1.0);
         }
 
         return 1.0 - maskValue;

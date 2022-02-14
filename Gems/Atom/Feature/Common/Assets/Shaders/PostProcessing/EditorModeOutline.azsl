@@ -7,10 +7,12 @@
  */
  
 #include <EditorModeCommon.azsli>
+#include <EditorModeDepthTransition.azsli>
  
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {    
-    float m_desaturationAmount;
+    float m_lineThickness;
+    float4 m_lineColor;
 }
 
 static float2 maskSize;
@@ -46,32 +48,24 @@ PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
-    uint2 uMaskSize;
-    PassSrg::m_entityMask.GetDimensions(uMaskSize.x, uMaskSize.y);
-
-    maskSize.x = float(uMaskSize.x);
-    maskSize.y = float(uMaskSize.y);
-
+    maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
+    const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
     float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
- 
-    // Fetch the pixel color from the input texture
-    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
 
-    // Get the mask value at this point
-    float4 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
+    // Apply the depth transition to the blend amount
+    const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
+
+    // Outline effect
+    //const float lineThickness = lerp(1., PassSrg::m_lineThickness, t);
+    const float lineThickness = lerp(1., PassSrg::m_lineThickness, 1.0 - t);
+    //const float lineThickness = PassSrg::m_lineThickness;
+    const float outline = selectedEntityOutliner(unnormalizedUV, lineThickness);
 
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
-    OUT.m_color.rgb = color;
-    OUT.m_color.a = 1.0;
+    OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outline);
 
-    float depth = PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r * 10.;
-    float depthT = clamp(depth, 0., 1.);
-
-    float minLineThickness = 3.;
-    float maxLineThickness = 10.;
-    float lineThickness = lerp(minLineThickness, maxLineThickness, depthT);
-    float outline = selectedEntityOutliner(unnormalizedUV, lineThickness);
-    float3 outlineColor = float3(.96, 0.65, 0.13);
-    OUT.m_color.rgb = lerp(OUT.m_color.rgb, outlineColor, outline);
+    //OUT.m_color.rgb = float3(t, t, t);
     return OUT;
 }

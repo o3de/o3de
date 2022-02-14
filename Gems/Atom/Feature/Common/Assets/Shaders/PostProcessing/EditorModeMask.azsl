@@ -11,8 +11,11 @@
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
-    uint m_objectId; //!< Id of this draw object for retrieval of transformation matrices. 
-    uint m_maskId; //!< Id to fill the mask with for this draw object.
+    //! Id of this draw object for retrieval of transformation matrices.
+    uint m_objectId;
+
+    //! Id to fill the mask with for this draw object.
+    uint m_maskId;
 
     //! Returns the matrix for transforming points from Object Space to World Space.
     float4x4 GetWorldMatrix()
@@ -42,7 +45,7 @@ VSOutput MainVS(VSInput IN)
 
     // Offset the depth of redrawn entities to avoid z fighting with the underlying entity rendered data
     // A proper programatic solution will be investigated in LYN-10304
-    OUT.m_position.z += 0.05;
+    OUT.m_position.z += 0.01;
 
 /*
     For use in LYN-9929

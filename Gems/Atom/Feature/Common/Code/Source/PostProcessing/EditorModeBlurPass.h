@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <PostProcessing/EditorModeFeedbackPassBase.h>
@@ -43,7 +44,6 @@ namespace AZ
             void SetSrgConstants();
 
             RHI::ShaderInputNameIndex m_kernalWidthIndex = "m_kernalWidth";
-
             float m_kernalWidth = 1.0f;
         };
     }   // namespace Render

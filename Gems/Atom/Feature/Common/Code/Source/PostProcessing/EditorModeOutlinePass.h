@@ -7,11 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
-#include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
-#include <Atom/RPI.Public/Shader/Shader.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <PostProcess/EditorModeFeedback/EditorModeFeedbackSettings.h>
+#include <PostProcessing/EditorModeFeedbackPassBase.h>
 
 namespace AZ
 {
@@ -21,17 +17,20 @@ namespace AZ
          *  The color grading pass.
          */
         class EditorModeOutlinePass
-            : public AZ::RPI::FullscreenTrianglePass
+            : public EditorModeFeedbackPassBase
             //TODO: , public PostProcessingShaderOptionBase
         {
         public:
-            AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", AZ::RPI::FullscreenTrianglePass);
+            AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackPassBase);
             AZ_CLASS_ALLOCATOR(EditorModeOutlinePass, SystemAllocator, 0);
 
             virtual ~EditorModeOutlinePass() = default;
 
             //! Creates a EditorModeOutlinePass
             static RPI::Ptr<EditorModeOutlinePass> Create(const RPI::PassDescriptor& descriptor);
+
+            void SetLineThickness(float width);
+            void SetLineColor(AZ::Color color);
 
         protected:
             EditorModeOutlinePass(const RPI::PassDescriptor& descriptor);
@@ -40,6 +39,14 @@ namespace AZ
             void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             bool IsEnabled() const override;
+
+        private:
+            void SetSrgConstants();
+
+            RHI::ShaderInputNameIndex m_lineThicknessIndex = "m_lineThickness";
+            RHI::ShaderInputNameIndex m_lineColorIndex = "m_lineColor";
+            float m_lineThickness = 3.0f;
+            AZ::Color m_lineColor = AZ::Color(0.96f, 0.65f, 0.13f, 1.0f);
         };
     }   // namespace Render
 }   // namespace AZ
