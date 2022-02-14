@@ -46,10 +46,35 @@ namespace Multiplayer
     void MultiplayerDebugAuditTrail::OnImGuiUpdate(const AZStd::deque<AuditTrailInput>& auditTrailElems)
     {
 #if defined(IMGUI_ENABLED)
+        if (ImGui::Button("Refresh"))
+        {
+            m_canPumpTrail = true;
+        }
+        ImGui::SameLine();
+        const ImGuiInputTextFlags inputTextFlags = ImGuiInputTextFlags_EnterReturnsTrue;
+        ImGui::Text("| Search:");
+        ImGui::SameLine();
+        const bool textWasInput = ImGui::InputText("", m_inputBuffer, IM_ARRAYSIZE(m_inputBuffer), inputTextFlags);
+        if (textWasInput)
+        {
+            SetAuditTrailFilter(m_inputBuffer);
+            ImGui::SetKeyboardFocusHere(-1);
+        }
+
+        // Focus on the text input field.
+        if (ImGui::IsWindowAppearing())
+        {
+            ImGui::SetKeyboardFocusHere(-1);
+        }
+        ImGui::SetItemDefaultFocus();
+
+        ImGui::Separator();
+
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
         const ImGuiTableFlags flags = ImGuiTableFlags_BordersV
             | ImGuiTableFlags_BordersOuterH
-            | ImGuiTableFlags_Resizable
+            | ImGuiTableFlags_Resizable 
+            | ImGuiTableFlags_SizingStretchSame
             | ImGuiTableFlags_RowBg
             | ImGuiTableFlags_NoBordersInBody;
 
@@ -58,10 +83,10 @@ namespace Multiplayer
         if (ImGui::BeginTable("", 5, flags))
         {
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("Input ID", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
-            ImGui::TableSetupColumn("HostFrame", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
-            ImGui::TableSetupColumn("Client Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
-            ImGui::TableSetupColumn("Server Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
+            ImGui::TableSetupColumn("Input ID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, TEXT_BASE_WIDTH * 12.0f);
+            ImGui::TableSetupColumn("HostFrame", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, TEXT_BASE_WIDTH * 12.0f);
+            ImGui::TableSetupColumn("Client Value", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Server Value", ImGuiTableColumnFlags_WidthStretch);
 
             ImGui::TableHeadersRow();
 
@@ -199,31 +224,6 @@ namespace Multiplayer
             ImGui::NewLine();
         }
         ImGui::EndChild();
-
-        ImGui::Separator();
-        const ImGuiInputTextFlags inputTextFlags = ImGuiInputTextFlags_EnterReturnsTrue;
-        ImGui::Text("Search:");
-        ImGui::SameLine();
-        const bool textWasInput =
-            ImGui::InputText("", m_inputBuffer, IM_ARRAYSIZE(m_inputBuffer), inputTextFlags);
-        if (textWasInput)
-        {
-            SetAuditTrailFilter(m_inputBuffer);
-            ImGui::SetKeyboardFocusHere(-1);
-        }
-
-        // Focus on the text input field.
-        if (ImGui::IsWindowAppearing())
-        {
-            ImGui::SetKeyboardFocusHere(-1);
-        }
-        ImGui::SetItemDefaultFocus();
-
-        ImGui::SameLine();
-        if (ImGui::Button("Refresh"))
-        {
-            m_canPumpTrail = true;
-        }
 #endif
     }
 
