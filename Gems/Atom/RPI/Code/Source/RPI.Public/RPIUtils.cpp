@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 
+#include <AzCore/Math/Color.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
@@ -113,12 +114,22 @@ namespace AZ
                 case AZ::RHI::Format::A8_UNORM:
                 case AZ::RHI::Format::R8G8_UNORM:
                 case AZ::RHI::Format::R8G8B8A8_UNORM:
+                case AZ::RHI::Format::A8B8G8R8_UNORM:
                 {
                     return mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                }
+                case AZ::RHI::Format::R8_UNORM_SRGB:
+                case AZ::RHI::Format::R8G8_UNORM_SRGB:
+                case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
+                case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
+                {
+                    float srgbValue = mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                    return AZ::Color::ConvertSrgbGammaToLinear(srgbValue);
                 }
                 case AZ::RHI::Format::R8_SNORM:
                 case AZ::RHI::Format::R8G8_SNORM:
                 case AZ::RHI::Format::R8G8B8A8_SNORM:
+                case AZ::RHI::Format::A8B8G8R8_SNORM:
                 {
                     // Scale the value from AZ::s8 min/max to -1 to 1
                     // We need to treat -128 and -127 the same, so that we get a symmetric
@@ -452,9 +463,15 @@ namespace AZ
             case AZ::RHI::Format::A8_UNORM:
             case AZ::RHI::Format::R8G8_UNORM:
             case AZ::RHI::Format::R8G8B8A8_UNORM:
+            case AZ::RHI::Format::A8B8G8R8_UNORM:
+            case AZ::RHI::Format::R8_UNORM_SRGB:
+            case AZ::RHI::Format::R8G8_UNORM_SRGB:
+            case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
+            case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
             case AZ::RHI::Format::R8_SNORM:
             case AZ::RHI::Format::R8G8_SNORM:
             case AZ::RHI::Format::R8G8B8A8_SNORM:
+            case AZ::RHI::Format::A8B8G8R8_SNORM:
             case AZ::RHI::Format::D16_UNORM:
             case AZ::RHI::Format::R16_UNORM:
             case AZ::RHI::Format::R16G16_UNORM:
