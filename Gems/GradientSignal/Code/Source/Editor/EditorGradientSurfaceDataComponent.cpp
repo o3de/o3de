@@ -108,7 +108,7 @@ namespace GradientSignal
             // Create a fake surface point with the position we're sampling.
             AzFramework::SurfaceData::SurfacePoint point;
             point.m_position = params.m_position;
-            SurfaceData::SurfacePointList pointList = { { point } };
+            SurfaceData::SurfacePointList pointList = AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1);
 
             // Send it into the component, see what emerges
             m_component.ModifySurfacePoints(pointList);
