@@ -1,4 +1,5 @@
 {
+    // Applies a tinting effect as controlled by the tint color and tint amount
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",

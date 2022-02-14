@@ -1,4 +1,5 @@
 {
+    // Applies a desaturation effect as controlled by the saturation amount
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",

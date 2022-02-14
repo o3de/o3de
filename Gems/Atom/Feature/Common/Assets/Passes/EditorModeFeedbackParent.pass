@@ -53,8 +53,9 @@
                         }
                     ]
                 },
+                // Applied the desaturation effect to entities not of interest
                 {
-                    "Name": "UnmaskedDesaturationPass",
+                    "Name": "DesaturationPass",
                     "TemplateName": "EditorModeDesaturationTemplate",
                     "Connections": [
                         {
@@ -80,8 +81,9 @@
                         }
                     ]
                 },
+                // Applied the tint effect to entities not of interest
                 {
-                    "Name": "UnmaskedTintPass",
+                    "Name": "TintPass",
                     "TemplateName": "EditorModeTintTemplate",
                     "Connections": [
                         {
@@ -101,14 +103,15 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "UnmaskedDesaturationPass",
+                                "Pass": "DesaturationPass",
                                 "Attachment": "OutputColor"
                             }
                         }
                     ]
                 },
+                // Applied the box blur effect to entities not of interest
                 {
-                    "Name": "UnmaskedBlurPass",
+                    "Name": "BlurPass",
                     "TemplateName": "EditorModeBlurTemplate",
                     "Connections": [
                         {
@@ -128,12 +131,13 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "UnmaskedTintPass",
+                                "Pass": "TintPass",
                                 "Attachment": "OutputColor"
                             }
                         }
                     ]
                 },
+                // Applied the outlining effect to entities of interest
                 {
                     "Name": "EntityOutlinePass",
                     "TemplateName": "EditorModeOutlineTemplate",
@@ -155,7 +159,7 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "UnmaskedBlurPass",
+                                "Pass": "BlurPass",
                                 "Attachment": "OutputColor"
                             }
                         }
