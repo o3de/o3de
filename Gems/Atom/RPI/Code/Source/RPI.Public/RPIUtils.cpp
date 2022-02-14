@@ -232,16 +232,12 @@ namespace AZ
                 }
             }
 
-            template<typename T>
-            T GetSubImagePixelValueInternal(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+            size_t GetImageDataIndex(const AZ::RHI::ImageDescriptor& imageDescriptor, uint32_t x, uint32_t y, uint32_t componentIndex)
             {
-                AZStd::array values{ aznumeric_cast<T>(0) };
+                auto width = imageDescriptor.m_size.m_width;
+                const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
 
-                auto topLeft = AZStd::make_pair(x, y);
-                auto bottomRight = AZStd::make_pair(x + 1, y + 1);
-                GetSubImagePixelValues(imageAsset, topLeft, bottomRight, AZStd::span<T>(values), componentIndex, mip, slice);
-
-                return values[0];
+                return (y * width + x) * numComponents + componentIndex;
             }
         }
 
@@ -447,22 +443,115 @@ namespace AZ
             return GetComputeShaderNumThreads(shaderAsset, &dispatchDirect.m_threadsPerGroupX, &dispatchDirect.m_threadsPerGroupY, &dispatchDirect.m_threadsPerGroupZ);
         }
 
+        bool IsImageDataPixelAPISupported(AZ::RHI::Format format)
+        {
+            switch (format)
+            {
+            // Float types
+            case AZ::RHI::Format::R8_UNORM:
+            case AZ::RHI::Format::A8_UNORM:
+            case AZ::RHI::Format::R8G8_UNORM:
+            case AZ::RHI::Format::R8G8B8A8_UNORM:
+            case AZ::RHI::Format::R8_SNORM:
+            case AZ::RHI::Format::R8G8_SNORM:
+            case AZ::RHI::Format::R8G8B8A8_SNORM:
+            case AZ::RHI::Format::D16_UNORM:
+            case AZ::RHI::Format::R16_UNORM:
+            case AZ::RHI::Format::R16G16_UNORM:
+            case AZ::RHI::Format::R16G16B16A16_UNORM:
+            case AZ::RHI::Format::R16_SNORM:
+            case AZ::RHI::Format::R16G16_SNORM:
+            case AZ::RHI::Format::R16G16B16A16_SNORM:
+            case AZ::RHI::Format::R16_FLOAT:
+            case AZ::RHI::Format::R16G16_FLOAT:
+            case AZ::RHI::Format::R16G16B16A16_FLOAT:
+            case AZ::RHI::Format::D32_FLOAT:
+            case AZ::RHI::Format::R32_FLOAT:
+            case AZ::RHI::Format::R32G32_FLOAT:
+            case AZ::RHI::Format::R32G32B32_FLOAT:
+            case AZ::RHI::Format::R32G32B32A32_FLOAT:
+            // Unsigned integer types
+            case AZ::RHI::Format::R8_UINT:
+            case AZ::RHI::Format::R8G8_UINT:
+            case AZ::RHI::Format::R8G8B8A8_UINT:
+            case AZ::RHI::Format::R16_UINT:
+            case AZ::RHI::Format::R16G16_UINT:
+            case AZ::RHI::Format::R16G16B16A16_UINT:
+            case AZ::RHI::Format::R32_UINT:
+            case AZ::RHI::Format::R32G32_UINT:
+            case AZ::RHI::Format::R32G32B32_UINT:
+            case AZ::RHI::Format::R32G32B32A32_UINT:
+            // Signed integer types
+            case AZ::RHI::Format::R8_SINT:
+            case AZ::RHI::Format::R8G8_SINT:
+            case AZ::RHI::Format::R8G8B8A8_SINT:
+            case AZ::RHI::Format::R16_SINT:
+            case AZ::RHI::Format::R16G16_SINT:
+            case AZ::RHI::Format::R16G16B16A16_SINT:
+            case AZ::RHI::Format::R32_SINT:
+            case AZ::RHI::Format::R32G32_SINT:
+            case AZ::RHI::Format::R32G32B32_SINT:
+            case AZ::RHI::Format::R32G32B32A32_SINT:
+                return true;
+            }
+
+            return false;
+        }
+
+        template<>
+        float GetImageDataPixelValue<float>(AZStd::span<const uint8_t> imageData, const AZ::RHI::ImageDescriptor& imageDescriptor, uint32_t x, uint32_t y, uint32_t componentIndex)
+        {
+            size_t imageDataIndex = Internal::GetImageDataIndex(imageDescriptor, x, y, componentIndex);
+            return Internal::RetrieveFloatValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
+        }
+
+        template<>
+        AZ::u32 GetImageDataPixelValue<AZ::u32>(AZStd::span<const uint8_t> imageData, const AZ::RHI::ImageDescriptor& imageDescriptor, uint32_t x, uint32_t y, uint32_t componentIndex)
+        {
+            size_t imageDataIndex = Internal::GetImageDataIndex(imageDescriptor, x, y, componentIndex);
+            return Internal::RetrieveUintValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
+        }
+
+        template<>
+        AZ::s32 GetImageDataPixelValue<AZ::s32>(AZStd::span<const uint8_t> imageData, const AZ::RHI::ImageDescriptor& imageDescriptor, uint32_t x, uint32_t y, uint32_t componentIndex)
+        {
+            size_t imageDataIndex = Internal::GetImageDataIndex(imageDescriptor, x, y, componentIndex);
+            return Internal::RetrieveIntValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
+        }
+
+        template<typename T>
+        T GetSubImagePixelValueInternal(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        {
+            if (!imageAsset.IsReady())
+            {
+                return aznumeric_cast<T>(0);
+            }
+
+            auto imageData = imageAsset->GetSubImageData(mip, slice);
+            if (imageData.empty())
+            {
+                return aznumeric_cast<T>(0);
+            }
+
+            return GetImageDataPixelValue<T>(imageData, imageAsset->GetImageDescriptor(), x, y, componentIndex);
+        }
+
         template<>
         float GetSubImagePixelValue<float>(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            return Internal::GetSubImagePixelValueInternal<float>(imageAsset, x, y, componentIndex, mip, slice);
+            return GetSubImagePixelValueInternal<float>(imageAsset, x, y, componentIndex, mip, slice);
         }
 
         template<>
         AZ::u32 GetSubImagePixelValue<AZ::u32>(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            return Internal::GetSubImagePixelValueInternal<AZ::u32>(imageAsset, x, y, componentIndex, mip, slice);
+            return GetSubImagePixelValueInternal<AZ::u32>(imageAsset, x, y, componentIndex, mip, slice);
         }
 
         template<>
         AZ::s32 GetSubImagePixelValue<AZ::s32>(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            return Internal::GetSubImagePixelValueInternal<AZ::s32>(imageAsset, x, y, componentIndex, mip, slice);
+            return GetSubImagePixelValueInternal<AZ::s32>(imageAsset, x, y, componentIndex, mip, slice);
         }
 
         bool GetSubImagePixelValues(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<float> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
@@ -478,16 +567,14 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
-            auto width = imageDescriptor.m_size.m_width;
-            const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
+            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * numComponents + componentIndex;
+                    size_t imageDataIndex = Internal::GetImageDataIndex(imageDescriptor, x, y, componentIndex);
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveFloatValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -510,16 +597,14 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
-            auto width = imageDescriptor.m_size.m_width;
-            const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
+            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * numComponents + componentIndex;
+                    size_t imageDataIndex = Internal::GetImageDataIndex(imageDescriptor, x, y, componentIndex);
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveUintValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -542,16 +627,14 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
-            auto width = imageDescriptor.m_size.m_width;
-            const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
+            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * numComponents + componentIndex;
+                    size_t imageDataIndex = Internal::GetImageDataIndex(imageDescriptor, x, y, componentIndex);
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveIntValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);

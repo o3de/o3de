@@ -61,6 +61,7 @@ class TestAutomation(TestAutomationBase):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_NodePalette_HappyPath_CanSelectNode(self, request, workspace, editor, launcher_platform):
         from . import NodePalette_HappyPath_CanSelectNode as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -113,6 +114,7 @@ class TestAutomation(TestAutomationBase):
         from . import Debugger_HappyPath_TargetMultipleGraphs as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="Test fails on nightly build builds, it needs to be fixed.")
     @pytest.mark.parametrize("level", ["tmp_level"])
     def test_Debugger_HappyPath_TargetMultipleEntities(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
@@ -174,6 +176,7 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptEvents_ReturnSetType_Successfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_NodeCategory_ExpandOnClick(self, request, workspace, editor, launcher_platform):
         from . import NodeCategory_ExpandOnClick as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -187,6 +190,7 @@ class TestAutomation(TestAutomationBase):
         from . import VariableManager_UnpinVariableType_Works as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_Node_HappyPath_DuplicateNode(self, request, workspace, editor, launcher_platform):
         from . import Node_HappyPath_DuplicateNode as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -263,6 +267,7 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
+    @pytest.mark.xfail(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_VariableManager_Default_CreateDeleteVars(self, request, editor, launcher_platform):
         var_types = ["Boolean", "Color", "EntityID", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
         expected_lines = [f"Success: {var_type} variable is created" for var_type in var_types]

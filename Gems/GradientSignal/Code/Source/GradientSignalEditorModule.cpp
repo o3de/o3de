@@ -24,6 +24,7 @@
 #include <Editor/EditorPerlinGradientComponent.h>
 #include <Editor/EditorRandomGradientComponent.h>
 #include <Editor/EditorGradientTransformComponent.h>
+#include <Editor/EditorStreamingImageAssetCtrl.h>
 #include <Editor/EditorSurfaceMaskGradientComponent.h>
 #include <Editor/EditorGradientSurfaceDataComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
@@ -112,11 +113,14 @@ namespace GradientSignal
     void GradientSignalEditorSystemComponent::Activate()
     {
         GradientPreviewDataWidgetHandler::Register();
+        StreamingImagePropertyHandler::Register();
     }
 
     void GradientSignalEditorSystemComponent::Deactivate()
     {
         GradientPreviewDataWidgetHandler::Unregister();
+        // We don't need to unregister the StreamingImagePropertyHandler
+        // because its set to auto-delete (default)
     }
 }
 
