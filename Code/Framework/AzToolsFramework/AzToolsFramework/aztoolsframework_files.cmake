@@ -86,8 +86,6 @@ set(FILES
     Thumbnails/Thumbnail.cpp
     Thumbnails/Thumbnail.h
     Thumbnails/Thumbnail.inl
-    Thumbnails/ThumbnailContext.cpp
-    Thumbnails/ThumbnailContext.h
     Thumbnails/ThumbnailerBus.h
     Thumbnails/ThumbnailWidget.cpp
     Thumbnails/ThumbnailWidget.h

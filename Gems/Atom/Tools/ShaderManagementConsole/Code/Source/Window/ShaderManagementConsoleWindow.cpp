@@ -26,11 +26,9 @@ AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
-    ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(QWidget* parent /* = 0 */)
-        : Base(parent)
+    ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
+        : Base(toolId, parent)
     {
-        resize(1280, 1024);
-
         // Among other things, we need the window wrapper to save the main window size, position, and state
         auto mainWindowWrapper =
             new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
@@ -42,11 +40,11 @@ namespace ShaderManagementConsole
         setObjectName("ShaderManagementConsoleWindow");
 
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
-        m_assetBrowser->SetOpenHandler([](const AZStd::string& absolutePath) {
+        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
             if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
             {
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-                    &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
                 return;
             }
 

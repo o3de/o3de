@@ -59,10 +59,11 @@ namespace ImageProcessingAtom
 
         void ImageThumbnail::LoadThread()
         {
+            m_state = State::Loading;
             AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::Event(
                 AZ::RPI::StreamingImageAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
-                m_key,
-                ImageThumbnailSize);
+                m_key, ImageThumbnailSize);
+
             // wait for response from thumbnail renderer
             m_renderWait.acquire();
         }
@@ -70,6 +71,7 @@ namespace ImageProcessingAtom
         void ImageThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
         {
             m_pixmap = thumbnailImage;
+            m_state = State::Ready;
             m_renderWait.release();
         }
 

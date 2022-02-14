@@ -482,10 +482,10 @@ QTabBar::tab:focus {
 
 #labelButtonOverlay {
     background-color: rgba(50,50,50,200);
-    min-width:210px;
-    max-width:210px;;
-    min-height:278px;
-    max-height:278px;
+    min-width:208px;
+    max-width:208px;;
+    min-height:270px;
+    max-height:270px;
 }
 
 QProgressBar {
