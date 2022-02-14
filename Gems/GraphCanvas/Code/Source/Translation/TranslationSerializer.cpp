@@ -9,8 +9,6 @@
 #include <Translation/TranslationSerializer.h>
 #include <Translation/TranslationAsset.h>
 
-#pragma optimize("", off)
-
 namespace GraphCanvas
 {
     AZ_CLASS_ALLOCATOR_IMPL(TranslationFormatSerializer, AZ::SystemAllocator, 0);
@@ -192,6 +190,3 @@ namespace GraphCanvas
         return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Unsupported, "Storing a Translation asset is not currently supported");
     }
 }
-
-
-#pragma optimize("", on)
