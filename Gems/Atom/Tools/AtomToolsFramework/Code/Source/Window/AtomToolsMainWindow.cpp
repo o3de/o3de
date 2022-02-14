@@ -6,8 +6,11 @@
  *
  */
 
+#include <Atom/RHI/Factory.h>
 #include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
@@ -19,11 +22,11 @@
 
 namespace AtomToolsFramework
 {
-    AtomToolsMainWindow::AtomToolsMainWindow(QWidget* parent)
+    AtomToolsMainWindow::AtomToolsMainWindow(const AZ::Crc32& toolId, QWidget* parent)
         : AzQtComponents::DockMainWindow(parent)
+        , m_toolId(toolId)
+        , m_advancedDockManager(new AzQtComponents::FancyDocking(this))
     {
-        m_advancedDockManager = new AzQtComponents::FancyDocking(this);
-
         setDockNestingEnabled(true);
         setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -42,20 +45,21 @@ namespace AtomToolsFramework
         centralWidget->setLayout(centralWidgetLayout);
         setCentralWidget(centralWidget);
 
-        m_assetBrowser = new AtomToolsFramework::AtomToolsAssetBrowser(this);
+        m_assetBrowser = new AtomToolsAssetBrowser(this);
         AddDockWidget("Asset Browser", m_assetBrowser, Qt::BottomDockWidgetArea, Qt::Horizontal);
         AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
         SetDockWidgetVisible("Python Terminal", false);
 
         SetupMetrics();
+        UpdateWindowTitle();
+        resize(1280, 1024);
 
-        AtomToolsMainWindowRequestBus::Handler::BusConnect();
+        AtomToolsMainWindowRequestBus::Handler::BusConnect(m_toolId);
     }
 
     AtomToolsMainWindow::~AtomToolsMainWindow()
     {
-        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
-            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
+        PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
         AtomToolsMainWindowRequestBus::Handler::BusDisconnect();
     }
 
@@ -160,10 +164,12 @@ namespace AtomToolsFramework
         m_menuHelp = menuBar()->addMenu("&Help");
 
         m_menuFile->addAction("Run &Python...", [this]() {
-            const QString script = QFileDialog::getOpenFileName(this, "Run Script", QString(), QString("*.py"));
+            const QString script = QFileDialog::getOpenFileName(
+                this, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
             if (!script.isEmpty())
             {
-                AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(&AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
+                AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                    &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
             }
         });
 
@@ -213,21 +219,34 @@ namespace AtomToolsFramework
         m_metricsTimer.start();
         connect(&m_metricsTimer, &QTimer::timeout, this, &AtomToolsMainWindow::UpdateMetrics);
 
-        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
-            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, true);
+        PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, true);
 
         UpdateMetrics();
     }
 
     void AtomToolsMainWindow::UpdateMetrics()
     {
-        AtomToolsFramework::PerformanceMetrics metrics = {};
-        AtomToolsFramework::PerformanceMonitorRequestBus::BroadcastResult(
-            metrics, &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::GetMetrics);
+        PerformanceMetrics metrics = {};
+        PerformanceMonitorRequestBus::BroadcastResult(metrics, &PerformanceMonitorRequestBus::Handler::GetMetrics);
 
         m_statusBarCpuTime->setText(tr("CPU Time %1 ms").arg(QString::number(metrics.m_cpuFrameTimeMs, 'f', 2)));
         m_statusBarGpuTime->setText(tr("GPU Time %1 ms").arg(QString::number(metrics.m_gpuFrameTimeMs, 'f', 2)));
         int frameRate = metrics.m_cpuFrameTimeMs > 0 ? aznumeric_cast<int>(1000 / metrics.m_cpuFrameTimeMs) : 0;
         m_statusBarFps->setText(tr("FPS %1").arg(QString::number(frameRate)));
+    }
+
+    void AtomToolsMainWindow::UpdateWindowTitle()
+    {
+        AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+        if (!apiName.IsEmpty())
+        {
+            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
+            setWindowTitle(title);
+        }
+        else
+        {
+            AZ_Assert(false, "Render API name not found");
+            setWindowTitle(QApplication::applicationName());
+        }
     }
 } // namespace AtomToolsFramework
