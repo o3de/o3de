@@ -5,21 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <Viewport/InputController/Behavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    //! Rotates target model in viewport
-    class RotateModelBehavior final
-        : public Behavior
+    //! Moves camera along its vertical and horizontal axis
+    class MoveCameraBehavior final : public ViewportInputBehavior
     {
     public:
-        RotateModelBehavior() = default;
-        virtual ~RotateModelBehavior() = default;
-
-        void Start() override;
+        MoveCameraBehavior(ViewportInputBehaviorControllerInterface* controller);
+        virtual ~MoveCameraBehavior() = default;
+        void End() override;
 
     protected:
         void TickInternal(float x, float y, float z) override;
@@ -29,8 +28,5 @@ namespace MaterialEditor
     private:
         static constexpr float SensitivityX = 0.01f;
         static constexpr float SensitivityY = 0.01f;
-
-        AZ::EntityId m_targetEntityId;
-        AZ::Vector3 m_cameraRight = AZ::Vector3::CreateAxisX();
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <Viewport/InputController/Behavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h>
 
 namespace AZ
 {
@@ -15,16 +16,15 @@ namespace AZ
     {
         class SkyBoxFeatureProcessorInterface;
     }
-}
+} // namespace AZ
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
     //! Rotates lighting and skybox around vertical axis
-    class RotateEnvironmentBehavior final
-        : public Behavior
+    class RotateEnvironmentBehavior final : public ViewportInputBehavior
     {
     public:
-        RotateEnvironmentBehavior() = default;
+        RotateEnvironmentBehavior(ViewportInputBehaviorControllerInterface* controller);
         virtual ~RotateEnvironmentBehavior() = default;
 
         void Start() override;
@@ -38,8 +38,8 @@ namespace MaterialEditor
         static constexpr float SensitivityX = 0.01f;
         static constexpr float SensitivityY = 0;
 
-        AZ::EntityId m_iblEntityId;
-        AZ::Render::SkyBoxFeatureProcessorInterface* m_skyBoxFeatureProcessorInterface = nullptr;
-        float m_rotation = 0;
+        AZ::EntityId m_environmentEntityId;
+        AZ::Render::SkyBoxFeatureProcessorInterface* m_skyBoxFeatureProcessor = {};
+        float m_rotation = {};
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

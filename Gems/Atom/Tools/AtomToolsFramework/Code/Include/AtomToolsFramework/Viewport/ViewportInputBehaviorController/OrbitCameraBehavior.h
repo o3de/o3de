@@ -5,19 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <Viewport/InputController/Behavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
     //! Rotates the camera around target position,
     //! this can either be model center or any position in world
-    class OrbitCameraBehavior final
-        : public Behavior
+    class OrbitCameraBehavior final : public ViewportInputBehavior
     {
     public:
-        OrbitCameraBehavior() = default;
+        OrbitCameraBehavior(ViewportInputBehaviorControllerInterface* controller);
         virtual ~OrbitCameraBehavior() = default;
 
     protected:
@@ -30,7 +30,6 @@ namespace MaterialEditor
 
         static constexpr float SensitivityX = 0.005f;
         static constexpr float SensitivityY = 0.005f;
-        
         bool m_aligned = false;
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework
