@@ -116,7 +116,6 @@ function(ly_copy source_file target_directory)
             # only one executable that we need to sign so we can do it directly.
             set(target_filename "${target_filename}/Versions/5/${CMAKE_MATCH_1}")
         elseif("${target_filename}" MATCHES "python.*-darwin")
-            fixup_python_framework("${target_file}")
             codesign_python_binaries("${target_file}")
         endif()
         codesign_file("${target_file}" "none")
