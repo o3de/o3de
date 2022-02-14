@@ -13,6 +13,7 @@
 #include <AzCore/Memory/OSAllocator.h> // required by certain platforms
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/containers/intrusive_list.h>
 #include <AzCore/std/containers/intrusive_set.h>
 
 #ifdef _DEBUG
@@ -55,212 +56,6 @@ namespace AZ {
 
 // Enabled mutex per bucket
 #define USE_MUTEX_PER_BUCKET
-
-    //////////////////////////////////////////////////////////////////////////
-    // TODO: Replace with AZStd::intrusive_list
-    class intrusive_list_base
-    {
-    public:
-        class node_base
-        {
-            node_base* mPrev;
-            node_base* mNext;
-        public:
-            node_base* next() const {return mNext; }
-            node_base* prev() const {return mPrev; }
-            void reset()
-            {
-                mPrev = this;
-                mNext = this;
-            }
-            void unlink()
-            {
-                mNext->mPrev = mPrev;
-                mPrev->mNext = mNext;
-            }
-            void link(node_base* node)
-            {
-                mPrev = node->mPrev;
-                mNext = node;
-                node->mPrev = this;
-                mPrev->mNext = this;
-            }
-        };
-        intrusive_list_base()
-        {
-            mHead.reset();
-        }
-        intrusive_list_base(const intrusive_list_base&)
-        {
-            mHead.reset();
-        }
-        bool empty() const {return mHead.next() == &mHead; }
-        void swap(intrusive_list_base& other)
-        {
-            node_base* node = &other.mHead;
-            if (!empty())
-            {
-                node = mHead.next();
-                mHead.unlink();
-                mHead.reset();
-            }
-            node_base* other_node = &mHead;
-            if (!other.empty())
-            {
-                other_node = other.mHead.next();
-                other.mHead.unlink();
-                other.mHead.reset();
-            }
-            mHead.link(other_node);
-            other.mHead.link(node);
-        }
-    protected:
-        node_base mHead;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // TODO: Replace with AZStd::intrusive_list
-    template<class T>
-    class intrusive_list
-        : public intrusive_list_base
-    {
-        intrusive_list(const intrusive_list& rhs);
-        intrusive_list& operator=(const intrusive_list& rhs);
-    public:
-        class node
-            : public node_base
-        {
-        public:
-            T* next() const {return static_cast<T*>(node_base::next()); }
-            T* prev() const {return static_cast<T*>(node_base::prev()); }
-            const T& data() const {return *static_cast<const T*>(this); }
-            T& data() {return *static_cast<T*>(this); }
-        };
-
-        class const_iterator;
-        class iterator
-        {
-            using reference = T&;
-            using pointer = T*;
-            friend class const_iterator;
-            T* mPtr;
-        public:
-            iterator()
-                : mPtr(0) {}
-            explicit iterator(T* ptr)
-                : mPtr(ptr) {}
-            reference operator*() const {return mPtr->data(); }
-            pointer operator->() const {return &mPtr->data(); }
-            operator pointer() const {
-                return &mPtr->data();
-            }
-            iterator& operator++()
-            {
-                mPtr = mPtr->next();
-                return *this;
-            }
-            iterator& operator--()
-            {
-                mPtr = mPtr->prev();
-                return *this;
-            }
-            bool operator==(const iterator& rhs) const {return mPtr == rhs.mPtr; }
-            bool operator!=(const iterator& rhs) const {return mPtr != rhs.mPtr; }
-            T* ptr() const {return mPtr; }
-        };
-
-        class const_iterator
-        {
-            using reference = const T &;
-            using pointer = const T *;
-            const T* mPtr;
-        public:
-            const_iterator()
-                : mPtr(0) {}
-            explicit const_iterator(const T* ptr)
-                : mPtr(ptr) {}
-            const_iterator(const iterator& it)
-                : mPtr(it.mPtr) {}
-            reference operator*() const {return mPtr->data(); }
-            pointer operator->() const {return &mPtr->data(); }
-            operator pointer() const {
-                return &mPtr->data();
-            }
-            const_iterator& operator++()
-            {
-                mPtr = mPtr->next();
-                return *this;
-            }
-            const_iterator& operator--()
-            {
-                mPtr = mPtr->prev();
-                return *this;
-            }
-            bool operator==(const const_iterator& rhs) const {return mPtr == rhs.mPtr; }
-            bool operator!=(const const_iterator& rhs) const {return mPtr != rhs.mPtr; }
-            const T* ptr() const {return mPtr; }
-        };
-
-        intrusive_list()
-            : intrusive_list_base() {}
-        ~intrusive_list() {clear(); }
-
-        const_iterator begin() const {return const_iterator((const T*)mHead.next()); }
-        iterator begin() {return iterator((T*)mHead.next()); }
-        const_iterator end() const {return const_iterator((const T*)&mHead); }
-        iterator end() {return iterator((T*)&mHead); }
-
-        const T& front() const
-        {
-            HPPA_ASSERT(!empty());
-            return *begin();
-        }
-        T& front()
-        {
-            HPPA_ASSERT(!empty());
-            return *begin();
-        }
-        const T& back() const
-        {
-            HPPA_ASSERT(!empty());
-            return *(--end());
-        }
-        T& back()
-        {
-            HPPA_ASSERT(!empty());
-            return *(--end());
-        }
-
-        void push_front(T* v) {insert(this->begin(), v); }
-        void pop_front() {erase(this->begin()); }
-        void push_back(T* v) {insert(this->end(), v); }
-        void pop_back() {erase(--(this->end())); }
-
-        iterator insert(iterator where, T* node)
-        {
-            T* newLink = node;
-            newLink->link(where.ptr());
-            return iterator(newLink);
-        }
-        iterator erase(iterator where)
-        {
-            T* node = where.ptr();
-            ++where;
-            node->unlink();
-            return where;
-        }
-        void erase(T* node)
-        {
-            node->unlink();
-        }
-        void clear()
-        {
-            while (!this->empty())
-            {
-                this->pop_back();
-            }
-        }
-    };
 
     //////////////////////////////////////////////////////////////////////////
     class HpAllocator
@@ -376,7 +171,7 @@ namespace AZ {
         };
         struct page
             : public block_header_proxy     /* must be first */
-            , public intrusive_list<page>::node
+            , public AZStd::list_base_hook<page>::node_type
         {
             page(size_t elemSize, size_t pageSize, size_t marker)
                 : mBucketIndex((unsigned short)bucket_spacing_function_aligned(elemSize))
@@ -415,7 +210,7 @@ namespace AZ {
             void dec_ref()                          { HPPA_ASSERT(mUseCount > 0); mUseCount--; }
             bool check_marker(size_t marker) const  { return mMarker == (marker ^ ((size_t)this)); }
         };
-        using page_list = intrusive_list<page>;
+        using page_list = AZStd::intrusive_list<page, AZStd::list_base_hook<page>>;
         class bucket
         {
             page_list mPageList;
@@ -442,16 +237,17 @@ namespace AZ {
     #endif
 #endif
             size_t marker() const {return mMarker; }
-            const page* page_list_begin() const {return mPageList.begin(); }
-            page* page_list_begin() {return mPageList.begin(); }
-            const page* page_list_end() const {return mPageList.end(); }
-            page* page_list_end() {return mPageList.end(); }
+            auto page_list_begin() const {return mPageList.begin(); }
+            auto page_list_begin() {return mPageList.begin(); }
+            auto page_list_end() const {return mPageList.end(); }
+            auto page_list_end() {return mPageList.end(); }
             bool page_list_empty() const {return mPageList.empty(); }
-            void add_free_page(page* p) {mPageList.push_front(p); }
+            void add_free_page(page* p) {mPageList.push_front(*p); }
             page* get_free_page();
             const page* get_free_page() const;
             void* alloc(page* p);
             void free(page* p, void* ptr);
+            void unlink(page* p);
         };
         void* bucket_system_alloc();
         void bucket_system_free(void* ptr);
@@ -1278,8 +1074,8 @@ namespace AZ {
         if (!next)
         {
             // if full, auto sort to back
-            p->unlink();
-            mPageList.push_back(p);
+            mPageList.erase(*p);
+            mPageList.push_back(*p);
         }
         return (void*)free;
     }
@@ -1295,9 +1091,14 @@ namespace AZ {
         if (!free)
         {
             // if the page was previously full, auto sort to front
-            p->unlink();
-            mPageList.push_front(p);
+            mPageList.erase(*p);
+            mPageList.push_front(*p);
         }
+    }
+
+    void HpAllocator::bucket::unlink(page* p)
+    {
+        mPageList.erase(*p);
     }
 
     void* HpAllocator::bucket_system_alloc()
@@ -1522,8 +1323,8 @@ namespace AZ {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
     #endif
 #endif
-            const page* pageEnd = mBuckets[i].page_list_end();
-            for (const page* p = mBuckets[i].page_list_begin(); p != pageEnd; )
+            auto pageEnd = mBuckets[i].page_list_end();
+            for (auto p = mBuckets[i].page_list_begin(); p != pageEnd; )
             {
                 // early out if we reach fully occupied page (the remaining should all be full)
                 if (p->mFreeList == nullptr)
@@ -1537,7 +1338,7 @@ namespace AZ {
                 {
                     AZ_TracePrintf("System", "Unused Bucket %d page %p elementSize: %d available: %d elements\n", i, p, elementSize, availableMemory / elementSize);
                 }
-                p = p->next();
+                p = p->m_next;
             }
         }
         return unusedMemory;
@@ -1554,21 +1355,21 @@ namespace AZ {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
     #endif
 #endif
-            page* pageEnd = mBuckets[i].page_list_end();
-            for (page* p = mBuckets[i].page_list_begin(); p != pageEnd; )
+            auto pageEnd = mBuckets[i].page_list_end();
+            for (auto p = mBuckets[i].page_list_begin(); p != pageEnd; )
             {
                 // early out if we reach fully occupied page (the remaining should all be full)
                 if (p->mFreeList == nullptr)
                 {
                     break;
                 }
-                page* next = p->next();
+                page* next = p->m_next;
                 if (p->empty())
                 {
                     HPPA_ASSERT(p->mFreeList);
-                    p->unlink();
+                    mBuckets[i].unlink(AZStd::to_address(p));
                     p->setInvalid();
-                    bucket_system_free(p);
+                    bucket_system_free(AZStd::to_address(p));
                 }
                 p = next;
             }
@@ -2239,11 +2040,17 @@ namespace AZ {
 
     size_t HpAllocator::tree_get_max_allocation() const
     {
+#ifdef MULTITHREADED
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
+#endif
         return mFreeTree.maximum()->get_block()->size();
     }
 
     size_t HpAllocator::tree_get_unused_memory(bool isPrint) const
     {
+#ifdef MULTITHREADED
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
+#endif
         size_t unusedMemory = 0;
         for (free_node_tree::const_iterator it = mFreeTree.begin(); it != mFreeTree.end(); ++it)
         {

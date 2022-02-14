@@ -434,5 +434,29 @@ namespace AZ
             return m_renderTick;
         }
 
+        void RPISystem::SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState)
+        {
+            m_multisampleState = multisampleState;
+
+            bool isNonMsaaPipeline = (m_multisampleState.m_samples == 1);
+            const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
+            AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
+
+            // reinitialize pipelines for all scenes
+            for (auto& scene : m_scenes)
+            {
+                for (auto& renderPipeline : scene->GetRenderPipelines())
+                {
+                    renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
+                    renderPipeline->SetPassNeedsRecreate();
+                }
+            }
+        }
+
+        const RHI::MultisampleState& RPISystem::GetApplicationMultisampleState() const
+        {
+            return m_multisampleState;
+        }
+
     } //namespace RPI
 } //namespace AZ

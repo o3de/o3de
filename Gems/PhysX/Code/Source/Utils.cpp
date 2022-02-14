@@ -29,6 +29,7 @@
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include <PhysX/ColliderShapeBus.h>
+#include <PhysX/EditorColliderComponentRequestBus.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/Utils.h>
@@ -830,6 +831,17 @@ namespace PhysX
             const AZ::Quaternion& colliderRelativeRotation)
         {
             return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRelativeRotation, colliderRelativePosition);
+        }
+
+        AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair)
+        {
+            AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
+            PhysX::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
+
+            AZ::Vector3 colliderOffset = AZ::Vector3::CreateZero();
+            PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
+
+            return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRotation, colliderOffset);
         }
 
         AZ::Transform GetColliderWorldTransform(const AZ::Transform& worldTransform,

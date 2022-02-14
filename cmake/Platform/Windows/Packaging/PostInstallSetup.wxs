@@ -36,6 +36,7 @@
                 <Directory Id="root.cmake.runtime" Name="runtime"/>
             </Directory>
             <Directory Id="root.python" Name="python"/>
+            <Directory Id="root.scripts" Name="scripts"/>
             <Directory Id="root.tools" Name="Tools">
                 <Directory Id="root.tools.redist" Name="Redistributables">
                     <Directory Id="root.tools.redist.cmake" Name="CMake"/>
@@ -59,6 +60,13 @@
             ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C set &quot;LY_CMAKE_PATH=[root.cmake.runtime]bin&quot; &amp;&amp; &quot;[root.python]get_python.bat&quot;"
             Directory="INSTALL_ROOT"
             Execute="deferred"
+            Impersonate="no"/>
+
+        <CustomAction Id="UnRegisterEngine"
+            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C @&quot;[root.scripts]o3de.bat&quot; register --remove --this-engine"
+            Directory="INSTALL_ROOT"
+            Execute="immediate"
+            Return="ignore"
             Impersonate="no"/>
 
     </Fragment>
