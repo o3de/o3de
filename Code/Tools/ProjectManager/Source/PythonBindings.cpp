@@ -1356,11 +1356,18 @@ namespace O3DE::ProjectManager
 
     IPythonBindings::ErrorPair PythonBindings::GetErrorPair()
     {
-        AZStd::string detailedString = m_pythonErrorStrings.size() == 1
-            ? ""
-            : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
+        if (const size_t errorSize = m_pythonErrorStrings.size())
+        {
+            AZStd::string detailedString =
+                errorSize == 1 ? "" : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
 
-        return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+            return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+        }
+        // If no error was found
+        else
+        {
+            return IPythonBindings::ErrorPair(AZStd::string("Unknown Python Bindings Error"), AZStd::string(""));
+        }
     }
 
     void PythonBindings::AddErrorString(AZStd::string errorString)

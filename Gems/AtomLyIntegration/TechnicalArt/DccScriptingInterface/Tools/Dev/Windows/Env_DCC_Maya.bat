@@ -31,8 +31,8 @@ IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=7)
 IF "%MAYA_VERSION%"=="" (set MAYA_VERSION=2022)
 
 :: Initialize env
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
+CALL %~dp0\Env_O3DE_Core.bat
+CALL %~dp0\Env_O3DE_Python.bat
 
 echo.
 echo _____________________________________________________________________

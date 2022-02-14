@@ -7,6 +7,17 @@
  */
 #include "LmbrCentralReflectionTest.h"
 #include "Shape/EditorBoxShapeComponent.h"
+#include "Shape/EditorSphereShapeComponent.h"
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
+#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
+#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
+#include <AzManipulatorTestFramework/ViewportInteraction.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace LmbrCentral
 {
@@ -55,6 +66,111 @@ namespace LmbrCentral
             dimensions, m_entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
 
        EXPECT_EQ(dimensions, AZ::Vector3(0.37f, 0.57f, 0.66f));
+    }
+
+    class EditorBoxShapeComponentFixture : public UnitTest::ToolsApplicationFixture
+    {
+    public:
+        void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
+
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorBoxShapeComponentDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorSphereShapeComponentDescriptor;
+
+        AZ::Entity* m_entity = nullptr;
+    };
+
+    void EditorBoxShapeComponentFixture::SetUpEditorFixtureImpl()
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        // need to reflect EditorSphereShapeComponent in order for EditorBaseShapeComponent to be reflected
+        m_editorSphereShapeComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(EditorSphereShapeComponent::CreateDescriptor());
+
+        m_editorBoxShapeComponentDescriptor =
+            AZStd::unique_ptr<AZ::ComponentDescriptor>(EditorBoxShapeComponent::CreateDescriptor());
+
+        ShapeComponentConfig::Reflect(serializeContext);
+        BoxShape::Reflect(serializeContext);
+        m_editorSphereShapeComponentDescriptor->Reflect(serializeContext);
+        m_editorBoxShapeComponentDescriptor->Reflect(serializeContext);
+
+        UnitTest::CreateDefaultEditorEntity("BoxShapeComponentEntity", &m_entity);
+        m_entity->Deactivate();
+        m_entity->CreateComponent(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type());
+        m_entity->CreateComponent(EditorBoxShapeComponentTypeId);
+        m_entity->Activate();
+    }
+
+    void EditorBoxShapeComponentFixture::TearDownEditorFixtureImpl()
+    {
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entity->GetId());
+        m_entity = nullptr;
+
+        m_editorBoxShapeComponentDescriptor.reset();
+        m_editorSphereShapeComponentDescriptor.reset();
+    }
+
+    using EditorBoxShapeComponentManipulatorFixture =
+        UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorBoxShapeComponentFixture>;
+
+    TEST_F(EditorBoxShapeComponentManipulatorFixture, BoxShapeNonUniformScaleManipulatorsScaleCorrectly)
+    {
+        // a rotation which rotates the x-axis to (0.8, 0.6, 0)
+        const AZ::Quaternion boxRotation(0.0f, 0.0f, 0.316228f, 0.948683f);
+        AZ::Transform boxTransform = AZ::Transform::CreateFromQuaternionAndTranslation(boxRotation, AZ::Vector3(2.0f, 3.0f, 4.0f));
+        boxTransform.SetUniformScale(1.5f);
+        AZ::TransformBus::Event(m_entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, boxTransform);
+
+        const AZ::Vector3 nonUniformScale(4.0f, 1.5f, 2.0f);
+        AZ::NonUniformScaleRequestBus::Event(m_entity->GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+
+        const AZ::Vector3 boxDimensions(1.0f, 2.0f, 2.5f);
+        BoxShapeComponentRequestsBus::Event(m_entity->GetId(), &BoxShapeComponentRequests::SetBoxDimensions, boxDimensions);
+
+        // enter the box shape component's component mode
+        AzToolsFramework::SelectEntity(m_entity->GetId());
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
+            EditorBoxShapeComponentTypeId);
+
+        // position the camera so it is looking down at the box
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::HalfPi), AZ::Vector3(2.0f, 3.0f, 20.0f)));
+
+        // position in world space which should allow grabbing the box's x scale manipulator
+        // the unscaled position of the x scale manipulator in the box's local frame should be (0.5f, 0.0f, 0.0f)
+        // after non-uniform scale, the manipulator position should be (2.0f, 0.0f, 0.0f)
+        // after the scale of the entity transform, the manipulator position should be (3.0f, 0.0f, 0.0f)
+        // after the rotation of the entity transform, the manipulator position should be (2.4f, 1.8f, 0.0f)
+        // after the translation of the entity transform, the manipulator position should be (4.4f, 4.8f, 4.0f)
+        const AZ::Vector3 worldStart(4.4f, 4.8f, 4.0f);
+
+        // position in world space to move to
+        const AZ::Vector3 worldEnd(6.8f, 6.6f, 4.0f);
+
+        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
+        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
+
+        m_actionDispatcher
+            ->CameraState(m_cameraState)
+            // move the mouse to the position of the x scale manipulator
+            ->MousePosition(screenStart)
+            // drag to move the manipulator
+            ->MouseLButtonDown()
+            ->MousePosition(screenEnd)
+            ->MouseLButtonUp();
+
+        AZ::Vector3 newBoxDimensions = AZ::Vector3::CreateZero();
+        BoxShapeComponentRequestsBus::EventResult(newBoxDimensions, m_entity->GetId(), &BoxShapeComponentRequests::GetBoxDimensions);
+
+        const AZ::Vector3 expectedBoxDimensions(2.0f, 2.0f, 2.5f);
+        // allow a reasonably high tolerance because we can't get better accuracy than the resolution of the viewport
+        EXPECT_THAT(newBoxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, 1e-2f));
     }
 }
 
