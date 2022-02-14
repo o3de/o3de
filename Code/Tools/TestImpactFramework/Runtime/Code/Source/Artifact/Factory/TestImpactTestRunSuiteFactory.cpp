@@ -69,6 +69,7 @@ namespace TestImpact
                     const auto getDuration = [Keys](const AZ::rapidxml::xml_node<>* node)
                     AZ_POP_DISABLE_WARNING
                     {
+                        AZ_UNUSED(Keys); // Clang reports a warning that capturing Keys is not necessary because it is not odr-used
                         const AZStd::string duration = node->first_attribute(Keys[DurationKey])->value();
                         return AZStd::chrono::milliseconds(static_cast<AZStd::sys_time_t>(AZStd::stof(duration) * 1000.f));
                     };
@@ -86,6 +87,7 @@ namespace TestImpact
                         const auto getStatus = [Keys](const AZ::rapidxml::xml_node<>* node)
                         AZ_POP_DISABLE_WARNING
                         {
+                            AZ_UNUSED(Keys); // Clang reports a warning that capturing Keys is not necessary because it is not odr-used
                             const AZStd::string status = node->first_attribute(Keys[StatusKey])->value();
                             if (status == Keys[RunKey])
                             {

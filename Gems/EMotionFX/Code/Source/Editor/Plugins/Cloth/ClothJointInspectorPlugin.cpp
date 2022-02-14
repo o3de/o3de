@@ -196,10 +196,9 @@ namespace EMotionFX
             renderInfo);
     }
 
-    void ClothJointInspectorPlugin::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void ClothJointInspectorPlugin::Render(EMotionFX::ActorRenderFlags renderFlags)
     {
-        const bool renderColliders = renderFlags[RENDER_CLOTH_COLLIDERS];
-        if (!renderColliders)
+        if (!AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::ClothColliders))
         {
             return;
         }

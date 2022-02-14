@@ -61,7 +61,7 @@ namespace EMotionFX
 
         void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
         void LegacyRenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance, const AZ::Color& color);
-        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
+        void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         void RenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance, const AZ::Color& color);
 
         SimulatedObjectModel* GetSimulatedObjectModel() const;

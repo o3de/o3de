@@ -181,7 +181,7 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // This is declared outside the loop so that the list of points doesn't fully reallocate on every query.
             SurfaceData::SurfacePointList points;
@@ -211,7 +211,7 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             SurfaceData::SurfacePointList points;
 
@@ -235,7 +235,7 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::vector<AZ::Vector3> queryPositions;
             queryPositions.reserve(worldSizeInt * worldSizeInt);
