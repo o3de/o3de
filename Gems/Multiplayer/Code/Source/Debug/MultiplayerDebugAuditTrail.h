@@ -63,7 +63,7 @@ namespace Multiplayer
         AZStd::string_view GetAuditTrialFilter();
 
         //! Sets string filter for the audit trail
-        void SetAuditTrailFilter(const AZStd::string filter);
+        void SetAuditTrailFilter(AZStd::string filter);
     private:
         AZ::ScheduledEvent m_updateDebugOverlay;
 
