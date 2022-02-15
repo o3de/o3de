@@ -6,28 +6,26 @@
  *
  */
 
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/PanCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
-#include <Viewport/InputController/MaterialEditorViewportInputControllerBus.h>
-#include <Viewport/InputController/PanCameraBehavior.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
+    PanCameraBehavior::PanCameraBehavior(ViewportInputBehaviorControllerInterface* controller)
+        : ViewportInputBehavior(controller)
+    {
+    }
+
     void PanCameraBehavior::End()
     {
-        float distanceToTarget;
-        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
-            distanceToTarget,
-            &MaterialEditorViewportInputControllerRequestBus::Handler::GetDistanceToTarget);
+        float distanceToTarget = m_controller->GetDistanceToTarget();
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTM);
-        AZ::Vector3 targetPosition =
-            transform.GetTranslation() +
-            transform.GetBasisY() * distanceToTarget;
-        MaterialEditorViewportInputControllerRequestBus::Broadcast(
-            &MaterialEditorViewportInputControllerRequestBus::Handler::SetTargetPosition,
-            targetPosition);
+        AZ::Vector3 targetPosition = transform.GetTranslation() + transform.GetBasisY() * distanceToTarget;
+        m_controller->SetTargetPosition(targetPosition);
     }
 
     void PanCameraBehavior::TickInternal(float x, float y, [[maybe_unused]] float z)
@@ -37,9 +35,7 @@ namespace MaterialEditor
         AZ::Quaternion rotation = transform.GetRotation();
         const AZ::Vector3 right = transform.GetBasisX();
         rotation =
-            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), -x) *
-            AZ::Quaternion::CreateFromAxisAngle(right, -y) *
-            rotation;
+            AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), -x) * AZ::Quaternion::CreateFromAxisAngle(right, -y) * rotation;
         rotation.Normalize();
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);
     }
@@ -53,4 +49,4 @@ namespace MaterialEditor
     {
         return SensitivityY;
     }
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

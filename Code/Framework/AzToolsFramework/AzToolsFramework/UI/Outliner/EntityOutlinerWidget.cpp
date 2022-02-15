@@ -193,7 +193,6 @@ namespace AzToolsFramework
         m_listModel->SetSortMode(m_sortMode);
 
         const int autoExpandDelayMilliseconds = 2500;
-        m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         SetDefaultTreeViewEditTriggers();
         m_gui->m_objectTree->setAutoExpandDelay(autoExpandDelayMilliseconds);
         m_gui->m_objectTree->setDragEnabled(true);
@@ -208,6 +207,7 @@ namespace AzToolsFramework
         m_gui->m_objectTree->setAutoScrollMargin(20);
         m_gui->m_objectTree->setIndentation(24);
         m_gui->m_objectTree->setRootIsDecorated(false);
+        m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         connect(m_gui->m_objectTree, &QTreeView::customContextMenuRequested, this, &EntityOutlinerWidget::OnOpenTreeContextMenu);
 
         // custom item delegate
@@ -260,6 +260,8 @@ namespace AzToolsFramework
         m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnVisibilityToggle, 20);
         m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnLockToggle, QHeaderView::Fixed);
         m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnLockToggle, 24);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnSpacing, QHeaderView::Fixed);
+        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnSpacing, 16);
 
         connect(m_gui->m_objectTree->selectionModel(),
             &QItemSelectionModel::selectionChanged,

@@ -7,48 +7,25 @@
  */
 #pragma once
 
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Viewport/SingleViewportController.h>
-#include <Viewport/InputController/Behavior.h>
-#include <Viewport/InputController/MaterialEditorViewportInputControllerBus.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    class Behavior;
+    class ViewportInputBehavior;
 
     //! Provides controls for manipulating camera, model, and environment in Material Editor
-    class MaterialEditorViewportInputController
+    class ViewportInputBehaviorController
         : public AzFramework::SingleViewportController
-        , public MaterialEditorViewportInputControllerRequestBus::Handler
+        , public ViewportInputBehaviorControllerInterface
     {
     public:
+        AZ_TYPE_INFO(ViewportInputBehaviorController, "{569A0544-7654-4DCE-8156-00A71B408374}");
+        AZ_CLASS_ALLOCATOR(ViewportInputBehaviorController, AZ::SystemAllocator, 0)
+        AZ_DISABLE_COPY_MOVE(ViewportInputBehaviorController);
 
-        AZ_TYPE_INFO(MaterialEditorViewportInputController, "{569A0544-7654-4DCE-8156-00A71B408374}");
-        AZ_CLASS_ALLOCATOR(MaterialEditorViewportInputController, AZ::SystemAllocator, 0)
-
-        MaterialEditorViewportInputController();
-        virtual ~MaterialEditorViewportInputController();
-
-        void Init(const AZ::EntityId& cameraEntityId, const AZ::EntityId& targetEntityId, const AZ::EntityId& iblEntityId);
-
-        // MaterialEditorViewportInputControllerRequestBus::Handler interface overrides...
-        const AZ::EntityId& GetCameraEntityId() const override;
-        const AZ::EntityId& GetTargetEntityId() const override;
-        const AZ::EntityId& GetIblEntityId() const override;
-        const AZ::Vector3& GetTargetPosition() const override;
-        void SetTargetPosition(const AZ::Vector3& targetPosition) override;
-        float GetDistanceToTarget() const override;
-        void GetExtents(float& distanceMin, float& distanceMax) const override;
-        float GetRadius() const override;
-        void Reset() override;
-        void SetFieldOfView(float value) override;
-        bool IsCameraCentered() const override;
-
-        // AzFramework::ViewportControllerInstance interface overrides...
-        bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
-        void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
-
-    private:
         using KeyMask = uint32_t;
 
         enum Keys
@@ -62,12 +39,35 @@ namespace MaterialEditor
             Shift = 1 << 5
         };
 
+        ViewportInputBehaviorController(
+            const AZ::EntityId& cameraEntityId, const AZ::EntityId& targetEntityId, const AZ::EntityId& environmentEntityId);
+        virtual ~ViewportInputBehaviorController();
+
+        void AddBehavior(KeyMask mask, AZStd::shared_ptr<ViewportInputBehavior> behavior);
+
+        // ViewportInputBehaviorControllerInterface overrides...
+        const AZ::EntityId& GetCameraEntityId() const override;
+        const AZ::EntityId& GetTargetEntityId() const override;
+        const AZ::EntityId& GetEnvironmentEntityId() const override;
+        const AZ::Vector3& GetTargetPosition() const override;
+        void SetTargetPosition(const AZ::Vector3& targetPosition) override;
+        void SetTargetBounds(const AZ::Aabb& targetBounds) override;
+        float GetDistanceToTarget() const override;
+        void GetExtents(float& distanceMin, float& distanceMax) const override;
+        float GetRadius() const override;
+        void Reset() override;
+        void SetFieldOfView(float value) override;
+        bool IsCameraCentered() const override;
+
+        // AzFramework::ViewportControllerInstance overrides...
+        bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
+        void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
+
+    private:
         //! Calculate min and max dist and center based on mesh size of target model
         void CalculateExtents();
         //! Determine which behavior to set based on mouse/keyboard input
         void EvaluateControlBehavior();
-
-        bool m_initialized = false;
 
         //! Input keys currently pressed
         KeyMask m_keys = None;
@@ -77,16 +77,18 @@ namespace MaterialEditor
         float m_timeToBehaviorSwitchMs = 0;
 
         //! Current behavior of the controller
-        AZStd::shared_ptr<Behavior> m_behavior;
-        AZStd::unordered_map<KeyMask, AZStd::shared_ptr<Behavior>> m_behaviorMap;
+        AZStd::shared_ptr<ViewportInputBehavior> m_behavior;
+        AZStd::unordered_map<KeyMask, AZStd::shared_ptr<ViewportInputBehavior>> m_behaviorMap;
 
         AZ::EntityId m_cameraEntityId;
         //! Target entity is looking at
         AZ::EntityId m_targetEntityId;
         //! IBL entity for rotating environment lighting
-        AZ::EntityId m_iblEntityId;
+        AZ::EntityId m_environmentEntityId;
         //! Target position camera is pointed towards
         AZ::Vector3 m_targetPosition;
+        //! Target bounds
+        AZ::Aabb m_targetBounds = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
         //! Center of the model observed
         AZ::Vector3 m_modelCenter;
         //! Minimum distance from camera to target
@@ -106,4 +108,4 @@ namespace MaterialEditor
         //! e.g. pressing RMB+LMB shouldn't switch into RMB behavior (or LMB behavior) first because it's virtually impossible to press both mouse buttons on the same frame
         static constexpr float BehaviorSwitchDelayMs = 0.1f;
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

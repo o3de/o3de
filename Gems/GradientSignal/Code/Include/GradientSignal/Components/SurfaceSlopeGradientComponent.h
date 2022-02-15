@@ -13,6 +13,7 @@
 #include <GradientSignal/Ebuses/SmoothStepRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceSlopeGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <GradientSignal/SmoothStep.h>
 #include <GradientSignal/Util.h>
 
@@ -125,17 +126,19 @@ namespace GradientSignal
     private:
         float GetSlopeRatio(const SurfaceData::SurfacePointList& points, float angleMin, float angleMax) const
         {
-            if (points.IsEmpty())
+            constexpr size_t inPositionIndex = 0;
+            if (points.IsEmpty(inPositionIndex))
             {
                 return 0.0f;
             }
 
             // Assuming our surface normal vector is actually normalized, we can get the slope
             // by just grabbing the Z value.  It's the same thing as normal.Dot(AZ::Vector3::CreateAxisZ()).
+            auto highestSurfacePoint = points.GetHighestSurfacePoint(inPositionIndex);
             AZ_Assert(
-                points.GetHighestSurfacePoint().m_normal.GetNormalized().IsClose(points.GetHighestSurfacePoint().m_normal),
+                highestSurfacePoint.m_normal.GetNormalized().IsClose(highestSurfacePoint.m_normal),
                 "Surface normals are expected to be normalized");
-            const float slope = points.GetHighestSurfacePoint().m_normal.GetZ();
+            const float slope = highestSurfacePoint.m_normal.GetZ();
             // Convert slope back to an angle so that we can lerp in "angular space", not "slope value space".
             // (We want our 0-1 range to be linear across the range of angles)
             const float slopeAngle = acosf(slope);
