@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 
 #include <AzCore/Math/Color.h>
+#include <AzCore/std/containers/array.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
@@ -106,6 +107,30 @@ namespace AZ
                 return ((value - origMin) / (origMax - origMin)) * (scaledMax - scaledMin) + scaledMin;
             }
 
+            // Pre-compute a lookup table for converting SRGB gamma to linear
+            // by specifying the AZ::u8 so we don't have to do the computation
+            // when retrieving pixels
+            using ConversionLookupTable = AZStd::array<float, 256>;
+            ConversionLookupTable CreateSrgbGammaToLinearLookupTable()
+            {
+                ConversionLookupTable lookupTable;
+
+                for (size_t i = 0; i < lookupTable.array_size; ++i)
+                {
+                    float srgbValue = i / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                    lookupTable[i] = AZ::Color::ConvertSrgbGammaToLinear(srgbValue);
+                }
+
+                return lookupTable;
+            }
+
+            static ConversionLookupTable s_SrgbGammaToLinearLookupTable = CreateSrgbGammaToLinearLookupTable();
+
+            float ConvertSrgbGammaToLinearUint(AZ::u8 x)
+            {
+                return s_SrgbGammaToLinearLookupTable[x];
+            }
+
             float RetrieveFloatValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
             {
                 switch (format)
@@ -123,8 +148,9 @@ namespace AZ
                 case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
                 case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
                 {
-                    float srgbValue = mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
-                    return AZ::Color::ConvertSrgbGammaToLinear(srgbValue);
+                    // Use a variant of ConvertSrgbGammaToLinear that takes an AZ::u8
+                    // and a lookup table instead of a float for better performance
+                    return ConvertSrgbGammaToLinearUint(mem[index]);
                 }
                 case AZ::RHI::Format::R8_SNORM:
                 case AZ::RHI::Format::R8G8_SNORM:
