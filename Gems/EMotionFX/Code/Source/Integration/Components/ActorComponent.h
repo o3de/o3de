@@ -82,11 +82,9 @@ namespace EMotionFX
                 AZ::EntityId m_attachmentTarget{}; ///< Target entity this actor should attach to.
                 size_t m_attachmentJointIndex = InvalidIndex; ///< Index of joint on target skeleton for actor attachments.
                 AttachmentType m_attachmentType = AttachmentType::None; ///< Type of attachment.
-                bool m_renderSkeleton = false; ///< Toggles debug rendering of the skeleton.
-                bool m_renderCharacter = true; ///< Toggles rendering of the character.
-                bool m_renderBounds = false; ///< Toggles rendering of the character bounds used for visibility testing.
                 SkinningMethod m_skinningMethod = SkinningMethod::DualQuat; ///< The skinning method for this actor
                 size_t m_lodLevel = 0;
+                ActorRenderFlags m_renderFlags = ActorRenderFlags::Default; ///< Actor render flag
 
                 // Force updating the joints when it is out of camera view. By
                 // default, joints level update (beside the root joint) on
@@ -180,7 +178,7 @@ namespace EMotionFX
             bool IsPhysicsSceneSimulationFinishEventConnected() const;
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
 
-            void SetRenderFlag(ActorRenderFlagBitset renderFlags);
+            void SetRenderFlag(ActorRenderFlags renderFlags);
 
         private:
             // AZ::TransformNotificationBus::MultiHandler
@@ -202,7 +200,6 @@ namespace EMotionFX
             AZStd::vector<AZ::EntityId>                     m_attachments;
 
             AZStd::unique_ptr<RenderActorInstance>          m_renderActorInstance;
-            ActorRenderFlagBitset                             m_debugRenderFlags;         ///< Actor debug render flag
 
             AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         };

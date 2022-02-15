@@ -178,7 +178,7 @@ namespace SurfaceData
         AZ::Vector3 hitNormal;
         if (DoRayTrace(inPosition, hitPosition, hitNormal))
         {
-            surfacePointList.AddSurfacePoint(GetEntityId(), hitPosition, hitNormal, m_newPointWeights);
+            surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, hitPosition, hitNormal, m_newPointWeights);
         }
     }
 
@@ -255,6 +255,7 @@ namespace SurfaceData
         registryEntry.m_entityId = GetEntityId();
         registryEntry.m_bounds = GetSurfaceAabb();
         registryEntry.m_tags = GetSurfaceTags();
+        registryEntry.m_maxPointsCreatedPerInput = 1;
 
         if (!meshValidBeforeUpdate && !meshValidAfterUpdate)
         {
