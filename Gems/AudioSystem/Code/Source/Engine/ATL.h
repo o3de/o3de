@@ -16,10 +16,12 @@
 
 #include <ISystem.h>
 
+#if !defined(AUDIO_RELEASE)
 namespace AzFramework
 {
     class DebugDisplayRequests;
 }
+#endif
 
 namespace Audio
 {

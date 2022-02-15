@@ -20,6 +20,10 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/thread.h>
 
+#if !defined(AUDIO_RELEASE)
+    #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#endif // !AUDIO_RELEASE
+
 #define PROVIDE_GETNAME_SUPPORT
 
 AZ_DECLARE_BUDGET(Audio);
@@ -53,6 +57,9 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class CAudioSystem
         : public AZ::Interface<Audio::IAudioSystem>::Registrar
+        #if !defined(AUDIO_RELEASE)
+        , AzFramework::DebugDisplayEventBus::Handler
+        #endif
     {
         friend class CAudioThread;
 
@@ -108,7 +115,7 @@ namespace Audio
         bool m_bSystemInitialized;
 
         using duration_ms = AZStd::chrono::duration<float, AZStd::milli>;
-        const duration_ms m_targetUpdatePeriod = AZStd::chrono::milliseconds(8);
+        const duration_ms m_targetUpdatePeriod = AZStd::chrono::milliseconds(4);
 
         CAudioTranslationLayer m_oATL;
         CAudioThread m_audioSystemThread;
@@ -137,7 +144,7 @@ namespace Audio
         CATLDebugNameStore m_debugNameStore;
         #endif // PROVIDE_GETNAME_SUPPORT
 
-        void DrawAudioDebugData();
+        void DrawGlobalDebugInfo() override;
     #endif // !AUDIO_RELEASE
     };
 

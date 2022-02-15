@@ -24,8 +24,10 @@
     #include <AzFramework/Entity/EntityDebugDisplayBus.h>
     #include <AzFramework/Viewport/ViewportBus.h>
     #include <AzFramework/Viewport/ViewportScreen.h>
+    #include <Atom/RPI.Public/View.h>
     #include <Atom/RPI.Public/ViewportContext.h>
     #include <Atom/RPI.Public/ViewportContextBus.h>
+    #include <Atom/RPI.Public/WindowContext.h>
 #endif // !AUDIO_RELEASE
 
 
@@ -677,17 +679,43 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObject::DrawDebugInfo(
-        AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& vListenerPos, const CATLDebugNameStore* const pDebugNameStore) const
+    bool ConvertOjbectWorldPosToScreenCoords(AZ::Vector3& position)
     {
-        m_raycastProcessor.DrawObstructionRays(debugDisplay);
+        auto viewportContextMgr = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        if (!viewportContextMgr)
+        {
+            return false;
+        }
+        AZ::RPI::ViewportContextPtr viewportContext = viewportContextMgr->GetDefaultViewportContext();
+        if (!viewportContext)
+        {
+            return false;
+        }
+        AZ::RPI::ViewPtr view = viewportContext->GetDefaultView();
+        if (!view)
+        {
+            return false;
+        }
+        const AZ::RHI::Viewport& viewport = viewportContext->GetWindowContext()->GetViewport();
 
+        position = AzFramework::WorldToScreenNdc(position, view->GetWorldToViewMatrixAsMatrix3x4(), view->GetViewToClipMatrix());
+        position.SetX(position.GetX() * viewport.GetWidth());
+        position.SetY((1.f - position.GetY()) * viewport.GetHeight());
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CATLAudioObject::DrawDebugInfo(
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        [[maybe_unused]] const AZ::Vector3& vListenerPos,
+        [[maybe_unused]] const CATLDebugNameStore* const pDebugNameStore) const
+    {
         if (!m_cTriggers.empty())
         {
             // Inspect triggers and apply filter (if set)...
-            TTriggerCountMap cTriggerCounts;
+            TTriggerCountMap triggerCounts;
 
-            auto triggerFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioTriggersDebugFilter);
+            auto triggerFilter = static_cast<AZ::CVarFixedString>(CVars::s_AudioTriggersDebugFilter);
             AZStd::to_lower(triggerFilter.begin(), triggerFilter.end());
 
             for (auto& trigger : m_cTriggers)
@@ -697,167 +725,150 @@ namespace Audio
 
                 if (AudioDebugDrawFilter(triggerName, triggerFilter))
                 {
-                    ++cTriggerCounts[trigger.second.nTriggerID];
+                    ++triggerCounts[trigger.second.nTriggerID];
                 }
             }
 
             // Early out for this object if all trigger names were filtered out.
-            if (cTriggerCounts.empty())
+            if (triggerCounts.empty())
             {
                 return;
             }
 
-            const AZ::Vector3 vPos(m_oPosition.GetPositionVec());
+            const AZ::Vector3 pos3d(m_oPosition.GetPositionVec());
+            AZ::Vector3 screenPos{ pos3d };
+            if (!ConvertOjbectWorldPosToScreenCoords(screenPos))
+            {
+                return;
+            }
 
-            auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-            AZ::RPI::ViewportContextPtr viewportContext = atomViewportRequests->GetDefaultViewportContext();
-            AzFramework::WindowSize windowSize = viewportContext->GetViewportSize();
-            AZ::Matrix3x4 cameraView = viewportContext->GetCameraViewMatrixAsMatrix3x4();
-            AZ::Matrix4x4 cameraProj = viewportContext->GetCameraProjectionMatrix();
+            if (screenPos.GetZ() < 0.5f)
+            {
+                return;
+            }
 
-            AZ::Vector3 screenProjNdc = AzFramework::WorldToScreenNdc(vPos, cameraView, cameraProj);
-            AZ::Vector3 viewportSize(aznumeric_cast<float>(windowSize.m_width), aznumeric_cast<float>(windowSize.m_height), 1.f);
-            AZ::Vector3 screenPos = screenProjNdc * viewportSize;
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawObjects))
+            {
+                const float radius = 0.05f;
+                const AZ::Color sphereColor{ 1.f, 0.1f, 0.1f, 1.f };
+                debugDisplay.SetColor(sphereColor);
+                debugDisplay.DrawWireSphere(pos3d, radius);
+            }
 
             AZStd::string str;
+            const AZ::Color brightColor{ 0.9f, 0.9f, 0.9f, 1.f };
+            const AZ::Color normalColor(0.75f, 0.75f, 0.75f, 1.f);
+            const AZ::Color dimmedColor(0.5f, 0.5f, 0.5f, 1.f);
+            const float distance = pos3d.GetDistance(vListenerPos);
+            const float fontSize = 0.75f;
+            const float lineHeight = 15.f;
+            float posX = screenPos.GetX();
+            float posY = screenPos.GetY();
 
-            if (0.0f <= screenProjNdc.GetX() && screenProjNdc.GetX() <= 1.0f &&
-                0.0f <= screenProjNdc.GetY() && screenProjNdc.GetY() <= 1.0f)
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectLabels))
             {
-                const float fDist = vPos.GetDistance(vListenerPos);
+                SATLSoundPropagationData obstOccData;
+                GetObstOccData(obstOccData);
+                str = AZStd::string::format(
+                    "%s  ID: %llu  RefCnt: %2zu  Dist: %4.1f m", pDebugNameStore->LookupAudioObjectName(GetID()), GetID(), GetRefCount(),
+                    distance);
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
 
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawObjects))
+                posY += lineHeight;
+                str = AZStd::string::format("  Obst: %.3f  Occl: %.3f", obstOccData.fObstruction, obstOccData.fOcclusion);
+                debugDisplay.SetColor(normalColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
+            }
+
+
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectTriggers))
+            {
+                posY += lineHeight;
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, "Triggers:");
+                debugDisplay.SetColor(normalColor);
+
+                for (auto& triggerCount : triggerCounts)
                 {
-                    const float fRadius = 0.05f;
-                    const AZ::Color sphereColor(1.f, 0.1f, 0.1f, 1.f);
-                    debugDisplay.SetColor(sphereColor);
-                    debugDisplay.DrawWireSphere(vPos, fRadius);
-                }
-
-                const float fFontSize = 1.0f;
-                const float fLineHeight = 15.0f;
-
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectStates))
-                {
-                    AZ::Vector3 vSwitchPos(screenPos);
-
-                    for (auto& switchState : m_cSwitchStates)
+                    auto triggerName = pDebugNameStore->LookupAudioTriggerName(triggerCount.first);
+                    if (triggerName)
                     {
-                        const TAudioControlID nSwitchID = switchState.first;
-                        const TAudioSwitchStateID nStateID = switchState.second;
-
-                        const char* const pSwitchName = pDebugNameStore->LookupAudioSwitchName(nSwitchID);
-                        const char* const pStateName = pDebugNameStore->LookupAudioSwitchStateName(nSwitchID, nStateID);
-
-                        if (pSwitchName && pStateName)
-                        {
-                            CStateDebugDrawData& oDrawData = m_cStateDrawInfoMap[nSwitchID];
-                            oDrawData.Update(nStateID);
-                            const AZ::Color switchTextColor(0.8f, 0.8f, 0.8f, oDrawData.fCurrentAlpha);
-
-                            vSwitchPos -= AZ::Vector3(0.f, fLineHeight, 0.f);
-
-                            str = AZStd::string::format("%s: %s", pSwitchName, pStateName);
-                            debugDisplay.SetColor(switchTextColor);
-                            debugDisplay.Draw2dTextLabel(vSwitchPos.GetX(), vSwitchPos.GetY(), fFontSize, str.c_str());
-                        }
+                        posY += lineHeight;
+                        str = AZStd::string::format("  %s  (count = %zu)", triggerName, triggerCount.second);
+                        debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
                     }
                 }
+            }
 
-                const AZ::Color brightTextColor(0.9f, 0.9f, 0.9f, 1.f);
-                const AZ::Color normalTextColor(0.75f, 0.75f, 0.75f, 1.f);
-                const AZ::Color dimmedTextColor(0.5f, 0.5f, 0.5f, 1.f);
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectStates))
+            {
+                posY += lineHeight;
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, "Switches:");
 
-                debugDisplay.SetColor(brightTextColor);
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectLabels))
+                for (auto& switchState : m_cSwitchStates)
                 {
-                    const TAudioObjectID nObjectID = GetID();
-
-                    str = AZStd::string::format(
-                        "%s  ID: %llu  RefCnt: %2zu  Dist: %4.1f m", pDebugNameStore->LookupAudioObjectName(nObjectID), nObjectID,
-                        GetRefCount(), fDist);
-                    debugDisplay.Draw2dTextLabel(screenPos.GetX(), screenPos.GetY(), fFontSize, str.c_str());
-
-                    SATLSoundPropagationData obstOccData;
-                    GetObstOccData(obstOccData);
-
-                    str = AZStd::string::format("Obst: %.3f  Occl: %.3f", obstOccData.fObstruction, obstOccData.fOcclusion);
-                    debugDisplay.Draw2dTextLabel(screenPos.GetX(), screenPos.GetY() + fLineHeight, fFontSize, str.c_str());
-                }
-
-                debugDisplay.SetColor(normalTextColor);
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectTriggers))
-                {
-                    AZStd::string triggerStringFormatted;
-
-                    for (auto& triggerCount : cTriggerCounts)
+                    const auto switchId = switchState.first;
+                    const auto stateId = switchState.second;
+                    auto switchName = pDebugNameStore->LookupAudioSwitchName(switchId);
+                    auto stateName = pDebugNameStore->LookupAudioSwitchStateName(switchId, stateId);
+                    if (switchName && stateName)
                     {
-                        const char* const pName = pDebugNameStore->LookupAudioTriggerName(triggerCount.first);
-                        if (pName)
-                        {
-                            const size_t nInstances = triggerCount.second;
-                            if (nInstances == 1)
-                            {
-                                triggerStringFormatted += pName;
-                                triggerStringFormatted += "\n";
-                            }
-                            else
-                            {
-                                triggerStringFormatted += AZStd::string::format("%s: %zu\n", pName, nInstances);
-                            }
-                        }
-                    }
-
-                    debugDisplay.Draw2dTextLabel(
-                        screenPos.GetX(), screenPos.GetY() + (2.0f * fLineHeight), fFontSize, triggerStringFormatted.c_str());
-                }
-
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectRtpcs))
-                {
-                    AZ::Vector3 vRtpcPos(screenPos);
-
-                    for (auto& rtpc : m_cRtpcs)
-                    {
-                        const float fRtpcValue = rtpc.second;
-                        const char* const pRtpcName = pDebugNameStore->LookupAudioRtpcName(rtpc.first);
-
-                        if (pRtpcName)
-                        {
-                            const float xOffset = 5.f;
-
-                            vRtpcPos -= AZ::Vector3(0.f, fLineHeight, 0.f);     // list grows up
-
-                            str = AZStd::string::format("%s: %2.2f", pRtpcName, fRtpcValue);
-                            debugDisplay.Draw2dTextLabel(vRtpcPos.GetX() - xOffset, vRtpcPos.GetY(), fFontSize, str.c_str());
-                        }
+                        CStateDebugDrawData& stateDrawData = m_cStateDrawInfoMap[switchId];
+                        stateDrawData.Update(stateId);
+                        AZ::Color switchColor{ 0.8f, 0.8f, 0.8f, stateDrawData.fCurrentAlpha };
+                        posY += lineHeight;
+                        str = AZStd::string::format("  %s : %s", switchName, stateName);
+                        debugDisplay.SetColor(switchColor);
+                        debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
                     }
                 }
+            }
 
-                if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectEnvironments))
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectRtpcs))
+            {
+                posY += lineHeight;
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, "Parameters:");
+                debugDisplay.SetColor(normalColor);
+
+                for (auto& param : m_cRtpcs)
                 {
-                    AZ::Vector3 vEnvPos(screenPos);
-
-                    for (auto& environment : m_cEnvironments)
+                    const float value = param.second;
+                    auto paramName = pDebugNameStore->LookupAudioRtpcName(param.first);
+                    if (paramName)
                     {
-                        const float fEnvValue = environment.second;
-                        const char* const pEnvName = pDebugNameStore->LookupAudioEnvironmentName(environment.first);
+                        posY += lineHeight;
+                        str = AZStd::string::format("  %s = %4.2f", paramName, value);
+                        debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
+                    }
+                }
+            }
 
-                        if (pEnvName)
-                        {
-                            const float xOffset = 5.f;
+            if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ObjectEnvironments))
+            {
+                posY += lineHeight;
+                debugDisplay.SetColor(brightColor);
+                debugDisplay.Draw2dTextLabel(posX, posY, fontSize, "Environments:");
+                debugDisplay.SetColor(normalColor);
 
-                            vEnvPos += AZ::Vector3(0.f, fLineHeight, 0.f);      // list grows down
-
-                            str = AZStd::string::format("%s: %.2f", pEnvName, fEnvValue);
-                            debugDisplay.Draw2dTextLabel(vEnvPos.GetX() - xOffset, vEnvPos.GetY(), fFontSize, str.c_str());
-                        }
+                for (auto& environment : m_cEnvironments)
+                {
+                    const float value = environment.second;
+                    auto envName = pDebugNameStore->LookupAudioEnvironmentName(environment.first);
+                    if (envName)
+                    {
+                        posY += lineHeight;
+                        str = AZStd::string::format("  %s = %.3f", envName, value);
+                        debugDisplay.Draw2dTextLabel(posX, posY, fontSize, str.c_str());
                     }
                 }
             }
         }
     }
 
-
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
     void RaycastProcessor::DrawObstructionRays(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         static const AZ::Color obstructedRayColor(0.8f, 0.08f, 0.f, 1.f);
@@ -873,15 +884,8 @@ namespace Audio
             return;
         }
 
-        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        AZ::RPI::ViewportContextPtr viewportContext = atomViewportRequests->GetDefaultViewportContext();
-        AzFramework::WindowSize windowSize = viewportContext->GetViewportSize();
-        AZ::Matrix3x4 cameraView = viewportContext->GetCameraViewMatrixAsMatrix3x4();
-        AZ::Matrix4x4 cameraProj = viewportContext->GetCameraProjectionMatrix();
-
         AZStd::string str;
-        const float textSize = 0.8f;
-
+        const float textSize = 0.7f;
         const bool drawRays = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawRays);
         const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::RayLabels);
 
@@ -889,7 +893,6 @@ namespace Audio
         for (size_t rayIndex = 0; rayIndex < numRays; ++rayIndex)
         {
             const RaycastInfo& rayInfo = m_rayInfos[rayIndex];
-
             const AZ::Vector3 rayEnd = rayInfo.m_raycastRequest.m_start + rayInfo.m_raycastRequest.m_direction * rayInfo.GetNearestHitDistance();
 
             if (drawRays)
@@ -908,12 +911,8 @@ namespace Audio
 
             if (drawLabels)
             {
-                AZ::Vector3 screenProjNdc = AzFramework::WorldToScreenNdc(rayEnd, cameraView, cameraProj);
-                AZ::Vector3 viewportSize(aznumeric_cast<float>(windowSize.m_width), aznumeric_cast<float>(windowSize.m_height), 1.f);
-                AZ::Vector3 screenPos = screenProjNdc * viewportSize;
-
-                if (0.0f <= screenProjNdc.GetX() && screenProjNdc.GetX() <= 1.0f &&
-                    0.0f <= screenProjNdc.GetY() && screenProjNdc.GetY() <= 1.0f)
+                AZ::Vector3 screenPos{ rayEnd };
+                if (ConvertOjbectWorldPosToScreenCoords(screenPos) && screenPos.GetZ() >= 0.5f)
                 {
                     float lerpValue = rayInfo.m_contribution;
                     AZ::Color labelColor = freeRayLabelColor.Lerp(obstructedRayLabelColor, lerpValue);

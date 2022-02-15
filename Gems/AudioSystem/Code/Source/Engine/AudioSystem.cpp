@@ -86,11 +86,19 @@ namespace Audio
         m_apAudioProxies.reserve(Audio::CVars::s_AudioObjectPoolSize);
         m_apAudioProxiesToBeFreed.reserve(16);
         m_controlsPath.assign(Audio::AudioControlsBasePath);
+
+        #if !defined(AUDIO_RELEASE)
+        AzFramework::DebugDisplayEventBus::Handler::BusConnect();
+        #endif // !AUDIO_RELEASE
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioSystem::~CAudioSystem()
     {
+        #if !defined(AUDIO_RELEASE)
+        AzFramework::DebugDisplayEventBus::Handler::BusDisconnect();
+        #endif // !AUDIO_RELEASE
+
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +126,7 @@ namespace Audio
         m_mainEvent.acquire();
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystem::PushCallback(AudioRequestVariant&& callback)
     {
         AZStd::scoped_lock lock(m_pendingCallbacksMutex);
@@ -163,10 +172,6 @@ namespace Audio
         }
 
         m_apAudioProxiesToBeFreed.clear();
-
-    #if !defined(AUDIO_RELEASE)
-        DrawAudioDebugData();
-    #endif // !AUDIO_RELEASE
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -536,9 +541,9 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(AUDIO_RELEASE)
-    void CAudioSystem::DrawAudioDebugData()
+    void CAudioSystem::DrawGlobalDebugInfo()
     {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::DrawAudioDebugData - called from non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::DrawGlobalDebugInfo - called from non-Main thread!");
 
         if (CVars::s_debugDrawOptions.GetRawFlags() != 0)
         {
