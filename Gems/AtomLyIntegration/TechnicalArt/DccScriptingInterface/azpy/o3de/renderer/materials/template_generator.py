@@ -49,32 +49,57 @@ _LOGGER.debug('Initializing: {0}.'.format({module_name}))
 
 
 class TemplateGenerator:
-    def __init__(self, material_type, output_path):
+    def __init__(self, material_type, output_path, attribute_validation=False):
+        self.target_material_dictionary = {
+            'description': '',
+            'parentMaterial': '',
+            'materialTypeVersion': '',
+            'properties': {}
+        }
         self.material_type = material_type
-        self.target_material_dictionary = {}
         self.output_path = output_path
+        self.attribute_validation = attribute_validation
+        self.material_templates_directory = Path(os.environ['PATH_DCCSIG'])/'azpy/o3de/renderer/materials'
         self.template_source_directory = Path(os.environ['O3DE_DEV'])/'Gems/Atom/Feature/Common/Assets/Materials/Types'
         self.material_type_definitions = [x for x in self.template_source_directory.glob('*.materialtype')]
-        self.build_template()
 
-    def build_template(self):
+    def get_template(self):
         _LOGGER.info(f'Material template base directory: {self.template_source_directory}')
+        if self.attribute_validation:
+            self.set_material_template()
+
         self.get_material_definition()
-        self.format_material_definition()
+
+    def get_material_templates(self):
+        pass
 
     def get_material_definition(self):
         for target_file in self.material_type_definitions:
             if self.material_type.lower() in str(target_file).lower():
                 self.target_material_dictionary = helpers.get_commented_json_data(target_file)
 
-    def format_material_definition(self):
+    def set_material_template(self):
+        material_property_values = {}
         for key, value in self.target_material_dictionary.items():
-            _LOGGER.info(f'Key: {key}   Value: {value}')
+            if key == 'propertyLayout':
+                for properties in self.target_material_dictionary[key]['propertyGroups']:
+                    for k, v in properties.items():
+                        target_property = None
+                        target_property_values = {}
+                        if k == 'properties':
+                            for property_list in v:
+                                attr_name = property_list['name']
+                                attr_values = property_list['defaultValue'] if 'defaultValue' in property_list.keys() else ''
+                                target_property_values[attr_name] = attr_values
+                        elif k == 'name':
+                            target_property = v
+                        material_property_values[target_property] = target_property_values
+            else:
+                if key in self.target_material_dictionary.keys():
+                    self.target_material_dictionary[key] = value
+        self.target_material_dictionary['properties'] = material_property_values
 
 
-
-template_generator = TemplateGenerator('standardPBR', 'path/to/directory')
-
-
-
+template_generator = TemplateGenerator('standardPBR', 'path/to/directory').get_template()
+_LOGGER.info(f'Returned Template Info: {template_generator}')
 
