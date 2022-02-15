@@ -78,6 +78,7 @@ namespace UnitTest
                 for (int x = 0; x < dataSize; x++)
                 {
                     float angle = AZ::DegToRad(inputAngles[(y * dataSize) + x]);
+                    point.m_position = AZ::Vector3(aznumeric_cast<float>(x), aznumeric_cast<float>(y), 0.0f);
                     point.m_normal = AZ::Vector3(sinf(angle), 0.0f, cosf(angle));
                     mockSurface->m_surfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] =
                         AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1);
@@ -549,10 +550,10 @@ namespace UnitTest
         mockSurface->m_bounds = mockShapeComponentHandler.m_GetEncompassingAabb;
         AzFramework::SurfaceData::SurfacePoint mockOutputs[] =
         {
-            { AZ::Vector3(0.0f, 0.0f,  0.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f,  2.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f,  5.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f,  0.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f,  2.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f,  5.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateAxisZ() },
         };
         
         mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] =
@@ -597,10 +598,10 @@ namespace UnitTest
         auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
         mockSurface->m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(1.0f));
         AzFramework::SurfaceData::SurfacePoint mockOutputs[] = {
-            { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateAxisZ() },
         };
 
         mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] =
@@ -667,10 +668,10 @@ namespace UnitTest
         auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
         mockSurface->m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(1.0f));
         AzFramework::SurfaceData::SurfacePoint mockOutputs[] = {
-            { AZ::Vector3(0.0f, 0.0f, -10.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f,  -5.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f,  15.0f), AZ::Vector3::CreateZero() },
-            { AZ::Vector3(0.0f, 0.0f,  20.0f), AZ::Vector3::CreateZero() },
+            { AZ::Vector3(0.0f, 0.0f, -10.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f,  -5.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f,  15.0f), AZ::Vector3::CreateAxisZ() },
+            { AZ::Vector3(0.0f, 0.0f,  20.0f), AZ::Vector3::CreateAxisZ() },
         };
 
         // Altitude value below min - should result in 0.0f.
@@ -724,6 +725,8 @@ namespace UnitTest
         {
             for (int x = 0; x < dataSize; x++)
             {
+                point.m_position = AZ::Vector3(aznumeric_cast<float>(x), aznumeric_cast<float>(y), 0.0f);
+                point.m_normal = AZ::Vector3::CreateAxisZ();
                 point.m_surfaceTags.clear();
                 point.m_surfaceTags.emplace_back(AZ_CRC_CE("test_mask"), expectedOutput[(y * dataSize) + x]);
                 mockSurface->m_surfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] =
