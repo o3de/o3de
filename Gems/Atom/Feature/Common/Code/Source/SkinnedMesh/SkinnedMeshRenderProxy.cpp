@@ -38,7 +38,7 @@ namespace AZ
             {
                 return false;
             }
-            const uint32_t modelLodCount = aznumeric_caster(m_instance->m_model->GetLodCount());
+            const size_t modelLodCount = m_instance->m_model->GetLodCount();
             m_featureProcessor = featureProcessor;
 
             m_dispatchItemsByLod.reserve(modelLodCount);
@@ -146,7 +146,7 @@ namespace AZ
 
         void SkinnedMeshRenderProxy::SetMorphTargetWeights(uint32_t lodIndex, const AZStd::vector<float>& weights)
         {
-            auto& morphTargetDispatchItems = m_morphTargetDispatchItemsByLod[lodIndex];
+            [[maybe_unused]] auto& morphTargetDispatchItems = m_morphTargetDispatchItemsByLod[lodIndex];
 
             AZ_Assert(morphTargetDispatchItems.size() == weights.size(), "Skinned Mesh Feature Processor - Morph target weights passed into SetMorphTargetWeight don't align with morph target dispatch items.");
             for (size_t morphIndex = 0; morphIndex < weights.size(); ++morphIndex)
@@ -155,12 +155,12 @@ namespace AZ
             }
         }
 
-        size_t SkinnedMeshRenderProxy::GetLodCount() const
+        uint32_t SkinnedMeshRenderProxy::GetLodCount() const
         {
-            return m_dispatchItemsByLod.size();
+            return aznumeric_caster(m_dispatchItemsByLod.size());
         }
 
-        AZStd::span<const AZStd::unique_ptr<SkinnedMeshDispatchItem>> SkinnedMeshRenderProxy::GetDispatchItems(size_t lodIndex) const
+        AZStd::span<const AZStd::unique_ptr<SkinnedMeshDispatchItem>> SkinnedMeshRenderProxy::GetDispatchItems(uint32_t lodIndex) const
         {
             return m_dispatchItemsByLod[lodIndex];
         }

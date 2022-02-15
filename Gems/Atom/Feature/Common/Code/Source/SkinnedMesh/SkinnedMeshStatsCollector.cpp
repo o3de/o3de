@@ -30,7 +30,7 @@ namespace AZ
 
             for (const SkinnedMeshRenderProxy& renderProxy : m_featureProcessor->m_renderProxies)
             {
-                for (size_t lodIndex = 0; lodIndex < renderProxy.GetLodCount(); ++lodIndex)
+                for (uint32_t lodIndex = 0; lodIndex < renderProxy.GetLodCount(); ++lodIndex)
                 {
                     for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& dispatchItem : renderProxy.GetDispatchItems(lodIndex))
                     {

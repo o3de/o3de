@@ -22,6 +22,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Math/PackedVector3.h>
+#include <inttypes.h>
 
 AZ_DECLARE_BUDGET(AzRender);
 
@@ -126,7 +127,7 @@ namespace AZ
                     {
                         // Initialize the buffer view
                         AZStd::string bufferViewName = AZStd::string::format(
-                            "%s_lod%zu_mesh%zu_%s", modelName, lodIndex, meshIndex,
+                            "%s_lod%" PRIu32 "_mesh%" PRIu32 "_%s", modelName, lodIndex, meshIndex,
                             streamInfo->m_shaderResourceGroupName.GetCStr());
                         bufferView->SetName(Name(bufferViewName));
                         RHI::ResultCode resultCode = bufferView->Init(*streamBufferView.GetBuffer(), descriptor);
@@ -490,7 +491,7 @@ namespace AZ
 
         const SkinnedMeshInputLod& SkinnedMeshInputBuffers::GetLod(uint32_t lodIndex) const
         {
-            AZ_Assert(lodIndex < m_lods.size(), "Attempting to get lod at index %d in SkinnedMeshInputBuffers, which is outside the range of %zu.", lodIndex, m_lods.size());
+            AZ_Assert(lodIndex < m_lods.size(), "Attempting to get lod at index %" PRIu32 " in SkinnedMeshInputBuffers, which is outside the range of %zu.", lodIndex, m_lods.size());
             return m_lods[lodIndex];
         }
 
@@ -518,7 +519,7 @@ namespace AZ
         void SkinnedMeshInputBuffers::SetBufferViewsOnShaderResourceGroup(
             uint32_t lodIndex, uint32_t meshIndex, const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG)
         {
-            AZ_Assert(lodIndex < m_lods.size() && meshIndex < m_lods[lodIndex].m_modelLodAsset->GetMeshes().size(), "Lod %zu Mesh %zu out of range for model '%s'", lodIndex, meshIndex, m_modelAsset->GetName().GetCStr());
+            AZ_Assert(lodIndex < m_lods.size() && meshIndex < m_lods[lodIndex].m_modelLodAsset->GetMeshes().size(), "Lod %" PRIu32 " Mesh %" PRIu32 " out of range for model '%s'", lodIndex, meshIndex, m_modelAsset->GetName().GetCStr());
 
             // Loop over each input buffer view and set it on the srg
             for (const SkinnedSubMeshProperties::SrgNameViewPair& nameViewPair :
