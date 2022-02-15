@@ -110,6 +110,6 @@ namespace Terrain
 
         TerrainSurfaceMaterialsListConfig m_configuration;
 
-        AZ::Aabb m_cachedAabb;
+        AZ::Aabb m_cachedAabb{ AZ::Aabb::CreateNull() };
     };
 } // namespace Terrain

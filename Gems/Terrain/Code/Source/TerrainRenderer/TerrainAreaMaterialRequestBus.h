@@ -29,7 +29,7 @@ namespace Terrain
         //! Get the Aabb for the region where a TerrainSurfaceMaterialMapping exists
         virtual const AZ::Aabb& GetTerrainSurfaceMaterialRegion() const = 0;
 
-        //! Get the Materials assigned to a various surface tags.
+        //! Get the Materials assigned to various surface tags.
         virtual const AZStd::vector<struct TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings() const = 0;
 
         //! Get the default material
@@ -96,6 +96,20 @@ namespace Terrain
             [[maybe_unused]] AZ::EntityId entityId,
             [[maybe_unused]] SurfaceData::SurfaceTag surface,
             [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
+        {
+        }
+        
+        //! A set of surface material mappings has been created
+        virtual void OnTerrainSurfaceMaterialMappingRegionCreated(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] const AZ::Aabb& region)
+        {
+        }
+        
+        //! A set of surface material mappings has been destroyed
+        virtual void OnTerrainSurfaceMaterialMappingRegionDestroyed(
+            [[maybe_unused]] AZ::EntityId entityId,
+            [[maybe_unused]] const AZ::Aabb& oldRegion)
         {
         }
 

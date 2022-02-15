@@ -120,9 +120,9 @@ namespace Terrain
             uint16_t m_heightImageIndex{ InvalidImageIndex };
 
             // 16 byte aligned
-            uint16_t m_padding1;
-            uint32_t m_padding2;
-            uint32_t m_padding3;
+            uint16_t m_padding1{ 0 };
+            uint32_t m_padding2{ 0 };
+            uint32_t m_padding3{ 0 };
         };
         static_assert(sizeof(DetailMaterialShaderData) % 16 == 0, "DetailMaterialShaderData must be 16 byte aligned.");
 
@@ -130,7 +130,7 @@ namespace Terrain
         {
             AZ::Data::AssetId m_assetId;
             AZ::RPI::Material::ChangeId m_materialChangeId{AZ::RPI::Material::DEFAULT_CHANGE_ID};
-            uint32_t refCount = 0;
+            uint32_t m_refCount = 0;
             uint16_t m_detailMaterialBufferIndex{ 0xFFFF };
 
             AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
@@ -154,10 +154,15 @@ namespace Terrain
             AZ::Aabb m_region{AZ::Aabb::CreateNull()};
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
             uint16_t m_defaultDetailMaterialId{ 0xFFFF };
+
+            bool HasMaterials()
+            {
+                return m_defaultDetailMaterialId != InvalidDetailMaterialId || !m_materialsForSurfaces.empty();
+            }
         };
         
         using DetailMaterialContainer = AZ::Render::IndexedDataVector<DetailMaterialData>;
-        static constexpr auto InvalidDetailMaterailId = DetailMaterialContainer::NoFreeSlot;
+        static constexpr auto InvalidDetailMaterialId = DetailMaterialContainer::NoFreeSlot;
         
         // System-level parameters
         static constexpr int32_t DetailTextureSize{ 1024 };
@@ -176,6 +181,8 @@ namespace Terrain
         void OnTerrainSurfaceMaterialMappingMaterialChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
         void OnTerrainSurfaceMaterialMappingTagChanged(
             AZ::EntityId entityId, SurfaceData::SurfaceTag oldSurfaceTag, SurfaceData::SurfaceTag newSurfaceTag) override;
+        void OnTerrainSurfaceMaterialMappingRegionCreated(AZ::EntityId entityId, const AZ::Aabb& region) override;
+        void OnTerrainSurfaceMaterialMappingRegionDestroyed(AZ::EntityId entityId, const AZ::Aabb& oldRegion) override;
         void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
         //! Removes all images from all detail materials from the bindless image array
