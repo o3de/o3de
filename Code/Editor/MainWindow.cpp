@@ -645,7 +645,7 @@ void MainWindow::InitActions()
     am->AddAction(ID_FILE_SAVE_LEVEL, tr("&Save"))
         .SetShortcut(tr("Ctrl+S"))
         .SetReserved()
-        .SetStatusTip(tr("Save the current level"))
+        .SetStatusTip(tr("Save the current prefab"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
     am->AddAction(ID_FILE_SAVE_AS, tr("Save &As..."))
         .SetShortcut(tr("Ctrl+Shift+S"))
