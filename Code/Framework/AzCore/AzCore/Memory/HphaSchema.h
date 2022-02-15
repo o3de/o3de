@@ -86,9 +86,7 @@ namespace AZ
         int                 m_pad;      // pad the Descriptor to avoid C4355
         size_type           m_capacity;                 ///< Capacity in bytes.
         HpAllocator*        m_allocator;
-        // [LY-84974][sconel@][2018-08-10] SliceStrike integration up to CL 671758
         AZStd::aligned_storage_t<hpAllocatorStructureSize, 16> m_hpAllocatorBuffer;    ///< Memory buffer for HpAllocator
-        // [LY][sconel@] end
         bool                m_ownMemoryBlock;
     };
 } // namespace AZ
