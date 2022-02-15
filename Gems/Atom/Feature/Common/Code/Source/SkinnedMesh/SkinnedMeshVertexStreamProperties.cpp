@@ -209,7 +209,7 @@ namespace AZ
 
         const SkinnedMeshVertexStreamInfo* SkinnedMeshVertexStreamProperties::GetInputStreamInfo(const RHI::ShaderSemantic& shaderSemantic) const
         {
-            auto FindVertexStreamInfo = [shaderSemantic](const SkinnedMeshVertexStreamInfo& vertexStreamInfo)
+            auto FindVertexStreamInfo = [&shaderSemantic](const SkinnedMeshVertexStreamInfo& vertexStreamInfo)
             {
                 return shaderSemantic == vertexStreamInfo.m_semantic;
             };
@@ -237,7 +237,7 @@ namespace AZ
 
         const SkinnedMeshOutputVertexStreamInfo* SkinnedMeshVertexStreamProperties::GetOutputStreamInfo(const RHI::ShaderSemantic& shaderSemantic) const
         {
-            auto FindVertexStreamInfo = [shaderSemantic](const SkinnedMeshOutputVertexStreamInfo& vertexStreamInfo)
+            auto FindVertexStreamInfo = [&shaderSemantic](const SkinnedMeshOutputVertexStreamInfo& vertexStreamInfo)
             {
                 return shaderSemantic == vertexStreamInfo.m_semantic;
             };

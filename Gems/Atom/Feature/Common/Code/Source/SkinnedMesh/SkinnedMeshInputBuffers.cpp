@@ -138,7 +138,7 @@ namespace AZ
                         }
                         else
                         {
-                            AZ_Error("MorphTargetInputBuffers", false, "Failed to initialize buffer view for morph target.");
+                            AZ_Error("MorphTargetInputBuffers", false, "Failed to initialize buffer view %s.", bufferViewName.c_str());
                         }
                     }
 
