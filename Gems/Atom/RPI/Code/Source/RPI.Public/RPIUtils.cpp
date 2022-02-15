@@ -126,11 +126,6 @@ namespace AZ
 
             static ConversionLookupTable s_SrgbGammaToLinearLookupTable = CreateSrgbGammaToLinearLookupTable();
 
-            float ConvertSrgbGammaToLinearUint(AZ::u8 x)
-            {
-                return s_SrgbGammaToLinearLookupTable[x];
-            }
-
             float RetrieveFloatValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
             {
                 switch (format)
@@ -148,9 +143,9 @@ namespace AZ
                 case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
                 case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
                 {
-                    // Use a variant of ConvertSrgbGammaToLinear that takes an AZ::u8
-                    // and a lookup table instead of a float for better performance
-                    return ConvertSrgbGammaToLinearUint(mem[index]);
+                    // Use a lookup table that takes an AZ::u8 instead of a float
+                    // for better performance
+                    return s_SrgbGammaToLinearLookupTable[mem[index]];
                 }
                 case AZ::RHI::Format::R8_SNORM:
                 case AZ::RHI::Format::R8G8_SNORM:
