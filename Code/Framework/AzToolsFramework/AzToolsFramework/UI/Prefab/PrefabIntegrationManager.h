@@ -66,7 +66,7 @@ namespace AzToolsFramework
 
             // PrefabIntegrationInterface overrides ...
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
-            int ExecuteClosePrefabDialog(TemplateId templateId) override;
+            int HandleRootPrefabClosure(TemplateId templateId) override;
             void SaveCurrentPrefab() override;
 
         private:

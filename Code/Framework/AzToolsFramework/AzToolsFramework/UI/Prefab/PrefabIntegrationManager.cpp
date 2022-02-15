@@ -947,7 +947,7 @@ namespace AzToolsFramework
             }
         }
 
-        int PrefabIntegrationManager::ExecuteClosePrefabDialog(TemplateId templateId)
+        int PrefabIntegrationManager::HandleRootPrefabClosure(TemplateId templateId)
         {
             return m_prefabSaveHandler.ExecuteClosePrefabDialog(templateId);
         }
