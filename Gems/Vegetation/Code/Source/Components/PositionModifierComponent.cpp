@@ -328,7 +328,8 @@ namespace Vegetation
             AZ::Vector3 originalInstanceDataPosition = instanceData.m_position;
             m_points.EnumeratePoints(
                 [&instanceData, originalInstanceDataPosition, &closestPointDistanceSq](
-                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     float distanceSq = position.GetDistanceSq(originalInstanceDataPosition);
                     if (distanceSq < closestPointDistanceSq)
