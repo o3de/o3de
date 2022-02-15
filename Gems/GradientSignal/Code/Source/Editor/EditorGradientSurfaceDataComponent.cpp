@@ -108,14 +108,26 @@ namespace GradientSignal
             // Create a fake surface point with the position we're sampling.
             AzFramework::SurfaceData::SurfacePoint point;
             point.m_position = params.m_position;
-            SurfaceData::SurfacePointList pointList = AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1);
+            SurfaceData::SurfacePointList pointList;
 
-            // Send it into the component, see what emerges
+            // Lock the SurfaceDataSystemRequestBus during the point list construction so that we always follow a pattern of locking the
+            // system bus *before* modifying surface weights, which locks the SurfaceDataModifierBus. Otherwise, it's possible to get
+            // these to lock in the reverse order which can cause deadlocks.
+            {
+                auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
+                typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
-            SurfaceData::SurfaceDataRegistryHandle modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
-            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
-                modifierHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle, m_component.GetEntityId());
-            pointList.ModifySurfaceWeights(modifierHandle);
+                // Get the Surface Modifier handle for this component.
+                SurfaceData::SurfaceDataRegistryHandle modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
+                SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
+                    modifierHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle,
+                    m_component.GetEntityId());
+
+                // Send the fake surface point into the component, see what emerges
+                pointList.StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1));
+                pointList.ModifySurfaceWeights(modifierHandle);
+                pointList.EndListConstruction();
+            }
 
             // If the point was successfully modified, we should have one or more masks with a non-zero value.
             // Technically, they should all have the same value, but we'll grab the max from all of them in case
