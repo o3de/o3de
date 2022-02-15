@@ -44,7 +44,7 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "ContrastAdaptiveSharpeningPass",
+                        "Pass": "EditorModeFeedbackPassParent",
                         "Attachment": "OutputColor"
                     }
                 },
@@ -199,6 +199,27 @@
                             "AttachmentRef": {
                                 "Pass": "LightAdaptation",
                                 "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "EditorModeFeedbackPassParent",
+                    "TemplateName": "EditorModeFeedbackParentTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "ContrastAdaptiveSharpeningPass",
+                                "Attachment": "OutputColor"
                             }
                         }
                     ]

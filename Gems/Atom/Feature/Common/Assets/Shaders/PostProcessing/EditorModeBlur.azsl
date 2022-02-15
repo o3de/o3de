@@ -1,0 +1,62 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#include <EditorModeCommon.azsli>
+#include <EditorModeDepthTransition.azsli>
+ 
+partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    float m_kernalWidth;
+}
+
+static float2 maskSize;
+
+float2 normalizedUV(float2 uv)
+{
+    return uv/maskSize;
+}
+ 
+float3 Blur(float2 unormalizedUv, const float boxRadius)
+{
+    float3 outColor = float3(0., 0., 0.);
+
+    // Box blur kernal
+    float weights = 0.;
+    for(float u = -boxRadius; u <= boxRadius; u+=1.)
+    {
+        for(float v = -boxRadius; v <= boxRadius; v+=1.)
+        {
+            weights += 1.;
+            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).rgb;
+        }
+    }
+
+    return outColor / weights;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
+    maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
+    float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
+
+    // Blur effect
+    float3 finalEffect = Blur(unnormalizedUV, PassSrg::m_kernalWidth);
+  
+    // Apply the depth transition to the blend amount
+    const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
+    
+    // Apply the visual effect to non-mask entities, leaving mask entities untouched
+    OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, finalEffect, t);
+
+    return OUT;
+}
