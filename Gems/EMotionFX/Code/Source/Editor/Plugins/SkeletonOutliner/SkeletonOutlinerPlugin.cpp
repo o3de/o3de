@@ -28,8 +28,11 @@ namespace EMotionFX
     SkeletonOutlinerPlugin::~SkeletonOutlinerPlugin()
     {
         // Reset selection on close.
-        m_skeletonModel->GetSelectionModel().clearSelection();
-        m_skeletonModel.reset();
+        if (m_skeletonModel)
+        {
+            m_skeletonModel->GetSelectionModel().clearSelection();
+            m_skeletonModel.reset();
+        }
 
         for (MCore::Command::Callback* callback : m_commandCallbacks)
         {
