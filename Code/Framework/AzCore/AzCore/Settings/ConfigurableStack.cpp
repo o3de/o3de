@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Settings/ConfigurableStack.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
