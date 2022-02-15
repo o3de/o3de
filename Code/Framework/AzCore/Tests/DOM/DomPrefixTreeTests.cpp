@@ -13,6 +13,29 @@ namespace AZ::Dom::Tests
 {
     using DomPrefixTreeTests = DomTestFixture;
 
+    TEST_F(DomPrefixTreeTests, InitializeFromInitializerList)
+    {
+        DomPrefixTree<int> tree({
+            { Path(), 0 },
+            { Path("/foo/bar"), 1 },
+        });
+
+        EXPECT_EQ(0, *tree.ValueAtPath(Path(), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(1, *tree.ValueAtPath(Path("/foo/bar"), PrefixTreeMatch::ExactPath));
+    }
+
+    TEST_F(DomPrefixTreeTests, InitializeFromRange)
+    {
+        AZStd::vector<AZStd::pair<Path, int>> container({
+            { Path(), 21 },
+            { Path("/foo/bar"), 42 },
+        });
+        DomPrefixTree<int> tree(container);
+
+        EXPECT_EQ(21, *tree.ValueAtPath(Path(), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(42, *tree.ValueAtPath(Path("/foo/bar"), PrefixTreeMatch::ExactPath));
+    }
+
     TEST_F(DomPrefixTreeTests, GetAndSetRoot)
     {
         DomPrefixTree<AZStd::string> tree;

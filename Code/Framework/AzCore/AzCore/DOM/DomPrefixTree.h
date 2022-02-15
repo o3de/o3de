@@ -9,9 +9,10 @@
 #pragma once
 
 #include <AzCore/DOM/DomPath.h>
-#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/stack.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/ranges/ranges.h>
 
 namespace AZ::Dom
 {
@@ -42,6 +43,19 @@ namespace AZ::Dom
         DomPrefixTree(const DomPrefixTree&) = default;
         DomPrefixTree(DomPrefixTree&&) = default;
         explicit DomPrefixTree(AZStd::initializer_list<AZStd::pair<Path, T>> init);
+        template<
+            class Range,
+            class = AZStd::enable_if_t<
+                AZStd::ranges::input_range<Range> &&
+                AZStd::convertible_to<AZStd::tuple_element_t<0, AZStd::ranges::range_value_t<Range>>, Path> &&
+                AZStd::convertible_to<AZStd::tuple_element_t<1, AZStd::ranges::range_value_t<Range>>, T>>>
+        explicit DomPrefixTree(Range&& range)
+        {
+            for (auto&& [path, value] : AZStd::forward<Range>(range))
+            {
+                SetValue(path, value);
+            }
+        }
 
         DomPrefixTree& operator=(const DomPrefixTree&) = default;
         DomPrefixTree& operator=(DomPrefixTree&&) = default;
@@ -55,10 +69,12 @@ namespace AZ::Dom
         //! \see ValueAtPath
         const T* ValueAtPath(const Path& path, PrefixTreeMatch match) const;
         //! Visits a path and returns the most specific matching value or some default value.
-        T ValueAtPathOrDefault(const Path& path, T&& defaultValue, PrefixTreeMatch match) const;
+        template<class Deduced>
+        T ValueAtPathOrDefault(const Path& path, Deduced&& defaultValue, PrefixTreeMatch match) const;
 
         //! Sets the value stored at path.
-        void SetValue(const Path& path, T&& value);
+        template<class Deduced>
+        void SetValue(const Path& path, Deduced&& value);
         //! Removes the value stored at path. If removeChildren is true, also removes any values stored at subpaths.
         void EraseValue(const Path& path, bool removedChildren = false);
         //! Removes all entries from this tree.

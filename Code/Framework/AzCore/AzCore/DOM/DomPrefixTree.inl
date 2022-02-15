@@ -13,9 +13,9 @@ namespace AZ::Dom
     template<class T>
     DomPrefixTree<T>::DomPrefixTree(AZStd::initializer_list<AZStd::pair<Path, T>> init)
     {
-        for (const auto& entry : init)
+        for (const auto& [path, value] : init)
         {
-            SetValue(entry.first, entry.second);
+            SetValue(path, value);
         }
     }
 
@@ -158,7 +158,7 @@ namespace AZ::Dom
         return result;
     }
 
-    template <class T>
+    template<class T>
     const T* DomPrefixTree<T>::ValueAtPath(const Path& path, PrefixTreeMatch match) const
     {
         // Const coerce the ValueAtPath result, which doesn't mutate but returns a mutable pointer
@@ -166,14 +166,16 @@ namespace AZ::Dom
     }
 
     template<class T>
-    T DomPrefixTree<T>::ValueAtPathOrDefault(const Path& path, T&& defaultValue, PrefixTreeMatch match) const
+    template<class Deduced>
+    T DomPrefixTree<T>::ValueAtPathOrDefault(const Path& path, Deduced&& defaultValue, PrefixTreeMatch match) const
     {
         const T* value = ValueAtPath(path, match);
-        return value == nullptr ? AZStd::forward<T>(defaultValue) : *value;
+        return value == nullptr ? AZStd::forward<Deduced>(defaultValue) : *value;
     }
 
     template<class T>
-    void DomPrefixTree<T>::SetValue(const Path& path, T&& value)
+    template<class Deduced>
+    void DomPrefixTree<T>::SetValue(const Path& path, Deduced&& value)
     {
         Node* node = &m_rootNode;
         for (const PathEntry& entry : path)
@@ -181,7 +183,7 @@ namespace AZ::Dom
             // Get or create an entry in this node
             node = &node->m_values[entry];
         }
-        node->m_data = AZStd::forward<T>(value);
+        node->m_data = AZStd::forward<Deduced>(value);
     }
 
     template<class T>
