@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include <EditorModeCommon.azsli>
 #include <EditorModeDepthTransition.azsli>
- 
+
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {    
     float m_lineThickness;
@@ -21,7 +21,7 @@ float2 normalizedUV(float2 uv)
 {
     return uv/maskSize;
 }
- 
+
 // Entity outliner effect
 float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
 {

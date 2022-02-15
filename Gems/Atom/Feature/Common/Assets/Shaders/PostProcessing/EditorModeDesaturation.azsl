@@ -11,7 +11,8 @@
  
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 { 
-    float m_desaturationAmount; //!< Amount of desaturation to apply.
+    //! Amount of desaturation to apply.
+    float m_desaturationAmount;
 }
 
 PSOutput MainPS(VSOutput IN)
