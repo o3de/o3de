@@ -69,6 +69,7 @@ namespace AzToolsFramework
             ColumnName,                 //!< Entity name
             ColumnVisibilityToggle,     //!< Visibility Icons
             ColumnLockToggle,           //!< Lock Icons
+            ColumnSpacing,              //!< Spacing to allow for drag select
             ColumnSortIndex,            //!< Index of sort order
             ColumnCount                 //!< Total number of columns
         };

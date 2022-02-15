@@ -709,7 +709,10 @@ namespace AZ::IO
 
         constexpr reference operator*() const;
 
-        constexpr pointer operator->() const;
+        constexpr pointer operator->() const
+        {
+            return &m_stashed_elem;
+        }
 
         constexpr PathIterator& operator++();
 

@@ -30,14 +30,13 @@ namespace AzToolsFramework
         {
         }
 
-        void ThumbnailWidget::SetThumbnailKey(SharedThumbnailKey key, const char* contextName)
+        void ThumbnailWidget::SetThumbnailKey(SharedThumbnailKey key)
         {
             if (m_key)
             {
                 disconnect(m_key.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &ThumbnailWidget::KeyUpdatedSlot);
             }
             m_key = key;
-            m_contextName = contextName;
             connect(m_key.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &ThumbnailWidget::KeyUpdatedSlot);
             repaint();
         }
@@ -65,7 +64,7 @@ namespace AzToolsFramework
             {
                 // thumbnail instance is not stored locally, but retrieved each paintEvent since thumbnail mapped to a specific key may change
                 SharedThumbnail thumbnail;
-                ThumbnailerRequestsBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, m_key, m_contextName.c_str());
+                ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, m_key);
                 QPainter painter(this);
 
                 // Scaling and centering pixmap within bounds to preserve aspect ratio

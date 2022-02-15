@@ -237,7 +237,7 @@ namespace SurfaceData
 
         if (DoRayTrace(inPosition, queryPointOnly, hitPosition, hitNormal))
         {
-            surfacePointList.AddSurfacePoint(GetEntityId(), hitPosition, hitNormal, m_newPointWeights);
+            surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, hitPosition, hitNormal, m_newPointWeights);
         }
     }
 
@@ -317,10 +317,11 @@ namespace SurfaceData
         providerRegistryEntry.m_entityId = GetEntityId();
         providerRegistryEntry.m_bounds = m_colliderBounds;
         providerRegistryEntry.m_tags = m_configuration.m_providerTags;
+        providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
 
         SurfaceDataRegistryEntry modifierRegistryEntry(providerRegistryEntry);
         modifierRegistryEntry.m_tags = m_configuration.m_modifierTags;
-
+        modifierRegistryEntry.m_maxPointsCreatedPerInput = 0;
 
         if (!colliderValidBeforeUpdate && !colliderValidAfterUpdate)
         {

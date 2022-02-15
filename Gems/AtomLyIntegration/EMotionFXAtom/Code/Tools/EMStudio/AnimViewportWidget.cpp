@@ -244,7 +244,7 @@ namespace EMStudio
         }
     }
 
-    void AnimViewportWidget::UpdateRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void AnimViewportWidget::UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
     {
         m_renderer->UpdateActorRenderFlag(renderFlags);
     }

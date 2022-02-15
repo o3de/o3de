@@ -63,10 +63,8 @@ namespace AtomToolsFramework
         pipelineDesc.m_mainViewTagName = "MainCamera";
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = "ToolsPipelineRenderToTexture";
+        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
-        // We have to set the samples to 4 to match the pipeline passes' setting, otherwise it may lead to device lost issue
-        // [GFX TODO] [ATOM-13551] Default value sand validation required to prevent pipeline crash and device lost
-        pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_scene->Activate();

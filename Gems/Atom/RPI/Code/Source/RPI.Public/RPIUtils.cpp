@@ -443,6 +443,61 @@ namespace AZ
             return GetComputeShaderNumThreads(shaderAsset, &dispatchDirect.m_threadsPerGroupX, &dispatchDirect.m_threadsPerGroupY, &dispatchDirect.m_threadsPerGroupZ);
         }
 
+        bool IsImageDataPixelAPISupported(AZ::RHI::Format format)
+        {
+            switch (format)
+            {
+            // Float types
+            case AZ::RHI::Format::R8_UNORM:
+            case AZ::RHI::Format::A8_UNORM:
+            case AZ::RHI::Format::R8G8_UNORM:
+            case AZ::RHI::Format::R8G8B8A8_UNORM:
+            case AZ::RHI::Format::R8_SNORM:
+            case AZ::RHI::Format::R8G8_SNORM:
+            case AZ::RHI::Format::R8G8B8A8_SNORM:
+            case AZ::RHI::Format::D16_UNORM:
+            case AZ::RHI::Format::R16_UNORM:
+            case AZ::RHI::Format::R16G16_UNORM:
+            case AZ::RHI::Format::R16G16B16A16_UNORM:
+            case AZ::RHI::Format::R16_SNORM:
+            case AZ::RHI::Format::R16G16_SNORM:
+            case AZ::RHI::Format::R16G16B16A16_SNORM:
+            case AZ::RHI::Format::R16_FLOAT:
+            case AZ::RHI::Format::R16G16_FLOAT:
+            case AZ::RHI::Format::R16G16B16A16_FLOAT:
+            case AZ::RHI::Format::D32_FLOAT:
+            case AZ::RHI::Format::R32_FLOAT:
+            case AZ::RHI::Format::R32G32_FLOAT:
+            case AZ::RHI::Format::R32G32B32_FLOAT:
+            case AZ::RHI::Format::R32G32B32A32_FLOAT:
+            // Unsigned integer types
+            case AZ::RHI::Format::R8_UINT:
+            case AZ::RHI::Format::R8G8_UINT:
+            case AZ::RHI::Format::R8G8B8A8_UINT:
+            case AZ::RHI::Format::R16_UINT:
+            case AZ::RHI::Format::R16G16_UINT:
+            case AZ::RHI::Format::R16G16B16A16_UINT:
+            case AZ::RHI::Format::R32_UINT:
+            case AZ::RHI::Format::R32G32_UINT:
+            case AZ::RHI::Format::R32G32B32_UINT:
+            case AZ::RHI::Format::R32G32B32A32_UINT:
+            // Signed integer types
+            case AZ::RHI::Format::R8_SINT:
+            case AZ::RHI::Format::R8G8_SINT:
+            case AZ::RHI::Format::R8G8B8A8_SINT:
+            case AZ::RHI::Format::R16_SINT:
+            case AZ::RHI::Format::R16G16_SINT:
+            case AZ::RHI::Format::R16G16B16A16_SINT:
+            case AZ::RHI::Format::R32_SINT:
+            case AZ::RHI::Format::R32G32_SINT:
+            case AZ::RHI::Format::R32G32B32_SINT:
+            case AZ::RHI::Format::R32G32B32A32_SINT:
+                return true;
+            }
+
+            return false;
+        }
+
         template<>
         float GetImageDataPixelValue<float>(AZStd::span<const uint8_t> imageData, const AZ::RHI::ImageDescriptor& imageDescriptor, uint32_t x, uint32_t y, uint32_t componentIndex)
         {

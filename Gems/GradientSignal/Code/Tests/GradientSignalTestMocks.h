@@ -132,6 +132,18 @@ namespace UnitTest
             providerRegistryEntry.m_bounds = m_bounds;
             providerRegistryEntry.m_tags = m_tags;
 
+            // Run through the set of surface points that have been set on this component to find out the maximum number
+            // that we'll return for any given input point.
+            providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
+            for (auto& pointEntry : m_surfacePoints)
+            {
+                for (size_t index = 0; index < pointEntry.second.GetInputPositionSize(); index++)
+                {
+                    providerRegistryEntry.m_maxPointsCreatedPerInput =
+                        AZ::GetMax(providerRegistryEntry.m_maxPointsCreatedPerInput, pointEntry.second.GetSize(index));
+                }
+            }
+
             SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
                 m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
@@ -160,7 +172,15 @@ namespace UnitTest
 
             if (surfacePoints != m_surfacePoints.end())
             {
-                surfacePointList = surfacePoints->second;
+                // If we have an entry for this input position, run through all of its points and add them to the passed-in list.
+                surfacePoints->second.EnumeratePoints(
+                    [inPosition, &surfacePointList](
+                        [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal,
+                        const SurfaceData::SurfaceTagWeights& weights) -> bool
+                    {
+                        surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, position, normal, weights);
+                        return true;
+                    });
             }
         }
 

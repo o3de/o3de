@@ -75,6 +75,7 @@ namespace AZ
 
             void Init(RPI::Scene* scene, ReflectionRenderData* reflectionRenderData);
             void Simulate(uint32_t probeIndex);
+            void OnRenderEnd();
 
             const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
             const AZ::Transform& GetTransform() const { return m_transform; }
