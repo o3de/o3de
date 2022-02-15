@@ -61,35 +61,35 @@ namespace EMStudio
             renderOptionsButton->setIcon(QIcon(":/EMotionFXAtom/Visualization.svg"));
             addWidget(renderOptionsButton);
 
-            CreateViewOptionEntry(contextMenu, "Solid", EMotionFX::ActorRenderFlag::RENDER_SOLID);
-            CreateViewOptionEntry(contextMenu, "Wireframe", EMotionFX::ActorRenderFlag::RENDER_WIREFRAME);
+            CreateViewOptionEntry(contextMenu, "Solid", EMotionFX::ActorRenderFlagIndex::SOLID);
+            CreateViewOptionEntry(contextMenu, "Wireframe", EMotionFX::ActorRenderFlagIndex::WIREFRAME);
             // [EMFX-TODO] Add those option once implemented.
-            // CreateViewOptionEntry(contextMenu, "Lighting", EMotionFX::ActorRenderFlag::RENDER_LIGHTING);
-            // CreateViewOptionEntry(contextMenu, "Backface Culling", EMotionFX::ActorRenderFlag::RENDER_BACKFACECULLING);
+            // CreateViewOptionEntry(contextMenu, "Lighting", EMotionFX::ActorRenderFlagIndex::RENDER_LIGHTING);
+            // CreateViewOptionEntry(contextMenu, "Backface Culling", EMotionFX::ActorRenderFlagIndex::RENDER_BACKFACECULLING);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Vertex Normals", EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS);
-            CreateViewOptionEntry(contextMenu, "Face Normals", EMotionFX::ActorRenderFlag::RENDER_FACENORMALS);
-            CreateViewOptionEntry(contextMenu, "Tangents", EMotionFX::ActorRenderFlag::RENDER_TANGENTS);
-            CreateViewOptionEntry(contextMenu, "Actor Bounding Boxes", EMotionFX::ActorRenderFlag::RENDER_AABB);
+            CreateViewOptionEntry(contextMenu, "Vertex Normals", EMotionFX::ActorRenderFlagIndex::VERTEXNORMALS);
+            CreateViewOptionEntry(contextMenu, "Face Normals", EMotionFX::ActorRenderFlagIndex::FACENORMALS);
+            CreateViewOptionEntry(contextMenu, "Tangents", EMotionFX::ActorRenderFlagIndex::TANGENTS);
+            CreateViewOptionEntry(contextMenu, "Actor Bounding Boxes", EMotionFX::ActorRenderFlagIndex::AABB);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Line Skeleton", EMotionFX::ActorRenderFlag::RENDER_LINESKELETON);
-            CreateViewOptionEntry(contextMenu, "Solid Skeleton", EMotionFX::ActorRenderFlag::RENDER_SKELETON);
-            CreateViewOptionEntry(contextMenu, "Joint Names", EMotionFX::ActorRenderFlag::RENDER_NODENAMES);
-            CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION);
+            CreateViewOptionEntry(contextMenu, "Line Skeleton", EMotionFX::ActorRenderFlagIndex::LINESKELETON);
+            CreateViewOptionEntry(contextMenu, "Solid Skeleton", EMotionFX::ActorRenderFlagIndex::SKELETON);
+            CreateViewOptionEntry(contextMenu, "Joint Names", EMotionFX::ActorRenderFlagIndex::NODENAMES);
+            CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlagIndex::NODEORIENTATION);
             // [EMFX-TODO] Add those option once implemented.
-            // CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlag::RENDER_ACTORBINDPOSE);
+            // CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlagIndex::RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlagIndex::HITDETECTION_COLLIDERS, true,
                 ":/EMotionFXAtom/HitDetection.svg");
-            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlagIndex::RAGDOLL_COLLIDERS, true,
                 ":/EMotionFXAtom/RagdollCollider.svg");
-            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_JOINTLIMITS, true,
+            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlagIndex::RAGDOLL_JOINTLIMITS, true,
                 ":/EMotionFXAtom/RagdollJointLimit.svg");
-            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlag::RENDER_CLOTH_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlagIndex::CLOTH_COLLIDERS, true,
                 ":/EMotionFXAtom/Cloth.svg");
-            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlag::RENDER_SIMULATEDOBJECT_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlagIndex::SIMULATEDOBJECT_COLLIDERS, true,
                 ":/EMotionFXAtom/SimulatedObjectCollider.svg");
-            CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlag::RENDER_SIMULATEJOINTS);
+            CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlagIndex::SIMULATEJOINTS);
         }
 
         // Add the camera button
@@ -158,7 +158,7 @@ namespace EMStudio
     }
 
     void AnimViewportToolBar::CreateViewOptionEntry(
-        QMenu* menu, const char* menuEntryName, uint32_t actionIndex, bool visible, const char* iconFileName)
+        QMenu* menu, const char* menuEntryName, AZ::u8 actionIndex, bool visible, const char* iconFileName)
     {
         QAction* action = menu->addAction(
             menuEntryName,
@@ -194,13 +194,13 @@ namespace EMStudio
             m_manipulatorActions[mode]->setChecked(true);
         }
 
-        const EMotionFX::ActorRenderFlagBitset renderFlags = renderOptions->GetRenderFlags();
-        for (size_t i = 0; i < renderFlags.size(); ++i)
+        const EMotionFX::ActorRenderFlags renderFlags = renderOptions->GetRenderFlags();
+        for (uint8 i = 0; i < EMotionFX::ActorRenderFlagIndex::NUM_RENDERFLAGINDEXES; ++i)
         {
             QAction* action = m_renderActions[i];
             if (action)
             {
-                action->setChecked(renderFlags[i]);
+                action->setChecked(EMotionFX::ActorRenderFlagUtil::CheckBit(renderFlags, i));
             }
         }
     }

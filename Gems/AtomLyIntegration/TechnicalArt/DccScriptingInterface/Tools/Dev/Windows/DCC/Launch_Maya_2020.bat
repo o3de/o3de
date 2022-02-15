@@ -23,9 +23,9 @@ set DCCSI_PY_VERSION_MAJOR=2
 set DCCSI_PY_VERSION_MINOR=7
 set DCCSI_PY_VERSION_RELEASE=11
 
-CALL %~dp0\..\Env_Core.bat
-CALL %~dp0\..\Env_Python.bat
-CALL %~dp0\..\Env_Maya.bat
+CALL %~dp0..\Env_O3DE_Core.bat
+CALL %~dp0..\Env_O3DE_Python.bat
+CALL %~dp0..\Env_DCC_Maya.bat
 
 :: ide and debugger plug
 set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
@@ -34,6 +34,20 @@ set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
 :: Can be overridden (example, Launch_mayaPy_2020.bat :: MayaPy.exe)
 set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%Launch_mayaPy_2020.bat
 echo     DCCSI_PY_DCCSI = %DCCSI_PY_DCCSI%
+
+:: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
+IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe")
+echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
+
+:: add to the PATH
+SET PATH=%MAYA_BIN_PATH%;%PATH%
+
+:: add all python related paths to PYTHONPATH for package imports
+set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%DCCSI_MAYA_SCRIPT_PY_PATH%;%PYTHONPATH%
+echo     PYTHONPATH = %PYTHONPATH%
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________

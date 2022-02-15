@@ -48,7 +48,7 @@ namespace EMotionFX
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;
 
         void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
-        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
+        void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         static bool IsJointInCloth(const QModelIndex& index);
 
     public slots:

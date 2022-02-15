@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 bl_info = {
     "name": "O3DE_DCCSI_BLENDER_SCENE_EXPORTER",
     "author": "shawstar@amazon",
-    "version": (1, 1),
+    "version": (1, 2),
     "blender": (3, 00, 0),
     "location": "",
     "description": "Export Scene Assets to O3DE",
@@ -67,12 +67,20 @@ def register():
     bpy.utils.register_class(ui.SceneExporterFileMenu)
     bpy.utils.register_class(ui.ExportOptionsListDropDown)
     bpy.utils.register_class(ui.AnimationOptionsListDropDown)
+    #bpy.utils.register_class(ui.FileNameString)
+    #bpy.utils.register_class(ui.SetFileNameString)
+    bpy.types.Scene.export_file_name = bpy.props.StringProperty \
+    (
+        name = "",
+        description = "Export File Name",
+        default = "o3de_export"
+    )
     bpy.types.TOPBAR_MT_file_export.append(ui.file_export_menu_add) # Blender Specific Class and Naming Convention. 
     bpy.types.Scene.selected_o3de_project_path = ''
     bpy.types.Scene.export_textures_folder = True
     bpy.types.Scene.animation_export = constants.NO_ANIMATION
     bpy.types.Scene.file_menu_animation_export = False
-    bpy.types.Scene.export_good = False
+    bpy.types.Scene.export_good = True
     bpy.types.Scene.stored_image_source_paths = {}
     bpy.types.Scene.o3de_projects_list = EnumProperty(items=o3de_utils.build_projects_list(), name='')
     bpy.types.Scene.texture_options_list = EnumProperty(items=constants.EXPORT_LIST_OPTIONS, name='', default='0')
@@ -88,6 +96,9 @@ def unregister():
     bpy.utils.unregister_class(ui.SceneExporterFileMenu)
     bpy.utils.unregister_class(ui.ExportOptionsListDropDown)
     bpy.utils.unregister_class(ui.AnimationOptionsListDropDown)
+    #bpy.utils.unregister_class(ui.FileNameString)
+    #bpy.utils.unregister_class(ui.SetFileNameString)
+    del bpy.types.Scene.export_file_name
     bpy.types.TOPBAR_MT_file_export.remove(ui.file_export_menu_add) # Blender Specific Class and Naming Convention. 
     del bpy.types.Scene.selected_o3de_project_path
     del bpy.types.Scene.o3de_projects_list

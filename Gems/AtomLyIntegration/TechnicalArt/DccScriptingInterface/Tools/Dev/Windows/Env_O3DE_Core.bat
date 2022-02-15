@@ -116,7 +116,7 @@ echo     PATH_O3DE_BUILD = %PATH_O3DE_BUILD%
 IF "%PATH_O3DE_BIN%"=="" (set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile")
 echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
 
-:: add to the PATH
+:: in this case it makes sense for the core to always add to PATH
 SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
 
 ::ENDLOCAL
