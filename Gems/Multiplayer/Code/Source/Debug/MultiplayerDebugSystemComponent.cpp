@@ -611,7 +611,7 @@ namespace Multiplayer
 
     void MultiplayerDebugSystemComponent::FilterAuditTrail()
     {
-        AZStd::string_view filter = m_auditTrail->GetAuditTrialFilter();
+        AZStd::string filter = m_auditTrail->GetAuditTrialFilter();
         if (m_filteredAuditTrail.size() > 0 && filter == m_lastFilter)
         {
             return;
@@ -626,52 +626,50 @@ namespace Multiplayer
 
         for (auto elem = m_committedAuditTrail.begin(); elem != m_committedAuditTrail.end(); ++elem)
         {
+            const char* nodeTitle = elem->m_category == AuditCategory::Desync
+                ? MultiplayerDebugAuditTrail::DESYNC_TITLE : (elem->m_category == AuditCategory::Input
+                    ? MultiplayerDebugAuditTrail::INPUT_TITLE : MultiplayerDebugAuditTrail::EVENT_TITLE);
 
-            if (elem->m_category == AuditCategory::Desync)
+            // Events only have one item
+            if (elem->m_category == AuditCategory::Event)
             {
-                const char* nodeTitle = elem->m_category == AuditCategory::Desync
-                    ? MultiplayerDebugAuditTrail::DESYNC_TITLE : (elem->m_category == AuditCategory::Input
-                        ? MultiplayerDebugAuditTrail::INPUT_TITLE : MultiplayerDebugAuditTrail::EVENT_TITLE);
-
-                // Events only have one item
-                if (elem->m_category == AuditCategory::Event)
+                if (elem->m_children.size() > 0 && elem->m_children.front().m_elements.size() > 0)
                 {
-                    if (elem->m_children.size() > 0 && elem->m_children.front().m_elements.size() > 0)
+                    if(AZStd::string::format(nodeTitle, elem->m_name.c_str()).contains(filter))
                     {
-                        if(AZStd::string::format(nodeTitle, elem->m_name.c_str()).contains(filter))
-                        {
-                            m_filteredAuditTrail.push_back(*elem);
-                        }
-
+                        m_filteredAuditTrail.push_back(*elem);
+                    }
+                    else
+                    {
                         AZStd::pair<AZStd::string, AZStd::string> cliServValues =
                             elem->m_children.front().m_elements.front()->GetClientServerValues();
-                        if(AZStd::string::format(
-                            "%d %d %s %s", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId),
-                            cliServValues.first.c_str(), cliServValues.second.c_str()).contains(filter))
+                        if (AZStd::string::format(
+                                "%d %d %s %s", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId),
+                                cliServValues.first.c_str(), cliServValues.second.c_str())
+                                .contains(filter))
                         {
                             m_filteredAuditTrail.push_back(*elem);
                         }
-
                     }
                 }
-                // Desyncs and inputs can contain multiple line items
+            }
+            // Desyncs and inputs can contain multiple line items
+            else
+            {
+                if (AZStd::string::format(nodeTitle, elem->m_name.c_str()).contains(filter))
+                {
+                    m_filteredAuditTrail.push_back(*elem);
+                }
+                else if (AZStd::string::format("%d %d", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId))
+                        .contains(filter))
+                {
+                    m_filteredAuditTrail.push_back(*elem);
+                }
                 else
                 {
-                    if (AZStd::string::format(nodeTitle, elem->m_name.c_str()).contains(filter))
-                    {
-                        m_filteredAuditTrail.push_back(*elem);
-                        continue;
-                    }
-
-                    if (AZStd::string::format("%d %d", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId))
-                            .contains(filter))
-                    {
-                        m_filteredAuditTrail.push_back(*elem);
-                        continue;
-                    }
-
                     // Attempt to construct a filtered input
-                    Multiplayer::AuditTrailInput filteredInput(elem->m_category, elem->m_inputId, elem->m_hostFrameId, elem->m_name, {});
+                    Multiplayer::AuditTrailInput filteredInput(
+                        elem->m_category, elem->m_inputId, elem->m_hostFrameId, elem->m_name, {});
 
                     for (const auto& child : elem->m_children)
                     {
@@ -688,7 +686,8 @@ namespace Multiplayer
                             {
                                 AZStd::pair<AZStd::string, AZStd::string> cliServValues = childElem->GetClientServerValues();
                                 if (AZStd::string::format(
-                                        "%s %s %s", childElem->GetName().c_str(), cliServValues.first.c_str(), cliServValues.second.c_str())
+                                        "%s %s %s", childElem->GetName().c_str(), cliServValues.first.c_str(),
+                                        cliServValues.second.c_str())
                                         .contains(filter))
                                 {
                                     filteredChild.m_elements.push_back(childElem.get()->Clone());
@@ -702,7 +701,7 @@ namespace Multiplayer
                         }
                     }
 
-                    if (filteredInput.m_children.size() > 0)
+                    if (filteredInput.m_children.size() > 0 || elem->m_category == AuditCategory::Desync)
                     {
                         m_filteredAuditTrail.push_back(filteredInput);
                     }

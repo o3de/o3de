@@ -85,7 +85,7 @@ namespace Multiplayer
 
         AzFramework::SystemCursorState m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown; //! The last system cursor state.
 
-        AZStd::string_view m_lastFilter;
+        AZStd::string m_lastFilter;
         AZStd::deque<AuditTrailInput> m_auditTrailElems;
         AZStd::deque<AuditTrailInput> m_committedAuditTrail;
         AZStd::deque<AuditTrailInput> m_pendingAuditTrail;
