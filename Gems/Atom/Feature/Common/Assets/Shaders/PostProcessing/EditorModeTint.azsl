@@ -30,7 +30,7 @@ PSOutput MainPS(VSOutput IN)
 
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
-    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
+    const float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
     
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, finalEffect, t);
