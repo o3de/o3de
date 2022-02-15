@@ -47,7 +47,7 @@ IF "%PYCHARM_PROJ%"=="" (SET "PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solut
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    Setting up O3DE DCCsi Dev Env PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%
+echo ~    Setting up O3DE DCCsi IDE Env PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%
 echo _____________________________________________________________________
 echo.
 

@@ -116,8 +116,11 @@ echo     PATH_O3DE_BUILD = %PATH_O3DE_BUILD%
 IF "%PATH_O3DE_BIN%"=="" (set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile")
 echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
 
-:: add to the PATH
-SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
+echo.
+echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
+
+:: we are moving to only setting up PATH in launchers
+::SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
 
 ::ENDLOCAL
 

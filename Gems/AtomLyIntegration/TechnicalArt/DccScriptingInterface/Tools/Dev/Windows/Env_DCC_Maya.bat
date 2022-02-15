@@ -84,12 +84,9 @@ echo     DCCSI_MAYA_SET_CALLBACKS = %DCCSI_MAYA_SET_CALLBACKS%
 ::echo     MAYA_NO_CONSOLE_WINDOW = %MAYA_NO_CONSOLE_WINDOW%
 :: But I like the console window for development and debugging early boot
 
-:: shared location for 64bit DCCSI_PY_MAYA python location (2.7)
+:: shared location for 64bit DCCSI_PY_MAYA python location
 set "DCCSI_PY_MAYA=%MAYA_BIN_PATH%\mayapy.exe"
 echo     DCCSI_PY_MAYA = %DCCSI_PY_MAYA%
-
-:: add to the PATH
-SET PATH=%MAYA_BIN_PATH%;%PATH%
 
 :: Local DCCsi Maya plugins access (ours)
 set "DCCSI_MAYA_PLUG_IN_PATH=%DCCSI_TOOLS_MAYA_PATH%\plugins"
@@ -125,16 +122,14 @@ set "DCCSI_MAYA_SCRIPT_PATH=%DCCSI_TOOLS_MAYA_PATH%\Scripts"
 :: also attached to maya's built-it env var
 set MAYA_SCRIPT_PATH=%DCCSI_MAYA_SCRIPT_PATH%;%MAYA_SCRIPT_PATH%
 echo     DCCSI_MAYA_SCRIPT_PATH = %DCCSI_MAYA_SCRIPT_PATH%
-
 echo     MAYA_SCRIPT_PATH = %MAYA_SCRIPT_PATH%
-
-:: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%DCCSI_MAYA_SCRIPT_PY_PATH%;%PYTHONPATH%
-echo     PYTHONPATH = %PYTHONPATH%
 
 :: DX11 Viewport
 Set MAYA_VP2_DEVICE_OVERRIDE=VirtualDeviceDx11
 echo     MAYA_VP2_DEVICE_OVERRIDE = %MAYA_VP2_DEVICE_OVERRIDE%
+
+echo.
+echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
 
 ::ENDLOCAL
 

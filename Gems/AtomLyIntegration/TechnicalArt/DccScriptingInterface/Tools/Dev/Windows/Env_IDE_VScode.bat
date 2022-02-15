@@ -7,7 +7,7 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-:: Sets up environment for Lumberyard DCC tools and code access
+:: Sets up environment for O3DE DCC tools and code access
 
 :: Skip initialization if already completed
 IF "%DCCSI_ENV_VSCODE_INIT%"=="1" GOTO :END_OF_FILE
@@ -34,7 +34,7 @@ IF "%VSCODE_WRKSPC%"=="" (SET "VSCODE_WRKSPC=%PATH_DCCSIG%\Tools\Dev\Windows\Sol
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    O3DE DCCsi WingIDE Environment ...
+echo ~    O3DE DCCsi VScode Environment ...
 echo _____________________________________________________________________
 echo.
 

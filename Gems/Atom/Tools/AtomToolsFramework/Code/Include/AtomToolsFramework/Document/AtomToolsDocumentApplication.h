@@ -22,7 +22,7 @@ namespace AtomToolsFramework
 
         using Base = AtomToolsApplication;
 
-        AtomToolsDocumentApplication(const AZStd::string& targetName, int* argc, char*** argv);
+        AtomToolsDocumentApplication(const char* targetName, int* argc, char*** argv);
 
     protected:
         // AtomToolsApplication overrides...

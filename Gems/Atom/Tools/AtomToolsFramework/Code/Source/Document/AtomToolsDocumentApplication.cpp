@@ -11,7 +11,7 @@
 
 namespace AtomToolsFramework
 {
-    AtomToolsDocumentApplication::AtomToolsDocumentApplication(const AZStd::string& targetName, int* argc, char*** argv)
+    AtomToolsDocumentApplication::AtomToolsDocumentApplication(const char* targetName, int* argc, char*** argv)
         : Base(targetName, argc, argv)
     {
     }

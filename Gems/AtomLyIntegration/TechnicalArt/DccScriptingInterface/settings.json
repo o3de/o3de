@@ -9,5 +9,6 @@
         "settings.py",
         "settings.json",
         ".secrets.json"
-    ]
+    ],
+    "DCCSI_IMAGE_TYPES": [".tif", ".tiff", ".png", ".jpg", ".jpeg", ".tga"]
 }

@@ -30,7 +30,7 @@ CALL %~dp0\Env_O3DE_Qt.bat
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    O3DE DCCsi WingIDE Environment ...
+echo ~    O3DE DCCsi IDE Env WingIDE %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR% ...
 echo _____________________________________________________________________
 echo.
 
@@ -43,8 +43,11 @@ echo     DCCSI_WING_VERSION_MINOR = %DCCSI_WING_VERSION_MINOR%
 echo     WINGHOME = %WINGHOME%
 echo     WING_PROJ = %WING_PROJ%
 
+echo.
+echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
+
 :: add to the PATH
-SET PATH=%WINGHOME%;%PATH%
+::SET PATH=%WINGHOME%;%PATH%
 
 :: Set flag so we don't initialize dccsi environment twice
 SET DCCSI_ENV_WINGIDE_INIT=1
