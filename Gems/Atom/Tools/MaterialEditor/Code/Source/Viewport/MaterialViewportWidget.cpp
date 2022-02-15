@@ -41,6 +41,7 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/PanCameraBehavior.h>
@@ -345,6 +346,8 @@ namespace MaterialEditor
         // Create viewport input controller and regioster its behaviors
         m_viewportController.reset(
             aznew ViewportInputBehaviorController(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::None, AZStd::make_shared<IdleBehavior>(m_viewportController.get()));
         m_viewportController->AddBehavior(
             ViewportInputBehaviorController::Lmb, AZStd::make_shared<PanCameraBehavior>(m_viewportController.get()));
         m_viewportController->AddBehavior(

@@ -8,17 +8,17 @@
 
 #pragma once
 
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
+
 namespace AzToolsFramework
 {
-    using EntityIdList = AZStd::vector<AZ::EntityId>;
-
     //! FocusModeInterface
     //! Interface to handle the Editor Focus Mode.
     class FocusModeInterface

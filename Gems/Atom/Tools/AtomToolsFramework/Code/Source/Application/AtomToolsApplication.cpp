@@ -45,7 +45,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    AtomToolsApplication::AtomToolsApplication(const AZStd::string& targetName, int* argc, char*** argv)
+    AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
         , m_targetName(targetName)
