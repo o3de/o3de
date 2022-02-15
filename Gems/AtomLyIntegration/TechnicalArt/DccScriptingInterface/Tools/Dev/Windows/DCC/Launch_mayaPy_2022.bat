@@ -26,12 +26,15 @@ set DCCSI_PY_VERSION_MAJOR=3
 set DCCSI_PY_VERSION_MINOR=7
 set DCCSI_PY_VERSION_RELEASE=7
 
-CALL %~dp0\..\Env_Core.bat
-CALL %~dp0\..\Env_Python.bat
-CALL %~dp0\..\Env_Maya.bat
+CALL %~dp0\..\Env_O3DE_Core.bat
+CALL %~dp0\..\Env_O3DE_Python.bat
+CALL %~dp0..\Env_DCC_Maya.bat
 
 :: ide and debugger plug
 set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________

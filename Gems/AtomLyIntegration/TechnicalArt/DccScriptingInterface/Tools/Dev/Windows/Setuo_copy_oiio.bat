@@ -20,6 +20,6 @@ set PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python
 
 set PY_SITE=%PATH_O3DE_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python\Lib\site-packages
 
-set PACKAGE_LOC=C:\Depot\3rdParty\packages\openimageio-2.1.16.0-rev1-windows\OpenImageIO\2.1.16.0\win_x64\bin
+set PACKAGE_LOC=C:\Depot\3rdParty\packages\openimageio-2.1.16.0-rev2-windows\OpenImageIO\2.1.16.0\win_x64\bin
 
 copy %PACKAGE_LOC%\OpenImageIO.pyd %PY_SITE%\OpenImageIO.pyd

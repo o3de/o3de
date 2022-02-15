@@ -43,8 +43,8 @@ Env_DCC_Substance.bat   : Configures Substance Designer
 ### IDE env
 
 Env_IDE_WingIDE.bat     : configures WingIDE for DCCsi development
-Env_IDE_VScode.bat      : configures VScode  for DCCsi development
-Env_IDE_PyCharm.bat     : configures PyCharm for DCCsi development
+Env_IDE_VScode.bat      : configures VScode
+Env_IDE_PyCharm.bat     : configures PyCharm
 
 ### Launchers
 
@@ -64,7 +64,7 @@ How to test the synthetic environment and settings externally
 
 1. Run the cmd:   Launch_PyMin_Cmd.bat
 
-        C:\Depot\o3de-engine\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface>
+    C:\Depot\o3de-engine\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface>
 
 2. Run command:>python config.py -dm=True -py=True -qt=True
 

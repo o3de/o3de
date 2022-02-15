@@ -7,7 +7,7 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-:: Set up and run LY Python CMD prompt
+:: Set up and run O3DE Python CMD prompt
 :: Sets up the DccScriptingInterface_Env,
 :: Puts you in the CMD within the dev environment
 
@@ -19,7 +19,7 @@ COLOR 8E
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    O3DE DCCsi CMD ...
+echo ~    O3DE DCCsi DCCSI_PY_BASE (python) CMD ...
 echo _____________________________________________________________________
 echo.
 
@@ -32,9 +32,26 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
+:: Initialize env
 CALL %~dp0\Env_O3DE_Core.bat
 CALL %~dp0\Env_O3DE_Python.bat
 CALL %~dp0\Env_O3DE_Qt.bat
+
+:: set the PATH and PYTHONPATH
+SET PATH=%PATH_DCCSI_PYTHON_LIB%;%PATH%
+
+:: add to the PATH
+SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
+
+:: add all python related paths to PYTHONPATH for package imports
+set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
+echo     PYTHONPATH = %PYTHONPATH%
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+
+echo     ~ Starting O3DE DCCsi python CMD
+echo .
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%

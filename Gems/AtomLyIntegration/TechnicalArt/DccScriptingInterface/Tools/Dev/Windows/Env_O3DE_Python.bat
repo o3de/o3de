@@ -26,6 +26,10 @@ echo ~    O3DE DCCsi Python Environment ...
 echo _____________________________________________________________________
 echo.
 
+:: this is the default env setup for O3DE python
+:: we will attempt to avoid causing conflicts in DCC tools with their
+:: own python (which is most of them)
+
 :: Python Version
 :: Ideally these are set to match the O3DE python distribution
 :: <O3DE>\python\runtime
@@ -50,32 +54,40 @@ echo     PATH_DCCSI_PYTHON = %PATH_DCCSI_PYTHON%
 IF "%PATH_DCCSI_PYTHON_LIB%"=="" (set "PATH_DCCSI_PYTHON_LIB=%PATH_DCCSI_PYTHON%\Lib\%DCCSI_PY_VERSION_MAJOR%.x\%DCCSI_PY_VERSION_MAJOR%.%DCCSI_PY_VERSION_MINOR%.x\site-packages")
 echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
 
-:: add to the PATH
-SET PATH=%PATH_DCCSI_PYTHON_LIB%;%PATH%
+:: we should NOT add to the PATH here (this is global)
+:: setting PATH should be move to Launch .bat files 
+:::SET PATH=%PATH_DCCSI_PYTHON_LIB%;%PATH%
 
 :: shared location for default O3DE python location
-set "PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\python"
-echo    PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
+set PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\python
+echo     PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
 
 :: location for O3DE python 3.7 location 
 :: Note, many DCC tools (like Maya) include thier own python interpretter
 :: Some DCC apps may not operate correctly if PYTHONHOME is set (this is definitely the case with Maya)
 :: Be aware the python.cmd below does set PYTHONHOME
-set "DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd"
+set DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd
 echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 
+:: will set O3DE_PYTHONHOME location
 CALL %PATH_O3DE_PYTHON_INSTALL%\get_python_path.bat
 
+:: ide and debugger plug
+IF "%DCCSI_PY_DEFAULT%"=="" (set "DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%")
+echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
+
 :: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
-IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe")
+:: ide and debugger plug
+IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%DCCSI_PY_BASE%")
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
-:: add to the PATH
-SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
+:: we should NOT add to the PATH here (this is global)
+::SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
 
+:: we should NOT add to the PYTHONPATH here (this is global)
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
-echo     PYTHONPATH = %PYTHONPATH%
+::set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
+::echo     PYTHONPATH = %PYTHONPATH%
 
 :: Set flag so we don't initialize dccsi environment twice
 SET DCCSI_ENV_PY_INIT=1
