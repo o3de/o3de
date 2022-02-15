@@ -45,7 +45,6 @@
 #include <PostProcessing/BloomParentPass.h>
 #include <PostProcessing/HDRColorGradingPass.h>
 #include <PostProcessing/EditorModeFeedbackParentPass.h>
-#include <PostProcessing/EditorModeMaskPass.h>
 #include <PostProcessing/EditorModeDesaturationPass.h>
 #include <PostProcessing/EditorModeTintPass.h>
 #include <PostProcessing/EditorModeBlurPass.h>
@@ -233,7 +232,6 @@ namespace AZ
             passSystem->AddPassCreator(Name("BlendColorGradingLutsPass"), &BlendColorGradingLutsPass::Create);
             passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
             passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeMaskPass"), &EditorModeMaskPass::Create);
             passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
             passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
             passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);

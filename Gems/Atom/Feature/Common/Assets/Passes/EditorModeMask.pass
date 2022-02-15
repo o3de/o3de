@@ -6,7 +6,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "EditorModeMaskTemplate",
-            "PassClass": "EditorModeMaskPass",
+            "PassClass": "RasterPass",
             "Slots": [
                 {
                     "Name": "InputDepth",

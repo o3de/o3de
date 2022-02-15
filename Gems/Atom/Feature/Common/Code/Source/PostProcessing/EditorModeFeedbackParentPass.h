@@ -25,7 +25,7 @@ namespace AZ
 
             virtual ~EditorModeFeedbackParentPass() = default;
 
-            //! Creates a EditorModeMaskPass
+            //! Creates a EditorModeFeedbackParentPass
             static RPI::Ptr<EditorModeFeedbackParentPass> Create(const RPI::PassDescriptor& descriptor);
 
         protected:
