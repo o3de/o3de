@@ -14,7 +14,7 @@
 
     <Input Name="Create Ticket" OutputName="Ticket Created">
         <Parameter Name="Prefab" Type="const ScriptCanvas::Nodeables::Spawning::SpawnableAsset&amp;" Description="Prefab source asset to spawn"/>
-		<Return Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Shared="true"/>
+		<Return Name="SpawnTicketInstance" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Shared="true"/>
     </Input>
   </Class>
 </ScriptCanvas>

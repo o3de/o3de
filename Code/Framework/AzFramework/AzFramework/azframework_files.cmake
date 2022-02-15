@@ -287,8 +287,11 @@ set(FILES
     Spawnable/SpawnableMetaData.h
     Spawnable/SpawnableMonitor.h
     Spawnable/SpawnableMonitor.cpp
-    Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
+    Spawnable/SpawnableSystemComponent.h
+    Spawnable/SpawnAssistant/SpawnAssistantBus.h
+    Spawnable/SpawnAssistant/SpawnAssistantComponent.h
+    Spawnable/SpawnAssistant/SpawnAssistantComponent.cpp
     SurfaceData/SurfaceData.h
     SurfaceData/SurfaceData.cpp
     Terrain/TerrainDataRequestBus.h

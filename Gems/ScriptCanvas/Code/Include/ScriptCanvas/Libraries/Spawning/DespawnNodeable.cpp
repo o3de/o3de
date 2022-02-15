@@ -58,6 +58,11 @@ namespace ScriptCanvas::Nodeables::Spawning
             m_despawnedTicketIdList.push_back(ticketId);
         };
 
+        if (!spawnTicketInstance.m_ticket)
+        {
+            return;
+        }
+
         AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(despawnCompleteCB);
         AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(*spawnTicketInstance.m_ticket, AZStd::move(optionalArgs));

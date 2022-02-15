@@ -13,7 +13,8 @@
          Description="Spawns a selected prefab">
 
     <Input Name="Request Spawn" OutputName="Spawn Requested">
-      <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance assosiated with spawnable asset."/>
+      <Parameter Name="SpawnTicketInstance" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance assosiated with spawnable asset."/>
+	  <Return Name="SpawnTicketInstance" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Shared="true"/>
     </Input>
 
 	<Output Name="On Insertion" Description="Called after instances of entities have been created, but before they're spawned into the world. gives the opportunity to modify the entities if needed such as injecting additional components or modifying components.">

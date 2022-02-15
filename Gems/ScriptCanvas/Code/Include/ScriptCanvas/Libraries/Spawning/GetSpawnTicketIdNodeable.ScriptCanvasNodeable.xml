@@ -13,7 +13,7 @@
          Description="Gets spawn ticket id">
 
     <Input Name="Get Ticket Id" OutputName="Out">
-        <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Data containing required spawning information."/>
+        <Parameter Name="SpawnTicketInstance" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Data containing required spawning information."/>
 		<Return Name="TicketId" Type="AzFramework::EntitySpawnTicket::Id" Shared="true"/>
     </Input>
   </Class>

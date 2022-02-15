@@ -60,11 +60,11 @@ namespace ScriptCanvas::Nodeables::Spawning
             {
                 continue;
             }
-            CallOnInsertion(spawnResult.m_spawnTicketId, AZStd::move(spawnResult.m_entityList));
+            CallOnCompletion(spawnResult.m_spawnTicketId, AZStd::move(spawnResult.m_entityList));
         }
     }
 
-    void SpawnNodeable::RequestSpawn(SpawnTicketInstance spawnTicketInstance)
+    SpawnTicketInstance SpawnNodeable::RequestSpawn(SpawnTicketInstance spawnTicketInstance)
     {
         auto preSpawnCB = [this](AzFramework::EntitySpawnTicket::Id ticketId,
             AzFramework::SpawnableEntityContainerView view)
@@ -112,6 +112,7 @@ namespace ScriptCanvas::Nodeables::Spawning
         optionalArgs.m_preInsertionCallback = AZStd::move(preSpawnCB);
         optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
         AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*spawnTicketInstance.m_ticket, AZStd::move(optionalArgs));
+        return spawnTicketInstance;
     }
 } // namespace ScriptCanvas::Nodeables::Spawning
 #pragma optimize("", on)

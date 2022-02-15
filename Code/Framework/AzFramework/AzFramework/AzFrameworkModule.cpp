@@ -26,6 +26,7 @@
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
+#include <AzFramework/Spawnable/SpawnAssistant/SpawnAssistantComponent.h>
 
 AZ_DEFINE_BUDGET(AzFramework);
 
@@ -59,6 +60,7 @@ namespace AzFramework
 
             AzFramework::OctreeSystemComponent::CreateDescriptor(),
             AzFramework::SpawnableSystemComponent::CreateDescriptor(),
+            AzFramework::SpawnAssistantComponent::CreateDescriptor(),
         });
     }
 
