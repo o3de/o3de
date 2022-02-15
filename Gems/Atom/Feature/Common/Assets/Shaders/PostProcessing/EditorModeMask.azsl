@@ -73,7 +73,7 @@ PixelOutput MainPS(VSOutput IN)
     PixelOutput OUT;
 
     // Ignore m_maskId for now until LYN-9878 is resolved
-    OUT.m_color = float4(1.,1.,1.,1.);
+    OUT.m_color = float4(1., 1., 1., 1.);
 
     return OUT;
 } 

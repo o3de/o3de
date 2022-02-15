@@ -5,24 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include <EditorModeCommon.azsli>
 #include <EditorModeDepthTransition.azsli>
- 
+
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     float m_kernalWidth;
 }
 
-static float2 maskSize;
-
-float2 normalizedUV(float2 uv)
+float3 Blur(const float2 uv, const float boxRadius)
 {
-    return uv/maskSize;
-}
- 
-float3 Blur(float2 unormalizedUv, const float boxRadius)
-{
+    const float2 maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
+    const float2 unormalizedUv = float2(uv.x * maskSize.x, uv.y * maskSize.y);
+    const float2 maskSizeReciprocal = float2(1., 1.0) / maskSize;
     float3 outColor = float3(0., 0., 0.);
 
     // Box blur kernal
@@ -32,7 +28,7 @@ float3 Blur(float2 unormalizedUv, const float boxRadius)
         for(float v = -boxRadius; v <= boxRadius; v+=1.)
         {
             weights += 1.;
-            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).rgb;
+            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * maskSizeReciprocal).rgb;
         }
     }
 
@@ -45,11 +41,9 @@ PSOutput MainPS(VSOutput IN)
 
     const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
-    maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
-    float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
-
+    
     // Blur effect
-    float3 finalEffect = Blur(unnormalizedUV, PassSrg::m_kernalWidth);
+    float3 finalEffect = Blur(IN.m_texCoord, PassSrg::m_kernalWidth);
   
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;

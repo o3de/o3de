@@ -5,30 +5,26 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include <EditorModeCommon.azsli>
 #include <EditorModeDepthTransition.azsli>
- 
+
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {    
     float m_lineThickness;
     float4 m_lineColor;
 }
 
-static float2 maskSize;
-
-float2 normalizedUV(float2 uv)
-{
-    return uv/maskSize;
-}
- 
 // Entity outliner effect
-float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
+float selectedEntityOutliner(float2 uv, float lineThickness)
 {
+    const float2 maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
+    const float2 unormalizedUv = float2(uv.x * maskSize.x, uv.y * maskSize.y);
+    const float2 maskSizeReciprocal = float2(1., 1.0) / maskSize;
     float r = 0.;
 
     // Selected entity mask value
-    float S = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv)).a;
+    float S = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, unormalizedUv * maskSizeReciprocal).a;
 
     if(S > 0.0)
     {
@@ -40,7 +36,7 @@ float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
     {
         for(float v = -lineThickness; v <= lineThickness; v+=1.)
         {
-            r += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).r;
+            r += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * maskSizeReciprocal).r;
         }
     }
     
@@ -54,8 +50,6 @@ PSOutput MainPS(VSOutput IN)
 
     const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
-    maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
-    float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
 
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
@@ -64,7 +58,7 @@ PSOutput MainPS(VSOutput IN)
     // Outline effect
     // Known issue with pimples due to LYN-10304
     const float lineThickness = lerp(1., PassSrg::m_lineThickness, 1.0 - t);
-    const float outline = selectedEntityOutliner(unnormalizedUV, lineThickness);
+    const float outline = selectedEntityOutliner(IN.m_texCoord, lineThickness);
 
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outline);
