@@ -29,7 +29,12 @@ float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
 
     // Selected entity mask value
     float S = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv)).a;
-     
+
+    if(S > 0.0)
+    {
+        return 0.0;
+    }
+    
     // Outliner kernal
     for(float u = -lineThickness; u <= lineThickness; u+=1.)
     {
@@ -38,19 +43,18 @@ float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
             r += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).r;
         }
     }
-     
+    
     // Only apply the outliner effect to fragments not part of S
-    // Could just do an early exit above when S > 0.0...
-    return min(1.0, (r / lineThickness) * (1.0 - S));
+    return min(1.0, (r / lineThickness));
 }
 
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
-    maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
     const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
+    maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
     float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
 
     // Apply the depth transition to the blend amount
@@ -58,14 +62,12 @@ PSOutput MainPS(VSOutput IN)
     float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
 
     // Outline effect
-    //const float lineThickness = lerp(1., PassSrg::m_lineThickness, t);
+    // Known issue with pimples due to LYN-10304
     const float lineThickness = lerp(1., PassSrg::m_lineThickness, 1.0 - t);
-    //const float lineThickness = PassSrg::m_lineThickness;
     const float outline = selectedEntityOutliner(unnormalizedUV, lineThickness);
 
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outline);
 
-    //OUT.m_color.rgb = float3(t, t, t);
     return OUT;
 }

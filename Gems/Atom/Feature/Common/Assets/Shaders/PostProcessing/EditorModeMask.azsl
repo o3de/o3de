@@ -45,7 +45,7 @@ VSOutput MainVS(VSInput IN)
 
     // Offset the depth of redrawn entities to avoid z fighting with the underlying entity rendered data
     // A proper programatic solution will be investigated in LYN-10304
-    OUT.m_position.z += 0.01;
+    OUT.m_position.z += 0.001;
 
 /*
     For use in LYN-9929
