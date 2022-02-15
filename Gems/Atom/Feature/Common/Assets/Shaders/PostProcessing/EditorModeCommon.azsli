@@ -60,14 +60,14 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     }
 
     //! Returns the final blend amount after the final blend amount scale is applied.
-    float CalculateFinalBlendAmount(float t)
+    float CalculateFinalBlendAmount(const float t)
     {
         // Apply the final blend amount modifier
         return lerp(0.0, t, m_finalBlendAmount);
     }
 
     //! Returns the calculated color after blending original framebuffer color with the calculated feedback effect.
-    float4 CalculateOutputColor(const float3 inColor, const float3 finalEffect, float t)
+    float4 CalculateOutputColor(const float3 inColor, const float3 finalEffect, const float t)
     {
         float4 outColor;
         outColor.rgb = lerp(inColor, finalEffect, t);
@@ -76,7 +76,7 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     }
 
     //! Calculates the final blend anount and returns the blended output color.
-    float4 CalculateFinalBlendAmountAndOutputColor(const float3 inColor, const float3 finalEffect, float t)
+    float4 CalculateFinalBlendAmountAndOutputColor(const float3 inColor, const float3 finalEffect, const float t)
     {
         return CalculateOutputColor(inColor, finalEffect, CalculateFinalBlendAmount(t));
     }
