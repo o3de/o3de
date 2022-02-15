@@ -98,7 +98,13 @@ def loop_through_selected_materials(texture_file_path):
             if img.type == 'TEX_IMAGE':
                 # Frist make sure the image is not packed inside blender
                 if img.image.packed_file:
-                    bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(img.image.name))
+                    if not Path(img.image.name).suffix == '':
+                        bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(img.image.name))
+                    else:
+                        ext = '.png'
+                        build_string = f'{img.image.name}{ext}'
+                        bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(build_string))
+                    
                     bpy.data.images[img.image.name].save()
                 full_path = bpy.path.abspath(img.image.filepath, library=img.image.library)
                 base_name = Path(full_path).name
