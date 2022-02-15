@@ -22,6 +22,7 @@ echo ~    O3DE DCCsi WingIDE Launch Env ...
 echo _____________________________________________________________________
 echo.
 echo ~    default envas for wingide env
+echo.
 
 :: Store current dir
 %~d0
@@ -64,28 +65,33 @@ IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 :: Initialize env
 CALL %~dp0..\Env_O3DE_Core.bat
-CALL %~dp0..\Env_O3DE_Python.bat
-CALL %~dp0..\Env_DCC_Maya.bat
-CALL %~dp0..\Env_IDE_WingIDE.bat
 
-echo     O3DE_DEV = %O3DE_DEV%
+:: add to the PATH here (this is global)
+SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
+
+CALL %~dp0..\Env_DCC_Maya.bat
 
 :: ide and debugger plug
-set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
+set "DCCSI_PY_DEFAULT=%MAYA_BIN_PATH%\mayapy.exe"
 echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 
 :: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
-set %DCCSI_PY_IDE%=%DCCSI_PY_MAYA%
+set "DCCSI_PY_IDE=%MAYA_BIN_PATH%\mayapy.exe"
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
-:: add to the PATH here (this is global)
-SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
-echo     PATH = %PATH%
+SET PATH=%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
+
+CALL %~dp0..\Env_O3DE_Python.bat
 
 :: add to the PYTHONPATH here (this is global)
+SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%PATH%
+
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
-echo     PYTHONPATH = %PYTHONPATH%
+set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
+
+CALL %~dp0..\Env_IDE_WingIDE.bat
+
+SET PATH=%WINGHOME%;%PATH%
 
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
@@ -99,8 +105,14 @@ echo ~ MayaPy.exe (default python interpreter)
 echo _____________________________________________________________________
 echo.
 
+echo.
+echo     PATH = %PATH%
+echo.
+echo     PYTHONPATH = %PYTHONPATH%
+
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%
+echo.
 
 IF EXIST "%WINGHOME%\bin\wing.exe" (
     start "" "%WINGHOME%\bin\wing.exe" "%WING_PROJ%"

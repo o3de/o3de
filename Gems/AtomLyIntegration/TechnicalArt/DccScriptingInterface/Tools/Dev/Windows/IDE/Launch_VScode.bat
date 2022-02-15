@@ -51,12 +51,30 @@ echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 :: Initialize env
-CALL %~dp0\..\Env_Core.bat
-CALL %~dp0\..\Env_Python.bat
-CALL %~dp0\..\Env_Qt.bat
-CALL %~dp0\..\Env_Maya.bat
-CALL %~dp0\..\Env_Substance.bat
-CALL %~dp0\..\Env_VScode.bat
+CALL %~dp0\..\Env_O3DE_Core.bat
+
+:: add to the PATH here (this is global)
+SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
+
+CALL %~dp0\..\Env_O3DE_Python.bat
+
+:: add to the PYTHONPATH here (this is global)
+SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%PATH%
+
+:: add all python related paths to PYTHONPATH for package imports
+set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
+
+CALL %~dp0\..\Env_O3DE_Qt.bat
+
+SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
+SET PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
+
+CALL %~dp0\..\Env_IDE_VScode.bat
+
+SET PATH=%VSCODEHOME%;%PATH%
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________
@@ -64,9 +82,6 @@ echo.
 echo ~ Launching DCCsi Project in VScode
 echo _____________________________________________________________________
 echo.
-
-echo     O3DE_DEV = %O3DE_DEV%
-
 echo.
 
 REM "C:\Program Files\Microsoft VS Code\Code.exe"

@@ -27,31 +27,44 @@ echo.
 cd %~dp0
 PUSHD %~dp0
 
-SETLOCAL ENABLEDELAYEDEXPANSION
+::SETLOCAL ENABLEDELAYEDEXPANSION
 
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 :: Initialize env
 CALL %~dp0\Env_O3DE_Core.bat
+
+:: add to the PATH here (this is global)
+SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
+
 CALL %~dp0\Env_O3DE_Python.bat
-CALL %~dp0\Env_O3DE_Qt.bat
 
-:: set the PATH and PYTHONPATH
-SET PATH=%PATH_DCCSI_PYTHON_LIB%;%PATH%
-
-:: add to the PATH
-SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
+:: add to the PYTHONPATH here (this is global)
+SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
-echo     PYTHONPATH = %PYTHONPATH%
+SET PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
+
+CALL %~dp0\Env_O3DE_Qt.bat
+
+SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
+SET PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
 
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
-echo     ~ Starting O3DE DCCsi python CMD
-echo .
+echo.
+echo _____________________________________________________________________
+echo.
+echo ~     Starting O3DE DCCsi python CMD
+echo _____________________________________________________________________
+echo.
+
+echo.
+echo     PATH = %PATH%
+echo.
+echo     PYTHONPATH = %PYTHONPATH%
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%

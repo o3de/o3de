@@ -100,6 +100,7 @@ os.environ["DYNACONF_DCCSI_PATH_BLENDER"] = _DCCSI_PATH_BLENDER.resolve()
 _LOGGER.debug(f"Blender Install: {_DCCSI_PATH_BLENDER}")
 
 from dynaconf import settings
+settings.setenv()
 # -------------------------------------------------------------------------
 
 

@@ -61,9 +61,37 @@ IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 :: Initialize env
 CALL %~dp0..\Env_O3DE_Core.bat
-CALL %~dp0..\Env_O3DE_Python.bat
+
+:: add to the PATH here (this is global)
+SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
+
 CALL %~dp0..\Env_DCC_Maya.bat
+
+:: ide and debugger plug
+set "DCCSI_PY_DEFAULT=%MAYA_BIN_PATH%\mayapy.exe"
+echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
+
+:: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
+set "DCCSI_PY_IDE=%MAYA_BIN_PATH%\mayapy.exe"
+echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
+
+SET PATH=%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
+
+CALL %~dp0..\Env_O3DE_Python.bat
+
+:: add to the PYTHONPATH here (this is global)
+SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%PATH%
+
+:: add all python related paths to PYTHONPATH for package imports
+set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
+
 CALL %~dp0..\Env_IDE_PyCharm.bat
+
+:: add to the PATH here (this is global)
+SET PATH=%PYCHARM_HOME%;%PATH%
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________
@@ -73,39 +101,14 @@ echo ~ MayaPy.exe (default python interpreter)
 echo _____________________________________________________________________
 echo.
 
-echo     O3DE_DEV = %O3DE_DEV%
-
-:: ide and debugger plug
-set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
-echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
-
-:: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
-set DCCSI_PY_IDE=%DCCSI_PY_MAYA%
-echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
-
-:: add to the PATH here (this is global)
-SET PATH=%PYCHARM_HOME%;%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
+echo.
 echo     PATH = %PATH%
-
-:: add to the PYTHONPATH here (this is global)
-:: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
+echo.
 echo     PYTHONPATH = %PYTHONPATH%
-
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
-
-echo.
-echo _____________________________________________________________________
-echo.
-echo ~ WingIDE Version %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
-echo ~ Launching O3DE %O3DE_PROJECT% project in WingIDE %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR% ...
-echo ~ MayaPy.exe (default python interpreter)
-echo _____________________________________________________________________
-echo.
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%
+echo.
 
 IF EXIST "%PYCHARM_HOME%\bin\pycharm64.exe" (
     start "" "%PYCHARM_HOME%\bin\pycharm64.exe" "%PYCHARM_PROJ%"

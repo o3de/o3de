@@ -128,6 +128,9 @@ echo     MAYA_SCRIPT_PATH = %MAYA_SCRIPT_PATH%
 Set MAYA_VP2_DEVICE_OVERRIDE=VirtualDeviceDx11
 echo     MAYA_VP2_DEVICE_OVERRIDE = %MAYA_VP2_DEVICE_OVERRIDE%
 
+echo.
+echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
+
 ::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice

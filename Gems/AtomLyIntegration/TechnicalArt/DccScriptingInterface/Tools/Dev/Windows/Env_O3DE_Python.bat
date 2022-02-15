@@ -66,7 +66,7 @@ echo     PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
 :: Note, many DCC tools (like Maya) include thier own python interpretter
 :: Some DCC apps may not operate correctly if PYTHONHOME is set (this is definitely the case with Maya)
 :: Be aware the python.cmd below does set PYTHONHOME
-set DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd
+set "DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd"
 echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 
 :: will set O3DE_PYTHONHOME location
@@ -80,6 +80,9 @@ echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 :: ide and debugger plug
 IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%DCCSI_PY_BASE%")
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
+
+echo.
+echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
 
 :: we should NOT add to the PATH here (this is global)
 ::SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
