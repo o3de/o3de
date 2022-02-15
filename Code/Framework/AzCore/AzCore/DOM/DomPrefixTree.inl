@@ -52,7 +52,7 @@ namespace AZ::Dom
     }
 
     template<class T>
-    void DomPrefixTree<T>::VisitPath(const Path& path, PrefixTreeMatch match, const AZStd::function<void(const Path&, const T&)>& visitor) const
+    void DomPrefixTree<T>::VisitPath(const Path& path, PrefixTreeMatch match, const VisitorFunction& visitor) const
     {
         const Node* rootNode = GetNodeForPath(path);
         if (rootNode == nullptr)

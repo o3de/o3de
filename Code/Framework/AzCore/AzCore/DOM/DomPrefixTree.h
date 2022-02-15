@@ -43,8 +43,13 @@ namespace AZ::Dom
         DomPrefixTree(DomPrefixTree&&) = default;
         explicit DomPrefixTree(AZStd::initializer_list<AZStd::pair<Path, T>> init);
 
+        DomPrefixTree& operator=(const DomPrefixTree&) = default;
+        DomPrefixTree& operator=(DomPrefixTree&&) = default;
+
+        using VisitorFunction = AZStd::function<void(const Path&, const T&)>;
+
         //! Visits a path and calls a visitor for each matching path and value.
-        void VisitPath(const Path& path, PrefixTreeMatch match, const AZStd::function<void(const Path&, const T&)>& visitor) const;
+        void VisitPath(const Path& path, PrefixTreeMatch match, const VisitorFunction& visitor) const;
         //! Visits a path and returns the most specific matching value, or null if none was found.
         T* ValueAtPath(const Path& path, PrefixTreeMatch match);
         //! \see ValueAtPath
