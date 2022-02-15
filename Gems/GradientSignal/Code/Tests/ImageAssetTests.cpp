@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <GradientSignal/GradientImageConversion.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 #include <limits>
 
@@ -64,26 +65,8 @@ namespace
         }
     }
 
-    class ImageAssetTest
-        : public ::testing::Test
+    class ImageAssetTest : public ::testing::Test
     {
-    protected:
-        AZ::ComponentApplication m_app;
-        AZ::Entity* m_systemEntity = nullptr;
-
-        void SetUp() override
-        {
-            AZ::ComponentApplication::Descriptor appDesc;
-            appDesc.m_memoryBlocksByteSize = 128 * 1024 * 1024;
-            m_systemEntity = m_app.Create(appDesc);
-            m_app.AddEntity(m_systemEntity);
-        }
-
-        void TearDown() override
-        {
-            m_app.Destroy();
-            m_systemEntity = nullptr;
-        }
     };
 
 #if AZ_TRAIT_DISABLE_FAILED_GRADIENT_SIGNAL_TESTS

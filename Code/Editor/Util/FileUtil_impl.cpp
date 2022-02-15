@@ -30,11 +30,6 @@ void CFileUtil_impl::EditTextureFile(const char* txtureFile, bool bUseGameFolder
     CFileUtil::EditTextureFile(txtureFile, bUseGameFolder);
 }
 
-bool CFileUtil_impl::CalculateDccFilename(const QString& assetFilename, QString& dccFilename)
-{
-    return CFileUtil::CalculateDccFilename(assetFilename, dccFilename);
-}
-
 void CFileUtil_impl::FormatFilterString(QString& filter)
 {
     CFileUtil::FormatFilterString(filter);

@@ -421,6 +421,7 @@ namespace AzToolsFramework
     {
         QString label{ text };
         m_nameLabel->setText(label);
+        m_nameLabel->setOpenExternalLinks(true);
         m_nameLabel->setVisible(!label.isEmpty());
         // setting the stretches to 0 in case of an empty label really hides the label (i.e. even the reserved space)
         m_mainLayout->setStretch(0, label.isEmpty() ? 0 : LabelColumnStretch);

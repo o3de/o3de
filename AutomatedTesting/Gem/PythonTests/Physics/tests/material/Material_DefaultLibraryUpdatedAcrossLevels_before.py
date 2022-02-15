@@ -189,7 +189,7 @@ def Material_DefaultLibraryUpdatedAcrossLevels_before():
         # 1) Open the correct level is open
         helper.open_level(
             "Physics",
-            f"Material_DefaultLibraryUpdatedAcrossLevels\\{test.level}"
+            os.path.join("Material_DefaultLibraryUpdatedAcrossLevels", str(test.level))
         )
 
         # 2) Enter Game Mode

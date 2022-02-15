@@ -9,6 +9,7 @@
 set(FILES
     base.h
     Docs.h
+    variadic.h
     Platform.cpp
     Platform.h
     PlatformDef.h
@@ -115,10 +116,20 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
+    DOM/DomPatch.cpp
+    DOM/DomPatch.h
+    DOM/DomPath.cpp
+    DOM/DomPath.h
     DOM/DomUtils.cpp
     DOM/DomUtils.h
+    DOM/DomValue.cpp
+    DOM/DomValue.h
+    DOM/DomValueWriter.cpp
+    DOM/DomValueWriter.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
+    DOM/DomComparison.cpp
+    DOM/DomComparison.h
     DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
@@ -233,7 +244,6 @@ set(FILES
     Jobs/JobManagerComponent.cpp
     Jobs/JobManagerComponent.h
     Jobs/JobManagerDesc.h
-    Jobs/LegacyJobExecutor.h
     Jobs/MultipleDependentJob.h
     Jobs/task_group.h
     Math/Aabb.cpp
@@ -362,8 +372,6 @@ set(FILES
     Memory/AllocatorBase.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
-    Memory/AllocatorOverrideShim.cpp
-    Memory/AllocatorOverrideShim.h
     Memory/AllocatorWrapper.h
     Memory/AllocatorScope.h
     Memory/BestFitExternalMapAllocator.cpp
@@ -533,6 +541,8 @@ set(FILES
     Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
+    Serialization/Json/PathSerializer.h
+    Serialization/Json/PathSerializer.cpp
     Serialization/Json/RegistrationContext.h
     Serialization/Json/RegistrationContext.cpp
     Serialization/Json/SmartPointerSerializer.h

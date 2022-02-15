@@ -144,7 +144,7 @@ namespace AZ
         }
 
         template <>
-        bool ConstantsData::SetConstantArray<bool>(ShaderInputConstantIndex inputIndex, AZStd::array_view<bool> values)
+        bool ConstantsData::SetConstantArray<bool>(ShaderInputConstantIndex inputIndex, AZStd::span<const bool> values)
         {
             // The shader packs type bool as 4 bytes
             const size_t elementSize = 4;
@@ -310,7 +310,7 @@ namespace AZ
         template <>
         bool ConstantsData::GetConstant<bool>(ShaderInputConstantIndex inputIndex) const
         {
-            AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+            AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
             // The shader packs bool data as 4 bytes 
             const size_t sizeInBytes = 4;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, sizeInBytes))
@@ -328,7 +328,7 @@ namespace AZ
             const size_t sizeInBytes = sizeof(float) * 11;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, sizeInBytes))
             {
-                const AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                const AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
 
                 // As per shader packing rules the Matrix3x3 is stored as 11 floats (2 are padding).
                 float localData[12];
@@ -348,7 +348,7 @@ namespace AZ
             const uint32_t sizeInBytes = sizeof(Matrix3x4);
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, sizeInBytes))
             {
-                const AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                const AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
                 const Matrix3x4& resultMatrix = Matrix3x4::CreateFromRowMajorFloat12(reinterpret_cast<const float*>(constantBytes.data()));
                 return resultMatrix;
             }
@@ -361,7 +361,7 @@ namespace AZ
             const size_t sizeInBytes = sizeof(float) * 16;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, sizeInBytes))
             {
-                const AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                const AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
                 const Matrix4x4& resultMatrix = Matrix4x4::CreateFromRowMajorFloat16(reinterpret_cast<const float*>(constantBytes.data()));
                 return resultMatrix;
             }
@@ -374,7 +374,7 @@ namespace AZ
             constexpr size_t vector2Size = 8;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(vector2Size)))
             {
-                AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
                 return Vector2::CreateFromFloat2(reinterpret_cast<const float*>(constantBytes.data()));
             }
             return Vector2();
@@ -387,7 +387,7 @@ namespace AZ
             constexpr size_t vector3Size = sizeof(float) * 3;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, vector3Size))
             {
-                AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
                 return Vector3::CreateFromFloat3(reinterpret_cast<const float*>(constantBytes.data()));
             }
             return Vector3();
@@ -399,7 +399,7 @@ namespace AZ
             constexpr size_t vector4Size = 16;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(vector4Size)))
             {
-                AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
                 return Vector4::CreateFromFloat4(reinterpret_cast<const float*>(constantBytes.data()));
             }
             return Vector4();
@@ -411,19 +411,19 @@ namespace AZ
             constexpr size_t colorSize = sizeof(Color);
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(colorSize)))
             {
-                AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
                 return Color::CreateFromFloat4(reinterpret_cast<const float*>(constantBytes.data()));
             }
             return Color();
         }
 
-        AZStd::array_view<uint8_t> ConstantsData::GetConstantRaw(ShaderInputConstantIndex inputIndex) const
+        AZStd::span<const uint8_t> ConstantsData::GetConstantRaw(ShaderInputConstantIndex inputIndex) const
         {
             const Interval interval = GetLayout()->GetInterval(inputIndex);
-            return AZStd::array_view<uint8_t>(&m_constantData[interval.m_min], interval.m_max - interval.m_min);
+            return AZStd::span<const uint8_t>(&m_constantData[interval.m_min], interval.m_max - interval.m_min);
         }
 
-        AZStd::array_view<uint8_t> ConstantsData::GetConstantData() const
+        AZStd::span<const uint8_t> ConstantsData::GetConstantData() const
         {
             return m_constantData;
         }
@@ -436,11 +436,11 @@ namespace AZ
 
         bool ConstantsData::ConstantIsEqual(const ConstantsData& other, ShaderInputConstantIndex inputIndex) const
         {
-            AZStd::array_view<uint8_t> myConstant = GetConstantRaw(inputIndex);
-            AZStd::array_view<uint8_t> otherConstant = other.GetConstantRaw(inputIndex);
+            AZStd::span<const uint8_t> myConstant = GetConstantRaw(inputIndex);
+            AZStd::span<const uint8_t> otherConstant = other.GetConstantRaw(inputIndex);
 
             // If they point to the same data, they are equal
-            if (myConstant == otherConstant)
+            if (myConstant.data() == otherConstant.data() && myConstant.size() == otherConstant.size())
             {
                 return true;
             }
@@ -474,8 +474,8 @@ namespace AZ
                 return differingIndices;
             }
 
-            AZStd::array_view<ShaderInputConstantDescriptor> myShaderInputs = m_layout->GetShaderInputList();
-            AZStd::array_view<ShaderInputConstantDescriptor> otherShaderInputs = other.m_layout->GetShaderInputList();
+            AZStd::span<const ShaderInputConstantDescriptor> myShaderInputs = m_layout->GetShaderInputList();
+            AZStd::span<const ShaderInputConstantDescriptor> otherShaderInputs = other.m_layout->GetShaderInputList();
 
             size_t minSize = AZStd::min(myShaderInputs.size(), otherShaderInputs.size());
             size_t maxSize = AZStd::max(myShaderInputs.size(), otherShaderInputs.size());

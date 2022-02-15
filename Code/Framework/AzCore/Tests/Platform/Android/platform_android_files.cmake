@@ -8,4 +8,5 @@
 
 set(FILES
     Tests/UtilsTests_Android.cpp
+    Tests/Memory/AllocatorBenchmarks_Android.cpp
 )

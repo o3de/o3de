@@ -114,22 +114,22 @@ def get_property(document_id, property_name):
     """
     :return: property value or invalid value if the document is not open or the property_name can't be found
     """
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
+    return azlmbr.materialeditor.MaterialDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
 
 
 def set_property(document_id, property_name, value):
-    azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
+    azlmbr.materialeditor.MaterialDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
 
 
 def is_pane_visible(pane_name):
     """
     :return: bool
     """
-    return atomtools.AtomToolsWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
+    return atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
 
 
 def set_pane_visibility(pane_name, value):
-    atomtools.AtomToolsWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
+    atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
 def select_lighting_config(config_name):
@@ -160,6 +160,13 @@ def get_shadowcatcher_enable_disable():
 
 def select_model_config(configname):
     azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectModelPresetByName", configname)
+
+
+def exit():
+    """
+    Closes the Material Editor
+    """
+    azlmbr.atomtools.general.exit()
 
 
 def wait_for_condition(function, timeout_in_seconds=1.0):

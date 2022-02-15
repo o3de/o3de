@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceAltitudeGradientComponent.h"
+#include <GradientSignal/Components/SurfaceAltitudeGradientComponent.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -202,19 +202,48 @@ namespace GradientSignal
 
     float SurfaceAltitudeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        // For GetValue(), we reuse our SurfacePointList for the GetSurfacePoints query to avoid the repeated cost of memory allocation
+        // and deallocation across GetValue() calls. However, this also means we can only use it from one thread at a time, so lock a
+        // mutex to ensure no other threads call GetValue() at the same time.
+        AZStd::unique_lock<decltype(m_surfacePointListMutex)> surfacePointLock(m_surfacePointListMutex);
 
-        SurfaceData::SurfacePointList points;
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
         SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, points);
+            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, m_surfacePointList);
 
-        if (points.empty())
+        constexpr size_t inPositionIndex = 0;
+        return CalculateAltitudeRatio(m_surfacePointList, inPositionIndex, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
+    }
+
+    void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            return 0.0f;
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
         }
 
-        const AZ::Vector3& position = points.front().m_position;
-        return GetRatio(m_configuration.m_altitudeMin, m_configuration.m_altitudeMax, position.GetZ());
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+        SurfaceData::SurfacePointList points;
+        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
+            points);
+
+        if (points.IsEmpty())
+        {
+            // No surface data, so no output values.
+            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
+        }
+        else
+        {
+            // For each position, turn the height into a 0-1 value based on our min/max altitudes.
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                outValues[index] = CalculateAltitudeRatio(points, index, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
+            }
+        }
     }
 
     void SurfaceAltitudeGradientComponent::OnCompositionChanged()
@@ -246,7 +275,7 @@ namespace GradientSignal
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_configuration.m_shapeEntityId.IsValid())
         {

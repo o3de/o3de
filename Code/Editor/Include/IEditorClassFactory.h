@@ -31,10 +31,7 @@ struct IUnknown
 };
 #endif
 
-#ifdef __uuidof
-#undef __uuidof
-#endif
-#define __uuidof(T) T::uuid()
+#define __az_uuidof(T) T::uuid()
 
 #if defined(AZ_PLATFORM_LINUX) || defined(AZ_PLATFORM_MAC)
 
@@ -107,7 +104,7 @@ struct IClassDesc
     template<class Q>
     HRESULT STDMETHODCALLTYPE QueryInterface(Q** pp)
     {
-        return QueryInterface(__uuidof(Q), (void**)pp);
+        return QueryInterface(__az_uuidof(Q), (void**)pp);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -138,9 +135,6 @@ struct IClassDesc
     //////////////////////////////////////////////////////////////////////////
 };
 
-
-struct IViewPaneClass;
-
 struct CRYEDIT_API IEditorClassFactory
 {
 public:
@@ -152,7 +146,6 @@ public:
     virtual IClassDesc* FindClass(const char* pClassName) const = 0;
     //! Find class in the factory by class id
     virtual IClassDesc* FindClass(const GUID& rClassID) const = 0;
-    virtual IViewPaneClass* FindViewPaneClassByTitle(const char* pPaneTitle) const = 0;
     virtual void UnregisterClass(const char* pClassName) = 0;
     virtual void UnregisterClass(const GUID& rClassID) = 0;
     //! Get classes that matching specific requirements.

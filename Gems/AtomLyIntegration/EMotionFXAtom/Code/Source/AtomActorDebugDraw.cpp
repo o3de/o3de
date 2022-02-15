@@ -33,7 +33,7 @@ namespace AZ::Render
         m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(entityId);
     }
 
-    void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags, EMotionFX::ActorInstance* instance)
+    void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags, EMotionFX::ActorInstance* instance)
     {
         if (!m_auxGeomFeatureProcessor || !instance)
         {
@@ -46,10 +46,12 @@ namespace AZ::Render
             return;
         }
 
+        using AZ::RHI::CheckBitsAny;
+
         // Update the mesh deformers (perform cpu skinning and morphing) when needed.
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB] || renderFlags[EMotionFX::ActorRenderFlag::RENDER_FACENORMALS] ||
-            renderFlags[EMotionFX::ActorRenderFlag::RENDER_TANGENTS] || renderFlags[EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS] ||
-            renderFlags[EMotionFX::ActorRenderFlag::RENDER_WIREFRAME])
+        if (CheckBitsAny(renderFlags,
+                EMotionFX::ActorRenderFlags::AABB | EMotionFX::ActorRenderFlags::FaceNormals | EMotionFX::ActorRenderFlags::Tangents |
+                EMotionFX::ActorRenderFlags::VertexNormals | EMotionFX::ActorRenderFlags::Wireframe))
         {
             instance->UpdateMeshDeformers(0.0f, true);
         }
@@ -61,45 +63,48 @@ namespace AZ::Render
         const float scaleMultiplier = CalculateScaleMultiplier(instance);
 
         // Render aabb
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::AABB))
         {
-            RenderAABB(instance, renderActorSettings.m_staticAABBColor);
+            RenderAABB(instance,
+                renderActorSettings.m_enabledNodeBasedAabb, renderActorSettings.m_nodeAABBColor,
+                renderActorSettings.m_enabledMeshBasedAabb, renderActorSettings.m_meshAABBColor,
+                renderActorSettings.m_enabledStaticBasedAabb, renderActorSettings.m_staticAABBColor);
         }
 
         // Render simple line skeleton
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_LINESKELETON])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::LineSkeleton))
         {
             RenderLineSkeleton(instance, renderActorSettings.m_lineSkeletonColor);
         }
 
         // Render advanced skeleton
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_SKELETON])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Skeleton))
         {
             RenderSkeleton(instance, renderActorSettings.m_skeletonColor);
         }
 
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODENAMES])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeNames))
         {
             RenderJointNames(instance, viewport, renderActorSettings.m_jointNameColor);
         }
 
         // Render internal EMFX debug lines.
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_EMFX_DEBUG])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::EmfxDebug))
         {
             RenderEMFXDebugDraw(instance);
         }
 
         // Render
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeOrientation))
         {
             RenderNodeOrientations(instance, debugDisplay, renderActorSettings.m_nodeOrientationScale * scaleMultiplier);
         }
 
         // Render vertex normal, face normal, tagent and wireframe.
-        const bool renderVertexNormals = renderFlags[EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS];
-        const bool renderFaceNormals = renderFlags[EMotionFX::ActorRenderFlag::RENDER_FACENORMALS];
-        const bool renderTangents = renderFlags[EMotionFX::ActorRenderFlag::RENDER_TANGENTS];
-        const bool renderWireframe = renderFlags[EMotionFX::ActorRenderFlag::RENDER_WIREFRAME];
+        const bool renderVertexNormals = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::VertexNormals);
+        const bool renderFaceNormals = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::FaceNormals);
+        const bool renderTangents = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Tangents);
+        const bool renderWireframe = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Wireframe);
 
         if (renderVertexNormals || renderFaceNormals || renderTangents || renderWireframe)
         {
@@ -201,11 +206,46 @@ namespace AZ::Render
         return AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
     }
 
-    void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor)
+    void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance,
+            bool enableNodeAabb,
+            const AZ::Color& nodeAabbColor,
+            bool enableMeshAabb,
+            const AZ::Color& meshAabbColor,
+            bool enableStaticAabb,
+            const AZ::Color& staticAabbColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
-        const AZ::Aabb& aabb = instance->GetAabb();
-        auxGeom->DrawAabb(aabb, aabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+
+        if (enableNodeAabb)
+        {
+            AZ::Aabb aabb;
+            instance->CalcNodeBasedAabb(&aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, nodeAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
+
+        if (enableMeshAabb)
+        {
+            AZ::Aabb aabb;
+            const size_t lodLevel = instance->GetLODLevel();
+            instance->CalcMeshBasedAabb(lodLevel, &aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, meshAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
+
+        if (enableStaticAabb)
+        {
+            AZ::Aabb aabb;
+            instance->CalcStaticBasedAabb(&aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, staticAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
     }
 
     void AtomActorDebugDraw::RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
@@ -263,7 +303,7 @@ namespace AZ::Render
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
         lineArgs.m_colorCount = lineArgs.m_vertCount;
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -355,9 +395,9 @@ namespace AZ::Render
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+        lineArgs.m_colorCount = aznumeric_cast<uint32_t>(m_auxColors.size());
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
     }
@@ -426,15 +466,15 @@ namespace AZ::Render
                     m_auxVertices.emplace_back(normalPos);
                     m_auxVertices.emplace_back(normalPos + (normalDir * faceNormalsScale * scaleMultiplier));
                 }
-            }
 
-            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-            lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &faceNormalsColor;
-            lineArgs.m_colorCount = 1;
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-            auxGeom->DrawLines(lineArgs);
+                RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+                lineArgs.m_verts = m_auxVertices.data();
+                lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
+                lineArgs.m_colors = &faceNormalsColor;
+                lineArgs.m_colorCount = 1;
+                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+                auxGeom->DrawLines(lineArgs);
+            }
         }
 
         // render vertex normals
@@ -463,7 +503,7 @@ namespace AZ::Render
 
                 RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
                 lineArgs.m_verts = m_auxVertices.data();
-                lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+                lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
                 lineArgs.m_colors = &vertexNormalsColor;
                 lineArgs.m_colorCount = 1;
                 lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -551,9 +591,9 @@ namespace AZ::Render
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+        lineArgs.m_colorCount = aznumeric_cast<uint32_t>(m_auxColors.size());
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
     }
@@ -611,7 +651,7 @@ namespace AZ::Render
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+            lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
             lineArgs.m_colors = &wireframeColor;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -650,7 +690,7 @@ namespace AZ::Render
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
         AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
+        m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
             TopRightBorderPadding * viewportContext->GetDpiScalingFactor();
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;

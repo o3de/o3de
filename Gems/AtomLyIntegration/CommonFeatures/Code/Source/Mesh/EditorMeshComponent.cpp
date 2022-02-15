@@ -72,12 +72,18 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_modelAsset, "Mesh Asset", "Mesh asset reference")
+                                ->Attribute(AZ_CRC_CE("EditButton"), "")
+                                ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Scene Settings")
+                                ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_sortKey, "Sort Key", "Transparent meshes are drawn by sort key then depth. Used this to force certain transparent meshes to draw before or after others.")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::IsAssetSet)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Mesh will not be visible in baked reflection probe cubemaps")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_useForwardPassIblSpecular, "Use Forward Pass IBL Specular",
                                 "Renders IBL specular reflections in the forward pass, using only the most influential probe (based on the position of the entity) and the global IBL cubemap.  Can reduce rendering costs, but only recommended for static objects that are affected by at most one reflection probe.")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isRayTracingEnabled, "Use ray tracing",
+                                "Includes this mesh in ray tracing calculations.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodType, "Lod Type", "Lod Method.")
                                 ->EnumAttribute(RPI::Cullable::LodType::Default, "Default")
@@ -198,6 +204,7 @@ namespace AZ
 
             debugDisplay.PushMatrix(worldTM);
 
+            debugDisplay.SetColor(AZ::Colors::White);
             debugDisplay.DrawWireBox(localAabb.GetMin(), localAabb.GetMax());
 
             debugDisplay.PopMatrix();

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <iosfwd>
@@ -35,6 +36,13 @@ namespace AZ::IO
     void PrintTo(const AZ::IO::PathView& path, ::std::ostream* os);
     void PrintTo(const AZ::IO::Path& path, ::std::ostream* os);
     void PrintTo(const AZ::IO::FixedMaxPath& path, ::std::ostream* os);
+}
+
+namespace AZ
+{
+    class EntityId;
+
+    void PrintTo(AZ::EntityId entityId, ::std::ostream* os);
 }
 
 #include <AzTest/Printers.inl>

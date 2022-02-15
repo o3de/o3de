@@ -19,10 +19,10 @@ import importlib.util
 # if running in py2.7 we won't have access to pathlib yet until we boostrap
 # the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
-_DCCSIG_PATH = os.path.normpath(os.path.join(_MODULE_PATH, '../../../..'))
-_DCCSIG_PATH = os.getenv('DCCSIG_PATH', _DCCSIG_PATH)
-site.addsitedir(_DCCSIG_PATH)
-# print(_DCCSIG_PATH)
+_PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../../../..'))
+_PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
+site.addsitedir(_PATH_DCCSIG)
+# print(_PATH_DCCSIG)
 
 # Lumberyard DCCsi site extensions
 from pathlib import Path
@@ -46,7 +46,7 @@ _LOGGER = azpy.initialize_logger(_PACKAGENAME,
                                  log_to_file=True,
                                  default_log_level=_log_level)
 _LOGGER.debug('Starting up:  {0}.'.format({_PACKAGENAME}))
-_LOGGER.debug('_DCCSIG_PATH: {}'.format(_DCCSIG_PATH))
+_LOGGER.debug('_PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
 _LOGGER.debug('_G_DEBUG: {}'.format(_DCCSI_GDEBUG))
 _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
 
@@ -59,7 +59,7 @@ if _DCCSI_DEV_MODE:
 # we can go ahead and just make sure the the DCCsi env is set
 # config is SO generic this ensures we are importing a specific one
 _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi.config",
-                                                            Path(_DCCSIG_PATH,
+                                                            Path(_PATH_DCCSIG,
                                                                  "config.py"))
 _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
 _spec_dccsi_config.loader.exec_module(_dccsi_config)
@@ -96,16 +96,16 @@ from azpy.constants import ENVAR_O3DE_DEV
 _O3DE_DEV = Path(os.getenv(ENVAR_O3DE_DEV,
                          settings.O3DE_DEV)).resolve()
 
-from azpy.constants import ENVAR_O3DE_PROJECT_PATH
-_O3DE_PROJECT_PATH = Path(os.getenv(ENVAR_O3DE_PROJECT_PATH,
-                                  settings.O3DE_PROJECT_PATH)).resolve()
+from azpy.constants import ENVAR_PATH_O3DE_PROJECT
+_PATH_O3DE_PROJECT = Path(os.getenv(ENVAR_PATH_O3DE_PROJECT,
+                                  settings.PATH_O3DE_PROJECT)).resolve()
 
 from azpy.constants import ENVAR_DCCSI_SDK_PATH
 _DCCSI_SDK_PATH = Path(os.getenv(ENVAR_DCCSI_SDK_PATH,
                                  settings.DCCSIG_SDK_PATH)).resolve()
 
 # build some reuseable path parts for the substance builder
-_PROJECT_ASSETS_PATH = Path(_O3DE_PROJECT_PATH, 'Assets').resolve()
+_PROJECT_ASSETS_PATH = Path(_PATH_O3DE_PROJECT, 'Assets').resolve()
 _PROJECT_MATERIALS_PATH = Path(_PROJECT_ASSETS_PATH, 'Materials').resolve()
 # -------------------------------------------------------------------------
 
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     """Run this file as main"""
 
     _LOGGER.info('_O3DE_DEV: {}'.format(_O3DE_DEV))
-    _LOGGER.info('_O3DE_PROJECT_PATH: {}'.format(_O3DE_PROJECT_PATH))
+    _LOGGER.info('_PATH_O3DE_PROJECT: {}'.format(_PATH_O3DE_PROJECT))
     _LOGGER.info('_DCCSI_SDK_PATH: {}'.format(_DCCSI_SDK_PATH))
     
     _LOGGER.info('_PYSBS_DIR_PATH: {}'.format(_PYSBS_DIR_PATH))

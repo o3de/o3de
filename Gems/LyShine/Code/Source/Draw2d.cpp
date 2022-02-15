@@ -6,7 +6,7 @@
  *
  */
 
-#include <LyShine/Draw2d.h>
+#include "Draw2d.h"
 #include <LyShine/UiRenderFormats.h>
 #include "LyShinePassDataBus.h"
 
@@ -103,10 +103,7 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
 
     m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
-    AZ::RPI::ShaderOptionList shaderOptions;
-    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
-    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("false")));
-    m_dynamicDraw->InitShaderWithVariant(shader, &shaderOptions);
+    m_dynamicDraw->InitShader(shader);
     m_dynamicDraw->InitVertexFormat(
         { {"POSITION", AZ::RHI::Format::R32G32B32_FLOAT},
         {"COLOR", AZ::RHI::Format::B8G8R8A8_UNORM},
@@ -125,17 +122,34 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     }
     m_dynamicDraw->EndInit();
 
-    // Cache draw srg input indices for later use
-    static const char textureIndexName[] = "m_texture";
-    static const char worldToProjIndexName[] = "m_worldToProj";
-    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
-    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetLayout();
-    m_shaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
-    AZ_Error("Draw2d", m_shaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        textureIndexName);
-    m_shaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(worldToProjIndexName));
-    AZ_Error("Draw2d", m_shaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        worldToProjIndexName);
+    // Check that the dynamic draw context has been initialized appropriately
+    if (m_dynamicDraw->IsReady())
+    {
+        // Cache draw srg input indices for later use
+        static const char textureIndexName[] = "m_texture";
+        static const char worldToProjIndexName[] = "m_worldToProj";
+        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+        if (drawSrg)
+        {
+            const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetLayout();
+            m_shaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
+            AZ_Error("Draw2d", m_shaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
+                textureIndexName);
+            m_shaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(worldToProjIndexName));
+            AZ_Error("Draw2d", m_shaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
+                worldToProjIndexName);
+        }
+
+        // Cache shader variants that will be used
+        AZ::RPI::ShaderOptionList shaderOptionsClamp;
+        shaderOptionsClamp.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
+        shaderOptionsClamp.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
+        m_shaderData.m_shaderOptionsClamp = m_dynamicDraw->UseShaderVariant(shaderOptionsClamp);
+        AZ::RPI::ShaderOptionList shaderOptionsWrap;
+        shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("false")));
+        shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
+        m_shaderData.m_shaderOptionsWrap = m_dynamicDraw->UseShaderVariant(shaderOptionsWrap);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,6 +195,8 @@ void CDraw2d::DrawImage(AZ::Data::Instance<AZ::RPI::Image> image, AZ::Vector2 po
 
     quad.m_image = image;
 
+    quad.m_clamp = actualImageOptions->m_clamp;
+
     // add the blendMode flags to the base state
     quad.m_renderState = actualImageOptions->m_renderState;
 
@@ -199,14 +215,14 @@ void CDraw2d::DrawImageAligned(AZ::Data::Instance<AZ::RPI::Image> image, AZ::Vec
     HAlign horizontalAlignment, VAlign verticalAlignment,
     float opacity, float rotation, const AZ::Vector2* minMaxTexCoords, ImageOptions* imageOptions)
 {
-    AZ::Vector2 alignedPosition = Align(position, size, horizontalAlignment, verticalAlignment);
+    AZ::Vector2 alignedPosition = Draw2dHelper::Align(position, size, horizontalAlignment, verticalAlignment);
 
     DrawImage(image, alignedPosition, size, opacity, rotation, &position, minMaxTexCoords, imageOptions);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CDraw2d::DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV* verts, Rounding pixelRounding,
-    const CDraw2d::RenderState& renderState)
+    bool clamp, const CDraw2d::RenderState& renderState)
 {
     // define quad
     DeferredQuad quad;
@@ -217,6 +233,7 @@ void CDraw2d::DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV*
         quad.m_packedColors[i] = PackARGB8888(verts[i].color);
     }
     quad.m_image = image;
+    quad.m_clamp = clamp;
 
     // add the blendMode flags to the base state
     quad.m_renderState = renderState;
@@ -453,6 +470,12 @@ float CDraw2d::GetViewportHeight() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+float CDraw2d::GetViewportDpiScalingFactor() const
+{
+    return GetViewportContext()->GetDpiScalingFactor();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 const CDraw2d::ImageOptions& CDraw2d::GetDefaultImageOptions() const
 {
     return m_defaultImageOptions;
@@ -500,40 +523,6 @@ void CDraw2d::SetSortKey(int64_t key)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC STATIC FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::Vector2 CDraw2d::Align(AZ::Vector2 position, AZ::Vector2 size,
-    HAlign horizontalAlignment, VAlign verticalAlignment)
-{
-    AZ::Vector2 result = AZ::Vector2::CreateZero();
-    switch (horizontalAlignment)
-    {
-    case HAlign::Left:
-        result.SetX(position.GetX());
-        break;
-    case HAlign::Center:
-        result.SetX(position.GetX() - size.GetX() * 0.5f);
-        break;
-    case HAlign::Right:
-        result.SetX(position.GetX() - size.GetX());
-        break;
-    }
-
-    switch (verticalAlignment)
-    {
-    case VAlign::Top:
-        result.SetY(position.GetY());
-        break;
-    case VAlign::Center:
-        result.SetY(position.GetY() - size.GetY() * 0.5f);
-        break;
-    case VAlign::Bottom:
-        result.SetY(position.GetY() - size.GetY());
-        break;
-    }
-
-    return result;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Data::Instance<AZ::RPI::Image> CDraw2d::LoadTexture(const AZStd::string& pathName)
@@ -759,6 +748,8 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
         vertices[i].color.dcolor = m_packedColors[j];
         vertices[i].st = Vec2(m_texCoords[j].GetX(), m_texCoords[j].GetY());
     }
+
+    dynamicDraw->SetShaderVariant(m_clamp ? shaderData.m_shaderOptionsClamp : shaderData.m_shaderOptionsWrap);
 
     // Set up per draw SRG
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();

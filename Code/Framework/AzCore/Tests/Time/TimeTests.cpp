@@ -11,8 +11,7 @@
 
 namespace UnitTest
 {
-    class TimeTests
-        : public AllocatorsFixture
+    class TimeTests : public AllocatorsFixture
     {
     public:
         void SetUp() override
@@ -77,4 +76,4 @@ namespace UnitTest
         int64_t delta = static_cast<int64_t>(timeMs) - static_cast<int64_t>(timeUsToMs);
         EXPECT_LT(abs(delta), 1);
     }
-}
+} // namespace UnitTest

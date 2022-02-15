@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_GLWIDGET_H
-#define __EMSTUDIO_GLWIDGET_H
+#pragma once
 
 #if !defined(Q_MOC_RUN)
 #include "../RenderPluginsConfig.h"
@@ -84,6 +83,3 @@ namespace EMStudio
         AZ::Debug::Timer                        m_perfTimer;
     };
 } // namespace EMStudio
-
-
-#endif

@@ -145,13 +145,17 @@ namespace AssetUtilities
     //! Strips the first "asset platform" from the first path segment of a relative product path
     //! This is meant for removing the asset platform for paths such as "pc/MyAssetFolder/MyAsset.asset"
     //! Therefore the result here becomes "MyAssetFolder/MyAsset"
-    //! 
+    //!
     //! Similarly invoking this function on relative path that begins with the "server" platform
     //! "server/AssetFolder/Server.asset2" -> "AssetFolder/Server.asset2"
     //! This function does not strip an asset platform from anywhere, but the first path segment
     //! Therefore invoking strip Asset on "MyProject/Cache/pc/MyAsset/MyAsset.asset"
     //! would return a copy of the relative path
     QString StripAssetPlatform(AZStd::string_view relativeProductPath);
+
+    //! Same as StripAssetPlatform, but does not perform any string copies
+    //! The return result is only valid for as long as the original input is valid
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath);
 
     //! Converts all slashes to forward slashes, removes double slashes,
     //! replaces all indirections such as '.' or '..' as appropriate.

@@ -35,8 +35,7 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    class Graph;
-    class ScriptCanvasAsset;
+    class EditorGraph;
     class SourceHandle;
 }
 
@@ -60,7 +59,7 @@ namespace ScriptCanvasBuilder
         CorrectGraphVariableVersion,
         ReflectEntityIdNodes,
         FixExecutionStateNodeableConstruction,
-
+        SwitchAssetsToBinary,
         // add new entries above
         Current,
     };
@@ -132,13 +131,11 @@ namespace ScriptCanvasBuilder
 
     int GetBuilderVersion();
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB = {});
-
     AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath);
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input);
 
-    ScriptCanvasEditor::Graph* PrepareSourceGraph(AZ::Entity* const buildEntity);
+    ScriptCanvasEditor::EditorGraph* PrepareSourceGraph(AZ::Entity* const buildEntity);
 
     AZ::Outcome<void, AZStd::string> SaveSubgraphInterface(ProcessTranslationJobInput& input, ScriptCanvas::SubgraphInterfaceData& subgraphInterface);
 

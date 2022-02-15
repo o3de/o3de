@@ -66,4 +66,10 @@ namespace AzToolsFramework
 
     float ManipulatorViewBaseScale();
     void SetManipulatorViewBaseScale(float scale);
+
+    bool IconsVisible();
+    void SetIconsVisible(bool visible);
+
+    bool HelpersVisible();
+    void SetHelpersVisible(bool visible);
 } // namespace AzToolsFramework

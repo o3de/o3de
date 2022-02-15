@@ -12,6 +12,7 @@ set(FILES
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
     AssetSystemMocks.h
+    AzToolsFrameworkTestHelpersTest.cpp
     BoundsTestComponent.cpp
     BoundsTestComponent.h
     ComponentAdapterTests.cpp
@@ -23,6 +24,7 @@ set(FILES
     ComponentModeTests.cpp
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
+    EditorViewportIconTests.cpp
     Entity/EditorEntityContextComponentTests.cpp
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp

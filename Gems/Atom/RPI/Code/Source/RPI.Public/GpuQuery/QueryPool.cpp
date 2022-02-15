@@ -147,7 +147,7 @@ namespace AZ
             return endQuery->End(commandList);
         }
 
-        AZStd::array_view<RHI::Ptr<RHI::Query>> RPI::QueryPool::GetRhiQueryArray() const
+        AZStd::span<const RHI::Ptr<RHI::Query>> RPI::QueryPool::GetRhiQueryArray() const
         {
             return m_rhiQueryArray;
         }
@@ -230,12 +230,12 @@ namespace AZ
             return m_queriesPerResult;
         }
 
-        AZStd::array_view<RHI::Ptr<RHI::Query>> QueryPool::GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
+        AZStd::span<const RHI::Ptr<RHI::Query>> QueryPool::GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
         {
             const uint32_t queryCount = rhiQueryIndices.m_max - rhiQueryIndices.m_min + 1u;
             AZ_Assert(rhiQueryIndices.m_max < m_rhiQueryCapacity, "Query array index is going over the limit");
 
-            return AZStd::array_view<RHI::Ptr<RHI::Query>>(m_rhiQueryArray.begin() + rhiQueryIndices.m_min, queryCount);
+            return AZStd::span<const RHI::Ptr<RHI::Query>>(m_rhiQueryArray.begin() + rhiQueryIndices.m_min, queryCount);
         }
 
         AZStd::vector<RHI::Query*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const

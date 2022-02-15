@@ -8,14 +8,15 @@
 #pragma once
 
 #include <AzTest/AzTest.h>
-#include <AzCore/std/hash.h>
+
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/hash.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
-#include <AzCore/Casting/lossy_cast.h>
 
 namespace UnitTest
 {
@@ -23,23 +24,6 @@ namespace UnitTest
         : public ::testing::Test
     {
     protected:
-        AZ::ComponentApplication m_app;
-        AZ::Entity* m_systemEntity = nullptr;
-
-        void SetUp() override
-        {
-            AZ::ComponentApplication::Descriptor appDesc;
-            appDesc.m_memoryBlocksByteSize = 128 * 1024 * 1024;
-            m_systemEntity = m_app.Create(appDesc);
-            m_app.AddEntity(m_systemEntity);
-        }
-
-        void TearDown() override
-        {
-            m_app.Destroy();
-            m_systemEntity = nullptr;
-        }
-
         AZStd::unique_ptr<AZ::Entity> CreateEntity()
         {
             return AZStd::make_unique<AZ::Entity>();
@@ -57,14 +41,12 @@ namespace UnitTest
         template <typename Component, typename Configuration>
         AZ::Component* CreateComponent(AZ::Entity* entity, const Configuration& config)
         {
-            m_app.RegisterComponentDescriptor(Component::CreateDescriptor());
             return entity->CreateComponent<Component>(config);
         }
 
         template <typename Component>
         AZ::Component* CreateComponent(AZ::Entity* entity)
         {
-            m_app.RegisterComponentDescriptor(Component::CreateDescriptor());
             return entity->CreateComponent<Component>();
         }
     };
@@ -126,6 +108,29 @@ namespace UnitTest
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        }
+    };
+
+    // Mock out a generic Physics Collider Component, which is a required dependency for adding a SurfaceDataColliderComponent.
+    struct MockPhysicsColliderComponent : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(MockPhysicsColliderComponent, "{4F7C36DE-6475-4E0A-96A7-BFAF21C07C95}", AZ::Component);
+
+        void Activate() override
+        {
+        }
+        void Deactivate() override
+        {
+        }
+
+        static void Reflect(AZ::ReflectContext* reflect)
+        {
+            AZ_UNUSED(reflect);
+        }
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        {
+            provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
         }
     };
 
@@ -200,7 +205,14 @@ namespace UnitTest
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointListPerPosition& surfacePointListPerPosition) const override
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointListPerPosition) const override
+        {
+        }
+
+        void GetSurfacePointsFromList(
+            [[maybe_unused]] AZStd::span<const AZ::Vector3> inPositions,
+            [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointLists) const override
         {
         }
 
@@ -236,6 +248,16 @@ namespace UnitTest
 
         void RefreshSurfaceData([[maybe_unused]] const AZ::Aabb& dirtyBounds) override
         {
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataProviderHandle(const AZ::EntityId& providerEntityId) override
+        {
+            return GetSurfaceProviderHandle(providerEntityId);
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataModifierHandle(const AZ::EntityId& modifierEntityId) override
+        {
+            return GetSurfaceModifierHandle(modifierEntityId);
         }
 
         SurfaceData::SurfaceDataRegistryHandle GetSurfaceProviderHandle(AZ::EntityId id)

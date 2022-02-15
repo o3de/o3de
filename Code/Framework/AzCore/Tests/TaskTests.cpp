@@ -447,13 +447,13 @@ namespace UnitTest
             {
                 x -= 1;
             });
-
-        //   a  <-- Root
-        //  / \
-        // b   c
-        //  \ /
-        //   d
-
+        /*
+             a  <-- Root
+            / \
+           b   c
+            \ /
+             d
+        */
         a.Precedes(b, c);
         d.Follows(b, c);
 
@@ -522,20 +522,20 @@ namespace UnitTest
             {
                 x -= 1;
             });
-
-        // NOTE: The ideal way to express this topology is without the wait on the subgraph
-        // at task g, but this is more an illustrative test. Better is to express the entire
-        // graph in a single larger graph.
-        //   a  <-- Root
-        //  / \
-        // b   c - f
-        //  \   \   \
-        //   \   e - g
-        //    \     /
-        //     \   /
-        //      \ /
-        //       d
-
+        /*
+           NOTE: The ideal way to express this topology is without the wait on the subgraph
+           at task g, but this is more an illustrative test. Better is to express the entire
+           graph in a single larger graph.
+             a  <-- Root
+            / \
+           b   c - f
+            \   \   \
+             \   e - g
+              \     /
+               \   /
+                \ /
+                 d
+        */
         a.Precedes(b);
         a.Precedes(c);
         b.Precedes(d);
@@ -593,17 +593,17 @@ namespace UnitTest
             {
                 x += 0b1000;
             });
-
-        //   a  <-- Root
-        //  / \
-        // b   c - f
-        //  \   \   \
-        //   \   e - g
-        //    \     /
-        //     \   /
-        //      \ /
-        //       d
-
+        /*
+             a  <-- Root
+            / \
+           b   c - f
+            \   \   \
+             \   e - g
+              \     /
+               \   /
+                \ /
+                 d
+        */
         a.Precedes(b, c);
         b.Precedes(d);
         c.Precedes(e, f);
@@ -677,7 +677,7 @@ namespace Benchmark
             []
             {
             });
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);
@@ -699,7 +699,7 @@ namespace Benchmark
             });
         a.Precedes(b);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);
@@ -729,7 +729,7 @@ namespace Benchmark
 
         e.Follows(a, b, c, d);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);

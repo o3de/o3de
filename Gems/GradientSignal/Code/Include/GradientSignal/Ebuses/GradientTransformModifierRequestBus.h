@@ -13,14 +13,30 @@
 
 namespace GradientSignal
 {
+    //! TransformType describes where the gradient's origin is mapped to.
+    enum class TransformType : AZ::u8
+    {
+        //! The gradient's origin is the world position of this entity.
+        World_ThisEntity = 0,
+        //! The gradient's origin is the local position of this entity, but in world space.
+        //! i.e. If the parent is at (2, 2), and the gradient is at (3,3) in local space, the gradient entity itself will be at (5,5) in
+        //! world space but its origin will frozen at (3,3) in world space, no matter how much the parent moves around.
+        Local_ThisEntity,
+        //! The gradient's origin is the world position of the reference entity.
+        World_ReferenceEntity,
+        //! The gradient's origin is the local position of the reference entity, but in world space.
+        Local_ReferenceEntity,
+        //! The gradient's origin is at (0,0,0) in world space.
+        World_Origin,
+        //! The gradient's origin is in translated world space relative to the reference entity.
+        Relative,
+    };
+
     class GradientTransformModifierRequests
         : public AZ::ComponentBus
     {
     public:
-        /**
-         * Overrides the default AZ::EBusTraits handler policy to allow one
-         * listener only.
-         */
+        //! Overrides the default AZ::EBusTraits handler policy to allow only one listener.
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         virtual bool GetAllowReference() const = 0;

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_MATERIAL_H
-#define __RENDERGL_MATERIAL_H
+#pragma once
 
 #include <AzCore/Math/Vector2.h>
 #include <MCore/Source/StandardHeaders.h>
@@ -105,6 +104,4 @@ namespace RenderGL
 
         GLActor* m_actor;
     };
-}
-
-#endif
+} // namespace RenderGL

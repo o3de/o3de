@@ -315,7 +315,7 @@ class EditorTestSuite():
         return 8
 
     ## Internal ##
-    _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in secondss
+    _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in seconds
     _TEST_FAIL_RETCODE = 0xF # Return code for test failure
 
     @pytest.fixture(scope="class")
@@ -762,7 +762,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -771,7 +771,9 @@ class EditorTestSuite():
             output = editor.get_output()
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-
+            # Save the editor log
+            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
+                                                     f'({run_id}){log_name}')
             if return_code == 0:
                 test_result = Result.Pass.create(test_spec, output, editor_log_content)
             else:
@@ -779,12 +781,15 @@ class EditorTestSuite():
                 if has_crashed:
                     test_result = Result.Crash.create(test_spec, output, return_code, editor_utils.retrieve_crash_output
                     (run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
+                    # Save the crash log
+                    crash_file_name = os.path.basename(workspace.paths.crash_log())
+                    workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
                     editor_utils.cycle_crash_report(run_id, workspace)
                 else:
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
         except WaitTimeoutError:
             output = editor.get_output()
-            editor.kill()
+            editor.stop()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
     
@@ -830,7 +835,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
 
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
@@ -842,13 +847,15 @@ class EditorTestSuite():
             output = editor.get_output()
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-
+            # Save the editor log
+            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
+                                                     f'({run_id}){log_name}')
             if return_code == 0:
-                # No need to scrap the output, as all the tests have passed
+                # No need to scrape the output, as all the tests have passed
                 for test_spec in test_spec_list:
                     results[test_spec.__name__] = Result.Pass.create(test_spec, output, editor_log_content)
             else:
-                # Scrap the output to attempt to find out which tests failed.
+                # Scrape the output to attempt to find out which tests failed.
                 # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
                 results = self._get_results_using_output(test_spec_list, output, editor_log_content)
                 assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
@@ -863,6 +870,10 @@ class EditorTestSuite():
                                 # The first test with "Unknown" result (no data in output) is likely the one that crashed
                                 crash_error = editor_utils.retrieve_crash_output(run_id, workspace,
                                                                                  self._TIMEOUT_CRASH_LOG)
+                                # Save the crash log
+                                crash_file_name = os.path.basename(workspace.paths.crash_log())
+                                workspace.artifact_manager.save_artifact(
+                                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
                                 editor_utils.cycle_crash_report(run_id, workspace)
                                 results[test_spec_name] = Result.Crash.create(result.test_spec, output, return_code,
                                                                               crash_error, result.editor_log)
@@ -880,7 +891,7 @@ class EditorTestSuite():
                         results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code,
                                                                       crash_error, crashed_result.editor_log)
         except WaitTimeoutError:            
-            editor.kill()
+            editor.stop()
             output = editor.get_output()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 
@@ -929,6 +940,9 @@ class EditorTestSuite():
         editor_test_data.results.update(results)
         test_name, test_result = next(iter(results.items()))
         self._report_result(test_name, test_result)
+        # If test did not pass, save assets with errors and warnings
+        if not isinstance(test_result, Result.Pass):
+            editor_utils.save_failed_asset_joblogs(workspace)
 
     def _run_batched_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
                            test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
@@ -950,6 +964,11 @@ class EditorTestSuite():
                                               extra_cmdline_args)
         assert results is not None
         editor_test_data.results.update(results)
+        # If at least one test did not pass, save assets with errors and warnings
+        for result in results:
+            if not isinstance(result, Result.Pass):
+                editor_utils.save_failed_asset_joblogs(workspace)
+                return
 
     def _run_parallel_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
                             test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
@@ -996,8 +1015,14 @@ class EditorTestSuite():
             for t in threads:
                 t.join()
 
+            save_asset_logs = False
             for result in results_per_thread:
                 editor_test_data.results.update(result)
+                if not isinstance(result, Result.Pass):
+                    save_asset_logs = True
+            # If at least one test did not pass, save assets with errors and warnings
+            if save_asset_logs:
+                editor_utils.save_failed_asset_joblogs(workspace)
 
     def _run_parallel_batched_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
                                     test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
@@ -1045,8 +1070,14 @@ class EditorTestSuite():
         for t in threads:
             t.join()
 
+        save_asset_logs = False
         for result in results_per_thread:
             editor_test_data.results.update(result)
+            if not isinstance(result, Result.Pass):
+                save_asset_logs = True
+        # If at least one test did not pass, save assets with errors and warnings
+        if save_asset_logs:
+            editor_utils.save_failed_asset_joblogs(workspace)
 
     def _get_number_parallel_editors(self, request: Request) -> int:
         """

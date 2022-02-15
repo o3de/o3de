@@ -11,11 +11,6 @@
 
 #include <algorithm>
 
-// AWs Native SDK
-AZ_PUSH_DISABLE_WARNING(4251 4355 4996, "-Wunknown-warning-option")
-#include <aws/core/auth/AWSCredentialsProvider.h>
-AZ_POP_DISABLE_WARNING
-
 // Qt
 #include <QMenuBar>
 #include <QDebug>
@@ -47,6 +42,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
@@ -76,7 +72,6 @@ AZ_POP_DISABLE_WARNING
 #include "ToolbarManager.h"
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
-#include "CVarMenu.h"
 #include "EditorViewportSettings.h"
 
 #include "KeyboardCustomizationSettings.h"
@@ -445,10 +440,10 @@ void MainWindow::Initialize()
 {
     m_viewPaneManager->SetMainWindow(m_viewPaneHost, &m_settings, /*unused*/ QByteArray());
 
+    InitActions();
+
     RegisterStdViewClasses();
     InitCentralWidget();
-
-    InitActions();
 
     // load toolbars ("shelves") and macros
     GetIEditor()->GetToolBoxManager()->Load(m_actionManager);
@@ -642,11 +637,11 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Create a new slice"));
     am->AddAction(ID_FILE_OPEN_SLICE, tr("Open Slice..."))
         .SetStatusTip(tr("Open an existing slice"));
-#endif
     am->AddAction(ID_FILE_SAVE_SELECTED_SLICE, tr("Save selected slice")).SetShortcut(tr("Alt+S"))
         .SetStatusTip(tr("Save the selected slice to the first level root"));
     am->AddAction(ID_FILE_SAVE_SLICE_TO_ROOT, tr("Save Slice to root")).SetShortcut(tr("Ctrl+Alt+S"))
         .SetStatusTip(tr("Save the selected slice to the top level root"));
+#endif
     am->AddAction(ID_FILE_SAVE_LEVEL, tr("&Save"))
         .SetShortcut(tr("Ctrl+S"))
         .SetReserved()
@@ -664,7 +659,7 @@ void MainWindow::InitActions()
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (!usePrefabSystemForLevels)
     {
         am->AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, tr("&Export to Engine"))
@@ -676,7 +671,9 @@ void MainWindow::InitActions()
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
     am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
+#ifdef ENABLE_SLICE_EDITOR
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
+#endif
     am->AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS, tr("Edit Project Settings..."));
     am->AddAction(ID_FILE_PROJECT_MANAGER_NEW, tr("New Project..."));
     am->AddAction(ID_FILE_PROJECT_MANAGER_OPEN, tr("Open Project..."));
@@ -798,27 +795,40 @@ void MainWindow::InitActions()
                     EditorTransformComponentSelectionRequests::Mode::Scale);
             });
 
-    am->AddAction(AzToolsFramework::SnapToGrid, tr("Snap to grid"))
+    am->AddAction(AzToolsFramework::SnapToGrid, tr("Grid snapping"))
         .SetIcon(Style::icon("Grid"))
+        .SetStatusTip(tr("Toggle grid snapping"))
         .SetShortcut(tr("G"))
-        .SetToolTip(tr("Snap to grid (G)"))
-        .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
-        .RegisterUpdateCallback([](QAction* action) {
-            Q_ASSERT(action->isCheckable());
-            action->setChecked(SandboxEditor::GridSnappingEnabled());
-        })
-        .Connect(&QAction::triggered, []() { SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled()); });
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(SandboxEditor::GridSnappingEnabled());
+            })
+        .Connect(
+            &QAction::triggered,
+            []
+            {
+                SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
+            });
 
-    am->AddAction(AzToolsFramework::SnapAngle, tr("Snap angle"))
+    am->AddAction(AzToolsFramework::SnapAngle, tr("Angle snapping"))
         .SetIcon(Style::icon("Angle"))
-        .SetStatusTip(tr("Snap angle"))
+        .SetStatusTip(tr("Toggle angle snapping"))
         .SetCheckable(true)
-        .RegisterUpdateCallback([](QAction* action) {
-            Q_ASSERT(action->isCheckable());
-            action->setChecked(SandboxEditor::AngleSnappingEnabled());
-        })
-        .Connect(&QAction::triggered, []() { SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled()); });
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(SandboxEditor::AngleSnappingEnabled());
+            })
+        .Connect(
+            &QAction::triggered,
+            []
+            {
+                SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
+            });
 
     // Display actions
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
@@ -918,9 +928,41 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Cycle 2D Viewport"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNonGameMode);
 #endif
-    am->AddAction(ID_DISPLAY_SHOWHELPERS, tr("Show/Hide Helpers"))
+    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers"))
         .SetShortcut(tr("Shift+Space"))
-        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"));
+        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
+                    AzToolsFramework::HelpersVisible());
+            });
+    am->AddAction(AzToolsFramework::Icons, tr("Show Icons"))
+        .SetShortcut(tr("Ctrl+Space"))
+        .SetToolTip(tr("Show/Hide Icons (Ctrl+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::IconsVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+            });
 
     // Audio actions
     am->AddAction(ID_SOUND_STOPALLSOUNDS, tr("Stop All Sounds"))

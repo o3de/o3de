@@ -86,7 +86,7 @@ namespace AZ
 
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
-            void DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags);
+            void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags);
             void UpdateBounds() override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
@@ -152,6 +152,8 @@ namespace AZ
             float GetQualityDecayRate() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
+            void SetRayTracingEnabled(bool enabled) override;
+            bool GetRayTracingEnabled() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

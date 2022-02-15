@@ -6,23 +6,86 @@
  *
  */
 
-#include <Atom/Document/MaterialDocumentModule.h>
-#include <Atom/Viewport/MaterialViewportModule.h>
-#include <Atom/Window/MaterialEditorWindowModule.h>
+#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <Document/MaterialDocument.h>
+#include <Document/MaterialDocumentRequestBus.h>
 #include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
+#include <Viewport/MaterialViewportModule.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
+#include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorWindowSettings.h>
+
+#include <QDesktopServices>
+#include <QDialog>
+#include <QMenu>
+#include <QUrl>
+
+void InitMaterialEditorResources()
+{
+    // Must register qt resources from other modules
+    Q_INIT_RESOURCE(MaterialEditor);
+    Q_INIT_RESOURCE(InspectorWidget);
+    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+}
 
 namespace MaterialEditor
 {
-    //! This function returns the build system target name of "MaterialEditor"
-    AZStd::string MaterialEditorApplication::GetBuildTargetName() const
+    static const char* GetBuildTargetName()
     {
 #if !defined(LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
-        return AZStd::string{ LY_CMAKE_TARGET };
+        return LY_CMAKE_TARGET;
+    }
+
+    MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
+        : Base(GetBuildTargetName(), argc, argv)
+    {
+        InitMaterialEditorResources();
+
+        QApplication::setApplicationName("O3DE Material Editor");
+
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+    }
+
+    MaterialEditorApplication::~MaterialEditorApplication()
+    {
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
+        m_window.reset();
+    }
+
+    void MaterialEditorApplication::Reflect(AZ::ReflectContext* context)
+    {
+        Base::Reflect(context);
+        MaterialEditorWindowSettings::Reflect(context);
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<MaterialDocumentRequestBus>("MaterialDocumentRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
+                ->Event("SetPropertyValue", &MaterialDocumentRequestBus::Events::SetPropertyValue)
+                ->Event("GetPropertyValue", &MaterialDocumentRequestBus::Events::GetPropertyValue);
+        }
+    }
+
+    void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
+    {
+        Base::CreateStaticModules(outModules);
+        outModules.push_back(aznew MaterialViewportModule);
     }
 
     const char* MaterialEditorApplication::GetCurrentConfigurationName() const
@@ -36,22 +99,93 @@ namespace MaterialEditor
 #endif
     }
 
-    MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
-        : AtomToolsApplication(argc, argv)
+    void MaterialEditorApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        QApplication::setApplicationName("O3DE Material Editor");
+        Base::StartCommon(systemEntity);
 
-        // The settings registry has been created at this point, so add the CMake target
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
-            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
+            [](const AZ::Crc32& toolId) { return aznew MaterialDocument(toolId); });
+
+        m_window.reset(aznew MaterialEditorWindow(m_toolId));
+
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
+            },
+            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                const bool isMaterial = AzFramework::StringFunc::Path::IsExtension(
+                    entries.front()->GetFullPath().c_str(), AZ::RPI::MaterialSourceData::Extension);
+                const bool isMaterialType = AzFramework::StringFunc::Path::IsExtension(
+                    entries.front()->GetFullPath().c_str(), AZ::RPI::MaterialTypeSourceData::Extension);
+                if (isMaterial || isMaterialType)
+                {
+                    menu->addAction(QObject::tr("Open"), [entries, this]()
+                        {
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument,
+                                entries.front()->GetFullPath());
+                        });
+
+                    const QString createActionName =
+                        isMaterialType ? QObject::tr("Create Material...") : QObject::tr("Create Child Material...");
+
+                    menu->addAction(createActionName, [entries, this]()
+                        {
+                            const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
+                                QString(AZ::Utils::GetProjectPath().c_str()) +
+                                AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets" +
+                                AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
+                                AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
+
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                                entries.front()->GetFullPath(),
+                                AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
+                        });
+                }
+                else
+                {
+                    menu->addAction(QObject::tr("Open"), [entries]()
+                        {
+                            QDesktopServices::openUrl(QUrl::fromLocalFile(entries.front()->GetFullPath().c_str()));
+                        });
+                }
+            });
+
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder;
+            },
+            [this](QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                menu->addAction(QObject::tr("Create Material..."), [caller, entries, this]()
+                    {
+                        CreateMaterialDialog createDialog(entries.front()->GetFullPath().c_str(), caller);
+                        createDialog.adjustSize();
+
+                        if (createDialog.exec() == QDialog::Accepted &&
+                            !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
+                            !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
+                        {
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                                createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
+                                createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
+                        }
+                    });
+            });
     }
 
-    void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
+    void MaterialEditorApplication::Destroy()
     {
-        Base::CreateStaticModules(outModules);
-        outModules.push_back(aznew MaterialDocumentModule);
-        outModules.push_back(aznew MaterialViewportModule);
-        outModules.push_back(aznew MaterialEditorWindowModule);
+        m_window.reset();
+        Base::Destroy();
     }
 
     AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
@@ -59,18 +193,8 @@ namespace MaterialEditor
         return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/" });
     }
 
-    void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
+    QWidget* MaterialEditorApplication::GetAppMainWindow()
     {
-        // Process command line options for opening one or more material documents on startup
-        size_t openDocumentCount = commandLine.GetNumMiscValues();
-        for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
-        {
-            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
-
-            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
-        }
-
-        Base::ProcessCommandLine(commandLine);
+        return m_window.get();
     }
 } // namespace MaterialEditor

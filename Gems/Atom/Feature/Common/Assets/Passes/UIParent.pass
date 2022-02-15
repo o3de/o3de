@@ -41,7 +41,8 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "2dpass",
-                        "PipelineViewTag": "MainCamera"
+                        "PipelineViewTag": "MainCamera",
+                        "DrawListSortType": "KeyThenReverseDepth"
                     }
                 },
                 {
