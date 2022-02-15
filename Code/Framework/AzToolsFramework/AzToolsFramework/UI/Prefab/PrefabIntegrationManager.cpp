@@ -47,6 +47,7 @@ namespace AzToolsFramework
 
         ContainerEntityInterface* PrefabIntegrationManager::s_containerEntityInterface = nullptr;
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
+        PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
         PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
@@ -78,6 +79,13 @@ namespace AzToolsFramework
             if (s_prefabLoaderInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            s_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            if (s_prefabFocusInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabFocusInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -944,9 +952,12 @@ namespace AzToolsFramework
             return m_prefabSaveHandler.ExecuteClosePrefabDialog(templateId);
         }
 
-        void PrefabIntegrationManager::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
+        void PrefabIntegrationManager::SaveCurrentPrefab()
         {
-            m_prefabSaveHandler.ExecuteSavePrefabDialog(templateId, useSaveAllPrefabsPreference);
+            m_prefabSaveHandler.ExecuteSavePrefabDialog(
+                s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId),
+                true
+            );
         }
 
     } // namespace Prefab
