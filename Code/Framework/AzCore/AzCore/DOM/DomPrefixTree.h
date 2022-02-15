@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/DOM/DomPath.h>
-#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/optional.h>
 
