@@ -806,6 +806,8 @@ namespace Terrain
             DetailMaterialPixel& pixel = pixels.at(yIndex * width + xIndex);
             uint32_t foundMaterials = 0;
             float firstWeight = 0.0f;
+            float secondWeight = 0.0f;
+
             AZ::Vector2 position(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY());
             const DetailMaterialListRegion* region = FindRegionForPosition(position);
 
@@ -825,45 +827,48 @@ namespace Terrain
                     {
                         if (foundMaterials == 0)
                         {
+                            // Found first material. Save its weight to calculate blend later.
                             ++foundMaterials;
-                            // First material is valid. Save its weight to calculate blend later
                             pixel.m_material1 = aznumeric_cast<uint8_t>(materialId);
                             firstWeight = surfaceTagWeight.m_weight;
-                            continue; // search for second material
                         }
                         else if (materialId == pixel.m_material1)
                         {
-                            // Same material used for multiple surface tags, just add the weights.
+                            // Same material as the first material, just add the weights.
                             firstWeight += surfaceTagWeight.m_weight;
+                        }
+                        else if (foundMaterials == 1)
+                        {
+                            // Found second material. Save its weight to calculate blend later.
+                            ++foundMaterials;
+                            secondWeight += surfaceTagWeight.m_weight;
+                            pixel.m_material2 = aznumeric_cast<uint8_t>(materialId);
+                        }
+                        else if (materialId == pixel.m_material2)
+                        {
+                            // Same material as the second material, just add the weights.
+                            secondWeight += surfaceTagWeight.m_weight;
                         }
                         else
                         {
-                            ++foundMaterials;
-                            float totalWeight = firstWeight + surfaceTagWeight.m_weight;
-                            pixel.m_material2 = aznumeric_cast<uint8_t>(materialId);
-                            float blendWeight = 1.0f - (firstWeight / totalWeight);
-                            pixel.m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
                             break;
                         }
                     }
                 }
-                break;
             }
             
-            uint8_t defaultMaterial = region->m_defaultDetailMaterialId == InvalidDetailMaterialId ? m_passthroughMaterialId :
-                aznumeric_cast<uint8_t>(m_detailMaterials.GetData(region->m_defaultDetailMaterialId).m_detailMaterialBufferIndex);
-
             if (foundMaterials == 0)
             {
-                // There's only one material and it's the default material.
+                // No materials found, so use the default materail.
+                uint8_t defaultMaterial = region->m_defaultDetailMaterialId == InvalidDetailMaterialId ? m_passthroughMaterialId :
+                    aznumeric_cast<uint8_t>(m_detailMaterials.GetData(region->m_defaultDetailMaterialId).m_detailMaterialBufferIndex);
                 pixel.m_material1 = defaultMaterial;
             }
-
-            if (pixel.m_material1 == pixel.m_material2)
+            else if (foundMaterials == 2)
             {
-                // If the materials are the same, then make the blend 100% on the first id so the shader
-                // doesn't blend identical materials
-                pixel.m_blend = 0;
+                float totalWeight = firstWeight + secondWeight;
+                float blendWeight = 1.0f - (firstWeight / totalWeight);
+                pixel.m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
             }
         };
             
