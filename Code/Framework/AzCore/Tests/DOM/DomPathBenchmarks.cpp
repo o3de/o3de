@@ -104,7 +104,7 @@ namespace AZ::Dom::Benchmark
         PathEntry endOfArray;
         endOfArray.SetEndOfArray();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             benchmark::DoNotOptimize(name == name);
             benchmark::DoNotOptimize(name == index);
