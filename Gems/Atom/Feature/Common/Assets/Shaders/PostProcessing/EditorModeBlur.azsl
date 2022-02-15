@@ -11,21 +11,23 @@
 
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
+    //! Width of kernal to apply box blur effect.
     float m_kernalWidth;
 }
 
-float3 Blur(const float2 uv, const float boxRadius)
+//! Applies a box blur of the specified kernal width
+//! @note This is not an efficient implementation. Future work will replace this with a multi-pass Gaussian blur.
+float3 Blur(const float2 uv, const float kernalWidth)
 {
     const float2 maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
     const float2 unormalizedUv = float2(uv.x * maskSize.x, uv.y * maskSize.y);
     const float2 maskSizeReciprocal = float2(1., 1.0) / maskSize;
     float3 outColor = float3(0., 0., 0.);
 
-    // Box blur kernal
     float weights = 0.;
-    for(float u = -boxRadius; u <= boxRadius; u+=1.)
+    for(float u = -kernalWidth; u <= kernalWidth; u+=1.)
     {
-        for(float v = -boxRadius; v <= boxRadius; v+=1.)
+        for(float v = -kernalWidth; v <= kernalWidth; v+=1.)
         {
             weights += 1.;
             outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * maskSizeReciprocal).rgb;
@@ -47,7 +49,7 @@ PSOutput MainPS(VSOutput IN)
   
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
-    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
+    const float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
     
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, finalEffect, t);

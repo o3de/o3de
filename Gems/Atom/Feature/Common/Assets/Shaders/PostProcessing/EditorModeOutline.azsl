@@ -15,7 +15,8 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float4 m_lineColor;
 }
 
-// Entity outliner effect
+//! Applies an outline effect to the entity mask of the specified line thickness.
+//! @note There are known issues with pimples due to z-fighting of coincident surfaces in the entity mask that will be addressed it LYN-10304.
 float selectedEntityOutliner(float2 uv, float lineThickness)
 {
     const float2 maskSize = PassSrg::GetImageSize(PassSrg::m_entityMask);
@@ -56,7 +57,6 @@ PSOutput MainPS(VSOutput IN)
     float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
 
     // Outline effect
-    // Known issue with pimples due to LYN-10304
     const float lineThickness = lerp(1., PassSrg::m_lineThickness, 1.0 - t);
     const float outline = selectedEntityOutliner(IN.m_texCoord, lineThickness);
 

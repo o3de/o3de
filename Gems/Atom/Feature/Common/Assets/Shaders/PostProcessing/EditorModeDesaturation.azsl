@@ -23,13 +23,13 @@ PSOutput MainPS(VSOutput IN)
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
     // Desaturation effect
-    const float3 luminanceWeights = float3(0.299,0.587,0.114);
+    const float3 luminanceWeights = float3(0.299, 0.587, 0.114);
     const float luminance = dot(inColor, luminanceWeights);
     const float3 finalEffect = lerp(inColor, luminance, PassSrg::m_desaturationAmount);
 
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
-    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
+    const float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
     
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, finalEffect, t);
