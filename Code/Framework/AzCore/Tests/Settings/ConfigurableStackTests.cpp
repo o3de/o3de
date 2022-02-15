@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 namespace UnitTest
@@ -32,7 +33,7 @@ namespace UnitTest
         }
     };
 
-    struct ConfigurableStackTests : public AllocatorsFixture
+    struct ConfigurableStackTests : public ScopedAllocatorSetupFixture
     {
         void Reflect(AZ::ReflectContext* context)
         {
@@ -50,32 +51,29 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            ScopedAllocatorSetupFixture::SetUp();
 
-            m_serializeContext = aznew AZ::SerializeContext();
-            m_jsonRegistrationContext = aznew AZ::JsonRegistrationContext();
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
 
-            Reflect(m_serializeContext);
-            Reflect(m_jsonRegistrationContext);
+            Reflect(m_serializeContext.get());
+            Reflect(m_jsonRegistrationContext.get());
             
-            m_deserializationSettings.m_registrationContext = m_jsonRegistrationContext;
-            m_deserializationSettings.m_serializeContext = m_serializeContext;
+            m_deserializationSettings.m_registrationContext = m_jsonRegistrationContext.get();
+            m_deserializationSettings.m_serializeContext = m_serializeContext.get();
         }
 
         void TearDown()
         {
             m_jsonRegistrationContext->EnableRemoveReflection();
-            Reflect(m_jsonRegistrationContext);
+            Reflect(m_jsonRegistrationContext.get());
             m_jsonRegistrationContext->DisableRemoveReflection();
 
             m_serializeContext->EnableRemoveReflection();
-            Reflect(m_serializeContext);
+            Reflect(m_serializeContext.get());
             m_serializeContext->DisableRemoveReflection();
 
-            delete m_jsonRegistrationContext;
-            delete m_serializeContext;
-
-            AllocatorsFixture::TearDown();
+            ScopedAllocatorSetupFixture::TearDown();
         }
 
         void ObjectTest(AZStd::string_view jsonText)
@@ -100,8 +98,8 @@ namespace UnitTest
             }
         }
 
-        AZ::SerializeContext* m_serializeContext;
-        AZ::JsonRegistrationContext* m_jsonRegistrationContext;
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
         AZ::JsonDeserializerSettings m_deserializationSettings;
     };
 

@@ -45,18 +45,6 @@ namespace AZ
     }
 
     template<typename StackBaseType>
-    auto ConfigurableStack<StackBaseType>::cbegin() const -> ConstIterator
-    {
-        return m_nodes.cbegin();
-    }
-
-    template<typename StackBaseType>
-    auto ConfigurableStack<StackBaseType>::cend() const -> ConstIterator
-    {
-        return m_nodes.cend();
-    }
-
-    template<typename StackBaseType>
     size_t ConfigurableStack<StackBaseType>::size() const
     {
         return m_nodes.size();

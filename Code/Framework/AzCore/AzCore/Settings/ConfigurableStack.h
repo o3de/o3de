@@ -110,9 +110,7 @@ namespace AZ
         Iterator end();
         ConstIterator begin() const;
         ConstIterator end() const;
-        ConstIterator cbegin() const;
-        ConstIterator cend() const;
-
+        
         size_t size() const;
 
     protected:
