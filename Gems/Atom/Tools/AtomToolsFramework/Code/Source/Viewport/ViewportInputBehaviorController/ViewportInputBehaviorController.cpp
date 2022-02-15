@@ -280,8 +280,14 @@ namespace AtomToolsFramework
     void ViewportInputBehaviorController::EvaluateControlBehavior()
     {
         auto it = m_behaviorMap.find(m_keys);
+        if (it == m_behaviorMap.end())
+        {
+            it = m_behaviorMap.find(None);
+        }
+
         AZStd::shared_ptr<ViewportInputBehavior> nextBehavior =
             it != m_behaviorMap.end() ? it->second : AZStd::shared_ptr<ViewportInputBehavior>();
+
         if (m_behavior != nextBehavior)
         {
             if (m_behavior)
