@@ -195,10 +195,8 @@ namespace AZ
             //
             // Process all LODs from the EMotionFX actor data.
             //
-
-            skinnedMeshInputBuffers->SetLodCount(numLODs);
             AZ_Assert(numLODs == modelAsset->GetLodCount(), "The lod count of the EMotionFX mesh and Atom model are out of sync for '%s'", fullFileName.c_str());
-            for (size_t lodIndex = 0; lodIndex < numLODs; ++lodIndex)
+            for (uint32_t lodIndex = 0; lodIndex < numLODs; ++lodIndex)
             {
                 // Create a single LOD
                 const SkinnedMeshInputLod& skinnedMeshLod = skinnedMeshInputBuffers->GetLod(lodIndex);
@@ -212,26 +210,26 @@ namespace AZ
                 blendWeightBufferData.reserve(skinnedMeshLod.GetVertexCount() * MaxSupportedSkinInfluences);
 
                 // Now iterate over the actual data and populate the data for the per-actor buffers
-                size_t vertexBufferOffset = 0;
-                for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+                uint32_t vertexBufferOffset = 0;
+                for (uint32_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
                 {
-                    const EMotionFX::Mesh* mesh = actor->GetMesh(static_cast<uint32>(lodIndex), static_cast<uint32>(jointIndex));
+                    const EMotionFX::Mesh* mesh = actor->GetMesh(lodIndex, jointIndex);
                     if (!mesh || mesh->GetIsCollisionMesh())
                     {
                         continue;
                     }
 
                     // For each sub-mesh within each mesh, we want to create a separate sub-piece.
-                    const size_t numSubMeshes = mesh->GetNumSubMeshes();
+                    const uint32_t numSubMeshes = aznumeric_caster(mesh->GetNumSubMeshes());
 
                     AZ_Assert(numSubMeshes == modelLodAsset->GetMeshes().size(),
                         "Number of submeshes (%d) in EMotionFX mesh (lod %d and joint index %d) doesn't match the number of meshes (%d) in model lod asset",
                         numSubMeshes, lodIndex, jointIndex, modelLodAsset->GetMeshes().size());
 
-                    for (size_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
+                    for (uint32_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
                     {
                         const EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(static_cast<uint32>(subMeshIndex));
-                        const size_t vertexCount = subMesh->GetNumVertices();
+                        const uint32_t vertexCount = subMesh->GetNumVertices();
 
                         // Skip empty sub-meshes and sub-meshes that would put the total vertex count beyond the supported range
                         if (vertexCount > 0 && IsVertexCountWithinSupportedRange(vertexBufferOffset, vertexCount))

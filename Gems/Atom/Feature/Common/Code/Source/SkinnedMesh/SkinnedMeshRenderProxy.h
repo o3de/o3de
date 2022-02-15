@@ -52,7 +52,7 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(SkinnedMeshRenderProxy);
 
             bool Init(const RPI::Scene& scene, SkinnedMeshFeatureProcessor* featureProcessor);
-            bool BuildDispatchItem(const RPI::Scene& scene, size_t modelLodIndex, const SkinnedMeshShaderOptions& shaderOptions);
+            bool BuildDispatchItem(const RPI::Scene& scene, uint32_t modelLodIndex, const SkinnedMeshShaderOptions& shaderOptions);
 
             Vector3 m_position = Vector3(0.0f, 0.0f, 0.0f); //!< Cached position so SkinnedMeshFeatureProcessor can make faster LOD calculations
             AZStd::fixed_vector<AZStd::vector<AZStd::unique_ptr<SkinnedMeshDispatchItem>>, RPI::ModelLodAsset::LodCountMax> m_dispatchItemsByLod;

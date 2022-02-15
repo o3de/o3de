@@ -38,11 +38,11 @@ namespace AZ
             {
                 return false;
             }
-            const size_t modelLodCount = m_instance->m_model->GetLodCount();
+            const uint32_t modelLodCount = aznumeric_caster(m_instance->m_model->GetLodCount());
             m_featureProcessor = featureProcessor;
 
             m_dispatchItemsByLod.reserve(modelLodCount);
-            for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
+            for (uint32_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
             {
                 if (!BuildDispatchItem(scene, modelLodIndex, m_shaderOptions))
                 {
@@ -53,7 +53,7 @@ namespace AZ
             return true;
         }
 
-        bool SkinnedMeshRenderProxy::BuildDispatchItem([[maybe_unused]] const RPI::Scene& scene, size_t modelLodIndex, [[maybe_unused]] const SkinnedMeshShaderOptions& shaderOptions)
+        bool SkinnedMeshRenderProxy::BuildDispatchItem([[maybe_unused]] const RPI::Scene& scene, uint32_t modelLodIndex, [[maybe_unused]] const SkinnedMeshShaderOptions& shaderOptions)
         {
             Data::Instance<RPI::Shader> skinningShader = m_featureProcessor->GetSkinningShader();
             if (!skinningShader)
@@ -73,7 +73,7 @@ namespace AZ
             }
 
             m_dispatchItemsByLod.emplace_back(AZStd::vector<AZStd::unique_ptr<SkinnedMeshDispatchItem>>());
-            for (size_t meshIndex = 0; meshIndex < m_inputBuffers->GetMeshCount(modelLodIndex); ++meshIndex)
+            for (uint32_t meshIndex = 0; meshIndex < m_inputBuffers->GetMeshCount(modelLodIndex); ++meshIndex)
             {
                 m_dispatchItemsByLod[modelLodIndex].emplace_back(
                     aznew SkinnedMeshDispatchItem{
@@ -89,7 +89,7 @@ namespace AZ
 
 
             AZ_Assert(m_dispatchItemsByLod.size() == modelLodIndex + 1, "Skinned Mesh Feature Processor - Mismatch in size between the fixed vector of dispatch items and the lod being initialized");
-            for (size_t meshIndex = 0; meshIndex < m_inputBuffers->GetMeshCount(modelLodIndex); ++meshIndex)
+            for (uint32_t meshIndex = 0; meshIndex < m_inputBuffers->GetMeshCount(modelLodIndex); ++meshIndex)
             {
                 if (!m_dispatchItemsByLod[modelLodIndex][meshIndex]->Init())
                 {
@@ -110,7 +110,7 @@ namespace AZ
 
             // Create one dispatch item per morph target
             m_morphTargetDispatchItemsByLod.emplace_back(AZStd::vector<AZStd::unique_ptr<MorphTargetDispatchItem>>());
-            for (size_t morphTargetIndex = 0; morphTargetIndex < morphTargetMetaDatas.size(); ++morphTargetIndex)
+            for (uint32_t morphTargetIndex = 0; morphTargetIndex < morphTargetMetaDatas.size(); ++morphTargetIndex)
             {
                 m_morphTargetDispatchItemsByLod[modelLodIndex].emplace_back(
                     aznew MorphTargetDispatchItem{

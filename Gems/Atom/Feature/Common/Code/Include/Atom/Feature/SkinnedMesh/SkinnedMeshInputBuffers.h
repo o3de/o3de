@@ -71,7 +71,7 @@ namespace AZ
             void CreateFromModelLod(
                 const Data::Asset<RPI::ModelAsset>& modelAsset,
                 const Data::Instance<RPI::Model>& model,
-                size_t lodIndex);
+                uint32_t lodIndex);
 
             //! Get the ModelLodAsset that was used to create this lod
             Data::Asset<RPI::ModelLodAsset> GetModelLodAsset() const;
@@ -141,18 +141,18 @@ namespace AZ
             
             using HasInputStreamArray = AZStd::array<bool, static_cast<uint8_t>(SkinnedMeshInputVertexStreams::NumVertexStreams)>;
             HasInputStreamArray CreateInputBufferViews(
-                size_t lodIndex,
-                size_t meshIndex,
+                uint32_t lodIndex,
+                uint32_t meshIndex,
                 const RHI::InputStreamLayout& inputLayout,
                 const RPI::ModelLod::StreamBufferViewList& streamBufferViews,
                 const char* modelName);
 
             void CreateOutputOffsets(
-                size_t meshIndex,
+                uint32_t meshIndex,
                 const HasInputStreamArray& meshHasInputStream,
                 SkinnedMeshOutputVertexOffsets& currentMeshOffsetFromStreamStart);
 
-            void TrackStaticBufferViews(size_t meshIndex);
+            void TrackStaticBufferViews(uint32_t meshIndex);
 
             //! The lod asset from the underlying mesh
             Data::Asset<RPI::ModelLodAsset> m_modelLodAsset;
@@ -215,34 +215,34 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> GetModelAsset() const;
 
             //! Get the number of meshes for the lod.
-            size_t GetMeshCount(size_t lodIndex) const;
+            uint32_t GetMeshCount(uint32_t lodIndex) const;
 
             //! Set the total number of lods for the SkinnedMeshInputBuffers
             void SetLodCount(size_t lodCount);
 
             //! Get the total number of lods
-            size_t GetLodCount() const;
+            uint32_t GetLodCount() const;
 
             //! Sets the SkinnedMeshInputLod at the specified index. SetLodCount must be called first.
             void SetLod(size_t lodIndex, const SkinnedMeshInputLod& lod);
 
             //! Get an individual lod
-            const SkinnedMeshInputLod& GetLod(size_t lodIndex) const;
+            const SkinnedMeshInputLod& GetLod(uint32_t lodIndex) const;
 
             //! Get a span of the buffer views for all the input streams
-            AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> GetInputBufferViews(size_t lodIndex) const;
+            AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> GetInputBufferViews(uint32_t lodIndex) const;
 
             //! Get the buffer view for a specific input stream
-            AZ::RHI::Ptr<const RHI::BufferView> GetInputBufferView(size_t lodIndex, uint8_t inputStream) const;
+            AZ::RHI::Ptr<const RHI::BufferView> GetInputBufferView(uint32_t lodIndex, uint8_t inputStream) const;
 
             //! Check if the mesh has dynamically modified colors
-            bool HasDynamicColors(size_t lodIndex, size_t meshIndex) const;
+            bool HasDynamicColors(uint32_t lodIndex, uint32_t meshIndex) const;
 
             //! Get the number of vertices for the specified lod.
-            uint32_t GetVertexCount(size_t lodIndex, size_t meshIndex) const;
+            uint32_t GetVertexCount(uint32_t lodIndex, uint32_t meshIndex) const;
 
             //! Set the buffer views and vertex count on the given SRG
-            void SetBufferViewsOnShaderResourceGroup(size_t lodIndex, size_t meshIndex, const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG);
+            void SetBufferViewsOnShaderResourceGroup(uint32_t lodIndex, uint32_t meshIndex, const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG);
 
             //! Create a model and resource views into the SkinnedMeshOutputBuffer that can be used as a target for the skinned vertices
             AZStd::intrusive_ptr<SkinnedMeshInstance> CreateSkinnedMeshInstance() const;

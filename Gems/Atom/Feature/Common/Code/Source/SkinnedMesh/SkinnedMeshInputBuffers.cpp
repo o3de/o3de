@@ -87,8 +87,8 @@ namespace AZ
         }
 
         SkinnedMeshInputLod::HasInputStreamArray SkinnedMeshInputLod::CreateInputBufferViews(
-            size_t lodIndex,
-            size_t meshIndex,
+            uint32_t lodIndex,
+            uint32_t meshIndex,
             const RHI::InputStreamLayout& inputLayout,
             const RPI::ModelLod::StreamBufferViewList& streamBufferViews,
             const char* modelName)
@@ -161,7 +161,7 @@ namespace AZ
         }
 
         void SkinnedMeshInputLod::CreateOutputOffsets(
-            size_t meshIndex,
+            uint32_t meshIndex,
             const HasInputStreamArray& meshHasInputStream,
             SkinnedMeshOutputVertexOffsets& currentMeshOffsetFromStreamStart)
         {
@@ -189,7 +189,7 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshInputLod::TrackStaticBufferViews(size_t meshIndex)
+        void SkinnedMeshInputLod::TrackStaticBufferViews(uint32_t meshIndex)
         {
             SkinnedSubMeshProperties& skinnedSubMesh = m_meshes[meshIndex];
             const RPI::ModelLodAsset::Mesh& modelLodAssetMesh = m_modelLodAsset->GetMeshes()[meshIndex];
@@ -219,7 +219,8 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshInputLod::CreateFromModelLod(const Data::Asset<RPI::ModelAsset>& modelAsset, const Data::Instance<RPI::Model>& model, size_t lodIndex)
+        void SkinnedMeshInputLod::CreateFromModelLod(
+            const Data::Asset<RPI::ModelAsset>& modelAsset, const Data::Instance<RPI::Model>& model, uint32_t lodIndex)
         {
             m_modelLodAsset = modelAsset->GetLodAssets()[lodIndex];
             const Data::Instance<RPI::ModelLod>& modelLod = model->GetLods()[lodIndex];
@@ -229,7 +230,7 @@ namespace AZ
             SkinnedMeshOutputVertexOffsets currentMeshOffsetFromStreamStart = { 0 };
 
             m_meshes.resize(modelLod->GetMeshes().size());
-            for (size_t meshIndex = 0; meshIndex < modelLod->GetMeshes().size(); ++meshIndex)
+            for (uint32_t meshIndex = 0; meshIndex < modelLod->GetMeshes().size(); ++meshIndex)
             {
                 SkinnedSubMeshProperties& skinnedSubMesh = m_meshes[meshIndex];
                 skinnedSubMesh.m_vertexOffsetsFromStreamStartInBytes = SkinnedMeshOutputVertexOffsets{ 0 };
@@ -447,7 +448,7 @@ namespace AZ
             if (m_model)
             {
                 m_lods.resize(m_model->GetLodCount());                
-                for (size_t lodIndex = 0; lodIndex < m_model->GetLodCount(); ++lodIndex)
+                for (uint32_t lodIndex = 0; lodIndex < m_model->GetLodCount(); ++lodIndex)
                 {
                     // Add a new lod to the SkinnedMeshInputBuffers
                     SkinnedMeshInputLod& skinnedMeshLod = m_lods[lodIndex];
@@ -461,9 +462,9 @@ namespace AZ
             return m_modelAsset;
         }
 
-        size_t SkinnedMeshInputBuffers::GetMeshCount(size_t lodIndex) const
+        uint32_t SkinnedMeshInputBuffers::GetMeshCount(uint32_t lodIndex) const
         {
-            return m_lods[lodIndex].m_meshes.size();
+            return aznumeric_caster(m_lods[lodIndex].m_meshes.size());
         }
 
         void SkinnedMeshInputBuffers::SetLodCount(size_t lodCount)
@@ -473,9 +474,9 @@ namespace AZ
             m_lods.resize(lodCount);
         }
 
-        size_t SkinnedMeshInputBuffers::GetLodCount() const
+        uint32_t SkinnedMeshInputBuffers::GetLodCount() const
         {
-            return m_lods.size();
+            return aznumeric_caster(m_lods.size());
         }
 
         void SkinnedMeshInputBuffers::SetLod(size_t lodIndex, const SkinnedMeshInputLod& lod)
@@ -487,34 +488,35 @@ namespace AZ
             m_isUploadPending = true;
         }
 
-        const SkinnedMeshInputLod& SkinnedMeshInputBuffers::GetLod(size_t lodIndex) const
+        const SkinnedMeshInputLod& SkinnedMeshInputBuffers::GetLod(uint32_t lodIndex) const
         {
             AZ_Assert(lodIndex < m_lods.size(), "Attempting to get lod at index %d in SkinnedMeshInputBuffers, which is outside the range of %zu.", lodIndex, m_lods.size());
             return m_lods[lodIndex];
         }
 
-        AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshInputBuffers::GetInputBufferViews(size_t lodIndex) const
+        AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshInputBuffers::GetInputBufferViews(uint32_t lodIndex) const
         {
             return m_lods[lodIndex].m_bufferViews;
         }
 
-        AZ::RHI::Ptr<const RHI::BufferView> SkinnedMeshInputBuffers::GetInputBufferView(size_t lodIndex, uint8_t inputStream) const
+        AZ::RHI::Ptr<const RHI::BufferView> SkinnedMeshInputBuffers::GetInputBufferView(uint32_t lodIndex, uint8_t inputStream) const
         {
             return m_lods[lodIndex].m_inputBuffers[inputStream]->GetBufferView();
         }
 
-        bool SkinnedMeshInputBuffers::HasDynamicColors(size_t lodIndex, [[maybe_unused]] size_t meshIndex) const
+        bool SkinnedMeshInputBuffers::HasDynamicColors(uint32_t lodIndex, [[maybe_unused]] uint32_t meshIndex) const
         {
             // TODO - treat each mesh individually
             return m_lods[lodIndex].HasDynamicColors();//m_hasDynamicColors[meshIndex];
         }
 
-        uint32_t SkinnedMeshInputBuffers::GetVertexCount(size_t lodIndex, size_t meshIndex) const
+        uint32_t SkinnedMeshInputBuffers::GetVertexCount(uint32_t lodIndex, uint32_t meshIndex) const
         {
             return m_lods[lodIndex].m_meshes[meshIndex].m_vertexCount;
         }
 
-        void SkinnedMeshInputBuffers::SetBufferViewsOnShaderResourceGroup(size_t lodIndex, size_t meshIndex, const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG)
+        void SkinnedMeshInputBuffers::SetBufferViewsOnShaderResourceGroup(
+            uint32_t lodIndex, uint32_t meshIndex, const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG)
         {
             AZ_Assert(lodIndex < m_lods.size() && meshIndex < m_lods[lodIndex].m_modelLodAsset->GetMeshes().size(), "Lod %zu Mesh %zu out of range for model '%s'", lodIndex, meshIndex, m_modelAsset->GetName().GetCStr());
 
@@ -541,10 +543,15 @@ namespace AZ
         }
 
         // Create a resource view that has a different type than the data it is viewing
-        static RHI::BufferViewDescriptor CreateResourceViewWithDifferentFormat(size_t offsetInBytes, uint32_t realElementCount, uint32_t realElementSize,  RHI::Format format, RHI::BufferBindFlags overrideBindFlags)
+        static RHI::BufferViewDescriptor CreateResourceViewWithDifferentFormat(
+            uint64_t offsetInBytes,
+            uint32_t realElementCount,
+            uint32_t realElementSize,
+            RHI::Format format,
+            RHI::BufferBindFlags overrideBindFlags)
         {
             RHI::BufferViewDescriptor viewDescriptor;
-            size_t elementOffset = offsetInBytes / aznumeric_cast<size_t>(RHI::GetFormatSize(format));
+            uint64_t elementOffset = offsetInBytes / RHI::GetFormatSize(format);
             AZ_Assert(elementOffset <= std::numeric_limits<uint32_t>().max(), "The offset in bytes from the start of the SkinnedMeshOutputStream buffer is too large to be expressed as a uint32_t element offset in the BufferViewDescriptor.");
             viewDescriptor.m_elementOffset = aznumeric_cast<uint32_t>(elementOffset);
 
@@ -681,7 +688,9 @@ namespace AZ
 
             // For the purpose of the model, which is fed to the static mesh feature processor, these buffer views are only going to be used as input assembly.
             // The underlying buffer is still writable and will be written to by the skinning shader.
-            RHI::BufferViewDescriptor viewDescriptor = CreateResourceViewWithDifferentFormat(static_cast<size_t>(streamOffsetsFromBufferStart[outputStreamIndex]) + static_cast<size_t>(subMeshOffsetsFromStreamStart[outputStreamIndex]), submeshVertexCount, outputStreamInfo.m_elementSize, outputStreamInfo.m_elementFormat, RHI::BufferBindFlags::InputAssembly);
+            RHI::BufferViewDescriptor viewDescriptor = CreateResourceViewWithDifferentFormat(
+                aznumeric_cast<uint64_t>(streamOffsetsFromBufferStart[outputStreamIndex]) + aznumeric_cast<uint64_t>(subMeshOffsetsFromStreamStart[outputStreamIndex]),
+                submeshVertexCount, outputStreamInfo.m_elementSize, outputStreamInfo.m_elementFormat, RHI::BufferBindFlags::InputAssembly);
 
             AZ_Assert(streamOffsetsFromBufferStart[outputStreamIndex] % outputStreamInfo.m_elementSize == 0, "The SkinnedMeshOutputStreamManager is supposed to guarantee that offsets can always align.");
 

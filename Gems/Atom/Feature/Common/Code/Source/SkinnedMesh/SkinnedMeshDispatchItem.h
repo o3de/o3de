@@ -49,8 +49,8 @@ namespace AZ
                 AZStd::intrusive_ptr<SkinnedMeshInputBuffers> inputBuffers,
                 const SkinnedMeshOutputVertexOffsets& outputBufferOffsetsInBytes,
                 uint32_t positionHistoryOutputBufferOffsetInBytes,
-                size_t lodIndex,
-                size_t meshIndex,
+                uint32_t lodIndex,
+                uint32_t meshIndex,
                 Data::Instance<RPI::Buffer> skinningMatrices,
                 const SkinnedMeshShaderOptions& shaderOptions,
                 SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
@@ -89,10 +89,10 @@ namespace AZ
             AZStd::intrusive_ptr<SkinnedMeshInputBuffers> m_inputBuffers;
 
             // The index of the lod within m_inputBuffers that is represented by the DispatchItem
-            size_t m_lodIndex;
+            uint32_t m_lodIndex;
 
             // The index of the mesh within the lod that is represented by the DispatchItem
-            size_t m_meshIndex;
+            uint32_t m_meshIndex;
 
             // The per-object shader resource group
             Data::Instance<RPI::ShaderResourceGroup> m_instanceSrg;

@@ -457,8 +457,8 @@ namespace AZ::Render
 
             // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
             // Wait for them all to be ready before creating the instance
-            size_t lodCount = m_skinnedMeshInputBuffers->GetLodCount();
-            for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
+            uint32_t lodCount = m_skinnedMeshInputBuffers->GetLodCount();
+            for (uint32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
                 const SkinnedMeshInputLod& inputLod = m_skinnedMeshInputBuffers->GetLod(lodIndex);
                 Data::Asset<RPI::ModelLodAsset> modelLodAsset = inputLod.GetModelLodAsset();
@@ -704,7 +704,7 @@ namespace AZ::Render
             "Number of lods in Skinned Mesh Input Buffers (%d) does not match with Skinned Mesh Instance (%d)",
             m_skinnedMeshInputBuffers->GetLodCount(), m_skinnedMeshInstance->m_outputStreamOffsetsInBytes.size());
 
-        for (size_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
+        for (uint32_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
         {
             const SkinnedMeshInputLod& inputSkinnedMeshLod = m_skinnedMeshInputBuffers->GetLod(lodIndex);
             const SkinnedMeshOutputVertexOffsets& outputBufferOffsetsInBytes = m_skinnedMeshInstance->m_outputStreamOffsetsInBytes[lodIndex][0];
