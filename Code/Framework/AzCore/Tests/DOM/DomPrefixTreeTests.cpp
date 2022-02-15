@@ -17,7 +17,7 @@ namespace AZ::Dom::Tests
     {
         DomPrefixTree<AZStd::string> tree;
         tree.SetValue(Path(), "root");
-        EXPECT_EQ(*tree.ValueAtPath(Path(), PrefixTreeMatch::ExactPath), "root");
+        EXPECT_EQ("root", *tree.ValueAtPath(Path(), PrefixTreeMatch::ExactPath));
     }
 
     TEST_F(DomPrefixTreeTests, GetExactPath)
@@ -29,14 +29,14 @@ namespace AZ::Dom::Tests
         tree.SetValue(Path("/foo/foo"), 1);
         tree.SetValue(Path("/foo/bar"), 2);
 
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath), 0);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::ExactPath), 42);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/foo"), PrefixTreeMatch::ExactPath), 1);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/bar"), PrefixTreeMatch::ExactPath), 2);
+        EXPECT_EQ(0, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(42, *tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(1, *tree.ValueAtPath(Path("/foo/foo"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(2, *tree.ValueAtPath(Path("/foo/bar"), PrefixTreeMatch::ExactPath));
 
-        EXPECT_EQ(tree.ValueAtPath(Path(), PrefixTreeMatch::ExactPath), nullptr);
-        EXPECT_EQ(tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath), nullptr);
-        EXPECT_EQ(tree.ValueAtPath(Path("/foo/0/subpath"), PrefixTreeMatch::ExactPath), nullptr);
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path(), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::ExactPath));
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo/0/subpath"), PrefixTreeMatch::ExactPath));
     }
 
     TEST_F(DomPrefixTreeTests, GetSubpath)
@@ -46,12 +46,12 @@ namespace AZ::Dom::Tests
         tree.SetValue(Path("/foo/0"), 0);
         tree.SetValue(Path("/foo/1"), 42);
 
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/0/bar"), PrefixTreeMatch::SubpathsOnly), 0);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/0/bar/baz"), PrefixTreeMatch::SubpathsOnly), 0);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/1/0"), PrefixTreeMatch::SubpathsOnly), 42);
+        EXPECT_EQ(0, *tree.ValueAtPath(Path("/foo/0/bar"), PrefixTreeMatch::SubpathsOnly));
+        EXPECT_EQ(0, *tree.ValueAtPath(Path("/foo/0/bar/baz"), PrefixTreeMatch::SubpathsOnly));
+        EXPECT_EQ(42, *tree.ValueAtPath(Path("/foo/1/0"), PrefixTreeMatch::SubpathsOnly));
 
-        EXPECT_EQ(tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::SubpathsOnly), nullptr);
-        EXPECT_EQ(tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::SubpathsOnly), nullptr);
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::SubpathsOnly));
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::SubpathsOnly));
     }
 
     TEST_F(DomPrefixTreeTests, GetPathOrSubpath)
@@ -61,15 +61,15 @@ namespace AZ::Dom::Tests
         tree.SetValue(Path("/foo/0"), 0);
         tree.SetValue(Path("/foo/1"), 42);
 
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::PathAndSubpaths), 0);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/0/bar"), PrefixTreeMatch::PathAndSubpaths), 0);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/0/bar/baz"), PrefixTreeMatch::PathAndSubpaths), 0);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::PathAndSubpaths), 42);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/1/0"), PrefixTreeMatch::PathAndSubpaths), 42);
+        EXPECT_EQ(0, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::PathAndSubpaths));
+        EXPECT_EQ(0, *tree.ValueAtPath(Path("/foo/0/bar"), PrefixTreeMatch::PathAndSubpaths));
+        EXPECT_EQ(0, *tree.ValueAtPath(Path("/foo/0/bar/baz"), PrefixTreeMatch::PathAndSubpaths));
+        EXPECT_EQ(42, *tree.ValueAtPath(Path("/foo/1"), PrefixTreeMatch::PathAndSubpaths));
+        EXPECT_EQ(42, *tree.ValueAtPath(Path("/foo/1/0"), PrefixTreeMatch::PathAndSubpaths));
 
-        EXPECT_EQ(tree.ValueAtPath(Path(), PrefixTreeMatch::PathAndSubpaths), nullptr);
-        EXPECT_EQ(tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::PathAndSubpaths), nullptr);
-        EXPECT_EQ(tree.ValueAtPath(Path("/path/0"), PrefixTreeMatch::PathAndSubpaths), nullptr);
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path(), PrefixTreeMatch::PathAndSubpaths));
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::PathAndSubpaths));
+        EXPECT_EQ(nullptr, tree.ValueAtPath(Path("/path/0"), PrefixTreeMatch::PathAndSubpaths));
     }
 
     TEST_F(DomPrefixTreeTests, RemovePath)
@@ -82,8 +82,8 @@ namespace AZ::Dom::Tests
 
         tree.EraseValue(Path("/foo"));
 
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::PathAndSubpaths), 20);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::PathAndSubpaths), 80);
+        EXPECT_EQ(20, *tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::PathAndSubpaths));
+        EXPECT_EQ(80, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::PathAndSubpaths));
     }
 
     TEST_F(DomPrefixTreeTests, RemovePathAndChildren)
@@ -96,8 +96,8 @@ namespace AZ::Dom::Tests
 
         tree.EraseValue(Path("/foo"), true);
 
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::PathAndSubpaths), 20);
-        EXPECT_EQ(*tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::PathAndSubpaths), 20);
+        EXPECT_EQ(20, *tree.ValueAtPath(Path("/foo"), PrefixTreeMatch::PathAndSubpaths));
+        EXPECT_EQ(20, *tree.ValueAtPath(Path("/foo/0"), PrefixTreeMatch::PathAndSubpaths));
     }
 
     TEST_F(DomPrefixTreeTests, ClearTree)
@@ -109,7 +109,7 @@ namespace AZ::Dom::Tests
 
         tree.Clear();
 
-        EXPECT_EQ(tree.ValueAtPathOrDefault(Path("/foo"), -10, PrefixTreeMatch::PathAndSubpaths), -10);
+        EXPECT_EQ(-10, tree.ValueAtPathOrDefault(Path("/foo"), -10, PrefixTreeMatch::PathAndSubpaths));
     }
 
     TEST_F(DomPrefixTreeTests, Visit)
@@ -141,27 +141,27 @@ namespace AZ::Dom::Tests
         tree.SetValue(Path("/bar/baz"), 2);
 
         tree.VisitPath(Path("/bar"), PrefixTreeMatch::ExactPath, visitorFn);
-        EXPECT_EQ(results.size(), 0);
+        EXPECT_EQ(0, results.size());
         results.clear();
 
         tree.VisitPath(Path("/foo/0"), PrefixTreeMatch::ExactPath, visitorFn);
-        EXPECT_EQ(results.size(), 1);
+        EXPECT_EQ(1, results.size());
         EXPECT_TRUE(validateResult(Path("/foo/0"), 0));
         results.clear();
 
         tree.VisitPath(Path("/foo/1"), PrefixTreeMatch::ExactPath, visitorFn);
-        EXPECT_EQ(results.size(), 1);
+        EXPECT_EQ(1, results.size());
         EXPECT_TRUE(validateResult(Path("/foo/1"), 42));
         results.clear();
 
         tree.VisitPath(Path("/foo"), PrefixTreeMatch::SubpathsOnly, visitorFn);
-        EXPECT_EQ(results.size(), 2);
+        EXPECT_EQ(2, results.size());
         EXPECT_TRUE(validateResult(Path("/foo/0"), 0));
         EXPECT_TRUE(validateResult(Path("/foo/1"), 42));
         results.clear();
 
         tree.VisitPath(Path("/foo"), PrefixTreeMatch::PathAndSubpaths, visitorFn);
-        EXPECT_EQ(results.size(), 3);
+        EXPECT_EQ(3, results.size());
         EXPECT_TRUE(validateResult(Path("/foo"), 99));
         EXPECT_TRUE(validateResult(Path("/foo/0"), 0));
         EXPECT_TRUE(validateResult(Path("/foo/1"), 42));

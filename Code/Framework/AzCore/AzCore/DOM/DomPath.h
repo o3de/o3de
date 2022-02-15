@@ -47,10 +47,6 @@ namespace AZ::Dom
         bool operator!=(const AZ::Name& key) const;
         bool operator!=(AZStd::string_view key) const;
 
-        //! Comparison operator used for storage in map structures
-        //! Compares hash order and not lexigraphic order, so not suitable for UI purposes
-        bool operator<(const PathEntry& rhs) const;
-
         void SetEndOfArray();
 
         bool IsEndOfArray() const;
@@ -59,11 +55,24 @@ namespace AZ::Dom
 
         size_t GetIndex() const;
         const AZ::Name& GetKey() const;
+        size_t GetHash() const;
 
     private:
         AZStd::variant<size_t, AZ::Name> m_value;
     };
+} // namespace AZ::Dom
 
+namespace AZStd
+{
+    template<>
+    struct hash<AZ::Dom::PathEntry>
+    {
+        size_t operator()(const AZ::Dom::PathEntry& entry) const;
+    };
+} // namespace AZStd
+
+namespace AZ::Dom
+{
     //! Represents a path, represented as a series of PathEntry values, to a position in a Value.
     class Path final
     {
@@ -139,7 +148,7 @@ namespace AZ::Dom
         AZStd::string ToString() const;
 
         void AppendToString(AZStd::string& output) const;
-        template <class T>
+        template<class T>
         void AppendToString(T& output) const
         {
             const size_t startIndex = output.length();

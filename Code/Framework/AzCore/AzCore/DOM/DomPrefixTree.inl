@@ -52,7 +52,7 @@ namespace AZ::Dom
     }
 
     template<class T>
-    void DomPrefixTree<T>::VisitPath(const Path& path, PrefixTreeMatch match, AZStd::function<void(const Path&, const T&)> visitor) const
+    void DomPrefixTree<T>::VisitPath(const Path& path, PrefixTreeMatch match, const AZStd::function<void(const Path&, const T&)>& visitor) const
     {
         const Node* rootNode = GetNodeForPath(path);
         if (rootNode == nullptr)
@@ -166,14 +166,14 @@ namespace AZ::Dom
     }
 
     template<class T>
-    T DomPrefixTree<T>::ValueAtPathOrDefault(const Path& path, const T& defaultValue, PrefixTreeMatch match) const
+    T DomPrefixTree<T>::ValueAtPathOrDefault(const Path& path, T&& defaultValue, PrefixTreeMatch match) const
     {
         const T* value = ValueAtPath(path, match);
-        return value == nullptr ? defaultValue : *value;
+        return value == nullptr ? AZStd::forward<T>(defaultValue) : *value;
     }
 
     template<class T>
-    void DomPrefixTree<T>::SetValue(const Path& path, T value)
+    void DomPrefixTree<T>::SetValue(const Path& path, T&& value)
     {
         Node* node = &m_rootNode;
         for (const PathEntry& entry : path)
@@ -181,7 +181,7 @@ namespace AZ::Dom
             // Get or create an entry in this node
             node = &node->m_values[entry];
         }
-        node->m_data = value;
+        node->m_data = AZStd::forward<T>(value);
     }
 
     template<class T>

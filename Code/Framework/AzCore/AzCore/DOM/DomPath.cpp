@@ -89,26 +89,6 @@ namespace AZ::Dom
         return !operator==(key);
     }
 
-    bool PathEntry::operator<(const PathEntry& rhs) const
-    {
-        return AZStd::visit(
-            [&](auto&& lhsValue)
-            {
-                using CurrentType = AZStd::decay_t<decltype(lhsValue)>;
-                if constexpr (AZStd::is_same_v<CurrentType, size_t>)
-                {
-                    const size_t* rhsValue = AZStd::get_if<size_t>(&rhs.m_value);
-                    return rhsValue == nullptr ? true : lhsValue < *rhsValue;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, AZ::Name>)
-                {
-                    const AZ::Name* rhsValue = AZStd::get_if<Name>(&rhs.m_value);
-                    return rhsValue == nullptr ? false : lhsValue.GetStringView() < rhsValue->GetStringView();
-                }
-            },
-            m_value);
-    }
-
     void PathEntry::SetEndOfArray()
     {
         m_value = EndOfArrayIndex;
@@ -137,6 +117,36 @@ namespace AZ::Dom
         return AZStd::get<size_t>(m_value);
     }
 
+    size_t PathEntry::GetHash() const
+    {
+        return AZStd::visit(
+            [&](auto&& value) -> size_t
+            {
+                using CurrentType = AZStd::decay_t<decltype(value)>;
+                if constexpr (AZStd::is_same_v<CurrentType, size_t>)
+                {
+                    AZStd::hash<size_t> hasher;
+                    return hasher(value);
+                }
+                else if constexpr (AZStd::is_same_v<CurrentType, AZ::Name>)
+                {
+                    return value.GetHash();
+                }
+            },
+            m_value);
+    }
+} // namespace AZ::Dom
+
+namespace AZStd
+{
+    size_t AZStd::hash<AZ::Dom::PathEntry>::operator()(const AZ::Dom::PathEntry& entry) const
+    {
+        return entry.GetHash();
+    }
+} // namespace AZStd
+
+namespace AZ::Dom
+{
     const AZ::Name& PathEntry::GetKey() const
     {
         AZ_Assert(IsKey(), "Key called on PathEntry that is not a key");
