@@ -33,7 +33,7 @@ namespace AZ::Render
         m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(entityId);
     }
 
-    void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags, EMotionFX::ActorInstance* instance)
+    void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags, EMotionFX::ActorInstance* instance)
     {
         if (!m_auxGeomFeatureProcessor || !instance)
         {
@@ -46,10 +46,12 @@ namespace AZ::Render
             return;
         }
 
+        using AZ::RHI::CheckBitsAny;
+
         // Update the mesh deformers (perform cpu skinning and morphing) when needed.
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB] || renderFlags[EMotionFX::ActorRenderFlag::RENDER_FACENORMALS] ||
-            renderFlags[EMotionFX::ActorRenderFlag::RENDER_TANGENTS] || renderFlags[EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS] ||
-            renderFlags[EMotionFX::ActorRenderFlag::RENDER_WIREFRAME])
+        if (CheckBitsAny(renderFlags,
+                EMotionFX::ActorRenderFlags::AABB | EMotionFX::ActorRenderFlags::FaceNormals | EMotionFX::ActorRenderFlags::Tangents |
+                EMotionFX::ActorRenderFlags::VertexNormals | EMotionFX::ActorRenderFlags::Wireframe))
         {
             instance->UpdateMeshDeformers(0.0f, true);
         }
@@ -61,7 +63,7 @@ namespace AZ::Render
         const float scaleMultiplier = CalculateScaleMultiplier(instance);
 
         // Render aabb
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::AABB))
         {
             RenderAABB(instance,
                 renderActorSettings.m_enabledNodeBasedAabb, renderActorSettings.m_nodeAABBColor,
@@ -70,39 +72,39 @@ namespace AZ::Render
         }
 
         // Render simple line skeleton
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_LINESKELETON])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::LineSkeleton))
         {
             RenderLineSkeleton(instance, renderActorSettings.m_lineSkeletonColor);
         }
 
         // Render advanced skeleton
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_SKELETON])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Skeleton))
         {
             RenderSkeleton(instance, renderActorSettings.m_skeletonColor);
         }
 
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODENAMES])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeNames))
         {
             RenderJointNames(instance, viewport, renderActorSettings.m_jointNameColor);
         }
 
         // Render internal EMFX debug lines.
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_EMFX_DEBUG])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::EmfxDebug))
         {
             RenderEMFXDebugDraw(instance);
         }
 
         // Render
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeOrientation))
         {
             RenderNodeOrientations(instance, debugDisplay, renderActorSettings.m_nodeOrientationScale * scaleMultiplier);
         }
 
         // Render vertex normal, face normal, tagent and wireframe.
-        const bool renderVertexNormals = renderFlags[EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS];
-        const bool renderFaceNormals = renderFlags[EMotionFX::ActorRenderFlag::RENDER_FACENORMALS];
-        const bool renderTangents = renderFlags[EMotionFX::ActorRenderFlag::RENDER_TANGENTS];
-        const bool renderWireframe = renderFlags[EMotionFX::ActorRenderFlag::RENDER_WIREFRAME];
+        const bool renderVertexNormals = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::VertexNormals);
+        const bool renderFaceNormals = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::FaceNormals);
+        const bool renderTangents = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Tangents);
+        const bool renderWireframe = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Wireframe);
 
         if (renderVertexNormals || renderFaceNormals || renderTangents || renderWireframe)
         {

@@ -18,10 +18,12 @@ set(FILES
     Include/SurfaceData/SurfaceDataTagProviderRequestBus.h
     Include/SurfaceData/SurfaceDataProviderRequestBus.h
     Include/SurfaceData/SurfaceDataModifierRequestBus.h
+    Include/SurfaceData/SurfacePointList.h
     Include/SurfaceData/SurfaceTag.h
     Include/SurfaceData/Utility/SurfaceDataUtility.h
     Source/SurfaceDataSystemComponent.cpp
     Source/SurfaceDataTypes.cpp
+    Source/SurfacePointList.cpp
     Source/SurfaceTag.cpp
     Source/Components/SurfaceDataColliderComponent.cpp
     Source/Components/SurfaceDataShapeComponent.cpp
