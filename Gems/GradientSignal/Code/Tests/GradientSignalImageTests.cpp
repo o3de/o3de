@@ -8,6 +8,7 @@
 
 
 #include <Tests/GradientSignalTestFixtures.h>
+#include <Tests/GradientSignalTestHelpers.h>
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -88,7 +89,7 @@ namespace UnitTest
 
             // Create the Image Gradient Component.
             GradientSignal::ImageGradientConfig config;
-            config.m_imageAsset = ImageAssetMockAssetHandler::CreateSpecificPixelImageAsset(
+            config.m_imageAsset = UnitTest::CreateSpecificPixelImageAsset(
                 test.m_imageSize, test.m_imageSize, static_cast<AZ::u32>(test.m_pixel.GetX()), static_cast<AZ::u32>(test.m_pixel.GetY()));
             config.m_tilingX = test.m_tiling;
             config.m_tilingY = test.m_tiling;
@@ -379,7 +380,7 @@ namespace UnitTest
 
             // Create an ImageGradient with a 3x3 asset with the center pixel set.
             GradientSignal::ImageGradientConfig gradientConfig;
-            gradientConfig.m_imageAsset = ImageAssetMockAssetHandler::CreateSpecificPixelImageAsset(3, 3, 1, 1);
+            gradientConfig.m_imageAsset = UnitTest::CreateSpecificPixelImageAsset(3, 3, 1, 1);
             entity->CreateComponent<GradientSignal::ImageGradientComponent>(gradientConfig);
 
             // Create the test GradientTransform

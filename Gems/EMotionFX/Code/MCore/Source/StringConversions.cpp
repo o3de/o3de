@@ -76,11 +76,6 @@ namespace MCore
 
 namespace AZStd
 {
-    void to_string(string& str, bool value)
-    {
-        str = value ? "true" : "false";
-    }
-
     void to_string(string& str, const AZ::Vector2& value)
     {
         str = AZStd::string::format("%.8f,%.8f", 

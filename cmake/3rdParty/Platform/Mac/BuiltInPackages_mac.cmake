@@ -20,7 +20,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-mac                             TARGETS assimplib                   PACKAGE_HASH ad35c2e0efd0852021c84b9a454fdcba2fc8af8b7117e9a0dd7ea0a1915932e0)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 3f77367dbb0342136ec4ebbd44bc1fedf7198089a0f83c5631248530769b2be6)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2112-o3de-rev1-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 2d3aa6d188fcd4f09c95cf26a518a45400f34a54c8dff3a7ebef6add917fb07c)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-mac                    TARGETS SPIRVCross                  PACKAGE_HASH 78c6376ed2fd195b9b1f5fb2b56e5267a32c3aa21fb399e905308de470eb4515)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-mac                            TARGETS TIFF                        PACKAGE_HASH c2615ccdadcc0e1d6c5ed61e5965c4d3a82193d206591b79b805c3b3ff35a4bf)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-mac                            TARGETS freetype                    PACKAGE_HASH f159b346ac3251fb29cb8dd5f805c99b0015ed7fdb3887f656945ca701a61d0d)
@@ -42,5 +42,5 @@ ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev5-mac                     
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac                      TARGETS ISPCTexComp                 PACKAGE_HASH 8a4e93277b8face6ea2fd57c6d017bdb55643ed3d6387110bc5f6b3b884dd169)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-mac                          TARGETS lz4                         PACKAGE_HASH 891ff630bf34f7ab1d8eaee2ea0a8f1fca89dbdc63fca41ee592703dd488a73b)
 ly_associate_package(PACKAGE_NAME azslc-1.7.35-rev1-mac                             TARGETS azslc                       PACKAGE_HASH 03cb1ea8c47d4c80c893e2e88767272d5d377838f5ba94b777a45902dd85052e)
-ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-mac                            TARGETS SQLite                      PACKAGE_HASH f9101023f99cf32fc5867284ceb28c0761c23d2c5a4b1748349c69f976a2fbea)
+ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev2-mac                            TARGETS SQLite                      PACKAGE_HASH b7d9abdb68045003e030e1a9a805db1aefa5e8fde6dccfbb4fab3a06249a41fc)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev2-mac                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 4854edb7b88fa6437b4e69e87d0ee111a25313ac2a2db5bb2f8b674ba0974f95)

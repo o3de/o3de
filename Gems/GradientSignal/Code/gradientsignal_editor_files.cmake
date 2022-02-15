@@ -47,6 +47,8 @@ set(FILES
     Source/Editor/EditorShapeAreaFalloffGradientComponent.h
     Source/Editor/EditorSmoothStepGradientComponent.cpp
     Source/Editor/EditorSmoothStepGradientComponent.h
+    Source/Editor/EditorStreamingImageAssetCtrl.cpp
+    Source/Editor/EditorStreamingImageAssetCtrl.h
     Source/Editor/EditorSurfaceAltitudeGradientComponent.cpp
     Source/Editor/EditorSurfaceAltitudeGradientComponent.h
     Source/Editor/EditorSurfaceMaskGradientComponent.cpp
