@@ -617,10 +617,10 @@ namespace Multiplayer
             return;
         }
         m_lastFilter = filter;
+        m_filteredAuditTrail.clear();
 
         if (filter.size() == 0)
         {
-            m_filteredAuditTrail.clear();
             return;
         }
 

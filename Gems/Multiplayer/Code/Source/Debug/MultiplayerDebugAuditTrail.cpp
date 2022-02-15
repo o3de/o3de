@@ -37,7 +37,7 @@ namespace Multiplayer
         return m_filter;
     }
 
-    void MultiplayerDebugAuditTrail::SetAuditTrailFilter(const AZStd::string_view& filter)
+    void MultiplayerDebugAuditTrail::SetAuditTrailFilter(const AZStd::string filter)
     {
         m_filter = filter;
     }
