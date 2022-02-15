@@ -2440,7 +2440,7 @@ namespace AZ
             m_capacity = desc.m_capacity;
         }
 
-        AZ_Assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, we need %d bytes but we have %d bytes!", sizeof(HpAllocator), sizeof(m_hpAllocatorBuffer));
+        static_assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, it needs to be at least the sizeof(HpAllocator)");
         m_allocator = new (&m_hpAllocatorBuffer) HpAllocator(m_desc);
     }
 
