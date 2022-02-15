@@ -268,6 +268,12 @@ namespace AZ
                     return;
                 }
 
+                // Skip adding draw or dispath items if there it no hair render objects
+                if (m_hairRenderObjects.size() == 0)
+                {
+                    return;
+                }
+
                 // [To Do] - no culling scheme applied yet.
                 // Possibly setup the hair culling work group to be re-used for each view.
                 // See SkinnedMeshFeatureProcessor::Render for more details
@@ -321,7 +327,7 @@ namespace AZ
                 if (HasHairParentPass(renderPipeline))
                 {
                     CreatePerPassResources();
-                    return false;
+                    return true;
                 }
                 const char* passRequestAssetFilePath = "Passes/AtomTressFX_PassRequest.azasset";
                 m_hairPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
@@ -333,7 +339,7 @@ namespace AZ
                 }
                 if (!passRequest)
                 {
-                    AZ_Warning("AtomTressFx", false, "Failed to load PassRequest from %s", passRequestAssetFilePath);
+                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
                     return false;
                 }
 
@@ -356,6 +362,8 @@ namespace AZ
 
                 if (!opaquePass)
                 {
+                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Can't find pass created with OpaqueParentTemplate in render pipeline [%s]",
+                        renderPipeline->GetId().GetCStr());
                     return false;
                 }
                 // insert the pass 
@@ -368,6 +376,11 @@ namespace AZ
                 if (success)
                 {
                     CreatePerPassResources();
+                }
+                else
+                {
+                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Insert the pass to render pipeline [%s] failed",
+                        renderPipeline->GetId().GetCStr());
                 }
                 return success;
             }

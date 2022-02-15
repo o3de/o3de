@@ -89,7 +89,7 @@ namespace AZ
             //! Perform any necessary deactivation.
             virtual void Deactivate() {}
 
-            //! Apply changes to render pipeline from feature processors
+            //! Apply changes and add additional render passes to the render pipeline from the feature processors
             virtual void ApplyRenderPipelineChange(RenderPipeline* ) {}
 
             //! Allows the feature processor to expose supporting views based on
