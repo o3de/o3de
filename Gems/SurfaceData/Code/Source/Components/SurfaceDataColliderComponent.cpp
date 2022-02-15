@@ -241,28 +241,39 @@ namespace SurfaceData
         }
     }
 
-    void SurfaceDataColliderComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
+    void SurfaceDataColliderComponent::ModifySurfacePoints(
+            AZStd::span<const AZ::Vector3> positions,
+            AZStd::span<const AZ::EntityId> creatorEntityIds,
+            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
     {
+        AZ_Assert(
+            (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
+            "Sizes of the passed-in spans don't match");
+
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_colliderBounds.IsValid() && !m_configuration.m_modifierTags.empty())
         {
-            surfacePointList.ModifySurfaceWeights(
-                GetEntityId(),
-                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                // Don't bother modifying points that this component created.
+                if (creatorEntityIds[index] == GetEntityId())
                 {
-                    if (m_colliderBounds.Contains(position))
+                    continue;
+                }
+
+                if (m_colliderBounds.Contains(positions[index]))
+                {
+                    AZ::Vector3 hitPosition;
+                    AZ::Vector3 hitNormal;
+                    constexpr bool queryPointOnly = true;
+                    if (DoRayTrace(positions[index], queryPointOnly, hitPosition, hitNormal))
                     {
-                        AZ::Vector3 hitPosition;
-                        AZ::Vector3 hitNormal;
-                        constexpr bool queryPointOnly = true;
-                        if (DoRayTrace(position, queryPointOnly, hitPosition, hitNormal))
-                        {
-                            // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
-                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
-                        }
+                        // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
+                        weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
                     }
-                });
+                }
+            }
         }
     }
 

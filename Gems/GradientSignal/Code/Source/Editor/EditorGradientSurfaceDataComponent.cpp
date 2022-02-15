@@ -111,7 +111,11 @@ namespace GradientSignal
             SurfaceData::SurfacePointList pointList = AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1);
 
             // Send it into the component, see what emerges
-            m_component.ModifySurfacePoints(pointList);
+
+            SurfaceData::SurfaceDataRegistryHandle modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
+            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
+                modifierHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle, m_component.GetEntityId());
+            pointList.ModifySurfaceWeights(modifierHandle);
 
             // If the point was successfully modified, we should have one or more masks with a non-zero value.
             // Technically, they should all have the same value, but we'll grab the max from all of them in case

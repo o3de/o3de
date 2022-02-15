@@ -207,8 +207,15 @@ namespace GradientSignal
         return false;
     }
 
-    void GradientSurfaceDataComponent::ModifySurfacePoints(SurfaceData::SurfacePointList& surfacePointList) const
+    void GradientSurfaceDataComponent::ModifySurfacePoints(
+            AZStd::span<const AZ::Vector3> positions,
+            [[maybe_unused]] AZStd::span<const AZ::EntityId> creatorEntityIds,
+            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
     {
+        AZ_Assert(
+            (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
+            "Sizes of the passed-in spans don't match");
+
         if (!m_configuration.m_modifierTags.empty())
         {
             // This method can be called from the vegetation thread, but our shape bounds can get updated from the main thread.
@@ -224,37 +231,35 @@ namespace GradientSignal
                 validShapeBounds = m_cachedShapeConstraintBounds.IsValid();
             }
 
-            surfacePointList.ModifySurfaceWeights(
-                GetEntityId(), 
-                [this, validShapeBounds, shapeConstraintBounds](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                bool inBounds = true;
+
+                // If we have an optional shape bounds, verify the point exists inside of it before querying the gradient value.
+                // Otherwise, assume an unbounded surface modifier and allow *all* points through the shape check.
+                if (validShapeBounds)
                 {
-                    bool inBounds = true;
-
-                    // If we have an optional shape bounds, verify the point exists inside of it before querying the gradient value.
-                    // Otherwise, assume an unbounded surface modifier and allow *all* points through the shape check.
-                    if (validShapeBounds)
+                    inBounds = false;
+                    if (shapeConstraintBounds.Contains(positions[index]))
                     {
-                        inBounds = false;
-                        if (shapeConstraintBounds.Contains(position))
-                        {
-                            LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                                inBounds, m_configuration.m_shapeConstraintEntityId,
-                                &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, position);
-                        }
+                        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                            inBounds, m_configuration.m_shapeConstraintEntityId,
+                            &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, positions[index]);
                     }
+                }
 
-                    // If the point is within our allowed shape bounds, verify that it meets the gradient thresholds.
-                    // If so, then return the value to add to the surface tags.
-                    if (inBounds)
+                // If the point is within our allowed shape bounds, verify that it meets the gradient thresholds.
+                // If so, then return the value to add to the surface tags.
+                if (inBounds)
+                {
+                    const GradientSampleParams sampleParams = { positions[index] };
+                    const float value = m_gradientSampler.GetValue(sampleParams);
+                    if (value >= m_configuration.m_thresholdMin && value <= m_configuration.m_thresholdMax)
                     {
-                        const GradientSampleParams sampleParams = { position };
-                        const float value = m_gradientSampler.GetValue(sampleParams);
-                        if (value >= m_configuration.m_thresholdMin && value <= m_configuration.m_thresholdMax)
-                        {
-                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, value);
-                        }
+                        weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, value);
                     }
-                });
+                }
+            }
         }
     }
 

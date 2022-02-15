@@ -167,19 +167,20 @@ class MockSurfaceProvider
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceDataModifierRequestBus
-        void ModifySurfacePoints(SurfaceData::SurfacePointList& surfacePointList) const override
+        void ModifySurfacePoints(
+            AZStd::span<const AZ::Vector3> positions,
+            [[maybe_unused]] AZStd::span<const AZ::EntityId> creatorEntityIds,
+            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const override
         {
-            surfacePointList.ModifySurfaceWeights(
-                AZ::EntityId(),
-                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
-                {
-                    auto surfacePoints = m_GetSurfacePoints.find(AZStd::make_pair(position.GetX(), position.GetY()));
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                auto surfacePoints = m_GetSurfacePoints.find(AZStd::make_pair(positions[index].GetX(), positions[index].GetY()));
 
-                    if (surfacePoints != m_GetSurfacePoints.end())
-                    {
-                        weights.AddSurfaceTagWeights(m_tags, 1.0f);
-                    }
-                });
+                if (surfacePoints != m_GetSurfacePoints.end())
+                {
+                    weights[index].AddSurfaceTagWeights(m_tags, 1.0f);
+                }
+            }
         }
 
         SurfaceData::SurfaceDataRegistryHandle m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
