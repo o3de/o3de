@@ -73,6 +73,18 @@ namespace MaterialEditor
     {
         m_ui->setupUi(this);
 
+        // Create a new entity context
+        m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
+        m_entityContext->InitContext();
+
+        // Create the framework scene and use the new entity context
+        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        AZ_Assert(sceneSystem, "Unable to retrieve scene system.");
+        AZ::Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome = sceneSystem->CreateScene("MaterialViewportScene");
+        AZ_Assert(createSceneOutcome, "%s", createSceneOutcome.GetError().data());
+        m_frameworkScene = createSceneOutcome.TakeValue();
+        m_frameworkScene->SetSubsystem<AzFramework::EntityContext::SceneStorageType>(m_entityContext.get());
+
         // The viewport context created by AtomToolsFramework::RenderViewportWidget has no name.
         // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
         // ------------------------------
@@ -92,13 +104,14 @@ namespace MaterialEditor
         m_scene->EnableAllFeatureProcessors();
 
         // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
-        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-        AZ_Assert(sceneSystem, "MaterialViewportWidget was unable to get the scene system during construction.");
-        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        //auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        //AZ_Assert(sceneSystem, "MaterialViewportWidget was unable to get the scene system during construction.");
+        //AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
 
         // This should never happen unless scene creation has changed.
-        AZ_Assert(mainScene, "Main scenes missing during system component initialization");
-        mainScene->SetSubsystem(m_scene);
+        //AZ_Assert(mainScene, "Main scenes missing during system component initialization");
+        //mainScene->SetSubsystem(m_scene);
+        m_frameworkScene->SetSubsystem(m_scene);
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
@@ -123,9 +136,9 @@ namespace MaterialEditor
 
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
 
-        AzFramework::EntityContextId entityContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+        //AzFramework::EntityContextId entityContextId;
+        //AzFramework::GameEntityContextRequestBus::BroadcastResult(
+        //    entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
 
         // Configure camera
         m_cameraEntity =
@@ -260,18 +273,29 @@ namespace MaterialEditor
         DestroyEntity(m_cameraEntity);
         DestroyEntity(m_postProcessEntity);
 
+        m_entityContext->DestroyContext();
+
         for (DirectionalLightHandle& handle : m_lightHandles)
         {
             m_directionalLightFeatureProcessor->ReleaseLight(handle);
         }
         m_lightHandles.clear();
 
-        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-        AZ_Assert(sceneSystem, "MaterialViewportWidget was unable to get the scene system during destruction.");
-        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        //auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        //AZ_Assert(sceneSystem, "MaterialViewportWidget was unable to get the scene system during destruction.");
+        //AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
         // This should never happen unless scene creation has changed.
-        AZ_Assert(mainScene, "Main scenes missing during system component destruction");
-        mainScene->UnsetSubsystem(m_scene);
+        //AZ_Assert(mainScene, "Main scenes missing during system component destruction");
+        //mainScene->UnsetSubsystem(m_scene);
+        m_frameworkScene->UnsetSubsystem(m_scene);
+
+        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        AZ_Assert(sceneSystem, "AtomViewportRenderer was unable to get the scene system during destruction.");
+        bool removeSuccess = sceneSystem->RemoveScene("MaterialViewportScene");
+        if (!removeSuccess)
+        {
+            AZ_Assert(false, "MaterialViewportScene should be removed.");
+        }
 
         m_swapChainPass = nullptr;
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
@@ -280,9 +304,10 @@ namespace MaterialEditor
 
     AZ::Entity* MaterialViewportWidget::CreateEntity(const AZStd::string& name, const AZStd::vector<AZ::Uuid>& componentTypeIds)
     {
-        AzFramework::EntityContextId entityContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+        //AzFramework::EntityContextId entityContextId;
+        //AzFramework::GameEntityContextRequestBus::BroadcastResult(
+        //    entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+        AzFramework::EntityContextId entityContextId = m_entityContext->GetContextId();
 
         AZ::Entity* entity = {};
         AzFramework::EntityContextRequestBus::EventResult(
@@ -295,6 +320,7 @@ namespace MaterialEditor
             {
                 entity->CreateComponent(componentTypeId);
             }
+            entity->Init();
             entity->Activate();
         }
 
@@ -303,9 +329,10 @@ namespace MaterialEditor
 
     void MaterialViewportWidget::DestroyEntity(AZ::Entity*& entity)
     {
-        AzFramework::EntityContextId entityContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+        //AzFramework::EntityContextId entityContextId;
+        //AzFramework::GameEntityContextRequestBus::BroadcastResult(
+        //    entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
+        AzFramework::EntityContextId entityContextId = m_entityContext->GetContextId();
 
         AzFramework::EntityContextRequestBus::Event(entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, entity);
         entity = nullptr;
