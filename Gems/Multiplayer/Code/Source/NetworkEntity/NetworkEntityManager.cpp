@@ -25,6 +25,8 @@
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
+AZ_DECLARE_BUDGET(MULTIPLAYER);
+
 namespace Multiplayer
 {
     AZ_CVAR(bool, net_DebugCheckNetworkEntityManager, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables extra debug checks inside the NetworkEntityManager");
@@ -203,11 +205,13 @@ namespace Multiplayer
 
     void NetworkEntityManager::NotifyEntitiesDirtied()
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "NotifyEntitiesDirtied");
         m_onEntityMarkedDirty.Signal();
     }
 
     void NetworkEntityManager::NotifyEntitiesChanged()
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "NotifyEntitiesChanged");
         m_onEntityNotifyChanges.Signal();
     }
 

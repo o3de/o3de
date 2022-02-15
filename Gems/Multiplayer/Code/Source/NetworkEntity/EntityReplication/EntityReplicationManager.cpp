@@ -26,7 +26,10 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
+
+AZ_DECLARE_BUDGET(MULTIPLAYER);
 
 namespace Multiplayer
 {
@@ -78,6 +81,8 @@ namespace Multiplayer
 
     void EntityReplicationManager::ActivatePendingEntities()
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "ActivatePendingEntities");
+
         AZStd::vector<NetEntityId> notReadyEntities;
 
         const AZ::TimeMs endTimeMs = AZ::GetElapsedTimeMs() + m_entityActivationTimeSliceMs;
@@ -126,17 +131,23 @@ namespace Multiplayer
                 GetRemoteHostId().GetString().c_str()
             );
 
-            // Prep a replication record for send, at this point, everything needs to be sent
-            for (EntityReplicator* replicator : toSendList)
             {
-                replicator->GetPropertyPublisher()->PrepareSerialization();
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "PrepareSerialization");
+                // Prep a replication record for send, at this point, everything needs to be sent
+                for (EntityReplicator* replicator : toSendList)
+                {
+                    replicator->GetPropertyPublisher()->PrepareSerialization();
+                }
             }
 
-            // While our to send list is not empty, build up another packet to send
-            do
             {
-                SendEntityUpdateMessages(toSendList);
-            } while (!toSendList.empty());
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "SendEntityUpdateMessages");
+                // While our to send list is not empty, build up another packet to send
+                do
+                {
+                    SendEntityUpdateMessages(toSendList);
+                } while (!toSendList.empty());
+            }
         }
 
         SendEntityRpcs(m_deferredRpcMessagesReliable, true);
@@ -163,6 +174,8 @@ namespace Multiplayer
         {
             return EntityReplicatorList();
         }
+                
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "GenerateEntityUpdateList");
 
         // Generate a list of all our entities that need updates
         EntityReplicatorList toSendList;
