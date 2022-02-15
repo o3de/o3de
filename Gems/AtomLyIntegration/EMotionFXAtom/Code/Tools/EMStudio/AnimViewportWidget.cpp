@@ -73,8 +73,7 @@ namespace EMStudio
         {
             return 3.0f;
         };
-
-        m_dollyScrollCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
+        m_lookScrollCamera = AZStd::make_shared<AzFramework::LookScrollTranslationCameraInput>();
 
         m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(EMStudio::ViewportUtil::OrbitCameraInputChannelId());
         m_orbitCamera->SetPivotFn(
@@ -87,7 +86,9 @@ namespace EMStudio
                 return m_defaultOrbitPoint;
             });
         m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::OrbitLookCameraInputChannelId());
+        m_orbitDollyScrollCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitRotateCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitDollyScrollCamera);
     }
 
     void AnimViewportWidget::SetupCameraController()
@@ -135,7 +136,7 @@ namespace EMStudio
             {
                 cameras.AddCamera(m_rotateCamera);
                 cameras.AddCamera(m_translateCamera);
-                cameras.AddCamera(m_dollyScrollCamera);
+                cameras.AddCamera(m_lookScrollCamera);
                 cameras.AddCamera(m_orbitCamera);
             });
         GetControllerList()->Add(controller);
