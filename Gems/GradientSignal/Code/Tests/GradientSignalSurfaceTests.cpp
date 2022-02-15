@@ -108,12 +108,13 @@ namespace UnitTest
             EXPECT_TRUE(modifierHandle != SurfaceData::InvalidSurfaceDataRegistryHandle);
 
             // Call ModifySurfacePoints and verify the results
-            SurfaceData::SurfacePointList pointList = { { input } };
+            SurfaceData::SurfacePointList pointList;
+            pointList.StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&input, 1));
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
+            pointList.EndListConstruction();
             ASSERT_EQ(pointList.GetSize(), 1);
-            pointList.EnumeratePoints(
-                [this, expectedOutput](
-                    const AZ::Vector3& position, const AZ::Vector3& normal,
+            pointList.EnumeratePoints([this, expectedOutput](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal,
                     const SurfaceData::SurfaceTagWeights& masks)
                 {
                     EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));

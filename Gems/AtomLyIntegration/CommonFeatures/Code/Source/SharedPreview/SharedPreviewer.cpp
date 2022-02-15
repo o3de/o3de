@@ -11,7 +11,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <SharedPreview/SharedPreviewUtils.h>
 #include <SharedPreview/SharedPreviewer.h>
 
@@ -51,7 +50,7 @@ namespace AZ
             using namespace AzToolsFramework::Thumbnailer;
 
             auto thumbnailKey = entry->GetThumbnailKey();
-            m_ui->m_previewWidget->SetThumbnailKey(thumbnailKey, ThumbnailContext::DefaultContext);
+            m_ui->m_previewWidget->SetThumbnailKey(thumbnailKey);
             m_fileInfo = QString::fromUtf8(entry->GetName().c_str());
             UpdateFileInfo();
         }

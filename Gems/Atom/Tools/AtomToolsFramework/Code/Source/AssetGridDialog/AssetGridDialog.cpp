@@ -13,7 +13,6 @@
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
@@ -105,9 +104,7 @@ namespace AtomToolsFramework
 
         AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(itemWidget);
         thumbnail->setFixedSize(m_tileSize);
-        thumbnail->SetThumbnailKey(
-            MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, selectableAsset.m_assetId),
-            AzToolsFramework::Thumbnailer::ThumbnailContext::DefaultContext);
+        thumbnail->SetThumbnailKey(MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, selectableAsset.m_assetId));
         thumbnail->updateGeometry();
         itemWidget->layout()->addWidget(thumbnail);
 

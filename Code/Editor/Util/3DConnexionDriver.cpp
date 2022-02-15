@@ -116,9 +116,6 @@ bool C3DConnexionDriver::GetInputMessageData(LPARAM lParam, S3DConnexionMessage&
     {
         if (event->header.dwType == RIM_TYPEHID)
         {
-            static bool bGotTranslation = false,
-                        bGotRotation    = false;
-            static int all6DOFs[6] = {0};
             LPRAWHID pRawHid = &event->data.hid;
 
             // Translation or Rotation packet?  They come in two different packets.
