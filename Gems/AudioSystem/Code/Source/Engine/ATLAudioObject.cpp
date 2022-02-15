@@ -906,7 +906,7 @@ namespace Audio
                     debugDisplay.DrawWireSphere(rayEnd, hitSphereRadius);
                 }
 
-                debugDisplay.DrawLine(rayInfo.m_raycastRequest.m_start, rayEnd, (AZ::Vector4)freeRayColor, (AZ::Vector4)rayColor);
+                debugDisplay.DrawLine(rayInfo.m_raycastRequest.m_start, rayEnd, freeRayColor.GetAsVector4(), rayColor.GetAsVector4());
             }
 
             if (drawLabels)

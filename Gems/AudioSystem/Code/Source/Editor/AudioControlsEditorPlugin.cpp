@@ -29,9 +29,8 @@ using namespace AudioControls;
 CATLControlsModel CAudioControlsEditorPlugin::ms_ATLModel;
 QATLTreeModel CAudioControlsEditorPlugin::ms_layoutModel;
 FilepathSet CAudioControlsEditorPlugin::ms_currentFilenames;
-Audio::IAudioProxy* CAudioControlsEditorPlugin::ms_pIAudioProxy = nullptr;
-Audio::TAudioControlID CAudioControlsEditorPlugin::ms_nAudioTriggerID = INVALID_AUDIO_CONTROL_ID;
 CImplementationManager CAudioControlsEditorPlugin::ms_implementationManager;
+Audio::TAudioControlID CAudioControlsEditorPlugin::ms_audioTriggerId = INVALID_AUDIO_CONTROL_ID;
 
 //-----------------------------------------------------------------------------------------------//
 CAudioControlsEditorPlugin::CAudioControlsEditorPlugin(IEditor* editor)
@@ -40,17 +39,9 @@ CAudioControlsEditorPlugin::CAudioControlsEditorPlugin(IEditor* editor)
     options.canHaveMultipleInstances = true;
     RegisterQtViewPane<CAudioControlsEditorWindow>(editor, LyViewPane::AudioControlsEditor, LyViewPane::CategoryOther, options);
 
-    ms_pIAudioProxy = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioProxy();
-    if (ms_pIAudioProxy)
-    {
-        ms_pIAudioProxy->Initialize("AudioControlsEditor-Preview");
-        ms_pIAudioProxy->SetObstructionCalcType(Audio::ObstructionType::Ignore);
-    }
-
     ms_implementationManager.LoadImplementation();
     ReloadModels();
     ms_layoutModel.Initialize(&ms_ATLModel);
-    GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
 }
 
 //-----------------------------------------------------------------------------------------------//
@@ -67,12 +58,6 @@ void CAudioControlsEditorPlugin::Release()
     CUndoSuspend suspendUndo;
     ms_ATLModel.ClearAllConnections();
     ms_implementationManager.Release();
-    if (ms_pIAudioProxy)
-    {
-        StopTriggerExecution();
-        ms_pIAudioProxy->Release();
-    }
-    GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
 }
 
 //-----------------------------------------------------------------------------------------------//
@@ -139,7 +124,7 @@ QATLTreeModel* CAudioControlsEditorPlugin::GetControlsTree()
 //-----------------------------------------------------------------------------------------------//
 void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTriggerName)
 {
-    if (!sTriggerName.empty() && ms_pIAudioProxy)
+    if (!sTriggerName.empty())
     {
         auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
         if (!audioSystem)
@@ -148,24 +133,12 @@ void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTrigge
         }
 
         StopTriggerExecution();
-        if (ms_nAudioTriggerID = audioSystem->GetAudioTriggerID(sTriggerName.data());
-            ms_nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
+        if (ms_audioTriggerId = audioSystem->GetAudioTriggerID(sTriggerName.data());
+            ms_audioTriggerId != INVALID_AUDIO_CONTROL_ID)
         {
-            AZ::Transform activeCameraTm = AZ::Transform::CreateIdentity();
-            Camera::ActiveCameraRequestBus::BroadcastResult(
-                activeCameraTm,
-                &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform
-            );
-            const AZ::Matrix3x4 cameraMatrix = AZ::Matrix3x4::CreateFromTransform(activeCameraTm);
-
-            Audio::ListenerRequest::SetWorldTransform setListenerTransform;
-            setListenerTransform.m_transform = cameraMatrix;
-            setListenerTransform.m_transform.NormalizeForwardVec();
-            setListenerTransform.m_transform.NormalizeUpVec();
-            audioSystem->PushRequest(AZStd::move(setListenerTransform));
-
-            ms_pIAudioProxy->SetPosition(cameraMatrix);
-            ms_pIAudioProxy->ExecuteTrigger(ms_nAudioTriggerID);
+            Audio::ObjectRequest::ExecuteTrigger execTrigger;
+            execTrigger.m_triggerId = ms_audioTriggerId;
+            audioSystem->PushRequest(AZStd::move(execTrigger));
         }
     }
 }
@@ -173,23 +146,16 @@ void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTrigge
 //-----------------------------------------------------------------------------------------------//
 void CAudioControlsEditorPlugin::StopTriggerExecution()
 {
-    if (ms_pIAudioProxy && ms_nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
+    if (ms_audioTriggerId != INVALID_AUDIO_CONTROL_ID)
     {
-        ms_pIAudioProxy->StopTrigger(ms_nAudioTriggerID);
-        ms_nAudioTriggerID = INVALID_AUDIO_CONTROL_ID;
-    }
-}
-
-//-----------------------------------------------------------------------------------------------//
-void CAudioControlsEditorPlugin::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
-{
-    switch (event)
-    {
-    case ESYSTEM_EVENT_AUDIO_IMPLEMENTATION_LOADED:
-        GetIEditor()->SuspendUndo();
-        ms_implementationManager.LoadImplementation();
-        GetIEditor()->ResumeUndo();
-        break;
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+            audioSystem != nullptr)
+        {
+            Audio::ObjectRequest::StopTrigger stopTrigger;
+            stopTrigger.m_triggerId = ms_audioTriggerId;
+            audioSystem->PushRequest(AZStd::move(stopTrigger));
+            ms_audioTriggerId = INVALID_AUDIO_CONTROL_ID;
+        }
     }
 }
 
