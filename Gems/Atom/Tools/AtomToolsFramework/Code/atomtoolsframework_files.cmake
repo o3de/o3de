@@ -95,6 +95,8 @@ set(FILES
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h
     Source/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.cpp
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/IdleBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h
     Source/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.cpp
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h
     Source/Viewport/ViewportInputBehaviorController/PanCameraBehavior.cpp
