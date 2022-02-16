@@ -494,12 +494,12 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Connect& packet
     )
     {
-        AzFramework::PlayerConnectionConfig config;
+        PlayerConnectionConfig config;
         config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
         config.m_playerSessionId = packet.GetTicket();
 
         // Validate our session with the provider if any
-        AzFramework::ISessionHandlingProviderRequests* sessionRequests = AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get();
+        ISessionHandlingProviderRequests* sessionRequests = AZ::Interface<ISessionHandlingProviderRequests>::Get();
         if (sessionRequests != nullptr)
         {
             if (!sessionRequests->ValidatePlayerJoinSession(config))
@@ -821,7 +821,7 @@ namespace Multiplayer
                     AZLOG_ERROR("No IMultiplayerSpawner found OnPlayerDisconnect. Ensure one is registered.");
                 }
 
-                if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+                if (AZ::Interface<ISessionHandlingProviderRequests>::Get() != nullptr)
                 {
                     PlayerConnectionConfig config;
                     config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
