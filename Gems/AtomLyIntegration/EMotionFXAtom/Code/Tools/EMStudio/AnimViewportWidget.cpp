@@ -19,9 +19,6 @@
 #include <EMStudio/AnimViewportWidget.h>
 #include <EMStudio/AtomRenderPlugin.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace EMStudio
 {
     AnimViewportWidget::AnimViewportWidget(AtomRenderPlugin* parentPlugin)
@@ -260,6 +257,3 @@ namespace EMStudio
         return GetViewportContext()->GetId();
     }
 } // namespace EMStudio
-
-#pragma optimize("", on)
-#pragma inline_depth()

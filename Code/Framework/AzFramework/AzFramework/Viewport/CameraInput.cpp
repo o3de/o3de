@@ -15,9 +15,6 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzFramework
 {
     AZ_CVAR(
@@ -1009,6 +1006,3 @@ namespace AzFramework
         return AZStd::monostate{};
     }
 } // namespace AzFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()
