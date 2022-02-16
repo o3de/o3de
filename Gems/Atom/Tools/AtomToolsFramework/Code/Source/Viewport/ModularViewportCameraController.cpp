@@ -294,14 +294,15 @@ namespace AtomToolsFramework
         m_targetCamera.m_offset = offset;
     }
 
-    void ModularViewportCameraControllerInstance::AddCamera(AZStd::shared_ptr<AzFramework::CameraInput> cameraInput)
+    bool ModularViewportCameraControllerInstance::AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
     {
-        m_cameraSystem.m_cameras.AddCamera(cameraInput);
+        return m_cameraSystem.m_cameras.AddCameras(cameraInputs);
     }
 
-    bool ModularViewportCameraControllerInstance::RemoveCamera(const AZStd::shared_ptr<AzFramework::CameraInput>& cameraInput)
+    bool ModularViewportCameraControllerInstance::RemoveCameras(
+        const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
     {
-        return m_cameraSystem.m_cameras.RemoveCamera(cameraInput);
+        return m_cameraSystem.m_cameras.RemoveCameras(cameraInputs);
     }
 
     bool ModularViewportCameraControllerInstance::IsInterpolating() const

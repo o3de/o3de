@@ -193,14 +193,33 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void Cameras::AddCamera(AZStd::shared_ptr<CameraInput> cameraInput)
+    bool Cameras::AddCamera(AZStd::shared_ptr<CameraInput> cameraInput)
     {
-        m_idleCameraInputs.push_back(AZStd::move(cameraInput));
+        const auto idleCameraIt = AZStd::find(m_idleCameraInputs.begin(), m_idleCameraInputs.end(), cameraInput);
+        const auto activeCameraIt = AZStd::find(m_activeCameraInputs.begin(), m_activeCameraInputs.end(), cameraInput);
+
+        if (idleCameraIt == m_idleCameraInputs.end() && activeCameraIt == m_activeCameraInputs.end())
+        {
+            m_idleCameraInputs.push_back(AZStd::move(cameraInput));
+            return true;
+        }
+
+        return false;
+    }
+
+    bool Cameras::AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
+    {
+        bool allAdded = true;
+        for (auto cameraInput : cameraInputs)
+        {
+            allAdded = AddCamera(AZStd::move(cameraInput)) && allAdded;
+        }
+        return allAdded;
     }
 
     bool Cameras::RemoveCamera(const AZStd::shared_ptr<CameraInput>& cameraInput)
     {
-        if (auto idleCameraIt = AZStd::find(m_idleCameraInputs.begin(), m_idleCameraInputs.end(), cameraInput);
+        if (const auto idleCameraIt = AZStd::find(m_idleCameraInputs.begin(), m_idleCameraInputs.end(), cameraInput);
             idleCameraIt != m_idleCameraInputs.end())
         {
             const auto idleIndex = idleCameraIt - m_idleCameraInputs.begin();
@@ -211,7 +230,7 @@ namespace AzFramework
             return true;
         }
 
-        if (auto activeCameraIt = AZStd::find(m_activeCameraInputs.begin(), m_activeCameraInputs.end(), cameraInput);
+        if (const auto activeCameraIt = AZStd::find(m_activeCameraInputs.begin(), m_activeCameraInputs.end(), cameraInput);
             activeCameraIt != m_activeCameraInputs.end())
         {
             (*activeCameraIt)->Reset();
@@ -225,6 +244,16 @@ namespace AzFramework
         }
 
         return false;
+    }
+
+    bool Cameras::RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
+    {
+        bool allRemoved = true;
+        for (const auto& cameraInput : cameraInputs)
+        {
+            allRemoved = RemoveCamera(cameraInput) && allRemoved;
+        }
+        return allRemoved;
     }
 
     bool Cameras::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)

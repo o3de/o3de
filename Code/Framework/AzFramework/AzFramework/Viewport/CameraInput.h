@@ -289,9 +289,13 @@ namespace AzFramework
 
         //! Add a camera input (behavior) to run in this set of camera inputs.
         //! The camera inputs added here will determine the overall behavior of the camera.
-        void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
-        //! 
+        bool AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
+        //! Add a collection of camera inputs (behaviors) to run in this set of camera inputs.
+        bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs);
+        //! Remove a camera input (behavior) to stop it running in the set of camera inputs.
         bool RemoveCamera(const AZStd::shared_ptr<CameraInput>& cameraInput);
+        //! Remove a collection of camera inputs (behaviors) to stop them running in the set of camera inputs.
+        bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs);
         //! Reset the state of all cameras.
         void Reset();
         //! Remove all cameras that were added.

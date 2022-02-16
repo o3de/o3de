@@ -121,8 +121,8 @@ namespace AtomToolsFramework
         void SetCameraPivotAttached(const AZ::Vector3& pivot) override;
         void SetCameraPivotDetached(const AZ::Vector3& pivot) override;
         void SetCameraOffset(const AZ::Vector3& offset) override;
-        void AddCamera(AZStd::shared_ptr<AzFramework::CameraInput> cameraInput) override;
-        bool RemoveCamera(const AZStd::shared_ptr<AzFramework::CameraInput>& cameraInput) override;
+        bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
+        bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
 
     private:
         //! Combine the current camera transform with any potential roll from the tracked

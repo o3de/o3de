@@ -121,12 +121,12 @@ namespace EMStudio
                 };
             });
 
-        //controller->SetCameraListBuilderCallback(
-        //    [this](AzFramework::Cameras& cameras)
-        //    {
-        //        //cameras.AddCamera(m_lookRotateCamera);
-        //        //cameras.AddCamera(m_lookTranslateCamera);
-        //    });
+        controller->SetCameraListBuilderCallback(
+            [this](AzFramework::Cameras& cameras)
+            {
+                cameras.AddCamera(m_lookRotateCamera);
+                cameras.AddCamera(m_lookTranslateCamera);
+            });
 
         GetControllerList()->Add(controller);
     }
@@ -175,16 +175,12 @@ namespace EMStudio
         if (followUp)
         {
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCamera, m_lookRotateCamera);
-            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCamera,
-                m_lookTranslateCamera);
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCameras,
+                AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_lookRotateCamera, m_lookTranslateCamera });
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCamera, m_orbitRotateCamera);
-            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCamera,
-                m_orbitDollyScrollCamera);
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCameras,
+                AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_orbitRotateCamera, m_orbitDollyScrollCamera });
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
@@ -193,16 +189,12 @@ namespace EMStudio
         else
         {
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCamera, m_orbitRotateCamera);
-            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCamera,
-                m_orbitDollyScrollCamera);
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCameras,
+                AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_orbitRotateCamera, m_orbitDollyScrollCamera });
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCamera, m_lookRotateCamera);
-            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCamera,
-                m_lookTranslateCamera);
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCameras,
+                AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_lookRotateCamera, m_lookTranslateCamera });
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
