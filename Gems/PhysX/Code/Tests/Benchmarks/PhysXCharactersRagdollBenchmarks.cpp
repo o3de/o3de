@@ -198,7 +198,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(RagdollConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
@@ -264,7 +264,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(RagdollConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {

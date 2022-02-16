@@ -21,6 +21,7 @@ namespace UnitTest
     {
     public:
         void AddGemsAndComponents() override;
+        void PostCreateApplication() override;
     };
 
 #ifdef HAVE_BENCHMARK
@@ -90,7 +91,7 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceMaskGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceSlopeGradient(float shapeHalfBounds);
 
-        AZ::RPI::AssetHandlerPtrList m_assetHandlers;
+        AZStd::fixed_vector<AZStd::unique_ptr<AZ::Data::AssetHandler>, 2> m_assetHandlers;
     };
 
     struct GradientSignalTest

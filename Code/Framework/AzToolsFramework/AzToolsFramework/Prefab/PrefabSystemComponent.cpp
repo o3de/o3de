@@ -319,7 +319,7 @@ namespace AzToolsFramework
             }
 
             auto newInstance = AZStd::make_unique<Instance>(parent);
-            Instance::EntityList newEntities;
+            EntityList newEntities;
             if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom()))
             {
                 AZ_Error("Prefab", false,

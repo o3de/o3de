@@ -96,7 +96,7 @@ namespace EMStudio
         virtual void LegacyRender(RenderPlugin* renderPlugin, RenderInfo* renderInfo)             { MCORE_UNUSED(renderPlugin); MCORE_UNUSED(renderInfo); }
 
         //! Render function will call atom auxGeom internally to render. This is the replacement for LegacyRender function.
-        virtual void Render(EMotionFX::ActorRenderFlagBitset renderFlags)
+        virtual void Render(EMotionFX::ActorRenderFlags renderFlags)
         {
             AZ_UNUSED(renderFlags);
         };
