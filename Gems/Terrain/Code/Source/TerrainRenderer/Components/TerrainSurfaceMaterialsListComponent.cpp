@@ -361,7 +361,7 @@ namespace Terrain
             TerrainAreaMaterialNotificationBus::Broadcast(
                 &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingRegionDestroyed, GetEntityId(), oldAabb);
         }
-        else
+        else if (m_cachedAabb.IsValid() && oldAabb.IsValid())
         {
             TerrainAreaMaterialNotificationBus::Broadcast(
                 &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingRegionChanged, GetEntityId(), oldAabb,
