@@ -12,6 +12,7 @@
 #include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
@@ -97,7 +98,6 @@ namespace AzToolsFramework
         , private AzFramework::SliceEntityRequestBus::MultiHandler
     {
     public:
-        using EntityList = AzFramework::EntityList;
         using OnEntitiesAddedCallback = AzFramework::OnEntitiesAddedCallback;
         using OnEntitiesRemovedCallback = AzFramework::OnEntitiesRemovedCallback;
         using ValidateEntitiesCallback = AzFramework::ValidateEntitiesCallback;

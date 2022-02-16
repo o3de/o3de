@@ -76,6 +76,7 @@ set(FILES
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Settings/CommandLineTests.cpp
+    Settings/ConfigurableStackTests.cpp
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
     Settings/SettingsRegistryMergeUtilsTests.cpp
