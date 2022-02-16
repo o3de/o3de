@@ -146,27 +146,40 @@ namespace Terrain
     void TerrainSurfaceDataSystemComponent::GetSurfacePoints(
         const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const
     {
+        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
+    }
+
+    void TerrainSurfaceDataSystemComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, SurfaceData::SurfacePointList& surfacePointList) const
+    {
         if (!m_terrainBoundsIsValid)
         {
             return;
         }
 
-        bool isTerrainValidAtPoint = false;
-        AzFramework::SurfaceData::SurfacePoint terrainSurfacePoint;
-        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePoint,
-            inPosition, terrainSurfacePoint, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
-            &isTerrainValidAtPoint);
+        size_t inPositionIndex = 0;
 
-        const bool isHole = !isTerrainValidAtPoint;
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequestBus::Events::ProcessSurfacePointsFromList, inPositions,
+            [this, inPositions, &inPositionIndex, &surfacePointList]
+                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                AZ_Assert(inPositionIndex < inPositions.size(), "Too many points returned from ProcessSurfacePointsFromList");
 
-        SurfaceData::SurfaceTagWeights weights(terrainSurfacePoint.m_surfaceTags);
+                SurfaceData::SurfaceTagWeights weights(surfacePoint.m_surfaceTags);
 
-        // Always add a "terrain" or "terrainHole" tag.
-        const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
-        weights.AddSurfaceTagWeight(terrainTag, 1.0f);
+                // Always add a "terrain" or "terrainHole" tag.
+                const AZ::Crc32 terrainTag = terrainExists ? Constants::s_terrainTagCrc : Constants::s_terrainHoleTagCrc;
+                weights.AddSurfaceTagWeight(terrainTag, 1.0f);
 
-        surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, terrainSurfacePoint.m_position, terrainSurfacePoint.m_normal, weights);
+                surfacePointList.AddSurfacePoint(
+                    GetEntityId(), inPositions[inPositionIndex], surfacePoint.m_position, surfacePoint.m_normal, weights);
+
+                inPositionIndex++;
+            },
+            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
     }
+
 
     AZ::Aabb TerrainSurfaceDataSystemComponent::GetSurfaceAabb() const
     {
