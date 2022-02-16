@@ -121,7 +121,7 @@ namespace AZ
                         SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
                         AttachmentComponent::CreateDescriptor(),
                         OcclusionCullingPlaneComponent::CreateDescriptor(),
-						ChromaticAberrationComponent::CreateDescriptor(),
+                        ChromaticAberrationComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
                         EditorAreaLightComponent::CreateDescriptor(),
@@ -156,7 +156,7 @@ namespace AZ
                         SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
                         EditorAttachmentComponent::CreateDescriptor(),
                         EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
-						EditorChromaticAberrationComponent::CreateDescriptor(),
+                        EditorChromaticAberrationComponent::CreateDescriptor(),
 #endif
                     });
             }

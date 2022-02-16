@@ -27,4 +27,3 @@ POST_PROCESS_MEMBER(LookModificationSettings, m_lookModificationSettings)
 POST_PROCESS_MEMBER(DeferredFogSettings, m_deferredFogSettings)
 POST_PROCESS_MEMBER(HDRColorGradingSettings, m_hdrColorGradingSettings)
 POST_PROCESS_MEMBER(ChromaticAberrationSettings, m_chromaticAberrationSettings)
-

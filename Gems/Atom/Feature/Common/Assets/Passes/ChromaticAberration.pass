@@ -45,19 +45,19 @@
                     }
                 }
             ],
+            "FallbackConnections": [
+                {
+                    "Input": "Input",
+                    "Output": "Output"
+                }
+            ],
             "PassData": {
                 "$type": "ComputePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/ChromaticAberration.shader"
                 },
                 "Make Fullscreen Pass": true
-            },
-            "FallbackConnections": [
-                {
-                    "Input": "Input",
-                    "Output": "Output"
-                }
-            ]
+            }
         }
     }
 }

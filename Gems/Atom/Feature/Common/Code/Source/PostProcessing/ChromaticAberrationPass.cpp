@@ -41,17 +41,17 @@ namespace AZ
             const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
             if (!fp)
             {
-                return true;
+                return false;
             }
             PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
             if (!postProcessSettings)
             {
-                return true;
+                return false;
             }
             const ChromaticAberrationSettings* chromaticAberrationSettings = postProcessSettings->GetChromaticAberrationSettings();
             if (!chromaticAberrationSettings)
             {
-                return true;
+                return false;
             }
             return chromaticAberrationSettings->GetEnabled();
         }
@@ -65,7 +65,6 @@ namespace AZ
                 AZStd::array<float, 2> m_outputCenter;
                 float m_strength = ChromaticAberration::DefaultStrength;
                 float m_blend = ChromaticAberration::DefaultBlend;
-                float m_blendRemainder = 1 - m_blend;
             } constants{};
 
             RPI::Scene* scene = GetScene();
@@ -81,7 +80,6 @@ namespace AZ
                     {
                         constants.m_strength = chromaticAberrationSettings->GetStrength();
                         constants.m_blend = chromaticAberrationSettings->GetBlend();
-                        constants.m_blendRemainder = 1 - constants.m_blend;
                     }
                 }
             }

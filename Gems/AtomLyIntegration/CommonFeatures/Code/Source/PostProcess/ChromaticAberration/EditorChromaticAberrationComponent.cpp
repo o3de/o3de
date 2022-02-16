@@ -19,7 +19,7 @@ namespace AZ
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<EditorChromaticAberrationComponent, BaseClass>()->Version(1);
+                serializeContext->Class<EditorChromaticAberrationComponent, BaseClass>()->Version(0);
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
@@ -56,7 +56,7 @@ namespace AZ
                         ->Attribute(Edit::Attributes::ReadOnly, &ChromaticAberrationComponentConfig::ArePropertiesReadOnly)
 
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Slider, &ChromaticAberrationComponentConfig::m_blend, "Blend", "Blend with original image")
+                            AZ::Edit::UIHandlers::Slider, &ChromaticAberrationComponentConfig::m_blend, "Blend", "Factor for additive blending with original image")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)

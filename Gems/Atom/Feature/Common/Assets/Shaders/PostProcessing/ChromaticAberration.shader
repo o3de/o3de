@@ -1,7 +1,10 @@
 {
     "Source": "ChromaticAberration.azsl",
-    "ProgramSettings": {
-        "EntryPoints": [
+
+    "ProgramSettings": 
+    {
+        "EntryPoints": 
+        [
             {
                 "name": "MainCS",
                 "type": "Compute"
