@@ -144,22 +144,46 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
+        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
+    }
+
+    void SurfaceDataShapeComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
+    {
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
-        if (m_shapeBoundsIsValid && SurfaceData::AabbContains2D(m_shapeBounds, inPosition))
+        if (!m_shapeBoundsIsValid)
         {
-            const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_shapeBounds.GetMax().GetZ());
-            const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
-            float intersectionDistance = 0.0f;
-            bool hitShape = false;
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(hitShape, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, rayOrigin, rayDirection, intersectionDistance);
-            if (hitShape)
-            {
-                AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
-                surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, position, AZ::Vector3::CreateAxisZ(), m_newPointWeights);
-            }
+            return;
         }
+
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            GetEntityId(),
+            [this, inPositions, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
+            {
+                const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
+
+                // Shapes don't currently have a way to query normals at a point intersection, so we'll just return a Z-up normal
+                // until they get support for it.
+                const AZ::Vector3 surfacePointNormal = AZ::Vector3::CreateAxisZ();
+
+                for (auto& inPosition : inPositions)
+                {
+                    if (SurfaceData::AabbContains2D(m_shapeBounds, inPosition))
+                    {
+                        const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_shapeBounds.GetMax().GetZ());
+                        float intersectionDistance = 0.0f;
+                        bool hitShape = shape->IntersectRay(rayOrigin, rayDirection, intersectionDistance);
+                        if (hitShape)
+                        {
+                            AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
+                            surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, position, surfacePointNormal, m_newPointWeights);
+                        }
+                    }
+                }
+            });
     }
+
 
     void SurfaceDataShapeComponent::ModifySurfacePoints(
         AZStd::span<const AZ::Vector3> positions,
