@@ -32,7 +32,7 @@ namespace MaterialCanvas
         MaterialCanvasInspector(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~MaterialCanvasInspector() override;
 
-        // AtomToolsFramework::InspectorRequestBus::Handler overrides...
+        // AtomToolsFramework::InspectorWidget overrides...
         void Reset() override;
 
     protected:

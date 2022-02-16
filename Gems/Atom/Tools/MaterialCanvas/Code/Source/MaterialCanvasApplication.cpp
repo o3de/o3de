@@ -65,16 +65,8 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::Reflect(AZ::ReflectContext* context)
     {
         Base::Reflect(context);
+        MaterialCanvasDocument::Reflect(context);
         MaterialCanvasMainWindowSettings::Reflect(context);
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<MaterialCanvasDocumentRequestBus>("MaterialCanvasDocumentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "materialcanvas")
-                ;
-        }
     }
 
     void MaterialCanvasApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)

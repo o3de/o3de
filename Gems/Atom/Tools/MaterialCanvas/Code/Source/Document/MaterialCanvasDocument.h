@@ -20,10 +20,13 @@ namespace MaterialCanvas
         , public MaterialCanvasDocumentRequestBus::Handler
     {
     public:
-        AZ_RTTI(MaterialCanvasDocument, "{628858AB-4FE0-4284-BF40-BB38E7374F93}");
+        AZ_RTTI(MaterialCanvasDocument, "{3C87BBF0-912B-43D0-9A86-E2A0CE85F04F}", AtomToolsFramework::AtomToolsDocument);
         AZ_CLASS_ALLOCATOR(MaterialCanvasDocument, AZ::SystemAllocator, 0);
         AZ_DISABLE_COPY_MOVE(MaterialCanvasDocument);
 
+        static void Reflect(AZ::ReflectContext* context);
+
+        MaterialCanvasDocument() = default;
         MaterialCanvasDocument(const AZ::Crc32& toolId);
         virtual ~MaterialCanvasDocument();
     };

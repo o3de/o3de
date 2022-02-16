@@ -28,7 +28,6 @@ namespace MaterialCanvas
     MaterialCanvasInspector::~MaterialCanvasInspector()
     {
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
-        AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
     }
 
     void MaterialCanvasInspector::Reset()
@@ -37,7 +36,6 @@ namespace MaterialCanvas
         m_documentId = AZ::Uuid::CreateNull();
         m_activeProperty = {};
 
-        AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
     }
 
@@ -89,8 +87,6 @@ namespace MaterialCanvas
                 AddGroup(objectInfo.m_name, objectInfo.m_displayName, objectInfo.m_description, propertyGroupWidget);
                 SetGroupVisible(objectInfo.m_name, objectInfo.m_visible);
             }
-
-            AtomToolsFramework::InspectorRequestBus::Handler::BusConnect(m_documentId);
         }
 
         AddGroupsEnd();
@@ -103,7 +99,7 @@ namespace MaterialCanvas
 
     bool MaterialCanvasInspector::IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const
     {
-        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(node);
+        const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
         return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
     }
 
@@ -134,7 +130,7 @@ namespace MaterialCanvas
     {
         // This function is called before every single property change whether it's a button click or dragging a slider. We only want to
         // begin tracking undo state for the first change in the sequence, when the user begins to drag the slider.
-        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
+        const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
         if (!m_activeProperty && property)
         {
             m_activeProperty = property;
@@ -146,7 +142,7 @@ namespace MaterialCanvas
     void MaterialCanvasInspector::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
     {
         // If tracking has started and editing has completed then we can stop tracking undue state for this sequence of changes.
-        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
+        const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
         if (m_activeProperty && m_activeProperty == property)
         {
             AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
