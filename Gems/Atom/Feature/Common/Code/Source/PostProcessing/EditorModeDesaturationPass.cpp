@@ -65,5 +65,5 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmoun
 
             m_shaderResourceGroup->SetConstant(m_desaturationAmountIndex, m_desaturationAmount);
         }
-    }
-}
+    } // namespace Render
+} // namespace AZ

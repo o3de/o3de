@@ -75,5 +75,5 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Col
             m_shaderResourceGroup->SetConstant(m_lineThicknessIndex, m_lineThickness);
             m_shaderResourceGroup->SetConstant(m_lineColorIndex, m_lineColor);
         }
-    }
-}
+    } // namespace Render
+} // namespace AZ

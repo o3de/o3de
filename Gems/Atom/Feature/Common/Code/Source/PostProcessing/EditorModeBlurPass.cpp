@@ -65,5 +65,5 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernalWidth, 5.0f);
 
             m_shaderResourceGroup->SetConstant(m_kernalWidthIndex, m_kernalWidth);
         }
-    }
-}
+    } // namespace Render
+} // namespace AZ
