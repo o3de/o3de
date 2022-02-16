@@ -222,6 +222,8 @@ class O3deTools(Panel):
         row = layout.row()
         # Look at the o3de Engine Manifest
         o3de_projects, engine_is_installed = o3de_utils.LookatEngineManifest()
+        # Validate a selection
+        valid_selection, selected_name = utils.check_selected()
 
         if engine_is_installed: # Checks to see if O3DE is installed
 
@@ -229,9 +231,9 @@ class O3deTools(Panel):
 
             installed_lable = layout.row()
             if not obj is None:
-                installed_lable.label(text=f'MESH(S): {obj.name}')
+                installed_lable.label(text=f'OBJECTS({len(selected_name)}): {obj.name}')
             else:
-                installed_lable.label(text='MESH(S): None')
+                installed_lable.label(text='OBJECTS: None')
 
             file_name_lable = layout.row()
             file_name_lable.label(text='Export File Name')
