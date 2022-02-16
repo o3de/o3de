@@ -11,6 +11,29 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 
+//! Returns the dimensions of the specified 2D image.
+float2 GetImageSize(Texture2D<float4> image)
+{
+    float2 size = float2(0., 0.);
+    image.GetDimensions(size.x, size.y);
+    return size;
+}
+
+//! Returns the linear depth value of the specified non-linear depth value.
+float CalculateLinearDepth(const float zDepth)
+{
+    return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
+}
+
+//! Returns the calculated color after blending original framebuffer color with the calculated feedback effect.
+float4 CalculateOutputColor(const float3 inColor, const float3 finalEffect, const float t)
+{
+    float4 outColor;
+    outColor.rgb = lerp(inColor, finalEffect, t);
+    outColor.a = 1.0;
+    return outColor;
+}
+
 partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     //! The color buffer to apply the editor mode feedback effects to.
@@ -45,39 +68,16 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressW = Clamp;
     };
 
-    //! Returns the dimensions of the specified 2D image.
-    float2 GetImageSize(Texture2D<float4> image)
-    {
-        float3 size = float3(0., 0., 0.);
-        image.GetDimensions(size.x, size.y);
-        return size;
-    }
-
-    //! Returns the linear depth value of the specified non-linear depth value.
-    float CalculateLinearDepth(const float zDepth)
-    {
-        return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
-    }
-
     //! Returns the final blend amount after the final blend amount scale is applied.
     float CalculateFinalBlendAmount(const float t)
     {
         // Apply the final blend amount modifier
-        return lerp(0.0, t, m_finalBlendAmount);
-    }
-
-    //! Returns the calculated color after blending original framebuffer color with the calculated feedback effect.
-    float4 CalculateOutputColor(const float3 inColor, const float3 finalEffect, const float t)
-    {
-        float4 outColor;
-        outColor.rgb = lerp(inColor, finalEffect, t);
-        outColor.a = 1.0;
-        return outColor;
+        return lerp(0.0, t, PassSrg::m_finalBlendAmount);
     }
 
     //! Calculates the final blend anount and returns the blended output color.
     float4 CalculateFinalBlendAmountAndOutputColor(const float3 inColor, const float3 finalEffect, const float t)
     {
-        return CalculateOutputColor(inColor, finalEffect, CalculateFinalBlendAmount(t));
+        return CalculateOutputColor(inColor, finalEffect, PassSrg::CalculateFinalBlendAmount(t));
     }
 }
