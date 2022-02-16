@@ -76,6 +76,7 @@ set(FILES
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Settings/CommandLineTests.cpp
+    Settings/ConfigurableStackTests.cpp
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
     Settings/SettingsRegistryMergeUtilsTests.cpp
@@ -206,7 +207,9 @@ set(FILES
     AZStd/Optional.cpp
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
+    AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
+    AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp
     AZStd/SmartPtr.cpp

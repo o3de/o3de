@@ -29,7 +29,7 @@ namespace AZ::Dom::Benchmark
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
             AZStd::string payloadCopy = serializedPayload;
@@ -53,7 +53,7 @@ namespace AZ::Dom::Benchmark
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
             AZStd::string payloadCopy = serializedPayload;
@@ -77,7 +77,7 @@ namespace AZ::Dom::Benchmark
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             auto result = AZ::Dom::Json::WriteToRapidJsonDocument(
                 [&](AZ::Dom::Visitor& visitor)
@@ -97,7 +97,7 @@ namespace AZ::Dom::Benchmark
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             auto result = AZ::Dom::Utils::WriteToValue(
                 [&](AZ::Dom::Visitor& visitor)
@@ -117,7 +117,7 @@ namespace AZ::Dom::Benchmark
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             auto result = AZ::JsonSerializationUtils::ReadJsonString(serializedPayload);
 
@@ -130,7 +130,7 @@ namespace AZ::Dom::Benchmark
 
     BENCHMARK_DEFINE_F(DomJsonBenchmark, RapidjsonMakeComplexObject)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             TakeAndDiscardWithoutTimingDtor(GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1)), state);
         }
@@ -152,7 +152,7 @@ namespace AZ::Dom::Benchmark
                 document.GetAllocator());
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const AZStd::string& key : keys)
             {
@@ -168,7 +168,7 @@ namespace AZ::Dom::Benchmark
     {
         rapidjson::Document original = GenerateDomJsonBenchmarkDocument(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             rapidjson::Document copy;
             copy.CopyFrom(original, copy.GetAllocator(), true);
@@ -184,7 +184,7 @@ namespace AZ::Dom::Benchmark
     {
         rapidjson::Document original = GenerateDomJsonBenchmarkDocument(state.range(0), state.range(1));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             rapidjson::Document copy;
             copy.CopyFrom(original, copy.GetAllocator(), true);

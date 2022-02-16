@@ -7,7 +7,7 @@
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "Default Project Template",
+    "display_name": "Default",
     "summary": "This is the project template that will be used if no project template is specified during project creation.",
     "canonical_tags": [
         "Template",
