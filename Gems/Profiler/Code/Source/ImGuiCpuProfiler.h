@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/Time/ITime.h>
 
 #include <imgui/imgui.h>
 
@@ -171,6 +172,7 @@ namespace Profiler
         //  --- Visualizer Members ---
 
         int m_updateFrequencyMs = DefaultUpdateFrequencyMs;
+        AZ::TimeMs m_currentUpdateTimeMs = AZ::TimeMs{ 0 };
 
         int m_framesToCollect = DefaultFramesToCollect;
 

@@ -24,7 +24,6 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/time.h>
-#include <AzCore/Time/ITime.h>
 
 namespace Profiler
 {
@@ -686,8 +685,8 @@ namespace Profiler
         // Get the latest TimeRegionMap
         const CpuProfiler::TimeRegionMap& timeRegionMap = CpuProfiler::Get()->GetTimeRegionMap();
 
-        m_viewportStartTick = AZStd::numeric_limits<AZ::s64>::max();
-        m_viewportEndTick = AZStd::numeric_limits<AZ::s64>::lowest();
+        AZ::s64 viewportStartTick = AZStd::numeric_limits<AZ::s64>::max();
+        AZ::s64 viewportEndTick = AZStd::numeric_limits<AZ::s64>::lowest();
 
         // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
         for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
@@ -732,8 +731,8 @@ namespace Profiler
                 });
 
             // Use the latest frame's data as the new bounds of the viewport
-            m_viewportStartTick = AZStd::min(newVisualizerData.front().m_startTick, m_viewportStartTick);
-            m_viewportEndTick = AZStd::max(newVisualizerData.back().m_endTick, m_viewportEndTick);
+            viewportStartTick = AZStd::min(newVisualizerData.front().m_startTick, viewportStartTick);
+            viewportEndTick = AZStd::max(newVisualizerData.back().m_endTick, viewportEndTick);
 
             m_savedRegionCount += newVisualizerData.size();
 
@@ -741,6 +740,16 @@ namespace Profiler
             AZStd::vector<TimeRegion>& savedDataVec = m_savedData[threadIdHashed];
             savedDataVec.insert(
                 savedDataVec.end(), AZStd::make_move_iterator(newVisualizerData.begin()), AZStd::make_move_iterator(newVisualizerData.end()));
+        }
+
+        // only update the viewport bounds at the specified frequency
+        m_currentUpdateTimeMs += AZ::TimeUsToMs(AZ::GetRealTickDeltaTimeUs());
+        if (m_currentUpdateTimeMs >= static_cast<AZ::TimeMs>(m_updateFrequencyMs))
+        {
+            m_currentUpdateTimeMs = AZ::TimeMs{ 0 };
+
+            m_viewportStartTick = viewportStartTick;
+            m_viewportEndTick = viewportEndTick;
         }
     }
 
