@@ -59,26 +59,26 @@ echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
 :::SET PATH=%PATH_DCCSI_PYTHON_LIB%;%PATH%
 
 :: shared location for default O3DE python location
-set PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\python
+IF "%PATH_O3DE_PYTHON_INSTALL%"=="" (set "PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\python")
 echo     PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
 
 :: location for O3DE python 3.7 location 
 :: Note, many DCC tools (like Maya) include thier own python interpretter
 :: Some DCC apps may not operate correctly if PYTHONHOME is set (this is definitely the case with Maya)
 :: Be aware the python.cmd below does set PYTHONHOME
-set "DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd"
+IF "%DCCSI_PY_BASE%"=="" (set "DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd")
 echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 
 :: will set O3DE_PYTHONHOME location
 CALL %PATH_O3DE_PYTHON_INSTALL%\get_python_path.bat
 
 :: ide and debugger plug
-IF "%DCCSI_PY_DEFAULT%"=="" (set "DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%")
+IF "%DCCSI_PY_DEFAULT%"=="" (set "DCCSI_PY_DEFAULT=%PATH_O3DE_PYTHON_INSTALL%\python.cmd")
 echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 
 :: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
 :: ide and debugger plug
-IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%DCCSI_PY_BASE%")
+IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe")
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 echo.

@@ -29,6 +29,8 @@ CALL %~dp0\Env_O3DE_Qt.bat
 :: that will change the paths assumed in this launcher (assume system install)
 :: vscode envars: https://code.visualstudio.com/docs/editor/variables-reference
 
+IF "%VSCODEHOME%"=="" (SET "VSCODEHOME=%ProgramFiles%\Microsoft VS Code\")
+
 IF "%VSCODE_WRKSPC%"=="" (SET "VSCODE_WRKSPC=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions\.vscode\dccsi.code-workspace")
 
 echo.
