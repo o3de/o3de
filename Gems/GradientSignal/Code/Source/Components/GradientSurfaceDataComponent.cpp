@@ -94,17 +94,23 @@ namespace GradientSignal
 
     void GradientSurfaceDataComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataModifierService", 0x68f8aa72));
+        services.push_back(AZ_CRC_CE("SurfaceDataModifierService"));
     }
 
     void GradientSurfaceDataComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataModifierService", 0x68f8aa72));
+        services.push_back(AZ_CRC_CE("SurfaceDataModifierService"));
     }
 
     void GradientSurfaceDataComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
+    }
+
+    void GradientSurfaceDataComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        // If there's a shape on this entity, start it before this component just in case it's the shape that we're using as our bounds.
+        services.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void GradientSurfaceDataComponent::Reflect(AZ::ReflectContext* context)
