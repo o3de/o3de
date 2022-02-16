@@ -191,6 +191,8 @@ namespace GradientSignal
 
             behaviorContext->EBus<ImageGradientRequestBus>("ImageGradientRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "vegetation")
                 ->Event("GetImageAssetPath", &ImageGradientRequestBus::Events::GetImageAssetPath)
                 ->Event("SetImageAssetPath", &ImageGradientRequestBus::Events::SetImageAssetPath)
                 ->VirtualProperty("ImageAssetPath", "GetImageAssetPath", "SetImageAssetPath")
@@ -378,9 +380,22 @@ namespace GradientSignal
     void ImageGradientComponent::SetImageAssetPath(const AZStd::string& assetPath)
     {
         AZ::Data::AssetId assetId;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, assetPath.c_str(), AZ::Data::s_invalidAssetType, false);
-        if (assetId.IsValid())
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, assetPath.c_str(), AZ::Data::s_invalidAssetType, false);
+        if (assetId.IsValid() || assetPath.empty())
         {
+            // If we were given a valid asset, then make sure it is the right type
+            if (assetId.IsValid())
+            {
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
+
+                if (assetInfo.m_assetType != azrtti_typeid<AZ::RPI::StreamingImageAsset>())
+                {
+                    AZ_Warning("GradientSignal", false, "Asset type for %s is not AZ::RPI::StreamingImageAsset, will be ignored", assetPath.c_str());
+                    return;
+                }
+            }
+
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
@@ -389,10 +404,18 @@ namespace GradientSignal
                 // Clear our cached image data
                 m_imageData = AZStd::span<const uint8_t>();
 
-                m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<AZ::RPI::StreamingImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
+                if (assetPath.empty())
+                {
+                    m_configuration.m_imageAsset.Reset();
+                }
+                else
+                {
+                    m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<AZ::RPI::StreamingImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
+                }
             }
 
             SetupDependencies();
+            m_configuration.m_imageAsset.QueueLoad();
             AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
             LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
         }
