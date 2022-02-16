@@ -290,6 +290,8 @@ namespace AzFramework
         //! Add a camera input (behavior) to run in this set of camera inputs.
         //! The camera inputs added here will determine the overall behavior of the camera.
         void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
+        //! 
+        bool RemoveCamera(const AZStd::shared_ptr<CameraInput>& cameraInput);
         //! Reset the state of all cameras.
         void Reset();
         //! Remove all cameras that were added.
@@ -299,9 +301,10 @@ namespace AzFramework
         bool Exclusive() const;
 
     private:
-        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_activeCameraInputs; //!< Active camera inputs updating the camera (empty initially).
-        AZStd::vector<AZStd::shared_ptr<CameraInput>>
-            m_idleCameraInputs; //!< Idle camera inputs not contributing to the update (filled initially).
+        //! Active camera inputs updating the camera (empty initially).
+        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_activeCameraInputs;
+        //! Idle camera inputs not contributing to the update (filled initially).
+        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_idleCameraInputs;
     };
 
     //! Responsible for updating a series of cameras given various inputs.

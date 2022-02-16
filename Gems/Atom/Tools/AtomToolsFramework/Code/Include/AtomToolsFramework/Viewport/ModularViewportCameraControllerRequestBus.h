@@ -9,11 +9,17 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
 namespace AZ
 {
     class Transform;
+}
+
+namespace AzFramework
+{
+    class CameraInput;
 }
 
 namespace AtomToolsFramework
@@ -54,6 +60,10 @@ namespace AtomToolsFramework
         //! @note The offset value is in the current space of the camera, not world space. Setting
         //! a negative Z value will move the camera backwards from the pivot.
         virtual void SetCameraOffset(const AZ::Vector3& offset) = 0;
+        //!
+        virtual void AddCamera(AZStd::shared_ptr<AzFramework::CameraInput> cameraInput) = 0;
+        //!
+        virtual bool RemoveCamera(const AZStd::shared_ptr<AzFramework::CameraInput>& cameraInput) = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

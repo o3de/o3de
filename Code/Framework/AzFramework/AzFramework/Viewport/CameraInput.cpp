@@ -15,6 +15,9 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzFramework
 {
     AZ_CVAR(
@@ -193,6 +196,35 @@ namespace AzFramework
     void Cameras::AddCamera(AZStd::shared_ptr<CameraInput> cameraInput)
     {
         m_idleCameraInputs.push_back(AZStd::move(cameraInput));
+    }
+
+    bool Cameras::RemoveCamera(const AZStd::shared_ptr<CameraInput>& cameraInput)
+    {
+        if (auto idleCameraIt = AZStd::find(m_idleCameraInputs.begin(), m_idleCameraInputs.end(), cameraInput);
+            idleCameraIt != m_idleCameraInputs.end())
+        {
+            const auto idleIndex = idleCameraIt - m_idleCameraInputs.begin();
+            using AZStd::swap;
+            swap(m_idleCameraInputs[idleIndex], m_idleCameraInputs[m_idleCameraInputs.size() - 1]);
+            m_idleCameraInputs.pop_back();
+
+            return true;
+        }
+
+        if (auto activeCameraIt = AZStd::find(m_activeCameraInputs.begin(), m_activeCameraInputs.end(), cameraInput);
+            activeCameraIt != m_activeCameraInputs.end())
+        {
+            (*activeCameraIt)->Reset();
+
+            const auto activeIndex = activeCameraIt - m_idleCameraInputs.begin();
+            using AZStd::swap;
+            swap(m_activeCameraInputs[activeIndex], m_activeCameraInputs[m_activeCameraInputs.size() - 1]);
+            m_activeCameraInputs.pop_back();
+
+            return true;
+        }
+
+        return false;
     }
 
     bool Cameras::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
@@ -948,3 +980,6 @@ namespace AzFramework
         return AZStd::monostate{};
     }
 } // namespace AzFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()

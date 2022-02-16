@@ -54,8 +54,10 @@ namespace EMStudio
 
         AtomRenderPlugin* m_plugin;
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
-        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
-        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_lookRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_lookTranslateCamera;
+
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
         AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
     };
 }

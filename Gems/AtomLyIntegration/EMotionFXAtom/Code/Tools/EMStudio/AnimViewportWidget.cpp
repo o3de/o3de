@@ -6,18 +6,21 @@
  *
  */
 
-#include <AzCore/Math/MatrixUtils.h>
-#include <AzFramework/Viewport/ViewportControllerList.h>
-#include <AzFramework/Viewport/CameraInput.h>
-#include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/ViewportContext.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
+#include <AzCore/Math/MatrixUtils.h>
+#include <AzFramework/Viewport/CameraInput.h>
+#include <AzFramework/Viewport/ViewportControllerList.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
-#include <EMStudio/AnimViewportWidget.h>
 #include <EMStudio/AnimViewportRenderer.h>
 #include <EMStudio/AnimViewportSettings.h>
+#include <EMStudio/AnimViewportWidget.h>
 #include <EMStudio/AtomRenderPlugin.h>
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
 
 namespace EMStudio
 {
@@ -64,12 +67,13 @@ namespace EMStudio
 
     void AnimViewportWidget::SetupCameras()
     {
-        m_rotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::BuildRotateCameraInputId());
+        m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::BuildRotateCameraInputId());
+        m_lookRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::BuildRotateCameraInputId());
 
         const auto translateCameraInputChannelIds = EMStudio::ViewportUtil::BuildTranslateCameraInputChannelIds();
-        m_translateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
+        m_lookTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
             translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivotLook);
-        m_translateCamera.get()->m_translateSpeedFn = []
+        m_lookTranslateCamera->m_translateSpeedFn = []
         {
             return 3.0f;
         };
@@ -117,13 +121,13 @@ namespace EMStudio
                 };
             });
 
-        controller->SetCameraListBuilderCallback(
-            [this](AzFramework::Cameras& cameras)
-            {
-                cameras.AddCamera(m_rotateCamera);
-                cameras.AddCamera(m_translateCamera);
-                cameras.AddCamera(m_orbitDollyScrollCamera);
-            });
+        //controller->SetCameraListBuilderCallback(
+        //    [this](AzFramework::Cameras& cameras)
+        //    {
+        //        //cameras.AddCamera(m_lookRotateCamera);
+        //        //cameras.AddCamera(m_lookTranslateCamera);
+        //    });
+
         GetControllerList()->Add(controller);
     }
 
@@ -171,11 +175,35 @@ namespace EMStudio
         if (followUp)
         {
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCamera, m_lookRotateCamera);
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCamera,
+                m_lookTranslateCamera);
+
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCamera, m_orbitRotateCamera);
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCamera,
+                m_orbitDollyScrollCamera);
+
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
                 AZ::Vector3::CreateAxisY(-CameraDistance));
         }
         else
         {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCamera, m_orbitRotateCamera);
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCamera,
+                m_orbitDollyScrollCamera);
+
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCamera, m_lookRotateCamera);
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCamera,
+                m_lookTranslateCamera);
+
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
                 AZ::Vector3::CreateZero());
@@ -203,8 +231,9 @@ namespace EMStudio
 
         const RenderOptions* renderOptions = m_plugin->GetRenderOptions();
         AZ::Matrix4x4 viewToClipMatrix;
-        AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::DegToRad(renderOptions->GetFOV()), aspectRatio,
-            renderOptions->GetNearClipPlaneDistance(), renderOptions->GetFarClipPlaneDistance(), true);
+        AZ::MakePerspectiveFovMatrixRH(
+            viewToClipMatrix, AZ::DegToRad(renderOptions->GetFOV()), aspectRatio, renderOptions->GetNearClipPlaneDistance(),
+            renderOptions->GetFarClipPlaneDistance(), true);
 
         viewportContext->GetDefaultView()->SetViewToClipMatrix(viewToClipMatrix);
     }
@@ -239,3 +268,6 @@ namespace EMStudio
         return GetViewportContext()->GetId();
     }
 } // namespace EMStudio
+
+#pragma optimize("", on)
+#pragma inline_depth()
