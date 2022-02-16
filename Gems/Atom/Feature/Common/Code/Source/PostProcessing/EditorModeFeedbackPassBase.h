@@ -41,16 +41,16 @@ namespace AZ
             static RPI::Ptr<EditorModeFeedbackPassBase> Create(const RPI::PassDescriptor& descriptor);
 
             //! Sets the minimum blend amount that will be calculated through depth transitioning. 
-            void SetMinDepthTransitionValue(float value);
+            void SetMinDepthTransitionValue(float minValue);
 
             //! Sets the start of depth transtion for non-mask effect blending.
-            void SetDepthTransitionStart(float value);
+            void SetDepthTransitionStart(float start);
 
             //! Sets the duration (depth) of the depth transition band (0.0 = no depth transitioning will be applied).
-            void SetDepthTransitionDuration(float value);
+            void SetDepthTransitionDuration(float duration);
 
             //! Sets the final blend amount that is used to scale the calculated blend values.
-            void SetFinalBlendAmount(float value);
+            void SetFinalBlendAmount(float amount);
 
         protected:
             using AZ::RPI::FullscreenTrianglePass::FullscreenTrianglePass;

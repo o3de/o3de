@@ -43,24 +43,24 @@ namespace AZ
             FullscreenTrianglePass::FrameBeginInternal(params);
         }
 
-        void EditorModeFeedbackPassBase::SetMinDepthTransitionValue(const float value)
+        void EditorModeFeedbackPassBase::SetMinDepthTransitionValue(const float minValue)
         {
-            m_depthransition.m_minDepthTransitionValue = value;
+            m_depthransition.m_minDepthTransitionValue = minValue;
         }
 
-        void EditorModeFeedbackPassBase::SetDepthTransitionStart(const float value)
+        void EditorModeFeedbackPassBase::SetDepthTransitionStart(const float start)
         {
-            m_depthransition.m_depthTransitionStart = value;
+            m_depthransition.m_depthTransitionStart = start;
         }
 
-        void EditorModeFeedbackPassBase::SetDepthTransitionDuration(const float value)
+        void EditorModeFeedbackPassBase::SetDepthTransitionDuration(const float duration)
         {
-            m_depthransition.m_depthTransitionDuration = value;
+            m_depthransition.m_depthTransitionDuration = duration;
         }
 
-        void EditorModeFeedbackPassBase::SetFinalBlendAmount(const float value)
+        void EditorModeFeedbackPassBase::SetFinalBlendAmount(const float amount)
         {
-            m_finalBlendAmount = value;
+            m_finalBlendAmount = amount;
         }
 
         void EditorModeFeedbackPassBase::SetSrgConstants()
