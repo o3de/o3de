@@ -595,12 +595,42 @@ namespace AZStd
         static constexpr int_type not_eof(int_type c) noexcept { return c != eof() ? c : !eof(); }
     };
 
+    // string_view forward declaation
+    template <class Element, class Traits = AZStd::char_traits<Element>>
+    class basic_string_view;
+}
+
+namespace AZStd::Internal
+{
+    template <class Element, class Traits, class R, class = void>
+    struct has_operator_basic_string_view
+        : false_type
+    {};
+
+    template <class Element, class Traits, class R>
+    struct has_operator_basic_string_view<Element, Traits, R, enable_if_t<
+        bool(&decay_t<R>::operator basic_string_view<Element, Traits>)>>
+        : true_type
+    {};
+
+    // If the range has a traits_type element, it must match
+    template <class Element, class Traits, class R, class = void>
+    static constexpr bool range_trait_type_matches = true;
+    template <class Element, class Traits, class R>
+    inline constexpr bool range_trait_type_matches<Element, Traits, R,
+        enable_if_t<conjunction_v<
+        Internal::sfinae_trigger<typename remove_reference_t<R>::traits_type>,
+        bool_constant<!same_as<typename remove_reference_t<R>::traits_type, Traits>>
+        >>> = false;
+}
+namespace AZStd
+{
     /**
-     * Immutable string wrapper based on boost::const_string and std::string_view. When we operate on
+     * Immutable string wrapper based on std::string_view. When we operate on
      * const char* we don't know if this points to NULL terminated string or just a char array.
      * to have a clear distinction between them we provide this wrapper.
      */
-    template <class Element, class Traits = AZStd::char_traits<Element>>
+    template <class Element, class Traits>
     class basic_string_view
     {
     public:
@@ -644,6 +674,25 @@ namespace AZStd
         constexpr basic_string_view(It first, End last)
             : m_begin(AZStd::to_address(first))
             , m_size(AZStd::to_address(last) - AZStd::to_address(first))
+        {}
+
+        // double SFINAE is used to defer evaluation of the contiguous range
+        // until after validating the input type isn't basic_string_view
+        template <typename R,
+            typename = enable_if_t<conjunction_v<
+            bool_constant<!same_as<remove_cvref_t<R>, basic_string_view>>,
+            bool_constant<!convertible_to<const_pointer, R>>
+            >>,
+            typename = enable_if_t<conjunction_v<
+            bool_constant<ranges::contiguous_range<R>>,
+            bool_constant<ranges::sized_range<R>>,
+            bool_constant<same_as<ranges::range_value_t<R>, value_type>>,
+            negation<Internal::has_operator_basic_string_view<Element, Traits, R>>,
+            bool_constant<Internal::range_trait_type_matches<Element, Traits, R>>
+            >>>
+        constexpr basic_string_view(R&& r)
+            : m_begin(ranges::data(r))
+            , m_size(ranges::size(r))
         {}
 
         constexpr basic_string_view(const basic_string_view&) noexcept = default;
@@ -981,6 +1030,11 @@ namespace AZStd
         const_pointer m_begin{};
         size_type m_size{};
     };
+
+    template<class It, class End>
+    basic_string_view(It, End)->basic_string_view<iter_value_t<It>>;
+    template<class R>
+    basic_string_view(R&&)->basic_string_view<ranges::range_value_t<R>>;
 
     using string_view = basic_string_view<char>;
     using wstring_view = basic_string_view<wchar_t>;

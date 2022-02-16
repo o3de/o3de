@@ -16,11 +16,8 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 
-
 namespace EMotionFX
 {
-    int SkeletonOutlinerPlugin::s_iconSize = 16;
-
     SkeletonOutlinerPlugin::SkeletonOutlinerPlugin()
         : EMStudio::DockWidgetPlugin()
         , m_mainWidget(nullptr)
@@ -30,13 +27,19 @@ namespace EMotionFX
 
     SkeletonOutlinerPlugin::~SkeletonOutlinerPlugin()
     {
+        // Reset selection on close.
+        if (m_skeletonModel)
+        {
+            m_skeletonModel->GetSelectionModel().clearSelection();
+            m_skeletonModel.reset();
+        }
+
         for (MCore::Command::Callback* callback : m_commandCallbacks)
         {
             CommandSystem::GetCommandManager()->RemoveCommandCallback(callback, true);
         }
         m_commandCallbacks.clear();
 
-        SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::SingleNodeSelectionChanged, nullptr, nullptr);
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusDisconnect();
     }
 

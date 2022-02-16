@@ -11,7 +11,6 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -52,7 +51,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 119; // new material file format
+            materialBuilderDescriptor.m_version = 123; // nested property layers
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -161,11 +160,19 @@ namespace AZ
                 const bool isMaterialTypeFile = AzFramework::StringFunc::Path::IsExtension(request.m_sourceFile.c_str(), MaterialTypeSourceData::Extension);
                 if (isMaterialTypeFile)
                 {
-                    auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(fullSourcePath, &document);
+                    MaterialUtils::ImportedJsonFiles importedJsonFiles;
+                    auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(fullSourcePath, &document, &importedJsonFiles);
 
                     if (!materialTypeSourceData.IsSuccess())
                     {
                         return;
+                    }
+
+                    for (auto& importedJsonFile : importedJsonFiles)
+                    {
+                        AssetBuilderSDK::SourceFileDependency sourceDependency;
+                        sourceDependency.m_sourceFileDependencyPath = importedJsonFile;
+                        response.m_sourceFileDependencyList.push_back(sourceDependency);
                     }
 
                     for (auto& shader : materialTypeSourceData.GetValue().m_shaderCollection)
@@ -243,7 +250,7 @@ namespace AZ
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }
 
-        AZ::Data::Asset<MaterialTypeAsset> CreateMaterialTypeAsset(AZStd::string_view materialTypeSourceFilePath, const rapidjson::Value& json)
+        AZ::Data::Asset<MaterialTypeAsset> CreateMaterialTypeAsset(AZStd::string_view materialTypeSourceFilePath, rapidjson::Document& json)
         {
             auto materialType = MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourceFilePath, &json);
 

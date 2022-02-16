@@ -24,8 +24,8 @@ namespace TestImpact
     public:
         Pipe(SECURITY_ATTRIBUTES& sa, HANDLE& stdChannel);
         Pipe(Pipe&& other) = delete;
-        Pipe(Pipe& other) = delete;
-        Pipe& operator=(Pipe& other) = delete;
+        Pipe(const Pipe& other) = delete;
+        Pipe& operator=(const Pipe& other) = delete;
         Pipe& operator=(Pipe&& other) = delete;
 
         //! Releases the child end of the pipe (not needed once parent has their end).
