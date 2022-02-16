@@ -109,6 +109,7 @@ Here is a rundown of what is happeneing:
 __What does this look like?__
 Using just these basic options (no -dm, devmode): -py=True -qt=True -tp=True
 The synthetic environment looks like:
+![image](https://user-images.githubusercontent.com/23222931/154307884-752875dd-060c-4f83-88f0-ff4fe574d744.png)
 
 
 ## Contribute
