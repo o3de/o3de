@@ -354,7 +354,7 @@ namespace ImageProcessingAtom
         // output conversion log
         if (m_isSucceed && m_isFinished)
         {
-            IImageObjectPtr imageObj = m_image->Get();
+            [[maybe_unused]] IImageObjectPtr imageObj = m_image->Get();
             [[maybe_unused]] const uint32 sizeTotal = imageObj->GetTextureMemory();
             if (m_input->m_isPreview)
             {

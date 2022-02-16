@@ -286,7 +286,7 @@ namespace Terrain
         DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
         if (materialRegion == nullptr)
         {
-            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialDestroyed() called for region that doesn't exist.");
+            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialCreated() called for region that doesn't exist.");
             return;
         }
         AZ_Error("TerrainDetailMaterialManager", materialRegion->m_defaultDetailMaterialId == InvalidDetailMaterialId,
@@ -341,7 +341,7 @@ namespace Terrain
         DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
         if (materialRegion == nullptr)
         {
-            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialDestroyed() called for region that doesn't exist.");
+            AZ_Assert(false, "OnTerrainSurfaceMaterialMappingCreated() called for region that doesn't exist.");
             return;
         }
 
@@ -362,7 +362,7 @@ namespace Terrain
         DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
         if (materialRegion == nullptr)
         {
-            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialDestroyed() called for region that doesn't exist.");
+            AZ_Assert(false, "OnTerrainSurfaceMaterialMappingDestroyed() called for region that doesn't exist.");
             return;
         }
         
@@ -446,7 +446,7 @@ namespace Terrain
         DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
         if (materialRegion == nullptr)
         {
-            AZ_Assert(false, "OnTerrainSurfaceMaterialMappingDestroyed() called for region that doesn't exist.");
+            AZ_Assert(false, "OnTerrainSurfaceMaterialMappingRegionDestroyed() called for region that doesn't exist.");
             return;
         }
         
@@ -859,7 +859,7 @@ namespace Terrain
             
             if (foundMaterials == 0)
             {
-                // No materials found, so use the default materail.
+                // No materials found, so use the default material.
                 uint8_t defaultMaterial = region->m_defaultDetailMaterialId == InvalidDetailMaterialId ? m_passthroughMaterialId :
                     aznumeric_cast<uint8_t>(m_detailMaterials.GetData(region->m_defaultDetailMaterialId).m_detailMaterialBufferIndex);
                 pixel.m_material1 = defaultMaterial;
