@@ -45,7 +45,7 @@ namespace TrackView
         m_passHierarchy.push_back("CopyToSwapChain");
 
         // retrieve View from the camera that's animating
-        AZ::Name viewName = AZ::Name("MainCamera");
+        AZ::Name viewName = AZ_NAME_LITERAL("MainCamera");
         m_view = AZ::RPI::View::CreateView(viewName, AZ::RPI::View::UsageCamera);
         m_renderPipeline->SetDefaultView(m_view);
         m_targetView = scene.GetDefaultRenderPipeline()->GetDefaultView();

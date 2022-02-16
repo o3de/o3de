@@ -16,6 +16,17 @@ namespace AZ::Internal
         , m_hash{hash}
     {}
 
+    NameData::~NameData()
+    {
+        while (m_literalLinkedList != nullptr)
+        {
+            NameLiteral* next = m_literalLinkedList->m_nextLiteral;
+            m_literalLinkedList->m_data = nullptr;
+            m_literalLinkedList->m_nextLiteral = nullptr;
+            m_literalLinkedList = next;
+        }
+    }
+
     AZStd::string_view NameData::GetName() const
     {
         return m_name;

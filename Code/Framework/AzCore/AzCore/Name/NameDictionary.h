@@ -77,6 +77,8 @@ namespace AZ
         //! @return A Name instance. If the hash was not found, the Name will be empty.
         Name FindName(Name::Hash hash) const;
 
+        Internal::NameData* MakeNameLiteral(AZStd::string_view name);
+
         NameDictionary();
     private:
         ~NameDictionary();
@@ -97,6 +99,7 @@ namespace AZ
         Name::Hash CalcHash(AZStd::string_view name);
 
         AZStd::unordered_map<Name::Hash, Internal::NameData*> m_dictionary;
+        AZStd::unordered_map<const char*, Internal::NameData*> m_literals;
         mutable AZStd::shared_mutex m_sharedMutex;
     };
 }

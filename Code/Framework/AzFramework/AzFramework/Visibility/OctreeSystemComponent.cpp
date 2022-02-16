@@ -524,7 +524,7 @@ namespace AzFramework
         AZ::Interface<IVisibilitySystem>::Register(this);
         IVisibilitySystemRequestBus::Handler::BusConnect();
 
-        m_defaultScene = aznew OctreeScene(AZ::Name("DefaultVisibilityScene"));
+        m_defaultScene = aznew OctreeScene(AZ_NAME_LITERAL("DefaultVisibilityScene"));
     }
 
     OctreeSystemComponent::~OctreeSystemComponent()

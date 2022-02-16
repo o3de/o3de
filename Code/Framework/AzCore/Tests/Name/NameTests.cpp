@@ -635,6 +635,26 @@ namespace UnitTest
         RunConcurrencyTest<ThreadRepeatedlyCreatesAndReleasesOneName<100>>(100, 2);
     }
 
+    TEST_F(NameTest, NameLiteral)
+    {
+        static AZ::NameLiteral s_nameLiteral = AZ::NameLiteral("name_literal");
+        AZ::NameLiteral secondLiteral("name_literal");
+        EXPECT_EQ(AZ::Name("name_literal"), s_nameLiteral);
+        EXPECT_EQ(AZ::Name("name_literal"), secondLiteral);
+        EXPECT_EQ(AZ::Name("name_literal"), AZ_NAME_LITERAL("name_literal"));
+        {
+            AZ::NameLiteral temporaryLiteral("name_literal");
+            EXPECT_EQ(AZ::Name("name_literal"), temporaryLiteral);
+        }
+        EXPECT_EQ(AZ::Name("name_literal"), s_nameLiteral);
+        EXPECT_EQ(AZ::Name("name_literal"), secondLiteral);
+        AZ::NameDictionary::Destroy();
+        AZ::NameDictionary::Create();
+        EXPECT_EQ(AZ::Name("name_literal"), s_nameLiteral);
+        EXPECT_EQ(AZ::Name("name_literal"), secondLiteral);
+        EXPECT_EQ(secondLiteral, AZ_NAME_LITERAL("name_literal"));
+    }
+
     TEST_F(NameTest, DISABLED_NameVsStringPerf_Creation)
     {
         constexpr int CreateCount = 1000;

@@ -197,6 +197,50 @@ namespace AZ
             jsonContext->Serializer<NameJsonSerializer>()->HandlesType<Name>();
         }
     }
-    
+
+    NameLiteral::NameLiteral(const char* value)
+        : m_view(value)
+    {
+    }
+
+    NameLiteral::~NameLiteral()
+    {
+        if (m_data != nullptr)
+        {
+            NameLiteral** list = &m_data->m_literalLinkedList;
+            while (*list != nullptr)
+            {
+                if (*list == this)
+                {
+                    *list = m_nextLiteral;
+                    break;
+                }
+
+                list = &(*list)->m_nextLiteral;
+            }
+        }
+    }
+
+    Name NameLiteral::GetName() const
+    {
+        if (m_data == nullptr)
+        {
+            AZ_Assert(NameDictionary::IsReady(), "Attempted to initialize Name Literal '%.*s' before the NameDictionary is ready.", AZ_STRING_ARG(m_view));
+            m_data = NameDictionary::Instance().MakeNameLiteral(m_view);
+            m_nextLiteral = m_data->m_literalLinkedList;
+            m_data->m_literalLinkedList = const_cast<NameLiteral*>(this);
+        }
+
+        AZ::Name name;
+        name.m_view = m_view;
+        name.m_data = m_data;
+        name.m_hash = m_data->GetHash();
+        return AZStd::move(name);
+    }
+
+    bool NameLiteral::operator==(const AZ::Name& rhs) const
+    {
+        return GetName() == rhs;
+    }
 } // namespace AZ
 

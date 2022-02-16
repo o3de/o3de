@@ -87,6 +87,13 @@ namespace AZ
     {
         [[maybe_unused]] bool leaksDetected = false;
 
+        for (auto& literalData : m_literals)
+        {
+            literalData.second->m_useCount = 0;
+            TryReleaseName(literalData.second->m_hash);
+        }
+        m_literals.clear();
+
         for (const auto& keyValue : m_dictionary)
         {
             Internal::NameData* nameData = keyValue.second;
@@ -168,6 +175,21 @@ namespace AZ
                 iter = m_dictionary.find(hash);
             }
         }
+    }
+
+    Internal::NameData* NameDictionary::MakeNameLiteral(AZStd::string_view name)
+    {
+        auto literalIt = m_literals.find(name.data());
+        if (literalIt != m_literals.end())
+        {
+            return literalIt->second;
+        }
+
+        Name newName = MakeName(name);
+        Internal::NameData* data = newName.m_data.get();
+        m_literals[name.data()] = data;
+        memset(&newName.m_data, 0, sizeof(newName.m_data));
+        return data;
     }
 
     void NameDictionary::TryReleaseName(Name::Hash hash)

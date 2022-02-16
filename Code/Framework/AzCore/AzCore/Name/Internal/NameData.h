@@ -17,12 +17,14 @@
 namespace AZ
 {
     class NameDictionary;
+    class NameLiteral;
 
     namespace Internal
     {
         class NameData final
         {
             friend NameDictionary;
+            friend NameLiteral;
         public:
             AZ_CLASS_ALLOCATOR(NameData, AZ::SystemAllocator, 0);
 
@@ -33,6 +35,8 @@ namespace AZ
 
             //! Returns the hash part of the name data.
             Hash GetHash() const;
+
+            ~NameData();
 
         private:
             NameData(AZStd::string&& name, Hash hash);
@@ -45,6 +49,7 @@ namespace AZ
 
             AZStd::atomic_int m_useCount = {0};
             AZStd::string m_name;
+            NameLiteral* m_literalLinkedList = nullptr;
             Hash m_hash;
 
             // TODO: We should be able to change this to a normal bool after introducing name dictionary garbage collection

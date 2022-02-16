@@ -257,7 +257,7 @@ namespace AZ
 
         void LightCullingPass::BuildInternal()
         {
-            m_tileDataIndex = FindInputBinding(AZ::Name("TileLightData"));
+            m_tileDataIndex = FindInputBinding(AZ_NAME_LITERAL("TileLightData"));
             CreateLightList();
             AttachLightList();
         }

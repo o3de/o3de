@@ -34,6 +34,7 @@ namespace AZ
     class Name
     {
         friend NameDictionary;
+        friend class NameLiteral;
         friend UnitTest::NameTest;
     public:
         using Hash = Internal::NameData::Hash;
@@ -121,6 +122,32 @@ namespace AZ
         //! Pointer to NameData in the NameDictionary. This holds both the hash and string pair.
         AZStd::intrusive_ptr<Internal::NameData> m_data;
     };
+
+    class NameLiteral final
+    {
+        friend class Internal::NameData;
+
+    public:
+        NameLiteral(const char* value);
+        ~NameLiteral();
+        Name GetName() const;
+
+        bool operator==(const Name& rhs) const;
+
+        inline operator Name() const { return GetName(); }
+
+    private:
+        AZStd::string_view m_view;
+        mutable Internal::NameData* m_data = nullptr;
+
+        mutable NameLiteral* m_nextLiteral = nullptr;
+    };
+
+    #define AZ_NAME_LITERAL(str) \
+        ([]() noexcept -> AZ::NameLiteral { \
+            static AZ::NameLiteral strLiteral(str); \
+            return strLiteral; \
+        }())
 
 } // namespace AZ
 

@@ -162,7 +162,7 @@ namespace AzNetworking
 
             DeferredData deferred = DeferredData(address, data, size, encrypt, dtlsEndpoint);
             AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([&, deferredData = deferred]
-                    { SendInternalDeferred(deferredData); }, AZ::Name("Deferred packet"), deferTimeMs);
+                    { SendInternalDeferred(deferredData); }, AZ_NAME_LITERAL("Deferred packet"), deferTimeMs);
         }
 #endif
 
