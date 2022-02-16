@@ -140,28 +140,28 @@ namespace Terrain
 
         //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
         //! XY coordinate in the list.
-        virtual void ProcessHeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+        virtual void ProcessHeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessNormalsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+        virtual void ProcessNormalsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfaceWeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+        virtual void ProcessSurfaceWeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfacePointsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+        virtual void ProcessSurfacePointsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessHeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+        virtual void ProcessHeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessNormalsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+        virtual void ProcessNormalsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+        virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+        virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
@@ -194,42 +194,42 @@ namespace Terrain
             const AzFramework::RenderGeometry::RayRequest& ray) const override;
 
         AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListAsync(
-            const AZStd::span<AZ::Vector3>& inPositions,
+            const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListAsync(
-            const AZStd::span<AZ::Vector3>& inPositions,
+            const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListAsync(
-            const AZStd::span<AZ::Vector3>& inPositions,
+            const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListAsync(
-            const AZStd::span<AZ::Vector3>& inPositions,
+            const AZStd::span<const AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListOfVector2Async(
-            const AZStd::span<AZ::Vector2>& inPositions,
+            const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListOfVector2Async(
-            const AZStd::span<AZ::Vector2>& inPositions,
+            const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListOfVector2Async(
-            const AZStd::span<AZ::Vector2>& inPositions,
+            const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
         AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListOfVector2Async(
-            const AZStd::span<AZ::Vector2>& inPositions,
+            const AZStd::span<const AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
@@ -262,7 +262,7 @@ namespace Terrain
         template<typename SynchronousFunctionType, typename VectorType>
         AZStd::shared_ptr<TerrainJobContext> ProcessFromListAsync(
             SynchronousFunctionType synchronousFunction,
-            const AZStd::span<VectorType>& inPositions,
+            const AZStd::span<const VectorType>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const;
@@ -291,31 +291,31 @@ namespace Terrain
         AZ::Vector3 GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
 
         typedef AZStd::function<void(
-            const AZStd::span<AZ::Vector3> inPositions,
+            const AZStd::span<const AZ::Vector3> inPositions,
             AZStd::span<AZ::Vector3> outPositions,
             AZStd::span<bool> outTerrainExists,
             AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
             AZ::EntityId areaId)> BulkQueriesCallback;
 
         void GetHeightsSynchronous(
-            const AZStd::span<AZ::Vector3>& inPositions,
+            const AZStd::span<const AZ::Vector3>& inPositions,
             Sampler sampler, AZStd::span<float> heights,
             AZStd::span<bool> terrainExists) const;
         void GetNormalsSynchronous(
-            const AZStd::span<AZ::Vector3>& inPositions,
+            const AZStd::span<const AZ::Vector3>& inPositions,
             Sampler sampler, AZStd::span<AZ::Vector3> normals,
             AZStd::span<bool> terrainExists) const;
         void GetOrderedSurfaceWeightsFromList(
-            const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler,
+            const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler,
             AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
             AZStd::span<bool> terrainExists) const;
         void MakeBulkQueries(
-            const AZStd::span<AZ::Vector3> inPositions,
+            const AZStd::span<const AZ::Vector3> inPositions,
             AZStd::span<AZ::Vector3> outPositions,
             AZStd::span<bool> outTerrainExists,
             AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWieghts,
             BulkQueriesCallback queryCallback) const;
-        void GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPositions, 
+        void GenerateQueryPositions(const AZStd::span<const AZ::Vector3>& inPositions, 
             AZStd::vector<AZ::Vector3>& outPositions,
             Sampler sampler) const;
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromRegion(
@@ -361,7 +361,7 @@ namespace Terrain
     template<typename SynchronousFunctionType, typename VectorType>
     inline AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessFromListAsync(
         SynchronousFunctionType synchronousFunction,
-        const AZStd::span<VectorType>& inPositions,
+        const AZStd::span<const VectorType>& inPositions,
         AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
         Sampler sampleFilter,
         AZStd::shared_ptr<ProcessAsyncParams> params) const
@@ -397,7 +397,7 @@ namespace Terrain
             const size_t subSpanCount = (i < numJobs - 1) ? numPositionsPerJob : AZStd::dynamic_extent;
 
             // Define the job function using the sub span of positions to process.
-            const AZStd::span<VectorType>& positionsToProcess = inPositions.subspan(subSpanOffset, subSpanCount);
+            const AZStd::span<const VectorType>& positionsToProcess = inPositions.subspan(subSpanOffset, subSpanCount);
             auto jobFunction = [this, synchronousFunction, positionsToProcess, perPositionCallback, sampleFilter, jobContext, params]()
             {
                 // Process the sub span of positions, unless the associated job context has been cancelled.

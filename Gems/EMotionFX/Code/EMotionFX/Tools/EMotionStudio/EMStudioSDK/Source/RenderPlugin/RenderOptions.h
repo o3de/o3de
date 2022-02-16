@@ -284,9 +284,9 @@ namespace EMStudio
         void SetCameraFollowUp(bool followUp);
         bool GetCameraFollowUp() const;
 
-        void ToggerRenderFlag(int index);
-        void SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags);
-        EMotionFX::ActorRenderFlagBitset GetRenderFlags() const;
+        void ToggerRenderFlag(uint8 index);
+        void SetRenderFlags(EMotionFX::ActorRenderFlags renderFlags);
+        EMotionFX::ActorRenderFlags GetRenderFlags() const;
 
     private:
         void OnGridUnitSizeChangedCallback() const;
@@ -406,7 +406,7 @@ namespace EMStudio
         ManipulatorMode  m_manipulatorMode = ManipulatorMode::SELECT;
         CameraViewMode   m_cameraViewMode = CameraViewMode::DEFAULT;
         bool             m_cameraFollowUp = false;
-        EMotionFX::ActorRenderFlagBitset m_renderFlags;
+        EMotionFX::ActorRenderFlags m_renderFlags;
     };
 
 } // namespace EMStudio

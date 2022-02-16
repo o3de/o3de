@@ -333,18 +333,21 @@ namespace UnitTest
         void GetSurfacePoints([[maybe_unused]] const AZ::Vector3& inPosition, [[maybe_unused]] const SurfaceData::SurfaceTagVector& masks, SurfaceData::SurfacePointList& surfacePointList) const override
         {
             ++m_count;
-            surfacePointList.AddSurfacePoint(AZ::EntityId(), m_outPosition, m_outNormal, m_outMasks);
+            surfacePointList.Clear();
+            surfacePointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&inPosition, 1), 1, {});
+            surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, m_outPosition, m_outNormal, m_outMasks);
+            surfacePointList.EndListConstruction();
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointLists& surfacePointListPerPosition) const override
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointListPerPosition) const override
         {
         }
 
         void GetSurfacePointsFromList(
             [[maybe_unused]] AZStd::span<const AZ::Vector3> inPositions,
             [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointLists& surfacePointLists) const override
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointLists) const override
         {
         }
 

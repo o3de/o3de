@@ -279,7 +279,7 @@ namespace UnitTest
             auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
 
             // Call the terrain API we're testing for every height and width in our ranges.
-            for (auto stateIterator : state)
+            for ([[maybe_unused]] auto stateIterator : state)
             {
                 ApiCaller(queryResolution, worldBounds, sampler);
             }

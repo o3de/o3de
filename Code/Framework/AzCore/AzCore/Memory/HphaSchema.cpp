@@ -42,8 +42,8 @@
 #define HPPA_ASSERT_PRINT_STACK(...) _EXPAND(_GET_MACRO23(__VA_ARGS__, _HPPA_ASSERT_PRINT_STACK3, _HPPA_ASSERT_PRINT_STACK2)(__VA_ARGS__))  
 
 
-namespace AZ {
-
+namespace AZ
+{
     /// default windows virtual page size \todo Read this from the OS when we create the allocator)
 #define OS_VIRTUAL_PAGE_SIZE AZ_PAGE_SIZE
     //////////////////////////////////////////////////////////////////////////
@@ -56,6 +56,79 @@ namespace AZ {
 
 // Enabled mutex per bucket
 #define USE_MUTEX_PER_BUCKET
+
+    namespace HphaInternal
+    {
+        //! Rounds up a value to next power of 2.
+        //! For example to round 8388609((2^23) + 1) up to 16777216(2^24) the following occurs
+        //! Subtract one from the value in case it is already
+        //! equal to a power of 2
+        //! 8388609 - 1 = 8388608
+        //! Propagate the highest one bit in the value to all the lower bits
+        //! 8388608 = 0b100'0000'0000'0000'0000'0000 in binary
+        //! 
+        //!  0b100'0000'0000'0000'0000'0000 
+        //! |0b010'0000'0000'0000'0000'0000 (>> 1)
+        //! -------------------------------
+        //!  0b110'0000'0000'0000'0000'0000 (Now there are 2 consecutive 1-bits)
+        //! |0b001'1000'0000'0000'0000'0000 (>> 2)
+        //! -------------------------------
+        //!  0b111'1000'0000'0000'0000'0000 (Now there are 4 consecutive 1-bits)
+        //! |0b000'0111'1000'0000'0000'0000 (>> 4)
+        //! -------------------------------
+        //!  0b111'1111'1000'0000'0000'0000 (Now there are 8 consecutive 1-bits)
+        //! |0b000'0000'0111'1111'1000'0000 (>> 8)
+        //! -------------------------------
+        //!  0b111'1111'1111'1111'1000'0000 (Now there are 16 consecutive 1-bits)
+        //! |0b000'0000'0000'0000'0111'1111 (>> 16)
+        //! -------------------------------
+        //!  0b111'1111'1111'1111'1111'1111 (Now there are 23 consecutive 1-bits)
+        //! |0b000'0000'0000'0000'0000'0000 (>> 32)
+        //! -------------------------------
+        //!  0b111'1111'1111'1111'1111'1111
+        //! Finally since all the one bits are set in the value, adding one pushes it
+        //! to next power of 2
+        //! 0b1000'0000'0000'0000'0000'0000 = 16777216
+        static constexpr size_t AlignUpToPowerOfTwo(size_t value)
+        {
+            // If the value is <=2 it is already aligned
+            if (value <= 2)
+            {
+                return value;
+            }
+
+            // Subtract one to make any values already
+            // aligned to a power of 2 less than that power of 2
+            // so that algorithm doesn't push those values upwards
+            --value;
+            value |= value >> 0b1;
+            value |= value >> 0b10;
+            value |= value >> 0b100;
+            value |= value >> 0b1000;
+            value |= value >> 0b1'0000;
+            value |= value >> 0b10'0000;
+            ++value;
+            return value;
+        }
+
+        static_assert(AlignUpToPowerOfTwo(0) == 0);
+        static_assert(AlignUpToPowerOfTwo(1) == 1);
+        static_assert(AlignUpToPowerOfTwo(2) == 2);
+        static_assert(AlignUpToPowerOfTwo(3) == 4);
+        static_assert(AlignUpToPowerOfTwo(4) == 4);
+        static_assert(AlignUpToPowerOfTwo(5) == 8);
+        static_assert(AlignUpToPowerOfTwo(8) == 8);
+        static_assert(AlignUpToPowerOfTwo(10) == 16);
+        static_assert(AlignUpToPowerOfTwo(16) == 16);
+        static_assert(AlignUpToPowerOfTwo(24) == 32);
+        static_assert(AlignUpToPowerOfTwo(32) == 32);
+        static_assert(AlignUpToPowerOfTwo(45) == 64);
+        static_assert(AlignUpToPowerOfTwo(64) == 64);
+        static_assert(AlignUpToPowerOfTwo(112) == 128);
+        static_assert(AlignUpToPowerOfTwo(128) == 128);
+        static_assert(AlignUpToPowerOfTwo(136) == 256);
+        static_assert(AlignUpToPowerOfTwo(256) == 256);
+    }
 
     //////////////////////////////////////////////////////////////////////////
     class HpAllocator
@@ -211,24 +284,21 @@ namespace AZ {
             bool check_marker(size_t marker) const  { return mMarker == (marker ^ ((size_t)this)); }
         };
         using page_list = AZStd::intrusive_list<page, AZStd::list_base_hook<page>>;
-        class bucket
+
+#if defined(MULTITHREADED) && defined(USE_MUTEX_PER_BUCKET)
+        static constexpr size_t BucketAlignment = HphaInternal::AlignUpToPowerOfTwo(sizeof(page_list) + sizeof(AZStd::mutex) + sizeof(size_t));
+#else
+        static constexpr size_t BucketAlignment = HphaInternal::AlignUpToPowerOfTwo(sizeof(page_list) + sizeof(size_t));
+#endif
+        AZ_PUSH_DISABLE_WARNING_MSVC(4324)
+        class alignas(BucketAlignment) bucket
         {
             page_list mPageList;
-#ifdef MULTITHREADED 
-    #if defined (USE_MUTEX_PER_BUCKET)
+#if defined(MULTITHREADED) && defined(USE_MUTEX_PER_BUCKET)
             mutable AZStd::mutex mLock;
-    #endif
 #endif
             size_t          mMarker;
-#ifdef MULTITHREADED
-    #if defined (USE_MUTEX_PER_BUCKET)
-            unsigned char _padding[sizeof(void*) * 16 - sizeof(page_list) - sizeof(AZStd::mutex) - sizeof(size_t)];
-    #else
-            unsigned char _padding[sizeof(void*) * 16 - sizeof(page_list) - sizeof(size_t)];
-    #endif
-#else
-            unsigned char _padding[sizeof(void*) * 4 - sizeof(page_list) - sizeof(size_t)];
-#endif
+
         public:
             bucket();
 #ifdef MULTITHREADED
@@ -249,6 +319,7 @@ namespace AZ {
             void free(page* p, void* ptr);
             void unlink(page* p);
         };
+        AZ_POP_DISABLE_WARNING_MSVC
         void* bucket_system_alloc();
         void bucket_system_free(void* ptr);
         page* bucket_grow(size_t elemSize, size_t marker);
@@ -1033,8 +1104,6 @@ namespace AZ {
         // Thats why we use SimpleLcgRandom here
         AZ::SimpleLcgRandom randGenerator = AZ::SimpleLcgRandom(reinterpret_cast<u64>(static_cast<void*>(this)));
         mMarker = size_t(randGenerator.Getu64Random());
-
-        (void)_padding;
     }
 
     HpAllocator::page* HpAllocator::bucket::get_free_page()
@@ -2371,7 +2440,7 @@ namespace AZ {
             m_capacity = desc.m_capacity;
         }
 
-        AZ_Assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, we need %d bytes but we have %d bytes!", sizeof(HpAllocator), sizeof(m_hpAllocatorBuffer));
+        static_assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, it needs to be at least the sizeof(HpAllocator)");
         m_allocator = new (&m_hpAllocatorBuffer) HpAllocator(m_desc);
     }
 

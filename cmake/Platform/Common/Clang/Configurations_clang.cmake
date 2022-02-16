@@ -20,8 +20,6 @@ ly_append_configurations_options(
         -Wall
         -Werror
 
-        -fpie                   # Position-Independent Executables
-
         ###################
         # Disabled warnings (please do not disable any others without first consulting sig-build)
         ###################

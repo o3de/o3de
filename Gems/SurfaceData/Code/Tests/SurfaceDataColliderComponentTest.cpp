@@ -135,14 +135,17 @@ namespace UnitTest
 
             // Call GetSurfacePoints and verify the results
             SurfaceData::SurfacePointList pointList;
+            pointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&queryPoint, 1), 1, {});
             SurfaceData::SurfaceDataProviderRequestBus::Event(providerHandle, &SurfaceData::SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
                                                               queryPoint, pointList);
+            pointList.EndListConstruction();
+
             if (pointOnProvider)
             {
                 ASSERT_EQ(pointList.GetSize(), 1);
-                pointList.EnumeratePoints(
-                    [this, expectedOutput](
-                        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                pointList.EnumeratePoints([this, expectedOutput](
+                        [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                        const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                     {
                         EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                         return true;
@@ -185,12 +188,14 @@ namespace UnitTest
             // Call ModifySurfacePoints and verify the results
             // Add the surface point with a different entity ID than the entity doing the modification, so that the point doesn't get
             // filtered out.
-            SurfaceData::SurfacePointList pointList = { input };
+            SurfaceData::SurfacePointList pointList;
+            pointList.StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&input, 1));
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
+            pointList.EndListConstruction();
             ASSERT_EQ(pointList.GetSize(), 1);
-            pointList.EnumeratePoints(
-                [this, expectedOutput](
-                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+            pointList.EnumeratePoints([this, expectedOutput](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                     return true;

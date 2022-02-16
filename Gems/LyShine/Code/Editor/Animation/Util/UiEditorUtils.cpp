@@ -9,6 +9,8 @@
 
 //#include "CustomizeKeyboardPage.h"
 
+#include <AzCore/Math/Color.h>
+
 #include <Util/EditorUtils.h>
 
 #include <Editor/Resource.h>
@@ -99,9 +101,9 @@ QColor ColorLinearToGamma(ColorF col)
     float g = clamp_tpl(col.g, 0.0f, 1.0f);
     float b = clamp_tpl(col.b, 0.0f, 1.0f);
 
-    r = (float)(r <= 0.0031308 ? (12.92 * r) : (1.055 * pow((double)r, 1.0 / 2.4) - 0.055));
-    g = (float)(g <= 0.0031308 ? (12.92 * g) : (1.055 * pow((double)g, 1.0 / 2.4) - 0.055));
-    b = (float)(b <= 0.0031308 ? (12.92 * b) : (1.055 * pow((double)b, 1.0 / 2.4) - 0.055));
+    r = AZ::Color::ConvertSrgbLinearToGamma(r);
+    g = AZ::Color::ConvertSrgbLinearToGamma(g);
+    b = AZ::Color::ConvertSrgbLinearToGamma(b);
 
     return QColor(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f));
 }
@@ -113,7 +115,7 @@ ColorF ColorGammaToLinear(const QColor& col)
     float g = (float)col.green() / 255.0f;
     float b = (float)col.blue() / 255.0f;
 
-    return ColorF((float)(r <= 0.04045 ? (r / 12.92) : pow(((double)r + 0.055) / 1.055, 2.4)),
-        (float)(g <= 0.04045 ? (g / 12.92) : pow(((double)g + 0.055) / 1.055, 2.4)),
-        (float)(b <= 0.04045 ? (b / 12.92) : pow(((double)b + 0.055) / 1.055, 2.4)));
+    return ColorF(AZ::Color::ConvertSrgbGammaToLinear(r),
+        AZ::Color::ConvertSrgbGammaToLinear(g),
+        AZ::Color::ConvertSrgbGammaToLinear(b));
 }
