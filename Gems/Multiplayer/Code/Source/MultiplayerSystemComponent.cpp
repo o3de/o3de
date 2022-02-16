@@ -1188,6 +1188,10 @@ namespace Multiplayer
         {
             controlledEntity = entityList[0];
         }
+        else
+        {
+            AZLOG_WARN("Attemp to spawn prefab %s failed. Check that prefab is network enabled.", playerPrefabEntityId.m_prefabName.GetCStr());
+        }
 
         // Immediate creation is not guaranteed to set transform, do so once activated
         controlledEntity.GetEntity()->GetTransform()->SetWorldTM(transform);
