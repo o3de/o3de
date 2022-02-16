@@ -224,6 +224,22 @@ namespace EMStudio
         return m_entityContext->GetContextId();
     }
 
+    void AnimViewportRenderer::CheckBounds()
+    {
+        AZ::Vector3 groundPos;
+        AZ::TransformBus::EventResult(groundPos, m_groundEntity->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
+
+        // Used the projected position to check the distance.
+        AZ::Vector3 characterProjectedPos = GetCharacterCenter();
+        characterProjectedPos.SetZ(groundPos.GetZ());
+
+        float distance = groundPos.GetDistanceEstimate(characterProjectedPos);
+        if (distance > BoundMaxDistance)
+        {
+            AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, characterProjectedPos);
+        }
+    }
+
     void AnimViewportRenderer::ResetEnvironment()
     {
         // Reset environment
