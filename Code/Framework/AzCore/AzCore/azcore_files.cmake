@@ -130,6 +130,8 @@ set(FILES
     DOM/DomVisitor.h
     DOM/DomComparison.cpp
     DOM/DomComparison.h
+    DOM/DomPrefixTree.h
+    DOM/DomPrefixTree.inl
     DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
@@ -560,6 +562,9 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/ConfigurableStack.cpp
+    Settings/ConfigurableStack.inl
+    Settings/ConfigurableStack.h
     Settings/SettingsRegistry.cpp
     Settings/SettingsRegistry.h
     Settings/SettingsRegistryConsoleUtils.cpp

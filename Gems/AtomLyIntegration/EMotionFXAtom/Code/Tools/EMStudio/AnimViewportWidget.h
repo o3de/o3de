@@ -45,7 +45,7 @@ namespace EMStudio
         // AnimViewportRequestBus::Handler overrides
         void UpdateCameraViewMode(RenderOptions::CameraViewMode mode);
         void UpdateCameraFollowUp(bool follow);
-        void UpdateRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags);
+        void UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags);
 
         // ViewportPluginRequestBus::Handler overrides
         AZ::s32 GetViewportId() const;
@@ -54,8 +54,13 @@ namespace EMStudio
 
         AtomRenderPlugin* m_plugin;
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
+
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
+        AZStd::shared_ptr<AzFramework::LookScrollTranslationCameraInput> m_lookScrollCamera;
         AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
+        AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
+        AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero();
     };
 }
