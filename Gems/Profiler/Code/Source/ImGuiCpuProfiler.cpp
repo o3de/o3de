@@ -30,7 +30,7 @@ namespace Profiler
     constexpr AZStd::sys_time_t ProfilerViewEdgePadding = 5000;
     constexpr size_t InitialCpuTimingStatsAllocation = 8;
 
-    constexpr int MinSavableFrameCount = 10;
+    constexpr int MinSavableFrameCount = 30; // 1 second @ 30 fps
     constexpr int MaxSavableFrameCount = 2000;
 
     constexpr int MaxUpdateFrequencyMs = 2000; // 2 seconds
@@ -514,6 +514,14 @@ namespace Profiler
             ImGui::SliderInt("Update Freq. (ms)", &m_updateFrequencyMs, 0, MaxUpdateFrequencyMs, "%d", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderInt("Saved Frames", &m_framesToCollect, MinSavableFrameCount, MaxSavableFrameCount, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
             m_visualizerHighlightFilter.Draw("Find Region");
+
+            // estimate the number of frames required to fulfill the update frequency
+            const AZ::TimeMs deltaMs = AZ::TimeUsToMs(AZ::GetRealTickDeltaTimeUs());
+            const int estimatedFrameCountPadding = 5; // padding is necessary to prevent flashes of blank frames
+            const int estimatedFrameCount = aznumeric_cast<int >(AZ::TimeMs{ m_updateFrequencyMs } / deltaMs) + estimatedFrameCountPadding;
+
+            // bump the number of saved frames to the update frequency estimate to prevent periods of empty data
+            m_framesToCollect = AZStd::max(m_framesToCollect, estimatedFrameCount);
 
             ImGui::NextColumn();
 
