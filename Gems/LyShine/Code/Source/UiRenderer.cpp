@@ -107,6 +107,7 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
     AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext = viewportContext->GetWindowContext();
     auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *windowContext.get());
     pipelineAsset.Release();
+    atomScene->ApplyRenderPipelineChange(renderPipeline.get());
     atomScene->AddRenderPipeline(renderPipeline);
 
     atomScene->Activate();

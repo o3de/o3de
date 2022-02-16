@@ -285,6 +285,14 @@ namespace AZ
             return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
         }
 
+        void Scene::ApplyRenderPipelineChange(RenderPipeline* pipeline)
+        {
+            for (auto& fp : m_featureProcessors)
+            {
+                fp->ApplyRenderPipelineChange(pipeline);
+            }
+        }
+
         void Scene::AddRenderPipeline(RenderPipelinePtr pipeline)
         {
             if (pipeline->m_scene != nullptr)
