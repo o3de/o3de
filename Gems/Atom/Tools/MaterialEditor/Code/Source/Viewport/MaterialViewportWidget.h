@@ -17,6 +17,7 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <Viewport/MaterialViewportNotificationBus.h>
 
@@ -92,10 +93,14 @@ namespace MaterialEditor
 
         using DirectionalLightHandle = AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle;
 
+        AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
+
+        AZ::RPI::ScenePtr m_scene;
+        AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
+        AZ::RPI::RenderPipelinePtr m_renderPipeline;
         AZ::Data::Instance<AZ::RPI::SwapChainPass> m_swapChainPass;
         AZStd::string m_defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
-        AZ::RPI::RenderPipelinePtr m_renderPipeline;
-        AZ::RPI::ScenePtr m_scene;
+
         AZ::Render::DirectionalLightFeatureProcessorInterface* m_directionalLightFeatureProcessor = {};
         AZ::Render::DisplayMapperFeatureProcessorInterface* m_displayMapperFeatureProcessor = {};
 
