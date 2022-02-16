@@ -11,6 +11,8 @@ import bpy
 from bpy.props import EnumProperty
 import shutil
 from pathlib import Path
+
+import constants
 from . import ui
 
 def check_selected():
@@ -46,13 +48,13 @@ def valid_animation_selection():
     obj = object_selections[0]
 
     if obj.type == 'ARMATURE':
-        bpy.types.Scene.export_good = False
+        bpy.types.Scene.export_good_o3de = False
         ui.message_box("You must select lowest level mesh of Armature.", "O3DE Tools", "ERROR")
     elif obj.children:
-        bpy.types.Scene.export_good = False
+        bpy.types.Scene.export_good_o3de = False
         ui.message_box("You need to select base mesh level.", "O3DE Tools", "ERROR")
     else:
-        bpy.types.Scene.export_good = True
+        bpy.types.Scene.export_good_o3de = True
         selected_hierarchy_and_rig_animation()
 
 def check_if_valid_path(file_path):
@@ -98,7 +100,7 @@ def loop_through_selected_materials(texture_file_path):
             if img.type == 'TEX_IMAGE':
                 # Frist make sure the image is not packed inside blender
                 if img.image.packed_file:
-                    if not Path(img.image.name).suffix == '':
+                    if Path(img.image.name).suffix in constants.IMAGE_EXT:
                         bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(img.image.name))
                     else:
                         ext = '.png'

@@ -67,9 +67,7 @@ def register():
     bpy.utils.register_class(ui.SceneExporterFileMenu)
     bpy.utils.register_class(ui.ExportOptionsListDropDown)
     bpy.utils.register_class(ui.AnimationOptionsListDropDown)
-    #bpy.utils.register_class(ui.FileNameString)
-    #bpy.utils.register_class(ui.SetFileNameString)
-    bpy.types.Scene.export_file_name = bpy.props.StringProperty \
+    bpy.types.Scene.export_file_name_o3de = bpy.props.StringProperty \
     (
         name = "",
         description = "Export File Name",
@@ -80,11 +78,13 @@ def register():
     bpy.types.Scene.export_textures_folder = True
     bpy.types.Scene.animation_export = constants.NO_ANIMATION
     bpy.types.Scene.file_menu_animation_export = False
-    bpy.types.Scene.export_good = True
+    bpy.types.Scene.export_good_o3de = True
+    bpy.types.Scene.multi_file_export_o3de = False
     bpy.types.Scene.stored_image_source_paths = {}
     bpy.types.Scene.o3de_projects_list = EnumProperty(items=o3de_utils.build_projects_list(), name='')
     bpy.types.Scene.texture_options_list = EnumProperty(items=constants.EXPORT_LIST_OPTIONS, name='', default='0')
     bpy.types.Scene.animation_options_list = EnumProperty(items=constants.ANIMATION_LIST_OPTIONS, name='', default='0')
+    bpy.types.WindowManager.multi_file_export_toggle = bpy.props.BoolProperty()
 
 def unregister():
     """! This is the function that will unregister Classes and Global Vars for this plugin
@@ -96,19 +96,19 @@ def unregister():
     bpy.utils.unregister_class(ui.SceneExporterFileMenu)
     bpy.utils.unregister_class(ui.ExportOptionsListDropDown)
     bpy.utils.unregister_class(ui.AnimationOptionsListDropDown)
-    #bpy.utils.unregister_class(ui.FileNameString)
-    #bpy.utils.unregister_class(ui.SetFileNameString)
-    del bpy.types.Scene.export_file_name
     bpy.types.TOPBAR_MT_file_export.remove(ui.file_export_menu_add) # Blender Specific Class and Naming Convention. 
+    del bpy.types.Scene.export_file_name_o3de
     del bpy.types.Scene.selected_o3de_project_path
     del bpy.types.Scene.o3de_projects_list
     del bpy.types.Scene.texture_options_list
     del bpy.types.Scene.animation_options_list
-    del bpy.types.Scene.export_good
+    del bpy.types.Scene.export_good_o3de
+    del bpy.types.Scene.multi_file_export_o3de
     del bpy.types.Scene.export_textures_folder
     del bpy.types.Scene.animation_export
     del bpy.types.Scene.file_menu_animation_export
     del bpy.types.Scene.stored_image_source_paths
+    del bpy.types.WindowManager.multi_file_export_toggle
 
 if __name__ == "__main__":
     register()
