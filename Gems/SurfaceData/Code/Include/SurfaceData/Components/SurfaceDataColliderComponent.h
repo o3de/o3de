@@ -92,7 +92,6 @@ namespace SurfaceData
             AZStd::span<SurfaceData::SurfaceTagWeights> weights) const override;
 
     private:
-        bool DoRayTrace(const AZ::Vector3& inPosition, bool queryPointOnly, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const;
         void UpdateColliderData();
         void OnCompositionChanged();
 
