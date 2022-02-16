@@ -23,7 +23,7 @@ namespace AZ
     class Vector2;
     class Vector3;
     class Vector4;
-}
+} // namespace AZ
 
 namespace AZStd
 {
@@ -54,13 +54,65 @@ namespace AZStd
     //! Prints a Color as four unsigned ints representing RGBA.
     void to_string(string& str, const AZ::Color& value);
 
-    inline AZStd::string to_string(const AZ::Vector2& val) { AZStd::string str; to_string(str, val); return str; }
-    inline AZStd::string to_string(const AZ::Vector3& val) { AZStd::string str; to_string(str, val); return str; }
-    inline AZStd::string to_string(const AZ::Vector4& val) { AZStd::string str; to_string(str, val); return str; }
-    inline AZStd::string to_string(const AZ::Quaternion& val) { AZStd::string str; to_string(str, val); return str; }
-    inline AZStd::string to_string(const AZ::Matrix3x3& val) { AZStd::string str; to_string(str, val); return str; }
-    inline AZStd::string to_string(const AZ::Matrix4x4& val) { AZStd::string str; to_string(str, val); return str; }
-    inline AZStd::string to_string(const AZ::Transform& val) { AZStd::string str; to_string(str, val); return str; }
-    inline AZStd::string to_string(const AZ::Aabb& val) { AZStd::string str; to_string(str, val); return str; }
-    inline AZStd::string to_string(const AZ::Color& val) { AZStd::string str; to_string(str, val); return str; }
-}
+    inline AZStd::string to_string(const AZ::Vector2& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+
+    inline AZStd::string to_string(const AZ::Vector3& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+
+    inline AZStd::string to_string(const AZ::Vector4& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+
+    inline AZStd::string to_string(const AZ::Quaternion& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+
+    inline AZStd::string to_string(const AZ::Matrix3x3& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+
+    inline AZStd::string to_string(const AZ::Matrix4x4& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+    inline AZStd::string to_string(const AZ::Transform& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+
+    inline AZStd::string to_string(const AZ::Aabb& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+
+    inline AZStd::string to_string(const AZ::Color& val)
+    {
+        AZStd::string str;
+        to_string(str, val);
+        return str;
+    }
+} // namespace AZStd
