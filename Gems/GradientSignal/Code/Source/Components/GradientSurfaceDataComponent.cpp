@@ -222,48 +222,60 @@ namespace GradientSignal
             (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
             "Sizes of the passed-in spans don't match");
 
-        if (!m_configuration.m_modifierTags.empty())
+        // If we don't have any modifier tags, there's nothing to modify.
+        if (m_configuration.m_modifierTags.empty())
         {
-            // This method can be called from the vegetation thread, but our shape bounds can get updated from the main thread.
-            // If we have an optional constraining shape bounds, grab a copy of it with minimized mutex lock times.  Avoid mutex
-            // locking entirely if we aren't using the shape bounds option at all.
-            // (m_validShapeBounds is an atomic bool, so it can be queried outside of the mutex)
-            bool validShapeBounds = false;
-            AZ::Aabb shapeConstraintBounds;
-            if (m_validShapeBounds)
-            {
-                AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
-                shapeConstraintBounds = m_cachedShapeConstraintBounds;
-                validShapeBounds = m_cachedShapeConstraintBounds.IsValid();
-            }
+            return;
+        }
 
-            for (size_t index = 0; index < positions.size(); index++)
-            {
-                bool inBounds = true;
+        // This method can be called from any thread, but our shape bounds can get updated from the main thread.
+        // If we have an optional constraining shape bounds, grab a copy of it with minimized mutex lock times.  Avoid mutex
+        // locking entirely if we aren't using the shape bounds option at all.
+        // (m_validShapeBounds is an atomic bool, so it can be queried outside of the mutex)
+        AZ::Aabb shapeConstraintBounds = AZ::Aabb::CreateNull();
+        if (m_validShapeBounds)
+        {
+            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            shapeConstraintBounds = m_cachedShapeConstraintBounds;
+        }
 
-                // If we have an optional shape bounds, verify the point exists inside of it before querying the gradient value.
-                // Otherwise, assume an unbounded surface modifier and allow *all* points through the shape check.
-                if (validShapeBounds)
+        // Start by assuming an unbounded surface modifier and default to allowing *all* points through the shape check.
+        AZStd::vector<bool> inBounds;
+
+        // If we have an optional shape bounds, adjust the inBounds flags based on whether or not each point is inside the bounds.
+        if (shapeConstraintBounds.IsValid())
+        {
+            LmbrCentral::ShapeComponentRequestsBus::Event(
+                m_configuration.m_shapeConstraintEntityId,
+                [positions, shapeConstraintBounds, &inBounds](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    inBounds = false;
-                    if (shapeConstraintBounds.Contains(positions[index]))
-                    {
-                        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                            inBounds, m_configuration.m_shapeConstraintEntityId,
-                            &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, positions[index]);
-                    }
-                }
+                    inBounds.resize(positions.size(), false);
 
-                // If the point is within our allowed shape bounds, verify that it meets the gradient thresholds.
-                // If so, then return the value to add to the surface tags.
-                if (inBounds)
-                {
-                    const GradientSampleParams sampleParams = { positions[index] };
-                    const float value = m_gradientSampler.GetValue(sampleParams);
-                    if (value >= m_configuration.m_thresholdMin && value <= m_configuration.m_thresholdMax)
+                    for (size_t index = 0; index < positions.size(); index++)
                     {
-                        weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, value);
+                        // Check the AABB first.
+                        if (shapeConstraintBounds.Contains(positions[index]))
+                        {
+                            // The point is in the AABB, so check against the actual shape geometry.
+                            inBounds[index] = shape->IsPointInside(positions[index]);
+                        }
                     }
+                });
+        }
+
+        // Get all of the potential gradient values in one bulk call.
+        AZStd::vector<float> gradientValues(positions.size());
+        m_gradientSampler.GetValues(positions, gradientValues);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            // If the point is within our allowed shape bounds, verify that it meets the gradient thresholds.
+            // If so, then add the value to the surface tags.
+            if (inBounds.empty() || inBounds[index])
+            {
+                if (gradientValues[index] >= m_configuration.m_thresholdMin && gradientValues[index] <= m_configuration.m_thresholdMax)
+                {
+                    weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, gradientValues[index]);
                 }
             }
         }
