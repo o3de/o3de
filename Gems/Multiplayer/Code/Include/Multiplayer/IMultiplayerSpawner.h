@@ -39,8 +39,16 @@ namespace Multiplayer
 
         virtual ~IMultiplayerSpawner() = default;
 
+        //! Invoked when a Client connects/ClientHost starts a session to determine what autonomous Prefab should be spawned where
+        //! @param userId User ID of joining player
+        //! @param agentDatum Datum containing connection data that can be used to inform join logic
+        //! @return A tuple of the PrefabEntityId to spawn and the world transform of where to spawn it
         virtual AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> OnPlayerJoin(uint64_t userId, const Multiplayer::MultiplayerAgentDatum& agentDatum) = 0;
 
+        //! Invoked when a Client disconnects from the session to determine how the autonomous prefab should be cleaned up
+        //! @param entityHandle The entity handle to consider on leaving, generally the connection's primary player entity
+        //! @param replicationSet The replication set of the related connection
+        //! @param reason The cause of disconnection
         virtual void OnPlayerLeave(
             Multiplayer::ConstNetworkEntityHandle entityHandle, const Multiplayer::ReplicationSet& replicationSet, AzNetworking::DisconnectReason reason) = 0;
     };
