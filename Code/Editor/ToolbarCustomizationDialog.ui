@@ -441,7 +441,7 @@
           <item>
            <widget class="QLabel" name="label_10">
             <property name="text">
-             <string>Save the current prefab</string>
+             <string>Save the current level</string>
             </property>
            </widget>
           </item>
