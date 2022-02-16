@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace Render
     {
-        //! Pass for editor mode feedback color tint effect.
+        //! Pass for editor mode feedback outline effect.
         class EditorModeOutlinePass
             : public EditorModeFeedbackPassBase
         {
@@ -46,8 +46,8 @@ namespace AZ
 
             RHI::ShaderInputNameIndex m_lineThicknessIndex = "m_lineThickness";
             RHI::ShaderInputNameIndex m_lineColorIndex = "m_lineColor";
-            float m_lineThickness = 3.0f;
-            AZ::Color m_lineColor = AZ::Color(0.96f, 0.65f, 0.13f, 1.0f);
+            float m_lineThickness = 3.0f; //!< Default line thickness for the outline effect.
+            AZ::Color m_lineColor = AZ::Color(0.96f, 0.65f, 0.13f, 1.0f); //!< Default line color for the outline effect.
         };
     }   // namespace Render
 }   // namespace AZ

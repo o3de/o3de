@@ -46,8 +46,8 @@ namespace AZ
 
             RHI::ShaderInputNameIndex m_tintAmountIndex = "m_tintAmount";
             RHI::ShaderInputNameIndex m_tintColorIndex = "m_tintColor";
-            float m_tintAmount = 0.5f;
-            AZ::Color m_tintColor = AZ::Color::CreateZero();
+            float m_tintAmount = 0.5f; //!< Default tint amount for the color tint effect.
+            AZ::Color m_tintColor = AZ::Color::CreateZero(); //!< Default tint color for the color tint effect.
         };
     }   // namespace Render
 }   // namespace AZ
