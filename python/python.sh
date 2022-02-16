@@ -21,7 +21,7 @@ if [[ "$OSTYPE" == *"darwin"* ]]; then
 elif [[ "$OSTYPE" == "msys" ]]; then
     PYTHON=$DIR/runtime/python-3.7.12-rev1-windows/python/python.exe
 else
-    PYTHON=$DIR/runtime/python-3.7.10-rev2-linux/python/bin/python
+    PYTHON=$DIR/runtime/python-3.7.12-rev1-linux/python/bin/python
 fi
 
 if [[ -e "$PYTHON" ]];
