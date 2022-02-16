@@ -69,12 +69,6 @@ namespace AZ
                 HairShortCutResolveColorPassName = Name{ "HairShortCutResolveColorPass" };
 
                 ++s_instanceCount;
-
-                if (!CreatePerPassResources())
-                {   // this might not be an error - if the pass system is still empty / minimal
-                    //  and these passes are not part of the minimal pipeline, they will not be created.
-                    AZ_Error("Hair Gem", false, "Failed to create the hair shared buffer resource");
-                }
             }
 
             HairFeatureProcessor::~HairFeatureProcessor()
@@ -106,9 +100,15 @@ namespace AZ
 
             void HairFeatureProcessor::Deactivate()
             {
+                m_hairPassRequestAsset.Reset();
                 DisableSceneNotification();
                 TickBus::Handler::BusDisconnect();
                 HairGlobalSettingsRequestBus::Handler::BusDisconnect();
+            }
+
+            void HairFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
+            {
+                CreateHairParentPass(renderPipeline);
             }
 
             void HairFeatureProcessor::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -268,6 +268,12 @@ namespace AZ
                     return;
                 }
 
+                // Skip adding draw or dispath items if there it no hair render objects
+                if (m_hairRenderObjects.size() == 0)
+                {
+                    return;
+                }
+
                 // [To Do] - no culling scheme applied yet.
                 // Possibly setup the hair culling work group to be re-used for each view.
                 // See SkinnedMeshFeatureProcessor::Render for more details
@@ -314,6 +320,69 @@ namespace AZ
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairParentPassName, renderPipeline);
                 RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
                 return pass ? true : false;
+            }
+
+            bool HairFeatureProcessor::CreateHairParentPass(RPI::RenderPipeline* renderPipeline)
+            {
+                if (HasHairParentPass(renderPipeline))
+                {
+                    CreatePerPassResources();
+                    return true;
+                }
+                const char* passRequestAssetFilePath = "Passes/AtomTressFX_PassRequest.azasset";
+                m_hairPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                    passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+                const AZ::RPI::PassRequest* passRequest = nullptr;
+                if (m_hairPassRequestAsset->IsReady())
+                {
+                    passRequest = m_hairPassRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+                }
+                if (!passRequest)
+                {
+                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
+                    return false;
+                }
+
+                m_usePPLLRenderTechnique = passRequest->m_templateName == AZ::Name("HairParentPassTemplate");
+
+                 // Create the pass
+                RPI::Ptr<RPI::Pass> hairParentPass  = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
+
+                // add the pass to render pipeline
+                RPI::Ptr<RPI::ParentPass> rootPass = renderPipeline->GetRootPass();
+
+                // Find opaque pass
+                auto passFilter = RPI::PassFilter::CreateWithTemplateName(Name("OpaqueParentTemplate"), renderPipeline);
+                RPI::Ptr<RPI::Pass> opaquePass = nullptr;
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&opaquePass](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        opaquePass = pass;
+                        return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                    });
+
+                if (!opaquePass)
+                {
+                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Can't find pass created with OpaqueParentTemplate in render pipeline [%s]",
+                        renderPipeline->GetId().GetCStr());
+                    return false;
+                }
+                // insert the pass 
+                auto parentPass = opaquePass->GetParent();
+                auto passIndex = parentPass->FindChildPassIndex(Name("OpaquePass"));
+                    
+                bool success = parentPass->InsertChild(hairParentPass, passIndex.GetIndex()+1);
+
+                // only create pass resources 
+                if (success)
+                {
+                    CreatePerPassResources();
+                }
+                else
+                {
+                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Insert the pass to render pipeline [%s] failed",
+                        renderPipeline->GetId().GetCStr());
+                }
+                return success;
             }
 
             void HairFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline)

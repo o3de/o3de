@@ -113,6 +113,7 @@ namespace AZ
                 // FeatureProcessor overrides ...
                 void Activate() override;
                 void Deactivate() override;
+                void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
                 void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
                 void Render(const FeatureProcessor::RenderPacket& packet) override;
 
@@ -167,6 +168,8 @@ namespace AZ
 
                 bool HasHairParentPass(RPI::RenderPipeline* renderPipeline);
 
+                bool CreateHairParentPass(RPI::RenderPipeline* renderPipeline);
+
                 //! The following will serve to register the FP in the Thumbnail system
                 AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
 
@@ -192,6 +195,9 @@ namespace AZ
                 // ShortCut Render Passes - special case for the geometry render passes
                 Data::Instance<HairShortCutGeometryDepthAlphaPass> m_hairShortCutGeometryDepthAlphaPass = nullptr;
                 Data::Instance<HairShortCutGeometryShadingPass> m_hairShortCutGeometryShadingPass = nullptr;
+
+                // Cache the pass request data for creating a hair parent pass
+                AZ::Data::Asset<AZ::RPI::AnyAsset> m_hairPassRequestAsset;
 
                 //--------------------------------------------------------------
                 //                      Per Pass Resources 
