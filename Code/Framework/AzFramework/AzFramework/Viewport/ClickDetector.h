@@ -60,6 +60,8 @@ namespace AzFramework
         //! time to avoid double click issues in tests for example.
         void OverrideTimeNowFn(AZStd::function<AZStd::chrono::milliseconds()> timeNowFn);
 
+        AZStd::function<void()> m_downEvent;
+
     private:
         //! Internal state of ClickDetector based on incoming events.
         enum class DetectionState

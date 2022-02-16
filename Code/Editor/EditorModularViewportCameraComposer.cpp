@@ -8,9 +8,12 @@
 
 #include <EditorModularViewportCameraComposer.h>
 
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Render/IntersectorInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -38,6 +41,9 @@ AZ_CVAR(
     nullptr,
     AZ::ConsoleFunctorFlags::Null,
     "Sets how long the default orbit point should take to appear and disappear");
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
 
 namespace SandboxEditor
 {
@@ -211,18 +217,29 @@ namespace SandboxEditor
             return SandboxEditor::CameraScrollSpeed();
         };
 
-        const auto pivotFn = []() -> AZStd::optional<AZ::Vector3>
+        const auto pivotFn = [/*viewportId = m_viewportId*/]() -> AZStd::optional<AZ::Vector3>
         {
             // use the manipulator transform as the pivot point
-            AZStd::optional<AZ::Transform> entityPivot;
-            AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-                entityPivot, AzToolsFramework::GetEntityContextId(),
-                &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+            // AZStd::optional<AZ::Transform> entityPivot;
+            // AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+            //    entityPivot, AzToolsFramework::GetEntityContextId(),
+            //    &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
-            if (entityPivot.has_value())
-            {
-                return entityPivot->GetTranslation();
-            }
+            // AZ::Vector2 systemCursorPositionNormalized = AZ::Vector2::CreateZero();
+            // AzFramework::InputSystemCursorRequestBus::EventResult(
+            //    systemCursorPositionNormalized, AzFramework::InputDeviceMouse::Id,
+            //    &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorPositionNormalized);
+
+            // const auto screenPoint = AzFramework::ScreenPointFromVector2(
+            //    systemCursorPositionNormalized *
+            //    AZ::Vector2(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)));
+
+            // return pickedPivot;
+
+            // if (entityPivot.has_value())
+            //{
+            //    return entityPivot->GetTranslation();
+            //}
 
             return AZStd::nullopt;
         };
@@ -234,27 +251,78 @@ namespace SandboxEditor
 
         m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(SandboxEditor::CameraOrbitChannelId());
 
+        // auto optionalPivot = AZStd::make_shared<AZStd::optional<AZ::Vector3>>();
+
+        const auto beginPickRotatePivot = [this]
+        {
+            //AZ::TickBus::Handler::BusConnect();
+            AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+            m_displayPivot = true;
+
+            // AZ_Printf("tom-debug", "begin pick rotate pivot\n");
+
+            // AZStd::optional<AzFramework::ScreenPoint> screenPoint;
+            // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::EventResult(
+            //    screenPoint, viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::MousePosition);
+
+            // if (screenPoint.has_value())
+            //{
+            //    const auto pickedPivot = AzToolsFramework::FindClosestPickIntersection(
+            //        viewportId, screenPoint.value(), AzToolsFramework::EditorPickRayLength, 10.0f);
+
+            //    m_optionalPivot = pickedPivot;
+            //}
+            // else
+            //{
+            //    m_optionalPivot = AZStd::nullopt;
+            //}
+        };
+
+        const auto endPickRotatePivot = [this]
+        {
+            m_displayPivot = false;
+        };
+
         m_orbitCamera->SetPivotFn(
-            [this, pivotFn](const AZ::Vector3& position, const AZ::Vector3& direction)
+            [this]([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
             {
+                // const auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+                // const auto viewportContext = viewportContextManager->GetViewportContextById(viewportId);
+                // const auto viewportSize = viewportContext->GetViewportSize();
+
+                // AZStd::optional<AzFramework::ScreenPoint> screenPoint;
+                // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::EventResult(
+                //    screenPoint, viewportId,
+                //    &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::MousePosition);
+
+                // if (screenPoint.has_value())
+                //{
+                //    const auto pickedPivot = AzToolsFramework::FindClosestPickIntersection(
+                //        viewportId, screenPoint.value(), AzToolsFramework::EditorPickRayLength, 10.0f);
+
+                //    return pickedPivot;
+                //}
+
+                return m_pivot;
+
                 // return the pivot
-                if (auto pivot = pivotFn())
-                {
-                    return pivot.value();
-                }
+                // if (auto pivot = pivotFn())
+                //{
+                //    return pivot.value();
+                //}
 
-                // start ticking and drawing (for the default pivot)
-                AZ::TickBus::Handler::BusConnect();
-                AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+                //// start ticking and drawing (for the default pivot)
+                // AZ::TickBus::Handler::BusConnect();
+                // AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
 
-                m_defaultOrbiting = true;
-                // calculate the default orbit point
-                if (!ed_cameraPinDefaultOrbit || m_orbitCamera->Beginning())
-                {
-                    m_defaultOrbitPoint = position + direction * SandboxEditor::CameraDefaultOrbitDistance();
-                }
+                // m_defaultOrbiting = true;
+                //// calculate the default orbit point
+                // if (!ed_cameraPinDefaultOrbit || m_orbitCamera->Beginning())
+                //{
+                //    m_defaultOrbitPoint = position + direction * SandboxEditor::CameraDefaultOrbitDistance();
+                //}
 
-                return m_defaultOrbitPoint;
+                // return m_defaultOrbitPoint;
             });
 
         m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraOrbitLookChannelId());
@@ -273,6 +341,27 @@ namespace SandboxEditor
         {
             return !trackingTransform();
         };
+
+        m_orbitRotateCamera->SetInitiateRotateFn(
+            [this, viewportId = m_viewportId]
+            {
+                AZ_Printf("tom-debug", "begin pick rotate pivot\n");
+
+                AZStd::optional<AzFramework::ScreenPoint> screenPoint;
+                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::EventResult(
+                    screenPoint, viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::MousePosition);
+
+                if (screenPoint.has_value())
+                {
+                    const auto pickedPivot = AzToolsFramework::FindClosestPickIntersection(
+                        viewportId, screenPoint.value(), AzToolsFramework::EditorPickRayLength, 10.0f);
+
+                    m_pivot = pickedPivot;
+                }
+            });
+
+        m_orbitRotateCamera->SetActivationBeganFn(beginPickRotatePivot);
+        m_orbitRotateCamera->SetActivationEndedFn(endPickRotatePivot);
 
         m_orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
             translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslateOffsetOrbit);
@@ -429,5 +518,16 @@ namespace SandboxEditor
     {
         DrawTransformAxis(
             debugDisplay, AzToolsFramework::GetCameraState(viewportInfo.m_viewportId), m_defaultOrbitPoint, 1.0f, m_defaultOrbitOpacity);
+
+        if (m_displayPivot)
+        {
+            debugDisplay.CullOff();
+            debugDisplay.SetColor(AZ::Colors::Red);
+            debugDisplay.DrawBall(m_pivot, 0.05f, false);
+            debugDisplay.CullOn();
+        }
     }
 } // namespace SandboxEditor
+
+#pragma optimize("", on)
+#pragma inline_depth()

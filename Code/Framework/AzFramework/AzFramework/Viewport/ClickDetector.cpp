@@ -50,6 +50,11 @@ namespace AzFramework
                 }
             }
 
+            if (m_downEvent)
+            {
+                m_downEvent();
+            }
+
             m_detectionState = DetectionState::WaitingForMove;
             m_moveAccumulator = 0.0f;
 

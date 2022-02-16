@@ -625,8 +625,19 @@ namespace AzFramework
 
         if (Active())
         {
-            MovePivotDetached(nextCamera, m_pivotFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY()));
             nextCamera = m_orbitCameras.StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
+            MovePivotDetached(nextCamera, m_pivotFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY()));
+
+            //if (const auto nextPivot = m_pivotFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY());
+            //    !nextPivot.IsClose(nextCamera.m_pivot))
+            //{
+            //    AZ_Printf("tom-debug", "pivot moved");
+            //    MovePivotDetached(nextCamera, nextPivot);
+            //}
+            //else
+            //{
+            //    nextCamera = m_orbitCameras.StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
+            //}
         }
 
         if (Ending())

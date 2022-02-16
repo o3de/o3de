@@ -372,6 +372,11 @@ namespace AzFramework
         AZStd::function<bool()> m_invertYawFn;
         AZStd::function<bool()> m_constrainPitch;
 
+        void SetInitiateRotateFn(AZStd::function<void()> initiateRotateFn)
+        {
+            m_clickDetector.m_downEvent = initiateRotateFn;
+        }
+
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.
         ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred after an initial discrete input

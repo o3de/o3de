@@ -65,6 +65,8 @@ namespace SandboxEditor
 
         float m_defaultOrbitOpacity = 0.0f; //!< The default orbit axes opacity (to fade in and out).
         AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero(); //!< The orbit point to use when no entity is selected.
+        AZ::Vector3 m_pivot; //!
         bool m_defaultOrbiting = false; //!< Is the camera default orbiting (orbiting when there's no selected entity).
+        bool m_displayPivot = false; //!
     };
 } // namespace SandboxEditor

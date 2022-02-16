@@ -328,6 +328,8 @@ namespace AzToolsFramework
             virtual void SetOverrideCursor(CursorStyleOverride cursorStyleOverride) = 0;
             //! Clear the cursor style override.
             virtual void ClearOverrideCursor() = 0;
+            //!
+            virtual AZStd::optional<AzFramework::ScreenPoint> MousePosition() const = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;
