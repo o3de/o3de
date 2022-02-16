@@ -13,11 +13,11 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 
-// Temporary measure for configuring editor mode feedback effects at runtime until LYN-5294 is implemented
+// Temporary measure for configuring editor mode feedback effects at runtime until GHI 3455 is implemented
 #define AZ_EDITOR_MODE_PASS_CVAR(TYPE, NAMESPACE, NAME, INITIAL_VALUE)                              \
     AZ_CVAR(TYPE, ##NAMESPACE##_##NAME, INITIAL_VALUE, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
-// Temporary measure for configuring editor mode depth transitions at runtime until LYN-5294 is implemented
+// Temporary measure for configuring editor mode depth transitions at runtime until GHI 3455 is implemented
 #define AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(NAMESPACE, MIN_VALUE, START, DURATION, FINAL_BLEND)    \
     AZ_EDITOR_MODE_PASS_CVAR(float, NAMESPACE, MinDepthTransitionValue, MIN_VALUE);                 \
     AZ_EDITOR_MODE_PASS_CVAR(float, NAMESPACE, DepthTransitionStart, START);                        \

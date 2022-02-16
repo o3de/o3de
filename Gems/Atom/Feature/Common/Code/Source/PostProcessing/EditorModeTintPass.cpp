@@ -13,7 +13,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-// Temporary measure for setting the color tint pass shader parameters at runtime until LYN-5294 is implemented
+// Temporary measure for setting the color tint pass shader parameters at runtime until GHI 3455 is implemented
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeTintPass, 0.0f, 0.0f, 0.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeTintPass, TintAmount, 0.5f);
 AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeTintPass, TintColor, AZ::Color(0.0f, 0.0f, 0.0f, 0.0f));
@@ -62,7 +62,7 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeTintPass, TintColor, AZ::Color(
 
         void EditorModeTintPass::SetSrgConstants()
         {
-            // Temporary measure for setting the pass shader parameters at runtime until LYN-5294 is implemented
+            // Temporary measure for setting the pass shader parameters at runtime until GHI 3455 is implemented
             SetMinDepthTransitionValue(cl_editorModeTintPass_MinDepthTransitionValue);
             SetDepthTransitionStart(cl_editorModeTintPass_DepthTransitionStart);
             SetDepthTransitionDuration(cl_editorModeTintPass_DepthTransitionDuration);
