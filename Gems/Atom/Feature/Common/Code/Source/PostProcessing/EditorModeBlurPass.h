@@ -14,12 +14,9 @@ namespace AZ
 {
     namespace Render
     {
-        /**
-         *  The color grading pass.
-         */
+        //! Pass for editor mode feedback blend effect.
         class EditorModeBlurPass
             : public EditorModeFeedbackPassBase
-            //TODO: , public PostProcessingShaderOptionBase
         {
         public:
             AZ_RTTI(EditorModeBlurPass, "{D907D0ED-61E4-4E46-A682-A849676CF48A}", EditorModeFeedbackPassBase);
@@ -30,6 +27,7 @@ namespace AZ
             //! Creates a EditorModeBlurPass
             static RPI::Ptr<EditorModeBlurPass> Create(const RPI::PassDescriptor& descriptor);
 
+            //! Sets the width of kernal to apply box blur effect.
             void SetKernalWidth(float width);
 
         protected:
@@ -41,10 +39,11 @@ namespace AZ
             bool IsEnabled() const override;
 
         private:
+            //! Sets the shader constant values for the blend effect.
             void SetSrgConstants();
 
             RHI::ShaderInputNameIndex m_kernalWidthIndex = "m_kernalWidth";
-            float m_kernalWidth = 1.0f;
+            float m_kernalWidth = 5.0f; //!< Default kernal width for the blend effect.
         };
     }   // namespace Render
 }   // namespace AZ

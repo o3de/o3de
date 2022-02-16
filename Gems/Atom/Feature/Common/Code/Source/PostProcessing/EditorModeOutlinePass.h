@@ -13,12 +13,9 @@ namespace AZ
 {
     namespace Render
     {
-        /**
-         *  The color grading pass.
-         */
+        //! Pass for editor mode feedback color tint effect.
         class EditorModeOutlinePass
             : public EditorModeFeedbackPassBase
-            //TODO: , public PostProcessingShaderOptionBase
         {
         public:
             AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackPassBase);
@@ -29,7 +26,10 @@ namespace AZ
             //! Creates a EditorModeOutlinePass
             static RPI::Ptr<EditorModeOutlinePass> Create(const RPI::PassDescriptor& descriptor);
 
+            //! Sets the outline line thickness.
             void SetLineThickness(float width);
+
+            //! Sets the outline line color.
             void SetLineColor(AZ::Color color);
 
         protected:
@@ -41,6 +41,7 @@ namespace AZ
             bool IsEnabled() const override;
 
         private:
+            //! Sets the shader constant values for the outline effect.
             void SetSrgConstants();
 
             RHI::ShaderInputNameIndex m_lineThicknessIndex = "m_lineThickness";

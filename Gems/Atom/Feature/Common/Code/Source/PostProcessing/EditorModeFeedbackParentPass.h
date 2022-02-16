@@ -13,11 +13,9 @@ namespace AZ
 {
     namespace Render
     {
-        /**
-         *
-         */
-        class EditorModeFeedbackParentPass : public AZ::RPI::ParentPass
-        // TODO: , public PostProcessingShaderOptionBase
+        //! Parent pass for the editor mode feedback system.
+        class EditorModeFeedbackParentPass 
+        : public AZ::RPI::ParentPass
         {
         public:
             AZ_RTTI(EditorModeFeedbackParentPass, "{890482AB-192E-45B6-866C-76CB7C799CF3}", AZ::RPI::ParentPass);

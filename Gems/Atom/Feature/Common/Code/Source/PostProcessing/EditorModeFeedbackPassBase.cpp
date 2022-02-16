@@ -18,6 +18,16 @@ namespace AZ
             return AZStd::move(pass);
         }
 
+        EditorModeFeedbackPassBase::EditorModeFeedbackPassBase(
+            const RPI::PassDescriptor& descriptor,
+            const DepthTransition& depthTransition,
+            float finalBlendAmount)
+            : FullscreenTrianglePass(descriptor)
+            , m_depthransition(depthTransition)
+            , m_finalBlendAmount(finalBlendAmount)
+        {
+        }
+
         void EditorModeFeedbackPassBase::InitializeInternal()
         {
             FullscreenTrianglePass::InitializeInternal();
@@ -35,17 +45,17 @@ namespace AZ
 
         void EditorModeFeedbackPassBase::SetMinDepthTransitionValue(const float value)
         {
-            m_minDepthTransitionValue = value;
+            m_depthransition.m_minDepthTransitionValue = value;
         }
 
         void EditorModeFeedbackPassBase::SetDepthTransitionStart(const float value)
         {
-            m_depthTransitionStart = value;
+            m_depthransition.m_depthTransitionStart = value;
         }
 
         void EditorModeFeedbackPassBase::SetDepthTransitionDuration(const float value)
         {
-            m_depthTransitionDuration = value;
+            m_depthransition.m_depthTransitionDuration = value;
         }
 
         void EditorModeFeedbackPassBase::SetFinalBlendAmount(const float value)
@@ -55,9 +65,9 @@ namespace AZ
 
         void EditorModeFeedbackPassBase::SetSrgConstants()
         {
-            m_shaderResourceGroup->SetConstant(m_minDepthTransitionValueIndex, m_minDepthTransitionValue);
-            m_shaderResourceGroup->SetConstant(m_depthTransitionStartIndex, m_depthTransitionStart);
-            m_shaderResourceGroup->SetConstant(m_depthTransitionDurationIndex, m_depthTransitionDuration);
+            m_shaderResourceGroup->SetConstant(m_minDepthTransitionValueIndex, m_depthransition.m_minDepthTransitionValue);
+            m_shaderResourceGroup->SetConstant(m_depthTransitionStartIndex, m_depthransition.m_depthTransitionStart);
+            m_shaderResourceGroup->SetConstant(m_depthTransitionDurationIndex, m_depthransition.m_depthTransitionDuration);
             m_shaderResourceGroup->SetConstant(m_finalBlendAmountIndex, m_finalBlendAmount);
         }
     } // namespace Render

@@ -14,12 +14,9 @@ namespace AZ
 {
     namespace Render
     {
-        /**
-         *  The color grading pass.
-         */
+        //! Pass for editor mode feedback desaturation effect.
         class EditorModeDesaturationPass
             : public EditorModeFeedbackPassBase
-            //TODO: , public PostProcessingShaderOptionBase
         {
         public:
             AZ_RTTI(EditorModeDesaturationPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", EditorModeFeedbackPassBase);
@@ -30,6 +27,7 @@ namespace AZ
             //! Creates a EditorModeDesaturationPass
             static RPI::Ptr<EditorModeDesaturationPass> Create(const RPI::PassDescriptor& descriptor);
 
+            //! Sets the amount of desaturation to apply.
             void SetDesaturationAmount(float value);
 
         protected:
@@ -41,10 +39,11 @@ namespace AZ
             bool IsEnabled() const override;
 
         private:
+            //! Sets the shader constant values for the desaturation effect.
             void SetSrgConstants();
 
             RHI::ShaderInputNameIndex m_desaturationAmountIndex = "m_desaturationAmount";
-            float m_desaturationAmount = 1.0f;
+            float m_desaturationAmount = 1.0f; //!< Default desaturation amount for the desaturation effect.
         };
     }   // namespace Render
 }   // namespace AZ

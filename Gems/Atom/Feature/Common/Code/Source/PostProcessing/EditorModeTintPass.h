@@ -13,12 +13,9 @@ namespace AZ
 {
     namespace Render
     {
-        /**
-         *  The color grading pass.
-         */
+        //! Pass for editor mode feedback color tint effect.
         class EditorModeTintPass
             : public EditorModeFeedbackPassBase
-            //TODO: , public PostProcessingShaderOptionBase
         {
         public:
             AZ_RTTI(EditorModeTintPass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", EditorModeFeedbackPassBase);
@@ -29,7 +26,10 @@ namespace AZ
             //! Creates a EditorModeTintPass
             static RPI::Ptr<EditorModeTintPass> Create(const RPI::PassDescriptor& descriptor);
 
+            //! Sets the amount of tint to apply.
             void SetTintAmount(float value);
+
+            //! Sets the color of tint to apply.
             void SetTintColor(AZ::Color color);
 
         protected:
@@ -41,11 +41,12 @@ namespace AZ
             bool IsEnabled() const override;
 
         private:
+            //! Sets the shader constant values for the color tint effect.
             void SetSrgConstants();
 
             RHI::ShaderInputNameIndex m_tintAmountIndex = "m_tintAmount";
             RHI::ShaderInputNameIndex m_tintColorIndex = "m_tintColor";
-            float m_tintAmount = 0.25f;
+            float m_tintAmount = 0.5f;
             AZ::Color m_tintColor = AZ::Color::CreateZero();
         };
     }   // namespace Render

@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
+// Temporary measure for setting the desaturation pass shader parameters at runtime until LYN-5294 is implemented
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeDesaturationPass, 0.75f, 0.0f, 20.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmount, 1.0f);
 
@@ -27,7 +28,7 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmoun
         }
         
         EditorModeDesaturationPass::EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor)
-            : EditorModeFeedbackPassBase(descriptor)
+            : EditorModeFeedbackPassBase(descriptor, { 0.75f, 0.0f, 20.0f }, 1.0f)
         {
         }
         
@@ -55,13 +56,13 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmoun
 
         void EditorModeDesaturationPass::SetSrgConstants()
         {
-            // THIS IS TEMP
+            // Temporary measure for setting the pass shader parameters at runtime until LYN-5294 is implemented
             SetMinDepthTransitionValue(cl_editorModeDesaturationPass_MinDepthTransitionValue);
             SetDepthTransitionStart(cl_editorModeDesaturationPass_DepthTransitionStart);
             SetDepthTransitionDuration(cl_editorModeDesaturationPass_DepthTransitionDuration);
             SetFinalBlendAmount(cl_editorModeDesaturationPass_FinalBlendAmount);
-
             SetDesaturationAmount(cl_editorModeDesaturationPass_DesaturationAmount);
+
             m_shaderResourceGroup->SetConstant(m_desaturationAmountIndex, m_desaturationAmount);
         }
     }
