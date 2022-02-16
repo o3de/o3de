@@ -108,29 +108,9 @@ namespace GradientSignal
         void AddTag(AZStd::string tag) override;
 
     private:
-        static float CalculateAltitudeRatio(const SurfaceData::SurfacePointList& points, size_t inPositionIndex, float altitudeMin, float altitudeMax)
-        {
-            if (points.IsEmpty(inPositionIndex))
-            {
-                return 0.0f;
-            }
-
-            // GetSurfacePoints (which was used to populate the points list) always returns points in decreasing height order, so the
-            // first point in the list contains the highest altitude.
-            const float highestAltitude = points.GetHighestSurfacePoint(inPositionIndex).m_position.GetZ();
-
-            // Turn the absolute altitude value into a 0-1 value by returning the % of the given altitude range that it falls at.
-            return GetRatio(altitudeMin, altitudeMax, highestAltitude);
-        }
-
         mutable AZStd::shared_mutex m_cacheMutex;
         SurfaceAltitudeGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
-
-        // m_surfacePointList exists here because it will more efficiently reuse memory across GetValue() calls if it stays constructed.
-        // The mutex exists to ensure that we don't try to use it from GetValue() in multiple threads at once.
-        mutable AZStd::recursive_mutex m_surfacePointListMutex;
-        mutable SurfaceData::SurfacePointList m_surfacePointList;
     };
 }

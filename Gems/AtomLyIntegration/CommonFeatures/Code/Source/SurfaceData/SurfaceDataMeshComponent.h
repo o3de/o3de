@@ -80,9 +80,9 @@ namespace SurfaceData
         ////////////////////////////////////////////////////////////////////////
         // SurfaceDataProviderRequestBus
         void GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const override;
+        void GetSurfacePointsFromList(AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const override;
 
     private:
-        bool DoRayTrace(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const;
         void UpdateMeshData();
         void OnCompositionChanged();
 
