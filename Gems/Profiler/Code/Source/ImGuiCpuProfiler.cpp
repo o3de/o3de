@@ -120,6 +120,12 @@ namespace Profiler
         }
     } // namespace CpuProfilerImGuiHelper
 
+    ImGuiCpuProfiler::ImGuiCpuProfiler()
+    {
+        // thread IDs are hashed internally to unify display across platforms
+        m_mainThreadId = AZStd::hash<AZStd::thread_id>{}(AZStd::this_thread::get_id());
+    }
+
     void ImGuiCpuProfiler::Draw(bool& keepDrawing)
     {
         // Cache the value to detect if it was changed by ImGui(user pressed 'x')
@@ -562,24 +568,25 @@ namespace Profiler
 
             // Main draw loop
             AZ::u64 baseRow = 0;
-            for (const auto& [currentThreadId, singleThreadData] : m_savedData)
+
+            auto drawThreadDataFunc = [&](size_t threadId, const AZStd::vector<TimeRegion>& threadData)
             {
                 // Find the first TimeRegion that we should draw
                 auto regionItr = AZStd::lower_bound(
-                    singleThreadData.begin(), singleThreadData.end(), *startTickItr,
+                    threadData.begin(), threadData.end(), *startTickItr,
                     [](const TimeRegion& wrapper, AZStd::sys_time_t target)
                     {
                         return wrapper.m_startTick < target;
                     });
 
-                if (regionItr == singleThreadData.end())
+                if (regionItr == threadData.end())
                 {
-                    continue;
+                    return;
                 }
 
                 // Draw all of the blocks for a given thread/row
                 AZ::u64 maxDepth = 0;
-                while (regionItr != singleThreadData.end())
+                while (regionItr != threadData.end())
                 {
                     const TimeRegion& region = *regionItr;
 
@@ -597,10 +604,20 @@ namespace Profiler
                 }
 
                 // Draw UI details
-                DrawThreadLabel(baseRow, currentThreadId);
+                DrawThreadLabel(baseRow, threadId);
                 DrawThreadSeparator(baseRow, maxDepth);
 
                 baseRow += maxDepth + 1; // Next draw loop should start one row down
+            };
+
+            // keep the main thread at the top
+            drawThreadDataFunc(m_mainThreadId, m_savedData[m_mainThreadId]);
+            for (const auto& [threadId, threadData] : m_savedData)
+            {
+                if (threadId != m_mainThreadId)
+                {
+                    drawThreadDataFunc(threadId, threadData);
+                }
             }
 
             DrawFrameBoundaries();

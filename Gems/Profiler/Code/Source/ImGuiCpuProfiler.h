@@ -93,7 +93,7 @@ namespace Profiler
             double m_executeDuration = 0;
         };
 
-        ImGuiCpuProfiler() = default;
+        ImGuiCpuProfiler();
         ~ImGuiCpuProfiler() = default;
 
         //! Draws the overall CPU profiling window, defaults to the statistical view
@@ -187,6 +187,7 @@ namespace Profiler
         // note: we use size_t as a proxy for thread_id because native_thread_id_type differs differs from
         // platform to platform, which causes problems when deserializing saved captures.
         AZStd::unordered_map<size_t, AZStd::vector<TimeRegion>> m_savedData;
+        size_t m_mainThreadId = 0;
 
         // Region color cache
         AZStd::unordered_map<GroupRegionName, ImVec4, CachedTimeRegion::GroupRegionName::Hash> m_regionColorMap;
