@@ -60,6 +60,10 @@ namespace AZ
         //! Same as above. Provided as a convenience when all arguments of the 'numthreads' attributes should be assigned to RHI::DispatchDirect::m_threadsPerGroup* variables.
         AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(const Data::Asset<ShaderAsset>& shaderAsset, RHI::DispatchDirect& dispatchDirect);
 
+        //! Returns true/false if the specified format is supported by the image data pixel retrieval APIs
+        //!     GetImageDataPixelValue, GetSubImagePixelValue, and GetSubImagePixelValues
+        bool IsImageDataPixelAPISupported(AZ::RHI::Format format);
+
         //! Get single image pixel value from raw image data
         //! This assumes the imageData is not empty
         template<typename T>

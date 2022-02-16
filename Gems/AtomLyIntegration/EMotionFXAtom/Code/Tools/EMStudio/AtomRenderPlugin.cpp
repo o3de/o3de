@@ -300,7 +300,7 @@ namespace EMStudio
         return &m_renderOptions;
     }
 
-    void AtomRenderPlugin::Render([[maybe_unused]]EMotionFX::ActorRenderFlagBitset renderFlags)
+    void AtomRenderPlugin::Render([[maybe_unused]]EMotionFX::ActorRenderFlags renderFlags)
     {
         if (!m_animViewportWidget)
         {

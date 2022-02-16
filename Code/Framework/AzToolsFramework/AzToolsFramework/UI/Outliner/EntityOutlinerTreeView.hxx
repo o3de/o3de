@@ -63,7 +63,6 @@ namespace AzToolsFramework
         void mouseMoveEvent(QMouseEvent* event) override;
         void focusInEvent(QFocusEvent* event) override;
         void focusOutEvent(QFocusEvent* event) override;
-        void startDrag(Qt::DropActions supportedActions) override;
         void dragMoveEvent(QDragMoveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
         void leaveEvent(QEvent* event) override;
@@ -71,33 +70,39 @@ namespace AzToolsFramework
         // FocusModeNotificationBus overrides ...
         void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
+        void paintEvent(QPaintEvent* event) override;
+
         //! Renders the left side of the item: appropriate background, branch lines, icons.
         void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 
         void timerEvent(QTimerEvent* event) override;
     private:
         void ClearQueuedMouseEvent();
+        void ProcessQueuedMousePressedEvent(QMouseEvent* event);
 
-        void processQueuedMousePressedEvent(QMouseEvent* event);
-        void recursiveCheckExpandedStates(const QModelIndex& parent);
-        void checkExpandedState(const QModelIndex& current);
+        void SelectAllEntitiesInSelectionRect();
 
+        void HandleDrag();
         void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
+
+        void RecursiveCheckExpandedStates(const QModelIndex& parent);
+        void CheckExpandedState(const QModelIndex& current);
 
         void PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const;
         void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
         
         QMouseEvent* m_queuedMouseEvent;
+        QModelIndex m_currentHoveredIndex;
         QPoint m_mousePosition;
-        bool m_draggingUnselectedItem; // This is set when an item is dragged outside its bounding box.
 
+        bool m_isDragSelectActive = false;
         int m_expandOnlyDelay = -1;
         QBasicTimer m_expandTimer;
 
         const QColor m_selectedColor = QColor(255, 255, 255, 45);
         const QColor m_hoverColor = QColor(255, 255, 255, 30);
-
-        QModelIndex m_currentHoveredIndex;
+        const QColor m_dragSelectRectColor = QColor(255, 255, 255, 20);
+        const QColor m_dragSelectBorderColor = QColor(255, 255, 255);
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
