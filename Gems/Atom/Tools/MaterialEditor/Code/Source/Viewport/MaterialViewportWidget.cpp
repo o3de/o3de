@@ -117,14 +117,18 @@ namespace MaterialEditor
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
             m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *GetViewportContext()->GetWindowContext().get());
+        const AZ::RPI::RenderPipelineDescriptor* assetPipelineDesc = AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
+        AZ_Assert(assetPipelineDesc, "Invalid render pipeline descriptor from asset %s", m_defaultPipelineAssetPath.c_str());
+        AZ::RPI::RenderPipelineDescriptor renderPipelineDesc = *assetPipelineDesc;
+        renderPipelineDesc.m_name += AZStd::string::format("_%i", GetViewportContext()->GetId()); // Use a unique render pipeline name to not conflict with other render pipelines
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc, *GetViewportContext()->GetWindowContext().get());
         pipelineAsset.Release();
         m_scene->AddRenderPipeline(m_renderPipeline);
 
         // As part of our initialization we need to create the BRDF texture generation pipeline
         AZ::RPI::RenderPipelineDescriptor pipelineDesc;
         pipelineDesc.m_mainViewTagName = "MainCamera";
-        pipelineDesc.m_name = "BRDFTexturePipeline";
+        pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%i", GetViewportContext()->GetId());
         pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
         pipelineDesc.m_executeOnce = true;
 
