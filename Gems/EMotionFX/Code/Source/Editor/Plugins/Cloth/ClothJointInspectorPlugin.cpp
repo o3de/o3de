@@ -195,15 +195,4 @@ namespace EMotionFX
             renderPlugin,
             renderInfo);
     }
-
-    void ClothJointInspectorPlugin::Render(EMotionFX::ActorRenderFlags renderFlags)
-    {
-        if (!AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::ClothColliders))
-        {
-            return;
-        }
-
-        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
-        ColliderContainerWidget::RenderColliders(PhysicsSetup::Cloth, settings.m_clothColliderColor, settings.m_selectedClothColliderColor);
-    }
 } // namespace EMotionFX
