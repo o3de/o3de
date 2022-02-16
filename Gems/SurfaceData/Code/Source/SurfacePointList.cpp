@@ -33,7 +33,11 @@ namespace SurfaceData
             inPositionIndex = (inPositionIndex + 1) % m_inputPositions.size();
         }
 
-        AZ_Assert(foundMatch, "Couldn't find input position!");
+        AZ_Assert(
+            foundMatch,
+            "Couldn't find input position: (%0.7f, %0.7f, %0.7f), m_lastInputPositionIndex = %zu, m_inputPositions.size() = %zu",
+            inPosition.GetX(), inPosition.GetY(), inPosition.GetZ(), m_lastInputPositionIndex, m_inputPositions.size());
+
         m_lastInputPositionIndex = inPositionIndex;
         return inPositionIndex;
     }

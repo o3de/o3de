@@ -108,6 +108,7 @@ namespace GradientSignal
             // Create a fake surface point with the position we're sampling.
             AzFramework::SurfaceData::SurfacePoint point;
             point.m_position = params.m_position;
+            point.m_normal = AZ::Vector3::CreateAxisZ();
             SurfaceData::SurfacePointList pointList;
 
             // Lock the SurfaceDataSystemRequestBus during the point list construction so that we always follow a pattern of locking the
