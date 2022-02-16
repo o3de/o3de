@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace Render
     {
-        //! Pass for editor mode feedback blend effect.
+        //! Pass for editor mode feedback blur effect.
         class EditorModeBlurPass
             : public EditorModeFeedbackPassBase
         {
@@ -39,11 +39,11 @@ namespace AZ
             bool IsEnabled() const override;
 
         private:
-            //! Sets the shader constant values for the blend effect.
+            //! Sets the shader constant values for the blur effect.
             void SetSrgConstants();
 
             RHI::ShaderInputNameIndex m_kernalWidthIndex = "m_kernalWidth";
-            float m_kernalWidth = 5.0f; //!< Default kernal width for the blend effect.
+            float m_kernalWidth = 5.0f; //!< Default kernal width for the blur effect.
         };
     }   // namespace Render
 }   // namespace AZ
