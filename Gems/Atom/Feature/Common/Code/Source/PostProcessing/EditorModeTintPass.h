@@ -27,7 +27,7 @@ namespace AZ
             static RPI::Ptr<EditorModeTintPass> Create(const RPI::PassDescriptor& descriptor);
 
             //! Sets the amount of tint to apply.
-            void SetTintAmount(float value);
+            void SetTintAmount(float amount);
 
             //! Sets the color of tint to apply.
             void SetTintColor(AZ::Color color);

@@ -49,7 +49,7 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernalWidth, 5.0f);
             return true;
         }
 
-        void EditorModeBlurPass::SetKernalWidth(float width)
+        void EditorModeBlurPass::SetKernalWidth(const float width)
         {
             m_kernalWidth = width;
         }

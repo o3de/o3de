@@ -49,9 +49,9 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmoun
             return true;
         }
 
-        void EditorModeDesaturationPass::SetDesaturationAmount(float value)
+        void EditorModeDesaturationPass::SetDesaturationAmount(const float amount)
         {
-            m_desaturationAmount = value;
+            m_desaturationAmount = amount;
         }
 
         void EditorModeDesaturationPass::SetSrgConstants()

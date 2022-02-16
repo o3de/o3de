@@ -27,7 +27,7 @@ namespace AZ
             static RPI::Ptr<EditorModeOutlinePass> Create(const RPI::PassDescriptor& descriptor);
 
             //! Sets the outline line thickness.
-            void SetLineThickness(float width);
+            void SetLineThickness(float thickness);
 
             //! Sets the outline line color.
             void SetLineColor(AZ::Color color);

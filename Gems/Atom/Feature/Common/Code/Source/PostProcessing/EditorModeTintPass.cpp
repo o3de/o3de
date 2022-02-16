@@ -50,9 +50,9 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeTintPass, TintColor, AZ::Color(
             return true;
         }
 
-        void EditorModeTintPass::SetTintAmount(float value)
+        void EditorModeTintPass::SetTintAmount(const float amount)
         {
-            m_tintAmount = value;
+            m_tintAmount = amount;
         }
 
         void EditorModeTintPass::SetTintColor(AZ::Color color)

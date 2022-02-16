@@ -52,14 +52,14 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Col
             return true;
         }
 
-        void EditorModeOutlinePass::SetLineThickness(float width)
+        void EditorModeOutlinePass::SetLineThickness(const float thickness)
         {
-            m_lineThickness = width;
+            m_lineThickness = thickness;
         }
 
         void EditorModeOutlinePass::SetLineColor(AZ::Color color)
         {
-            m_lineColor = color;
+            m_lineColor = AZStd::move(color);
         }
 
         void EditorModeOutlinePass::SetSrgConstants()

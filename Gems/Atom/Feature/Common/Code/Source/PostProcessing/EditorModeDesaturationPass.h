@@ -28,7 +28,7 @@ namespace AZ
             static RPI::Ptr<EditorModeDesaturationPass> Create(const RPI::PassDescriptor& descriptor);
 
             //! Sets the amount of desaturation to apply.
-            void SetDesaturationAmount(float value);
+            void SetDesaturationAmount(float amount);
 
         protected:
             EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor);
