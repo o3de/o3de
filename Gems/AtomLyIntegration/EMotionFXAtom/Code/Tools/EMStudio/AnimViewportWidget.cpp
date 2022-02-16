@@ -64,18 +64,31 @@ namespace EMStudio
 
     void AnimViewportWidget::SetupCameras()
     {
-        m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::BuildRotateCameraInputId());
-        m_lookRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::BuildRotateCameraInputId());
+        m_rotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::RotateCameraInputChannelId());
 
-        const auto translateCameraInputChannelIds = EMStudio::ViewportUtil::BuildTranslateCameraInputChannelIds();
-        m_lookTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
+        const auto translateCameraInputChannelIds = EMStudio::ViewportUtil::TranslateCameraInputChannelIds();
+        m_translateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
             translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivotLook);
-        m_lookTranslateCamera->m_translateSpeedFn = []
+        m_translateCamera.get()->m_translateSpeedFn = []
         {
             return 3.0f;
         };
+        m_lookScrollCamera = AZStd::make_shared<AzFramework::LookScrollTranslationCameraInput>();
 
+        m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(EMStudio::ViewportUtil::OrbitCameraInputChannelId());
+        m_orbitCamera->SetPivotFn(
+            [this](const AZ::Vector3& position, const AZ::Vector3& direction)
+            {
+                if (m_orbitCamera->Beginning())
+                {
+                    m_defaultOrbitPoint = position + direction * EMStudio::ViewportUtil::CameraDefaultOrbitDistance();
+                }
+                return m_defaultOrbitPoint;
+            });
+        m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::OrbitLookCameraInputChannelId());
         m_orbitDollyScrollCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitRotateCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitDollyScrollCamera);
     }
 
     void AnimViewportWidget::SetupCameraController()
@@ -121,10 +134,11 @@ namespace EMStudio
         controller->SetCameraListBuilderCallback(
             [this](AzFramework::Cameras& cameras)
             {
-                cameras.AddCamera(m_lookRotateCamera);
-                cameras.AddCamera(m_lookTranslateCamera);
+                cameras.AddCamera(m_rotateCamera);
+                cameras.AddCamera(m_translateCamera);
+                cameras.AddCamera(m_lookScrollCamera);
+                cameras.AddCamera(m_orbitCamera);
             });
-
         GetControllerList()->Add(controller);
     }
 
