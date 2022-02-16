@@ -106,7 +106,7 @@ _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
 
 
 # -------------------------------------------------------------------------
-def install_pip():
+def install_pip(_SETTINGS):
     # path to python.exe
     python_exe = Path(sys.prefix, 'bin', 'python.exe').resolve()
 
@@ -115,6 +115,16 @@ def install_pip():
     subprocess.call([python_exe, "-m", "pip", "install", "--upgrade", "pip"])
     
     python_exe
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def install_requirements():
+
+    ## install required packages
+    #subprocess.call([python_exe, "-m", "pip", "install", "PACKAGE_TO_INSTALL"])
+
+    print("DONE")
 # -------------------------------------------------------------------------
 
 
@@ -129,16 +139,6 @@ def install_pkg(pkg_name='pathlib'):
 
     # install required packages
     subprocess.call([python_exe, "-m", "pip", "install", pkg_name])
-
-    print("DONE")
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-def install_requirements():
-
-    ## install required packages
-    #subprocess.call([python_exe, "-m", "pip", "install", "PACKAGE_TO_INSTALL"])
 
     print("DONE")
 # -------------------------------------------------------------------------

@@ -69,6 +69,7 @@ CALL %~dp0..\Env_O3DE_Core.bat
 :: add to the PATH here (this is global)
 SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
 
+:: Initialize env
 CALL %~dp0..\Env_DCC_Maya.bat
 
 :: ide and debugger plug
@@ -81,6 +82,7 @@ echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 SET PATH=%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
 
+:: Initialize env
 CALL %~dp0..\Env_O3DE_Python.bat
 
 :: add to the PYTHONPATH here (this is global)
@@ -89,6 +91,7 @@ SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%PATH%
 :: add all python related paths to PYTHONPATH for package imports
 set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
 
+:: Initialize env
 CALL %~dp0..\Env_IDE_WingIDE.bat
 
 SET PATH=%WINGHOME%;%PATH%
@@ -109,6 +112,7 @@ echo.
 echo     PATH = %PATH%
 echo.
 echo     PYTHONPATH = %PYTHONPATH%
+echo.
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%
