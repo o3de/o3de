@@ -69,17 +69,8 @@ namespace MaterialEditor
     void MaterialEditorApplication::Reflect(AZ::ReflectContext* context)
     {
         Base::Reflect(context);
+        MaterialDocument::Reflect(context);
         MaterialEditorWindowSettings::Reflect(context);
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<MaterialDocumentRequestBus>("MaterialDocumentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("SetPropertyValue", &MaterialDocumentRequestBus::Events::SetPropertyValue)
-                ->Event("GetPropertyValue", &MaterialDocumentRequestBus::Events::GetPropertyValue);
-        }
     }
 
     void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
