@@ -140,28 +140,28 @@ namespace AzFramework
 
             //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
             //! XY coordinate in the list.
-            virtual void ProcessHeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            virtual void ProcessHeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessNormalsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            virtual void ProcessNormalsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfaceWeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            virtual void ProcessSurfaceWeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfacePointsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            virtual void ProcessSurfacePointsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessHeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            virtual void ProcessHeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessNormalsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            virtual void ProcessNormalsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
@@ -272,42 +272,42 @@ namespace AzFramework
             //! Asynchronous versions of the various 'Process*' API functions declared above.
             //! It's the responsibility of the caller to ensure all callbacks are threadsafe.
             virtual AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListAsync(
-                const AZStd::span<AZ::Vector3>& inPositions,
+                const AZStd::span<const AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
             virtual AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListAsync(
-                const AZStd::span<AZ::Vector3>& inPositions,
+                const AZStd::span<const AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
             virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListAsync(
-                const AZStd::span<AZ::Vector3>& inPositions,
+                const AZStd::span<const AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
             virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListAsync(
-                const AZStd::span<AZ::Vector3>& inPositions,
+                const AZStd::span<const AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
             virtual AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListOfVector2Async(
-                const AZStd::span<AZ::Vector2>& inPositions,
+                const AZStd::span<const AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
             virtual AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListOfVector2Async(
-                const AZStd::span<AZ::Vector2>& inPositions,
+                const AZStd::span<const AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
             virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListOfVector2Async(
-                const AZStd::span<AZ::Vector2>& inPositions,
+                const AZStd::span<const AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
             virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListOfVector2Async(
-                const AZStd::span<AZ::Vector2>& inPositions,
+                const AZStd::span<const AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;

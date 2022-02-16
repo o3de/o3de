@@ -577,7 +577,6 @@ namespace EMotionFX
             return;
         }
 
-        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
         const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
         if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::SimulatedJoints) && !selectedJointIndices.empty())
         {
@@ -610,12 +609,6 @@ namespace EMotionFX
                     }
                 }
             }
-        }
-
-        if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::SimulatedObjectColliders))
-        {
-            ColliderContainerWidget::RenderColliders(PhysicsSetup::SimulatedObjectCollider,
-                settings.m_simulatedObjectColliderColor, settings.m_selectedSimulatedObjectColliderColor);
         }
     }
 
