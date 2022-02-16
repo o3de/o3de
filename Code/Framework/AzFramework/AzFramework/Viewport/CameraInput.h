@@ -597,10 +597,10 @@ namespace AzFramework
     };
 
     //! A camera input to handle discrete scroll events that can modify the camera offset.
-    class OrbitDollyScrollCameraInput : public CameraInput
+    class OrbitScrollDollyCameraInput : public CameraInput
     {
     public:
-        OrbitDollyScrollCameraInput();
+        OrbitScrollDollyCameraInput();
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -610,10 +610,10 @@ namespace AzFramework
     };
 
     //! A camera input to handle motion deltas that can modify the camera offset.
-    class OrbitDollyMotionCameraInput : public CameraInput
+    class OrbitMotionDollyCameraInput : public CameraInput
     {
     public:
-        explicit OrbitDollyMotionCameraInput(const InputChannelId& dollyChannelId);
+        explicit OrbitMotionDollyCameraInput(const InputChannelId& dollyChannelId);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;

@@ -703,7 +703,7 @@ namespace AzFramework
         m_orbitChannelId = orbitChanneId;
     }
 
-    OrbitDollyScrollCameraInput::OrbitDollyScrollCameraInput()
+    OrbitScrollDollyCameraInput::OrbitScrollDollyCameraInput()
     {
         m_scrollSpeedFn = []() constexpr
         {
@@ -711,7 +711,7 @@ namespace AzFramework
         };
     }
 
-    bool OrbitDollyScrollCameraInput::HandleEvents(
+    bool OrbitScrollDollyCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
@@ -749,7 +749,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    Camera OrbitDollyScrollCameraInput::StepCamera(
+    Camera OrbitScrollDollyCameraInput::StepCamera(
         const Camera& targetCamera,
         [[maybe_unused]] const ScreenVector& cursorDelta,
         const float scrollDelta,
@@ -760,7 +760,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    OrbitDollyMotionCameraInput::OrbitDollyMotionCameraInput(const InputChannelId& dollyChannelId)
+    OrbitMotionDollyCameraInput::OrbitMotionDollyCameraInput(const InputChannelId& dollyChannelId)
         : m_dollyChannelId(dollyChannelId)
     {
         m_motionSpeedFn = []() constexpr
@@ -769,14 +769,14 @@ namespace AzFramework
         };
     }
 
-    bool OrbitDollyMotionCameraInput::HandleEvents(
+    bool OrbitMotionDollyCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         HandleActivationEvents(event, m_dollyChannelId, cursorDelta, m_clickDetector, *this);
         return CameraInputUpdatingAfterMotion(*this);
     }
 
-    Camera OrbitDollyMotionCameraInput::StepCamera(
+    Camera OrbitMotionDollyCameraInput::StepCamera(
         const Camera& targetCamera,
         const ScreenVector& cursorDelta,
         [[maybe_unused]] const float scrollDelta,
@@ -785,7 +785,7 @@ namespace AzFramework
         return OrbitDolly(targetCamera, aznumeric_cast<float>(cursorDelta.m_y) * m_motionSpeedFn());
     }
 
-    void OrbitDollyMotionCameraInput::SetDollyInputChannelId(const InputChannelId& dollyChannelId)
+    void OrbitMotionDollyCameraInput::SetDollyInputChannelId(const InputChannelId& dollyChannelId)
     {
         m_dollyChannelId = dollyChannelId;
     }
