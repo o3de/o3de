@@ -32,14 +32,19 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
         return;
     }
 
+    // determine offset using m_strength parameter and distance from screen center (as float2)
     float2 disp = dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter;
     float2 offset = disp * PassSrg::m_constants.m_strength;
-    float remainder = 1 - PassSrg::m_constants.m_blend;
 
-    float go = PassSrg::m_inputColor[dispatchThreadID.xy].g * remainder;
-    float bo = PassSrg::m_inputColor[dispatchThreadID.xy].b * remainder;
-    float ga = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 0.5)].g * PassSrg::m_constants.m_blend;
-    float ba = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)].b * PassSrg::m_constants.m_blend;
+    // crop and scale the image correctly by using offset pixel as base (needed to remove border artifacts due to out of bounds r values)
+    float3 base = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)].rgb;
 
-    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(PassSrg::m_inputColor[dispatchThreadID.xy].r, go + ga, bo + ba, 1.0);
+    // retrieve the desired values for each channel, mindful of the cropping (note the absence of g channel)
+    float2 ca = float2(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 2)].b);
+    
+    // weight it according to m_blend and add it to the base (note the absence of g channel)
+    ca *= PassSrg::m_constants.m_blend;
+    ca += base.rb * (1 - PassSrg::m_constants.m_blend);
+
+    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(ca.x, base.g, ca.y, 1.0);
 }
