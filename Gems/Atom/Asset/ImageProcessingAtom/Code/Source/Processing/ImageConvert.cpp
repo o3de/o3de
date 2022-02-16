@@ -933,8 +933,6 @@ namespace ImageProcessingAtom
         return previewImage;
     }
 
-    // This function will convert compressed image to RGBA32.
-    // Also if the image is in sRGB space will convert it to Linear space.
     IImageObjectPtr GetUncompressedLinearImage(IImageObjectPtr ddsImage)
     {
         if (ddsImage)

@@ -51,6 +51,9 @@ namespace ImageProcessingAtom
     //Converts the image to a RGBA8 format that can be displayed in a preview UI.
     IImageObjectPtr ConvertImageForPreview(IImageObjectPtr image);
 
+    //Convert a (potentially compressed, potentially sRGB) image to linear RGBA32.
+    IImageObjectPtr GetUncompressedLinearImage(IImageObjectPtr image);
+
     //get output image size and mip count based on the texture setting and preset setting
 
     //other helper functions

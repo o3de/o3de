@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/Utils/StableDynamicArray.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 
@@ -28,6 +29,7 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/ShapeIntersection.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -934,18 +936,7 @@ namespace AZ
                 // add material data
                 if (material)
                 {
-                    // irradiance color
-                    RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
-                    if (propertyIndex.IsValid())
-                    {
-                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
-                    }
-
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.factor"));
-                    if (propertyIndex.IsValid())
-                    {
-                        subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
-                    }
+                    RPI::MaterialPropertyIndex propertyIndex;
 
                     // base color
                     propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.color"));
@@ -975,6 +966,7 @@ namespace AZ
                     }
 
                     // textures
+                    Data::Instance<RPI::Image> baseColorImage; // can be used for irradiance color below
                     propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
                     if (propertyIndex.IsValid())
                     {
@@ -983,6 +975,7 @@ namespace AZ
                         {
                             subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
                             subMesh.m_baseColorImageView = image->GetImageView();
+                            baseColorImage = image;
                         }
                     }
 
@@ -1018,12 +1011,127 @@ namespace AZ
                             subMesh.m_roughnessImageView = image->GetImageView();
                         }
                     }
+
+                    // irradiance color
+                    SetIrradianceData(subMesh, material, baseColorImage);
                 }
 
                 subMeshes.push_back(subMesh);
             }
 
             rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
+        }
+
+        void ModelDataInstance::SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
+                const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage)
+        {
+            RPI::MaterialPropertyIndex propertyIndex;
+
+            // Default to manual color, so we work properly with legacy materials that don't contain
+            // the irradianceColorSource enum, but have their old irradiance.color transformed to
+            // irradiance.manualColor through the 'versionUpdates' rules:
+            AZ::Name irradianceColorSource = AZ::Name("Manual");
+            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
+            if (propertyIndex.IsValid())
+            {
+                uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
+                irradianceColorSource = material->GetMaterialPropertiesLayout()
+                                                ->GetPropertyDescriptor(propertyIndex)
+                                                ->GetEnumName(enumVal);
+            }
+            if (irradianceColorSource == AZ::Name("BaseColor"))
+            {
+                // Check if texturing is enabled
+                bool useTexture;
+                propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
+                if (propertyIndex.IsValid())
+                {
+                    useTexture = material->GetPropertyValue<bool>(propertyIndex);
+                }
+                else
+                {
+                    // No explicit baseColor.useTexture switch found, assuming the user wants to use
+                    // a texture if a texture was found.
+                    useTexture = true;
+                }
+
+                // If texturing was requested: check if we found a texture and use it
+                if (useTexture && baseColorImage.get())
+                {
+                    // Currently getMeanColor() is only implemented for a StreamingImage
+                    auto baseColorStreamingImg = azdynamic_cast<RPI::StreamingImage*>(baseColorImage.get());
+                    if (baseColorStreamingImg)
+                    {
+                        // Note: there are quite a few hidden assumptions in using the average
+                        // texture color. For instance, (1) it assumes that every texel in the
+                        // texture actually gets mapped to the surface (or non-mapped regions are
+                        // colored with a meaningful 'average' color, or have zero opacity); (2) it
+                        // assumes that the mapping from uv space to the mesh surface is
+                        // (approximately) area-preserving to get a properly weighted average; and
+                        // mostly, (3) it assumes that a single 'average color' is a meaningful
+                        // characterisation of the full material.
+                        Color meanColor = baseColorStreamingImg->getMeanColor();
+
+                        // We do a simple 'multiply' blend with the base color for now. Warn
+                        // the user if something else was intended.
+                        propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureBlendMode"));
+                        if (propertyIndex.IsValid())
+                        {
+                            AZ::Name textureBlendMode = material->GetMaterialPropertiesLayout()
+                                     ->GetPropertyDescriptor(propertyIndex)
+                                     ->GetEnumName(material->GetPropertyValue<uint32_t>(propertyIndex));
+                            if (textureBlendMode != AZ::Name("Multiply"))
+                            {
+                                AZ_Warning("MeshFeatureProcessor", false, "textureBlendMode '%s' is not "
+                                        "yet supported when requesting BaseColor irradiance source, "
+                                        "defaulting to 'Multiply'.", textureBlendMode.GetCStr());
+                            }
+                        }
+                        // 'Multiply' blend mode:
+                        subMesh.m_irradianceColor = meanColor * subMesh.m_baseColor;
+                    }
+                    else
+                    {
+                        AZ_Warning("MeshFeatureProcessor", false, "Using BaseColor as irradianceColorSource "
+                                "is currently only supported for textures of type StreamingImage");
+                        // Default to the flat base color
+                        subMesh.m_irradianceColor = subMesh.m_baseColor;
+                    }
+                }
+                else
+                {
+                    // No texture, simply copy the baseColor
+                    subMesh.m_irradianceColor = subMesh.m_baseColor;
+                }
+            }
+            else if (irradianceColorSource == AZ::Name("Manual"))
+            {
+                propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.manualColor"));
+                if (propertyIndex.IsValid())
+                {
+                    subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                }
+                else
+                {
+                    AZ_Warning("MeshFeatureProcessor", false, "Requested manual color as irradianceColorSource "
+                            "but I could not find an irradiance.manualColor field. Defaulting to black.");
+                    subMesh.m_irradianceColor = AZ::Color(0.0f);
+                }
+            }
+            else
+            {
+                AZ_Warning("MeshFeatureProcessor", false, "Unknown irradianceColorSource value: %s, "
+                        "defaulting to black.", irradianceColorSource.GetCStr());
+                subMesh.m_irradianceColor = AZ::Color(0.0f);
+            }
+
+
+            // Overall scale factor
+            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.factor"));
+            if (propertyIndex.IsValid())
+            {
+                subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
+            }
         }
 
         void ModelDataInstance::RemoveRayTracingData()

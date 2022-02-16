@@ -95,12 +95,20 @@ namespace AZ
                 m_asset->m_poolAssetId = poolAssetId;
             }
         }
-        
+
         void StreamingImageAssetCreator::SetFlags(StreamingImageFlags flag)
         {
             if (ValidateIsReady())
             {
                 m_asset->m_flags = flag;
+            }
+        }
+
+        void StreamingImageAssetCreator::SetMeanColor(Color meanColor)
+        {
+            if (ValidateIsReady())
+            {
+                m_asset->m_meanColor = meanColor;
             }
         }
 

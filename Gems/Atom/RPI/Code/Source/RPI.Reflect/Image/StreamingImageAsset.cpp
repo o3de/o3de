@@ -30,12 +30,13 @@ namespace AZ
                     ;
 
                 serializeContext->Class<StreamingImageAsset, ImageAsset>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_mipLevelToChainIndex", &StreamingImageAsset::m_mipLevelToChainIndex)
                     ->Field("m_mipChains", &StreamingImageAsset::m_mipChains)
                     ->Field("m_flags", &StreamingImageAsset::m_flags)
                     ->Field("m_tailMipChain", &StreamingImageAsset::m_tailMipChain)
                     ->Field("m_totalImageDataSize", &StreamingImageAsset::m_totalImageDataSize)
+                    ->Field("m_meanColor", &StreamingImageAsset::m_meanColor)
                     ;
             }
         }
@@ -93,7 +94,12 @@ namespace AZ
         {
             return m_totalImageDataSize;
         }
-        
+
+        Color StreamingImageAsset::GetMeanColor() const
+        {
+            return m_meanColor;
+        }
+
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)
         {
             if (mip >= m_mipLevelToChainIndex.size())

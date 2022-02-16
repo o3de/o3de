@@ -55,6 +55,8 @@ namespace ImageProcessingAtom
         float ComputeAlphaCoverageScaleFactor(AZ::u32 mip, float fDesiredCoverage, float fAlphaRef) const override;
         float ComputeAlphaCoverage(AZ::u32 firstMip, float fAlphaRef) const override;
 
+        AZ::Color ComputeLinearAlphaWeightedAverageColor() const override;
+
         bool CompareImage(const IImageObjectPtr otherImage) const override;
 
         uint32_t GetTextureMemory() const override;

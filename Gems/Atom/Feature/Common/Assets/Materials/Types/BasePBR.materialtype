@@ -1,6 +1,14 @@
 {
     "description": "Material Type with properties used to define Base PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
-    "version": 0,
+    "version": 1,
+    "versionUpdates": [
+        {
+            "toVersion": 1,
+            "actions": [
+                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"}
+            ]
+        }
+    ],
     "propertyLayout": {
         "groups": [
             {
@@ -501,9 +509,17 @@
             "irradiance": [
                 // Note: this property group is used in the DiffuseGlobalIllumination pass and not by the main forward shader
                 {
-                    "name": "color",
-                    "displayName": "Color",
-                    "description": "Color is displayed as sRGB but the values are stored as linear color.",
+                    "name": "irradianceColorSource",
+                    "displayName": "Irradiance Color Source",
+                    "description": "Where to get the irradiance color from? This color can be automatically derived from the diffuse base color (average texture color if textured), or the manually provided color below.",
+                    "type": "Enum",
+                    "enumValues": [ "BaseColor", "Manual"],
+                    "defaultValue": "BaseColor"
+                },
+                {
+                    "name": "manualColor",
+                    "displayName": "Manual Color",
+                    "description": "Irradiance color that is used when the Irradiance Color Source is set to 'Manual'. Color is displayed as sRGB but the values are stored as linear color.",
                     "type": "Color",
                     "defaultValue": [ 1.0, 1.0, 1.0 ]
                 },
@@ -595,6 +611,12 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Metallic.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "StandardPBR_HandleIrradianceColorSource.lua"
             }
         }
     ],

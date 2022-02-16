@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Color.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
@@ -97,6 +98,8 @@ namespace AZ
             //! Returns the total size of pixel data across all mips, both in this StreamingImageAsset and in all child ImageMipChainAssets. 
             size_t GetTotalImageDataSize() const;
 
+            Color GetMeanColor() const;
+
         private:
             struct MipChain
             {
@@ -127,6 +130,9 @@ namespace AZ
             uint32_t m_totalImageDataSize = 0;
 
             StreamingImageFlags m_flags = StreamingImageFlags::None;
+
+            // Cached value of the average color of this image (alpha-weighted average in case of 4-component images)
+            AZ::Color m_meanColor;
         };
     }
 }

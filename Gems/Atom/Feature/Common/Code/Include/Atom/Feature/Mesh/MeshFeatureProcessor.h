@@ -76,6 +76,8 @@ namespace AZ
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
             void RemoveRayTracingData();
+            void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
+                    const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);

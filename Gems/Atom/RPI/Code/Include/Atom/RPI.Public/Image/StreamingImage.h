@@ -115,6 +115,8 @@ namespace AZ
             //! Returns the most detailed mip level currently resident in memory, where a value of 0 is the highest detailed mip.
             uint16_t GetResidentMipLevel();
 
+            Color getMeanColor() const;
+
         private:
             StreamingImage() = default;
 
