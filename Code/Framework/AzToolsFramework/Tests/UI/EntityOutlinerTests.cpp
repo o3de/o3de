@@ -7,6 +7,7 @@
  */
 
 #include "Entity/EditorEntitySortComponent.h"
+#include <UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
@@ -37,8 +38,11 @@ namespace UnitTest
 
             m_model = AZStd::make_unique<AzToolsFramework::EntityOutlinerListModel>();
             m_model->Initialize();
+            m_proxyModel = AZStd::make_unique<AzToolsFramework::EntityOutlinerSortFilterProxyModel>();
+            m_proxyModel->setSourceModel(m_model.get());
+
             m_modelTester =
-                AZStd::make_unique<QAbstractItemModelTester>(m_model.get(), QAbstractItemModelTester::FailureReportingMode::Fatal);
+                AZStd::make_unique<QAbstractItemModelTester>(m_proxyModel.get(), QAbstractItemModelTester::FailureReportingMode::Fatal);
             
             // Create a new root prefab - the synthetic "NewLevel.prefab" that comes in by default isn't suitable for outliner tests
             // because it's created before the EditorEntityModel that our EntityOutlinerListModel subscribes to, and we want to
@@ -148,7 +152,7 @@ namespace UnitTest
         {
             auto instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             auto instance = instanceEntityMapperInterface->FindOwningInstance(containerId);
-            auto parentIndex = m_model->GetIndexFromEntity(containerId);
+            auto parentIndex = m_proxyModel->mapFromSource(m_model->GetIndexFromEntity(containerId));
 
             auto verifyEntityMapping = [this, &entityMap, &parentIndex](const AZ::Entity& entity) -> bool
             {
@@ -166,6 +170,7 @@ namespace UnitTest
         
         AZStd::unique_ptr<AzToolsFramework::EntityOutlinerListModel> m_model;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTester;
+        AZStd::unique_ptr<AzToolsFramework::EntityOutlinerSortFilterProxyModel> m_proxyModel;
     };
 
     TEST_F(EntityOutlinerTest, TestCreateFlatHierarchyUndoAndRedoWorks)
@@ -180,10 +185,6 @@ namespace UnitTest
             entityIds.push_back(CreateNamedEntity(entityName));
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
             //entityMap[entityName] = i;
-
-            
-            QApplication::processEvents();
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
         }
 
 
@@ -191,7 +192,8 @@ namespace UnitTest
         {
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-            auto entityIndex = m_model->GetIndexFromEntity(entityId);
+            auto originalIndex = m_model->GetIndexFromEntity(entityId);
+            auto entityIndex = m_proxyModel->mapFromSource(originalIndex);
             entityMap[entity->GetName()] = entityIndex.row();
         }
 
