@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/ranges/ranges.h>
+#include <AzCore/std/tuple.h>
 
 namespace AZ::Dom
 {
@@ -34,6 +35,18 @@ namespace AZ::Dom
         SubpathsOnly,
     };
 
+    template<class Range, class T, class = void>
+    constexpr bool RangeConvertibleToPrefixTree = false;
+
+    template<class Range, class T>
+    constexpr bool RangeConvertibleToPrefixTree<
+        Range,
+        T,
+        AZStd::enable_if_t<
+            AZStd::ranges::input_range<Range> && AZStd::tuple_size<AZStd::ranges::range_value_t<Range>>::value == 2 &&
+            AZStd::convertible_to<AZStd::tuple_element_t<0, AZStd::ranges::range_value_t<Range>>, Path> &&
+            AZStd::convertible_to<AZStd::tuple_element_t<1, AZStd::ranges::range_value_t<Range>>, T>>> = true;
+
     //! A prefix tree that maps DOM paths to some arbitrary value.
     template<class T>
     class DomPrefixTree
@@ -43,19 +56,9 @@ namespace AZ::Dom
         DomPrefixTree(const DomPrefixTree&) = default;
         DomPrefixTree(DomPrefixTree&&) = default;
         explicit DomPrefixTree(AZStd::initializer_list<AZStd::pair<Path, T>> init);
-        template<
-            class Range,
-            class = AZStd::enable_if_t<
-                AZStd::ranges::input_range<Range> &&
-                AZStd::convertible_to<AZStd::tuple_element_t<0, AZStd::ranges::range_value_t<Range>>, Path> &&
-                AZStd::convertible_to<AZStd::tuple_element_t<1, AZStd::ranges::range_value_t<Range>>, T>>>
-        explicit DomPrefixTree(Range&& range)
-        {
-            for (auto&& [path, value] : AZStd::forward<Range>(range))
-            {
-                SetValue(path, value);
-            }
-        }
+
+        template<class Range, class = AZStd::enable_if_t<RangeConvertibleToPrefixTree<Range, T>>>
+        explicit DomPrefixTree(Range&& range);
 
         DomPrefixTree& operator=(const DomPrefixTree&) = default;
         DomPrefixTree& operator=(DomPrefixTree&&) = default;

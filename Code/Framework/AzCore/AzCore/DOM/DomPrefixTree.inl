@@ -19,6 +19,16 @@ namespace AZ::Dom
         }
     }
 
+    template <class T>
+    template<class Range, class>
+    DomPrefixTree<T>::DomPrefixTree(Range&& range)
+    {
+        for (auto&& [path, value] : AZStd::forward<Range>(range))
+        {
+            SetValue(path, value);
+        }
+    }
+
     template<class T>
     auto DomPrefixTree<T>::GetNodeForPath(const Path& path) -> Node*
     {

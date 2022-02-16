@@ -13,6 +13,17 @@ namespace AZ::Dom::Tests
 {
     using DomPrefixTreeTests = DomTestFixture;
 
+    static_assert(!RangeConvertibleToPrefixTree<AZStd::vector<int>, int>, "Non-pair range should not convert to tree");
+    static_assert(
+        !RangeConvertibleToPrefixTree<AZStd::vector<AZStd::pair<Path, AZStd::string>>, int>,
+        "Mismatched value type should not convert to tree");
+    static_assert(
+        !RangeConvertibleToPrefixTree<AZStd::vector<AZStd::pair<AZStd::string, int>>, int>,
+        "Mismatched value type should not convert to tree");
+    static_assert(
+        RangeConvertibleToPrefixTree<AZStd::vector<AZStd::pair<Path, int>>, int>,
+        "Vector with path / key type pairs should convert to tree");
+
     TEST_F(DomPrefixTreeTests, InitializeFromInitializerList)
     {
         DomPrefixTree<int> tree({
@@ -190,4 +201,4 @@ namespace AZ::Dom::Tests
         EXPECT_TRUE(validateResult(Path("/foo/1"), 42));
         results.clear();
     }
-}
+} // namespace AZ::Dom::Tests
