@@ -253,7 +253,7 @@ AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
 }
 
 AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromListOfVector2(
-    const AZStd::span<AZ::Vector2>& inPositionsVec2) const
+    const AZStd::span<const AZ::Vector2> inPositionsVec2) const
 {
     AZStd::vector<AZ::Vector3> inPositions;
     inPositions.reserve(inPositionsVec2.size());
