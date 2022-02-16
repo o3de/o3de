@@ -11,7 +11,6 @@ import pytest
 
 import editor_python_test_tools.hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
-from ly_test_tools.benchmark.data_aggregator import BenchmarkDataAggregator
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorTestSuite
 from Atom.atom_utils.atom_component_helper import compare_screenshot_to_golden_image, golden_images_directory
 
