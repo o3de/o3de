@@ -479,7 +479,7 @@ bool GUIApplicationManager::PostActivate()
         return false;
     }
 
-    m_fileWatcher.StartWatching();
+    m_fileWatcher->StartWatching();
 
     return true;
 }

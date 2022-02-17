@@ -25,7 +25,7 @@ namespace AtomToolsFramework
         , protected AtomToolsMainWindowRequestBus::Handler
     {
     public:
-        AtomToolsMainWindow(QWidget* parent = 0);
+        AtomToolsMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~AtomToolsMainWindow();
 
     protected:
@@ -48,6 +48,9 @@ namespace AtomToolsFramework
 
         virtual void SetupMetrics();
         virtual void UpdateMetrics();
+        virtual void UpdateWindowTitle();
+
+        const AZ::Crc32 m_toolId = {};
 
         AzQtComponents::FancyDocking* m_advancedDockManager = {};
 

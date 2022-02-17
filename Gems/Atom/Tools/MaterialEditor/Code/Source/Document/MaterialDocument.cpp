@@ -13,17 +13,39 @@
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <Document/MaterialDocument.h>
 
 namespace MaterialEditor
 {
-    MaterialDocument::MaterialDocument()
-        : AtomToolsFramework::AtomToolsDocument()
+    void MaterialDocument::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<MaterialDocument, AtomToolsFramework::AtomToolsDocument>()
+                ->Version(0);
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<MaterialDocumentRequestBus>("MaterialDocumentRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
+                ->Event("SetPropertyValue", &MaterialDocumentRequestBus::Events::SetPropertyValue)
+                ->Event("GetPropertyValue", &MaterialDocumentRequestBus::Events::GetPropertyValue);
+        }
+    }
+
+    MaterialDocument::MaterialDocument(const AZ::Crc32& toolId)
+        : AtomToolsFramework::AtomToolsDocument(toolId)
     {
         MaterialDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -87,12 +109,12 @@ namespace MaterialEditor
                         }
                     }
 
-                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                        &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
+                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                        m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
                         GetObjectInfoFromDynamicPropertyGroup(group.get()), false);
 
-                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                        &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                        m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
                     return false;
                 }
             }
@@ -845,8 +867,8 @@ namespace MaterialEditor
 
             if (groupChange || groupRebuilt)
             {
-                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                    &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoChanged, m_id,
                     GetObjectInfoFromDynamicPropertyGroup(group.get()), groupRebuilt);
             }
             return true;

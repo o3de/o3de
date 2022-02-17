@@ -222,6 +222,8 @@ namespace AZ::Dom
         explicit Value(T*) = delete;
 
         static Value FromOpaqueValue(const AZStd::any& value);
+        static Value CreateNode(AZ::Name nodeName);
+        static Value CreateNode(AZStd::string_view nodeName);
 
         // Equality / comparison / swap...
         Value& operator=(const Value&);
