@@ -3830,7 +3830,6 @@ CMainFrame * CCryEditApp::GetMainFrame() const
 void CCryEditApp::OpenLUAEditor(const char* files)
 {
     AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
-    AZ::IO::FixedMaxPathString exePath = AZ::Utils::GetExecutableDirectory();
 
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
 
