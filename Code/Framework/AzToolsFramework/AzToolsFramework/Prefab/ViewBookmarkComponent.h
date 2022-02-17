@@ -61,8 +61,8 @@ namespace AzToolsFramework
                 if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
                 {
                     serializeContext->Class<EditorViewBookmarks>()
-                        ->Field("Last Known Location", &EditorViewBookmarks::m_lastKnownLocation)
-                        ->Field("View Bookmarks", &EditorViewBookmarks::m_viewBookmarks);
+                        ->Field("LastKnownLocation", &EditorViewBookmarks::m_lastKnownLocation)
+                        ->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);
 
                     if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                     {
