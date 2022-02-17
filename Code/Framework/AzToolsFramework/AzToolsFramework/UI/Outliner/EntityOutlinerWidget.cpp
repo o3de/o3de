@@ -1206,6 +1206,12 @@ namespace AzToolsFramework
         });
     }
 
+    void EntityOutlinerWidget::OnPrefabTemplateDirtyFlagUpdated(
+        [[maybe_unused]] Prefab::TemplateId templateId, [[maybe_unused]] bool status)
+    {
+        m_gui->m_objectTree->update();
+    }
+
     void EntityOutlinerWidget::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId childId)
     {
         QueueContentUpdateSort(childId);
