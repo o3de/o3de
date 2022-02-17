@@ -76,6 +76,20 @@ namespace GradientSignal
         }
     }
 
+    void StreamingImagePropertyAssetCtrl::UpdateAssetDisplay()
+    {
+        AzToolsFramework::PropertyAssetCtrl::UpdateAssetDisplay();
+
+        // If there is a valid asset selected but it's not a supported pixel format,
+        // show the error message state for this property
+        if (m_selectedAssetID.IsValid() && !Internal::IsImageDataPixelAPISupportedForAsset(m_selectedAssetID))
+        {
+            UpdateErrorButtonWithMessage(
+                AZStd::string::format("Image asset (%s) has an unsupported pixel format", GetCurrentAssetHint().c_str())
+            );
+        }
+    }
+
     AZ::u32 StreamingImagePropertyHandler::GetHandlerName() const
     {
         return AZ_CRC_CE("GradientSignalStreamingImageAsset");
