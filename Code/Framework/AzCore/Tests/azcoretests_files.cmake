@@ -141,6 +141,7 @@ set(FILES
     Math/FrustumPerformanceTests.cpp
     Math/IntersectionTests.cpp
     Math/MathIntrinsicsTests.cpp
+    Math/MathStringsTests.cpp
     Math/MathUtilsTests.cpp
     Math/Matrix3x3PerformanceTests.cpp
     Math/Matrix3x3Tests.cpp
