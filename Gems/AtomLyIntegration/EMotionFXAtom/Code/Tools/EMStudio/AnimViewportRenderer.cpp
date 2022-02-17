@@ -229,14 +229,14 @@ namespace EMStudio
         AZ::Vector3 groundPos;
         AZ::TransformBus::EventResult(groundPos, m_groundEntity->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
-        // Used the projected position to check the distance.
-        AZ::Vector3 characterProjectedPos = GetCharacterCenter();
-        characterProjectedPos.SetZ(groundPos.GetZ());
-
-        float distance = groundPos.GetDistanceEstimate(characterProjectedPos);
-        if (distance > BoundMaxDistance)
+        const AZ::Vector3 characterPos = GetCharacterCenter();
+        if (AZStd::abs(characterPos.GetX() - groundPos.GetX()) > BoundMaxDistance ||
+            AZStd::abs(characterPos.GetY() - groundPos.GetY()) > BoundMaxDistance)
         {
-            AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, characterProjectedPos);
+            const float tileOffsetX = AZStd::fmod(characterPos.GetX(), TileSize);
+            const float tileOffsetY = AZStd::fmod(characterPos.GetX(), TileSize);
+            const AZ::Vector3 newGroundPos(characterPos.GetX() - tileOffsetX, characterPos.GetY() - tileOffsetY, groundPos.GetZ());
+            AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, newGroundPos);
         }
     }
 

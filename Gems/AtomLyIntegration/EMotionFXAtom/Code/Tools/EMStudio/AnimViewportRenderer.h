@@ -95,6 +95,7 @@ namespace EMStudio
 
         const float DefaultFrustumDimension = 128.0f;
         const float BoundMaxDistance = 150.0f;
+        const float TileSize = 1.0f;
         AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> m_lightHandles;
     };
 }
