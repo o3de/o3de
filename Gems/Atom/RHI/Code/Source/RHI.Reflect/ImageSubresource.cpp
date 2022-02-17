@@ -78,6 +78,11 @@ namespace AZ
                 m_aspectFlags == other.m_aspectFlags;
         }
 
+        AZ::HashValue64 ImageSubresourceRange::GetHash(AZ::HashValue64 seed) const
+        {
+            return TypeHash64(*this, seed);
+        }
+
         void ImageSubresourceRange::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
