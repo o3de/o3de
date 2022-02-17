@@ -159,6 +159,12 @@ namespace AzToolsFramework
             }
 
             auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
+
+            if (!prefabTemplate.has_value())
+            {
+                return;
+            }
+
             AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
 
             if (s_prefabSystemComponentInterface->IsTemplateDirty(templateId))

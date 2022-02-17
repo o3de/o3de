@@ -955,7 +955,12 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::SaveCurrentPrefab()
         {
-            TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
+            TemplateId currentTemplateId = Prefab::InvalidTemplateId;
+
+            if (s_prefabFocusInterface)
+            {
+                currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
+            }
 
             if (currentTemplateId == Prefab::InvalidTemplateId)
             {
