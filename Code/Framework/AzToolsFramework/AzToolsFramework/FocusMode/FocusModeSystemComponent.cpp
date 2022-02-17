@@ -82,7 +82,7 @@ namespace AzToolsFramework
         RefreshFocusedEntityIdList();
 
         // Only trigger notifications if the focus root has changed.
-        if (m_focusRoot == previousFocusEntityId)
+        if (m_focusRoot != previousFocusEntityId)
         {
             if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
             {
