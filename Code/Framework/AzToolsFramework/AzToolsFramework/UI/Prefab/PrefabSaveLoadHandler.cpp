@@ -153,6 +153,11 @@ namespace AzToolsFramework
 
         void PrefabSaveHandler::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
         {
+            if (templateId == Prefab::InvalidTemplateId)
+            {
+                return;
+            }
+
             auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
             AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
 

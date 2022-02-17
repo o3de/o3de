@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
@@ -954,10 +955,18 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::SaveCurrentPrefab()
         {
-            m_prefabSaveHandler.ExecuteSavePrefabDialog(
-                s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId),
-                true
-            );
+            TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
+
+            if (currentTemplateId == Prefab::InvalidTemplateId)
+            {
+                auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+                if (prefabEditorEntityOwnershipInterface)
+                {
+                    currentTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+                }
+            }
+
+            m_prefabSaveHandler.ExecuteSavePrefabDialog(currentTemplateId, true);
         }
 
     } // namespace Prefab
