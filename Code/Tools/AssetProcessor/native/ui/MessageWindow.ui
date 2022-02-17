@@ -53,9 +53,12 @@
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="messageList">
-           <property name="resizeMode">
-            <enum>QListView::Adjust</enum>
+          <widget class="QPlainTextEdit" name="messageBox">
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

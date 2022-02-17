@@ -89,7 +89,7 @@ void ErrorCollector::AddError(AZStd::string message)
     QString qMessage(message.c_str());
     qMessage = qMessage.trimmed();
 
-    m_errorMessages << qMessage.split('\n', Qt::SkipEmptyParts);
+    m_errorMessages << qMessage;
 }
 
 GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent)

@@ -22,7 +22,6 @@ public:
     void SetHeaderText(QString headerText);
     void SetMessageText(QStringList messageText);
     void SetTitleText(QString titleText);
-    void ShowLineContextMenu(const QPoint& pos);
     void ViewLogsClicked();
 
 private:
