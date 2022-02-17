@@ -128,9 +128,30 @@ namespace AzToolsFramework
 
     void FocusModeSystemComponent::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
     {
-        // If the parent's entityId is in the list, add the child.
-        if (auto iter = AZStd::find(m_focusedEntityIdList.begin(), m_focusedEntityIdList.end(), parentId);
-            iter != m_focusedEntityIdList.end())
+        // If the parent's entityId is in the list and the child isn't, add the child to the list.
+        bool isParentInList = false;
+        bool isChildInList = false;
+
+        for (auto iter = m_focusedEntityIdList.begin(); iter != m_focusedEntityIdList.end(); ++iter)
+        {
+            if (*iter == parentId)
+            {
+                isParentInList = true;
+            }
+
+            if (*iter == childId)
+            {
+                isChildInList = true;
+            }
+
+            // Early out
+            if (isChildInList)
+            {
+                break;
+            }
+        }
+
+        if (isParentInList && !isChildInList)
         {
             m_focusedEntityIdList.push_back(childId);
         }
