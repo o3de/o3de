@@ -25,25 +25,7 @@ namespace AzToolsFramework
             {
             }
 
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-                {
-                    serializeContext->Class<ViewBookmark>()
-                        ->Version(0)
-                        ->Field("Position", &ViewBookmark::m_position)
-                        ->Field("Rotation", &ViewBookmark::m_rotation);
-
-                    if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                    {
-                        editContext->Class<ViewBookmark>("ViewBookmark Data", "")
-                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "ViewBookmark")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_position, "Position", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_rotation, "Rotation", "");
-                    }
-                }
-            }
+            static void Reflect(AZ::ReflectContext* context);
 
             AZ::Vector3 m_position;
             AZ::Vector3 m_rotation;
@@ -54,33 +36,10 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(EditorViewBookmarks, AZ::SystemAllocator, 0);
             AZ_RTTI(EditorViewBookmarks, "{EA0B8FF9-F706-4115-8226-E3F54F1EE8A1}");
 
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                ViewBookmark::Reflect(context);
+            static void Reflect(AZ::ReflectContext* context);
 
-                if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-                {
-                    serializeContext->Class<EditorViewBookmarks>()
-                        ->Field("LastKnownLocation", &EditorViewBookmarks::m_lastKnownLocation)
-                        ->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);
+            AZStd::string GetBookmarkLabel(int index) const;
 
-                    if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                    {
-                        editContext->Class<EditorViewBookmarks>("EditorViewBookmarks", "")
-                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "Editor View Bookmarks")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_lastKnownLocation, "Last Known Location", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_viewBookmarks, "View Bookmarks", "")
-                            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &EditorViewBookmarks::GetBookmarkLabel);
-                    }
-                }
-            }
-
-            AZStd::string GetBookmarkLabel(int index) const
-            {
-                return AZStd::string::format("View Bookmark %d", index);
-            }
             ViewBookmark m_lastKnownLocation;
             AZStd::vector<ViewBookmark> m_viewBookmarks;
         };
@@ -99,17 +58,15 @@ namespace AzToolsFramework
             void Activate() override{};
             void Deactivate() override{};
             //////////////////////////////////////////////////////////////////////////
+
+            ViewBookmark GetBookmarkAtIndex(int index);
+            void AddBookmark(ViewBookmark viewBookmark);
+            void SaveLastKnownLocation(ViewBookmark newLastKnownLocation);
+
         protected:
 
-            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
-            {
-                services.push_back(AZ_CRC("EditoViewbookmarkingService"));
-            }
-
-            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
-            {
-                services.push_back(AZ_CRC("EditoViewbookmarkingService"));
-            }
+            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
 
         private:
             // A user editable view Bookmark
