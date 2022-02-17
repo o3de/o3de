@@ -102,11 +102,12 @@ namespace ImageProcessingAtomEditor
         QObject::connect(m_ui->infoBtn, &QPushButton::clicked, this, &TexturePresetSelectionWidget::OnPresetInfoButton);
 
         // Tooltips
-        m_ui->activeFileConventionLabel->setToolTip(QString("Displays the supported naming convention for the selected preset."));
-        m_ui->presetComboBox->setToolTip(QString("Choose a preset to update the preview and other properties."));
-        m_ui->resetBtn->setToolTip(QString("Reset values to current preset defaults."));
-        m_ui->serCheckBox->setToolTip(QString("Preserves the original size. Use this setting for textures that include text."));
-        m_ui->infoBtn->setToolTip(QString("Show detail properties of the current preset"));
+        m_ui->activePresetLabel->setToolTip(QString("Choose a texture preset based on the texture's intended use case."));
+        m_ui->activeFileConventionLabel->setToolTip(QString("The file patterns that automatically apply the selected texture preset."));
+        m_ui->infoBtn->setToolTip(QString("Display the property details for the selected texture preset"));
+        m_ui->resetBtn->setToolTip(QString("Reset all values to the default values for the selected texture preset."));
+        m_ui->serCheckBox->setToolTip(QString("Use the maximum texture resolution regardless of the target platform specification. Use this setting for textures that feature text or other details that should be legible."));
+        
 
         EditorInternalNotificationBus::Handler::BusConnect();
     }
