@@ -61,6 +61,9 @@ namespace AZ
                     m_depthStencilReadDescriptor);
             }
 
+            m_hash = TypeHash64(viewDescriptor.GetHash(), m_hash);
+            m_hash = TypeHash64(m_format, m_hash);
+
             return RHI::ResultCode::Success;
         }
 

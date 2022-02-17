@@ -61,6 +61,19 @@ namespace AZ
 
             //! Returns true if a specific resource type has been enabled for compilation.
             bool IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const;
+
+            //! Update the m_rhiUpdateMask for a given resource type which will ensure we will compile that type for the current frame
+            void EnableRhiResourceTypeCompilation(const ShaderResourceGroupData::ResourceTypeMask resourceTypeMask);
+
+            //! Reset the iteration counter to 0 for a resource type which will ensure that the given type will
+            //! be compiled for another m_updateMaskResetLatency number of Compile calls
+            void ResetResourceTypeIteration(const ShaderResourceGroupData::ResourceType resourceType);
+
+            //! Return the view hash stored within m_viewHash
+            HashValue64 GetViewHash(const AZ::Name& viewName);
+
+            //! Update the view hash within m_viewHash
+            void UpdateViewHash(const AZ::Name& viewName, const HashValue64 viewHash);
             
         protected:
             ShaderResourceGroup() = default;
@@ -76,13 +89,15 @@ namespace AZ
             // Gates the Compile() function so that the SRG is only queued once.
             bool m_isQueuedForCompile = false;
             
-            // Mask used to check whether to compile a specific resource type
+            // Mask used to check whether to compile a specific resource type. This mask is managed on the RHI side.
             uint32_t m_rhiUpdateMask = 0;
 
             // Track iteration for each resource type in order to keep compiling it for m_updateMaskResetLatency number of times
             uint32_t m_resourceTypeIteration[static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count)] = { 0 };
             uint32_t m_updateMaskResetLatency = RHI::Limits::Device::FrameCountMax - 1; //we do -1 because we update after compile
-            
+
+            // Track hash related to views. This will help ensure we compile views in case they get invalidated and partial srg compilation is enabled
+            AZStd::unordered_map<AZ::Name, HashValue64> m_viewHash;
         };
     }
 }

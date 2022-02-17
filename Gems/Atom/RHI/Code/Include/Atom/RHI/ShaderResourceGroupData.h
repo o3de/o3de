@@ -239,7 +239,7 @@ namespace AZ
             //! The backing data store of constants for the shader resource group.
             ConstantsData m_constantsData;
 
-            //! Mask used to check whether to compile a specific resource type
+            //! Mask used to check whether to compile a specific resource type. This mask is managed by RPI and copied over to the RHI every frame. 
             uint32_t m_updateMask = 0;
         };
 

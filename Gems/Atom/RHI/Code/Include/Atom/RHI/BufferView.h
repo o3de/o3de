@@ -41,6 +41,12 @@ namespace AZ
             //! Assumes that the programmer is manually managing the Read/Write state of the buffer correctly.
             bool IgnoreFrameAttachmentValidation() const { return m_descriptor.m_ignoreFrameAttachmentValidation; }
 
+            //! Returns the hash of the view.
+            HashValue64 GetHash() const;
+
+        protected:
+            HashValue64 m_hash = HashValue64{ 0 };
+
         private:
             bool ValidateForInit(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor) const;
 

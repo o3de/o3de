@@ -64,7 +64,7 @@ namespace AZ
             m_rhiUpdateMask |= sourceUpdateMask;
             for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
             {
-                if (RHI::CheckBit(sourceUpdateMask, i))
+                if (RHI::CheckBit(sourceUpdateMask, static_cast<AZ::u8>(i)))
                 {
                     m_resourceTypeIteration[i] = 0;
                 }
@@ -75,7 +75,7 @@ namespace AZ
         {
             for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
             {
-                if(RHI::CheckBit(m_rhiUpdateMask, i))
+                if (RHI::CheckBit(m_rhiUpdateMask, static_cast<AZ::u8>(i)))
                 {
                     //Ensure that a SRG update is alive for m_updateMaskResetLatency times
                     //after SRG compile is called. This is because SRGs are triple buffered
@@ -96,6 +96,26 @@ namespace AZ
         bool ShaderResourceGroup::IsAnyResourceTypeUpdated() const
         {
             return m_rhiUpdateMask != 0;
+        }
+
+        void ShaderResourceGroup::EnableRhiResourceTypeCompilation(const ShaderResourceGroupData::ResourceTypeMask resourceTypeMask)
+        {
+            m_rhiUpdateMask = AZ::RHI::SetBits(m_rhiUpdateMask, static_cast<uint32_t>(resourceTypeMask));
+        }
+
+        void ShaderResourceGroup::ResetResourceTypeIteration(const ShaderResourceGroupData::ResourceType resourceType)
+        {
+            m_resourceTypeIteration[static_cast<uint32_t>(resourceType)] = 0;
+        }
+
+        HashValue64 ShaderResourceGroup::GetViewHash(const AZ::Name& viewName)
+        {
+            return m_viewHash[viewName];
+        }
+
+        void ShaderResourceGroup::UpdateViewHash(const AZ::Name& viewName, const HashValue64 viewHash)
+        {
+            m_viewHash[viewName] = viewHash;
         }
     
         void ShaderResourceGroup::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const

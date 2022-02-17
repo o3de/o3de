@@ -104,7 +104,24 @@ namespace AZ
 
             // Calculate diffs for updating the resource registry.
             void CalculateGroupDataDiff(ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData);
-          
+
+            // Calculate the hash for all the views passed in
+            template<typename T>
+            HashValue64 GetViewHash(AZStd::span<const RHI::ConstPtr<T>> views);
+
+            // Modify the m_rhiUpdateMask of a Srg if a view was modified in the current frame. This
+            // will ensure that the view will be compiled by the back end
+            template<typename T>
+            void UpdateMaskBasedOnViewHash(
+                ShaderResourceGroup& shaderResourceGroup,
+                Name entryName,
+                AZStd::span<const RHI::ConstPtr<T>> views,
+                ShaderResourceGroupData::ResourceType resourceType);
+
+            // Check all the resource types in order to ensure none of the views were invalidated or modified
+            void ResetUpdateMaskForModifiedViews(
+                ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData);
+
             //////////////////////////////////////////////////////////////////////////
             // Platform API
 

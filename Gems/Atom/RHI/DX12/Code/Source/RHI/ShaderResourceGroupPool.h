@@ -51,10 +51,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             void UpdateViewsDescriptorTable(DescriptorTable descriptorTable,
-                                            ShaderResourceGroup& group,
+                                            RHI::ShaderResourceGroup& group,
                                             const RHI::ShaderResourceGroupData& groupData,
-                                            bool forceUpdate = false);
-            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
+                                            bool forceUpdateViews = false);
+            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, RHI::ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
             void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
 
             //! Update all the buffer views for the unbounded array
