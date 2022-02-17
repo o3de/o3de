@@ -955,23 +955,11 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::SaveCurrentPrefab()
         {
-            TemplateId currentTemplateId = Prefab::InvalidTemplateId;
-
             if (s_prefabFocusInterface)
             {
-                currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
+                TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
+                m_prefabSaveHandler.ExecuteSavePrefabDialog(currentTemplateId, true);
             }
-
-            if (currentTemplateId == Prefab::InvalidTemplateId)
-            {
-                auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-                if (prefabEditorEntityOwnershipInterface)
-                {
-                    currentTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-                }
-            }
-
-            m_prefabSaveHandler.ExecuteSavePrefabDialog(currentTemplateId, true);
         }
 
     } // namespace Prefab
