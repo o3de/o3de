@@ -2328,7 +2328,7 @@ void EditorViewportWidget::UpdateScene()
             m_renderViewport->SetScene(mainScene);
             auto viewportContext = m_renderViewport->GetViewportContext();
             AZ::RPI::SceneNotificationBus::Handler::BusConnect(viewportContext->GetRenderScene()->GetId());
-
+/*
             // Don't enable the render pipeline until a level has been loaded
             // Also show/hide the RenderViewportWidget accordingly so that we get the
             // expected gradient background when no level is loaded
@@ -2346,6 +2346,7 @@ void EditorViewportWidget::UpdateScene()
                     renderPipeline->RemoveFromRenderTick();
                 }
             }
+ */
         }
     }
 }
