@@ -14,6 +14,8 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 
+#include <AzCore/Math/Color.h>
+#include <AzCore/std/containers/array.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
@@ -105,6 +107,25 @@ namespace AZ
                 return ((value - origMin) / (origMax - origMin)) * (scaledMax - scaledMin) + scaledMin;
             }
 
+            // Pre-compute a lookup table for converting SRGB gamma to linear
+            // by specifying the AZ::u8 so we don't have to do the computation
+            // when retrieving pixels
+            using ConversionLookupTable = AZStd::array<float, 256>;
+            ConversionLookupTable CreateSrgbGammaToLinearLookupTable()
+            {
+                ConversionLookupTable lookupTable;
+
+                for (size_t i = 0; i < lookupTable.array_size; ++i)
+                {
+                    float srgbValue = i / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                    lookupTable[i] = AZ::Color::ConvertSrgbGammaToLinear(srgbValue);
+                }
+
+                return lookupTable;
+            }
+
+            static ConversionLookupTable s_SrgbGammaToLinearLookupTable = CreateSrgbGammaToLinearLookupTable();
+
             float RetrieveFloatValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
             {
                 switch (format)
@@ -113,12 +134,23 @@ namespace AZ
                 case AZ::RHI::Format::A8_UNORM:
                 case AZ::RHI::Format::R8G8_UNORM:
                 case AZ::RHI::Format::R8G8B8A8_UNORM:
+                case AZ::RHI::Format::A8B8G8R8_UNORM:
                 {
                     return mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                }
+                case AZ::RHI::Format::R8_UNORM_SRGB:
+                case AZ::RHI::Format::R8G8_UNORM_SRGB:
+                case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
+                case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
+                {
+                    // Use a lookup table that takes an AZ::u8 instead of a float
+                    // for better performance
+                    return s_SrgbGammaToLinearLookupTable[mem[index]];
                 }
                 case AZ::RHI::Format::R8_SNORM:
                 case AZ::RHI::Format::R8G8_SNORM:
                 case AZ::RHI::Format::R8G8B8A8_SNORM:
+                case AZ::RHI::Format::A8B8G8R8_SNORM:
                 {
                     // Scale the value from AZ::s8 min/max to -1 to 1
                     // We need to treat -128 and -127 the same, so that we get a symmetric
@@ -441,6 +473,67 @@ namespace AZ
         AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(const Data::Asset<ShaderAsset>& shaderAsset, RHI::DispatchDirect& dispatchDirect)
         {
             return GetComputeShaderNumThreads(shaderAsset, &dispatchDirect.m_threadsPerGroupX, &dispatchDirect.m_threadsPerGroupY, &dispatchDirect.m_threadsPerGroupZ);
+        }
+
+        bool IsImageDataPixelAPISupported(AZ::RHI::Format format)
+        {
+            switch (format)
+            {
+            // Float types
+            case AZ::RHI::Format::R8_UNORM:
+            case AZ::RHI::Format::A8_UNORM:
+            case AZ::RHI::Format::R8G8_UNORM:
+            case AZ::RHI::Format::R8G8B8A8_UNORM:
+            case AZ::RHI::Format::A8B8G8R8_UNORM:
+            case AZ::RHI::Format::R8_UNORM_SRGB:
+            case AZ::RHI::Format::R8G8_UNORM_SRGB:
+            case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
+            case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
+            case AZ::RHI::Format::R8_SNORM:
+            case AZ::RHI::Format::R8G8_SNORM:
+            case AZ::RHI::Format::R8G8B8A8_SNORM:
+            case AZ::RHI::Format::A8B8G8R8_SNORM:
+            case AZ::RHI::Format::D16_UNORM:
+            case AZ::RHI::Format::R16_UNORM:
+            case AZ::RHI::Format::R16G16_UNORM:
+            case AZ::RHI::Format::R16G16B16A16_UNORM:
+            case AZ::RHI::Format::R16_SNORM:
+            case AZ::RHI::Format::R16G16_SNORM:
+            case AZ::RHI::Format::R16G16B16A16_SNORM:
+            case AZ::RHI::Format::R16_FLOAT:
+            case AZ::RHI::Format::R16G16_FLOAT:
+            case AZ::RHI::Format::R16G16B16A16_FLOAT:
+            case AZ::RHI::Format::D32_FLOAT:
+            case AZ::RHI::Format::R32_FLOAT:
+            case AZ::RHI::Format::R32G32_FLOAT:
+            case AZ::RHI::Format::R32G32B32_FLOAT:
+            case AZ::RHI::Format::R32G32B32A32_FLOAT:
+            // Unsigned integer types
+            case AZ::RHI::Format::R8_UINT:
+            case AZ::RHI::Format::R8G8_UINT:
+            case AZ::RHI::Format::R8G8B8A8_UINT:
+            case AZ::RHI::Format::R16_UINT:
+            case AZ::RHI::Format::R16G16_UINT:
+            case AZ::RHI::Format::R16G16B16A16_UINT:
+            case AZ::RHI::Format::R32_UINT:
+            case AZ::RHI::Format::R32G32_UINT:
+            case AZ::RHI::Format::R32G32B32_UINT:
+            case AZ::RHI::Format::R32G32B32A32_UINT:
+            // Signed integer types
+            case AZ::RHI::Format::R8_SINT:
+            case AZ::RHI::Format::R8G8_SINT:
+            case AZ::RHI::Format::R8G8B8A8_SINT:
+            case AZ::RHI::Format::R16_SINT:
+            case AZ::RHI::Format::R16G16_SINT:
+            case AZ::RHI::Format::R16G16B16A16_SINT:
+            case AZ::RHI::Format::R32_SINT:
+            case AZ::RHI::Format::R32G32_SINT:
+            case AZ::RHI::Format::R32G32B32_SINT:
+            case AZ::RHI::Format::R32G32B32A32_SINT:
+                return true;
+            }
+
+            return false;
         }
 
         template<>

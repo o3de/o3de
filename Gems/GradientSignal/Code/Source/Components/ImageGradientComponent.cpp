@@ -8,6 +8,7 @@
 
 #include <GradientSignal/Components/ImageGradientComponent.h>
 #include <Atom/ImageProcessing/ImageProcessingDefines.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/Profiler.h>
@@ -127,6 +128,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ImageGradientConfig::m_imageAsset, "Image Asset", "Image asset whose values will be mapped as gradient output.")
+                    ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("GradientSignalStreamingImageAsset"))
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_tilingX, "Tiling X", "Number of times to tile horizontally.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
@@ -190,6 +192,8 @@ namespace GradientSignal
 
             behaviorContext->EBus<ImageGradientRequestBus>("ImageGradientRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "vegetation")
                 ->Event("GetImageAssetPath", &ImageGradientRequestBus::Events::GetImageAssetPath)
                 ->Event("SetImageAssetPath", &ImageGradientRequestBus::Events::SetImageAssetPath)
                 ->VirtualProperty("ImageAssetPath", "GetImageAssetPath", "SetImageAssetPath")
@@ -223,6 +227,60 @@ namespace GradientSignal
         }
 
         m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
+    }
+
+    float ImageGradientComponent::GetValueFromImageData(const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue) const
+    {
+        if (!m_imageData.empty())
+        {
+            const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
+            auto width = imageDescriptor.m_size.m_width;
+            auto height = imageDescriptor.m_size.m_height;
+
+            if (width > 0 && height > 0)
+            {
+                // When "rasterizing" from uvs, a range of 0-1 has slightly different meanings depending on the sampler state.
+                // For repeating states (Unbounded/None, Repeat), a uv value of 1 should wrap around back to our 0th pixel.
+                // For clamping states (Clamp to Zero, Clamp to Edge), a uv value of 1 should point to the last pixel.
+
+                // We assume here that the code handling sampler states has handled this for us in the clamping cases
+                // by reducing our uv by a small delta value such that anything that wants the last pixel has a value
+                // just slightly less than 1.
+
+                // Keeping that in mind, we scale our uv from 0-1 to 0-image size inclusive.  So a 4-pixel image will scale
+                // uv values of 0-1 to 0-4, not 0-3 as you might expect.  This is because we want the following range mappings:
+                // [0 - 1/4)   = pixel 0
+                // [1/4 - 1/2) = pixel 1
+                // [1/2 - 3/4) = pixel 2
+                // [3/4 - 1)   = pixel 3
+                // [1 - 1 1/4) = pixel 0
+                // ...
+
+                // Also, based on our tiling settings, we extend the size of our image virtually by a factor of tilingX and tilingY.  
+                // A 16x16 pixel image and tilingX = tilingY = 1  maps the uv range of 0-1 to 0-16 pixels.  
+                // A 16x16 pixel image and tilingX = tilingY = 1.5 maps the uv range of 0-1 to 0-24 pixels.
+
+                const AZ::Vector3 tiledDimensions((width * tilingX),
+                    (height * tilingY),
+                    0.0f);
+
+                // Convert from uv space back to pixel space
+                AZ::Vector3 pixelLookup = (uvw * tiledDimensions);
+
+                // UVs outside the 0-1 range are treated as infinitely tiling, so that we behave the same as the 
+                // other gradient generators.  As mentioned above, if clamping is desired, we expect it to be applied
+                // outside of this function.
+                auto x = aznumeric_cast<AZ::u32>(pixelLookup.GetX()) % width;
+                auto y = aznumeric_cast<AZ::u32>(pixelLookup.GetY()) % height;
+
+                // Flip the y because images are stored in reverse of our world axes
+                y = (height - 1) - y;
+
+                return AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y);
+            }
+        }
+
+        return defaultValue;
     }
 
     void ImageGradientComponent::Activate()
@@ -324,8 +382,8 @@ namespace GradientSignal
 
             if (!wasPointRejected)
             {
-                return GetValueFromImageAsset(
-                    m_imageData, m_configuration.m_imageAsset->GetImageDescriptor(), uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+                return GetValueFromImageData(
+                    uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
             }
         }
 
@@ -357,8 +415,8 @@ namespace GradientSignal
 
             if (!wasPointRejected)
             {
-                outValues[index] = GetValueFromImageAsset(
-                    m_imageData, m_configuration.m_imageAsset->GetImageDescriptor(), uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+                outValues[index] = GetValueFromImageData(
+                    uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
             }
             else
             {
@@ -377,9 +435,22 @@ namespace GradientSignal
     void ImageGradientComponent::SetImageAssetPath(const AZStd::string& assetPath)
     {
         AZ::Data::AssetId assetId;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, assetPath.c_str(), AZ::Data::s_invalidAssetType, false);
-        if (assetId.IsValid())
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, assetPath.c_str(), AZ::Data::s_invalidAssetType, false);
+        if (assetId.IsValid() || assetPath.empty())
         {
+            // If we were given a valid asset, then make sure it is the right type
+            if (assetId.IsValid())
+            {
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
+
+                if (assetInfo.m_assetType != azrtti_typeid<AZ::RPI::StreamingImageAsset>())
+                {
+                    AZ_Warning("GradientSignal", false, "Asset type for %s is not AZ::RPI::StreamingImageAsset, will be ignored", assetPath.c_str());
+                    return;
+                }
+            }
+
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
@@ -388,10 +459,18 @@ namespace GradientSignal
                 // Clear our cached image data
                 m_imageData = AZStd::span<const uint8_t>();
 
-                m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<AZ::RPI::StreamingImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
+                if (assetPath.empty())
+                {
+                    m_configuration.m_imageAsset.Reset();
+                }
+                else
+                {
+                    m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<AZ::RPI::StreamingImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
+                }
             }
 
             SetupDependencies();
+            m_configuration.m_imageAsset.QueueLoad();
             AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
             LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
         }
