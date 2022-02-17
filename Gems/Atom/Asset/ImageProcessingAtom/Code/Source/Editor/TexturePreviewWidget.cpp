@@ -98,7 +98,6 @@ namespace ImageProcessingAtomEditor
         menu->addAction(m_refreshPerClickAction);
 
         m_ui->refreshBtn->setMenu(menu);
-        //AzQtComponents::PushButton::applySmallIconStyle(m_ui->refreshBtn);
 
         QObject::connect(m_ui->refreshBtn, &QPushButton::clicked, this, &TexturePreviewWidget::OnRefreshClicked);
         m_alwaysRefreshIcon.addFile(QStringLiteral(":/refresh.svg"), QSize(), QIcon::Normal, QIcon::On);
