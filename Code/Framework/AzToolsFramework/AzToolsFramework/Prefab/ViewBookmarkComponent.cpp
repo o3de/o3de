@@ -16,19 +16,25 @@ namespace AzToolsFramework
     {
         void ViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
         {
+            EditorViewBookmarks::Reflect(context);
+
             auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
+                serializeContext->RegisterGenericType<EditorViewBookmarks>();
+
                 serializeContext->Class<ViewBookmarkComponent, EditorComponentBase>()
-                    ->Version(1)->
-                    Field("Configuration", &ViewBookmarkComponent::m_comment);
+                    ->Version(0)
+                    ->Field("ViewBookmarks", &ViewBookmarkComponent::m_viewBookmark);
+
+                serializeContext->RegisterGenericType<AZStd::vector<AZ::Uuid>>();
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
                     editContext
                         ->Class<ViewBookmarkComponent>(
-                            "View BookmarkComponent", "The ViewBookmark Component allows to store bookmarks for a prefab")
+                            "View Bookmark Component", "The ViewBookmark Component allows to store bookmarks for a prefab")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
@@ -37,8 +43,8 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components")
-                        ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &ViewBookmarkComponent::m_comment, "", "Comment")
-                        ->Attribute(AZ_CRC("PlaceholderText", 0xa23ec278), "Add comment text here");
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
                 }
             }
         }
