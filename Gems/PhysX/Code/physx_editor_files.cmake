@@ -131,4 +131,9 @@ set(FILES
     Editor/Source/ComponentModes/Joints/JointsSubComponentModeTranslate.cpp
     Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.h
     Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.cpp
+    
+    Editor/Source/MaterialEditor/PhysXMaterialEditorSystemComponent.cpp
+    Editor/Source/MaterialEditor/PhysXMaterialEditorSystemComponent.h
+    Editor/Source/MaterialEditor/Window/MaterialEditorWindow.h
+    Editor/Source/MaterialEditor/Window/MaterialEditorWindow.cpp
 )

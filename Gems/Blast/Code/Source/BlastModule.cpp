@@ -17,6 +17,7 @@
 #include <Editor/EditorBlastFamilyComponent.h>
 #include <Editor/EditorBlastMeshDataComponent.h>
 #include <Editor/EditorSystemComponent.h>
+#include <Editor/MaterialEditor/BlastMaterialEditorSystemComponent.h>
 #endif
 
 namespace Blast
@@ -39,7 +40,8 @@ namespace Blast
 #ifdef BLAST_EDITOR
                     EditorSystemComponent::CreateDescriptor(),
                     EditorBlastFamilyComponent::CreateDescriptor(),
-                    EditorBlastMeshDataComponent::CreateDescriptor()
+                    EditorBlastMeshDataComponent::CreateDescriptor(),
+                    BlastMaterialEditorSystemComponent::CreateDescriptor()
 #endif
                 });
         }
@@ -53,6 +55,7 @@ namespace Blast
                 azrtti_typeid<BlastSystemComponent>(),
 #ifdef BLAST_EDITOR
                 azrtti_typeid<EditorSystemComponent>(),
+                azrtti_typeid<BlastMaterialEditorSystemComponent>(),
 #endif
             };
         }

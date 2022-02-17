@@ -21,6 +21,7 @@
         "ImageProcessingAtom",
         "Atom_Component_DebugCamera",
         "CommonFeaturesAtom",
-        "LyShine"
+        "LyShine",
+        "O3DEMaterialEditor"
     ]
 }

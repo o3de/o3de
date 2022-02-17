@@ -99,6 +99,9 @@ namespace MaterialEditor
         AZ::Render::DirectionalLightFeatureProcessorInterface* m_directionalLightFeatureProcessor = {};
         AZ::Render::DisplayMapperFeatureProcessorInterface* m_displayMapperFeatureProcessor = {};
 
+        AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
+        AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
+
         AZ::Entity* m_cameraEntity = {};
         AZ::Entity* m_postProcessEntity = {};
 

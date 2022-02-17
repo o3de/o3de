@@ -24,4 +24,9 @@ set(FILES
     Editor/MaterialIdWidget.cpp
     Editor/SettingsWidget.h
     Editor/SettingsWidget.cpp
+    
+    Source/Editor/MaterialEditor/BlastMaterialEditorSystemComponent.cpp
+    Source/Editor/MaterialEditor/BlastMaterialEditorSystemComponent.h
+    Source/Editor/MaterialEditor/Window/MaterialEditorWindow.h
+    Source/Editor/MaterialEditor/Window/MaterialEditorWindow.cpp
 )

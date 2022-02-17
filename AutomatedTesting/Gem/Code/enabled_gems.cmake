@@ -57,4 +57,6 @@ set(ENABLED_GEMS
     Terrain
     Profiler
     Multiplayer
+    O3DEMaterialEditor
+    AtomMaterialEditor
 )
