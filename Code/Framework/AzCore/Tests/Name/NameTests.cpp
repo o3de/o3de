@@ -33,6 +33,8 @@
 
 namespace UnitTest
 {
+    static AZ::Name globalName("global");
+
     class NameDictionaryTester
     {
     public:
@@ -55,7 +57,20 @@ namespace UnitTest
         
         static size_t GetEntryCount()
         {
-            return GetDictionary().size();
+            // Subtract any static scope names that are expected to persist
+            AZ::Name* head = AZ::NameDictionary::Instance().m_deferredHead;
+            size_t staticNameCount = 0;
+            AZ::Name* current = head;
+            while (current != nullptr)
+            {
+                ++staticNameCount;
+                current = current->m_nextName;
+                if (current == head)
+                {
+                    break;
+                }
+            }
+            return GetDictionary().size() - staticNameCount;
         }
 
         //! Directly calculate the hash value for a string without collision resolution
@@ -633,6 +648,33 @@ namespace UnitTest
         // We use only 2 threads for each name to try and maximize how much names are added and removed,
         // instead of letting shared references cause the name to stay in the dictionary.
         RunConcurrencyTest<ThreadRepeatedlyCreatesAndReleasesOneName<100>>(100, 2);
+    }
+
+    TEST_F(NameTest, NameRef)
+    {
+        AZ::NameRef fromRValue = AZ::Name("test");
+        EXPECT_EQ("test", fromRValue->GetName());
+
+        AZ::Name name("foo");
+        AZ::NameRef fromLValue = name;
+        EXPECT_EQ("foo", fromLValue->GetName());
+
+        AZ::Name fromRefLValue = fromLValue;
+        EXPECT_EQ("foo", fromRefLValue.GetStringView());
+
+        AZ::Name fromRefRValue = AZStd::move(fromRValue);
+        EXPECT_EQ("test", fromRefRValue.GetStringView());
+
+        EXPECT_TRUE(AZ::Name(fromLValue) == fromRefLValue);
+        EXPECT_TRUE(AZ::Name(fromLValue) == AZ::Name("foo"));
+    }
+
+    TEST_F(NameTest, NameLiteral)
+    {
+        static AZ::Name staticName = AZ::Name::FromStringLiteral("static");
+        EXPECT_EQ("literal", AZ_NAME_LITERAL("literal").GetStringView());
+        EXPECT_EQ("static", staticName.GetStringView());
+        EXPECT_EQ("global", globalName.GetStringView());
     }
 
     TEST_F(NameTest, DISABLED_NameVsStringPerf_Creation)

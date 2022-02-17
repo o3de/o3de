@@ -17,6 +17,7 @@
 
 namespace AZ
 {
+    Name* NameDictionary::s_deferredHead = nullptr;
     static const char* NameDictionaryInstanceName = "NameDictionaryInstance";
 
     namespace NameDictionaryInternal
@@ -46,21 +47,34 @@ namespace AZ
         using namespace NameDictionaryInternal;
 
         AZ_Assert(s_instance, "NameDictionary not created!");
+        s_instance->UnloadDeferredNames();
         s_instance.Reset();
     }
 
-    bool NameDictionary::IsReady()
+    bool NameDictionary::IsReady(bool tryCreate)
     {
         using namespace NameDictionaryInternal;
 
+        if (!AZ::AllocatorStorage::EnvironmentStoragePolicy<SystemAllocator>::IsReady())
+        {
+            return false;
+        }
+
         if (!s_instance)
         {
-            // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
-            // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
-            // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
-            // after the AZ::Allocators have been destroyed
-            // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
-            s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
+            if (tryCreate)
+            {
+                // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
+                // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
+                // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
+                // after the AZ::Allocators have been destroyed
+                // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
+                s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
+            }
+            else
+            {
+                return false;
+            }
         }
 
         return s_instance.IsConstructed();
@@ -81,10 +95,16 @@ namespace AZ
     }
     
     NameDictionary::NameDictionary()
-    {}
+    {
+        m_deferredHead = s_deferredHead;
+        LoadDeferredNames(AZ::Name::GetDeferredHead());
+        LoadDeferredNames(m_deferredHead);
+    }
 
     NameDictionary::~NameDictionary()
     {
+        s_deferredHead = m_deferredHead;
+
         [[maybe_unused]] bool leaksDetected = false;
 
         for (const auto& keyValue : m_dictionary)
@@ -118,6 +138,56 @@ namespace AZ
             return Name(iter->second);
         }
         return Name();
+    }
+
+    void NameDictionary::LoadLiteral(Name& nameLiteral)
+    {
+        if (nameLiteral.m_data == nullptr)
+        {
+            Name nameData = MakeName(nameLiteral.m_view);
+            nameLiteral.m_data = AZStd::move(nameData.m_data);
+            nameLiteral.m_hash = nameData.m_hash;
+        }
+    }
+
+    void NameDictionary::LoadDeferredNames(Name* deferredHead)
+    {
+        if (deferredHead == nullptr)
+        {
+            return;
+        }
+
+        Name* current = deferredHead;
+        while (current != nullptr)
+        {
+            LoadLiteral(*deferredHead);
+            current = current->m_nextName;
+        }
+
+        if (!deferredHead->m_linkedToDictionary)
+        {
+            deferredHead->m_linkedToDictionary = true;
+            deferredHead->LinkStaticName(&m_deferredHead);
+        }
+    }
+
+    void NameDictionary::UnregisterDeferredName(Name& name)
+    {
+        if (m_deferredHead == &name)
+        {
+            m_deferredHead = name.m_nextName;
+        }
+    }
+
+    void NameDictionary::UnloadDeferredNames()
+    {
+        Name* staticName = m_deferredHead;
+        while (staticName != nullptr)
+        {
+            staticName->m_data = nullptr;
+            staticName->m_hash = 0;
+            staticName = staticName->m_nextName;
+        }
     }
 
     Name NameDictionary::MakeName(AZStd::string_view nameString)

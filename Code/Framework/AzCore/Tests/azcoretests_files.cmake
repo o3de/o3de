@@ -73,6 +73,7 @@ set(FILES
     Debug/Trace.cpp
     Debug/UnhandledExceptions.cpp
     Name/NameJsonSerializerTests.cpp
+    Name/NameBenchmarks.cpp
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Settings/CommandLineTests.cpp
