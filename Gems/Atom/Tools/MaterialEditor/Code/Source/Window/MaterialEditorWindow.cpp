@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
@@ -36,11 +35,9 @@ AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
 {
-    MaterialEditorWindow::MaterialEditorWindow(QWidget* parent /* = 0 */)
-        : Base(parent)
+    MaterialEditorWindow::MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent)
+        : Base(toolId, parent)
     {
-        resize(1280, 1024);
-
         // Among other things, we need the window wrapper to save the main window size, position, and state
         auto mainWindowWrapper =
             new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
@@ -52,36 +49,24 @@ namespace MaterialEditor
 
         QApplication::setWindowIcon(QIcon(":/Icons/materialeditor.svg"));
 
-        AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
-        if (!apiName.IsEmpty())
-        {
-            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
-            setWindowTitle(title);
-        }
-        else
-        {
-            AZ_Assert(false, "Render API name not found");
-            setWindowTitle(QApplication::applicationName());
-        }
-
         setObjectName("MaterialEditorWindow");
 
         m_toolBar = new MaterialEditorToolBar(this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
-        m_materialViewport = new MaterialViewportWidget(centralWidget());
+        m_materialViewport = new MaterialViewportWidget(m_toolId, centralWidget());
         m_materialViewport->setObjectName("Viewport");
         m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         centralWidget()->layout()->addWidget(m_materialViewport);
 
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
-        m_assetBrowser->SetOpenHandler([](const AZStd::string& absolutePath) {
+        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
             if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
             {
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-                    &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
                 return;
             }
 
@@ -93,7 +78,7 @@ namespace MaterialEditor
             QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
         });
 
-        AddDockWidget("Inspector", new MaterialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Inspector", new MaterialInspector(m_toolId), Qt::RightDockWidgetArea, Qt::Vertical);
         AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
         SetDockWidgetVisible("Viewport Settings", false);
 

@@ -8,7 +8,10 @@
 
 
 #include <Tests/GradientSignalTestFixtures.h>
+#include <Tests/GradientSignalTestHelpers.h>
 
+#include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <GradientSignal/Components/GradientTransformComponent.h>
@@ -72,16 +75,34 @@ namespace UnitTest
         });
     }
 
+    void GradientSignalTestEnvironment::PostCreateApplication()
+    {
+        // Ebus usage will allocate a global context on first usage. If that first usage occurs in a DLL, then the context will be
+        // invalid on subsequent unit test runs if using gtest_repeat. However, if we force the ebus to create their global context in
+        // the main test DLL (this one), the context will remain active throughout repeated runs. By creating them in
+        // PostCreateApplication(), they will be created before the DLLs get loaded and any system components from those DLLs run, so we
+        // can guarantee this will be the first usage.
+
+        // These ebuses need their contexts created here before any of the dependent DLLs get loaded:
+        AZ::AssetTypeInfoBus::GetOrCreateContext();
+        SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext();
+        SurfaceData::SurfaceDataProviderRequestBus::GetOrCreateContext();
+        SurfaceData::SurfaceDataModifierRequestBus::GetOrCreateContext();
+        LmbrCentral::ShapeComponentRequestsBus::GetOrCreateContext();
+    }
+
     void GradientSignalBaseFixture::SetupCoreSystems()
     {
-        m_mockHandler = new UnitTest::ImageAssetMockAssetHandler();
-        AZ::Data::AssetManager::Instance().RegisterHandler(m_mockHandler, azrtti_typeid<GradientSignal::ImageAsset>());
+        // Using the AZ::RPI::MakeAssetHandler will both create the asset handlers,
+        // and register them with the AssetManager
+        m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
+        m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
     }
 
     void GradientSignalBaseFixture::TearDownCoreSystems()
     {
-        AZ::Data::AssetManager::Instance().UnregisterHandler(m_mockHandler);
-        delete m_mockHandler; // delete after removing from the asset manager
+        // This will delete the asset handlers, which will unregister themselves on deletion
+        m_assetHandlers.clear();
 
         AzFramework::LegacyAssetEventBus::ClearQueuedEvents();
     }
@@ -139,7 +160,7 @@ namespace UnitTest
         GradientSignal::ImageGradientConfig config;
         const uint32_t imageSize = 4096;
         const int32_t imageSeed = 12345;
-        config.m_imageAsset = ImageAssetMockAssetHandler::CreateImageAsset(imageSize, imageSize, imageSeed);
+        config.m_imageAsset = UnitTest::CreateImageAsset(imageSize, imageSize, imageSeed);
         config.m_tilingX = 1.0f;
         config.m_tilingY = 1.0f;
         entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);

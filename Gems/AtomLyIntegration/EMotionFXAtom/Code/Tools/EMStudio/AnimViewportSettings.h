@@ -31,7 +31,10 @@ namespace EMStudio::ViewportUtil
     float CameraTranslateSmoothness();
     bool CameraRotateSmoothingEnabled();
     bool CameraTranslateSmoothingEnabled();
+    float CameraDefaultOrbitDistance();
 
-    AzFramework::TranslateCameraInputChannelIds BuildTranslateCameraInputChannelIds();
-    AzFramework::InputChannelId BuildRotateCameraInputId();
+    AzFramework::TranslateCameraInputChannelIds TranslateCameraInputChannelIds();
+    AzFramework::InputChannelId RotateCameraInputChannelId();
+    AzFramework::InputChannelId OrbitCameraInputChannelId();
+    AzFramework::InputChannelId OrbitLookCameraInputChannelId();
 }

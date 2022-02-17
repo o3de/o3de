@@ -42,6 +42,9 @@ namespace AZ
 
         //! Returns if the current bakcend is a null renderer
         bool IsNullRenderer();
+
+        //! Returns true if the Atom/GraphicsDevMode settings registry key is set
+        bool IsGraphicsDevModeEnabled();
     }
 }
 

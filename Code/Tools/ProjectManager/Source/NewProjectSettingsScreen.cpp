@@ -207,6 +207,7 @@ namespace O3DE::ProjectManager
         {
             m_templateDisplayName = new QLabel(this);
             m_templateDisplayName->setObjectName("displayName");
+            m_templateDisplayName->setWordWrap(true);
             templateDetailsLayout->addWidget(m_templateDisplayName);
 
             m_templateSummary = new QLabel(this);

@@ -33,7 +33,9 @@ GLOBAL_ILLUMINATION_QUALITY = {
 }
 
 # Level list used in Editor Level Load Test
-LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest", "Sponza"]
+# WARNING: "Sponza" level is sandboxed due to an intermittent failure.
+LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
+
 
 class AtomComponentProperties:
     """
