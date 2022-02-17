@@ -77,19 +77,29 @@ namespace AZ
 
         bool ParentPass::InsertChild(const Ptr<Pass>& child, ChildPassIndex position)
         {
+            if (!position.IsValid())
+            {
+                AZ_Assert(false, "Can't insert a child pass with invalid position");
+                return false;
+            }
+            return InsertChild(child, position.GetIndex());
+        }
+        
+        bool ParentPass::InsertChild(const Ptr<Pass>& child, uint32_t index)
+        {
             if (child->m_parent != nullptr)
             {
                 AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
                 return false;
             }
 
-            if (!position.IsValid() || position.GetIndex() > m_children.size())
+            if (index > m_children.size())
             {
                 AZ_Assert(false, "Can't insert a child pass with invalid position");
                 return false;
             }
 
-            auto insertPos = m_children.cbegin() + position.GetIndex();
+            auto insertPos = m_children.cbegin() + index;
             m_children.insert(insertPos, child);
 
             child->m_parent = this;

@@ -1338,6 +1338,8 @@ void CCryEditApp::CompileCriticalAssets() const
     }
     assetsInQueueNotifcation.BusDisconnect();
 
+    AZ_TracePrintf("Editor", "CriticalAssetsCompiled\n");
+
     // Signal the "CriticalAssetsCompiled" lifecycle event
     // Also reload the "assetcatalog.xml" if it exists
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
@@ -1409,11 +1411,13 @@ bool CCryEditApp::ConnectToAssetProcessor() const
 
     if (connectedToAssetProcessor)
     {
+        AZ_TracePrintf("Editor", "Connected to Asset Processor\n");
         CCryEditApp::OutputStartupMessage(QString("Connected to Asset Processor"));
         CompileCriticalAssets();
         return true;
     }
 
+    AZ_TracePrintf("Editor", "Failed to connect to Asset Processor\n");
     CCryEditApp::OutputStartupMessage(QString("Failed to connect to Asset Processor"));
     return false;
 }
