@@ -76,25 +76,26 @@ namespace AzToolsFramework
 
     void FocusModeSystemComponent::SetFocusRoot(AZ::EntityId entityId)
     {
-        if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
-        {
-            if (!m_focusRoot.IsValid() && entityId.IsValid())
-            {
-                tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
-            }
-            else if (m_focusRoot.IsValid() && !entityId.IsValid())
-            {
-                tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
-            }
-        }
-
         AZ::EntityId previousFocusEntityId = m_focusRoot;
         m_focusRoot = entityId;
 
         RefreshFocusedEntityIdList();
 
+        // Only trigger notifications if the focus root has changed.
         if (m_focusRoot == previousFocusEntityId)
         {
+            if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
+            {
+                if (!m_focusRoot.IsValid() && entityId.IsValid())
+                {
+                    tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+                }
+                else if (m_focusRoot.IsValid() && !entityId.IsValid())
+                {
+                    tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+                }
+            }
+
             FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, previousFocusEntityId, m_focusRoot);
         }
     }
