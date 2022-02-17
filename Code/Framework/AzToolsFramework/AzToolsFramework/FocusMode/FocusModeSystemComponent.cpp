@@ -142,7 +142,9 @@ namespace AzToolsFramework
         if (auto iter = AZStd::find(m_focusedEntityIdList.begin(), m_focusedEntityIdList.end(), childId);
             iter != m_focusedEntityIdList.end())
         {
-            m_focusedEntityIdList.erase(iter);
+            // Swap and pop since we don't care about the ordering.
+            *iter = m_focusedEntityIdList.back();
+            m_focusedEntityIdList.pop_back();
         }
     }
 
