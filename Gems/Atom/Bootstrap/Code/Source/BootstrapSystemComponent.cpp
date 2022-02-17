@@ -325,7 +325,6 @@ namespace AZ
                 {
                     RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDescriptor, *viewportContext->GetWindowContext().get());
                     pipelineAsset.Release();
-                    scene->ApplyRenderPipelineChange(renderPipeline.get());
                     scene->AddRenderPipeline(renderPipeline);
                 }
 

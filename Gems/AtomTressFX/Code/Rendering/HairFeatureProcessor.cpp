@@ -108,7 +108,7 @@ namespace AZ
 
             void HairFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
             {
-                CreateHairParentPass(renderPipeline);
+                AddHairParentPass(renderPipeline);
             }
 
             void HairFeatureProcessor::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -322,7 +322,7 @@ namespace AZ
                 return pass ? true : false;
             }
 
-            bool HairFeatureProcessor::CreateHairParentPass(RPI::RenderPipeline* renderPipeline)
+            bool HairFeatureProcessor::AddHairParentPass(RPI::RenderPipeline* renderPipeline)
             {
                 if (HasHairParentPass(renderPipeline))
                 {
@@ -339,7 +339,7 @@ namespace AZ
                 }
                 if (!passRequest)
                 {
-                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
+                    AZ_Error("AtomTressFx", false, "Failed to add hair parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
                     return false;
                 }
 
@@ -347,39 +347,23 @@ namespace AZ
 
                  // Create the pass
                 RPI::Ptr<RPI::Pass> hairParentPass  = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
-
-                // add the pass to render pipeline
-                RPI::Ptr<RPI::ParentPass> rootPass = renderPipeline->GetRootPass();
-
-                // Find opaque pass
-                auto passFilter = RPI::PassFilter::CreateWithTemplateName(Name("OpaqueParentTemplate"), renderPipeline);
-                RPI::Ptr<RPI::Pass> opaquePass = nullptr;
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&opaquePass](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
-                    {
-                        opaquePass = pass;
-                        return RPI::PassFilterExecutionFlow::StopVisitingPasses;
-                    });
-
-                if (!opaquePass)
+                if (!hairParentPass)
                 {
-                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Can't find pass created with OpaqueParentTemplate in render pipeline [%s]",
+                    AZ_Error("AtomTressFx", false, "Create hair parent pass from pass request failed",
                         renderPipeline->GetId().GetCStr());
                     return false;
                 }
-                // insert the pass 
-                auto parentPass = opaquePass->GetParent();
-                auto passIndex = parentPass->FindChildPassIndex(Name("OpaquePass"));
-                    
-                bool success = parentPass->InsertChild(hairParentPass, passIndex.GetIndex()+1);
 
-                // only create pass resources 
+                // Add the pass to render pipeline
+                bool success = renderPipeline->AddPassAfter(hairParentPass, Name("OpaquePass"));
+                // only create pass resources if it was success
                 if (success)
                 {
                     CreatePerPassResources();
                 }
                 else
                 {
-                    AZ_Error("AtomTressFx", false, "Failed to create hair parent pass. Insert the pass to render pipeline [%s] failed",
+                    AZ_Error("AtomTressFx", false, "Add the hair parent pass to render pipeline [%s] failed",
                         renderPipeline->GetId().GetCStr());
                 }
                 return success;
@@ -474,15 +458,11 @@ namespace AZ
 
             bool HairFeatureProcessor::CreatePerPassResources()
             {
-                if (m_sharedResourcesCreated)
-                {
-                    return true;
-                }
-
                 SrgBufferDescriptor descriptor;
                 AZStd::string instanceNumber = AZStd::to_string(s_instanceCount);
 
                 // Shared buffer - this is a persistent buffer that needs to be created manually.
+                if (!m_sharedDynamicBuffer)
                 {
                     AZStd::vector<SrgBufferDescriptor> hairDynamicDescriptors;
                     DynamicHairData::PrepareSrgDescriptors(hairDynamicDescriptors, 1, 1);
@@ -495,7 +475,7 @@ namespace AZ
                 }
 
                 // PPLL nodes buffer - created only if the PPLL technique is used
-                if (m_usePPLLRenderTechnique)
+                if (m_usePPLLRenderTechnique && !m_linkedListNodesBuffer)
                 {
                     descriptor = SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
@@ -510,7 +490,6 @@ namespace AZ
                     }
                 }
 
-                m_sharedResourcesCreated = true;
                 return true;
             }
 

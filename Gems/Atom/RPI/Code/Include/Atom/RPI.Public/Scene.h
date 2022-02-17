@@ -170,8 +170,8 @@ namespace AZ
             //! User may call this function explicitly if render pipelines were changed
             void RebuildPipelineStatesLookup();
                         
-            //! apply render pipeline changes from each feature processors
-            void ApplyRenderPipelineChange(RenderPipeline* pipeline);
+            //! Try apply render pipeline changes from each feature processors if the pipeline allows modification and wasn't modified.
+            void TryApplyRenderPipelineChanges(RenderPipeline* pipeline);
 
         protected:
             // SceneFinder overrides...

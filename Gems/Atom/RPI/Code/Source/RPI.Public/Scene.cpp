@@ -285,12 +285,20 @@ namespace AZ
             return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
         }
 
-        void Scene::ApplyRenderPipelineChange(RenderPipeline* pipeline)
+        void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)
         {
+            // return directly if the pipeline doesn't allow modification or it was already modifed by scene
+            if (!pipeline->m_descriptor.m_allowModification || pipeline->m_wasModifiedByScene)
+            {
+                return;
+            }
+
+            pipeline->m_wasModifiedByScene = true;
             for (auto& fp : m_featureProcessors)
             {
                 fp->ApplyRenderPipelineChange(pipeline);
             }
+            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
         }
 
         void Scene::AddRenderPipeline(RenderPipelinePtr pipeline)
@@ -319,6 +327,9 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+
+            TryApplyRenderPipelineChanges(pipeline.get());
+
             PassSystemInterface::Get()->ProcessQueuedChanges();
             pipeline->BuildPipelineViews();
 

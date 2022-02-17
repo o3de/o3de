@@ -168,7 +168,7 @@ namespace AZ
 
                 bool HasHairParentPass(RPI::RenderPipeline* renderPipeline);
 
-                bool CreateHairParentPass(RPI::RenderPipeline* renderPipeline);
+                bool AddHairParentPass(RPI::RenderPipeline* renderPipeline);
 
                 //! The following will serve to register the FP in the Thumbnail system
                 AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
@@ -217,7 +217,6 @@ namespace AZ
                 float m_currentDeltaTime = 0.02f;
                 //! flag to disable/enable feature processor adding dispatch calls to compute passes.
                 bool m_addDispatchEnabled = true;
-                bool m_sharedResourcesCreated = false;
                 //! reload / pipeline changes force build dispatches and render items
                 bool m_forceRebuildRenderData = false;      
                 bool m_forceClearRenderData = false;

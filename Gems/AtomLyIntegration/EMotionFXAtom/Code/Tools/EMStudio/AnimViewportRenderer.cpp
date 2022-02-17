@@ -70,7 +70,6 @@ namespace EMStudio
             defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *m_windowContext.get());
         pipelineAsset.Release();
-        m_scene->ApplyRenderPipelineChange(m_renderPipeline.get());
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_renderPipeline->SetDefaultView(viewportContext->GetDefaultView());
 

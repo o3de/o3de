@@ -100,7 +100,6 @@ namespace MaterialEditor
             m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *GetViewportContext()->GetWindowContext().get());
         pipelineAsset.Release();
-        m_scene->ApplyRenderPipelineChange(m_renderPipeline.get());
         m_scene->AddRenderPipeline(m_renderPipeline);
 
         // As part of our initialization we need to create the BRDF texture generation pipeline
