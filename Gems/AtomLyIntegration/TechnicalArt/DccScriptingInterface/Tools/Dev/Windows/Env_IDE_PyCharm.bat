@@ -24,7 +24,6 @@ IF "%PYCHARM_VERSION_MAJOR%"=="" (set PYCHARM_VERSION_MAJOR=3)
 :: version Minor
 IF "%PYCHARM_VERSION_MINOR%"=="" (set PYCHARM_VERSION_MINOR=2)
 
-
 :: PyCharm install paths look something like the following and has changed from release to release
 ::"C:\Program Files\JetBrains\PyCharm 2019.1.3\bin"
 ::"C:\Program Files\JetBrains\PyCharm 2020.3.2\bin" <-- this is mine @HogJonnyAMZN

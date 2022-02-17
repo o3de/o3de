@@ -8,6 +8,13 @@
 #
 #
 # -------------------------------------------------------------------------
+"""! @brief
+Module Documentation:
+    < DCCsi >:: Tools//DCC//Blender//config.py
+
+This module manages the dynamic config and settings for boostrapping Blender
+"""
+# -------------------------------------------------------------------------
 # standard imports
 import sys
 import os
@@ -20,7 +27,7 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-_MODULENAME = 'O3DE.DCCsi.Tools.DCC.Blender.config'
+_MODULENAME = 'Blender.config'
 
 # configure basic logger
 FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
@@ -48,26 +55,9 @@ os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.resolve())
 
 
 # -------------------------------------------------------------------------
-def attach_debugger():
-    _DCCSI_GDEBUG = True
-    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-
-    _DCCSI_DEV_MODE = True
-    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
-
-    from azpy.test.entry_test import connect_wing
-    _debugger = connect_wing()
-
-    return _debugger
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # _settings.setenv()  # doing this will add the additional DYNACONF_ envars
 def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG.resolve()):
     """Convenience method to set and retreive settings directly from module."""
-
-    attach_debugger()
 
     try:
         Path(PATH_DCCSIG).exists()
@@ -95,9 +85,9 @@ settings = _CONFIG.get_config_settings(enable_o3de_python=False,
 # that will cause conflicts with the DCC tools python!!!
 # we are enabling the O3DE PySide2 (aka QtForPython) access
 
-_DCCSI_PATH_BLENDER = Path(sys.prefix)
-os.environ["DYNACONF_DCCSI_PATH_BLENDER"] = _DCCSI_PATH_BLENDER.resolve()
-_LOGGER.debug(f"Blender Install: {_DCCSI_PATH_BLENDER}")
+#_DCCSI_PATH_BLENDER = Path(sys.prefix)
+#os.environ["DYNACONF_DCCSI_PATH_BLENDER"] = _DCCSI_PATH_BLENDER.resolve()
+#_LOGGER.debug(f"Blender Install: {_DCCSI_PATH_BLENDER}")
 
 from dynaconf import settings
 settings.setenv()

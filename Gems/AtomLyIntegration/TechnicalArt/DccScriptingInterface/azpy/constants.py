@@ -57,6 +57,7 @@ ENVAR_DCCSI_GDEBUG = str('DCCSI_GDEBUG')
 ENVAR_DCCSI_DEV_MODE = str('DCCSI_DEV_MODE')
 ENVAR_DCCSI_GDEBUGGER = str('DCCSI_GDEBUGGER')
 ENVAR_DCCSI_LOGLEVEL = str('DCCSI_LOGLEVEL')
+ENVAR_DCCSI_TESTS = str('DCCSI_TESTS')
 # Log formating
 FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
 FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
