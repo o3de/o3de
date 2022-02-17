@@ -23,10 +23,71 @@ namespace ImageProcessingAtom
 {
     namespace QtImageLoader
     {
-        static bool loadTga(const AZStd::string& filename, QImage& image);
+        /*
+        * https://www.opennet.ru/docs/formats/targa.pdf
+        * http://www.paulbourke.net/dataformats/tga/
+        */
+        enum class ImageTypeCode : AZ::u8
+        {
+            // No image data included.
+            NoImageData = 0, // not supported?
+            // Uncompressed, color-mapped images.
+            ColorMappedUncompressed = 1, // not supported?
+            // Uncompressed, RGB images.
+            UnmappedRGB = 2,
+            // Uncompressed, black and white images.
+            BlackAndWhiteUncompressed = 3, // not supported?
+            // Runlength encoded color-mapped images.
+            ColorMappedRLE = 9, // not supported?
+            // Runlength encoded RGB images.
+            RGBRLE = 10,
+            // Compressed, black and white images.
+            BlackAndWhiteCompressed = 11, // not supported?
+            // Compressed color-mapped data, using Huffman, Delta, and runlength encoding.
+            ColorMappedCompressedRLE = 32, // not supported?
+            // Compressed color-mapped data, using Huffman, Delta, and runlength encoding.4 - pass quadtree - type process.
+            ColorMappedCompressedRLEWith4Pass = 33, // not supported?
+        };
+        /*
+         * https://www.opennet.ru/docs/formats/targa.pdf
+         * http://www.paulbourke.net/dataformats/tga/
+         */
+        enum class ImagePixelSize : AZ::u8
+        {
+            Targa8   = 8,
+            Targa16 = 16,
+            Targa24 = 24,
+            Targa32 = 32,
+        };
+#pragma pack(1)
+        /*
+         * https://www.opennet.ru/docs/formats/targa.pdf
+         * http://www.paulbourke.net/dataformats/tga/
+         */
+        struct TgaHeader
+        {
+            AZ::u8                      m_idLength;
+            AZ::u8                      m_colorMapType;
+            ImageTypeCode               m_dataTypeCode;
+            AZ::u16                     m_colorMapOrigin;
+            AZ::u16                     m_colorMapLength;
+            AZ::u8                      m_colorMapDepth;
+            AZ::u16                     m_xOrigin;
+            AZ::u16                     m_yOrigin;
+            AZ::u16                     m_width;
+            AZ::u16                     m_height;
+            ImagePixelSize              m_bitsPerPixel;
+            AZ::u8                      m_imageDescriptor;
+        };
+#pragma pack()
+
+        static void FillImageContent(
+            const TgaHeader& tgaHeader, const AZ::u8* byteData, AZStd::vector<AZ::u8>& pixelContent, AZ::u32& byteIndex);
+        static void CreateNewImage(const TgaHeader& tgaHeader, const AZStd::vector<AZ::u8>& pixelContent, QImage& image);
+        static bool LoadTgaImage(const AZStd::string& filename, QImage& image);
+
         IImageObject* LoadImageFromFile(const AZStd::string& filename)
         {
-            
             //try to open the image
             QImage qimage(filename.c_str());
             if (qimage.isNull())
@@ -34,16 +95,16 @@ namespace ImageProcessingAtom
                 QString suffix = QFileInfo(filename.c_str()).suffix().toLower();
                 if (suffix == "tga")
                 {
-                    if (!loadTga(filename, qimage))
+                    if (!LoadTgaImage(filename, qimage))
                     {
-                        AZ_Error("ImageProcessing", false, "Failed to load [%s] via QImage", filename.c_str());
-                        return NULL;
+                        AZ_Error("ImageProcessing", false, "Failed to load [%s] via TGA Image", filename.c_str());
+                        return nullptr;
                     }
                 }
                 else
                 {
                     AZ_Error("ImageProcessing", false, "Failed to load [%s] via QImage", filename.c_str());
-                    return NULL;
+                    return nullptr;
                 }
                 
             }
@@ -75,166 +136,166 @@ namespace ImageProcessingAtom
 
         // https://forum.qt.io/topic/74712/qimage-from-tga-with-alpha/11
         // https://forum.qt.io/topic/101971/qimage-and-tga-support-in-c/5
-        static bool loadTga(const AZStd::string& filename, QImage& image)
+        // http://www.paulbourke.net/dataformats/tga/
+        bool LoadTgaImage(const AZStd::string& filename, QImage& image)
         {
-            if (!image.load(filename.c_str()))
+            if (image.load(filename.c_str()))
             {
-                // open the file
-                FILE* pf = nullptr;
-                azfopen(&pf, filename.c_str(), "rb");
+                return true;
+            }
 
-                if (!pf)
+            // open the file
+            AZ::IO::SystemFile imageFile;
+            imageFile.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY);
+
+            if (!imageFile.IsOpen())
+            {
+                AZ_Warning("Image Processing", false, "Failed to open file %s", filename.c_str());
+                return false;
+            }
+
+            AZ::IO::SystemFileStream imageFileStream(&imageFile, true);
+            if (!imageFileStream.IsOpen())
+            {
+                AZ_Warning("Image Processing", false, "Failed to create file stream %s", filename.c_str());
+                return false;
+            }
+
+            // read in the header
+            TgaHeader tgaHeader;
+            
+            if (imageFileStream.Read(sizeof(tgaHeader), &tgaHeader) != sizeof(tgaHeader))
+            {
+                AZ_Warning("Image Processing", false, "Failed to read file header %s", filename.c_str());
+                return false;
+            }
+
+            if (tgaHeader.m_dataTypeCode != ImageTypeCode::UnmappedRGB && tgaHeader.m_dataTypeCode != ImageTypeCode::RGBRLE)
+            {
+                AZ_Warning("Image Processing", false, "Unsupported type code [%d] of TGA file %s", tgaHeader.m_dataTypeCode, filename.c_str());
+                return false;
+            }
+
+            if (tgaHeader.m_bitsPerPixel != ImagePixelSize::Targa24 && tgaHeader.m_bitsPerPixel != ImagePixelSize::Targa32)
+            {
+                AZ_Warning(
+                    "Image Processing", false, "Unsupported bits per pixel [%d], type code [%d] of TGA file %s", tgaHeader.m_bitsPerPixel,
+                    tgaHeader.m_dataTypeCode, filename.c_str());
+                return false;
+            }
+
+            AZ::u32 bytesPerPixel = (AZ::u8)tgaHeader.m_bitsPerPixel / 8;
+            AZ::u32 imageBytesSize = tgaHeader.m_width * tgaHeader.m_height * bytesPerPixel;
+
+            AZStd::vector<AZ::u8> pixelContent;
+            pixelContent.resize(imageBytesSize);
+
+            // jump to the data block
+            AZ::IO::OffsetType startOffsetOfDataBlocks = tgaHeader.m_idLength + tgaHeader.m_colorMapType * tgaHeader.m_colorMapLength;
+            imageFileStream.Seek(startOffsetOfDataBlocks, AZ::IO::SystemFileStream::SeekMode::ST_SEEK_CUR);
+
+            if (tgaHeader.m_dataTypeCode == ImageTypeCode::UnmappedRGB)
+            {
+                if (imageFileStream.Read(imageBytesSize, reinterpret_cast<char*>(pixelContent.data())) != imageBytesSize)
                 {
+                    AZ_Warning("Image Processing", false, "failed to read file content %s", filename.c_str());
                     return false;
                 }
+                
+                CreateNewImage(tgaHeader, pixelContent, image);
+                return true;
+            }
+            
+            //  if compressed 24 or 32 bit
+            if (tgaHeader.m_dataTypeCode == ImageTypeCode::RGBRLE) // compressed
+            {
+                AZ::u8 chunkHeader;
+                AZ::u8 byteData[5];
+                AZ::u32 byteIndex = 0;
 
-                // some variables
-                AZStd::vector<uint8_t>* vui8Pixels = nullptr;
-                uint32_t ui32BpP;
-                uint32_t ui32Width;
-                uint32_t ui32Height;
-
-                // read in the header
-                uint8_t ui8x18Header[19] = { 0 };
-
-                if (fread(reinterpret_cast<char*>(&ui8x18Header), sizeof(char), sizeof(ui8x18Header) - 1, pf) != sizeof(ui8x18Header) - 1)
+                do
                 {
-                    fclose(pf);
-                    return false;
-                }
-
-                // get variables
-                vui8Pixels = new AZStd::vector<uint8_t>;
-                bool bCompressed;
-                uint32_t ui32IDLength;
-                uint32_t ui32PicType;
-                uint32_t ui32PaletteLength;
-                uint32_t ui32Size;
-
-                // extract all information from header
-                ui32IDLength = ui8x18Header[0];
-                ui32PicType = ui8x18Header[2];
-                ui32PaletteLength = ui8x18Header[6] * 0x100 + ui8x18Header[5];
-                ui32Width = ui8x18Header[13] * 0x100 + ui8x18Header[12];
-                ui32Height = ui8x18Header[15] * 0x100 + ui8x18Header[14];
-                ui32BpP = ui8x18Header[16];
-
-                // calculate some more information
-                ui32Size = ui32Width * ui32Height * ui32BpP / 8;
-                bCompressed = ui32PicType == 9 || ui32PicType == 10;
-                vui8Pixels->resize(ui32Size);
-
-                // jump to the data block
-                fseek(pf, ui32IDLength + ui32PaletteLength, SEEK_CUR);
-
-                if (ui32PicType == 2 && (ui32BpP == 24 || ui32BpP == 32))
-                {
-                    if (fread(reinterpret_cast<char*>(vui8Pixels->data()), sizeof(char), ui32Size, pf) != ui32Size)
+                    if (imageFileStream.Read(sizeof(chunkHeader), reinterpret_cast<char*>(&chunkHeader)) != sizeof(chunkHeader))
                     {
-                        delete vui8Pixels;
-                        fclose(pf);
+                        AZ_Warning("Image Processing", false, "failed to read trunk header %s", filename.c_str());
                         return false;
                     }
-                }
-                // else if compressed 24 or 32 bit
-                else if (ui32PicType == 10 && (ui32BpP == 24 || ui32BpP == 32)) // compressed
-                {
-                    uint8_t tempChunkHeader;
-                    uint8_t tempData[5];
-                    unsigned int tempByteIndex = 0;
 
-                    do
+                    if (chunkHeader >> 7) // repeat count
                     {
-                        if (fread(reinterpret_cast<char*>(&tempChunkHeader), sizeof(char), sizeof(tempChunkHeader), pf) !=
-                            sizeof(tempChunkHeader))
+                        // just use the first 7 bits
+                        chunkHeader = AZ::u8(chunkHeader << 1) >> 1;
+
+                        if (imageFileStream.Read(bytesPerPixel, reinterpret_cast<char*>(byteData)) != bytesPerPixel)
                         {
-                            delete vui8Pixels;
-                            fclose(pf);
+                            AZ_Warning("Image Processing", false, "failed to read trunk content %s", filename.c_str());
                             return false;
                         }
 
-                        if (tempChunkHeader >> 7) // repeat count
-                        {
-                            // just use the first 7 bits
-                            tempChunkHeader = (uint8_t(tempChunkHeader << 1) >> 1);
+                        FillImageContent(tgaHeader, byteData, pixelContent, byteIndex);
+                    }
+                    else // data count
+                    {
+                        // just use the first 7 bits
+                        chunkHeader = AZ::u8(chunkHeader << 1) >> 1;
 
-                            if (fread(reinterpret_cast<char*>(&tempData), sizeof(char), ui32BpP / 8, pf) != ui32BpP / 8)
+                        for (AZ::u8 i = 0; i <= chunkHeader; i++)
+                        {
+                            if (imageFileStream.Read(bytesPerPixel, reinterpret_cast<char*>(byteData)) != bytesPerPixel)
                             {
-                                delete vui8Pixels;
-                                fclose(pf);
+                                AZ_Warning("Image Processing", false, "failed to read trunk content %s", filename.c_str());
                                 return false;
                             }
 
-                            for (int i = 0; i <= tempChunkHeader; i++)
-                            {
-                                vui8Pixels->at(tempByteIndex++) = tempData[0];
-                                vui8Pixels->at(tempByteIndex++) = tempData[1];
-                                vui8Pixels->at(tempByteIndex++) = tempData[2];
-                                if (ui32BpP == 32)
-                                {
-                                    vui8Pixels->at(tempByteIndex++) = tempData[3];
-                                }
-                                    
-                            }
+                            FillImageContent(tgaHeader, byteData, pixelContent, byteIndex);
                         }
-                        else // data count
-                        {
-                            // just use the first 7 bits
-                            tempChunkHeader = (uint8_t(tempChunkHeader << 1) >> 1);
-
-                            for (int i = 0; i <= tempChunkHeader; i++)
-                            {
-                                if (fread(reinterpret_cast<char*>(&tempData), sizeof(char), ui32BpP / 8, pf) != ui32BpP / 8)
-                                {
-                                    delete vui8Pixels;
-                                    fclose(pf);
-                                    return false;
-                                }
-                                vui8Pixels->at(tempByteIndex++) = tempData[0];
-                                vui8Pixels->at(tempByteIndex++) = tempData[1];
-                                vui8Pixels->at(tempByteIndex++) = tempData[2];
-                                if (ui32BpP == 32)
-                                {
-                                    vui8Pixels->at(tempByteIndex++) = tempData[3];
-                                }
-                                    
-                            }
-                        }
-                    } while (tempByteIndex < ui32Size);
-                }
-                // not useable format
-                else
-                {
-                    delete vui8Pixels;
-                    fclose(pf);
-                    return false;
-                }
-                                
-                fclose(pf);
-
-                image = QImage(ui32Width, ui32Height, QImage::Format_RGB888);
-
-                int pixelSize = ui32BpP == 32 ? 4 : 3;
-                // TODO: write direct into img
-                for (unsigned int x = 0; x < ui32Width; x++)
-                {
-                    for (unsigned int y = 0; y < ui32Height; y++)
-                    {
-                        int valr = vui8Pixels->at(y * ui32Width * pixelSize + x * pixelSize + 2);
-                        int valg = vui8Pixels->at(y * ui32Width * pixelSize + x * pixelSize + 1);
-                        int valb = vui8Pixels->at(y * ui32Width * pixelSize + x * pixelSize);
-
-                        QColor value(valr, valg, valb);
-                        image.setPixelColor(x, y, value);
                     }
+                } while (byteIndex < imageBytesSize);
+                
+                CreateNewImage(tgaHeader, pixelContent, image);
+            }
+            
+            // not useable format
+            return false;
+        }
+        
+        void FillImageContent(
+            const TgaHeader& tgaHeader, const AZ::u8* byteData, AZStd::vector<AZ::u8>& pixelContent, AZ::u32& byteIndex)
+        {
+            pixelContent.at(byteIndex++) = byteData[0];
+            pixelContent.at(byteIndex++) = byteData[1];
+            pixelContent.at(byteIndex++) = byteData[2];
+            if (tgaHeader.m_bitsPerPixel == ImagePixelSize::Targa32)
+            {
+                pixelContent.at(byteIndex++) = byteData[3];
+            }
+        }
+        
+        void CreateNewImage(const TgaHeader& tgaHeader, const AZStd::vector<AZ::u8>& pixelContent, QImage& image)
+        {
+            AZ::u32 bytesPerPixel = (AZ::u8)tgaHeader.m_bitsPerPixel / 8;
+            
+            image = QImage(tgaHeader.m_width, tgaHeader.m_height, QImage::Format_RGBA8888);
+
+            for (unsigned int x = 0; x < tgaHeader.m_width; x++)
+            {
+                for (unsigned int y = 0; y < tgaHeader.m_height; y++)
+                {
+                    int r = pixelContent.at(y * tgaHeader.m_width * bytesPerPixel + x * bytesPerPixel + 2);
+                    int g = pixelContent.at(y * tgaHeader.m_width * bytesPerPixel + x * bytesPerPixel + 1);
+                    int b = pixelContent.at(y * tgaHeader.m_width * bytesPerPixel + x * bytesPerPixel);
+                    int a = 255;
+                    if (bytesPerPixel == 4)
+                    {
+                        a = pixelContent.at(y * tgaHeader.m_width * bytesPerPixel + x * bytesPerPixel + 3);
+                    }
+
+                    QColor value(r, g, b, a);
+                    image.setPixelColor(x, y, value);
                 }
-
-                delete vui8Pixels;
-
-                image = image.mirrored();
             }
 
-            return true;
+            image = image.mirrored();
         }
 
         bool IsExtensionSupported(const char* extension)
