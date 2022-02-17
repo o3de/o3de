@@ -93,6 +93,7 @@ namespace AZ::SceneAPI::Behaviors
 
         Events::ProcessingResult PrepareForExport(Events::PreExportEventContext& context)
         {
+            m_writeDebug = context.GetDebug();
             return m_preExportEventContextFunction(context);
         }
 
@@ -404,6 +405,8 @@ namespace AZ::SceneAPI::Behaviors
 
         // AssetImportRequest
         Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
+
+        bool m_writeDebug = false;
     };
 
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
@@ -562,8 +565,18 @@ namespace AZ::SceneAPI::Behaviors
 
         // write to a UTF-8 string buffer
         rapidjson::StringBuffer sb;
-        rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
-        if (doc.Accept(writer) == false)
+        bool writerResult = false;
+        if(m_exportEventHandler->m_writeDebug)
+        {
+            rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
+            writerResult = doc.Accept(writer);
+        }
+        else
+        {
+            rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
+            writerResult = doc.Accept(writer);
+        }
+        if (writerResult == false)
         {
             AZ_Error("prefab", false, "PrefabGroup(%s) Could not buffer JSON", prefabGroup->GetName().c_str());
             return false;
