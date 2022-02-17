@@ -159,6 +159,9 @@ namespace ImageProcessingAtom
         //mipmap generation for cubemap
         bool FillCubemapMipmaps();
 
+        //set (alpha-weighted) average color computed from given mip
+        bool SetAverageColor(AZ::u32 mip);
+
         //IBL cubemap generation, this creates a separate ImageConvertProcess
         bool CreateIBLCubemap(PresetName preset, const char* fileNameSuffix, IImageObjectPtr& cubemapImage);
 

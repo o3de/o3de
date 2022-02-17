@@ -104,11 +104,11 @@ namespace AZ
             }
         }
 
-        void StreamingImageAssetCreator::SetMeanColor(Color meanColor)
+        void StreamingImageAssetCreator::SetAverageColor(Color avgColor)
         {
             if (ValidateIsReady())
             {
-                m_asset->m_meanColor = meanColor;
+                m_asset->m_averageColor = avgColor;
             }
         }
 

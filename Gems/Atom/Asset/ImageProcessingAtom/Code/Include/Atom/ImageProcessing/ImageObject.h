@@ -96,9 +96,6 @@ namespace ImageProcessingAtom
         virtual float ComputeAlphaCoverageScaleFactor(AZ::u32 mip, float fDesiredCoverage, float fAlphaRef) const = 0;
         virtual float ComputeAlphaCoverage(AZ::u32 mip, float fAlphaRef) const = 0;
 
-        // Computes the alpha-weighted average color in linear space and returns the average alpha value in the alpha channel.
-        virtual AZ::Color ComputeLinearAlphaWeightedAverageColor() const = 0;
-
         //helper functions
         //compare whether two images are same. return true if they are same.
         virtual bool CompareImage(const IImageObjectPtr otherImage) const = 0;
@@ -125,6 +122,8 @@ namespace ImageProcessingAtom
         virtual void SetNumPersistentMips(AZ::u32 nMips) = 0;
         virtual float GetAverageBrightness() const = 0;
         virtual void SetAverageBrightness(float avgBrightness) = 0;
+        virtual AZ::Color GetAverageColor() const = 0;
+        virtual void SetAverageColor(const AZ::Color& averageColor) = 0;
 
         // Derive new roughness from normal variance to preserve the bumpiness of normal map mips and to reduce specular aliasing.
         // The derived roughness is combined with the artist authored roughness stored in the alpha channel of the normal map.

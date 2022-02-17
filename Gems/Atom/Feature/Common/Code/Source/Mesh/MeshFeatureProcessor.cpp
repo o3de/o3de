@@ -1058,7 +1058,7 @@ namespace AZ
                 // If texturing was requested: check if we found a texture and use it
                 if (useTexture && baseColorImage.get())
                 {
-                    // Currently getMeanColor() is only implemented for a StreamingImage
+                    // Currently GetAverageColor() is only implemented for a StreamingImage
                     auto baseColorStreamingImg = azdynamic_cast<RPI::StreamingImage*>(baseColorImage.get());
                     if (baseColorStreamingImg)
                     {
@@ -1070,7 +1070,7 @@ namespace AZ
                         // (approximately) area-preserving to get a properly weighted average; and
                         // mostly, (3) it assumes that a single 'average color' is a meaningful
                         // characterisation of the full material.
-                        Color meanColor = baseColorStreamingImg->getMeanColor();
+                        Color avgColor = baseColorStreamingImg->GetAverageColor();
 
                         // We do a simple 'multiply' blend with the base color for now. Warn
                         // the user if something else was intended.
@@ -1088,7 +1088,7 @@ namespace AZ
                             }
                         }
                         // 'Multiply' blend mode:
-                        subMesh.m_irradianceColor = meanColor * subMesh.m_baseColor;
+                        subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
                     }
                     else
                     {

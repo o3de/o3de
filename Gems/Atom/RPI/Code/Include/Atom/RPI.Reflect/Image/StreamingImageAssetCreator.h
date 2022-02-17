@@ -46,8 +46,8 @@ namespace AZ
             //! Set streaming image asset's flags.
             void SetFlags(StreamingImageFlags flag);
 
-            //! Set the mean color of the image.
-            void SetMeanColor(Color meanColor);
+            //! Set the average color of the image.
+            void SetAverageColor(Color avgColor);
             
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.

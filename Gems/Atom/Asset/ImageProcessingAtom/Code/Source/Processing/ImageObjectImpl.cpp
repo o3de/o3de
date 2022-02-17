@@ -36,6 +36,7 @@ namespace ImageProcessingAtom
         : m_pixelFormat(pixelFormat)
         , m_colMinARGB(0.0f, 0.0f, 0.0f, 0.0f)
         , m_colMaxARGB(1.0f, 1.0f, 1.0f, 1.0f)
+        , m_averageColor(0.0f, 0.0f, 0.0f, 0.0f)
         , m_averageBrightness(0.63f)
         , m_imageFlags(0)
         , m_numPersistentMips(0)
@@ -88,6 +89,7 @@ namespace ImageProcessingAtom
         m_pixelFormat = pixelFormat;
         m_colMinARGB = AZ::Color(0.0f, 0.0f, 0.0f, 0.0f);
         m_colMaxARGB = AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
+        m_averageColor = AZ::Color(0.0f, 0.0f, 0.0f, 0.0f);
         m_averageBrightness = 0.0f;
         m_imageFlags = 0;
         m_numPersistentMips = 0;
@@ -148,6 +150,7 @@ namespace ImageProcessingAtom
         if (m_pixelFormat == other->m_pixelFormat
             && m_colMinARGB == other->m_colMinARGB
             && m_colMaxARGB == other->m_colMaxARGB
+            && m_averageColor == other->m_averageColor
             && m_averageBrightness == other->m_averageBrightness
             && m_imageFlags == other->m_imageFlags
             && m_numPersistentMips == other->m_numPersistentMips
@@ -351,63 +354,6 @@ namespace ImageProcessingAtom
         const double avg = (avgOverall[0] + avgOverall[1] + avgOverall[2]) / (3 * pixelCount);
 
         return (float)avg;
-    }
-
-    AZ::Color CImageObject::ComputeLinearAlphaWeightedAverageColor() const
-    {
-        // Check if we are in a compressed or non-linear (sRGB) space
-        if (!CPixelFormats::GetInstance().IsPixelFormatUncompressed(m_pixelFormat)
-            || HasImageFlags(EIF_SRGBRead))
-        {
-            IImageObjectPtr clone(Clone(1)); // Only most detailed mip is needed
-            IImageObjectPtr linear = GetUncompressedLinearImage(clone);
-            return linear->ComputeLinearAlphaWeightedAverageColor();
-        }
-
-        // We are already in a linear, uncompressed space
-        AZ_Assert(CPixelFormats::GetInstance().IsPixelFormatUncompressed(m_pixelFormat),
-                "Expected an uncompressed image")
-        AZ_Assert(!HasImageFlags(EIF_SRGBRead), "Expected a linearly-encoded image")
-
-        // Accumulate weighted pixel colors and alpha of the top mip
-        double weightedSum[3] = { 0.0, 0.0, 0.0 };
-        double alphaSum = 0;
-
-        // Create pixel operation function to access pixel data
-        IPixelOperationPtr pixelOp = CreatePixelOperation(m_pixelFormat);
-
-        // Get count of bytes per pixel for images
-        AZ::u32 pixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(m_pixelFormat)->bitsPerBlock / 8;
-
-        // Only calculate mip 0
-        AZ::u32 mip = 0;
-        AZ::u8* pixelBuf;
-        AZ::u32 pitch;
-        GetImagePointer(mip, pixelBuf, pitch);
-        const AZ::u32 pixelCount = GetPixelCount(mip);
-
-        float color[3];
-        float alpha;
-        for (AZ::u32 i = 0; i < pixelCount; ++i, pixelBuf += pixelBytes)
-        {
-            pixelOp->GetRGBA(pixelBuf, color[0], color[1], color[2], alpha);
-            // Alpha-weighted sum for the r,g,b channels
-            weightedSum[0] += alpha * color[0];
-            weightedSum[1] += alpha * color[1];
-            weightedSum[2] += alpha * color[2];
-            alphaSum += alpha;
-        }
-
-        if (alphaSum == 0)
-        {
-            // Entire alpha channel was zero -> return zero to avoid div by 0
-            return Color(0.0f);
-        }
-
-        return Color((float) weightedSum[0] / alphaSum,
-                     (float) weightedSum[1] / alphaSum,
-                     (float) weightedSum[2] / alphaSum,
-                     (float) alphaSum / pixelCount);
     }
 
     bool CImageObject::BuildSurfaceHeader(DDS_HEADER_LEGACY& header) const
@@ -642,6 +588,16 @@ namespace ImageProcessingAtom
         m_averageBrightness = avgBrightness;
     }
 
+    AZ::Color CImageObject::GetAverageColor() const
+    {
+        return m_averageColor;
+    }
+
+    void CImageObject::SetAverageColor(const AZ::Color& averageColor)
+    {
+        m_averageColor = averageColor;
+    }
+
     AZ::u32 CImageObject::GetImageFlags() const
     {
         return m_imageFlags;
@@ -695,6 +651,7 @@ namespace ImageProcessingAtom
     {
         m_colMinARGB = src->m_colMinARGB;
         m_colMaxARGB = src->m_colMaxARGB;
+        m_averageColor = src->m_averageColor;
         m_averageBrightness = src->m_averageBrightness;
         m_imageFlags = src->GetImageFlags();
     }

@@ -98,7 +98,8 @@ namespace AZ
             //! Returns the total size of pixel data across all mips, both in this StreamingImageAsset and in all child ImageMipChainAssets. 
             size_t GetTotalImageDataSize() const;
 
-            Color GetMeanColor() const;
+            //! Returns the average color of this image (alpha-weighted in case of 4-component images).
+            Color GetAverageColor() const;
 
         private:
             struct MipChain
@@ -132,7 +133,7 @@ namespace AZ
             StreamingImageFlags m_flags = StreamingImageFlags::None;
 
             // Cached value of the average color of this image (alpha-weighted average in case of 4-component images)
-            AZ::Color m_meanColor;
+            AZ::Color m_averageColor;
         };
     }
 }

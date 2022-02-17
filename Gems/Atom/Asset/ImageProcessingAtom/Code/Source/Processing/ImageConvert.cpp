@@ -53,6 +53,7 @@ namespace ImageProcessingAtom
         StepPreNormalize,
         StepGenerateIBL,
         StepMipmap,
+        StepAverageColor,
         StepGlossFromNormal,
         StepPostNormalize,
         StepConvertOutputColorSpace,
@@ -70,6 +71,7 @@ namespace ImageProcessingAtom
         "PreNormalize",
         "GenerateIBL",
         "Mipmap",
+        "AverageColor",
         "GlossFromNormal",
         "PostNormalize",
         "ConvertOutputColorSpace",
@@ -282,6 +284,17 @@ namespace ImageProcessingAtom
                 m_image->Get()->AddImageFlags(EIF_SupressEngineReduce);
             }
             break;
+        case StepAverageColor:
+            // Compute and cache the (alpha-weighted) average color.
+            // We can typically get away with using a lower quality mip (small deviations from the
+            // true 'mip=0' average may be possible with nontrivial alpha channels or non-power-of-2
+            // image sizes, but they are usually insignificant).
+            {
+                AZ::u32 preferredMip = 2; // set to 0 for exact average
+                AZ::u32 mip = AZStd::min(preferredMip, m_image->Get()->GetMipCount());
+                SetAverageColor(mip);
+            }
+            break;
         case StepGlossFromNormal:
             // get gloss from normal for all mipmaps and save to alpha channel
             if (m_input->m_presetSetting.m_glossFromNormals)
@@ -363,7 +376,6 @@ namespace ImageProcessingAtom
             }
             else
             {
-                
                 [[maybe_unused]] const PixelFormatInfo* formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(m_image->Get()->GetPixelFormat());
                 AZ_TracePrintf("Image Processing", "Image [%dx%d] [%s] converted with preset [%s] [%s] and saved to [%s] (%d bytes) taking %f seconds\n",
                     m_image->Get()->GetWidth(0), m_image->Get()->GetHeight(0),
@@ -513,6 +525,58 @@ namespace ImageProcessingAtom
 
         // set back to image
         m_image->Set(outImage);
+        return true;
+    }
+
+    // Set (alpha-weighted) average color computed from given mip
+    bool ImageConvertProcess::SetAverageColor(AZ::u32 mip)
+    {
+        // This function only works with pixel format rgba32f
+        const EPixelFormat srcPixelFormat = m_image->Get()->GetPixelFormat();
+        if (srcPixelFormat != ePixelFormat_R32G32B32A32F)
+        {
+            AZ_Assert(false, "%s only works with pixel format rgba32f", __FUNCTION__);
+            return false;
+        }
+        // ...and we require a linear (non-sRGB) color space
+        if (m_image->Get()->HasImageFlags(EIF_SRGBRead))
+        {
+            AZ_Assert(false, "%s only works with a linear (non-sRGB) color space", __FUNCTION__);
+            return false;
+        }
+
+        IPixelOperationPtr pixelOp = CreatePixelOperation(srcPixelFormat);
+        AZ::u32 pixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(srcPixelFormat)->bitsPerBlock / 8;
+        AZ::u8* pixelBuf;
+        AZ::u32 pitch;
+        m_image->Get()->GetImagePointer(mip, pixelBuf, pitch);
+        const AZ::u32 pixelCount = m_image->Get()->GetPixelCount(mip);
+
+        // Accumulate weighted pixel colors and alpha
+        float weightedRgbSum[3] = {0.0f, 0.0f, 0.0f};
+        float alphaSum = 0.0f;
+        for (AZ::u32 i = 0; i < pixelCount; ++i, pixelBuf += pixelBytes)
+        {
+            float R,G,B,A;
+            pixelOp->GetRGBA(pixelBuf, R, G, B, A);
+            // Alpha-weighted sum for the R,G,B channels:
+            weightedRgbSum[0] += A * R;
+            weightedRgbSum[1] += A * G;
+            weightedRgbSum[2] += A * B;
+            // Simple sum for the A channel:
+            alphaSum += A;
+        }
+
+        AZ::Color avgColor(0.0f);
+        if (alphaSum != 0)
+        {
+            avgColor.SetR(weightedRgbSum[0] / alphaSum);
+            avgColor.SetG(weightedRgbSum[1] / alphaSum);
+            avgColor.SetB(weightedRgbSum[2] / alphaSum);
+            avgColor.SetA(alphaSum / pixelCount);
+        }
+        m_image->Get()->SetAverageColor(avgColor);
+
         return true;
     }
 

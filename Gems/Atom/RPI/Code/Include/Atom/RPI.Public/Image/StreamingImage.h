@@ -115,7 +115,8 @@ namespace AZ
             //! Returns the most detailed mip level currently resident in memory, where a value of 0 is the highest detailed mip.
             uint16_t GetResidentMipLevel();
 
-            Color getMeanColor() const;
+            //! Returns the average color of this image (alpha-weighted in case of 4-component images).
+            Color GetAverageColor() const;
 
         private:
             StreamingImage() = default;

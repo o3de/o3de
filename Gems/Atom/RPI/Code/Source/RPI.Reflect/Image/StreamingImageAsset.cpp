@@ -36,7 +36,7 @@ namespace AZ
                     ->Field("m_flags", &StreamingImageAsset::m_flags)
                     ->Field("m_tailMipChain", &StreamingImageAsset::m_tailMipChain)
                     ->Field("m_totalImageDataSize", &StreamingImageAsset::m_totalImageDataSize)
-                    ->Field("m_meanColor", &StreamingImageAsset::m_meanColor)
+                    ->Field("m_averageColor", &StreamingImageAsset::m_averageColor)
                     ;
             }
         }
@@ -95,9 +95,9 @@ namespace AZ
             return m_totalImageDataSize;
         }
 
-        Color StreamingImageAsset::GetMeanColor() const
+        Color StreamingImageAsset::GetAverageColor() const
         {
-            return m_meanColor;
+            return m_averageColor;
         }
 
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)

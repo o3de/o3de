@@ -190,7 +190,7 @@ namespace ImageProcessingAtom
             }
         }
 
-        builder.SetMeanColor(m_imageObject->ComputeLinearAlphaWeightedAverageColor());
+        builder.SetAverageColor(m_imageObject->GetAverageColor());
 
         product.m_dependenciesHandled = true; // We've output the dependencies immediately above so it's OK to tell the AP we've handled dependencies
 
