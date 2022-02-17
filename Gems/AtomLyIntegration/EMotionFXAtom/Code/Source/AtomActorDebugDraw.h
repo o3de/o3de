@@ -55,8 +55,12 @@ namespace AZ::Render
             const AZ::Color& meshAabbColor,
             bool enableStaticAabb,
             const AZ::Color& staticAabbColor);
-        void RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
-        void RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
+        void RenderLineSkeleton(AzFramework::DebugDisplayRequests* debugDisplay,
+            EMotionFX::ActorInstance* instance,
+            const AZ::Color& skeletonColor) const;
+        void RenderSkeleton(AzFramework::DebugDisplayRequests* debugDisplay,
+            EMotionFX::ActorInstance* instance,
+            const AZ::Color& color);
         void RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance);
         void RenderNormals(
             EMotionFX::Mesh* mesh,
