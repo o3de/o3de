@@ -20,12 +20,12 @@ include(cmake/LySet.cmake)
 
 # CMAKE_HOST_SYSTEM_NAME is  "Windows", "Darwin", or "Linux" in our cases..
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
-    ly_set(LY_PYTHON_VERSION 3.7.10)
+    ly_set(LY_PYTHON_VERSION 3.7.12)
     ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.7)
     ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.12-rev1-linux)
     ly_set(LY_PYTHON_PACKAGE_HASH 8c902f1550600af9a12983b73e46a7d0e5ed04e761ce88475e1dc661850ff42a)
 elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
-    ly_set(LY_PYTHON_VERSION 3.7.10)
+    ly_set(LY_PYTHON_VERSION 3.7.12)
     ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.7)
     ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.12-rev1-darwin)
     ly_set(LY_PYTHON_PACKAGE_HASH 6db4a53c7a75292249260f54b00985fd026025a856f5a93a380dd9007853a42a)
@@ -33,7 +33,7 @@ elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
     ly_set(LY_PYTHON_VERSION 3.7.12)
     ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.7)
     ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.12-rev1-windows)
-    ly_set(LY_PYTHON_PACKAGE_HASH 199efc823a0408dcef113d4503cd8584bd9a882934b6e47078c94b1e441781ea)
+    ly_set(LY_PYTHON_PACKAGE_HASH bda55564b2b2232d3d72dec8b0cfd6ede551515475dbbdf371e054e4ed5a0e60)
 endif()
 
 # settings and globals
