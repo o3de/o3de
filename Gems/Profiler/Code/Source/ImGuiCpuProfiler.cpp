@@ -10,7 +10,7 @@
 
 #include <ImGuiCpuProfiler.h>
 
-#include <CpuProfilerImpl.h>
+#include <CpuProfiler.h>
 
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/IO/FileIO.h>
@@ -176,7 +176,7 @@ namespace Profiler
         // Toggle if the bool isn't the same as the cached value
         if (cachedShowCpuProfiler != keepDrawing)
         {
-            CpuProfiler::Get()->SetProfilerEnabled(keepDrawing);
+            AZ::Debug::ProfilerSystemInterface::Get()->SetActive(keepDrawing);
         }
     }
 
@@ -193,11 +193,11 @@ namespace Profiler
         }
 
         ImGui::SameLine();
-        m_paused = !CpuProfiler::Get()->IsProfilerEnabled();
+        m_paused = !AZ::Debug::ProfilerSystemInterface::Get()->IsActive();
         if (ImGui::Button(m_paused ? "Resume" : "Pause"))
         {
             m_paused = !m_paused;
-            CpuProfiler::Get()->SetProfilerEnabled(!m_paused);
+            AZ::Debug::ProfilerSystemInterface::Get()->SetActive(!m_paused);
         }
 
         ImGui::SameLine();
@@ -207,7 +207,7 @@ namespace Profiler
         }
 
         ImGui::SameLine();
-        bool isInProgress = CpuProfiler::Get()->IsContinuousCaptureInProgress();
+        bool isInProgress = AZ::Debug::ProfilerSystemInterface::Get()->IsCaptureInProgress();
         if (ImGui::Button(isInProgress ? "End" : "Begin"))
         {
             auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get();
@@ -445,7 +445,7 @@ namespace Profiler
         m_savedData.clear();
         m_paused = true;
 
-        CpuProfiler::Get()->SetProfilerEnabled(false);
+        AZ::Debug::ProfilerSystemInterface::Get()->SetActive(false);
         m_frameEndTicks.clear();
 
         m_tableData.clear();
@@ -708,7 +708,10 @@ namespace Profiler
         // compared to if we needed to transform the visualizer's data into the statistical format every frame.
 
         // Get the latest TimeRegionMap
-        const CpuProfiler::TimeRegionMap& timeRegionMap = CpuProfiler::Get()->GetTimeRegionMap();
+        auto profilerInterface = AZ::Interface<AZ::Debug::Profiler>::Get();
+        auto cpuProfiler = azrtti_cast<CpuProfiler*>(profilerInterface);
+
+        const TimeRegionMap& timeRegionMap = cpuProfiler->GetTimeRegionMap();
 
         AZ::s64 viewportStartTick = AZStd::numeric_limits<AZ::s64>::max();
         AZ::s64 viewportEndTick = AZStd::numeric_limits<AZ::s64>::lowest();
