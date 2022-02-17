@@ -141,8 +141,10 @@ namespace Audio
             if (durationInfo && eventData && eventData->m_owner)
             {
                 AudioTriggerNotificationBus::QueueEvent(
-                    TriggerNotificationIdType{ eventData->m_triggerId, eventData->m_owner },
-                    &AudioTriggerNotificationBus::Events::ReportDurationInfo, eventData->nATLID, durationInfo->fDuration,
+                    TriggerNotificationIdType{ eventData->m_owner }, &AudioTriggerNotificationBus::Events::ReportDurationInfo,
+                    eventData->m_triggerId,
+                    eventData->nATLID,
+                    durationInfo->fDuration,
                     durationInfo->fEstimatedDuration);
             }
         }

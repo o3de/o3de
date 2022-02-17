@@ -27,7 +27,6 @@ namespace LmbrCentral
     class AudioTriggerComponent
         : public AZ::Component
         , public AudioTriggerComponentRequestBus::Handler
-        , public Audio::AudioTriggerNotificationBus::Handler
     {
     public:
         /*!
@@ -38,7 +37,10 @@ namespace LmbrCentral
         void Deactivate() override;
 
         AudioTriggerComponent() = default;
-        AudioTriggerComponent(const AZStd::string& playTriggerName, const AZStd::string& stopTriggerName, Audio::ObstructionType obstructionType, bool playsImmediately, bool notifyFinished);
+        AudioTriggerComponent(const AZStd::string& playTriggerName, const AZStd::string& stopTriggerName,
+            Audio::ObstructionType obstructionType, bool playsImmediately);
+        ~AudioTriggerComponent() = default;
+        AZ_DISABLE_COPY(AudioTriggerComponent);
 
         /*!
          * AudioTriggerComponentRequestBus::Handler Interface
@@ -54,11 +56,6 @@ namespace LmbrCentral
         void SetMovesWithEntity(bool shouldTrackEntity) override;
 
         void SetObstructionType(Audio::ObstructionType obstructionType) override;
-
-        /*!
-         * AudioTriggerNotificationBus::Handler Interface
-         */
-        void ReportTriggerFinished() override;
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
@@ -83,7 +80,6 @@ namespace LmbrCentral
         static void Reflect(AZ::ReflectContext* context);
 
     private:
-        AudioTriggerComponent(const AudioTriggerComponent&) = delete;
         //! Editor callbacks
         void OnPlayTriggerChanged();
         void OnStopTriggerChanged();
@@ -98,7 +94,6 @@ namespace LmbrCentral
         AZStd::string m_defaultStopTriggerName;
         Audio::ObstructionType m_obstructionType = Audio::ObstructionType::Ignore;
         bool m_playsImmediately = false;
-        bool m_notifyWhenTriggerFinishes = false;
     };
 
 } // namespace LmbrCentral

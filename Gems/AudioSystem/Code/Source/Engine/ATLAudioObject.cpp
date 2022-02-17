@@ -55,8 +55,13 @@ namespace Audio
                 instState.nFlags &= ~eATS_STARTING;
                 instState.pOwner = owner;
 
-                // TODO: ???
-                // if (flags & eARF_SYNC_FINISHED_CALLBACK) { instState.nFlags |= eATS_CALLBACK_ON_AUDIO_THREAD; }
+                if (instState.pOwner)
+                {
+                    AudioTriggerNotificationBus::QueueEvent(
+                        TriggerNotificationIdType{ instState.pOwner },
+                        &AudioTriggerNotificationBus::Events::ReportTriggerStarted,
+                        iter->second.nTriggerID);
+                }
             }
             else
             {
@@ -68,9 +73,13 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CATLAudioObjectBase::TriggerInstanceFinished(TObjectTriggerStates::iterator& iter)
     {
-        AudioTriggerNotificationBus::QueueEvent(
-            TriggerNotificationIdType{ iter->second.nTriggerID, iter->second.pOwner },
-            &AudioTriggerNotificationBus::Events::ReportTriggerFinished);
+        if (iter->second.pOwner)
+        {
+            AudioTriggerNotificationBus::QueueEvent(
+                TriggerNotificationIdType{ iter->second.pOwner },
+                &AudioTriggerNotificationBus::Events::ReportTriggerFinished,
+                iter->second.nTriggerID);
+        }
         m_cTriggers.erase(iter);
     }
 

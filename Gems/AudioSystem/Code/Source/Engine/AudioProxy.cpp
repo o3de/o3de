@@ -120,6 +120,7 @@ namespace Audio
     {
         Audio::ObjectRequest::StopAllTriggers stopAll;
         stopAll.m_owner = (m_ownerOverride ? m_ownerOverride : this);
+        stopAll.m_filterByOwner = true;
 
         if (HasId())
         {

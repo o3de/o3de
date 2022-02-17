@@ -98,7 +98,6 @@ namespace Audio
         #if !defined(AUDIO_RELEASE)
         AzFramework::DebugDisplayEventBus::Handler::BusDisconnect();
         #endif // !AUDIO_RELEASE
-
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

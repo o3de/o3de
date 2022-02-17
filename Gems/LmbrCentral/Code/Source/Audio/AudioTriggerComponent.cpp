@@ -20,16 +20,23 @@ namespace LmbrCentral
 {
     //=========================================================================
     // Behavior Context AudioTriggerComponentNotificationBus forwarder
-    class BehaviorAudioTriggerComponentNotificationBusHandler
-        : public AudioTriggerComponentNotificationBus::Handler, public AZ::BehaviorEBusHandler
+    class BehaviorAudioTriggerNotificationBusHandler
+        : public Audio::AudioTriggerNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER(BehaviorAudioTriggerComponentNotificationBusHandler, "{ACCB0C42-3752-496B-9B1F-19276925EBB0}",
-            AZ::SystemAllocator, OnTriggerFinished);
+        AZ_EBUS_BEHAVIOR_BINDER(
+            BehaviorAudioTriggerNotificationBusHandler, "{ACCB0C42-3752-496B-9B1F-19276925EBB0}", AZ::SystemAllocator,
+            ReportTriggerStarted, ReportTriggerFinished);
 
-        void OnTriggerFinished(const Audio::TAudioControlID triggerID) override
+        void ReportTriggerStarted(Audio::TAudioControlID triggerId) override
         {
-            Call(FN_OnTriggerFinished, triggerID);
+            Call(FN_ReportTriggerStarted, triggerId);
+        }
+
+        void ReportTriggerFinished(Audio::TAudioControlID triggerId) override
+        {
+            Call(FN_ReportTriggerFinished, triggerId);
         }
     };
 
@@ -40,12 +47,16 @@ namespace LmbrCentral
         if (serializeContext)
         {
             serializeContext->Class<AudioTriggerComponent, AZ::Component>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Play Trigger", &AudioTriggerComponent::m_defaultPlayTriggerName)
                 ->Field("Stop Trigger", &AudioTriggerComponent::m_defaultStopTriggerName)
                 ->Field("Obstruction Type", &AudioTriggerComponent::m_obstructionType)
                 ->Field("Plays Immediately", &AudioTriggerComponent::m_playsImmediately)
-                ->Field("Send Finished Event", &AudioTriggerComponent::m_notifyWhenTriggerFinishes)
+                ;
+
+            serializeContext->Class<Audio::TriggerNotificationIdType>()
+                ->Version(1)
+                ->Field("Owner", &Audio::TriggerNotificationIdType::m_owner)
                 ;
         }
 
@@ -66,8 +77,13 @@ namespace LmbrCentral
                 ->Event("SetObstructionType", &AudioTriggerComponentRequestBus::Events::SetObstructionType)
                 ;
 
-            behaviorContext->EBus<AudioTriggerComponentNotificationBus>("AudioTriggerComponentNotificationBus")
-                ->Handler<BehaviorAudioTriggerComponentNotificationBusHandler>()
+            behaviorContext->Class<Audio::TriggerNotificationIdType>("TriggerNotificationIdType")
+                ->Constructor<AZ::EntityId>()
+                    ->Attribute(AZ::Script::Attributes::DefaultConstructorOverrideIndex, 0)
+                ;
+
+            behaviorContext->EBus<Audio::AudioTriggerNotificationBus>("AudioTriggerNotificationBus")
+                ->Handler<BehaviorAudioTriggerNotificationBusHandler>()
                 ;
         }
 
@@ -94,21 +110,15 @@ namespace LmbrCentral
     {
         AudioTriggerComponentRequestBus::Handler::BusDisconnect(GetEntityId());
 
-        if (m_notifyWhenTriggerFinishes)
-        {
-            Audio::AudioTriggerNotificationBus::Handler::BusDisconnect();
-        }
-
         KillAllTriggers();
     }
 
     //=========================================================================
-    AudioTriggerComponent::AudioTriggerComponent(const AZStd::string& playTriggerName, const AZStd::string& stopTriggerName, Audio::ObstructionType obstructionType, bool playsImmediately, bool notifyFinished)
+    AudioTriggerComponent::AudioTriggerComponent(const AZStd::string& playTriggerName, const AZStd::string& stopTriggerName, Audio::ObstructionType obstructionType, bool playsImmediately)
         : m_defaultPlayTriggerName(playTriggerName)
         , m_defaultStopTriggerName(stopTriggerName)
         , m_obstructionType(obstructionType)
         , m_playsImmediately(playsImmediately)
-        , m_notifyWhenTriggerFinishes(notifyFinished)
     {
     }
 
@@ -117,10 +127,6 @@ namespace LmbrCentral
     {
         if (m_defaultPlayTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
-            if (m_notifyWhenTriggerFinishes)
-            {
-                Audio::AudioTriggerNotificationBus::Handler::BusConnect({ m_defaultPlayTriggerID, GetEntityId() });
-            }
             AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, m_defaultPlayTriggerID);
         }
     }
@@ -134,10 +140,6 @@ namespace LmbrCentral
         }
         else
         {
-            if (m_notifyWhenTriggerFinishes)
-            {
-                Audio::AudioTriggerNotificationBus::Handler::BusConnect({ m_defaultStopTriggerID, GetEntityId() });
-            }
             AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, m_defaultStopTriggerID);
         }
     }
@@ -155,10 +157,6 @@ namespace LmbrCentral
 
             if (triggerID != INVALID_AUDIO_CONTROL_ID)
             {
-                if (m_notifyWhenTriggerFinishes)
-                {
-                    Audio::AudioTriggerNotificationBus::Handler::BusConnect({ triggerID, GetEntityId() });
-                }
                 AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, triggerID);
             }
         }
@@ -202,17 +200,6 @@ namespace LmbrCentral
             m_obstructionType = obstructionType;
             OnObstructionTypeChanged();
         }
-    }
-
-    //=========================================================================
-    // ** AudioTriggerNotificationBus **
-    // TODO: This maybe could use some work, collapsing the AudioTriggerComponentNotification and just using the AudioTriggerNotificationBus??
-    void AudioTriggerComponent::ReportTriggerFinished()
-    {
-        const Audio::TriggerNotificationIdType& triggerInfo = *Audio::AudioTriggerNotificationBus::GetCurrentBusId();
-        AudioTriggerComponentNotificationBus::Event(
-            static_cast<AZ::EntityId>(triggerInfo.m_owner), &AudioTriggerComponentNotificationBus::Events::OnTriggerFinished,
-            triggerInfo.m_triggerId);
     }
 
     //=========================================================================

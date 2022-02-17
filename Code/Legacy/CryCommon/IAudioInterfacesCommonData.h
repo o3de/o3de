@@ -411,29 +411,29 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct TriggerNotificationIdType
     {
-        TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
+        AZ_TYPE_INFO(TriggerNotificationIdType, "{E355AC15-8C88-4BDD-8CCE-9999EC32F970}");
         uintptr_t m_owner{ 0 };
 
-        TriggerNotificationIdType(TAudioControlID triggerId, void* owner)
-            : m_triggerId(triggerId)
-            , m_owner(reinterpret_cast<uintptr_t>(owner))
+        TriggerNotificationIdType() = default;
+        ~TriggerNotificationIdType() = default;
+
+        TriggerNotificationIdType(void* owner)
+            : m_owner(reinterpret_cast<uintptr_t>(owner))
         {
         }
-
-        TriggerNotificationIdType(TAudioControlID triggerId, AZ::EntityId owner)
-            : m_triggerId(triggerId)
-            , m_owner(static_cast<uintptr_t>(owner))
+        TriggerNotificationIdType(AZ::EntityId owner)
+            : m_owner(static_cast<uintptr_t>(static_cast<AZ::u64>(owner)))
         {
         }
 
         inline bool operator==(const TriggerNotificationIdType& rhs) const
         {
-            return (m_triggerId == rhs.m_triggerId) && (m_owner == rhs.m_owner);
+            return (m_owner == rhs.m_owner);
         }
 
         inline bool operator!=(const TriggerNotificationIdType& rhs) const
         {
-            return !(*this == rhs);
+            return !(*this == rhs); 
         }
     };
 
@@ -445,12 +445,12 @@ namespace AZStd
     template<>
     struct hash<Audio::TriggerNotificationIdType>
     {
-        inline size_t operator()(const Audio::TriggerNotificationIdType& id) const
+        using argument_type = Audio::TriggerNotificationIdType;
+        using result_type = size_t;
+        inline result_type operator()(const argument_type& id) const
         {
-            size_t hashValue = 0;
-            hash_combine(hashValue, id.m_triggerId);
-            hash_combine(hashValue, id.m_owner);
-            return hashValue;
+            AZStd::hash<uintptr_t> hasher;
+            return hasher(id.m_owner);
         }
     };
 } // namespace AZStd

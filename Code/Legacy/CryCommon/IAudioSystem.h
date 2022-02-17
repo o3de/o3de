@@ -537,8 +537,13 @@ namespace Audio
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         // Give default definitions, because handlers don't need to implement all these functions...
-        virtual void ReportDurationInfo(TAudioEventID, [[maybe_unused]] float duration, [[maybe_unused]] float estimatedDuration) {}
-        virtual void ReportTriggerFinished() {}
+        virtual void ReportDurationInfo(
+            [[maybe_unused]] TAudioControlID triggerId,
+            [[maybe_unused]] TAudioEventID eventId,
+            [[maybe_unused]] float duration,
+            [[maybe_unused]] float estimatedDuration) {}
+        virtual void ReportTriggerStarted([[maybe_unused]] TAudioControlID triggerId) {}
+        virtual void ReportTriggerFinished([[maybe_unused]] TAudioControlID triggerId) {}
     };
 
     using AudioTriggerNotificationBus = AZ::EBus<AudioTriggerNotifications>;
