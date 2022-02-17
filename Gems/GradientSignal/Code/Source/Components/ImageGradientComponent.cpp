@@ -226,6 +226,18 @@ namespace GradientSignal
             return;
         }
 
+        // If we have loaded in an old image asset with an unsupported pixel format,
+        // don't try to access the image data because there will be spam of asserts,
+        // so just log an error message and bail out
+        AZ::RHI::Format format = m_configuration.m_imageAsset->GetImageDescriptor().m_format;
+        bool isFormatSupported = AZ::RPI::IsImageDataPixelAPISupported(format);
+        if (!isFormatSupported)
+        {
+            AZ_Error("GradientSignal", false, "Image asset (%s) has an unsupported pixel format: %s",
+                m_configuration.m_imageAsset.GetHint().c_str(), AZ::RHI::ToString(format));
+            return;
+        }
+
         m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
     }
 
