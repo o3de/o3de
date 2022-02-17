@@ -200,8 +200,6 @@ set(FILES
     Source/PostProcess/PostProcessSettings.h
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.h
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
-    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackSettings.h
-    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
