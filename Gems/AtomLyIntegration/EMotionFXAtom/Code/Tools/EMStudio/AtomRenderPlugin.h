@@ -61,7 +61,7 @@ namespace EMStudio
         void SaveRenderOptions();
         RenderOptions* GetRenderOptions();
 
-        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
+        void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
 
     private:

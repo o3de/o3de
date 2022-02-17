@@ -11,15 +11,9 @@
 
 namespace AtomToolsFramework
 {
-    AtomToolsDocumentApplication::AtomToolsDocumentApplication(const AZStd::string& targetName, int* argc, char*** argv)
+    AtomToolsDocumentApplication::AtomToolsDocumentApplication(const char* targetName, int* argc, char*** argv)
         : Base(targetName, argc, argv)
     {
-    }
-
-    void AtomToolsDocumentApplication::Reflect(AZ::ReflectContext* context)
-    {
-        Base::Reflect(context);
-        AtomToolsDocumentSystem::Reflect(context);
     }
 
     void AtomToolsDocumentApplication::StartCommon(AZ::Entity* systemEntity)

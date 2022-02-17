@@ -22,11 +22,10 @@ namespace AtomToolsFramework
 
         using Base = AtomToolsApplication;
 
-        AtomToolsDocumentApplication(const AZStd::string& targetName, int* argc, char*** argv);
+        AtomToolsDocumentApplication(const char* targetName, int* argc, char*** argv);
 
     protected:
         // AtomToolsApplication overrides...
-        void Reflect(AZ::ReflectContext* context) override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;

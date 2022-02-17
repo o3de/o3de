@@ -76,7 +76,7 @@ namespace AZ::Prefab
 
         // Deserialize all of the entities and their components (for this prefab only)
         auto newInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
-        AzToolsFramework::Prefab::Instance::EntityList entities;
+        AzToolsFramework::EntityList entities;
         if (AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, entities, genericDocument))
         {
             // Add the fingerprint of all the components and their types

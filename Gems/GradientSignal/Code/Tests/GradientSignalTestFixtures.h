@@ -21,6 +21,7 @@ namespace UnitTest
     {
     public:
         void AddGemsAndComponents() override;
+        void PostCreateApplication() override;
     };
 
 #ifdef HAVE_BENCHMARK

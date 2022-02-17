@@ -12,14 +12,12 @@
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <ShaderManagementConsoleRequestBus.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
-        , private ShaderManagementConsoleRequestBus::Handler
         , private AzToolsFramework::EditorWindowRequestBus::Handler
     {
     public:
@@ -41,11 +39,6 @@ namespace ShaderManagementConsole
 
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
-
-        // ShaderManagementConsoleRequestBus::Handler overrides...
-        AZ::Data::AssetInfo GetSourceAssetInfo(const AZStd::string& sourceAssetFileName) override;
-        AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath) override;
-        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& assetId) override;
 
     private:
         AZStd::unique_ptr<ShaderManagementConsoleWindow> m_window;
