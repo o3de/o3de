@@ -101,6 +101,7 @@ namespace Terrain
         // TerrainAreaMaterialRequestBus
         const AZ::Aabb& GetTerrainSurfaceMaterialRegion() const override;
         const AZStd::vector<TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings() const override;
+        const TerrainSurfaceMaterialMapping& GetDefaultMaterial() const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Data::AssetBus::Handler
@@ -109,6 +110,6 @@ namespace Terrain
 
         TerrainSurfaceMaterialsListConfig m_configuration;
 
-        AZ::Aabb m_cachedAabb;
+        AZ::Aabb m_cachedAabb{ AZ::Aabb::CreateNull() };
     };
 } // namespace Terrain
