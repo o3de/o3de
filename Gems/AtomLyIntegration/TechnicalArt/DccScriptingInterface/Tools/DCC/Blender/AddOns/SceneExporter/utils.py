@@ -12,7 +12,7 @@ from bpy.props import EnumProperty
 import shutil
 from pathlib import Path
 
-import constants
+from . import constants
 from . import ui
 
 def check_selected():
