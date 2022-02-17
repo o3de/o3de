@@ -7,62 +7,63 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
-# The __init__.py files help guide import statements without automatically
-# importing all of the modules
-"""azpy.dcc.maya.__init__"""
+# -------------------------------------------------------------------------
+"""! @brief
+<DCCsi>/azpy/dcc/maya/__init__.py
 
+maya is a sub-module of the azpy.dcc pure-python api.
+"""
+# -------------------------------------------------------------------------
+# standard imports
 import logging as _logging
+# -------------------------------------------------------------------------
+# global scope
+_PACKAGENAME = 'azpy.dcc.maya'
 
-import azpy.env_bool as env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import FRMT_LOG_LONG
+__all__ = [] # only add here, if that sub-module does NOT require bpy!
 
-#  global space
-_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.dcc.maya'
-
-# set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
-__all__ = []
+# Make sure we can import the native blender apis
+try:
+    import maya.cmds
+    __all__ = init(__all__) # if we can import maya, we can load sub-modules
+except:
+    __all__ = []
+# -------------------------------------------------------------------------
+
 
 # -------------------------------------------------------------------------
-def init():
-    """If the maya api is required for a package/module to import,
-    then it should be initialized and added here so general imports
+def init(_all=__all__):
+    """If the maya.cmds or other apis are required for a package/module to
+    import, then it should be initialized and added here so general imports
     don't fail"""
 
-    # Make sure we can import the native apis
-    import maya.cmds as mc
-    import maya.api.OpenMaya as om
+    # extend all with submodules
+    _all.append('stub')
     
-    __all__.append('callbacks')
-    __all__.append('helpers')
-    __all__.append('toolbits')
-
+    # ^ as moldules are created, add them to the list above
+    # like _all.append('stub', 'foo', 'bar')
+    
     # Importing local packages/modules
-    pass
+    return _all
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-if _DCCSI_DEV_MODE:
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_TESTS
+
+#  global space
+_DCCSI_TESTS = env_bool(ENVAR_DCCSI_TESTS, False)
+
+if _DCCSI_TESTS:
     # If in dev mode this will test imports of __all__
     from azpy import test_imports
+    
     _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
     test_imports(__all__,
                  _pkg=_PACKAGENAME,
                  _logger=_LOGGER)
 # -------------------------------------------------------------------------
-
-del _LOGGER

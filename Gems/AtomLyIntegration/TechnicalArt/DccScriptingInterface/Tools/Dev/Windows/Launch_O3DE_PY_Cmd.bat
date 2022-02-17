@@ -65,6 +65,7 @@ echo.
 echo     PATH = %PATH%
 echo.
 echo     PYTHONPATH = %PYTHONPATH%
+echo.
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%

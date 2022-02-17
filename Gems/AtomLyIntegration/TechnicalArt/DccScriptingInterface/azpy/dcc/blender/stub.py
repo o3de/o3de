@@ -9,16 +9,12 @@
 #
 # -------------------------------------------------------------------------
 """! @brief
-Module Documentation:
-    < DCCsi >:: Tools//DCC//Blender//constants.py
+<DCCsi>/azpy/dcc/blender/stub.py
 
-This module is used to start blender with O3DE bootstrapping
+stub is a sub-module placeholder, for the azpy.dcc.blender api.
 """
 # -------------------------------------------------------------------------
 # standard imports
-import sys
-import os
-from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
@@ -29,4 +25,4 @@ _MODULENAME = 'Blender.start'
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 
-_LOGGER.info(f'Not Implemented: {_MODULENAME}')
+_LOGGER.info('This stub is an api placeholder: {}'.format(_MODULENAME))

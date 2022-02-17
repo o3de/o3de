@@ -9,38 +9,34 @@
 #
 # -------------------------------------------------------------------------
 """! @brief
-<DCCsi>//azpy/dcc/__init__.py
+<DCCsi>/Tools/__init__.py
 
-dcc is a sub-module of the azpy pure-python api.
+This init allows us to treat the Tools folder as a package.
 """
 # -------------------------------------------------------------------------
 # standard imports
+import os
+from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
-# global scope
-_PACKAGENAME = 'azpy.dcc'
 
-__all__ = ['blender',
-           'maya']
+# -------------------------------------------------------------------------
+# global scope
+_PACKAGENAME = 'Tools'
+
+__all__ = ['DCC',
+           'Python']  # to do: add others when they are set up
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_TESTS
-
-#  global space
-_DCCSI_TESTS = env_bool(ENVAR_DCCSI_TESTS, False)
-
-if _DCCSI_TESTS:
-    # If in dev mode this will test imports of __all__
-    from azpy import test_imports
-    
-    _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
-    test_imports(__all__,
-                 _pkg=_PACKAGENAME,
-                 _logger=_LOGGER)
+# set up access to this DCC folder as a pkg
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
+_PATH_DCCSI_TOOLS_DCC = Path(_MODULE_PATH.parent)
+_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('ATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
 # -------------------------------------------------------------------------

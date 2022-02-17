@@ -7,7 +7,12 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# --------------------------------------------------------------------------
+"""! @brief
+<DCCsi>/azpy/__init__.py
+
+This is the shared pure-python api.
+"""
 __copyright__ = "Copyright 2021, Amazon"
 __credits__ = ["Jonny Galloway", "Ben Black"]
 __license__ = "EULA"
@@ -33,9 +38,12 @@ __all__ = ['config_utils',
            'constants',
            'env_bool',
            'return_stub',
+           'logger',
            'core',
            'dcc',
            'dev',
+           'o3de',
+           'shared',
            'test']
 
 # we need to set up basic access to the DCCsi
@@ -52,6 +60,7 @@ import azpy.config_utils as config_utils
 
 _DCCSI_GDEBUG = env_bool.env_bool(constants.ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool.env_bool(constants.ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_TESTS = env_bool.env_bool(constants.ENVAR_DCCSI_TESTS, False)
 _DCCSI_GDEBUGGER = env_bool.env_bool(constants.ENVAR_DCCSI_GDEBUGGER, 'WING')
 
 # default loglevel to info unless set
@@ -84,7 +93,7 @@ except:
     import pathlib2 as pathlib
 from pathlib import Path
 if _DCCSI_GDEBUG:
-    print('[DCCsi][AZPY] DEBUG BREADCRUMB, pathlib is: {}'.format(pathlib))
+    _LOGGER.debug('[DCCsi][AZPY] DEBUG BREADCRUMB, pathlib is: {}'.format(pathlib))
 # -------------------------------------------------------------------------
 
 
@@ -230,34 +239,24 @@ _LOGGER.debug('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
 
 
 # -------------------------------------------------------------------------
-def test_imports(_all=__all__,
-                 _pkg=_PACKAGENAME,
-                 _logger=_LOGGER):
+def test_imports(_all=__all__, _pkg=_PACKAGENAME, _logger=_LOGGER):
+    
     # If in dev mode this will test imports of __all__
-    _logger.debug("~   Import triggered from: {0}".format(_pkg))
+    _logger.debug("~   Import triggered from: {}".format(_pkg))
     import importlib
-    for pkgStr in _all:
+    for mod_str in _all:
         try:
             # this is py2.7 compatible
             # in py3.5+, we can use importlib.util instead
-            importlib.import_module('.' + pkgStr, _pkg)
-            _logger.debug("~       Imported module: {0}".format(pkgStr))
+            importlib.import_module('.{}'.format(mod_str), _pkg)
+            _logger.debug("~       Imported module: {0}.{1}".format(_pkg, mod_str))
         except Exception as e:
-            _logger.warning('~       {0}'.format(e))
-            _logger.warning("~       {0} :: ImportFail".format(pkgStr))
+            _logger.warning('~       {}'.format(e))
+            _logger.warning("~       {0}.{1} :: ImportFail".format(_pkg, mod_str))
             return False
     return True
 # -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-if _DCCSI_DEV_MODE:
-    # If in dev mode this will test imports of __all__
-    _LOGGER.debug('Testing Imports: {0}'.format(_PACKAGENAME))
-    test_imports(__all__)
-# -------------------------------------------------------------------------
-
-del _LOGGER
 
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
@@ -266,6 +265,8 @@ if __name__ == '__main__':
     _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
 
-    if _DCCSI_GDEBUG:
-        print(_PATH_DCCSIG)
-        test_imports()
+    if _DCCSI_TESTS:
+        _LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
+        # If in dev mode this will test imports of __all__
+        _LOGGER.debug('azpy, testing imports: {0}'.format(_PACKAGENAME))
+        test_imports(__all__)

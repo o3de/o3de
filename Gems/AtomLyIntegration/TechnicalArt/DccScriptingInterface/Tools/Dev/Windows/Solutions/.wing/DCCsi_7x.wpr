@@ -69,7 +69,10 @@ proj.directory-list = [{'dirloc': loc('../../../../..'),
                         'recursive': True,
                         'watch_for_changes': True}]
 proj.file-type = 'shared'
-proj.launch-config = {loc('../../../../../azpy/__init__.py'): ('custom',
+proj.launch-config = {loc('../../../../DCC/Blender/__init__.py'): ('custom',
+        (u'',
+         'launch-0L6se5pxC9AWvpY0')),
+                      loc('../../../../../azpy/__init__.py'): ('custom',
         (u'',
          'launch-0L6se5pxC9AWvpY0')),
                       loc('../../../../../azpy/core/py2/utils.py'): ('custom',

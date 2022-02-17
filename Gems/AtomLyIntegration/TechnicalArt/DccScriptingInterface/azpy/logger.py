@@ -8,25 +8,20 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-Module Documentation:
-    < DCCsi >:: Tools//DCC//Blender//constants.py
+"""O3DE DCCsi Logger class. Convenience to reduce boilerplate logging setup"""
 
-This module is used to start blender with O3DE bootstrapping
-"""
-# -------------------------------------------------------------------------
 # standard imports
 import sys
 import os
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
+_MODULENAME = 'O3DE.DCCsi.azpy.logger'
 
+print('Not implemented: {}'.format(_MODULENAME))
 
+###########################################################################
+# Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
-# global scope
-_MODULENAME = 'Blender.start'
-
-_LOGGER = _logging.getLogger(_MODULENAME)
-
-_LOGGER.info(f'Not Implemented: {_MODULENAME}')
+if __name__ == '__main__':
+    """Run this file as a standalone cli script for testing/debugging"""
