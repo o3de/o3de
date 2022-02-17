@@ -86,11 +86,11 @@ namespace AzToolsFramework
         {
             if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
             {
-                if (!m_focusRoot.IsValid() && entityId.IsValid())
+                if (!previousFocusEntityId.IsValid() && m_focusRoot.IsValid())
                 {
                     tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
                 }
-                else if (m_focusRoot.IsValid() && !entityId.IsValid())
+                else if (previousFocusEntityId.IsValid() && !m_focusRoot.IsValid())
                 {
                     tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
                 }
