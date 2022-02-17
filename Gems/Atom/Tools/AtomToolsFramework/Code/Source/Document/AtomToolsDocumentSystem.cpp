@@ -64,28 +64,6 @@ namespace AtomToolsFramework
                 ->Event("SaveAllDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments)
                 ->Event("GetDocumentCount", &AtomToolsDocumentSystemRequestBus::Events::GetDocumentCount)
                 ;
-
-            behaviorContext->EBus<AtomToolsDocumentRequestBus>("AtomToolsDocumentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
-                ->Event("GetAbsolutePath", &AtomToolsDocumentRequestBus::Events::GetAbsolutePath)
-                ->Event("Open", &AtomToolsDocumentRequestBus::Events::Open)
-                ->Event("Reopen", &AtomToolsDocumentRequestBus::Events::Reopen)
-                ->Event("Close", &AtomToolsDocumentRequestBus::Events::Close)
-                ->Event("Save", &AtomToolsDocumentRequestBus::Events::Save)
-                ->Event("SaveAsChild", &AtomToolsDocumentRequestBus::Events::SaveAsChild)
-                ->Event("SaveAsCopy", &AtomToolsDocumentRequestBus::Events::SaveAsCopy)
-                ->Event("IsOpen", &AtomToolsDocumentRequestBus::Events::IsOpen)
-                ->Event("IsModified", &AtomToolsDocumentRequestBus::Events::IsModified)
-                ->Event("IsSavable", &AtomToolsDocumentRequestBus::Events::IsSavable)
-                ->Event("CanUndo", &AtomToolsDocumentRequestBus::Events::CanUndo)
-                ->Event("CanRedo", &AtomToolsDocumentRequestBus::Events::CanRedo)
-                ->Event("Undo", &AtomToolsDocumentRequestBus::Events::Undo)
-                ->Event("Redo", &AtomToolsDocumentRequestBus::Events::Redo)
-                ->Event("BeginEdit", &AtomToolsDocumentRequestBus::Events::BeginEdit)
-                ->Event("EndEdit", &AtomToolsDocumentRequestBus::Events::EndEdit)
-                ;
         }
     }
 

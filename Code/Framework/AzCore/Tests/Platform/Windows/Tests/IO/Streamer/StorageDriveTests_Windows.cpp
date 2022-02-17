@@ -981,7 +981,7 @@ namespace AZ::IO
 
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [numChunks, &numCallbacks, &waitForReads](FileRequestHandle request)
+            auto callback = [&numCallbacks, &waitForReads](FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 IStreamer* streamer = Interface<IStreamer>::Get();
@@ -1052,7 +1052,7 @@ namespace AZ::IO
 
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [numChunks, &waitForReads, &waitForSingleRead, &numReadCallbacks]([[maybe_unused]] FileRequestHandle request)
+            auto callback = [&waitForReads, &waitForSingleRead, &numReadCallbacks]([[maybe_unused]] FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 numReadCallbacks++;
@@ -1076,7 +1076,7 @@ namespace AZ::IO
             cancels.push_back(m_streamer->Cancel(requests[numChunks - i - 1]));
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [&numCancelCallbacks, &waitForCancels, numChunks](FileRequestHandle request)
+            auto callback = [&numCancelCallbacks, &waitForCancels](FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 auto result = Interface<IStreamer>::Get()->GetRequestStatus(request);
@@ -1248,7 +1248,7 @@ namespace Benchmark
 
             AZStd::unique_ptr<char[]> buffer(new char[FileSize]);
     
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 AZStd::binary_semaphore waitForReads;
                 AZStd::atomic<system_clock::time_point> end;

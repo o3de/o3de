@@ -8,6 +8,8 @@
 
 #include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Transform.h>
@@ -50,6 +52,15 @@ namespace AZStd
             static_cast<float>(value.GetW()));
     }
 
+    void to_string(string& str, const AZ::Matrix3x3& value)
+    {
+        str = AZStd::string::format(
+            "%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f",
+            static_cast<float>(value(0, 0)), static_cast<float>(value(1, 0)), static_cast<float>(value(2, 0)),
+            static_cast<float>(value(0, 1)), static_cast<float>(value(1, 1)), static_cast<float>(value(2, 1)),
+            static_cast<float>(value(0, 2)), static_cast<float>(value(1, 2)), static_cast<float>(value(2, 2)));
+    }
+
     void to_string(string& str, const AZ::Matrix4x4& value)
     {
         str = AZStd::string::format("%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f", 
@@ -77,5 +88,10 @@ namespace AZStd
             static_cast<float>(value.GetMin().GetX()), static_cast<float>(value.GetMin().GetY()),
             static_cast<float>(value.GetMin().GetZ()), static_cast<float>(value.GetMax().GetX()),
             static_cast<float>(value.GetMax().GetY()), static_cast<float>(value.GetMax().GetZ()));
+    }
+
+    void to_string(string& str, const AZ::Color& color)
+    {
+        str = AZStd::string::format("R:%d, G:%d, B:%d A:%d", color.GetR8(), color.GetG8(), color.GetB8(), color.GetA8());
     }
 }

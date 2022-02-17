@@ -9,9 +9,8 @@
 #pragma once
 
 #include <AzCore/std/functional.h>
-#include <AzCore/std/string/conversions.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/Math/MathStringConversions.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace MCore
@@ -36,11 +35,4 @@ namespace MCore
 
         static const char* wordSeparators;
     };
-}
-
-namespace AZStd
-{
-    void to_string(string& str, bool value);
-
-    inline AZStd::string to_string(bool val) { AZStd::string str; to_string(str, val); return str; }
 }

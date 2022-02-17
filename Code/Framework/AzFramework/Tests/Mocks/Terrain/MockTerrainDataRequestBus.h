@@ -77,21 +77,21 @@ namespace UnitTest
         MOCK_CONST_METHOD5(
             GetSurfacePointFromFloats, void(float, float, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
         MOCK_CONST_METHOD3(
-            ProcessHeightsFromList, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+            ProcessHeightsFromList, void(const AZStd::span<const AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
-            ProcessNormalsFromList, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+            ProcessNormalsFromList, void(const AZStd::span<const AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
-            ProcessSurfaceWeightsFromList, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+            ProcessSurfaceWeightsFromList, void(const AZStd::span<const AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
-            ProcessSurfacePointsFromList, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+            ProcessSurfacePointsFromList, void(const AZStd::span<const AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
-            ProcessHeightsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+            ProcessHeightsFromListOfVector2, void(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
-            ProcessNormalsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+            ProcessNormalsFromListOfVector2, void(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
-            ProcessSurfaceWeightsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+            ProcessSurfaceWeightsFromListOfVector2, void(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
-            ProcessSurfacePointsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+            ProcessSurfacePointsFromListOfVector2, void(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD2(
             GetNumSamplesFromRegion, AZStd::pair<size_t, size_t>(const AZ::Aabb&, const AZ::Vector2&));
         MOCK_CONST_METHOD4(
@@ -107,21 +107,21 @@ namespace UnitTest
         MOCK_CONST_METHOD1(
             GetClosestIntersection, AzFramework::RenderGeometry::RayResult(const AzFramework::RenderGeometry::RayRequest&));
         MOCK_CONST_METHOD4(
-            ProcessHeightsFromListAsync, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+            ProcessHeightsFromListAsync, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<const AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD4(
-            ProcessNormalsFromListAsync, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+            ProcessNormalsFromListAsync, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<const AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD4(
-            ProcessSurfaceWeightsFromListAsync, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+            ProcessSurfaceWeightsFromListAsync, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<const AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD4(
-            ProcessSurfacePointsFromListAsync, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+            ProcessSurfacePointsFromListAsync, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<const AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD4(
-            ProcessHeightsFromListOfVector2Async, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+            ProcessHeightsFromListOfVector2Async, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD4(
-            ProcessNormalsFromListOfVector2Async, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+            ProcessNormalsFromListOfVector2Async, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD4(
-            ProcessSurfaceWeightsFromListOfVector2Async, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+            ProcessSurfaceWeightsFromListOfVector2Async, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD4(
-            ProcessSurfacePointsFromListOfVector2Async, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+            ProcessSurfacePointsFromListOfVector2Async, AZStd::shared_ptr<TerrainJobContext>(const AZStd::span<const AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD5(
             ProcessHeightsFromRegionAsync, AZStd::shared_ptr<TerrainJobContext>(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD5(

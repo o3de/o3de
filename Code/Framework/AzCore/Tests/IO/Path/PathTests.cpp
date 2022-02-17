@@ -966,7 +966,7 @@ namespace Benchmark
     BENCHMARK_F(PathBenchmarkFixture, BM_PathAppendFixedPath)(benchmark::State& state)
     {
         AZ::IO::FixedMaxPath m_testPath{ "." };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const auto& appendPath : m_appendPaths)
             {
@@ -977,7 +977,7 @@ namespace Benchmark
     BENCHMARK_F(PathBenchmarkFixture, BM_PathAppendAllocatingPath)(benchmark::State& state)
     {
         AZ::IO::Path m_testPath{ "." };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const auto& appendPath : m_appendPaths)
             {
@@ -989,7 +989,7 @@ namespace Benchmark
     BENCHMARK_F(PathBenchmarkFixture, BM_StringFuncPathJoinFixedString)(benchmark::State& state)
     {
         AZStd::string m_testPath{ "." };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const auto& appendPath : m_appendPaths)
             {
@@ -1000,7 +1000,7 @@ namespace Benchmark
     BENCHMARK_F(PathBenchmarkFixture, BM_StringFuncPathJoinAZStdString)(benchmark::State& state)
     {
         AZStd::string m_testPath{ "." };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const auto& appendPath : m_appendPaths)
             {

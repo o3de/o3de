@@ -113,7 +113,7 @@ namespace AZ
 
             if (!memoryView.IsValid())
             {
-                RHI::ResultCode::OutOfMemory;
+                return RHI::ResultCode::OutOfMemory;
             }
 
             buffer->SetDescriptor(descriptor);

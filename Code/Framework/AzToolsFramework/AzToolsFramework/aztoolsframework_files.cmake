@@ -153,6 +153,7 @@ set(FILES
     Entity/SliceEditorEntityOwnershipService.h
     Entity/SliceEditorEntityOwnershipService.cpp
     Entity/SliceEditorEntityOwnershipServiceBus.h
+    Entity/EntityTypes.h
     Entity/EntityUtilityComponent.h
     Entity/EntityUtilityComponent.cpp
     Entity/ReadOnly/ReadOnlyEntityInterface.h
@@ -758,6 +759,8 @@ set(FILES
     UI/Prefab/PrefabIntegrationManager.h
     UI/Prefab/PrefabIntegrationManager.cpp
     UI/Prefab/PrefabIntegrationInterface.h
+    UI/Prefab/PrefabSaveLoadHandler.h
+    UI/Prefab/PrefabSaveLoadHandler.cpp
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h

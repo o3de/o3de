@@ -67,11 +67,3 @@ namespace MCore
         return result;
     }
 }
-
-namespace AZStd
-{
-    void to_string(string& str, bool value)
-    {
-        str = value ? "true" : "false";
-    }
-}

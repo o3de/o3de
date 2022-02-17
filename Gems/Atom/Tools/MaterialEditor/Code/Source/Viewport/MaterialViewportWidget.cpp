@@ -41,6 +41,7 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/PanCameraBehavior.h>
@@ -94,9 +95,15 @@ namespace MaterialEditor
         AZ_Assert(mainScene, "Main scenes missing during system component initialization");
         mainScene->SetSubsystem(m_scene);
 
-        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
+        // Load the render pipeline asset
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
             m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
+
+        // The default pipeline determines the initial MSAA state for the application
+        const AZ::RPI::RenderPipelineDescriptor* renderPipelineDescriptor = AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
+        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor->m_renderSettings.m_multisampleState);
+
+        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *GetViewportContext()->GetWindowContext().get());
         pipelineAsset.Release();
         m_scene->AddRenderPipeline(m_renderPipeline);
@@ -312,6 +319,8 @@ namespace MaterialEditor
         // Create viewport input controller and regioster its behaviors
         m_viewportController.reset(
             aznew ViewportInputBehaviorController(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId()));
+        m_viewportController->AddBehavior(
+            ViewportInputBehaviorController::None, AZStd::make_shared<IdleBehavior>(m_viewportController.get()));
         m_viewportController->AddBehavior(
             ViewportInputBehaviorController::Lmb, AZStd::make_shared<PanCameraBehavior>(m_viewportController.get()));
         m_viewportController->AddBehavior(
