@@ -109,13 +109,14 @@ namespace AzToolsFramework
         return m_focusRoot;
     }
 
-    EntityIdList FocusModeSystemComponent::GetFocusedEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    const EntityIdList& FocusModeSystemComponent::GetFocusedEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId)
     {
         return m_focusedEntityIdList;
     }
 
     bool FocusModeSystemComponent::IsInFocusSubTree(AZ::EntityId entityId) const
     {
+        // If the focus is on the root, all entities are in the focus subtree.
         if (m_focusRoot == AZ::EntityId())
         {
             return true;
