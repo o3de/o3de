@@ -10,6 +10,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import bpy
 from pathlib import Path
 import webbrowser
+import re
 from bpy_extras.io_utils import ExportHelper
 from bpy.types import Panel, Operator, PropertyGroup
 from bpy.props import EnumProperty, StringProperty, BoolProperty, PointerProperty
@@ -31,7 +32,6 @@ def message_box(message = "", title = "Message Box", icon = 'LIGHT'):
         """
         self.layout.label(text = message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
-
 class WikiButton(bpy.types.Operator):
     """!
     This Class is for the UI Wiki Button
@@ -45,16 +45,50 @@ class WikiButton(bpy.types.Operator):
         """
         webbrowser.open(constants.WIKI_URL)
         return{'FINISHED'}
-
 class ExportFiles(bpy.types.Operator):
+    """!
+    This function will send to selected GLB to an O3DE Project Path.
+    """
     bl_idname = "vin.o3defilexport"
     bl_label = "SENDFILES"
 
-    def execute(self, contex):
+    def export_files(self, file_name):
         """!
-        This function will send to selected GLB to an O3DE Project Path.
+        This function will export the selected as an .fbx to the current project path.
+        @param file_name is the file name selected or string in export_file_name_o3de
         """
-        fbx_exporter.fbx_file_exporter('')
+        # Add file ext
+        file_name = f'{file_name}.fbx'
+        fbx_exporter.fbx_file_exporter('', file_name)
+
+    def execute(self, context):
+        """!
+        This function will check the current selected count and multi_file_export_o3de bool is True or False.
+        If multi_file_export_o3de is True it will export each selected object as an .fbx file, if False it will
+        export all objects selected as one .fbx.
+        @param context defualt for this blender class
+        """
+        # Validate a selection
+        valid_selection, selected_name = utils.check_selected()
+        # Check if there are multi selections
+        if len(selected_name) > 1:
+            if bpy.types.Scene.multi_file_export_o3de:
+                for obj_name in selected_name:
+                    bpy.data.objects[obj_name].select_set(True)
+                    # Remove some nasty invalid char
+                    file_name = re.sub(r'\W+', '', obj_name)
+                    # Export file
+                    self.export_files(file_name)
+            else:
+                # Remove some nasty invalid char
+                file_name = re.sub(r'\W+', '', bpy.context.scene.export_file_name_o3de)
+                # Export file
+                self.export_files(file_name)
+        else:
+            # Remove some nasty invalid char
+            file_name = re.sub(r'\W+', '', bpy.context.scene.export_file_name_o3de)
+            # Export file
+            self.export_files(file_name)
         return{'FINISHED'}
 
 class ProjectsListDropDown(bpy.types.Operator):
@@ -124,7 +158,7 @@ class SceneExporterFileMenu(Operator, ExportHelper):
         if self.export_animation:
             bpy.types.Scene.animation_export = constants.KEY_FRAME_ANIMATION
             utils.valid_animation_selection()
-        fbx_exporter.fbx_file_exporter(self.filepath)
+        fbx_exporter.fbx_file_exporter(self.filepath, Path(self.filepath).stem)
         return{'FINISHED'}
 
 class ExportOptionsListDropDown(bpy.types.Operator):
@@ -220,44 +254,57 @@ class O3deTools(Panel):
         layout = self.layout
         obj = context.object
         row = layout.row()
+        wm = context.window_manager
         # Look at the o3de Engine Manifest
         o3de_projects, engine_is_installed = o3de_utils.LookatEngineManifest()
+        # Validate a selection
+        valid_selection, selected_name = utils.check_selected()
 
         if engine_is_installed: # Checks to see if O3DE is installed
-
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")
-
             installed_lable = layout.row()
             if not obj is None:
-                installed_lable.label(text=f'MESH(S): {obj.name}')
+                installed_lable.label(text=f'OBJECTS({len(selected_name)}): {obj.name}')
             else:
-                installed_lable.label(text='MESH(S): None')
-
+                installed_lable.label(text='OBJECTS: None')
+            # If more than 1 object is selected, let user choose export options
+            if len(selected_name) > 1:
+                multi_file_export_label = "Export Multi-Files" if wm.multi_file_export_toggle else "Export Single File"
+                multi_file_export_button = layout.row()
+                multi_file_export_button.prop(wm, "multi_file_export_toggle", text=multi_file_export_label, toggle=True)
+                if wm.multi_file_export_toggle:
+                    bpy.types.Scene.multi_file_export_o3de = True
+                else:
+                    bpy.types.Scene.multi_file_export_o3de = False
+            else:
+                bpy.types.Scene.multi_file_export_o3de = False
+            # Let user choose a custom file name
             file_name_lable = layout.row()
-            file_name_lable.label(text='Export File Name')
-            file_name_export_input = self.layout.column(align = True)
-            file_name_export_input.prop(context.scene, "export_file_name")
-
+            if not wm.multi_file_export_toggle:
+                file_name_lable.label(text='Export File Name')
+                file_name_export_input = self.layout.column(align = True)
+                file_name_export_input.prop(context.scene, "export_file_name_o3de")
+            # Let user choose a custom project path
             project_path_lable = layout.row()
             if not bpy.types.Scene.selected_o3de_project_path == '':
                 project_path_lable.label(text=f'PROJECT: {Path(bpy.types.Scene.selected_o3de_project_path).name}')
             else:
                 project_path_lable.label(text='PROJECT: None')
-
+            # Let user choose animation export options
             animation_export_lable = layout.row()
             if not bpy.types.Scene.animation_export == constants.NO_ANIMATION:
-                animation_export_lable.label(text=f'ANIMATION: {bpy.types.Scene.animation_export}')
+                animation_export_lable.label(text=f'ANIMATION: {bpy.types.Scene.animation_export}', icon="POSE_HLT")
             else:
-                animation_export_lable.label(text=f'ANIMATION: {bpy.types.Scene.animation_export}')
+                animation_export_lable.label(text=f'ANIMATION: {bpy.types.Scene.animation_export}', icon="CANCEL")
                 
             # This is the UI Export Texture Option Label
             texture_export_option_label = layout.row()
             if bpy.types.Scene.export_textures_folder:
-                texture_export_option_label.label(text='Texture Export: (TF)')
+                texture_export_option_label.label(text='Texture Export: (TF)', icon="FILEBROWSER")
             elif bpy.types.Scene.export_textures_folder is False:
-                texture_export_option_label.label(text='Texture Export: (TWM)')
+                texture_export_option_label.label(text='Texture Export: (TWM)', icon="COPY_ID")
             elif bpy.types.Scene.export_textures_folder is None:
-                texture_export_option_label.label(text='Texture Export: (MO)')
+                texture_export_option_label.label(text='Texture Export: (MO)', icon="CANCEL")
             # This is the UI Porjects List
             o3de_projects_panel = layout.row()
             o3de_projects_panel.operator('wm.projectlist', text='O3DE Projects', icon="OUTLINER")
@@ -266,7 +313,7 @@ class O3deTools(Panel):
             texture_export_options_panel.operator('wm.exportoptions', text='Texture Export Options', icon="OUTPUT")
             # This is the UI Animation Export Options List
             animation_export_options_panel = layout.row()
-            animation_export_options_panel.operator('wm.animationoptions', text='Animation Export Options', icon="OUTPUT")
+            animation_export_options_panel.operator('wm.animationoptions', text='Animation Export Options', icon="POSE_HLT")
             # This checks to see if we should enable the export button
             export_files_row = layout.row()
             export_ready_row = layout.row()
@@ -276,7 +323,7 @@ class O3deTools(Panel):
             elif not utils.check_if_valid_path(bpy.types.Scene.selected_o3de_project_path):
                 export_files_row.enabled = False
                 export_ready_row.label(text='Project Path Not Found.')
-            elif not bpy.types.Scene.export_good:
+            elif not bpy.types.Scene.export_good_o3de:
                 export_files_row.enabled = False
                 export_ready_row.label(text='Not Ready for Export.')
             else:

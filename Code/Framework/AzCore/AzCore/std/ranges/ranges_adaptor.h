@@ -23,28 +23,28 @@ namespace AZStd::ranges::views::Internal
         {}
         template<class... Args>
         constexpr decltype(auto) operator()(Args&&... args) &
-            noexcept(noexcept(AZStd::invoke(m_outer, AZStd::invoke(m_inner, AZStd::forward<Args>(args)...))))
+            noexcept(noexcept(AZStd::invoke(declval<Outer>(), AZStd::invoke(declval<Inner>(), AZStd::forward<Args>(args)...))))
         {
             return AZStd::invoke(m_outer, AZStd::invoke(m_inner, AZStd::forward<Args>(args)...));
         }
         template<class... Args>
         constexpr decltype(auto) operator()(Args&&... args) const&
-            noexcept(noexcept(AZStd::invoke(m_outer, AZStd::invoke(m_inner, AZStd::forward<Args>(args)...))))
+            noexcept(noexcept(AZStd::invoke(declval<Outer>(), AZStd::invoke(declval<Inner>(), AZStd::forward<Args>(args)...))))
         {
             return AZStd::invoke(m_outer, AZStd::invoke(m_inner, AZStd::forward<Args>(args)...));
         }
         //
         template<class... Args>
         constexpr decltype(auto) operator()(Args&&... args) &&
-            noexcept(noexcept(AZStd::invoke(AZStd::move(m_outer),
-                AZStd::invoke(AZStd::move(m_inner), AZStd::forward<Args>(args)...))))
+            noexcept(noexcept(AZStd::invoke(declval<Outer>(),
+                AZStd::invoke(declval<Inner>(), AZStd::forward<Args>(args)...))))
         {
             return AZStd::invoke(AZStd::move(m_outer), AZStd::invoke(AZStd::move(m_inner), AZStd::forward<Args>(args)...));
         }
         template<class... Args>
         constexpr decltype(auto) operator()(Args&&... args) const&&
-            noexcept(noexcept(AZStd::invoke(AZStd::move(m_outer),
-                AZStd::invoke(AZStd::move(m_inner), AZStd::forward<Args>(args)...))))
+            noexcept(noexcept(AZStd::invoke(declval<Outer>(),
+                AZStd::invoke(declval<Inner>(), AZStd::forward<Args>(args)...))))
         {
             return AZStd::invoke(AZStd::move(m_outer), AZStd::invoke(AZStd::move(m_inner), AZStd::forward<Args>(args)...));
         }

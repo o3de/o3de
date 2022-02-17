@@ -60,6 +60,9 @@ echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=20)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
+IF "%DCCSI_TESTS%"=="" (set DCCSI_TESTS=false)
+echo     DCCSI_TESTS = %DCCSI_TESTS%
+
 :: This maps up to the \Dev folder
 IF "%O3DE_REL_PATH%"=="" (set "O3DE_REL_PATH=..\..\..\..")
 echo     O3DE_REL_PATH = %O3DE_REL_PATH%
@@ -98,9 +101,13 @@ echo     PATH_DCCSIG = %PATH_DCCSIG%
 :: Change to DCCsi root dir
 CD /D %PATH_DCCSIG%
 
-:: per-dcc sdk path
+:: dccsi tools path
 set "PATH_DCCSI_TOOLS=%PATH_DCCSIG%\Tools"
 echo     PATH_DCCSI_TOOLS = %PATH_DCCSI_TOOLS%
+
+:: dccsi tools path
+set "PATH_DCCSI_TOOLS_DCC=%PATH_DCCSIG%\Tools\DCC"
+echo     PATH_DCCSI_TOOLS_DCC = %PATH_DCCSI_TOOLS_DCC%
 
 :: temp log location specific to this gem
 set "DCCSI_LOG_PATH=%PATH_O3DE_PROJECT%\.temp\logs"

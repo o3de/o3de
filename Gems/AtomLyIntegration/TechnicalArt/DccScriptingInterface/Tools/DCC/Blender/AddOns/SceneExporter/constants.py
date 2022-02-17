@@ -24,6 +24,7 @@ ANIMATION_LIST_OPTIONS = ( (
     ('2', MESH_AND_RIG, 'Key All Bones, Force exporting at least one key of animation for all bones')
     ))
 TAG_O3DE = '.o3de'
+IMAGE_EXT = ('', '.jpg', '.png', '.JPG', '.PNG')
 USER_HOME = Path.home()
 DEFAULT_SDK_MANIFEST_PATH = Path.home().joinpath(f'{TAG_O3DE}','o3de_manifest.json')
 WIKI_URL = 'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Blender-Scene-Exporter'

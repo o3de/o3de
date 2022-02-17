@@ -10,7 +10,9 @@
 # -------------------------------------------------------------------------
 
 """! @brief
-<DCCsi>/Tools/DCC/Blender/setup.py
+Module Documentation:
+    < DCCsi >:: Tools//DCC//Blender//setup.py
+    
 Running this module installs the DCCsi python requirements.txt for Blender.
 
 It installs based on the python version into a location (such as):
@@ -54,6 +56,9 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
+# global scope
+_MODULENAME = 'Blender.setup'
+
 # Local access
 _MODULE_PATH = Path(__file__)                   # this script
 _DCCSI_BLENDER_PATH = Path(_MODULE_PATH.parent) # dcsi/tools/dcc/blender
@@ -72,9 +77,6 @@ from azpy.constants import FRMT_LOG_LONG
 
 
 # -------------------------------------------------------------------------
-# global scope
-_MODULENAME = 'O3DE.DCCsi.Tools.DCC.Blender.setup'
-
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
@@ -106,7 +108,7 @@ _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
 
 
 # -------------------------------------------------------------------------
-def install_pip():
+def install_pip(_SETTINGS):
     # path to python.exe
     python_exe = Path(sys.prefix, 'bin', 'python.exe').resolve()
 
@@ -115,6 +117,16 @@ def install_pip():
     subprocess.call([python_exe, "-m", "pip", "install", "--upgrade", "pip"])
     
     python_exe
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def install_requirements():
+
+    ## install required packages
+    #subprocess.call([python_exe, "-m", "pip", "install", "PACKAGE_TO_INSTALL"])
+
+    print("DONE")
 # -------------------------------------------------------------------------
 
 
@@ -129,16 +141,6 @@ def install_pkg(pkg_name='pathlib'):
 
     # install required packages
     subprocess.call([python_exe, "-m", "pip", "install", pkg_name])
-
-    print("DONE")
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-def install_requirements():
-
-    ## install required packages
-    #subprocess.call([python_exe, "-m", "pip", "install", "PACKAGE_TO_INSTALL"])
 
     print("DONE")
 # -------------------------------------------------------------------------

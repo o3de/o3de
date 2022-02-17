@@ -8,34 +8,77 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
 import bpy
-import re
 from pathlib import Path
 from . import ui
 from . import utils
 from . import o3de_utils
 from . import constants
 
-def fbx_file_exporter(fbx_file_path):
+def amimation_export_options():
     """!
-    This function will send to selected .FBX to an O3DE Project Path
-    @param fbx_file_path this is the o3de project path where the selected meshe(s)
-    will be exported as an .fbx
+    This function will return the selected animation options from the O3DE Dropdown
+    Animation Export Options.
     """
-    # Animation Vars
+    # Animation Export Options:
+    # Set Default Values
     bake_anim_option = None
     bake_anim_use_all_bones = None
     bake_anim_use_nla_strips_option = None
     bake_anim_use_all_actions_option = None
     bake_anim_force_startend_keying_option = None
+
+    if bpy.types.Scene.animation_export == constants.NO_ANIMATION:
+        bake_anim_option = False
+        bake_anim_use_all_bones = False
+        bake_anim_use_nla_strips_option = False
+        bake_anim_use_all_actions_option = False
+        bake_anim_force_startend_keying_option = False
+        bpy.types.Scene.file_menu_animation_export = False
+        return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
+    elif bpy.types.Scene.animation_export == constants.KEY_FRAME_ANIMATION:
+        # Set Animation Options
+        bake_anim_option = True
+        bake_anim_use_all_bones = True
+        bake_anim_use_nla_strips_option = True
+        bake_anim_use_all_actions_option = True
+        bake_anim_force_startend_keying_option = True
+        bpy.types.Scene.file_menu_animation_export = True
+        return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
+    elif bpy.types.Scene.animation_export == constants.MESH_AND_RIG:
+        # Set Animation Options
+        bake_anim_option = False
+        bake_anim_use_all_bones = False
+        bake_anim_use_nla_strips_option = False
+        bake_anim_use_all_actions_option = False
+        bake_anim_force_startend_keying_option = False
+        bpy.types.Scene.file_menu_animation_export = False
+        return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
+
+    if bpy.types.Scene.file_menu_animation_export:
+        bake_anim_option = True
+        bake_anim_use_all_bones = True
+        bake_anim_use_nla_strips_option = True
+        bake_anim_use_all_actions_option = True
+        bake_anim_force_startend_keying_option = True
+        return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
+    else:
+        bake_anim_option = False
+        bake_anim_use_all_bones = False
+        bake_anim_use_nla_strips_option = False
+        bake_anim_use_all_actions_option = False
+        bake_anim_force_startend_keying_option = False
+        return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
+
+def fbx_file_exporter(fbx_file_path, file_name):
+    """!
+    This function will send to selected .FBX to an O3DE Project Path
+    @param fbx_file_path this is the o3de project path where the selected meshe(s)
+    will be exported as an .fbx
+    """
     # Export file path Var
     export_file_path = ''
     # Validate a selection
     valid_selection, selected_name = utils.check_selected()
-    # Remove some nasty invalid char
-    filename = re.sub(r'\W+', '', selected_name[0])
-    # file ext
-    #file_name = f'{filename}.fbx'
-    file_name = f'{bpy.context.scene.export_file_name}.fbx'
 
     # FBX Exporter
     if valid_selection:
@@ -67,42 +110,7 @@ def fbx_file_exporter(fbx_file_path):
             if not bpy.types.Scene.export_textures_folder is None:
                 utils.clone_repath_images(file_menu_export, source_file_path, o3de_utils.build_projects_list())
 
-        if bpy.types.Scene.animation_export == constants.NO_ANIMATION:
-            bake_anim_option = False
-            bake_anim_use_all_bones = False
-            bake_anim_use_nla_strips_option = False
-            bake_anim_use_all_actions_option = False
-            bake_anim_force_startend_keying_option = False
-            bpy.types.Scene.file_menu_animation_export = False
-        elif bpy.types.Scene.animation_export == constants.KEY_FRAME_ANIMATION:
-            # Set Animation Options
-            bake_anim_option = True
-            bake_anim_use_all_bones = True
-            bake_anim_use_nla_strips_option = True
-            bake_anim_use_all_actions_option = True
-            bake_anim_force_startend_keying_option = True
-            bpy.types.Scene.file_menu_animation_export = True
-        elif bpy.types.Scene.animation_export == constants.MESH_AND_RIG:
-            # Set Animation Options
-            bake_anim_option = False
-            bake_anim_use_all_bones = False
-            bake_anim_use_nla_strips_option = False
-            bake_anim_use_all_actions_option = False
-            bake_anim_force_startend_keying_option = False
-            bpy.types.Scene.file_menu_animation_export = False
-
-        if bpy.types.Scene.file_menu_animation_export:
-            bake_anim_option = True
-            bake_anim_use_all_bones = True
-            bake_anim_use_nla_strips_option = True
-            bake_anim_use_all_actions_option = True
-            bake_anim_force_startend_keying_option = True
-        else:
-            bake_anim_option = False
-            bake_anim_use_all_bones = False
-            bake_anim_use_nla_strips_option = False
-            bake_anim_use_all_actions_option = False
-            bake_anim_force_startend_keying_option = False
+        bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option = amimation_export_options()
 
         bpy.ops.export_scene.fbx(
             filepath=str(export_file_path),
@@ -116,7 +124,8 @@ def fbx_file_exporter(fbx_file_path):
             use_space_transform=True,
             bake_space_transform=False,
             object_types={'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'},
-            use_mesh_modifiers=True, use_mesh_modifiers_render=True,
+            use_mesh_modifiers=True,
+            use_mesh_modifiers_render=True,
             mesh_smooth_type='OFF',
             use_subsurf=False,
             use_mesh_edges=False,

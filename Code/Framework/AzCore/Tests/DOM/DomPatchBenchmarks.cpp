@@ -78,7 +78,7 @@ namespace AZ::Dom::Benchmark
             if (apply)
             {
                 auto patchInfo = GenerateHierarchicalDeltaPatch(m_before, m_after);
-                for (auto _ : state)
+                for ([[maybe_unused]] auto _ : state)
                 {
                     auto patchResult = patchInfo.m_forwardPatches.Apply(m_before);
                     benchmark::DoNotOptimize(patchResult);
@@ -86,7 +86,7 @@ namespace AZ::Dom::Benchmark
             }
             else
             {
-                for (auto _ : state)
+                for ([[maybe_unused]] auto _ : state)
                 {
                     auto patchInfo = GenerateHierarchicalDeltaPatch(m_before, m_after);
                     benchmark::DoNotOptimize(patchInfo);

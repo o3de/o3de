@@ -82,6 +82,11 @@ echo.
 echo ~ Launching DCCsi Project in VScode
 echo _____________________________________________________________________
 echo.
+
+echo.
+echo     PATH = %PATH%
+echo.
+echo     PYTHONPATH = %PYTHONPATH%
 echo.
 
 REM "C:\Program Files\Microsoft VS Code\Code.exe"
