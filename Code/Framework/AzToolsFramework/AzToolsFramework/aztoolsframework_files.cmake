@@ -731,6 +731,8 @@ set(FILES
     Prefab/Spawnable/SpawnableUtils.cpp
     Prefab/Template/Template.h
     Prefab/Template/Template.cpp
+    Prefab/ViewBookmarkComponent.h
+    Prefab/ViewBookmarkComponent.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx

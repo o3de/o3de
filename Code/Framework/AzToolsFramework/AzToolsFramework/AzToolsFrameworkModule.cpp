@@ -57,6 +57,8 @@
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
+#include <AzToolsFramework/Prefab/ViewBookmarkComponent.h>
+
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
 
@@ -84,6 +86,7 @@ namespace AzToolsFramework
             Prefab::PrefabSystemComponent::CreateDescriptor(),
             Prefab::EditorPrefabComponent::CreateDescriptor(),
             Prefab::ProceduralPrefabSystemComponent::CreateDescriptor(),
+            Prefab::ViewBookmarkComponent::CreateDescriptor(),
             Components::EditorEntityActionComponent::CreateDescriptor(),
             Components::EditorEntityIconComponent::CreateDescriptor(),
             Components::EditorInspectorComponent::CreateDescriptor(),
