@@ -16,7 +16,6 @@
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
-#include <AzCore/Math/ToString.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
 

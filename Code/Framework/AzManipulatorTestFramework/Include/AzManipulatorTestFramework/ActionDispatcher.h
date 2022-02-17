@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -278,7 +278,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& transform)
     {
-        Log("Setting entity world transform: %s", AZ::ToString(transform).c_str());
+        Log("Setting entity world transform: %s", AZStd::to_string(transform).c_str());
         SetEntityWorldTransformImpl(entityId, transform);
         return static_cast<DerivedDispatcherT*>(this);
     }
