@@ -624,10 +624,10 @@ namespace AzToolsFramework
                 contentLayout->addWidget(footerSeparatorLine);
 
                 QLabel* prefabSavePreferenceHint = new QLabel(
-                    "You can prevent this window from showing in the future by updating your global save preferences.",
+                    "You can prevent this from showing in the future by updating your preferences.",
                     savePrefabDialog.get());
                 prefabSavePreferenceHint->setToolTip(
-                    "Go to 'Edit > Editor Settings > Global Preferences... > Global save preferences' to update your preference");
+                    "Go to 'Edit > Editor Settings > Global Preferences... > Prefab Save Settings' to update your preference");
                 prefabSavePreferenceHint->setObjectName(PrefabSavePreferenceHint);
                 footerLayout->addWidget(prefabSavePreferenceHint);
             }
