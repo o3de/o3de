@@ -44,6 +44,7 @@ namespace GradientSignal
 
     public Q_SLOTS:
         void OnAutocomplete(const QModelIndex& index) override;
+        void UpdateAssetDisplay() override;
     };
 
     //! We need a custom asset property handler for the AZ::RPI::StreamingImageAsset on our
