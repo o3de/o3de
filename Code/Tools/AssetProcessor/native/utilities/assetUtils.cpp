@@ -1460,7 +1460,42 @@ namespace AssetUtilities
         }
         return false;
     }
+    bool IsInCacheFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath)
+    {
+        if(cachePath.empty())
+        {
+            QDir cacheDir;
+            [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
 
+            AZ_Error("AssetUtils", result, "Failed to get cache root for IsInCacheFolder");
+
+            // Since the cachePath is a string view it won't hold onto the memory, so we have to assign to something that will
+            AZ::IO::FixedMaxPath temp = cacheDir.absolutePath().toUtf8().constData();
+            cachePath = temp;
+        }
+
+        return path.IsRelativeTo(cachePath) && !IsInIntermediateAssetsFolder(path, cachePath);
+    }
+
+    bool IsInIntermediateAssetsFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath)
+    {
+        if (cachePath.empty())
+        {
+            QDir cacheDir;
+            [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+            AZ_Error("AssetUtils", result, "Failed to get cache root for IsInCacheFolder");
+
+            // Since the cachePath is a string view it won't hold onto the memory, so we have to assign to something that will
+            AZ::IO::FixedMaxPath temp = cacheDir.absolutePath().toUtf8().constData();
+            cachePath = temp;
+        }
+
+        AZ::IO::FixedMaxPath intermediateAssetsPath(cachePath);
+        intermediateAssetsPath /= AssetProcessor::IntermediateAssetsFolderName;
+
+        return path.IsRelativeTo(intermediateAssetsPath);
+    }
     BuilderFilePatternMatcher::BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID)
         : AssetBuilderSDK::FilePatternMatcher(pattern)
         , m_builderDescID(builderDescID)

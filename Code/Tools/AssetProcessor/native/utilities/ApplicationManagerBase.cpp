@@ -456,7 +456,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
 
         const auto OnFileAdded = [this, cachePath](QString path)
         {
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 [[maybe_unused]] bool result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
@@ -488,18 +488,19 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
 
         const auto OnFileModified = [this, cachePath](QString path)
         {
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 m_fileStateCache->UpdateFile(path);
             }
-            
+
             [[maybe_unused]] bool result = QMetaObject::invokeMethod(
                 m_assetProcessorManager,
                 [this, path]
                 {
                     m_assetProcessorManager->AssessModifiedFile(path);
-                }, Qt::QueuedConnection);
+                },
+                Qt::QueuedConnection);
 
             AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessModifiedFile");
         };
@@ -507,7 +508,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
         const auto OnFileRemoved = [this, cachePath](QString path)
         {
             [[maybe_unused]] bool result = false;
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 result = QMetaObject::invokeMethod(m_fileProcessor.get(), [this, path]()

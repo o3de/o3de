@@ -38,6 +38,7 @@ namespace AssetProcessor
     const char* const PlaceHolderFileName = "$missing_dependency$"; // Used as a placeholder in the dependency system, such as when a source file is deleted and a previously met dependency is broken.
     const unsigned int g_RetriesForFenceFile = 5; // number of retries for fencing
     const int RetriesForJobNetworkError = 1; // number of times to retry a job when a network error is determined to have caused a job failure
+    constexpr const char* IntermediateAssetsFolderName = "Intermediate Assets"; // name of the intermediate assets folder
     // Even though AP can handle files with path length greater than window's legacy path length limit, we have some 3rdparty sdk's
     // which do not handle this case ,therefore we will make AP fail any jobs whose either source file or output file name exceeds the windows legacy path length limit
 #define AP_MAX_PATH_LEN 260

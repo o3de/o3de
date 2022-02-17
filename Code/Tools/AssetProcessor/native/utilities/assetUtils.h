@@ -20,6 +20,7 @@
 #include "native/utilities/AssetUtilEBusHelper.h"
 #include "native/utilities/ApplicationManagerAPI.h"
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
+#include <AzCore/IO/Path/Path.h>
 
 namespace AzToolsFramework
 {
@@ -259,6 +260,14 @@ namespace AssetUtilities
 
     // A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
     bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot);
+
+    // Returns true if the path is in the cachePath and *not* in the intermediate assets folder.
+    // If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
+    bool IsInCacheFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath = "");
+
+    // Returns true if the path is in the intermediate assets folder.
+    // If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
+    bool IsInIntermediateAssetsFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath = "");
 
     class BuilderFilePatternMatcher
         : public AssetBuilderSDK::FilePatternMatcher

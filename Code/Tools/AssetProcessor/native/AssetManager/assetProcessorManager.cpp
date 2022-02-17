@@ -843,7 +843,7 @@ namespace AssetProcessor
                     // our new products to the same thing by removing the cache root
                     QString newProductName = productFilePath;
                     newProductName = AssetUtilities::NormalizeFilePath(newProductName);
-                    if (!newProductName.startsWith(m_normalizedCacheRootPath, Qt::CaseInsensitive))
+                    if (!IsInCacheFolder(newProductName.toUtf8().constData()))
                     {
                         AZ_Error(AssetProcessor::ConsoleChannel, false, "AssetProcessed(\" << %s << \", \" << %s << \" ... ) cache file \"  %s << \" does not appear to be within the cache!.\n",
                             itProcessedAsset->m_entry.m_pathRelativeToWatchFolder.toUtf8().constData(),
@@ -1074,7 +1074,7 @@ namespace AssetProcessor
                 // our new products to the same thing by removing the cache root
                 QString newProductName = product.m_productFileName.c_str();
                 newProductName = AssetUtilities::NormalizeFilePath(newProductName);
-                if (!newProductName.startsWith(m_normalizedCacheRootPath, Qt::CaseInsensitive))
+                if (!IsInCacheFolder(newProductName.toUtf8().constData()))
                 {
                     AZ_Error(AssetProcessor::ConsoleChannel, false, "AssetProcessed(\" << %s << \", \" << %s << \" ... ) cache file \"  %s << \" does not appear to be within the cache!.\n",
                         processedAsset.m_entry.m_pathRelativeToWatchFolder.toUtf8().constData(),
@@ -2401,7 +2401,7 @@ namespace AssetProcessor
             Q_ASSERT(normalizedPath == AssetUtilities::NormalizeFilePath(normalizedPath));
 
             // if its in the cache root then its a product file:
-            bool isProductFile = examineFile.m_fileName.startsWith(m_normalizedCacheRootPath, Qt::CaseInsensitive);
+            bool isProductFile = IsInCacheFolder(examineFile.m_fileName.toUtf8().constData());
 #if AZ_TRAIT_OS_PLATFORM_APPLE
             // a case can occur on apple platforms in the temp folders
             // where there is a symlink and /var/folders/.../ is also known
@@ -2821,7 +2821,7 @@ namespace AssetProcessor
 
     void AssetProcessorManager::AssessAddedFile(QString filePath)
     {
-        if (filePath.startsWith(m_normalizedCacheRootPath, Qt::CaseInsensitive))
+        if (IsInCacheFolder(filePath.toUtf8().constData()))
         {
             // modifies/adds to the cache are irrelevant.  Deletions are all we care about
             return;
@@ -2838,7 +2838,7 @@ namespace AssetProcessor
         if (!QFileInfo(filePath).isDir())
         {
             // we also don't care if you modify files in the cache, only deletions matter.
-            if (!filePath.startsWith(m_normalizedCacheRootPath, Qt::CaseInsensitive))
+            if(!IsInCacheFolder(filePath.toUtf8().constData()))
             {
                 AssessFileInternal(filePath, false);
             }
@@ -3204,6 +3204,16 @@ namespace AssetProcessor
             QString absoluteFullPath = QDir(job.m_jobEntry.m_watchFolderPath).absoluteFilePath(job.m_jobEntry.m_pathRelativeToWatchFolder);
             UpdateAnalysisTrackerForFile(absoluteFullPath.toUtf8().constData(), AnalysisTrackerUpdateType::JobFinished);
         }
+    }
+
+    bool AssetProcessorManager::IsInCacheFolder(AZ::IO::PathView path)
+    {
+        return AssetUtilities::IsInCacheFolder(path, m_normalizedCacheRootPath.toUtf8().constData());
+    }
+
+    bool AssetProcessorManager::IsInIntermediateAssetsFolder(AZ::IO::PathView path)
+    {
+        return AssetUtilities::IsInIntermediateAssetsFolder(path, m_normalizedCacheRootPath.toUtf8().constData());
     }
 
     void AssetProcessorManager::UpdateJobDependency(JobDetails& job)
