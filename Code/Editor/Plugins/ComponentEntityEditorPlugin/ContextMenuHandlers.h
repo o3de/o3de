@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 
 class ContextMenuBottomHandler : private AzToolsFramework::EditorContextMenuBus::Handler
