@@ -534,17 +534,17 @@ namespace ImageProcessingAtom
     // Set (alpha-weighted) average color computed from given mip
     bool ImageConvertProcess::SetAverageColor(AZ::u32 mip)
     {
-        // This function only works with pixel format rgba32f
+        // We only work with pixel format rgba32f
         const EPixelFormat srcPixelFormat = m_image->Get()->GetPixelFormat();
         if (srcPixelFormat != ePixelFormat_R32G32B32A32F)
         {
-            AZ_Assert(false, "%s only works with pixel format rgba32f", __FUNCTION__);
+            AZ_Assert(false, "I only work with pixel format rgba32f");
             return false;
         }
         // ...and we require a linear (non-sRGB) color space
         if (m_image->Get()->HasImageFlags(EIF_SRGBRead))
         {
-            AZ_Assert(false, "%s only works with a linear (non-sRGB) color space", __FUNCTION__);
+            AZ_Assert(false, "I only work with a linear (non-sRGB) color space");
             return false;
         }
 

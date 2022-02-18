@@ -1022,14 +1022,15 @@ namespace AZ
             rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
         }
 
-        void ModelDataInstance::SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
-                const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage)
+        void ModelDataInstance::SetIrradianceData(
+            RayTracingFeatureProcessor::SubMesh& subMesh,
+            const Data::Instance<RPI::Material> material,
+            const Data::Instance<RPI::Image> baseColorImage)
         {
             RPI::MaterialPropertyIndex propertyIndex;
 
-            // Default to manual color, so we work properly with legacy materials that don't contain
-            // the irradianceColorSource enum, but have their old irradiance.color transformed to
-            // irradiance.manualColor through the 'versionUpdates' rules:
+            // Default to manual color, in case the material type doesn't have the concept of
+            // manual vs. automatic irradiance color.
             AZ::Name irradianceColorSource = AZ::Name("Manual");
             propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
             if (propertyIndex.IsValid())

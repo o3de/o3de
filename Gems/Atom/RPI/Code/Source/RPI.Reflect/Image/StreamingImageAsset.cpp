@@ -30,7 +30,7 @@ namespace AZ
                     ;
 
                 serializeContext->Class<StreamingImageAsset, ImageAsset>()
-                    ->Version(2)
+                    ->Version(2) // Added m_averageColor field
                     ->Field("m_mipLevelToChainIndex", &StreamingImageAsset::m_mipLevelToChainIndex)
                     ->Field("m_mipChains", &StreamingImageAsset::m_mipChains)
                     ->Field("m_flags", &StreamingImageAsset::m_flags)
