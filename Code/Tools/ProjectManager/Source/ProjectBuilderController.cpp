@@ -21,7 +21,7 @@ namespace O3DE::ProjectManager
         : QObject()
         , m_projectInfo(projectInfo)
         , m_projectButton(projectButton)
-        , m_lastProgress(0)
+        , m_progressTicks(1)
         , m_parent(parent)
     {
         m_worker = new ProjectBuilderWorker(m_projectInfo);
@@ -58,9 +58,9 @@ namespace O3DE::ProjectManager
             projectButton->SetProjectBuilding();
             projectButton->SetProjectButtonAction(tr("Cancel Build"), [this] { HandleCancel(); });
 
-            if (m_lastProgress != 0)
+            if (!m_lastLine.isEmpty())
             {
-                UpdateUIProgress(m_lastProgress);
+                UpdateUIProgress(m_lastLine);
             }
         }
     }
@@ -70,14 +70,31 @@ namespace O3DE::ProjectManager
         return m_projectInfo;
     }
 
-    void ProjectBuilderController::UpdateUIProgress(int progress)
+    void ProjectBuilderController::UpdateUIProgress(const QString& lastLine)
     {
-        m_lastProgress = progress;
+        m_lastLine = lastLine.left(s_maxDisplayedBuiltOutputChars);
+
+        QString buildingProjectProgressDots = ".";
+        for (int dotCount = 1; dotCount < m_progressTicks; ++dotCount)
+        {
+            buildingProjectProgressDots.append(".");
+        }
+        QString buildingProjectString = QString("%1%2").arg(tr("Building Project"), buildingProjectProgressDots);
+
         if (m_projectButton)
         {
-            m_projectButton->SetButtonOverlayText(QString("%1 (%2%)<br>%3<br>").arg(tr("Building Project..."), QString::number(progress), tr("Click to <a href=\"logs\">view logs</a>.")));
-            m_projectButton->SetProgressBarValue(progress);
+            m_projectButton->SetButtonOverlayText(
+                QString("%1<br>%2<br>%3<br>").arg(buildingProjectString, m_lastLine, tr("Click to <a href=\"logs\">view logs</a>.")));
             m_projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
+        }
+
+        if (m_progressTicks == s_maxProgressTicks)
+        {
+            m_progressTicks = 1;
+        }
+        else
+        {
+            ++m_progressTicks;
         }
     }
 

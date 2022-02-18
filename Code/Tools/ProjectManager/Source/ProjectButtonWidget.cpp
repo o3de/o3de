@@ -369,10 +369,6 @@ namespace O3DE::ProjectManager
 
         // hide the warning label about this project needing to be built while building 
         ShowWarning(false, "");
-
-        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
-        progressBar->setVisible(true);
-        progressBar->setValue(0);
     }
 
     void ProjectButton::SetLaunchButtonEnabled(bool enabled)

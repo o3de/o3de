@@ -31,9 +31,11 @@ namespace O3DE::ProjectManager
         void SetProjectButton(ProjectButton* projectButton);
         const ProjectInfo& GetProjectInfo() const;
 
+        inline constexpr static int s_maxDisplayedBuiltOutputChars = 25;
+
     public slots:
         void Start();
-        void UpdateUIProgress(int progress);
+        void UpdateUIProgress(const QString& lastLine);
         void HandleResults(const QString& result);
         void HandleCancel();
 
@@ -48,6 +50,7 @@ namespace O3DE::ProjectManager
         ProjectButton* m_projectButton;
         QWidget* m_parent;
 
-        int m_lastProgress;
+        int m_progressTicks;
+        QString m_lastLine;
     };
 } // namespace O3DE::ProjectManager
