@@ -28,10 +28,6 @@ namespace AZ
             m_applyMorphTargetFalseValue = layout->FindValue(m_applyMorphTargetOptionIndex, AZ::Name("false"));
             m_applyMorphTargetTrueValue = layout->FindValue(m_applyMorphTargetOptionIndex, AZ::Name("true"));
 
-            m_applyColorMorphTargetOptionIndex = layout->FindShaderOptionIndex(AZ::Name("o_applyColorMorphTargets"));
-            m_applyColorMorphTargetFalseValue = layout->FindValue(m_applyColorMorphTargetOptionIndex, AZ::Name("false"));
-            m_applyColorMorphTargetTrueValue = layout->FindValue(m_applyColorMorphTargetOptionIndex, AZ::Name("true"));
-
             SkinnedMeshShaderOptionNotificationBus::Event(this, &SkinnedMeshShaderOptionNotificationBus::Events::OnShaderReinitialized, this);
         }
 
@@ -60,15 +56,6 @@ namespace AZ
             else
             {
                 shaderOptionGroup.SetValue(m_applyMorphTargetOptionIndex, m_applyMorphTargetFalseValue);
-            }
-
-            if (shaderOptions.m_applyColorMorphTargets)
-            {
-                shaderOptionGroup.SetValue(m_applyColorMorphTargetOptionIndex, m_applyColorMorphTargetTrueValue);
-            }
-            else
-            {
-                shaderOptionGroup.SetValue(m_applyColorMorphTargetOptionIndex, m_applyColorMorphTargetFalseValue);
             }
 
             shaderOptionGroup.SetUnspecifiedToDefaultValues();

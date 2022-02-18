@@ -56,9 +56,6 @@ namespace AZ::RPI
             //! Reference to the wrinkle mask, if it exists
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_wrinkleMask;
 
-            //! Boolean to indicate the presence or absence of color deltas
-            bool m_hasColorDeltas = false;
-
             static void Reflect(AZ::ReflectContext* context);
         };
 

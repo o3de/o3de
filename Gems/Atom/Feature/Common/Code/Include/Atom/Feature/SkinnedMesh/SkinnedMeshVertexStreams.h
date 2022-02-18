@@ -28,8 +28,6 @@ namespace AZ
             BiTangent,
             BlendIndices,
             BlendWeights,
-            // Optional
-            Color,
             NumVertexStreams
         };
 
@@ -40,8 +38,6 @@ namespace AZ
             Normal,
             Tangent,
             BiTangent,
-            // Optional
-            Color,
             NumVertexStreams
         };
 

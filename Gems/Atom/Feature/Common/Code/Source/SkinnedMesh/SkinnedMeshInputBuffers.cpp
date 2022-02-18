@@ -110,13 +110,6 @@ namespace AZ
                 const RHI::StreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
                 if (streamInfo && streamBufferView.GetByteCount() > 0)
                 {
-                    if (streamInfo->m_enum == SkinnedMeshInputVertexStreams::Color && !m_hasDynamicColors)
-                    {
-                        // There is a color stream on the mesh, but it is not modified by morph targets,
-                        // so it does not need to be included as input to the compute shader which applies the morph targets
-                        continue;
-                    }
-
                     m_inputBufferAssets[static_cast<uint8_t>(streamInfo->m_enum)] =
                         modelLodAssetMesh.GetSemanticBufferAssetView(streamInfo->m_semantic.m_name)->GetBufferAsset();
 
@@ -201,9 +194,6 @@ namespace AZ
                 // of skinning
                 bool isStaticStream = !SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(streamBufferInfo.m_semantic) &&
                     !SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(streamBufferInfo.m_semantic);
-
-                // Also, if it is a color, and colors aren't modified for this mesh, it is static, not dynamic
-                isStaticStream |= streamBufferInfo.m_semantic == RHI::ShaderSemantic{ Name{ "COLOR" } } && m_hasStaticColors;
 
                 if (isStaticStream)
                 {
@@ -317,12 +307,6 @@ namespace AZ
 
         void SkinnedMeshInputLod::SetSkinningInputBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset, SkinnedMeshInputVertexStreams inputStream)
         {
-            if (inputStream == SkinnedMeshInputVertexStreams::Color)
-            {
-                AZ_Assert(!m_hasStaticColors, "Attempting to set colors as skinning input (meaning they are dynamic) when they already exist as a static stream");
-                m_hasDynamicColors = true;
-            }
-
             m_inputBufferAssets[static_cast<uint8_t>(inputStream)] = bufferAsset;
             Data::Instance<RPI::Buffer> buffer = RPI::Buffer::FindOrCreate(bufferAsset);
             m_inputBuffers[static_cast<uint8_t>(inputStream)] = buffer;
@@ -351,12 +335,6 @@ namespace AZ
 
         void SkinnedMeshInputLod::SetStaticBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset, SkinnedMeshStaticVertexStreams staticStream)
         {
-            if (staticStream == SkinnedMeshStaticVertexStreams::Color)
-            {
-                AZ_Assert(!m_hasDynamicColors, "Attempting to set colors as a static stream on a skinned mesh, when they already exist as a dynamic stream");
-                m_hasStaticColors = true;
-            }
-
             m_staticBuffers[static_cast<uint8_t>(staticStream)] = RPI::Buffer::FindOrCreate(bufferAsset);
         }
 
@@ -409,17 +387,6 @@ namespace AZ
             RPI::BufferAssetView morphTargetDeltaView{ morphBufferAsset, morphView };
 
             m_morphTargetInputBuffers.push_back(aznew MorphTargetInputBuffers{ morphTargetDeltaView, bufferNamePrefix });
-
-            // If colors are going to be morphed, the SkinnedMeshInputLod needs to know so that it allocates memory for the dynamically updated colors
-            if (morphTarget.m_hasColorDeltas)
-            {
-                m_hasDynamicColors = true;
-            }
-        }
-
-        bool SkinnedMeshInputLod::HasDynamicColors() const
-        {
-            return m_hasDynamicColors;
         }
         
         const AZStd::vector<MorphTargetMetaData>& SkinnedMeshInputLod::GetMorphTargetMetaDatas() const
@@ -503,12 +470,6 @@ namespace AZ
         AZ::RHI::Ptr<const RHI::BufferView> SkinnedMeshInputBuffers::GetInputBufferView(uint32_t lodIndex, uint8_t inputStream) const
         {
             return m_lods[lodIndex].m_inputBuffers[inputStream]->GetBufferView();
-        }
-
-        bool SkinnedMeshInputBuffers::HasDynamicColors(uint32_t lodIndex, [[maybe_unused]] uint32_t meshIndex) const
-        {
-            // TODO - treat each mesh individually
-            return m_lods[lodIndex].HasDynamicColors();//m_hasDynamicColors[meshIndex];
         }
 
         uint32_t SkinnedMeshInputBuffers::GetVertexCount(uint32_t lodIndex, uint32_t meshIndex) const
@@ -605,19 +566,6 @@ namespace AZ
                 // later in the frame once skinning is finished ATOM-14429
 
                 size_t perVertexSizeInBytes = static_cast<size_t>(MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes) * MorphTargetConstants::s_morphTargetDeltaTypeCount;
-                if (lod.HasDynamicColors())
-                {
-                    // Naively, if colors are morphed by any of the morph targets,
-                    // we'll allocate enough memory to store the accumulated color deltas for every vertex in the lod.
-                    // This could be reduced by ATOM-14427
-          
-                    // We assume that the model has been padded to include colors even for the meshes which don't use them
-                    // this could be reduced by dispatching the skinning shade
-                    // for one mesh at a time instead of the entire lod at once ATOM-15078
-
-                    // Add four floats for colors
-                    perVertexSizeInBytes += 4 * sizeof(float);
-                }
 
                 AZStd::intrusive_ptr<SkinnedMeshOutputStreamAllocation> allocation = SkinnedMeshOutputStreamManagerInterface::Get()->Allocate(vertexCount * perVertexSizeInBytes);
                 if (!allocation)
@@ -649,16 +597,6 @@ namespace AZ
                     instanceMetaData.m_accumulatedNormalDeltaOffsetInBytes = instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes + deltaStreamSizeInBytes;
                     instanceMetaData.m_accumulatedTangentDeltaOffsetInBytes = instanceMetaData.m_accumulatedNormalDeltaOffsetInBytes + deltaStreamSizeInBytes;
                     instanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes = instanceMetaData.m_accumulatedTangentDeltaOffsetInBytes + deltaStreamSizeInBytes;
-
-                    // Followed by colors
-                    if (lod.HasDynamicColors())
-                    {
-                        instanceMetaData.m_accumulatedColorDeltaOffsetInBytes = instanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes + deltaStreamSizeInBytes;
-                    }
-                    else
-                    {
-                        instanceMetaData.m_accumulatedColorDeltaOffsetInBytes = MorphTargetConstants::s_invalidDeltaOffset;
-                    }
 
                     // Track both the allocation and the metadata in the instance
                     instance->m_morphTargetInstanceMetaData.push_back(instanceMetaData);
@@ -774,12 +712,6 @@ namespace AZ
                 // So we want to pack all the positions for each sub-mesh together, all the normals together, etc.
                 for (uint8_t outputStreamIndex = 0; outputStreamIndex < static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams); ++outputStreamIndex)
                 {
-                    // Skip colors if they don't exist or are not being morphed
-                    if (outputStreamIndex == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Color) && !lod.m_hasDynamicColors)
-                    {
-                        continue;
-                    }
-
                     if (!AllocateLodStream(outputStreamIndex, lod.m_outputVertexCountsByStream[outputStreamIndex], instance, streamOffsetsFromBufferStart, lodAllocations))
                     {
                         return nullptr;
@@ -834,13 +766,7 @@ namespace AZ
 
                     // Create and set the views into the skinning output buffers
                     for (uint8_t outputStreamIndex = 0; outputStreamIndex < static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams); ++outputStreamIndex)
-                    {
-                        // Skip colors if they don't exist or are not being morphed
-                        if (outputStreamIndex == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Color) && !lod.m_hasDynamicColors)
-                        {
-                            continue;
-                        }
-                        
+                    {                        
                         // Add a buffer view to the output model so it knows where to read the final skinned vertex data from
                         AddSubMeshViewToModelLodCreator(
                             outputStreamIndex, lod.m_outputVertexCountsByStream[static_cast<uint8_t>(outputStreamIndex)],

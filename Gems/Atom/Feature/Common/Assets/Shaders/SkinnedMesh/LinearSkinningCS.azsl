@@ -13,7 +13,6 @@
 
 option enum class SkinningMethod { LinearSkinning, DualQuaternion } o_skinningMethod = SkinningMethod::LinearSkinning;
 option bool o_applyMorphTargets = false;
-option bool o_applyColorMorphTargets = false;
 
 float3 ReadFloat3FromFloatBuffer(Buffer<float> buffer, uint index)
 {
@@ -195,16 +194,6 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
             ApplyMorphTargetDelta(InstanceSrg::m_morphTargetNormalDeltaOffset, i, normal);
             ApplyMorphTargetDelta(InstanceSrg::m_morphTargetTangentDeltaOffset, i, tangent.xyz);
             ApplyMorphTargetDelta(InstanceSrg::m_morphTargetBitangentDeltaOffset, i, bitangent);
-        }
-
-        if (o_applyColorMorphTargets)
-        {
-            float4 color = InstanceSrg::m_sourceColors[i];
-            ApplyMorphTargetDelta(InstanceSrg::m_morphTargetColorDeltaOffset, i, color);
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4] = color.r;
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 1] = color.g;
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 2] = color.b;
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 3] = color.a;
         }
         
         switch(o_skinningMethod)

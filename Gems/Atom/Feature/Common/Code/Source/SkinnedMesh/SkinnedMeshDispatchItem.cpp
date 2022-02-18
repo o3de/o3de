@@ -53,10 +53,6 @@ namespace AZ
             {
                 m_shaderOptions.m_applyMorphTargets = true;
             }
-            if (inputBuffers->HasDynamicColors(lodIndex, meshIndex))
-            {
-                m_shaderOptions.m_applyColorMorphTargets = true;
-            }
 
             // CreateShaderOptionGroup will also connect to the SkinnedMeshShaderOptionNotificationBus
             m_shaderOptionGroup = skinnedMeshFeatureProcessor->CreateSkinningShaderOptionGroup(m_shaderOptions, *this);
@@ -131,12 +127,6 @@ namespace AZ
 
             for (uint8_t outputStream = 0; outputStream < static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams); outputStream++)
             {
-                // Skip colors if they are not being morphed
-                if (outputStream == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Color) && !m_shaderOptions.m_applyColorMorphTargets)
-                {
-                    continue;
-                }
-
                 // Set the buffer offsets
                 const SkinnedMeshOutputVertexStreamInfo& outputStreamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(static_cast<SkinnedMeshOutputVertexStreams>(outputStream));
                 {
@@ -183,13 +173,6 @@ namespace AZ
             RHI::ShaderInputConstantIndex morphBitangentOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetBitangentDeltaOffset" });
             // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
             m_instanceSrg->SetConstant(morphBitangentOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
-
-            if (m_shaderOptions.m_applyColorMorphTargets)
-            {
-                RHI::ShaderInputConstantIndex morphColorOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetColorDeltaOffset" });
-                // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
-                m_instanceSrg->SetConstant(morphColorOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedColorDeltaOffsetInBytes / 4);
-            }
 
             RHI::ShaderInputConstantIndex morphDeltaIntegerEncodingIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetDeltaInverseIntegerEncoding" });
             m_instanceSrg->SetConstant(morphDeltaIntegerEncodingIndex, 1.0f / m_morphTargetDeltaIntegerEncoding);

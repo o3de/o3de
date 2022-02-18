@@ -248,7 +248,6 @@ namespace AZ
                 const RPI::BufferAssetView* jointIndicesBufferView = nullptr;
                 const RPI::BufferAssetView* skinWeightsBufferView = nullptr;
                 const RPI::BufferAssetView* morphBufferAssetView = nullptr;
-                const RPI::BufferAssetView* colorView = nullptr;
 
                 for (const auto& modelLodMesh : modelLodAsset->GetMeshes())
                 {
@@ -270,11 +269,6 @@ namespace AZ
                     if (!morphBufferAssetView)
                     {
                         morphBufferAssetView = modelLodMesh.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
-                    }
-
-                    if (!colorView)
-                    {
-                        colorView = modelLodMesh.GetSemanticBufferAssetView(Name{ "COLOR" });
                     }
                 }
 
@@ -309,24 +303,6 @@ namespace AZ
                 {
                     ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), static_cast<uint32_t>(lodIndex), fullFileName, skinnedMeshLod);
                 }
-
-                // Set colors after morphs are set, so that we know whether or not they are dynamic (if they exist)
-                if (colorView)
-                {
-                    if (skinnedMeshLod.HasDynamicColors())
-                    {
-                        // If colors are being morphed,
-                        // add them as input to the skinning compute shader, which will apply the morph
-                        //skinnedMeshLod.SetSkinningInputBufferAsset(colorView->GetBufferAsset(), SkinnedMeshInputVertexStreams::Color);
-                    }
-                    else
-                    {
-                        // If colors exist but are not modified dynamically,
-                        // add them to the static streams that are shared by all instances of the same skinned mesh
-                        //skinnedMeshLod.SetStaticBufferAsset(colorView->GetBufferAsset(), SkinnedMeshStaticVertexStreams::Color);
-                    }
-                }
-
             } // for all lods
 
             return skinnedMeshInputBuffers;

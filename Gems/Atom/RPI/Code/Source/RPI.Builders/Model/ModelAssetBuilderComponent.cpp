@@ -890,17 +890,6 @@ namespace AZ
             // Check if this is a skinned mesh
             if (!productMeshList.empty() && !productMeshList[0].m_skinWeights.empty())
             {
-                // First, do a pass to see if any mesh has morphed colors
-                bool hasMorphedColors = false;
-                for (ProductMeshContent& productMesh : productMeshList)
-                {
-                    if (productMesh.m_hasMorphedColors)
-                    {
-                        hasMorphedColors = true;
-                        break;
-                    }
-                }
-
                 for (ProductMeshContent& productMesh : productMeshList)
                 {
                     size_t vertexCount = productMesh.m_positions.size() / PositionFloatsPerVert;
@@ -916,25 +905,6 @@ namespace AZ
                     {
                         productMesh.m_bitangents.resize(vertexCount * BitangentFloatsPerVert, 1.0f);
                         AZ_Warning(s_builderName, false, "Mesh '%s' is missing bitangents and no defaults were generated. Skinned meshes require bitangents. Dummy bitangents will be inserted, which may result in rendering artifacts.", productMesh.m_name.GetCStr());
-                    }
-
-                    // If any of the meshes have morphed colors, padd all the meshes so that the color stream is aligned with the other skinned streams
-                    if (hasMorphedColors)
-                    {
-                        if (productMesh.m_colorCustomNames.empty())
-                        {
-                            productMesh.m_colorCustomNames.push_back(Name{ "COLOR" });
-                        }
-
-                        if (productMesh.m_colorSets.empty())
-                        {
-                            productMesh.m_colorSets.resize(1);
-                        }
-
-                        if (productMesh.m_colorSets[0].empty())
-                        {
-                            productMesh.m_colorSets[0].resize(vertexCount * ColorFloatsPerVert, 0.0f);
-                        }
                     }
                 }
             }

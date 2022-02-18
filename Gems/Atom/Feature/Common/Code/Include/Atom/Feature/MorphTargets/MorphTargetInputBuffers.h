@@ -60,7 +60,6 @@ namespace AZ
             float m_maxDelta;
             uint32_t m_vertexCount;
             uint32_t m_positionOffset;
-            bool m_hasColorDeltas;
         };
 
         namespace MorphTargetConstants
@@ -80,7 +79,6 @@ namespace AZ
             uint32_t m_accumulatedNormalDeltaOffsetInBytes;
             uint32_t m_accumulatedTangentDeltaOffsetInBytes;
             uint32_t m_accumulatedBitangentDeltaOffsetInBytes;
-            uint32_t m_accumulatedColorDeltaOffsetInBytes;
         };
 
     }// Render
