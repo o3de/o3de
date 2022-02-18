@@ -104,7 +104,6 @@ AZ_POP_DISABLE_WARNING
 #include "WaitProgress.h"
 
 #include "ToolBox.h"
-#include "LevelInfo.h"
 #include "EditorPreferencesDialog.h"
 #include "AnimationContext.h"
 
@@ -422,7 +421,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
-    ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
     ON_COMMAND(ID_TOOLS_PREFERENCES, OnToolsPreferences)
     ON_COMMAND(ID_SWITCHCAMERA_DEFAULTCAMERA, OnSwitchToDefaultCamera)
     ON_COMMAND(ID_SWITCHCAMERA_SEQUENCECAMERA, OnSwitchToSequenceCamera)
@@ -3642,14 +3640,6 @@ void CCryEditApp::OnClearRegistryData()
         QSettings settings;
         settings.clear();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnValidatelevel()
-{
-    // TODO: Add your command handler code here
-    CLevelInfo levelInfo;
-    levelInfo.Validate();
 }
 
 //////////////////////////////////////////////////////////////////////////
