@@ -21,6 +21,7 @@
 #include <MCore/Source/LogManager.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/SkinJointIdPadding.h>
 
 namespace EMotionFX
 {
@@ -184,11 +185,12 @@ namespace EMotionFX
         // The lod has shared buffers that combine the data from each submesh.
         // These buffers can be accessed through the first submesh in their entirety
         // by using the BufferViewDescriptor from the Buffer instead of the one from the sub-mesh's BufferAssetView
-        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceModelLod->GetMeshes()[0];
+        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh0 = sourceModelLod->GetMeshes()[0];
 
         // Copy the index buffer for the entire lod
-        AZStd::span<const uint8_t> indexBuffer = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
-        const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
+        AZStd::span<const uint8_t> indexBuffer = sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
+        const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor =
+            sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
         AZ_ErrorOnce("EMotionFX", indexBufferViewDescriptor.m_elementSize == 4, "Index buffer must stored as 4 bytes.");
         const size_t indexBufferCountsInBytes = indexBufferViewDescriptor.m_elementCount * indexBufferViewDescriptor.m_elementSize;
         const size_t indexBufferOffsetInBytes = indexBufferViewDescriptor.m_elementOffset * indexBufferViewDescriptor.m_elementSize;
@@ -205,7 +207,7 @@ namespace EMotionFX
         const float* skinWeights = nullptr;
 
         // Copy the vertex buffers
-        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh.GetStreamBufferInfoList())
+        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh0.GetStreamBufferInfoList())
         {
             const AZ::RHI::BufferViewDescriptor& bufferAssetViewDescriptor = streamBufferInfo.m_bufferAssetView.GetBufferAsset()->GetBufferViewDescriptor();
             const size_t elementCountInBytes = bufferAssetViewDescriptor.m_elementSize * bufferAssetViewDescriptor.m_elementCount;
@@ -257,10 +259,6 @@ namespace EMotionFX
             else if (name == AZ::Name("SKIN_JOINTINDICES"))
             {
                 // Atom stores the skin indices as uint16, but the buffer itself is a buffer of uint32 with two id's per element
-                size_t influenceCount = elementCountInBytes / sizeof(AZ::u16);
-                maxSkinInfluences = aznumeric_caster(influenceCount / modelVertexCount);
-                AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
-                AZ_Assert(influenceCount % modelVertexCount == 0, "Expect an equal number of influences for each vertex.");
                 AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer"); 
 
                 // Multiply element offset by 2 here since m_elementOffset is referring to 32-bit elements
@@ -273,6 +271,7 @@ namespace EMotionFX
                 size_t influenceCount = elementCountInBytes / sizeof(float);
                 maxSkinInfluences = aznumeric_caster(influenceCount / modelVertexCount);
                 AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
+                AZ_Assert(influenceCount % modelVertexCount == 0, "Expect an equal number of influences for each vertex.");
                 skinWeights = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
             }
         }
@@ -296,25 +295,38 @@ namespace EMotionFX
             skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
             skin2dArray.Resize(modelVertexCount);
 
-            // Fill in skinning data from atom buffer
-            for (uint32 v = 0; v < modelVertexCount; ++v)
+            AZ::u32 currentVertex = 0;            
+            AZ::u32 totalJointIdPadding = 0;
+            for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceModelLod->GetMeshes())
             {
-                for (uint32 i = 0; i < maxSkinInfluences; ++i)
-                {
-                    const float weight = skinWeights[v * maxSkinInfluences + i];
-                    if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
-                    {
-                        const AZ::u16 skinJointIndex = skinJointIndices[v * maxSkinInfluences + i];
-                        if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
-                        {
-                            AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
-                            continue;
-                        }
+                AZ::u32 meshVertexCount = sourceMesh.GetVertexCount();
 
-                        const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
-                        skinningLayer->AddInfluence(v, skeltonJointIndex, weight, 0);
+                // Fill in skinning data from atom buffer
+                for (AZ::u32 v = 0; v < meshVertexCount; ++v)
+                {
+                    for (AZ::u32 i = 0; i < maxSkinInfluences; ++i)
+                    {
+                        const float weight = skinWeights[currentVertex * maxSkinInfluences + i];
+                        if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
+                        {
+                            const AZ::u16 skinJointIndex = skinJointIndices[currentVertex * maxSkinInfluences + i + totalJointIdPadding];
+                            if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
+                            {
+                                AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
+                                continue;
+                            }
+
+                            const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
+                            skinningLayer->AddInfluence(currentVertex, skeltonJointIndex, weight, 0);
+                        }
                     }
+
+                    currentVertex++;
                 }
+
+                // JointId's are padded on sub-mesh boundaries to ensure each sub-mesh view is 16 byte aligned
+                AZ::u32 jointIdCount = meshVertexCount * maxSkinInfluences;
+                totalJointIdPadding += AZ::RPI::CalculateJointIdPaddingCount(jointIdCount);
             }
         }
 
