@@ -31,8 +31,8 @@ namespace AzFramework
     inline ScreenPoint ScreenPointFromNdc(const AZ::Vector2& screenNdc, const ScreenSize& viewportSize)
     {
         return ScreenPoint(
-            aznumeric_cast<int>(AZStd::lround(screenNdc.GetX() * aznumeric_cast<float>(viewportSize.m_width))),
-            aznumeric_cast<int>(AZStd::lround((1.0f - screenNdc.GetY()) * aznumeric_cast<float>(viewportSize.m_height))));
+            aznumeric_cast<int>(AZStd::lround(screenNdc.GetX() * viewportSize.Widthf())),
+            aznumeric_cast<int>(AZStd::lround((1.0f - screenNdc.GetY()) * viewportSize.Heightf())));
     }
 
     //! Returns a position in normalized device coordinates (in the range [0.0-1.0, 0.0-1.0]) from a
@@ -109,4 +109,12 @@ namespace AzFramework
 
     //! Returns a structure representing frustum attributes for the current camera state.
     AZ::ViewFrustumAttributes ViewFrustumAttributesFromCameraState(const CameraState& cameraState);
+
+    //! Returns the aspect ratio of the screen/viewport dimensions.
+    //! @note Ensure ScreenSize represents a valid viewport size/dimension before calling this function.
+    inline float AspectRatio(const ScreenSize& screenSize)
+    {
+        AZ_Assert(screenSize.m_height > 0.0f && screenSize.m_width > 0.0f, "AspectRatio called with invalid viewport size");
+        return aznumeric_cast<float>(screenSize.m_width) / aznumeric_cast<float>(screenSize.m_height);
+    }
 } // namespace AzFramework

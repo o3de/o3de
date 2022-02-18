@@ -68,17 +68,22 @@ namespace AzFramework
         {
         }
 
-        //! Returns the aspect ratio of the screen/viewport dimensions.
-        //! @note Ensure ScreenSize represents a valid viewport size/dimension before calling this function.
-        float AspectRatio() const
-        {
-            AZ_Assert(m_height > 0.0f, "AspectRatio called with invalid viewport size");
-            return aznumeric_cast<float>(m_width) / aznumeric_cast<float>(m_height);
-        }
+        float Widthf() const;
+        float Heightf() const;
 
         int m_width; //!< Screen size width.
         int m_height; //!< Screen size height.
     };
+
+    inline float ScreenSize::Widthf() const
+    {
+        return aznumeric_cast<float>(m_width);
+    }
+
+    inline float ScreenSize::Heightf() const
+    {
+        return aznumeric_cast<float>(m_height);
+    }
 
     void ScreenGeometryReflect(AZ::ReflectContext* context);
 

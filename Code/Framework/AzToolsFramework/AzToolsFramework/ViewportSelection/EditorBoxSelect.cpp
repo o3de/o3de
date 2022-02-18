@@ -13,6 +13,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <QApplication>
+#include <QRectF>
 
 namespace AzToolsFramework
 {
@@ -91,16 +92,14 @@ namespace AzToolsFramework
             debugDisplay.SetLineWidth(s_boxSelectLineWidth);
             debugDisplay.SetColor(s_boxSelectColor);
 
-            const AZ::Vector2 viewportSize =
-                AzFramework::Vector2FromScreenSize(AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize);
+            const auto screenSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
+            const auto viewportSize = AzFramework::Vector2FromScreenSize(screenSize);
+            const auto boxSelectRegion = QRectF(m_boxSelectRegion.value());
 
             debugDisplay.DrawWireQuad2d(
-                AZ::Vector2(aznumeric_cast<float>(m_boxSelectRegion->x()), aznumeric_cast<float>(m_boxSelectRegion->y())) / viewportSize,
-                AZ::Vector2(
-                    aznumeric_cast<float>(m_boxSelectRegion->x()) + aznumeric_cast<float>(m_boxSelectRegion->width()),
-                    aznumeric_cast<float>(m_boxSelectRegion->y()) + aznumeric_cast<float>(m_boxSelectRegion->height())) /
-                    viewportSize,
-                0.f);
+                AZ::Vector2(boxSelectRegion.x(), boxSelectRegion.y()) / viewportSize,
+                AZ::Vector2(boxSelectRegion.x() + boxSelectRegion.width(), boxSelectRegion.y() + boxSelectRegion.height()) / viewportSize,
+                0.0f);
 
             debugDisplay.DepthTestOn();
 
