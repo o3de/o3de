@@ -56,7 +56,6 @@ _PATH_DCCSI_TOOLS_DCC = Path(os.getenv('ATH_DCCSI_TOOLS_DCC',
                                        _PATH_DCCSI_TOOLS_DCC.as_posix()))
 
 _LOGGER.debug('PATH_DCCSI_TOOLS_DCC: {}'.format(_PATH_DCCSI_TOOLS_DCC))
-_LOGGER.debug(STR_CROSSBAR)
 # -------------------------------------------------------------------------
 
 
@@ -72,4 +71,6 @@ if _DCCSI_TESTS:
     test_imports(__all__,
                  _pkg=_PACKAGENAME,
                  _logger=_LOGGER)
+    
+    _LOGGER.info(STR_CROSSBAR)    
 # -------------------------------------------------------------------------

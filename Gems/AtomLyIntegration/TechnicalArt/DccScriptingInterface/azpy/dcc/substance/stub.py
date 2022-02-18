@@ -9,9 +9,9 @@
 #
 # -------------------------------------------------------------------------
 """! @brief
-<DCCsi>/azpy/dcc/blender/stub.py
+<DCCsi>/azpy/dcc/substance/stub.py
 
-stub is a sub-module placeholder, for the azpy.dcc.blender api.
+stub is a sub-module placeholder, for the azpy.dcc.substance api.
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -21,7 +21,7 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-from azpy.dcc.blender import _PKG_DCC_NAME
+from azpy.dcc.substance import _PKG_DCC_NAME
 
 _MODULENAME = 'tools.dcc.{}.stub'.format(_PKG_DCC_NAME)
 

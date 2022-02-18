@@ -53,6 +53,8 @@ _PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
 _PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
 site.addsitedir(_PATH_DCCSIG)
 
+_PATH_DCCSI_AZPY = os.path.dirname(_MODULE_PATH)
+
 # azpy
 import azpy.return_stub as return_stub
 import azpy.env_bool as env_bool
@@ -281,15 +283,115 @@ def test_imports(_all=__all__, _pkg=_PACKAGENAME, _logger=_LOGGER):
 # -------------------------------------------------------------------------
 
 
-###########################################################################
+##########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    _DCCSI_GDEBUG = True
-    _DCCSI_DEV_MODE = True
+    """Run in debug perform local tests from IDE or CLI"""
+    
+    # happy print
+    _LOGGER.info(constants.STR_CROSSBAR)
+    _LOGGER.info('~ {}.py ... Running script as __main__'.format(_PACKAGENAME))
+    _LOGGER.info(constants.STR_CROSSBAR)
+    
+    # default loglevel to info unless set
+    _DCCSI_LOGLEVEL = int(env_bool.env_bool(constants.ENVAR_DCCSI_LOGLEVEL,
+                                            _logging.INFO))
+    if _DCCSI_GDEBUG:
+        # override loglevel if runnign debug
+        _DCCSI_LOGLEVEL = _logging.DEBUG
+        
+    # set up module logging
+    #for handler in _logging.root.handlers[:]:
+        #_logging.root.removeHandler(handler)
+        
+    # configure basic logger
+    # note: not using a common logger to reduce cyclical imports
+    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                        format=constants.FRMT_LOG_LONG,
+                        datefmt='%m-%d %H:%M')
+    
+    # re-configure basic logger for debug
+    _LOGGER = _logging.getLogger(_PACKAGENAME)
+        
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='O3DE DCCsi azpy API CLI',
+        epilog="Allows for some light testing of the API structure from CLI")  
+    
+    parser.add_argument('-gd', '--global-debug',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Enables global debug flag.')
+    
+    parser.add_argument('-rt', '--run-tests',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Runs local import and other tests.')
+    
+    parser.add_argument('-sd', '--set-debugger',
+                        type=str,
+                        required=False,
+                        default='WING',
+                        help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
+    
+    parser.add_argument('-dm', '--developer-mode',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Enables dev mode for early auto attaching debugger.')  
+    
+    parser.add_argument('-ex', '--exit',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Exits python. Do not exit if you want to be in interactive interpretter after config')
+    
+    args = parser.parse_args()
 
-    if _DCCSI_TESTS:
-        _LOGGER.info('PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
+    # easy overrides
+    if args.global_debug:
+        _DCCSI_GDEBUG = True
+        os.environ["DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+
+    if args.set_debugger:
+        _LOGGER.info('Setting and switching debugger type not implemented yet (default=WING)')
+        # To Do: implement debugger plugin pattern
+        
+    if args.developer_mode:
+        _DCCSI_DEV_MODE = True
+        os.environ["DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
+        attach_debugger()  # attempts to start debugger     
+    
+    _LOGGER.info(constants.STR_CROSSBAR)
+    _LOGGER.info('_MODULE_PATH: {}'.format(_MODULE_PATH))
+    _LOGGER.info('_PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
+    _LOGGER.info('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
+    _LOGGER.info('_DCCSI_TESTS: {}'.format(_DCCSI_TESTS))
+    _LOGGER.info('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
+    _LOGGER.info('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+    
+    if args.run_tests:
+        _DCCSI_TESTS = True
+        os.environ["DCCSI_TESTS"] = str(_DCCSI_TESTS)
+        
         # If in dev mode this will test imports of __all__
-        _LOGGER.info('azpy, testing imports: {0}'.format(_PACKAGENAME))
-        test_imports(__all__)
+        from azpy import test_imports
+        
+        _LOGGER.info(constants.STR_CROSSBAR)
+        
+        _LOGGER.info('Testing Imports from {0}'.format(_PACKAGENAME))
+        test_imports(__all__,
+                     _pkg=_PACKAGENAME,
+                     _logger=_LOGGER)
+        
+    # -- DONE ----
+    _LOGGER.info(constants.STR_CROSSBAR)
+
+    if args.exit:
+        import sys
+        # return
+        sys.exit()
+# -------------------------------------------------------------------------

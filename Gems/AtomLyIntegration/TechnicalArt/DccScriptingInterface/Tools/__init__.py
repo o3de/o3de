@@ -80,7 +80,7 @@ _logging.basicConfig(level=_DCCSI_LOGLEVEL,
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug(STR_CROSSBAR)
-_LOGGER.debug('Initializing: {}.'.format(_PACKAGENAME))
+_LOGGER.debug('Initializing: {}'.format(_PACKAGENAME))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH.as_posix()))
 _LOGGER.debug('PATH_DCCSI_TOOLS: {}'.format(_PATH_DCCSI_TOOLS.as_posix()))
 _LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG.as_posix()))
@@ -142,8 +142,8 @@ if __name__ == '__main__':
         
     import argparse
     parser = argparse.ArgumentParser(
-        description='O3DE DCCsi Dynamic Config (dynaconf)',
-        epilog="Attempts to determine O3DE project if -pp not set")  
+        description='O3DE DCCsi Tools CLI',
+        epilog="Allows for some light testing of the DCCsi/Tools structure from CLI") 
     
     parser.add_argument('-gd', '--global-debug',
                         type=bool,

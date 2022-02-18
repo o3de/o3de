@@ -21,7 +21,9 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'tools.dcc.maya.stub'
+from azpy.dcc.maya import _PKG_DCC_NAME
+
+_MODULENAME = 'tools.dcc.{}.stub'.format(_PKG_DCC_NAME)
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 

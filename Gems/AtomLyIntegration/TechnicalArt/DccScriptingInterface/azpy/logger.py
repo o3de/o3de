@@ -9,19 +9,34 @@
 #
 # -------------------------------------------------------------------------
 """O3DE DCCsi Logger class. Convenience to reduce boilerplate logging setup"""
-
+# -------------------------------------------------------------------------
 # standard imports
 import sys
 import os
 from pathlib import Path
 import logging as _logging
+from azpy.constants import STR_CROSSBAR
 # -------------------------------------------------------------------------
-_MODULENAME = 'O3DE.DCCsi.azpy.logger'
+# global scope
+_MODULENAME = 'azpy.logger'
 
-print('Not implemented: {}'.format(_MODULENAME))
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+
+_LOGGER = _logging.getLogger(_MODULENAME)
+
+_LOGGER.debug(STR_CROSSBAR)
+_LOGGER.debug('Initializing: {}'.format(_MODULENAME))
+_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH.as_posix()))
+_LOGGER.info('This stub is an api placeholder: {}'.format(_MODULENAME))
+# -------------------------------------------------------------------------
+
 
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
+    import sys
+    # return
+    sys.exit()
+
