@@ -39,6 +39,9 @@
 #include <AzNetworking/Framework/INetworking.h>
 
 #include <cmath>
+#include <AzCore/Debug/Profiler.h>
+
+AZ_DEFINE_BUDGET(MULTIPLAYER);
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -353,6 +356,8 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick");
+
         if (bg_multiplayerDebugDraw)
         {
             m_networkEntityManager.DebugDraw();
@@ -394,7 +399,9 @@ namespace Multiplayer
         stats.m_clientConnectionCount = 0;
 
         // Send out the game state update to all connections
-        {
+        {            
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
+
             auto sendNetworkUpdates = [&stats](IConnection& connection)
             {
                 if (connection.GetUserData() != nullptr)
@@ -440,6 +447,7 @@ namespace Multiplayer
 
         if (!packet.GetCommandSet().empty())
         {
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendReliablePackets");
             m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         }
     }
@@ -1018,6 +1026,8 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds)
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: TickVisibleNetworkEntities");
+
         m_tickFactor += deltaTime / serverRateSeconds;
         // Linear close to the origin, but asymptote at y = 1
         m_renderBlendFactor = AZStd::clamp(1.0f - (std::pow(cl_renderTickBlendBase, m_tickFactor)), 0.0f, m_tickFactor);
