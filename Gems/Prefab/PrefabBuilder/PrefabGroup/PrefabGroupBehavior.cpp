@@ -93,7 +93,6 @@ namespace AZ::SceneAPI::Behaviors
 
         Events::ProcessingResult PrepareForExport(Events::PreExportEventContext& context)
         {
-            m_writeDebug = context.GetDebug();
             return m_preExportEventContextFunction(context);
         }
 
@@ -405,8 +404,6 @@ namespace AZ::SceneAPI::Behaviors
 
         // AssetImportRequest
         Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
-
-        bool m_writeDebug = false;
     };
 
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
@@ -556,6 +553,28 @@ namespace AZ::SceneAPI::Behaviors
             context.GetOutputDirectory(),
             AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
 
+        bool result = WriteOutProductAssetFile(filePath, context, prefabGroup, doc, false);
+
+        if (context.GetDebug())
+        {
+            AZStd::string debugFilePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
+                prefabGroup->GetName().c_str(),
+                context.GetOutputDirectory(),
+                AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
+            debugFilePath.append(".json");
+            WriteOutProductAssetFile(debugFilePath, context, prefabGroup, doc, true);
+        }
+
+        return result;
+    }
+
+    bool PrefabGroupBehavior::WriteOutProductAssetFile(
+        const AZStd::string& filePath,
+        Events::PreExportEventContext& context,
+        const SceneData::PrefabGroup* prefabGroup,
+        const rapidjson::Document& doc,
+        bool debug) const
+    {
         AZ::IO::FileIOStream fileStream(filePath.c_str(), AZ::IO::OpenMode::ModeWrite);
         if (fileStream.IsOpen() == false)
         {
@@ -564,12 +583,16 @@ namespace AZ::SceneAPI::Behaviors
         }
 
         // write to a UTF-8 string buffer
+        Data::AssetType assetType = azrtti_typeid<Prefab::ProceduralPrefabAsset>();
+        AZStd::string productPath {prefabGroup->GetName()};
         rapidjson::StringBuffer sb;
         bool writerResult = false;
-        if(m_exportEventHandler->m_writeDebug)
+        if (debug)
         {
             rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
             writerResult = doc.Accept(writer);
+            productPath.append(".debug");
+            assetType = {};
         }
         else
         {
@@ -585,11 +608,11 @@ namespace AZ::SceneAPI::Behaviors
         const auto bytesWritten = fileStream.Write(sb.GetSize(), sb.GetString());
         if (bytesWritten > 1)
         {
-            AZ::u32 subId = AZ::Crc32(prefabGroup->GetName().c_str());
+            AZ::u32 subId = AZ::Crc32(productPath.c_str());
             context.GetProductList().AddProduct(
                 filePath,
                 context.GetScene().GetSourceGuid(),
-                azrtti_typeid<Prefab::ProceduralPrefabAsset>(),
+                assetType,
                 {},
                 AZStd::make_optional(subId));
 
