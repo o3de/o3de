@@ -45,17 +45,17 @@
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Slice/SliceRequestBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
+#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Layer/AddToLayerMenu.h>
+#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
-#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
@@ -212,6 +212,8 @@ void SandboxIntegrationManager::Setup()
     AZ_Assert(m_readOnlyEntityPublicInterface, "SandboxIntegrationManager requires an ReadOnlyEntityPublicInterface instance to be present on Setup().");
 
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
+
+    m_contextMenuBottomHandler.Setup();
 }
 
 void SandboxIntegrationManager::SaveSlice(const bool& QuickPushToFirstLevel)
@@ -395,6 +397,8 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 
 void SandboxIntegrationManager::Teardown()
 {
+    m_contextMenuBottomHandler.Teardown();
+
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
@@ -733,20 +737,14 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
 
     if (selected.size() > 0)
     {
-        action = menu->addAction(QObject::tr("Open pinned Inspector"));
-        QObject::connect(action, &QAction::triggered, action, [this, selected]
-        {
-            AzToolsFramework::EntityIdSet pinnedEntities(selected.begin(), selected.end());
-            OpenPinnedInspector(pinnedEntities);
-        });
-        if (selected.size() > 0)
-        {
-            action = menu->addAction(QObject::tr("Find in Entity Outliner"));
-            QObject::connect(action, &QAction::triggered, [selected]
+        action = menu->addAction(QObject::tr("Find in Entity Outliner"));
+        QObject::connect(
+            action, &QAction::triggered,
+            [selected]
             {
-                AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
+                AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
+                    &EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
             });
-        }
         menu->addSeparator();
     }
 }
