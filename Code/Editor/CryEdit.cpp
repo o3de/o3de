@@ -43,13 +43,14 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
@@ -769,28 +770,6 @@ QString CCryEditApp::ShowWelcomeDialog()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::InitDirectory()
-{
-    //////////////////////////////////////////////////////////////////////////
-    // Initializes Root folder of the game.
-    //////////////////////////////////////////////////////////////////////////
-    QString szExeFileName = qApp->applicationDirPath();
-    const static char* s_engineMarkerFile = "engine.json";
-
-    while (!QFile::exists(QString("%1/%2").arg(szExeFileName, s_engineMarkerFile)))
-    {
-        QDir currentdir(szExeFileName);
-        if (!currentdir.cdUp())
-        {
-            break;
-        }
-        szExeFileName = currentdir.absolutePath();
-    }
-    QDir::setCurrent(szExeFileName);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 // Needed to work with custom memory manager.
 //////////////////////////////////////////////////////////////////////////
 
@@ -1502,7 +1481,7 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
 
         // We support specifying multiple files in the cmdline by separating them with ';'
         AZStd::vector<AZStd::string_view> fileList;
-        AzFramework::StringFunc::TokenizeVisitor(
+        AZ::StringFunc::TokenizeVisitor(
             fileStr.constData(),
             [&fileList](AZStd::string_view elem)
             {
@@ -1514,7 +1493,7 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
         {
             QByteArray pythonArgsStr = cmdInfo.m_pythonArgs.toUtf8();
             AZStd::vector<AZStd::string_view> pythonArgs;
-            AzFramework::StringFunc::TokenizeVisitor(pythonArgsStr.constData(),
+            AZ::StringFunc::TokenizeVisitor(pythonArgsStr.constData(),
                 [&pythonArgs](AZStd::string_view elem)
                 {
                     pythonArgs.push_back(elem);
@@ -1529,7 +1508,7 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
                 testcaseList.resize(fileList.size());
                 {
                     int i = 0;
-                    AzFramework::StringFunc::TokenizeVisitor(
+                    AZ::StringFunc::TokenizeVisitor(
                         pythonTestCase.constData(),
                         [&i, &testcaseList](AZStd::string_view elem)
                         {
@@ -1593,7 +1572,6 @@ bool CCryEditApp::InitInstance()
 {
     QElapsedTimer startupTimer;
     startupTimer.start();
-    InitDirectory();
 
     // create / attach to the environment:
     AttachEditorCoreAZEnvironment(AZ::Environment::GetInstance());
@@ -1603,8 +1581,6 @@ bool CCryEditApp::InitInstance()
     CEditCommandLineInfo cmdInfo;
 
     InitFromCommandLine(cmdInfo);
-
-    InitDirectory();
 
     qobject_cast<Editor::EditorQtApplication*>(qApp)->Initialize(); // Must be done after CEditorImpl() is created
     m_pEditor->Initialize();
@@ -3817,131 +3793,68 @@ CMainFrame * CCryEditApp::GetMainFrame() const
     return MainWindow::instance()->GetOldMainFrame();
 }
 
-void CCryEditApp::StartProcessDetached(const char* process, const char* args)
-{
-    // Build the arguments as a QStringList
-    AZStd::vector<AZStd::string> tokens;
-
-    // separate the string based on spaces for paths like "-launch", "lua", "-files";
-    // also separate the string and keep spaces inside the folder path;
-    // Ex: C:\dev\Foundation\dev\Cache\AutomatedTesting\pc\automatedtesting\scripts\components\a a\empty.lua;
-    // Ex: C:\dev\Foundation\dev\Cache\AutomatedTesting\pc\automatedtesting\scripts\components\a a\'empty'.lua;
-    AZStd::string currentStr(args);
-    AZStd::size_t firstQuotePos = AZStd::string::npos;
-    AZStd::size_t secondQuotePos = 0;
-    AZStd::size_t pos = 0;
-
-    while (!currentStr.empty())
-    {
-        firstQuotePos = currentStr.find_first_of('\"');
-        pos = currentStr.find_first_of(" ");
-
-        if ((firstQuotePos != AZStd::string::npos) && (firstQuotePos < pos || pos == AZStd::string::npos))
-        {
-            secondQuotePos = currentStr.find_first_of('\"', firstQuotePos + 1);
-            if (secondQuotePos == AZStd::string::npos)
-            {
-                AZ_Warning("StartProcessDetached", false, "String tokenize failed, no matching \" found.");
-                return;
-            }
-
-            AZStd::string newElement(AZStd::string(currentStr.data() + (firstQuotePos + 1), (secondQuotePos - 1)));
-            tokens.push_back(newElement);
-
-            currentStr = currentStr.substr(secondQuotePos + 1);
-
-            firstQuotePos = AZStd::string::npos;
-            secondQuotePos = 0;
-            continue;
-        }
-        else
-        {
-            if (pos != AZStd::string::npos)
-            {
-                AZStd::string newElement(AZStd::string(currentStr.data() + 0, pos));
-                tokens.push_back(newElement);
-                currentStr = currentStr.substr(pos + 1);
-            }
-            else
-            {
-                tokens.push_back(AZStd::string(currentStr));
-                break;
-            }
-        }
-    }
-
-    QStringList argsList;
-    for (const auto& arg : tokens)
-    {
-        argsList.push_back(QString(arg.c_str()));
-    }
-
-    // Launch the process
-    [[maybe_unused]] bool startDetachedReturn = QProcess::startDetached(
-        process,
-        argsList,
-        QCoreApplication::applicationDirPath()
-    );
-    AZ_Warning("StartProcessDetached", startDetachedReturn, "Failed to start process:%s args:%s", process, args);
-}
 
 void CCryEditApp::OpenLUAEditor(const char* files)
 {
-    AZStd::string args = "-launch lua";
-    if (files && strlen(files) > 0)
+    AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
+
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+
+    AZStd::string filename = "LuaIDE";
+    AZ::IO::FixedMaxPath executablePath = AZ::Utils::GetExecutableDirectory();
+    executablePath /= filename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
+
+    if (!AZ::IO::SystemFile::Exists(executablePath.c_str()))
     {
-        AZStd::vector<AZStd::string> resolvedPaths;
-
-        AZStd::vector<AZStd::string> tokens;
-
-        AzFramework::StringFunc::Tokenize(files, tokens, '|');
-
-        for (const auto& file : tokens)
-        {
-            char resolved[AZ_MAX_PATH_LEN];
-
-            AZStd::string fullPath = Path::GamePathToFullPath(file.c_str()).toUtf8().data();
-            azstrncpy(resolved, AZ_MAX_PATH_LEN, fullPath.c_str(), fullPath.size());
-
-            if (AZ::IO::FileIOBase::GetInstance()->Exists(resolved))
-            {
-                AZStd::string current = '\"' + AZStd::string(resolved) + '\"';
-                AZStd::replace(current.begin(), current.end(), '\\', '/');
-                resolvedPaths.push_back(current);
-            }
-        }
-
-        if (!resolvedPaths.empty())
-        {
-            for (const auto& resolvedPath : resolvedPaths)
-            {
-                args.append(AZStd::string::format(" -files %s", resolvedPath.c_str()));
-            }
-        }
+        AZ_Error("LuaIDE", false, "%s not found", executablePath.c_str());
+        return;
     }
 
-    AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
-    AZ_Assert(!engineRoot.empty(), "Unable to query Engine Path");
+    AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
-    AZStd::string_view exePath;
-    AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
+    AZStd::vector<AZStd::string> launchCmd = { executablePath.String() };
+    launchCmd.emplace_back("--engine-path");
+    launchCmd.emplace_back(AZStd::string_view{ enginePath });
+    launchCmd.emplace_back("--project-path");
+    launchCmd.emplace_back(AZStd::string_view{ projectPath });
+    launchCmd.emplace_back("--launch");
+    launchCmd.emplace_back("lua");
 
-#if defined(AZ_PLATFORM_LINUX)
-    // On Linux platforms, launching a process is not done through a shell and its arguments are passed in
-    // separately. There is no need to wrap the process path in case of spaces in the path
-    constexpr const char* argumentQuoteString = "";
-#else
-    constexpr const char* argumentQuoteString = "\"";
-#endif    
+    auto ParseFilesList = [&launchCmd](AZStd::string_view filePath)
+    {
+        bool fullPathFound = false;
+        auto GetFullSourcePath = [&launchCmd, &filePath, &fullPathFound]
+        (AzToolsFramework::AssetSystem::AssetSystemRequest* assetSystemRequests)
+        {
+            AZ::IO::Path assetFullPath;
+            if(assetSystemRequests->GetFullSourcePathFromRelativeProductPath(filePath, assetFullPath.Native()))
+            {
+                fullPathFound = true;
+                launchCmd.emplace_back("--files");
+                launchCmd.emplace_back(AZStd::move(assetFullPath.Native()));
+            }
+        };
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(AZStd::move(GetFullSourcePath));
+        // If the full source path could be found through the Asset System, then
+        // attempt to resolve the path using the FileIO instance
+        if (!fullPathFound)
+        {
+            AZ::IO::FixedMaxPath resolvedFilePath;
+            if (auto fileIo = AZ::IO::FileIOBase::GetInstance();
+                fileIo != nullptr && fileIo->ResolvePath(resolvedFilePath, filePath)
+                && fileIo->Exists(resolvedFilePath.c_str()))
+            {
+                launchCmd.emplace_back("--files");
+                launchCmd.emplace_back(resolvedFilePath.String());
+            }
+        }
+    };
+    AZ::StringFunc::TokenizeVisitor(files, ParseFilesList, "|");
 
-    AZStd::string process = AZStd::string::format("%s%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
-#if defined(AZ_PLATFORM_WINDOWS)
-        ".exe"
-#endif
-        "%s", argumentQuoteString, aznumeric_cast<int>(exePath.size()), exePath.data(), argumentQuoteString);
+    processLaunchInfo.m_commandlineParameters = AZStd::move(launchCmd);
 
-    AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot.c_str());
-    StartProcessDetached(process.c_str(), processArgs.c_str());
+    AZ_VerifyError("LuaIDE", AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo),
+        "Lua IDE has failed to launch at path %s", executablePath.c_str());
 }
 
 void CCryEditApp::PrintAlways(const AZStd::string& output)
@@ -4055,11 +3968,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     gSettings.Connect();
 
     auto theApp = AZStd::make_unique<CCryEditApp>();
-    // this does some magic to set the current directory...
-    {
-        QCoreApplication app(argc, argv);
-        CCryEditApp::InitDirectory();
-    }
 
     // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
     // on Windows 10
