@@ -28,10 +28,6 @@ def C29279329_WhiteBox_SetDefaultShape():
 
     from editor_python_test_tools.utils import Report
     from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
-<<<<<<< HEAD
-=======
-    from editor_python_test_tools.utils import TestHelper as helper
->>>>>>> origin/broganab/WhiteBoxTestConversion
 
     def check_shape_result(success_fail_tuple, condition):
         result = Report.result(success_fail_tuple, condition)
@@ -52,10 +48,6 @@ def C29279329_WhiteBox_SetDefaultShape():
     }
 
     # open level
-<<<<<<< HEAD
-=======
-    helper.init_idle()
->>>>>>> origin/broganab/WhiteBoxTestConversion
     hydra.open_base_level()
 
     # create white box entity and attach component
