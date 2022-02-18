@@ -45,6 +45,7 @@ __all__ = ['config_utils',
            'o3de',
            'shared',
            'test']
+           #'foo' is WIP
 
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
@@ -70,9 +71,9 @@ if _DCCSI_GDEBUG:
     # override loglevel if runnign debug
     _DCCSI_LOGLEVEL = _logging.DEBUG
 
-# set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
+## set up module logging
+#for handler in _logging.root.handlers[:]:
+    #_logging.root.removeHandler(handler)
     
 _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                      format=constants.FRMT_LOG_LONG,
@@ -80,6 +81,28 @@ _logging.basicConfig(level=_DCCSI_LOGLEVEL,
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def attach_debugger(debugge_typer=_DCCSI_GDEBUGGER):
+    """!
+    This will attemp to attch the WING debugger
+    To Do: other IDEs for debugging not yet implemented.
+    This should be replaced with a plugin based dev package."""
+    _DCCSI_GDEBUG = True
+    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+    
+    _DCCSI_DEV_MODE = True
+    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
+    
+    if debugge_typer == 'WING':
+        from azpy.test.entry_test import connect_wing
+        _debugger = connect_wing()
+    else:
+        _LOGGER.warning('Debugger type: {}, is Not Implemented!'.format(debugge_typer))
+    
+    return _debugger
 # -------------------------------------------------------------------------
 
 
@@ -249,7 +272,7 @@ def test_imports(_all=__all__, _pkg=_PACKAGENAME, _logger=_LOGGER):
             # this is py2.7 compatible
             # in py3.5+, we can use importlib.util instead
             importlib.import_module('.{}'.format(mod_str), _pkg)
-            _logger.debug("~       Imported module: {0}.{1}".format(_pkg, mod_str))
+            _logger.info("~       Imported module: {0}.{1}".format(_pkg, mod_str))
         except Exception as e:
             _logger.warning('~       {}'.format(e))
             _logger.warning("~       {0}.{1} :: ImportFail".format(_pkg, mod_str))
@@ -266,7 +289,7 @@ if __name__ == '__main__':
     _DCCSI_DEV_MODE = True
 
     if _DCCSI_TESTS:
-        _LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
+        _LOGGER.info('PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
         # If in dev mode this will test imports of __all__
-        _LOGGER.debug('azpy, testing imports: {0}'.format(_PACKAGENAME))
+        _LOGGER.info('azpy, testing imports: {0}'.format(_PACKAGENAME))
         test_imports(__all__)

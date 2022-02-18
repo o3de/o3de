@@ -73,7 +73,7 @@ except:
 
 # -------------------------------------------------------------------------
 # global scope, set up module logging, etc.
-_MODULENAME = 'DCCsi.config'
+_MODULENAME = 'config'
 
 #os.environ['PYTHONINSPECT'] = 'True'
 _MODULE_PATH = os.path.abspath(__file__)
@@ -131,7 +131,7 @@ _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
 
 
 # -------------------------------------------------------------------------
-def attach_debugger():
+def attach_debugger(debugge_typer=_DCCSI_GDEBUGGER):
     """!
     This will attemp to attch the WING debugger
     To Do: other IDEs for debugging not yet implemented.
@@ -143,7 +143,10 @@ def attach_debugger():
     os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
     
     from azpy.test.entry_test import connect_wing
-    _debugger = connect_wing()
+    if debugge_typer == 'WING':
+        _debugger = connect_wing()
+    else:
+        _LOGGER.warning('Debugger type: {}, is Not Implemented!'.format(debugge_typer))
     
     return _debugger
 # -------------------------------------------------------------------------
@@ -507,6 +510,7 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     # we can pull the O3DE_PROJECT (name) from the project path
     if not project_name:
         project_name = Path(_PATH_O3DE_PROJECT).name
+        
     os.environ["O3DE_PROJECT"] = str(project_name)
     _DCCSI_LOCAL_SETTINGS['O3DE_PROJECT'] = str(project_name)
 
@@ -791,59 +795,78 @@ if __name__ == '__main__':
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
+                        default=False,
                         help='Enables global debug flag.')
     parser.add_argument('-sd', '--set-debugger',
                         type=str,
                         required=False,
+                        default='WING',
                         help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
+                        default=False,
                         help='Enables dev mode for early auto attaching debugger.')
     parser.add_argument('-ep', '--engine-path',
                         type=pathlib.Path,
                         required=False,
+                        default=Path('{ to do: implement }'),                        
                         help='The path to the o3de engine.')
     parser.add_argument('-eb', '--engine-bin-path',
                         type=pathlib.Path,
                         required=False,
+                        default=Path('{ to do: implement }'), 
                         help='The path to the o3de engine binaries (build/bin/profile).')
     parser.add_argument('-bf', '--build-folder',
                         type=str,
                         required=False,
+                        default='build',
                         help='The name (tag) of the o3de build folder, example build or windows.')
     parser.add_argument('-pp', '--project-path',
                         type=pathlib.Path,
                         required=False,
+                        default=Path('{ to do: implement }'), 
                         help='The path to the project.')
     parser.add_argument('-pn', '--project-name',
                         type=str,
                         required=False,
+                        default='{ to do: implement }',
                         help='The name of the project.')
     parser.add_argument('-py', '--enable-python',
                         type=bool,
                         required=False,
+                        default=False,
                         help='Enables O3DE python access.')
     parser.add_argument('-qt', '--enable-qt',
                         type=bool,
                         required=False,
+                        default=False,
                         help='Enables O3DE Qt & PySide2 access.')
     parser.add_argument('-pc', '--project-config',
                         type=bool,
                         required=False,
+                        default=False,
                         help='(not implemented) Enables reading the < >project >/registry/dccsi_configuration.setreg.')
     parser.add_argument('-es', '--export-settings',
                         type=pathlib.Path,
                         required=False,
+                        default=False,
                         help='(not implemented) Writes managed settings to specified path.')
     parser.add_argument('-ec', '--export-configuration',
                         type=bool,
                         required=False,
+                        default=False,
                         help='(not implemented) writes settings as a O3DE < project >/registry/dccsi_configuration.setreg.')
     parser.add_argument('-tp', '--test-pyside2',
                         type=bool,
                         required=False,
+                        default=False,
                         help='Runs Qt/PySide2 tests and reports.')
+    parser.add_argument('-ex', '--exit',
+                        type=bool,
+                        required=False,
+                        default=False,
+                        help='Exits python. Do not exit if you want to be in interactive interpretter after config')
     args = parser.parse_args()
 
     # easy overrides
@@ -961,6 +984,7 @@ if __name__ == '__main__':
             _LOGGER.warning("Refer to: '{}/3rdParty/Python/README.txt'".format(settings.PATH_DCCSIG))
             _LOGGER.error(e)
 
-    # return
-    sys.exit()
+    if args.exit:
+        # return
+        sys.exit()
 # --- END -----------------------------------------------------------------    
