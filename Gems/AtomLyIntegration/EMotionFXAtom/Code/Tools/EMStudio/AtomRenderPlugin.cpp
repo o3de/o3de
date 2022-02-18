@@ -49,6 +49,11 @@ namespace EMStudio
         AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
     }
 
+    void AtomRenderPlugin::Reflect(AZ::ReflectContext* context)
+    {
+        RenderOptions::Reflect(context);
+    }
+
     const char* AtomRenderPlugin::GetName() const
     {
         return "Atom Render Window";
@@ -296,6 +301,11 @@ namespace EMStudio
     }
 
     RenderOptions* AtomRenderPlugin::GetRenderOptions()
+    {
+        return &m_renderOptions;
+    }
+
+    PluginOptions* AtomRenderPlugin::GetOptions()
     {
         return &m_renderOptions;
     }
