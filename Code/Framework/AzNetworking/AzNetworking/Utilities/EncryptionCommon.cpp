@@ -31,13 +31,13 @@
 
 namespace AzNetworking
 {
-    AZ_CVAR(AZ::CVarFixedString, net_SslExternalCertificateFile, "testcert.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) certificate chain in PEM format (default is for debugging purposes)");
-    AZ_CVAR(AZ::CVarFixedString, net_SslExternalPrivateKeyFile,  "testkey.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) private key file in PEM format (default is for debugging purposes)");
-    AZ_CVAR(AZ::CVarFixedString, net_SslExternalContextPassword,       "12345", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the EXTERNAL (server to client) private certificate (default is for debugging purposes)");
+    AZ_CVAR(AZ::CVarFixedString, net_SslExternalCertificateFile, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) certificate chain in PEM format");
+    AZ_CVAR(AZ::CVarFixedString, net_SslExternalPrivateKeyFile,  "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) private key file in PEM format");
+    AZ_CVAR(AZ::CVarFixedString, net_SslExternalContextPassword, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the EXTERNAL (server to client) private certificate");
 
-    AZ_CVAR(AZ::CVarFixedString, net_SslInternalCertificateFile, "servercert.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the INTERNAL (server to server only) certificate chain in PEM format (default is for debugging purposes)");
-    AZ_CVAR(AZ::CVarFixedString, net_SslInternalPrivateKeyFile,   "serverkey.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the INTERNAL (server to server only) private key file in PEM format (default is for debugging purposes)");
-    AZ_CVAR(AZ::CVarFixedString, net_SslInternalContextPassword,          "12345", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the INTERNAL (server to server only) private certificate (default is for debugging purposes)");
+    AZ_CVAR(AZ::CVarFixedString, net_SslInternalCertificateFile, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the INTERNAL (server to server only) certificate chain in PEM format");
+    AZ_CVAR(AZ::CVarFixedString, net_SslInternalPrivateKeyFile,  "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the INTERNAL (server to server only) private key file in PEM format");
+    AZ_CVAR(AZ::CVarFixedString, net_SslInternalContextPassword, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the INTERNAL (server to server only) private certificate");
 
     AZ_CVAR(AZ::CVarFixedString, net_SslCertCiphers, "ECDHE-RSA-AES256-GCM-SHA384", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The cipher suite to use when using cert based key exchange");
 
@@ -100,19 +100,35 @@ namespace AzNetworking
 
     static void GetCertificatePaths(TrustZone trustZone, AZStd::string& certificatePath, AZStd::string& privateKeyPath)
     {
-        const AZ::CVarFixedString certificateFile = (trustZone == TrustZone::ExternalClientToServer) ? net_SslExternalCertificateFile : net_SslInternalCertificateFile;
-        const AZ::CVarFixedString privateKeyFile = (trustZone == TrustZone::ExternalClientToServer) ? net_SslExternalPrivateKeyFile : net_SslInternalPrivateKeyFile;
-
-        AZStd::string assetDir;
-        if (AZ::IO::FileIOBase::GetInstance() != nullptr)
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            char buffer[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/", buffer, sizeof(buffer));
-            assetDir = AZStd::string(buffer);
-        }
+            AZ::CVarFixedString certificateFile = "";
+            AZ::CVarFixedString privateKeyFile = "";
+            if (trustZone == TrustZone::ExternalClientToServer)
+            {
+                console->GetCvarValue("net_SslExternalCertificateFile", certificateFile);
+                console->GetCvarValue("net_SslExternalPrivateKeyFile", privateKeyFile);
+            }
+            else
+            {
+                console->GetCvarValue("net_SslInternalCertificateFile", certificateFile);
+                console->GetCvarValue("net_SslInternalPrivateKeyFile", privateKeyFile);
+            }
 
-        certificatePath = assetDir + certificateFile.c_str();
-        privateKeyPath = assetDir + privateKeyFile.c_str();
+            // Check asset directory when provided file paths are not valid
+            AZStd::string assetDir = "";
+            if (!AZ::IO::SystemFile::Exists(certificateFile.c_str()) &&
+                !AZ::IO::SystemFile::Exists(privateKeyFile.c_str()) &&
+                AZ::IO::FileIOBase::GetInstance() != nullptr)
+            {
+                char buffer[AZ_MAX_PATH_LEN];
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/", buffer, sizeof(buffer));
+                assetDir = AZStd::string(buffer);
+            }
+
+            certificatePath = assetDir + certificateFile.c_str();
+            privateKeyPath = assetDir + privateKeyFile.c_str();
+        }
     }
 
     static bool ValidatePinnedCertificate(X509* remoteCert, TrustZone trustZone)
