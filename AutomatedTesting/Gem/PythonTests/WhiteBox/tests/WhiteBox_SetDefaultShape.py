@@ -25,9 +25,10 @@ def C29279329_WhiteBox_SetDefaultShape():
 
     import azlmbr.bus as bus
     import editor_python_test_tools.hydra_editor_utils as hydra
+    import WhiteBoxInit as init
 
     from editor_python_test_tools.utils import Report
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
+
 
     def check_shape_result(success_fail_tuple, condition):
         result = Report.result(success_fail_tuple, condition)

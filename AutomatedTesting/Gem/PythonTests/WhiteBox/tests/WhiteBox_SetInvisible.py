@@ -25,9 +25,9 @@ def C28798205_WhiteBox_SetInvisible():
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import editor_python_test_tools.hydra_editor_utils as hydra
+    import WhiteBoxInit as init
 
     from editor_python_test_tools.utils import Report
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
 
     # open level
     hydra.open_base_level()

@@ -23,8 +23,8 @@ def C28798177_WhiteBox_AddComponentToEntity():
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
-
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
+    import WhiteBoxInit as init
+    
     from editor_python_test_tools.utils import Report
 
     # open level
