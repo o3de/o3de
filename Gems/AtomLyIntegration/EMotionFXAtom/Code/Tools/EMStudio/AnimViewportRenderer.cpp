@@ -64,6 +64,28 @@ namespace EMStudio
         // Link our RPI::Scene to the AzFramework::Scene
         m_frameworkScene->SetSubsystem(m_scene);
 
+        const AZ::RPI::RenderPipelineDescriptor renderPipelineDesc =
+            [](const AzFramework::ViewportId& viewportId)
+            {
+                // Load the render pipeline asset
+                const char* pipelineAssetPath = "passes/MainRenderPipeline.azasset";
+                AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                    pipelineAssetPath, AZ::RPI::AssetUtils::TraceLevel::Error);
+                const AZ::RPI::RenderPipelineDescriptor* assetPipelineDesc = AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
+                AZ_Assert(assetPipelineDesc, "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
+
+                // Use a unique render pipeline name to not conflict with other render pipelines
+                AZ::RPI::RenderPipelineDescriptor pipelineDesc = *assetPipelineDesc;
+                pipelineDesc.m_name += AZStd::string::format("_%i", viewportId);
+
+                pipelineAsset.Release();
+                return pipelineDesc;
+            }(viewportContext->GetId());
+        
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc, *m_windowContext.get());
+        m_scene->AddRenderPipeline(m_renderPipeline);
+        m_renderPipeline->SetDefaultView(viewportContext->GetDefaultView());
+
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         AZStd::string defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
