@@ -1,6 +1,20 @@
 {
     "description": "Material Type tailored for rendering skin, with support for blended wrinkle maps that work with animated vertex blend shapes.",
-    "version": 3,
+    "version": 4,
+    "versionUpdates": [
+        {
+            "toVersion": 4,
+            "actions": [
+                {"op": "rename", "from": "detailUV.center", "to": "detailLayerGroup.detailUV.center"},
+                {"op": "rename", "from": "detailUV.tileU", "to": "detailLayerGroup.detailUV.tileU"},
+                {"op": "rename", "from": "detailUV.tileV", "to": "detailLayerGroup.detailUV.tileV"},
+                {"op": "rename", "from": "detailUV.offsetU", "to": "detailLayerGroup.detailUV.offsetU"},
+                {"op": "rename", "from": "detailUV.offsetV", "to": "detailLayerGroup.detailUV.offsetV"},
+                {"op": "rename", "from": "detailUV.rotateDegrees", "to": "detailLayerGroup.detailUV.rotateDegrees"},
+                {"op": "rename", "from": "detailUV.scale", "to": "detailLayerGroup.detailUV.scale"}
+            ]
+        }
+    ],
     "propertyLayout": {
         "propertyGroups": [
             {
@@ -432,72 +446,98 @@
                             "name": "m_detail_normal_flipY"
                         }
                     }
-                ]
-            },
-            {
-                "name": "detailUV",
-                "displayName": "Detail Layer UV",
-                "description": "Properties for modifying detail layer UV.",
-                "properties": [
+                ],
+                "propertyGroups":  [
                     {
-                        "name": "center",
-                        "displayName": "Center",
-                        "description": "Center point for scaling and rotation transformations.",
-                        "type": "vector2",
-                        "vectorLabels": [ "U", "V" ],
-                        "defaultValue": [ 0.5, 0.5 ]
+                        "name": "detailUV",
+                        "displayName": "UVs",
+                        "description": "Properties for modifying detail layer UV.",
+                        "properties": [
+                            {
+                                "name": "center",
+                                "displayName": "Center",
+                                "description": "Center point for scaling and rotation transformations.",
+                                "type": "vector2",
+                                "vectorLabels": [ "U", "V" ],
+                                "defaultValue": [ 0.5, 0.5 ]
+                            },
+                            {
+                                "name": "tileU",
+                                "displayName": "Tile U",
+                                "description": "Scales texture coordinates in V.",
+                                "type": "float",
+                                "defaultValue": 1.0,
+                                "step": 0.1
+                            },
+                            {
+                                "name": "tileV",
+                                "displayName": "Tile V",
+                                "description": "Scales texture coordinates in V.",
+                                "type": "float",
+                                "defaultValue": 1.0,
+                                "step": 0.1
+                            },
+                            {
+                                "name": "offsetU",
+                                "displayName": "Offset U",
+                                "description": "Offsets texture coordinates in the U direction.",
+                                "type": "float",
+                                "defaultValue": 0.0,
+                                "min": -1.0,
+                                "max": 1.0
+                            },
+                            {
+                                "name": "offsetV",
+                                "displayName": "Offset V",
+                                "description": "Offsets texture coordinates in the V direction.",
+                                "type": "float",
+                                "defaultValue": 0.0,
+                                "min": -1.0,
+                                "max": 1.0
+                            },
+                            {
+                                "name": "rotateDegrees",
+                                "displayName": "Rotate",
+                                "description": "Rotates the texture coordinates (degrees).",
+                                "type": "float",
+                                "defaultValue": 0.0,
+                                "min": -180.0,
+                                "max": 180.0,
+                                "step": 1.0
+                            },
+                            {
+                                "name": "scale",
+                                "displayName": "Scale",
+                                "description": "Scales texture coordinates in both U and V.",
+                                "type": "float",
+                                "defaultValue": 1.0,
+                                "step": 0.1
+                            }
+                        ]
+                    }
+                ],
+                "functors": [
+                    {
+                        // Maps 2D scale, offset, and rotate properties into a float3x3 transform matrix.
+                        "type": "Transform2D",
+                        "args": {
+                            "transformOrder": [ "Rotate", "Translate", "Scale" ],
+                            "centerProperty": "detailUV.center",
+                            "scaleProperty": "detailUV.scale",
+                            "scaleXProperty": "detailUV.tileU",
+                            "scaleYProperty": "detailUV.tileV",
+                            "translateXProperty": "detailUV.offsetU",
+                            "translateYProperty": "detailUV.offsetV",
+                            "rotateDegreesProperty": "detailUV.rotateDegrees",
+                            "float3x3ShaderInput": "m_detailUvMatrix",
+                            "float3x3InverseShaderInput": "m_detailUvMatrixInverse"
+                        }
                     },
                     {
-                        "name": "tileU",
-                        "displayName": "Tile U",
-                        "description": "Scales texture coordinates in V.",
-                        "type": "float",
-                        "defaultValue": 1.0,
-                        "step": 0.1
-                    },
-                    {
-                        "name": "tileV",
-                        "displayName": "Tile V",
-                        "description": "Scales texture coordinates in V.",
-                        "type": "float",
-                        "defaultValue": 1.0,
-                        "step": 0.1
-                    },
-                    {
-                        "name": "offsetU",
-                        "displayName": "Offset U",
-                        "description": "Offsets texture coordinates in the U direction.",
-                        "type": "float",
-                        "defaultValue": 0.0,
-                        "min": -1.0,
-                        "max": 1.0
-                    },
-                    {
-                        "name": "offsetV",
-                        "displayName": "Offset V",
-                        "description": "Offsets texture coordinates in the V direction.",
-                        "type": "float",
-                        "defaultValue": 0.0,
-                        "min": -1.0,
-                        "max": 1.0
-                    },
-                    {
-                        "name": "rotateDegrees",
-                        "displayName": "Rotate",
-                        "description": "Rotates the texture coordinates (degrees).",
-                        "type": "float",
-                        "defaultValue": 0.0,
-                        "min": -180.0,
-                        "max": 180.0,
-                        "step": 1.0
-                    },
-                    {
-                        "name": "scale",
-                        "displayName": "Scale",
-                        "description": "Scales texture coordinates in both U and V.",
-                        "type": "float",
-                        "defaultValue": 1.0,
-                        "step": 0.1
+                        "type": "Lua",
+                        "args": {
+                            "file": "MaterialInputs/DetailMapsCommonFunctor.lua"
+                        }
                     }
                 ]
             },
@@ -1012,22 +1052,6 @@
     ],
     "functors": [
         {
-            // Maps 2D scale, offset, and rotate properties into a float3x3 transform matrix.
-            "type": "Transform2D",
-            "args": {
-                "transformOrder": [ "Rotate", "Translate", "Scale" ],
-                "centerProperty": "detailUV.center",
-                "scaleProperty": "detailUV.scale",
-                "scaleXProperty": "detailUV.tileU",
-                "scaleYProperty": "detailUV.tileV",
-                "translateXProperty": "detailUV.offsetU",
-                "translateYProperty": "detailUV.offsetV",
-                "rotateDegreesProperty": "detailUV.rotateDegrees",
-                "float3x3ShaderInput": "m_detailUvMatrix",
-                "float3x3InverseShaderInput": "m_detailUvMatrixInverse"
-            }
-        },
-        {
             // Preprocess & build parameter set for subsurface scattering and translucency
             "type": "HandleSubsurfaceScatteringParameters",
             "args": {
@@ -1097,13 +1121,15 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Roughness.lua"
+                "file": "StandardPBR_Roughness.lua",
+                "propertyNamePrefix": "roughness."
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "EnhancedPBR_SubsurfaceState.lua"
+                "file": "EnhancedPBR_SubsurfaceState.lua",
+                "propertyNamePrefix": "subsurfaceScattering."
             }
         },
         {
@@ -1116,12 +1142,6 @@
             "type": "Lua",
             "args": {
                 "file": "Skin_SpecularF0.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "MaterialInputs/DetailMapsCommonFunctor.lua"
             }
         }
     ],
