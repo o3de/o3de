@@ -23,6 +23,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
+#include <Atom/RPI.Reflect/Model/SkinJointIdPadding.h>
 #include <Atom/RPI.Reflect/Model/SkinMetaAssetCreator.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
@@ -103,7 +104,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(30);  // (updated to separate material slot ID from default material asset)
+                    ->Version(31);  // [ATOM-14975]
             }
         }
 
@@ -1216,7 +1217,7 @@ namespace AZ
         }
 
         void ModelAssetBuilderComponent::MergeMeshesToCommonBuffers(
-            const ProductMeshContentList& lodMeshList,
+            ProductMeshContentList& lodMeshList,
             ProductMeshContent& lodMeshContent,
             ProductMeshViewList& meshViews)
         {
@@ -1228,7 +1229,7 @@ namespace AZ
             ProductMeshContentAllocInfo lodBufferInfo;
 
             bool isFirstMesh = true;
-            for (const ProductMeshContent& mesh : lodMeshList)
+            for (ProductMeshContent& mesh : lodMeshList)
             {
                 if (lodBufferInfo.m_uvSetFloatCounts.size() < mesh.m_uvSets.size())
                 {
@@ -1339,7 +1340,7 @@ namespace AZ
 
                 if (!mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty())
                 {
-                    if (!isFirstMesh && lodBufferInfo.m_skinInfluencesCount == 0)
+                    if (!isFirstMesh && lodBufferInfo.m_jointIdsCount == 0)
                     {
                         AZ_Error(
                             s_builderName, false,
@@ -1355,15 +1356,34 @@ namespace AZ
                         "The number of skin influences per vertex (%d) is not a multiple of the total number of skinning weights (%d). This means that not every vertex has exactly (%d) skinning weights and invalidates the data.",
                         mesh.m_skinWeights.size(), m_numSkinJointInfluencesPerVertex, m_numSkinJointInfluencesPerVertex);
 
-                    const size_t numPrevSkinInfluences = lodBufferInfo.m_skinInfluencesCount;
-                    const size_t numNewSkinInfluences = mesh.m_skinWeights.size();
+                    uint32_t prevJointIdCount = aznumeric_cast<uint32_t>(lodBufferInfo.m_jointIdsCount);
+                    uint32_t newJointIdCount = aznumeric_cast<uint32_t>(mesh.m_skinJointIndices.size());
 
-                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(/*byteOffset=*/ static_cast<uint32_t>(numPrevSkinInfluences * sizeof(uint16_t)), static_cast<uint32_t>(numNewSkinInfluences  * sizeof(uint16_t)));
-                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/ static_cast<uint32_t>(numPrevSkinInfluences), static_cast<uint32_t>(numNewSkinInfluences), SkinWeightFormat);
+                    // Pad the joint id buffer if it ends too soon, so the next view can start aligned
+                    uint32_t extraIdCount = CalculateJointIdPaddingCount(newJointIdCount);
 
-                    lodBufferInfo.m_skinInfluencesCount += numNewSkinInfluences;
+                    // Pad the buffer
+                    AZStd::vector<uint16_t> extraIds(extraIdCount, 0);
+                    mesh.m_skinJointIndices.insert(
+                        mesh.m_skinJointIndices.end(), extraIds.begin(), extraIds.end());
+
+                    AZ_Assert(prevJointIdCount * sizeof(uint16_t) % 16 == 0, "Failed to align the joint id offset along a 16-byte boundary");
+
+                    // For the view itself, we only want a view that includes the real ids, not the padding, so use newJointIdCount
+                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(
+                        /*byteOffset=*/prevJointIdCount * sizeof(uint16_t),
+                        /*byteCount*/ newJointIdCount * sizeof(uint16_t));
+
+                    // For the purpose of tracking the size of the buffer, include the padding
+                    lodBufferInfo.m_jointIdsCount += (newJointIdCount + extraIdCount);
+
+                    // Weights are more straightforward, just add any new weights
+                    const uint32_t prevJointWeightCount = aznumeric_cast<uint32_t>(lodBufferInfo.m_jointWeightsCount);
+                    const uint32_t newJointWeightCount = aznumeric_cast<uint32_t>(mesh.m_skinWeights.size());
+                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/prevJointWeightCount, newJointWeightCount, SkinWeightFormat);
+                    lodBufferInfo.m_jointWeightsCount += newJointWeightCount;
                 }
-                else if (lodBufferInfo.m_skinInfluencesCount > 0)
+                else if (lodBufferInfo.m_jointIdsCount > 0)
                 {
                     AZ_Error(s_builderName, false, "Attempting to merge a mix of static and skinned meshes, this will fail on buffer generation later. Mesh with name %s is not skinned, but previous meshes were skinned.",
                         mesh.m_name.GetCStr());
