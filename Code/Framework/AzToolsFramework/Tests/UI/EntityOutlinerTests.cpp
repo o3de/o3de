@@ -40,6 +40,7 @@ namespace UnitTest
             m_model->Initialize();
             m_proxyModel = AZStd::make_unique<AzToolsFramework::EntityOutlinerSortFilterProxyModel>();
             m_proxyModel->setSourceModel(m_model.get());
+            m_proxyModel->sort(4, Qt::AscendingOrder);
 
             m_modelTester =
                 AZStd::make_unique<QAbstractItemModelTester>(m_proxyModel.get(), QAbstractItemModelTester::FailureReportingMode::Fatal);
@@ -56,13 +57,13 @@ namespace UnitTest
             rootEntity->get().Activate();
 
             AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
-                &AzToolsFramework::EditorEntityContextNotification::ForceAddEntitiesToBack, true);
+                &AzToolsFramework::EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, true);
         }
 
         void TearDownEditorFixtureImpl() override
         {
             AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
-                &AzToolsFramework::EditorEntityContextNotification::ForceAddEntitiesToBack, false);
+                &AzToolsFramework::EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, false);
 
             m_undoStack = nullptr;
             m_modelTester.reset();
@@ -138,6 +139,12 @@ namespace UnitTest
             return m_model->index(0, 0);
         }
 
+        // Gets the sorted index of an entity, i.e. same index that we see in EntityOutliner
+        QModelIndex GetEntityIndex(AZ::EntityId entityId) const
+        {
+            return m_proxyModel->mapFromSource(m_model->GetIndexFromEntity(entityId));
+        }
+
         // Kicks off any updates scheduled for the next tick
         void ProcessDeferredUpdates() override
         {
@@ -148,23 +155,21 @@ namespace UnitTest
             m_model->ProcessEntityUpdates();
         }
 
-        void VerifyEntityOrder(AZStd::map<AZStd::string, size_t>& entityMap, AZ::EntityId containerId)
+        // Verifies that entities parented to parentId are in the expected order defined in entityMap
+        void VerifyEntityOrder(AZStd::map<AZStd::string, size_t>& entityMap, AZ::EntityId parentId)
         {
             auto instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
-            auto instance = instanceEntityMapperInterface->FindOwningInstance(containerId);
-            auto parentIndex = m_proxyModel->mapFromSource(m_model->GetIndexFromEntity(containerId));
+            auto instance = instanceEntityMapperInterface->FindOwningInstance(parentId);
 
-            auto verifyEntityMapping = [this, &entityMap, &parentIndex](const AZ::Entity& entity) -> bool
+            auto verifyEntityMapping = [this, &entityMap](const AZ::Entity& entity) -> bool
             {
                 auto it = entityMap.find(entity.GetName());
+                //verify that entity is present in cache
                 EXPECT_TRUE(it != entityMap.end());
-
-                auto entityIndex = m_model->GetIndexFromEntity(entity.GetId());
-                //EXPECT_EQ(it->second, entityIndex.row() - parentIndex.row());
+                auto entityIndex = GetEntityIndex(entity.GetId());
                 EXPECT_EQ(it->second, entityIndex.row());
                 return true;
             };
-
             instance->get().GetConstEntities(verifyEntityMapping);
         }
         
@@ -184,19 +189,15 @@ namespace UnitTest
             AZStd::string entityName = AZStd::string::format("Entity%zu", i);
             entityIds.push_back(CreateNamedEntity(entityName));
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
-            //entityMap[entityName] = i;
+            entityMap[entityName] = i;
         }
+        
+        auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        auto parentId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
 
-
-        for (auto entityId : entityIds)
-        {
-            AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-            auto originalIndex = m_model->GetIndexFromEntity(entityId);
-            auto entityIndex = m_proxyModel->mapFromSource(originalIndex);
-            entityMap[entity->GetName()] = entityIndex.row();
-        }
-
+        // verify order is correct after creating new entities
+        VerifyEntityOrder(entityMap, parentId);
+        
         // undo creating entities
         for (int i = entityCount; i > 0; --i)
         {
@@ -211,26 +212,38 @@ namespace UnitTest
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
         }
 
+        // verify order is consistent after redo
+        VerifyEntityOrder(entityMap, parentId);
+    }
+
+    // Disabled because deleting a non-container entity inside an instance triggers "Some of the patches were not successfully applied." error.
+    TEST_F(EntityOutlinerTest, DISABLED_TestDeleteAndUndoWorks)
+    {
+        constexpr size_t entityCount = 10;
+        AZStd::map<AZStd::string, size_t> entityMap;
+        AZStd::vector<AZ::EntityId> entityIds;
+
+        for (size_t i = 0; i < entityCount; ++i)
+        {
+            AZStd::string entityName = AZStd::string::format("Entity%zu", i);
+            entityIds.push_back(CreateNamedEntity(entityName));
+            EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
+            entityMap[entityName] = i;
+        }
+
         auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         auto parentId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
 
-        // verify order is consistent after redo
-        VerifyEntityOrder(entityMap, parentId);
-
-        //// test deletion
-        //for (auto entityId : entityIds)
-        //{
-        //    m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ entityId });
-        //}
-        //ProcessDeferredUpdates();
-        //EXPECT_EQ(m_model->rowCount(GetRootIndex()), 0);
+        // test deletion
+        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entityIds);
+        EXPECT_EQ(m_model->rowCount(GetRootIndex()), 0);
 
         // undo deletion
-      /*  Undo();
+        Undo();
         EXPECT_EQ(m_model->rowCount(GetRootIndex()), entityCount);
-        */
+        
         // verify order is consistent after undoing deletions
-        //VerifyEntityOrder(entityMap, parentId);
+        VerifyEntityOrder(entityMap, parentId);
     }
 
     TEST_F(EntityOutlinerTest, TestCreateNestedHierarchyUndoAndRedoWorks)
@@ -269,7 +282,8 @@ namespace UnitTest
         }
     }
 
-    TEST_F(EntityOutlinerTest, TestCreatePrefabWorks)
+    // Disabled because entities inside the instantiated prefab are in incorrect order
+    TEST_F(EntityOutlinerTest, DISABLED_TestCreateAndInstantiatePrefabWorks)
     {
         constexpr size_t entityCount = 10;
         AZStd::map<AZStd::string, size_t> entityMap;
@@ -282,28 +296,23 @@ namespace UnitTest
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
             entityMap[entityName] = i;
         }
-
-        for (auto entityId : entityIds)
-        {
-            AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-            auto entityIndex = m_model->GetIndexFromEntity(entityId);
-            entityMap[entity->GetName()] = entityIndex.row();
-        }
-
+        
         auto createPrefabResult = m_prefabPublicInterface->CreatePrefabInMemory(entityIds, PrefabMockFilePath);
         EXPECT_TRUE(createPrefabResult.IsSuccess());
 
         auto containerId1 = createPrefabResult.GetValue();
+        EXPECT_EQ(m_model->rowCount(GetEntityIndex(containerId1)), entityCount);
+        // verify the entities are in correct order when re-parented to container entity during creation of prefab
         VerifyEntityOrder(entityMap, containerId1);
 
-        
         auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         auto levelId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
         auto instantiatePrefabResult = m_prefabPublicInterface->InstantiatePrefab(PrefabMockFilePath, levelId, AZ::Vector3::CreateZero());
         EXPECT_TRUE(instantiatePrefabResult.IsSuccess());
 
         auto containerId2 = instantiatePrefabResult.GetValue();
+        EXPECT_EQ(m_model->rowCount(GetEntityIndex(containerId2)), entityCount);
+        // verify entities are in correct order after instantiating a prefab (currently broken)
         VerifyEntityOrder(entityMap, containerId2);
     }
 } // namespace UnitTest
