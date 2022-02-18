@@ -84,51 +84,51 @@ namespace MaterialEditor
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
 
-        // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
+        // Bind m_frameworkScene to the entity context's AzFramework::Scene
         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
         AZ_Assert(sceneSystem, "MaterialViewportWidget was unable to get the scene system during construction.");
 
         AZ::Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome =
             sceneSystem->CreateScene(AZStd::string::format("MaterialViewportWidgetScene_%i", GetViewportContext()->GetId()));
         AZ_Assert(createSceneOutcome, createSceneOutcome.GetError().c_str());
+
         m_frameworkScene = createSceneOutcome.TakeValue();
         m_frameworkScene->SetSubsystem(m_scene);
         m_frameworkScene->SetSubsystem(m_entityContext.get());
 
         // Load the render pipeline asset
-        AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
+        AZ::Data::Asset<AZ::RPI::AnyAsset> mainPipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+            m_mainPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
+        AZ_Assert(mainPipelineAsset.IsReady(), "MaterialViewportWidget pipeline asset fails to load.");
 
+        // Copy the pipeline descriptor from the asset so that it can be given a unique name in case there are multiple viewports
+        AZ::RPI::RenderPipelineDescriptor mainPipelineDesc =
+            *AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(mainPipelineAsset);
+        mainPipelineDesc.m_name += AZStd::string::format("_%i", GetViewportContext()->GetId());
+
+        // TODO etApplicationMultisampleState should only be called once per application and will need to consider scenarios with multiple
+        // viewports and pipelines
         // The default pipeline determines the initial MSAA state for the application
-        const AZ::RPI::RenderPipelineDescriptor* renderPipelineDescriptor =
-            AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
-        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor->m_renderSettings.m_multisampleState);
+        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(mainPipelineDesc.m_renderSettings.m_multisampleState);
+        mainPipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
-        m_renderPipeline =
-            AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *GetViewportContext()->GetWindowContext().get());
-        pipelineAsset.Release();
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(mainPipelineDesc, *GetViewportContext()->GetWindowContext().get());
         m_scene->AddRenderPipeline(m_renderPipeline);
 
-        // As part of our initialization we need to create the BRDF texture generation pipeline
-        AZ::RPI::RenderPipelineDescriptor pipelineDesc;
-        pipelineDesc.m_mainViewTagName = "MainCamera";
-        pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%i", GetViewportContext()->GetId());
-        pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
-        pipelineDesc.m_executeOnce = true;
+        // Create the BRDF texture generation pipeline
+        AZ::RPI::RenderPipelineDescriptor brdfPipelineDesc;
+        brdfPipelineDesc.m_mainViewTagName = "MainCamera";
+        brdfPipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%i", GetViewportContext()->GetId());
+        brdfPipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
+        brdfPipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        brdfPipelineDesc.m_executeOnce = true;
 
-        AZ::RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+        AZ::RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(brdfPipelineDesc);
         m_scene->AddRenderPipeline(brdfTexturePipeline);
-
-        // Currently the scene has to be activated after render pipeline was added so some feature processors (i.e. imgui) can be
-        // initialized properly with pipeline's pass information.
         m_scene->Activate();
 
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
-
-        AzFramework::EntityContextId entityContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
 
         // Configure camera
         m_cameraEntity =
@@ -274,6 +274,11 @@ namespace MaterialEditor
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
         m_frameworkScene->UnsetSubsystem(m_scene);
         m_frameworkScene->UnsetSubsystem(m_entityContext.get());
+
+        if (auto sceneSystem = AzFramework::SceneSystemInterface::Get())
+        {
+            sceneSystem->RemoveScene(m_frameworkScene->GetName());
+        }
     }
 
     AZ::Entity* MaterialViewportWidget::CreateEntity(const AZStd::string& name, const AZStd::vector<AZ::Uuid>& componentTypeIds)

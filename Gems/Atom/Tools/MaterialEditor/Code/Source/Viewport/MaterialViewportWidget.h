@@ -99,7 +99,7 @@ namespace MaterialEditor
         AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
         AZ::RPI::RenderPipelinePtr m_renderPipeline;
         AZ::Data::Instance<AZ::RPI::SwapChainPass> m_swapChainPass;
-        AZStd::string m_defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
+        AZStd::string m_mainPipelineAssetPath = "passes/MainRenderPipeline.azasset";
 
         AZ::Render::DirectionalLightFeatureProcessorInterface* m_directionalLightFeatureProcessor = {};
         AZ::Render::DisplayMapperFeatureProcessorInterface* m_displayMapperFeatureProcessor = {};
