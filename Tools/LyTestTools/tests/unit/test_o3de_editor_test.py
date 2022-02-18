@@ -544,12 +544,6 @@ class TestUtils(unittest.TestCase):
                           ')JSON_END'
 
         results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, mock_editor_log)
-#        mock_create_pass.assert_called_with(
-#            mock_test_pass, 'mock_std_out', 'JSON_START({"name": "mock_module_name_pass"})JSON_END')
-#        mock_create_fail.assert_called_with(
-#            mock_test_fail, 'mock_std_out', 'JSON_START({"name": "mock_module_name_fail"})JSON_END')
-#        mock_create_unknown.assert_called_with(
-#            mock_test_unknown, mock_output, "Couldn't find any test run information on stdout", mock_editor_log)
         assert len(results) == 3
         assert 'mock_test_name_pass' in results.keys()
         assert 'mock_test_name_fail' in results.keys()
