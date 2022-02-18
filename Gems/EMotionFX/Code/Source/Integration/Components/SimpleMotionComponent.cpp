@@ -55,10 +55,13 @@ namespace EMotionFX
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_mirror, "Mirror motion", "Toggles mirroring of the animation")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_playspeed, "Play speed", "Determines the rate at which the motion is played")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_blendInTime, "Blend In Time", "Determines the blend in time in seconds")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_blendOutTime, "Blend Out Time", "Determines the blend out time in seconds")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_playOnActivation, "Play on active", "Playing animation immediately after activation.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_inPlace, "In-place",
                             "Plays the animation in-place and removes any positional and rotational changes from root joints.")
