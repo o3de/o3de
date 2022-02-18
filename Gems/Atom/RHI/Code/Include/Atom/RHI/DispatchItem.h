@@ -41,17 +41,17 @@ namespace AZ
 
             uint16_t GetNumberOfGroupsX() const
             {
-                return aznumeric_cast<uint16_t>((m_totalNumberOfThreadsX + m_threadsPerGroupX - 1) / m_threadsPerGroupX);
+                return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsX, aznumeric_caster(m_threadsPerGroupX)));
             }
 
             uint16_t GetNumberOfGroupsY() const
             {
-                return aznumeric_cast<uint16_t>((m_totalNumberOfThreadsY + m_threadsPerGroupY - 1) / m_threadsPerGroupY);
+                return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsY, aznumeric_caster(m_threadsPerGroupY)));
             }
 
             uint16_t GetNumberOfGroupsZ() const
             {
-                return aznumeric_cast<uint16_t>((m_totalNumberOfThreadsZ + m_threadsPerGroupZ - 1) / m_threadsPerGroupZ);
+                return aznumeric_cast<uint16_t>(DivideAndRoundUp(m_totalNumberOfThreadsZ, aznumeric_caster(m_threadsPerGroupZ)));
             }
 
             // Different platforms require number of groups or number of threads or both in their Dispatch() call
