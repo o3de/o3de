@@ -591,7 +591,7 @@ namespace AZ::SceneAPI::Behaviors
         {
             rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
             writerResult = doc.Accept(writer);
-            productPath.append(".debug");
+            productPath.append(".json");
             assetType = {};
         }
         else
