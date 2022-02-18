@@ -252,6 +252,20 @@ AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
     return inPositions;
 }
 
+AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromListOfVector2(
+    const AZStd::span<const AZ::Vector2> inPositionsVec2) const
+{
+    AZStd::vector<AZ::Vector3> inPositions;
+    inPositions.reserve(inPositionsVec2.size());
+
+    for (auto& pos : inPositionsVec2)
+    {
+        inPositions.emplace_back(AZ::Vector3(pos.GetX(), pos.GetY(), 0.0f));
+    }
+
+    return inPositions;
+}
+
 void TerrainSystem::MakeBulkQueries(
     const AZStd::span<const AZ::Vector3> inPositions,
     AZStd::span<AZ::Vector3> outPositions,
@@ -1043,14 +1057,9 @@ void TerrainSystem::ProcessHeightsFromListOfVector2(
         return;
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
-    {
-        bool terrainExists = false;
-        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
-        surfacePoint.m_position.SetZ(GetHeightFromVector2(position, sampleFilter, &terrainExists));
-        perPositionCallback(surfacePoint, terrainExists);
-    }
+    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
+
+    ProcessHeightsFromList(inPositionsVec3, perPositionCallback, sampleFilter);
 }
 
 void TerrainSystem::ProcessNormalsFromListOfVector2(
@@ -1063,14 +1072,9 @@ void TerrainSystem::ProcessNormalsFromListOfVector2(
         return;
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
-    {
-        bool terrainExists = false;
-        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
-        surfacePoint.m_normal = GetNormalFromVector2(position, sampleFilter, &terrainExists);
-        perPositionCallback(surfacePoint, terrainExists);
-    }
+    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
+
+    ProcessNormalsFromList(inPositionsVec3, perPositionCallback, sampleFilter);
 }
 
 void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2(
@@ -1083,14 +1087,9 @@ void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2(
         return;
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
-    {
-        bool terrainExists = false;
-        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
-        GetSurfaceWeightsFromVector2(position, surfacePoint.m_surfaceTags, sampleFilter, &terrainExists);
-        perPositionCallback(surfacePoint, terrainExists);
-    }
+    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
+
+    ProcessSurfaceWeightsFromList(inPositionsVec3, perPositionCallback, sampleFilter);
 }
 
 void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
@@ -1103,14 +1102,9 @@ void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
         return;
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
-    {
-        bool terrainExists = false;
-        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
-        GetSurfacePointFromVector2(position, surfacePoint, sampleFilter, &terrainExists);
-        perPositionCallback(surfacePoint, terrainExists);
-    }
+    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
+
+    ProcessSurfacePointsFromList(inPositionsVec3, perPositionCallback, sampleFilter);
 }
 
 AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(

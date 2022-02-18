@@ -321,6 +321,8 @@ namespace Terrain
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromRegion(
             const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize) const;
+        AZStd::vector<AZ::Vector3> GenerateInputPositionsFromListOfVector2(
+            const AZStd::span<const AZ::Vector2> inPositionsVec2) const;
 
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
