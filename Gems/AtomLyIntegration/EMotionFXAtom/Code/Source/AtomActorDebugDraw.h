@@ -75,8 +75,8 @@ namespace AZ::Render
         void RenderTangents(
             EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float tangentsScale, float scaleMultiplier,
             const AZ::Color& tangentsColor, const AZ::Color& mirroredBitangentsColor, const AZ::Color& bitangentsColor);
-        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier,
-            const AZ::Color& wireframeColor);
+        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM,
+            float scale, const AZ::Color& color);
         void RenderJointNames(EMotionFX::ActorInstance* actorInstance, RPI::ViewportContextPtr viewportContext, const AZ::Color& jointNameColor);
         void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, AzFramework::DebugDisplayRequests* debugDisplay, float scale = 1.0f);
         void RenderLineAxis(

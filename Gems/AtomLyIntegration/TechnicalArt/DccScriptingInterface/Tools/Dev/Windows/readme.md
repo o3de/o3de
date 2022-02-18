@@ -29,7 +29,7 @@ What is in this folder ...
 
 ### Core env modules
 
-```
+```bash
 Env_O3DE_Core.bat       : core access to O3DE and DCCsi
 Env_O3DE_Python.bat     : access to O3DE python and general py configuration
 Env_O3DE_Qt.bat         : access to O3DE Qt .dll files and PySide2
@@ -37,7 +37,7 @@ Env_O3DE_Qt.bat         : access to O3DE Qt .dll files and PySide2
 
 ### DCC add on envars
 
-```
+```bash
 Env_DCC_Maya.bat        : configures Maya with code O3DE/DCCsi access
 Env_DCC_Blender.bat     : configures Blender
 Env_DCC_Substance.bat   : Configures Substance Designer
@@ -45,7 +45,7 @@ Env_DCC_Substance.bat   : Configures Substance Designer
 
 ### IDE env
 
-```
+```bash
 Env_IDE_WingIDE.bat     : configures WingIDE for DCCsi development
 Env_IDE_VScode.bat      : configures VScode
 Env_IDE_PyCharm.bat     : configures PyCharm
@@ -53,7 +53,7 @@ Env_IDE_PyCharm.bat     : configures PyCharm
 
 ### Core Env Launchers
 
-```
+```bash
 Launch_O3DE_PY_Cmd.bat  : Starts a cmd with core managed env context
                         : ^ allows user to validate env
                         : ^ display all default ENVAR plugs

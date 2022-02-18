@@ -20,7 +20,7 @@ import logging as _logging
 # global scope
 _PACKAGENAME = 'azpy.dcc.maya'
 
-__all__ = [] # only add here, if that sub-module does NOT require bpy!
+__all__ = ['stub'] # only add here, if that sub-module does NOT require bpy!
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
@@ -41,10 +41,10 @@ def init(_all=__all__):
     don't fail"""
 
     # extend all with submodules
-    _all.append('stub')
+    _all.append('callbacks', 'helpers', 'toolbits', 'utils')
     
     # ^ as moldules are created, add them to the list above
-    # like _all.append('stub', 'foo', 'bar')
+    # like _all.append('foo', 'bar')
     
     # Importing local packages/modules
     return _all

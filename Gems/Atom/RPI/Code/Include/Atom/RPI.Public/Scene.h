@@ -169,6 +169,9 @@ namespace AZ
             //! This function is called every time scene's render pipelines change.
             //! User may call this function explicitly if render pipelines were changed
             void RebuildPipelineStatesLookup();
+                        
+            //! Try apply render pipeline changes from each feature processors if the pipeline allows modification and wasn't modified.
+            void TryApplyRenderPipelineChanges(RenderPipeline* pipeline);
 
         protected:
             // SceneFinder overrides...
@@ -191,6 +194,7 @@ namespace AZ
             // Update and compile scene and view srgs
             // This is called after PassSystem's FramePrepare so passes can still modify view srgs in its FramePrepareIntenal function before they are submitted to command list
             void UpdateSrgs();
+
 
         private:
             Scene();

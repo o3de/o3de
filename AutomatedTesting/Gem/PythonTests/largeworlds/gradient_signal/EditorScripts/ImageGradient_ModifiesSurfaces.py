@@ -47,6 +47,7 @@ def ImageGradient_ModifiesSurfaces():
     import azlmbr.editor as editor
     import azlmbr.math as math
     import azlmbr.surface_data as surface_data
+    import azlmbr.vegetation as vegetation
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.asset_utils import Asset
@@ -58,7 +59,7 @@ def ImageGradient_ModifiesSurfaces():
     # 1) Open an existing simple level
     hydra.open_base_level()
 
-    # 2) Create an entity with required Image Gradient + Surface Tag Emitter components and assign image asset
+    # 2) Create an entity with required Image Gradient + Surface Tag Emitter components
     components_to_add = ["Image Gradient", "Gradient Transform Modifier", "Shape Reference",
                          "Gradient Surface Tag Emitter"]
     entity_position = math.Vector3(0.0, 0.0, 0.0)
@@ -68,11 +69,6 @@ def ImageGradient_ModifiesSurfaces():
     Report.critical_result(Tests.image_gradient_entity_created, new_entity_id.IsValid())
     image_gradient_entity = EditorEntity.create_editor_entity_at(entity_position, "Image Gradient")
     image_gradient_entity.add_components(components_to_add)
-    test_img_gradient_path = os.path.join("Assets", "ImageGradients", "image_grad_test_gsi.png.streamingimage")
-    asset = Asset.find_asset_by_path(test_img_gradient_path)
-    image_gradient_entity.components[0].set_component_property_value("Configuration|Image Asset", asset.id)
-    success = image_gradient_entity.components[0].get_component_property_value("Configuration|Image Asset") == asset.id
-    Report.result(Tests.image_gradient_assigned, success)
 
     # 3) Create vegetation and planting surface entities, and assign the Image Gradient entity's Shape Reference
 
@@ -101,10 +97,26 @@ def ImageGradient_ModifiesSurfaces():
     grad_surf_tag_emitter_component.set_enabled(False)
     grad_surf_tag_emitter_component.set_enabled(True)
 
+    # Assign the image asset to the image gradient and validate the expected asset was set
+    test_img_gradient_path = os.path.join("Assets", "ImageGradients", "image_grad_test_gsi.png.streamingimage")
+    asset = Asset.find_asset_by_path(test_img_gradient_path)
+    vegetation.ImageGradientRequestBus(bus.Event, "SetImageAssetPath", image_gradient_entity.id, test_img_gradient_path)
+    compare_asset_path = vegetation.ImageGradientRequestBus(bus.Event, "GetImageAssetPath", image_gradient_entity.id)
+    compare_asset = Asset.find_asset_by_path(compare_asset_path)
+    success = compare_asset.id == asset.id
+    Report.result(Tests.image_gradient_assigned, success)
+
     # 5) Validate the expected number of vegetation instances. Instances should only spawn on the modified surface
     num_expected_instances = 168
     success = helper.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(
         spawner_entity.id, num_expected_instances), 5.0)
+    Report.result(Tests.instance_validation, success)
+
+    # 6) Validate there are no vegetation instances after we clear the image gradient asset
+    vegetation.ImageGradientRequestBus(bus.Event, "SetImageAssetPath", image_gradient_entity.id, "")
+    num_expected_instances_after_clear = 0
+    success = helper.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(
+        spawner_entity.id, num_expected_instances_after_clear), 5.0)
     Report.result(Tests.instance_validation, success)
 
 

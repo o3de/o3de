@@ -11,7 +11,7 @@
 """! @brief
 <DCCsi>/Tools/DCC/__init__.py
 
-This init allows us to treat the DCC folder as a package.
+This init allows us to treat the DCCsi Tools DCC folder as a package.
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -26,17 +26,35 @@ _PACKAGENAME = 'Tools.DCC'
 
 __all__ = ['Blender',
            'Maya']  # to do: add others when they are set up
+          #'3dsMax',
+          #'Houdini',
+          #'Marmoset',
+          #'Substance',
+          #'Foo',
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug(f'Initializing: {_PACKAGENAME}')
+_LOGGER.debug('Initializing: {}'.format(_PACKAGENAME))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
+from Tools import STR_CROSSBAR
+_LOGGER.debug(STR_CROSSBAR)
+
 # set up access to this DCC folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
-_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
+_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH.as_posix()))
+
+from Tools import _PATH_DCCSIG
+_LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
+
+from Tools import _PATH_DCCSI_TOOLS
+_LOGGER.debug('PATH_DCCSI_TOOLS: {}'.format(_PATH_DCCSI_TOOLS))
+
 _PATH_DCCSI_TOOLS_DCC = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('ATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
+_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('ATH_DCCSI_TOOLS_DCC',
+                                       _PATH_DCCSI_TOOLS_DCC.as_posix()))
+
+_LOGGER.debug('PATH_DCCSI_TOOLS_DCC: {}'.format(_PATH_DCCSI_TOOLS_DCC))
+_LOGGER.debug(STR_CROSSBAR)
 # -------------------------------------------------------------------------
