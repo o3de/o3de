@@ -11,7 +11,6 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -52,7 +51,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 117; // new material type file format
+            materialBuilderDescriptor.m_version = 123; // nested property layers
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -129,38 +128,6 @@ namespace AZ
             }
         }
 
-        template<typename MaterialSourceDataT>
-        AZ::Outcome<MaterialSourceDataT> LoadSourceData(const rapidjson::Value& value, const AZStd::string& filePath)
-        {
-            MaterialSourceDataT material;
-
-            JsonDeserializerSettings settings;
-
-            JsonReportingHelper reportingHelper;
-            reportingHelper.Attach(settings);
-
-            // This is required by some custom material serializers to support relative path references.
-            JsonFileLoadContext fileLoadContext;
-            fileLoadContext.PushFilePath(filePath);
-            settings.m_metadata.Add(fileLoadContext);
-
-            JsonSerialization::Load(material, value, settings);
-
-            if (reportingHelper.ErrorsReported())
-            {
-                return AZ::Failure();
-            }
-            else if (reportingHelper.WarningsReported())
-            {
-                AZ_Error(MaterialBuilderName, false, "Warnings reported while loading '%s'", filePath.c_str());
-                return AZ::Failure();
-            }
-            else
-            {
-                return AZ::Success(AZStd::move(material));
-            }
-        }
-
         void MaterialBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
             if (m_isShuttingDown)
@@ -193,11 +160,19 @@ namespace AZ
                 const bool isMaterialTypeFile = AzFramework::StringFunc::Path::IsExtension(request.m_sourceFile.c_str(), MaterialTypeSourceData::Extension);
                 if (isMaterialTypeFile)
                 {
-                    auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(fullSourcePath, &document);
+                    MaterialUtils::ImportedJsonFiles importedJsonFiles;
+                    auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(fullSourcePath, &document, &importedJsonFiles);
 
                     if (!materialTypeSourceData.IsSuccess())
                     {
                         return;
+                    }
+
+                    for (auto& importedJsonFile : importedJsonFiles)
+                    {
+                        AssetBuilderSDK::SourceFileDependency sourceDependency;
+                        sourceDependency.m_sourceFileDependencyPath = importedJsonFile;
+                        response.m_sourceFileDependencyList.push_back(sourceDependency);
                     }
 
                     for (auto& shader : materialTypeSourceData.GetValue().m_shaderCollection)
@@ -275,7 +250,7 @@ namespace AZ
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }
 
-        AZ::Data::Asset<MaterialTypeAsset> CreateMaterialTypeAsset(AZStd::string_view materialTypeSourceFilePath, const rapidjson::Value& json)
+        AZ::Data::Asset<MaterialTypeAsset> CreateMaterialTypeAsset(AZStd::string_view materialTypeSourceFilePath, rapidjson::Document& json)
         {
             auto materialType = MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourceFilePath, &json);
 
@@ -295,7 +270,7 @@ namespace AZ
         
         AZ::Data::Asset<MaterialAsset> MaterialBuilder::CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const
         {
-            auto material = LoadSourceData<MaterialSourceData>(json, materialSourceFilePath);
+            auto material = MaterialUtils::LoadMaterialSourceData(materialSourceFilePath, &json, true);
 
             if (!material.IsSuccess())
             {

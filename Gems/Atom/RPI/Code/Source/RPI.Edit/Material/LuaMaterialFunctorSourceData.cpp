@@ -115,16 +115,26 @@ namespace AZ
 
         RPI::LuaMaterialFunctorSourceData::FunctorResult LuaMaterialFunctorSourceData::CreateFunctor(
                 const AZStd::string& materialTypeSourceFilePath,
-                const MaterialPropertiesLayout* propertiesLayout
+                const MaterialPropertiesLayout* propertiesLayout,
+                const MaterialNameContext* materialNameContext
             ) const
         {
             using namespace RPI;
 
             RPI::Ptr<LuaMaterialFunctor> functor = aznew LuaMaterialFunctor;
 
-            functor->m_propertyNamePrefix = m_propertyNamePrefix;
-            functor->m_srgNamePrefix = m_srgNamePrefix;
-            functor->m_optionsNamePrefix = m_optionsNamePrefix;
+            if (materialNameContext->IsDefault())
+            {
+                // This is a legacy feature that was used for a while to support reusing the same functor for multiple layers in StandardMultilayerPbr.materialtype.
+                // Now that we have support for nested property groups, this functionality is only supported for functors at the top level, for backward compatibility.
+                functor->m_materialNameContext.ExtendPropertyIdContext(m_propertyNamePrefix, false);
+                functor->m_materialNameContext.ExtendSrgInputContext(m_srgNamePrefix);
+                functor->m_materialNameContext.ExtendShaderOptionContext(m_optionsNamePrefix);
+            }
+            else
+            {
+                functor->m_materialNameContext = *materialNameContext;
+            }
 
             if (!m_luaScript.empty() && !m_luaSourceFile.empty())
             {
@@ -188,7 +198,10 @@ namespace AZ
 
             for (const Name& materialProperty : materialPropertyDependencies.GetValue())
             {
-                MaterialPropertyIndex index = propertiesLayout->FindPropertyIndex(Name{m_propertyNamePrefix + materialProperty.GetCStr()});
+                Name propertyName{materialProperty};
+                functor->m_materialNameContext.ContextualizeProperty(propertyName);
+
+                MaterialPropertyIndex index = propertiesLayout->FindPropertyIndex(propertyName);
                 if (!index.IsValid())
                 {
                     AZ_Error("LuaMaterialFunctorSourceData", false, "Property '%s' is not found in material type.", materialProperty.GetCStr());
@@ -205,14 +218,16 @@ namespace AZ
         {
             return CreateFunctor(
                 context.GetMaterialTypeSourceFilePath(),
-                context.GetMaterialPropertiesLayout());
+                context.GetMaterialPropertiesLayout(),
+                context.GetNameContext());
         }
 
         RPI::LuaMaterialFunctorSourceData::FunctorResult LuaMaterialFunctorSourceData::CreateFunctor(const EditorContext& context) const
         {
             return CreateFunctor(
                 context.GetMaterialTypeSourceFilePath(),
-                context.GetMaterialPropertiesLayout());
+                context.GetMaterialPropertiesLayout(),
+                context.GetNameContext());
         }
     }
 }

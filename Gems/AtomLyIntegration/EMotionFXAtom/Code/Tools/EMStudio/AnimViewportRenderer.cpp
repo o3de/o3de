@@ -191,7 +191,7 @@ namespace EMStudio
         return result;
     }
 
-    void AnimViewportRenderer::UpdateActorRenderFlag(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void AnimViewportRenderer::UpdateActorRenderFlag(EMotionFX::ActorRenderFlags renderFlags)
     {
         for (AZ::Entity* entity : m_actorEntities)
         {

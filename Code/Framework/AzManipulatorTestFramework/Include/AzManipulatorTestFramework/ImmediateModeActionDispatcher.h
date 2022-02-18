@@ -66,8 +66,8 @@ namespace AzManipulatorTestFramework
         void MouseMButtonUpImpl() override;
         void MouseLButtonDoubleClickImpl() override;
         void MousePositionImpl(const AzFramework::ScreenPoint& position) override;
-        void KeyboardModifierDownImpl(const KeyboardModifier& keyModifier) override;
-        void KeyboardModifierUpImpl(const KeyboardModifier& keyModifier) override;
+        void KeyboardModifierDownImpl(KeyboardModifier keyModifier) override;
+        void KeyboardModifierUpImpl(KeyboardModifier keyModifier) override;
         void ExpectManipulatorBeingInteractedImpl() override;
         void ExpectManipulatorNotBeingInteractedImpl() override;
         void SetEntityWorldTransformImpl(AZ::EntityId entityId, const AZ::Transform& transform) override;

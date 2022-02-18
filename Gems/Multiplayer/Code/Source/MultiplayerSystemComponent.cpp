@@ -283,22 +283,28 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const SessionConfig& sessionConfig)
     {
         // Check if session manager has a certificate for us and pass it along if so
-        if (AZ::Interface<ISessionHandlingProviderRequests>::Get() != nullptr)
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(
-                AZ::Interface<ISessionHandlingProviderRequests>::Get()->GetExternalSessionCertificate().c_str());
-            if (!externalCertPath.empty())
+            bool tcpUseEncryption = false;
+            console->GetCvarValue("net_TcpUseEncryption", tcpUseEncryption);
+            bool udpUseEncryption = false;
+            console->GetCvarValue("net_UdpUseEncryption", udpUseEncryption);
+            auto sessionProviderHandler = AZ::Interface<ISessionHandlingProviderRequests>::Get();
+            if ((tcpUseEncryption || udpUseEncryption) && sessionProviderHandler != nullptr)
             {
-                AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
-                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
-            }
+                AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(sessionProviderHandler->GetExternalSessionCertificate().c_str());
+                if (!externalCertPath.empty())
+                {
+                    AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
+                    console->PerformCommand(commandString.c_str());
+                }
 
-            AZ::CVarFixedString internalCertPath = AZ::CVarFixedString(
-                AZ::Interface<ISessionHandlingProviderRequests>::Get()->GetInternalSessionCertificate().c_str());
-            if (!internalCertPath.empty())
-            {
-                AZ::CVarFixedString commandString = "net_SslInternalCertificateFile " + internalCertPath;
-                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+                AZ::CVarFixedString externalKeyPath = AZ::CVarFixedString(sessionProviderHandler->GetExternalSessionPrivateKey().c_str());
+                if (!externalKeyPath.empty())
+                {
+                    AZ::CVarFixedString commandString = "net_SslExternalPrivateKeyFile " + externalKeyPath;
+                    console->PerformCommand(commandString.c_str());
+                }
             }
         }
 

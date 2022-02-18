@@ -112,6 +112,87 @@ The instance is where everything comes together. It stores the trajectory histor
 ## Architecture
 ![Class Diagram](https://user-images.githubusercontent.com/43751992/151819361-878edcb5-2b1f-4867-bb7f-8ed5c09a075a.png)
 
+## The motion matching algorithm
+
+Motion matching plays small clips of a motion database, while jumping and smoothly transitioning back and forth, to synthesize a new animation from that data.
+
+### Update loop
+
+In the majority of the game ticks, the current motion gets advanced. A few times per second, the actual motion matching search is triggered to not drift away too far from the expected user input (as we would just play the recorded animation otherwise).
+
+When a search for a better next matching frame is triggered, the current pose, including its joint velocities, gets evaluated. This pose (which we'll call input or query pose) is used to fill the query vector. The query vector contains feature values and is compared against other frames in the feature matrix. The query vector has the same size as there are columns in the feature matrix and is similar to any other row but represents the query pose.
+
+Using the query vector, we can find the next best matching frame in the motion database and start transitioning towards that.
+
+In case the new best matching frame candidate is close to the time in the animation that we are already playing, we don't do anything as we seem to be at the sweet spot in the motion database already.
+
+Pseudo-code:
+```
+// Keep playing the current animation.
+currentMotion.Update(timeDelta);
+
+if (Is it time to search for a new best matching frame?) // We might e.g. do this 5x a second
+{
+    // Evaluate the current pose including joint velocities.
+    queryPose = SamplePose(newMotionTime);
+
+    // Update the input query vector (Calculate features for the query pose)
+    queryValues = CalculateFeaturesFromPose(queryPose);
+
+    // Find the frame with the lowest cost based on the query vector.
+    bestMatchingFrame = FindBestMatchingFrame(queryValues);
+
+    // Start transitioning towards the new best matching frame in case it is not
+    // really close to the frame we are already playing.
+    if (IsClose(bestMatchingFrame, currentMotion.GetFrame()) == false)
+    {
+        StartTransition(bestMatchingFrame);
+    }
+}
+```
+
+### Cost function
+
+The core question in the algorithm is: Where do we jump and transition to? The algorithm tries to find the best time in the motion database that matches the current character pose including its movements and the user input. To compare the frame candidates with each other, we use a cost function.
+
+The feature schema defines the cost function. Every feature added to the feature schema adds up to the cost. The bigger the discrepancy between e.g. the current velocity and the one from the frame candidate, the higher the penalty to the cost and the less likely the candidate is a good one to take.
+
+This makes motion matching an optimization problem where the frame with the minimum cost is the most preferred candidate to transition to.
+
+### Searching next best matching frame
+
+The actual search happens in two phases, a broad phase to eliminate most of the candidates followed by a narrow phase to find the actual best candidate.
+
+#### 1. Broad-phase (KD-tree)
+
+A KD-tree is used to find the nearest neighbors (frames in the motion database) to the query vector (given input). The result is a set of pre-selected frames for the next best matching frame that is passed on to the narrow-phase. By adjusting the maximum tree depth or the minimum number of frames for the leaf nodes, the resulting number of frames can be adjusted. The bigger the set of frames the broad-phase returns, the more candidates the narrow-phase can choose from, the better the visual quality of the animation but the slower the algorithm.
+
+#### 2. Narrow-phase
+
+Inside the narrow-phase, we iterate through the returned set of frames from the KD-tree, and evaluate and compare their cost against each other. The frame with the minimal cost is the best match that we transition to.
+
+Pseudo-code:
+```
+minCost = MAX;
+for_all (nearest frames found in the broad-phase)
+{
+    frameCost = 0.0
+    for_all (features)
+    {
+        frameCost += CalculateCost(feature);
+    }
+
+    if (frameCost < minCost)
+    {
+        // We found a better next matching frame
+        minCost = frameCost;
+        newBestMatchingFrame = currentFrame;
+    }
+}
+
+StartTransition(newBestMatchingFrame);
+```
+
 ## Jupyter notebook
 
 ### Feature histograms

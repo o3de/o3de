@@ -20,7 +20,7 @@ namespace AZ::Dom::Benchmark
         PathEntry end;
         end.SetEndOfArray();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             Path p;
             p /= entry1;
@@ -40,7 +40,7 @@ namespace AZ::Dom::Benchmark
         PathEntry end;
         end.SetEndOfArray();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             Path p = Path() / entry1 / entry2 / 0 / end;
         }
@@ -55,7 +55,7 @@ namespace AZ::Dom::Benchmark
         AZStd::string s;
         s.resize_no_construct(p.GetStringLength());
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             p.GetStringLength();
             p.FormatString(s.data(), s.size());
@@ -69,7 +69,7 @@ namespace AZ::Dom::Benchmark
     {
         AZStd::string pathString = "/path/with/multiple/0/different/components/including-long-strings-like-this/65536/999/-";
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             Path p(pathString);
             benchmark::DoNotOptimize(p);
@@ -86,7 +86,7 @@ namespace AZ::Dom::Benchmark
         PathEntry endOfArray;
         endOfArray.SetEndOfArray();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             name.IsEndOfArray();
             index.IsEndOfArray();
@@ -96,4 +96,25 @@ namespace AZ::Dom::Benchmark
         state.SetItemsProcessed(3 * state.iterations());
     }
     BENCHMARK_REGISTER_F(DomPathBenchmark, DomPathEntry_IsEndOfArray);
+
+    BENCHMARK_DEFINE_F(DomPathBenchmark, DomPathEntry_Comparison)(benchmark::State& state)
+    {
+        PathEntry name("name");
+        PathEntry index(0);
+        PathEntry endOfArray;
+        endOfArray.SetEndOfArray();
+
+        for ([[maybe_unused]] auto _ : state)
+        {
+            benchmark::DoNotOptimize(name == name);
+            benchmark::DoNotOptimize(name == index);
+            benchmark::DoNotOptimize(name == endOfArray);
+            benchmark::DoNotOptimize(index == index);
+            benchmark::DoNotOptimize(index == endOfArray);
+            benchmark::DoNotOptimize(endOfArray == endOfArray);
+        }
+
+        state.SetItemsProcessed(6 * state.iterations());
+    }
+    BENCHMARK_REGISTER_F(DomPathBenchmark, DomPathEntry_Comparison);
 }

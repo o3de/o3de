@@ -11,6 +11,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/stack.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/tuple.h>
 
@@ -47,9 +48,6 @@ namespace AZStd
     class intrusive_ptr;
     template<class T>
     class shared_ptr;
-
-    template<class T>
-    class optional;
 }
 
 namespace AZ

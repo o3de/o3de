@@ -205,14 +205,14 @@ namespace UnitTest
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointLists& surfacePointListPerPosition) const override
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointListPerPosition) const override
         {
         }
 
         void GetSurfacePointsFromList(
             [[maybe_unused]] AZStd::span<const AZ::Vector3> inPositions,
             [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointLists& surfacePointLists) const override
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointLists) const override
         {
         }
 
@@ -248,6 +248,16 @@ namespace UnitTest
 
         void RefreshSurfaceData([[maybe_unused]] const AZ::Aabb& dirtyBounds) override
         {
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataProviderHandle(const AZ::EntityId& providerEntityId) override
+        {
+            return GetSurfaceProviderHandle(providerEntityId);
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataModifierHandle(const AZ::EntityId& modifierEntityId) override
+        {
+            return GetSurfaceModifierHandle(modifierEntityId);
         }
 
         SurfaceData::SurfaceDataRegistryHandle GetSurfaceProviderHandle(AZ::EntityId id)

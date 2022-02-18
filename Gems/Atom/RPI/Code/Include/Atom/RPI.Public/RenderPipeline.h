@@ -184,6 +184,23 @@ namespace AZ
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
 
+            //! Get the RenderPipelineDescriptor which was used to create this RenderPipeline
+            const RenderPipelineDescriptor& GetDescriptor() const;
+
+            // Helper functions to modify the passes of this render pipeline
+            //! Find a reference pass's location and add the new pass before the reference pass
+            //! After the new pass was inserted, the new pass and the reference pass are siblings
+            bool AddPassBefore(Ptr<Pass> newPass, const AZ::Name& referencePassName);
+            
+            //! Find a reference pass's location and add the new pass after the reference pass
+            //! After the new pass was inserted, the new pass and the reference pass are siblings
+            bool AddPassAfter(Ptr<Pass> newPass, const AZ::Name& referencePassName);
+
+            //! Find the first pass with matching name in the render pipeline
+            //! Note: to find all the passes with matching name in this render pipeline,
+            //! use RPI::PassSystemInterface::Get()->ForEachPass() function instead.
+            Ptr<Pass> FindFirstPass(const AZ::Name& passName);
+
         private:
             RenderPipeline() = default;
 
@@ -238,8 +255,8 @@ namespace AZ
 
             PipelineViewTag m_mainViewTag;
 
-            // Whether the pipeline should be removed after one execution
-            bool m_executeOnce = false;
+            // Was the pipeline modified by Scene's feature processor
+            bool m_wasModifiedByScene = false;
 
             // The window handle associated with this render pipeline if it's created for a window
             AzFramework::NativeWindowHandle m_windowHandle = nullptr;
@@ -247,15 +264,15 @@ namespace AZ
             // Render settings that can be queried by passes to setup things like render target resolution
             PipelineRenderSettings m_activeRenderSettings;
 
-            // Original settings from RenderPipelineDescriptor, used to revert active render settings to original settings from RenderPipelineDescriptor
-            PipelineRenderSettings m_originalRenderSettings;
-
             // A tag to filter draw items submitted by passes of this render pipeline.
             // This tag is allocated when it's added to a scene. It's set to invalid when it's removed to the scene.
             RHI::DrawFilterTag m_drawFilterTag;
             // A mask to filter draw items submitted by passes of this render pipeline.
             // This mask is created from the value of m_drawFilterTag.
-            RHI::DrawFilterMask m_drawFilterMask = 0; 
+            RHI::DrawFilterMask m_drawFilterMask = 0;
+
+            // The descriptor used to created this render pipeline
+            RenderPipelineDescriptor m_descriptor;
         };
 
     } // namespace RPI

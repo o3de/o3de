@@ -440,13 +440,9 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_LibraryClearingAssignsDefault as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.xfail(reason=
-                       "Test failed due to an error message shown while in game mode: "
-                       "'(Prefab) - Invalid asset found referenced in scene while entering game mode. "
-                       "The asset was stored in an instance of Asset.'")
     def test_Collider_AddColliderComponent(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_AddColliderComponent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.xfail(
         reason="This will fail due to this issue ATOM-15487.")

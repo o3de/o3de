@@ -25,7 +25,12 @@ namespace AZ::Render
         float m_vertexNormalsScale = 1.0f;
         float m_faceNormalsScale = 1.0f;
         float m_tangentsScale = 1.0f;
-        float m_wireframeScale = 1.0f;
+
+        //! Use the vertex normals to scale the wireframe a bit to avoid Z-fighting when rendering.
+        //! Scale the normal by the m_wireframeScale to push the wireframe a bit above the solide mesh rendering.
+        //! Additionally the character bounds will be taken into account, so this is a relative-to the character size value.
+        float m_wireframeScale = 0.1f;
+
         float m_nodeOrientationScale = 1.0f;
 
         bool m_enabledNodeBasedAabb = true;
