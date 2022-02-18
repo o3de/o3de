@@ -39,7 +39,7 @@ namespace AZ
             // [GFX TODO][ATOM-13648] Add local system allocator to material system
             // ScriptContext creates a new allocator if null (default) is passed in.
             // Temporarily using system allocator for preventing hitting the max allocator number.
-            m_scriptContext = AZStd::make_unique<AZ::ScriptContext>(ScriptContextIds::DefaultScriptContextId, &AZ::AllocatorInstance<AZ::SystemAllocator>::Get());
+            m_scriptContext = AZStd::make_unique<AZ::ScriptContext>(AZ_CRC_CE("MaterialFunctor"), &AZ::AllocatorInstance<AZ::SystemAllocator>::Get());
             m_sriptBehaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
 
             ReflectScriptContext(m_sriptBehaviorContext.get());

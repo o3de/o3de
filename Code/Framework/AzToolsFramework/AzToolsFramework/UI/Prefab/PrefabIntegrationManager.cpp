@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
@@ -47,6 +48,7 @@ namespace AzToolsFramework
 
         ContainerEntityInterface* PrefabIntegrationManager::s_containerEntityInterface = nullptr;
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
+        PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
         PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
@@ -78,6 +80,13 @@ namespace AzToolsFramework
             if (s_prefabLoaderInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            s_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            if (s_prefabFocusInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabFocusInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -993,14 +1002,18 @@ namespace AzToolsFramework
             }
         }
 
-        int PrefabIntegrationManager::ExecuteClosePrefabDialog(TemplateId templateId)
+        int PrefabIntegrationManager::HandleRootPrefabClosure(TemplateId templateId)
         {
             return m_prefabSaveHandler.ExecuteClosePrefabDialog(templateId);
         }
 
-        void PrefabIntegrationManager::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
+        void PrefabIntegrationManager::SaveCurrentPrefab()
         {
-            m_prefabSaveHandler.ExecuteSavePrefabDialog(templateId, useSaveAllPrefabsPreference);
+            if (s_prefabFocusInterface)
+            {
+                TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
+                m_prefabSaveHandler.ExecuteSavePrefabDialog(currentTemplateId, true);
+            }
         }
 
     } // namespace Prefab
