@@ -350,7 +350,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerTick");
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick");
 
         if (bg_multiplayerDebugDraw)
         {
@@ -394,7 +394,7 @@ namespace Multiplayer
 
         // Send out the game state update to all connections
         {            
-            AZ_PROFILE_SCOPE(MULTIPLAYER, "SendOutGameStateUpdateToAllConnections");
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
 
             auto sendNetworkUpdates = [&stats](IConnection& connection)
             {
@@ -441,7 +441,7 @@ namespace Multiplayer
 
         if (!packet.GetCommandSet().empty())
         {
-            AZ_PROFILE_SCOPE(MULTIPLAYER, "SendReliablePackets");
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendReliablePackets");
             m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         }
     }
@@ -1020,7 +1020,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds)
     {
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "TickVisibleNetworkEntities");
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: TickVisibleNetworkEntities");
 
         m_tickFactor += deltaTime / serverRateSeconds;
         // Linear close to the origin, but asymptote at y = 1

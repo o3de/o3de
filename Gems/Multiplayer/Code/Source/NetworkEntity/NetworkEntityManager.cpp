@@ -205,13 +205,13 @@ namespace Multiplayer
 
     void NetworkEntityManager::NotifyEntitiesDirtied()
     {
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "NotifyEntitiesDirtied");
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "NetworkEntityManager: NotifyEntitiesDirtied");
         m_onEntityMarkedDirty.Signal();
     }
 
     void NetworkEntityManager::NotifyEntitiesChanged()
     {
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "NotifyEntitiesChanged");
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "NetworkEntityManager: NotifyEntitiesChanged");
         m_onEntityNotifyChanges.Signal();
     }
 
@@ -364,7 +364,7 @@ namespace Multiplayer
             m_networkEntityTracker.erase(entityId);
         }
     }
-    
+
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
         const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, AutoActivate autoActivate)
     {
@@ -461,12 +461,12 @@ namespace Multiplayer
         {
             return returnList;
         }
-        
+
         auto spawnableAssetId = m_networkPrefabLibrary.GetAssetIdByName(prefabEntryId.m_prefabName);
         // Required for sync-instantiation. Todo: keep the reference in NetworkSpawnableLibrary
         auto netSpawnableAsset = AZ::Data::AssetManager::Instance().GetAsset<AzFramework::Spawnable>(spawnableAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         AZ::Data::AssetManager::Instance().BlockUntilLoadComplete(netSpawnableAsset);
-       
+
         AzFramework::Spawnable* netSpawnable = netSpawnableAsset.GetAs<AzFramework::Spawnable>();
         if (!netSpawnable)
         {
@@ -623,7 +623,7 @@ namespace Multiplayer
         NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
         NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
 
-        AZStd::vector<AZ::Entity*> hierarchicalEntities; 
+        AZStd::vector<AZ::Entity*> hierarchicalEntities;
 
         // Get the entities in this hierarchy
         if (hierarchyRootController)

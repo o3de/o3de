@@ -81,7 +81,7 @@ namespace Multiplayer
 
     void EntityReplicationManager::ActivatePendingEntities()
     {
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "ActivatePendingEntities");
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: ActivatePendingEntities");
 
         AZStd::vector<NetEntityId> notReadyEntities;
 
@@ -132,7 +132,7 @@ namespace Multiplayer
             );
 
             {
-                AZ_PROFILE_SCOPE(MULTIPLAYER, "PrepareSerialization");
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - PrepareSerialization");
                 // Prep a replication record for send, at this point, everything needs to be sent
                 for (EntityReplicator* replicator : toSendList)
                 {
@@ -141,7 +141,7 @@ namespace Multiplayer
             }
 
             {
-                AZ_PROFILE_SCOPE(MULTIPLAYER, "SendEntityUpdateMessages");
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - SendEntityUpdateMessages");
                 // While our to send list is not empty, build up another packet to send
                 do
                 {
@@ -174,8 +174,8 @@ namespace Multiplayer
         {
             return EntityReplicatorList();
         }
-                
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "GenerateEntityUpdateList");
+
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: GenerateEntityUpdateList");
 
         // Generate a list of all our entities that need updates
         EntityReplicatorList toSendList;
