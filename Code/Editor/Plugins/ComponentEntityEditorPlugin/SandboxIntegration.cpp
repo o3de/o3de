@@ -654,7 +654,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     // when nothing is selected, entity is created at root level
     if (selected.size() == 0)
     {
-        action = menu->addAction(QObject::tr("Create Entity"));
+        action = menu->addAction(QObject::tr("Create entity"));
         action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
         QObject::connect(
             action, &QAction::triggered, action,
@@ -672,7 +672,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
         if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly))
         {
-            action = menu->addAction(QObject::tr("Create Entity"));
+            action = menu->addAction(QObject::tr("Create entity"));
             action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
             QObject::connect(
                 action, &QAction::triggered, action,
@@ -688,7 +688,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     {
         menu->addSeparator();
 
-        action = menu->addAction(QObject::tr("Create Layer"));
+        action = menu->addAction(QObject::tr("Create layer"));
         QObject::connect(action, &QAction::triggered, [this] { ContextMenu_NewLayer(); });
 
         AzToolsFramework::EntityIdList entities;
