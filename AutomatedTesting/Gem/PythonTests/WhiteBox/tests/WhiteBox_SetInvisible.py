@@ -28,8 +28,15 @@ def C28798205_WhiteBox_SetInvisible():
 
     from editor_python_test_tools.utils import Report
     from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
+<<<<<<< HEAD
 
     # open level
+=======
+    from editor_python_test_tools.utils import TestHelper as helper
+
+    # open level
+    helper.init_idle()
+>>>>>>> origin/broganab/WhiteBoxTestConversion
     hydra.open_base_level()
 
     white_box_entity_name = 'WhiteBox-Visibility'
