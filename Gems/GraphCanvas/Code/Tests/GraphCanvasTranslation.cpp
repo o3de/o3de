@@ -15,15 +15,6 @@
 
 #include <Translation/TranslationBus.h>
 
-//using ::testing::AtLeast;
-//using ::testing::FloatNear;
-//using ::testing::FloatEq;
-//using ::testing::IsFalse;
-//using ::testing::Ne;
-//using ::testing::NiceMock;
-//using ::testing::Return;
-//using ::testing::SetArgReferee;
-
 class GraphCanvasTest : public ::testing::Test
 {
 protected:
