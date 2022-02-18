@@ -118,7 +118,7 @@ bool AssetImporterManager::OnBrowseFiles()
 
     QDir gameRoot(Path::GetEditingGameDataFolder().c_str());
     QString gameRootAbsPath = gameRoot.absolutePath();
-
+    CLogFile::FormatLine("AssetImporterManager:: gameRootAbsPath = '%s'", gameRootAbsPath.toStdString().c_str());
     // Case 1: if currentAbsolutePath is empty at this point, that means this is the first time
     //         users using the Asset Importer, set the default directory to be users' PC's desktop.
     // Case 2: if the current folder directory stored in the registry doesn't exist anymore,
@@ -129,11 +129,13 @@ bool AssetImporterManager::OnBrowseFiles()
     {
         currentAbsolutePath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     }
-
+    CLogFile::FormatLine("AssetImporterManager:: Setting Directory");
     fileDialog.setDirectory(currentAbsolutePath);
 
+    CLogFile::FormatLine("AssetImporterManager:: Going to fileDialog Exec");
     if (!fileDialog.exec())
     {
+        CLogFile::FormatLine("AssetImporterManager:: fileDialog Exec returned false");
         return false;
     }
 
