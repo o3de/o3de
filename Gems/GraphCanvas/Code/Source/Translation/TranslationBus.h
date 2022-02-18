@@ -41,6 +41,11 @@ namespace GraphCanvas
             return *this;
         }
 
+        bool operator == (const char* keyStr) const
+        {
+            return m_key.compare(keyStr) == 0;
+        }
+
         bool operator == (const TranslationKey& rhs) const
         {
             return m_key.compare(rhs.m_key) == 0;

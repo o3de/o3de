@@ -32,6 +32,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         INCLUDE_DIRECTORIES
             PUBLIC
                 .
+                Source
                 StaticLib
         COMPILE_DEFINITIONS
             PUBLIC
@@ -41,6 +42,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework
+                AZ::AssetBuilderSDK
                 3rdParty::Qt::Core
                 3rdParty::Qt::Gui
                 3rdParty::Qt::Widgets
@@ -78,3 +80,35 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
 
 endif ()
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    ly_add_target(
+        NAME GraphCanvas.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            graphcanvas_tests_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                GRAPHCANVAS_TESTS
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Tests
+                Source
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                Gem::GraphCanvas
+                Gem::GraphCanvasWidgets
+        RUNTIME_DEPENDENCIES
+                Gem::GraphCanvas
+                Gem::GraphCanvasWidgets
+    )
+    ly_add_googletest(
+        NAME Gem::GraphCanvas.Tests
+    )
+
+endif()
