@@ -14,6 +14,7 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <stdarg.h>
 
@@ -68,6 +69,10 @@ namespace AZ::Debug
     static AZ::EnvironmentVariable<AZStd::unordered_set<size_t>> g_ignoredAsserts;
     static AZ::EnvironmentVariable<int> g_assertVerbosityLevel;
     static AZ::EnvironmentVariable<int> g_logVerbosityLevel;
+
+    static const char* assertsAutoBreakUID = "assertsAutoBreak";
+    static const char* s_AssertsAutoBreakRegistryPath = "/O3DE/Core/asserts_auto_break";
+    static AZ::EnvironmentVariable<bool> s_AssertsAutoBreak;
 
     static constexpr auto PrintfEventId = EventNameHash("Printf");
     static constexpr auto WarningEventId = EventNameHash("Warning");
@@ -327,9 +332,38 @@ namespace AZ::Debug
                 }
             }
             
+            if (IsDebuggerPresent())
+            {
+                if (!s_AssertsAutoBreak.IsConstructed())
+                {
+                    SettingsRegistryInterface* settingsRegistry = SettingsRegistry::Get();
+                    if (settingsRegistry)
+                    {
+                        bool assertsAutoBreak;
+                        if (!settingsRegistry->Get(assertsAutoBreak, s_AssertsAutoBreakRegistryPath))
+                        {
+                            // Currently, asserts will not break in the debugger by default, however THIS IS EXPECTED TO CHANGE
+                            // shortly after this settings registry parameter is introduced to discourage asserts firing unchecked
+                            // or going undetected.
+                            // To enable this setting, add {"O3DE": { "asserts_auto_break": true }} to a settings registry file
+                            assertsAutoBreak = false;
+                        }
+
+                        s_AssertsAutoBreak = AZ::Environment::CreateVariable<bool>(assertsAutoBreakUID);
+                        s_AssertsAutoBreak.Set(assertsAutoBreak);
+                    }
+                }
+
+                if (s_AssertsAutoBreak.Get())
+                {
+                    // You've encountered an assert! By default, the presence of a debugger will cause asserts
+                    // to DebugBreak (walk up a few stack frames to understand what happened).
+                    g_tracer.Break();
+                }
+            }
 #if AZ_ENABLE_TRACE_ASSERTS
             //display native UI dialogs at verbosity level 2
-            if (currentLevel == assertLevel_nativeUI)
+            else if (currentLevel == assertLevel_nativeUI)
             {
                 AZ::NativeUI::AssertAction buttonResult;
                 EBUS_EVENT_RESULT(buttonResult, AZ::NativeUI::NativeUIRequestBus, DisplayAssertDialog, dialogBoxText);
@@ -356,7 +390,7 @@ namespace AZ::Debug
             else
 #endif //AZ_ENABLE_TRACE_ASSERTS
             // Crash the application directly at assert level 3
-            if (currentLevel >= assertLevel_crash)
+            if (currentLevel == assertLevel_crash)
             {
                 AZ_Crash();
             }
