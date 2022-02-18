@@ -322,7 +322,7 @@ if __name__ == '__main__':
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
-                        default=True,
+                        default=False,
                         help='Enables global debug flag.')
     
     parser.add_argument('-rt', '--run-tests',
@@ -340,7 +340,7 @@ if __name__ == '__main__':
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
-                        default=True,
+                        default=False,
                         help='Enables dev mode for early auto attaching debugger.')  
     
     parser.add_argument('-ex', '--exit',
@@ -376,6 +376,9 @@ if __name__ == '__main__':
     if args.run_tests:
         _DCCSI_TESTS = True
         os.environ["DCCSI_TESTS"] = str(_DCCSI_TESTS)
+        
+        _LOGGER.info('TESTS ENABLED, _DCCSI_TESTS: True')
+        _LOGGER.info('Tests are recursive package/module imports and will be verbose!')
         
         # If in dev mode this will test imports of __all__
         from azpy import test_imports
