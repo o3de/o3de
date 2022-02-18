@@ -74,7 +74,10 @@ class ExportFiles(bpy.types.Operator):
         if len(selected_name) > 1:
             if bpy.types.Scene.multi_file_export_o3de:
                 for obj_name in selected_name:
-                    bpy.data.objects[obj_name].select_set(True)
+                    active_selection = bpy.context.scene.objects[obj_name]
+                    bpy.ops.object.select_all(action='DESELECT')
+                    bpy.context.view_layer.objects.active = active_selection
+                    active_selection.select_set(True)
                     # Remove some nasty invalid char
                     file_name = re.sub(r'\W+', '', obj_name)
                     # Export file
