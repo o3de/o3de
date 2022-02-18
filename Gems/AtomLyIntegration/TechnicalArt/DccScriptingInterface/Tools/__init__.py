@@ -55,6 +55,7 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
+from azpy.constants import STR_CROSSBAR
 
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_TESTS = env_bool(ENVAR_DCCSI_TESTS, False)
@@ -78,8 +79,8 @@ _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                     datefmt='%m-%d %H:%M')
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('{}'.format('-' * 74))
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_LOGGER.debug(STR_CROSSBAR)
+_LOGGER.debug('Initializing: {}.'.format(_PACKAGENAME))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH.as_posix()))
 _LOGGER.debug('PATH_DCCSI_TOOLS: {}'.format(_PATH_DCCSI_TOOLS.as_posix()))
 _LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG.as_posix()))
@@ -113,9 +114,7 @@ def attach_debugger(debugge_typer=_DCCSI_GDEBUGGER):
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run in debug perform local tests from IDE or CLI"""   
-    
-    from azpy.constants import STR_CROSSBAR
+    """Run in debug perform local tests from IDE or CLI"""
     
     # happy print
     _LOGGER.info(STR_CROSSBAR)
