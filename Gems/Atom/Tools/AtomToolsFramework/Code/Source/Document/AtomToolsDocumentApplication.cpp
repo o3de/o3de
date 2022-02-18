@@ -16,12 +16,6 @@ namespace AtomToolsFramework
     {
     }
 
-    void AtomToolsDocumentApplication::Reflect(AZ::ReflectContext* context)
-    {
-        Base::Reflect(context);
-        AtomToolsDocumentSystem::Reflect(context);
-    }
-
     void AtomToolsDocumentApplication::StartCommon(AZ::Entity* systemEntity)
     {
         Base::StartCommon(systemEntity);

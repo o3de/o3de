@@ -23,7 +23,7 @@ def C28798205_WhiteBox_SetInvisible():
     # in future game_mode will be activated and a runtime White Box Component queried
     import os
     import sys
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
+    import WhiteBoxInit as init
     import editor_python_test_tools.hydra_editor_utils as hydra
 
     import azlmbr.whitebox.api as api

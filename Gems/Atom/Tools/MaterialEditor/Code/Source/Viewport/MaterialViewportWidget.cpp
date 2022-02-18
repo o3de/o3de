@@ -95,9 +95,15 @@ namespace MaterialEditor
         AZ_Assert(mainScene, "Main scenes missing during system component initialization");
         mainScene->SetSubsystem(m_scene);
 
-        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
+        // Load the render pipeline asset
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
             m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
+
+        // The default pipeline determines the initial MSAA state for the application
+        const AZ::RPI::RenderPipelineDescriptor* renderPipelineDescriptor = AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
+        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor->m_renderSettings.m_multisampleState);
+
+        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *GetViewportContext()->GetWindowContext().get());
         pipelineAsset.Release();
         m_scene->AddRenderPipeline(m_renderPipeline);

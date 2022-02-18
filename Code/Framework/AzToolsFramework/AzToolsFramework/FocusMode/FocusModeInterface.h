@@ -39,7 +39,7 @@ namespace AzToolsFramework
         virtual AZ::EntityId GetFocusRoot(AzFramework::EntityContextId entityContextId) = 0;
 
         //! Returns a list of the ids of all the entities that are descendants of the focus root.
-        virtual EntityIdList GetFocusedEntities(AzFramework::EntityContextId entityContextId) = 0;
+        virtual const EntityIdList& GetFocusedEntities(AzFramework::EntityContextId entityContextId) = 0;
 
         //! Returns whether the entity id provided is part of the focused sub-tree.
         virtual bool IsInFocusSubTree(AZ::EntityId entityId) const = 0;
