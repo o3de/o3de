@@ -33,6 +33,9 @@ namespace AtomToolsFramework
     //! Convert and assign editor dynamic property configuration fields to material property meta data
     void ConvertToPropertyMetaData(AZ::RPI::MaterialPropertyDynamicMetadata& propertyMetaData, const AtomToolsFramework::DynamicPropertyConfig& propertyConfig);
 
+    //! Compare equality of data types and values of editor property stored in AZStd::any
+    bool ArePropertyValuesEqual(const AZStd::any& valueA, const AZStd::any& valueB);
+
     //! Convert the property value into the format that will be stored in the source data
     //! This is primarily needed to support conversions of special types like enums and images
     //! @param exportPath absolute path of the file being saved

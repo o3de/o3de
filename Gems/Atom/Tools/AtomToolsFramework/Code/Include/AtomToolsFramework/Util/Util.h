@@ -42,9 +42,6 @@ namespace AtomToolsFramework
     AZStd::string GetExteralReferencePath(
         const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath = false);
 
-    //! Compare equality of data types and values of editor property stored in AZStd::any
-    bool ArePropertyValuesEqual(const AZStd::any& valueA, const AZStd::any& valueB);
-
     //! Traverse up the instance data hierarchy to find a node containing the corresponding type
     template<typename T>
     const T* FindAncestorInstanceDataNodeByType(const AzToolsFramework::InstanceDataNode* pNode)
