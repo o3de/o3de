@@ -6,9 +6,6 @@
  *
  */
 
-#include "Entity/EditorEntitySortComponent.h"
-#include <UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
 
@@ -20,6 +17,9 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
+
 #include <Prefab/PrefabTestFixture.h>
 
 #include <QAbstractItemModelTester>
