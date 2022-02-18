@@ -774,28 +774,6 @@ QString CCryEditApp::ShowWelcomeDialog()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::InitDirectory()
-{
-    //////////////////////////////////////////////////////////////////////////
-    // Initializes Root folder of the game.
-    //////////////////////////////////////////////////////////////////////////
-    QString szExeFileName = qApp->applicationDirPath();
-    const static char* s_engineMarkerFile = "engine.json";
-
-    while (!QFile::exists(QString("%1/%2").arg(szExeFileName, s_engineMarkerFile)))
-    {
-        QDir currentdir(szExeFileName);
-        if (!currentdir.cdUp())
-        {
-            break;
-        }
-        szExeFileName = currentdir.absolutePath();
-    }
-    QDir::setCurrent(szExeFileName);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 // Needed to work with custom memory manager.
 //////////////////////////////////////////////////////////////////////////
 
@@ -1594,7 +1572,6 @@ bool CCryEditApp::InitInstance()
 {
     QElapsedTimer startupTimer;
     startupTimer.start();
-    InitDirectory();
 
     // create / attach to the environment:
     AttachEditorCoreAZEnvironment(AZ::Environment::GetInstance());
@@ -1604,8 +1581,6 @@ bool CCryEditApp::InitInstance()
     CEditCommandLineInfo cmdInfo;
 
     InitFromCommandLine(cmdInfo);
-
-    InitDirectory();
 
     qobject_cast<Editor::EditorQtApplication*>(qApp)->Initialize(); // Must be done after CEditorImpl() is created
     m_pEditor->Initialize();
@@ -4001,11 +3976,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     gSettings.Connect();
 
     auto theApp = AZStd::make_unique<CCryEditApp>();
-    // this does some magic to set the current directory...
-    {
-        QCoreApplication app(argc, argv);
-        CCryEditApp::InitDirectory();
-    }
 
     // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
     // on Windows 10

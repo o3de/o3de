@@ -24,7 +24,7 @@ critical_shape_check = ("Default shape has more than 0 sides", "default shape ha
 def C29279329_WhiteBox_SetDefaultShape():
     import os
     import sys
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
+    import WhiteBoxInit as init
 
     import azlmbr.whitebox.api as api
     import azlmbr.bus as bus

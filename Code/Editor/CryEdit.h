@@ -138,7 +138,6 @@ public:
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);
     ECreateLevelResult CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName);
-    static void InitDirectory();
     bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
