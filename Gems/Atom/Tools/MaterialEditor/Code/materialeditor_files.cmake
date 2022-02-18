@@ -25,7 +25,6 @@ set(FILES
     Source/Viewport/MaterialViewportComponent.h
     Source/Viewport/MaterialViewportWidget.cpp
     Source/Viewport/MaterialViewportWidget.h
-    Source/Viewport/MaterialViewportWidget.ui
 
     Source/Window/MaterialEditorWindowSettings.h
     Source/Window/MaterialEditorWindow.h

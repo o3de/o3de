@@ -57,11 +57,6 @@
 #include <Viewport/MaterialViewportRequestBus.h>
 #include <Viewport/MaterialViewportSettings.h>
 #include <Viewport/MaterialViewportWidget.h>
-#include <Viewport/ui_MaterialViewportWidget.h>
-
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QWindow>
-AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
 {
@@ -69,11 +64,8 @@ namespace MaterialEditor
 
     MaterialViewportWidget::MaterialViewportWidget(const AZ::Crc32& toolId, QWidget* parent)
         : AtomToolsFramework::RenderViewportWidget(parent)
-        , m_ui(new Ui::MaterialViewportWidget)
         , m_toolId(toolId)
     {
-        m_ui->setupUi(this);
-
         // Create a custom entity context for the entities in this viewport 
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
         m_entityContext->InitContext();
