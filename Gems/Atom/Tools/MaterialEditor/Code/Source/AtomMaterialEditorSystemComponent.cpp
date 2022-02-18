@@ -116,7 +116,8 @@ namespace AtomMaterialEditor
                 return new MaterialEditor::MaterialEditorWindow(toolId, parent);
             };
 
-            o3deMaterialEditor->RegisterViewPane("Render Materials", AZStd::move(windowCreationFunc));
+            o3deMaterialEditor->RegisterViewPane(
+                "Render Materials", ":/Menu/material_editor.svg", AZStd::move(windowCreationFunc));
         }
     }
 

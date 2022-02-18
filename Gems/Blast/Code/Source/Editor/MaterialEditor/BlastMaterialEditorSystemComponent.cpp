@@ -57,7 +57,7 @@ namespace Blast
 
     void BlastMaterialEditorSystemComponent::RegisterBlastWindow()
     {
-        O3DEMaterialEditor::RegisterViewPane<MaterialEditorWindow>("Blast Materials");
+        O3DEMaterialEditor::RegisterViewPane<MaterialEditorWindow>("Blast Materials", ":/Menu/script_canvas_editor.svg");
     }
 
 } // namespace Blast

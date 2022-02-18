@@ -3,36 +3,86 @@
 
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QStylePainter>
+#include <QStyleOptionTab>
 
 #include <O3DEMaterialEditorWidget.h>
 #include <O3DEMaterialEditorSystemComponent.h>
 
 namespace O3DEMaterialEditor
 {
+    namespace
+    {
+        class RotatedTabBar : public AzQtComponents::TabBar
+        {
+        public:
+            explicit RotatedTabBar(QWidget* parent = nullptr)
+                : AzQtComponents::TabBar(parent)
+            {
+            }
+
+            QSize tabSizeHint([[maybe_unused]] int index) const override
+            {
+                return QSize(45, 55);
+            }
+
+        protected:
+            void paintEvent([[maybe_unused]] QPaintEvent* event) override
+            {
+                QStylePainter painter(this);
+                QStyleOptionTab optionTab;
+
+                for (int tabIndex = 0; tabIndex < count(); ++tabIndex)
+                {
+                    initStyleOption(&optionTab, tabIndex);
+                    painter.drawControl(QStyle::CE_TabBarTabShape, optionTab);
+                    painter.save();
+
+                    QSize size = optionTab.rect.size();
+                    size.transpose();
+                    QRect rect(QPoint(), size);
+                    rect.moveCenter(optionTab.rect.center());
+                    optionTab.rect = rect;
+
+                    QPoint center = tabRect(tabIndex).center();
+                    painter.translate(center);
+                    painter.rotate(90);
+                    painter.translate(-center);
+                    painter.drawControl(QStyle::CE_TabBarTabLabel, optionTab);
+                    painter.restore();
+                }
+            }
+        };
+    }
+
     O3DEMaterialEditorWidget::O3DEMaterialEditorWidget(QWidget* parent)
         : AzQtComponents::TabWidget(parent)
     {
-        AzQtComponents::TabWidget::applySecondaryStyle(this, false/*bordered*/);
+        auto tabBar = new RotatedTabBar(this);
+        setCustomTabBar(tabBar);
 
-        setMovable(true);
+        AzQtComponents::TabWidget::applyVerticalStyle(this, false/*bordered*/);
+
+        setTabPosition(QTabWidget::West);
+        setIconSize(QSize(33, 33));
+        setMovable(false); // RotatedTabBar is not working well while reordering tabs at the moment.
 
         if (auto* o3deMaterialEditorSystem = GetO3DEMaterialEditorSystem())
         {
             const auto& registeredTabs = o3deMaterialEditorSystem->GetRegisteredTabs();
             for (const auto& registeredTab : registeredTabs)
             {
-                const AZStd::string& tabName = registeredTab.first;
-                const WidgetCreationFunc& widgetCreationFunc = registeredTab.second;
-
                 // Have render material tab first
-                if (tabName == "Render Materials")
+                if (registeredTab.m_name == "Render Materials")
                 {
-                    insertTab(0, widgetCreationFunc(nullptr), tabName.c_str());
+                    insertTab(0, registeredTab.m_widgetCreationFunc(nullptr), QIcon(registeredTab.m_icon.c_str()), "");
                     setCurrentIndex(0);
+                    setTabToolTip(0, registeredTab.m_name.c_str());
                 }
                 else
                 {
-                    addTab(widgetCreationFunc(nullptr), tabName.c_str());
+                    addTab(registeredTab.m_widgetCreationFunc(nullptr), QIcon(registeredTab.m_icon.c_str()), "");
+                    setTabToolTip(count()-1, registeredTab.m_name.c_str());
                 }
             }
         }
@@ -49,7 +99,7 @@ namespace O3DEMaterialEditor
 
                 noWindowsTab->setLayout(mainLayout);
             }
-            addTab(noWindowsTab, "No Materials");
+            addTab(noWindowsTab, "");
         }
     }
 }

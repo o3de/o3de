@@ -61,6 +61,10 @@ namespace AzQtComponents
         //! @guidepage uidev-tab-component.html
         static void applySecondaryStyle(TabWidget* tabWidget, bool bordered = true);
 
+        //! Applies the "Vertical" style class to a TabWidget.
+        //! @guidepage uidev-tab-component.html
+        static void applyVerticalStyle(TabWidget* tabWidget, bool bordered = true);
+
         //! Sets the tab widget style configuration.
         //! @param settings The settings object to load the configuration from.
         //! @return The new configuration of the tab widget.

@@ -28,7 +28,7 @@ namespace O3DEMaterialEditor
         }
 
         //! Registers a view pane with the main editor.
-        virtual void RegisterViewPane(const AZStd::string& name, const WidgetCreationFunc& widgetCreationFunc) = 0;
+        virtual void RegisterViewPane(const AZStd::string& name, const AZStd::string& icon, const WidgetCreationFunc& widgetCreationFunc) = 0;
 
     protected:
         NotifyRegisterViewsEvent m_notifyRegisterViewsEvent;
@@ -38,7 +38,7 @@ namespace O3DEMaterialEditor
 
     //! Registers a view pane with the main editor.
     template <typename TWidget>
-    inline void RegisterViewPane(const AZStd::string& name)
+    inline void RegisterViewPane(const AZStd::string& name, const AZStd::string& icon)
     {
         auto* o3deMaterialEditor = O3DEMaterialEditorInterface::Get();
         if (o3deMaterialEditor)
@@ -49,7 +49,7 @@ namespace O3DEMaterialEditor
                     return new TWidget(parent);
                 };
 
-            o3deMaterialEditor->RegisterViewPane(name, AZStd::move(windowCreationFunc));
+            o3deMaterialEditor->RegisterViewPane(name, icon, AZStd::move(windowCreationFunc));
         }
     }
 

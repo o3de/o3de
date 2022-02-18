@@ -44,6 +44,7 @@ namespace AzQtComponents
     static int g_toolTipTabWidthThreshold = -1;
     static int g_overflowSpacing = -1;
     static QString g_secondaryStyleClass = QStringLiteral("Secondary");
+    static QString g_verticalStyleClass = QStringLiteral("Vertical");
     static QString g_borderedStyleClass = QStringLiteral("Bordered");
     static QString g_emptyStyleClass = QStringLiteral("Empty");
 
@@ -87,6 +88,23 @@ namespace AzQtComponents
         if (tabWidget->actionToolBar())
         {
             Style::addClass(tabWidget->actionToolBar(), g_secondaryStyleClass);
+        }
+    }
+
+    void TabWidget::applyVerticalStyle(TabWidget* tabWidget, bool bordered)
+    {
+        Style::addClass(tabWidget, g_verticalStyleClass);
+        Style::addClass(tabWidget->tabBar(), g_verticalStyleClass);
+
+        if (bordered)
+        {
+            Style::addClass(tabWidget, g_borderedStyleClass);
+            Style::addClass(tabWidget->tabBar(), g_borderedStyleClass);
+        }
+
+        if (tabWidget->actionToolBar())
+        {
+            Style::addClass(tabWidget->actionToolBar(), g_verticalStyleClass);
         }
     }
 

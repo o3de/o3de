@@ -148,3 +148,74 @@ AzQtComponents--TabBar.Secondary::tab:selected
     border-bottom: 3px solid #008DE5;
     color: #FFFFFF;
 }
+
+/* Vertical Style */
+
+AzQtComponents--TabWidget.Vertical
+{
+    background-color: #444444;
+    border-right: 1px solid #111111;
+}
+
+AzQtComponents--TabWidget.Vertical.Bordered
+{
+    border: 1px solid #111111;
+}
+
+AzQtComponents--TabWidget.Vertical:pane
+{
+    border: 0 none;
+    border-top: 0px solid #2B2B2B;
+    padding: 0px;
+    padding-top: 0;
+}
+
+AzQtComponents--TabWidget.Vertical:tab-bar
+{
+    left: 1px;
+    min-height: 30px;
+}
+
+AzQtComponents--TabBar.Vertical
+{
+    border: 0 none;
+}
+
+AzQtComponents--TabBar.Vertical.Bordered
+{
+    border-left: 0px solid #111111;
+    border-top: 0px solid #111111;
+}
+
+AzQtComponents--TabBar.Vertical::tab
+{
+    background-color: #444444;
+    border: 0 none;
+    border-left: 0px solid #333333;
+    text-align: center;
+    color: #959595;
+}
+
+AzQtComponents--TabBar.Vertical::close-button
+{
+    image: url(":/stylesheet/img/close_small.svg");
+}
+
+AzQtComponents--TabBar.Vertical::tab:hover
+{
+    background: rgba(255,255,255,0.15);
+    border-left: 0px solid #444444;
+    color: #FFFFFF;
+}
+
+AzQtComponents--TabBar.Vertical.Bordered::tab
+{
+    border-top: 0px solid #111111;
+}
+
+AzQtComponents--TabBar.Vertical::tab:selected
+{
+    border-left: 3px solid #008DE5;
+    color: #111111;;
+    background-color: #333333;
+}

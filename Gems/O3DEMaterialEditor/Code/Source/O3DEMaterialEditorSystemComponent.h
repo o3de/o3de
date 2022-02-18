@@ -7,7 +7,12 @@
 
 namespace O3DEMaterialEditor
 {
-    using TabsInfo = AZStd::pair<AZStd::string, WidgetCreationFunc>;
+    struct TabsInfo
+    {
+        AZStd::string m_name;
+        AZStd::string m_icon;
+        WidgetCreationFunc m_widgetCreationFunc;
+    };
 
     //! System component for O3DEMaterialEditor editor.
     class O3DEMaterialEditorSystemComponent
@@ -35,7 +40,7 @@ namespace O3DEMaterialEditor
         void Deactivate() override;
 
         // O3DEMaterialEditorInterface overrides ...
-        void RegisterViewPane(const AZStd::string& name, const WidgetCreationFunc& widgetCreationFunc) override;
+        void RegisterViewPane(const AZStd::string& name, const AZStd::string& icon, const WidgetCreationFunc& widgetCreationFunc) override;
 
         // AzToolsFramework::EditorEventsBus overrides ...
         void NotifyRegisterViews() override;

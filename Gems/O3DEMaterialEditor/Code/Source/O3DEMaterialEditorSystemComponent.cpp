@@ -54,9 +54,13 @@ namespace O3DEMaterialEditor
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }
 
-    void O3DEMaterialEditorSystemComponent::RegisterViewPane(const AZStd::string& name, const WidgetCreationFunc& widgetCreationFunc)
+    void O3DEMaterialEditorSystemComponent::RegisterViewPane(const AZStd::string& name, const AZStd::string& icon, const WidgetCreationFunc& widgetCreationFunc)
     {
-        m_registeredTabs.emplace_back(name, widgetCreationFunc);
+        TabsInfo tabInfo;
+        tabInfo.m_name = name;
+        tabInfo.m_icon = icon;
+        tabInfo.m_widgetCreationFunc = widgetCreationFunc;
+        m_registeredTabs.emplace_back(tabInfo);
     }
 
     void O3DEMaterialEditorSystemComponent::NotifyRegisterViews()
