@@ -665,6 +665,8 @@ namespace UnitTest
         EXPECT_EQ("20", AZStd::to_string(static_cast<uint32_t>(20)));
         EXPECT_EQ("20", AZStd::to_string(static_cast<int64_t>(20)));
         EXPECT_EQ("20", AZStd::to_string(static_cast<uint64_t>(20)));
+        EXPECT_EQ("false", AZStd::to_string(false));
+        EXPECT_EQ("true", AZStd::to_string(true));
 
         // wstring to string
         AZStd::string str1;

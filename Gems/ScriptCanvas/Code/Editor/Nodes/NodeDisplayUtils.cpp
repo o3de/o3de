@@ -338,7 +338,7 @@ namespace ScriptCanvasEditor::Nodes
         AZStd::string methodContext;
         // Get the method's text data
         GraphCanvas::TranslationRequests::Details methodDetails;
-        methodDetails.m_name = details.m_name; // fallback
+        methodDetails.m_name = methodName; // fallback
         key << "methods";
         AZStd::string updatedMethodName = methodName;
         if (isAccessor)
@@ -355,13 +355,13 @@ namespace ScriptCanvasEditor::Nodes
             }
             updatedMethodName.append(methodName);
         }
-        key << methodContext << updatedMethodName;
+        key << updatedMethodName << methodContext;
         GraphCanvas::TranslationRequestBus::BroadcastResult(methodDetails, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", methodDetails);
 
 
         if (methodDetails.m_subtitle.empty())
         {
-            methodDetails.m_subtitle = details.m_category;
+            methodDetails.m_subtitle = details.m_category.empty() ? details.m_name : details.m_category;
         }
 
         // Add to the tooltip the C++ class for reference
@@ -404,6 +404,19 @@ namespace ScriptCanvasEditor::Nodes
                 {
                     key.clear();
                     key << context << className << "methods" << updatedMethodName;
+
+                    if (isAccessor)
+                    {
+                        if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || methodNode->GetMethodType() == ScriptCanvas::MethodType::Free)
+                        {
+                            key << "Getter";
+                        }
+                        else
+                        {
+                            key << "Setter";
+                        }
+                    }
+
                     if (slot.IsInput())
                     {
                         key << "params";

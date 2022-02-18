@@ -46,8 +46,6 @@ set(FILES
     Source/Window/ToolBar/ModelPresetComboBox.cpp
     Source/Window/ToolBar/LightingPresetComboBox.h
     Source/Window/ToolBar/LightingPresetComboBox.cpp
-    Source/Window/MaterialInspector/MaterialInspector.h
-    Source/Window/MaterialInspector/MaterialInspector.cpp
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.cpp
 )

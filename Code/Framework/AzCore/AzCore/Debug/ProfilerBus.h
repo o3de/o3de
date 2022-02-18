@@ -58,6 +58,10 @@ namespace AZ
             //! Starting/ending a multi-frame capture of profiling data
             virtual bool StartCapture(AZStd::string outputFilePath) = 0;
             virtual bool EndCapture() = 0;
+
+            //! Check to see if a programmatic capture is currently in progress, implies
+            //! that the profiler is active if returns True.
+            virtual bool IsCaptureInProgress() const = 0;
         };
 
         using ProfilerSystemInterface = AZ::Interface<ProfilerRequests>;

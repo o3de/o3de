@@ -20,7 +20,7 @@ class Tests():
 def C28798177_WhiteBox_AddComponentToEntity():
     import os
     import sys
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
+    import WhiteBoxInit as init
 
     import azlmbr.bus as bus
     import azlmbr.editor as editor

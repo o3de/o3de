@@ -29,6 +29,7 @@ namespace AtomToolsFramework
         ~AtomToolsMainWindow();
 
     protected:
+        // AtomToolsMainWindowRequestBus::Handler overrides...
         void ActivateWindow() override;
         bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation) override;
         void RemoveDockWidget(const AZStd::string& name) override;
