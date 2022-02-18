@@ -293,7 +293,7 @@ namespace ImageProcessingAtom
             // image sizes, but they are usually insignificant).
             {
                 AZ::u32 preferredMip = 2; // set to 0 for exact average
-                AZ::u32 mip = AZStd::min(preferredMip, m_image->Get()->GetMipCount());
+                AZ::u32 mip = AZStd::min(preferredMip, m_image->Get()->GetMipCount() - 1);
                 SetAverageColor(mip);
             }
             break;
