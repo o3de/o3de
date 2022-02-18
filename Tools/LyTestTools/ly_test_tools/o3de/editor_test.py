@@ -700,9 +700,10 @@ class EditorTestSuite:
         for test_spec in test_spec_list:
             name = editor_utils.get_module_filename(test_spec.test_module)
             if name not in found_jsons.keys():
-                results[test_spec.__name__] = Result.Unknown(test_spec, output,
-                                                             "Found no test run information on stdout",
-                                                             editor_log_content)
+                results[test_spec.__name__] = Result.Unknown(
+                    test_spec, output,
+                    f"Found no test run information on stdout for {name} in the editor log",
+                    editor_log_content)
             else:
                 result = None
                 json_result = found_jsons[name]
@@ -966,7 +967,8 @@ class EditorTestSuite:
 
         result = self._exec_editor_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
         if result is None:
-            result = Result.Unknown(test_spec=EditorSingleTest)
+            result = Result.Unknown(test_spec=test_spec,
+                                    extra_info="Unexpectedly found no test run information on stdout in the editor log")
         editor_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
@@ -1001,7 +1003,8 @@ class EditorTestSuite:
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
             if result is None:
-                result = Result.Unknown(test_spec=EditorBatchedTest)
+                result = Result.Unknown(test_spec=EditorBatchedTest,
+                                        extra_info=f"Unexpectedly found no test run information on stdout in the editor log")
             if not isinstance(result, Result.Pass):
                 editor_utils.save_failed_asset_joblogs(workspace)
                 return
@@ -1060,7 +1063,8 @@ class EditorTestSuite:
 
             for result in results_per_thread:
                 if result is None:
-                    result = Result.Unknown(test_spec=EditorParallelTest)
+                    result = Result.Unknown(test_spec=EditorParallelTest,
+                                            extra_info=f"Unexpectedly found no test run information on stdout in the editor log")
                 editor_test_data.results.update(result)
                 if not isinstance(result, Result.Pass):
                     save_asset_logs = True
@@ -1123,7 +1127,8 @@ class EditorTestSuite:
         save_asset_logs = False
         for result in results_per_thread:
             if result is None:
-                result = Result.Unknown(test_spec=EditorSharedTest)
+                result = Result.Unknown(test_spec=EditorSharedTest,
+                                        extra_info=f"Unexpectedly found no test run information on stdout in the editor log")
             editor_test_data.results.update(result)
             if not isinstance(result, Result.Pass):
                 save_asset_logs = True
