@@ -218,7 +218,7 @@ namespace AZ
                 // It is possible that the material type has had some properties renamed or otherwise updated. If that's the case,
                 // and this material is still referencing the old property layout, we need to apply any auto updates to rename those
                 // properties before using them to realign the property values.
-                ApplyVersionUpdates();
+                ApplyVersionUpdates(reportError);
             }
             
             const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
@@ -393,7 +393,7 @@ namespace AZ
             }
         }
         
-        void MaterialAsset::ApplyVersionUpdates()
+        void MaterialAsset::ApplyVersionUpdates(AZStd::function<void(const char*)> reportError)
         {
             if (m_materialTypeVersion == m_materialTypeAsset->GetVersion())
             {
@@ -407,7 +407,7 @@ namespace AZ
             {
                 if (m_materialTypeVersion < versionUpdate.GetVersion() || m_materialTypeVersion == UnspecifiedMaterialTypeVersion)
                 {
-                    if (versionUpdate.ApplyVersionUpdates(*this))
+                    if (versionUpdate.ApplyVersionUpdates(*this, reportError))
                     {
                         changesWereApplied = true;
                         m_materialTypeVersion = versionUpdate.GetVersion();

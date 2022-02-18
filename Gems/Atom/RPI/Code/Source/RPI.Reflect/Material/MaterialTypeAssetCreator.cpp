@@ -95,14 +95,20 @@ namespace AZ
             }
 
             uint32_t prevVersion = 0;
-            for(const MaterialVersionUpdate& versionUpdate : m_asset->m_materialVersionUpdates)
+            for (const MaterialVersionUpdate& versionUpdate : m_asset->m_materialVersionUpdates)
             {
+                // Validate internal consistency
+                if (!versionUpdate.ValidateActions(m_asset->GetMaterialPropertiesLayout(), [this](const char* message){ReportError("%s", message);}))
+                {
+                    return false;
+                }
+
                 if (versionUpdate.GetVersion() <= prevVersion)
                 {
                     ReportError("Version updates are not sequential. See version update '%u'.", versionUpdate.GetVersion());
                     return false;
                 }
-                
+
                 if (versionUpdate.GetVersion() > m_asset->m_version)
                 {
                     ReportError("Version updates go beyond the current material type version. See version update '%u'.", versionUpdate.GetVersion());
@@ -127,20 +133,32 @@ namespace AZ
                 prevVersion = versionUpdate.GetVersion();
             }
 
+            // Collect new names of renamed properties...
             const auto& lastMaterialVersionUpdate = m_asset->m_materialVersionUpdates.back();
+            AZStd::vector<AZ::Name> renamedPropertyNewNames;
             for (const auto& action : lastMaterialVersionUpdate.GetActions())
-            {                
-                const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ action.m_toPropertyId });
-                if (!propertyIndex.IsValid())
+            {
+                if (action.m_operation != AZ::Name("rename"))
                 {
-                    ReportError("Renamed property '%s' not found in material property layout. Check that the property name has been "
-                            "upgraded to the correct version",
-                            action.m_toPropertyId.GetCStr());
-                    return false;
+                    continue;
                 }
 
+                AZStd::string toStr = action.GetArg(AZ::Name{ "to" }).GetValue<AZStd::string>();
+                renamedPropertyNewNames.push_back(AZ::Name(toStr));
             }
 
+            // ... and verify that we indeed have them.
+            for (const auto& propertyName : renamedPropertyNewNames)
+            {
+                const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ propertyName });
+                if (!propertyIndex.IsValid())
+                {
+                    ReportError("Renamed property '%s' not found in material property layout. "
+                            "Check that the property name has been upgraded to the correct version",
+                            propertyName.GetCStr());
+                    return false;
+                }
+            }
             return true;
         }
 

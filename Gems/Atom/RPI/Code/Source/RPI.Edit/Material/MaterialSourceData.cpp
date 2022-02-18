@@ -41,11 +41,7 @@ namespace AZ
     {
         void MaterialSourceData::Reflect(ReflectContext* context)
         {
-            if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
-            {
-                jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialPropertyValue>();
-            }
-            else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialSourceData>()
                     ->Version(2)

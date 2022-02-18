@@ -11,6 +11,7 @@
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyConnectionSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyGroupSerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
@@ -52,6 +53,7 @@ namespace AZ
                 jsonContext->Serializer<JsonMaterialPropertySerializer>()->HandlesType<MaterialTypeSourceData::PropertyDefinition>();
                 jsonContext->Serializer<JsonMaterialPropertyConnectionSerializer>()->HandlesType<MaterialTypeSourceData::PropertyConnection>();
                 jsonContext->Serializer<JsonMaterialPropertyGroupSerializer>()->HandlesType<MaterialTypeSourceData::GroupDefinition>();
+                jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialPropertyValue>();
             }
             else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
@@ -65,17 +67,11 @@ namespace AZ
                 serializeContext->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<PropertyDefinition>>>();
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
 
-                serializeContext->Class<VersionUpdatesRenameOperationDefinition>()
-                    ->Version(1)
-                    ->Field("op", &VersionUpdatesRenameOperationDefinition::m_operation)
-                    ->Field("from", &VersionUpdatesRenameOperationDefinition::m_renameFrom)
-                    ->Field("to", &VersionUpdatesRenameOperationDefinition::m_renameTo)
-                    ;
-
+                serializeContext->RegisterGenericType<VersionUpdatesOperationDefinition>();
                 serializeContext->RegisterGenericType<VersionUpdateActions>();
 
                 serializeContext->Class<VersionUpdateDefinition>()
-                    ->Version(1)
+                    ->Version(2) // Generic actions based on string -> MaterialPropertyValue map
                     ->Field("toVersion", &VersionUpdateDefinition::m_toVersion)
                     ->Field("actions", &VersionUpdateDefinition::m_actions)
                     ;
@@ -805,24 +801,12 @@ namespace AZ
             // Set materialtype version and add each version update object into MaterialTypeAsset.
             materialTypeAssetCreator.SetVersion(m_version);
             {
-                const AZ::Name rename = AZ::Name{ "rename" };
-
                 for (const auto& versionUpdate : m_versionUpdates)
                 {
                     MaterialVersionUpdate materialVersionUpdate{versionUpdate.m_toVersion};
                     for (const auto& action : versionUpdate.m_actions)
                     {
-                        if (action.m_operation == rename.GetStringView())
-                        {
-                            materialVersionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction{
-                                    AZ::Name{ action.m_renameFrom },
-                                    AZ::Name{ action.m_renameTo }
-                                });
-                        }
-                        else
-                        {
-                            materialTypeAssetCreator.ReportWarning("Unsupported material version update operation '%s'", action.m_operation.c_str());
-                        }
+                        materialVersionUpdate.AddAction(action);
                     }
                     materialTypeAssetCreator.AddVersionUpdate(materialVersionUpdate);
                 }

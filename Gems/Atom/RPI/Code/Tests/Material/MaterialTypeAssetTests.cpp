@@ -13,6 +13,7 @@
 #include <Common/ShaderAssetTestUtils.h>
 #include <Material/MaterialAssetTestUtils.h>
 
+#include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
@@ -92,7 +93,29 @@ namespace UnitTest
         Ptr<ShaderOptionGroupLayout> m_testShaderOptionsLayout;
         Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Asset<ImageAsset> m_testImageAsset;
+        Data::Asset<ImageAsset> m_testImageAsset2;
         const char* m_testImageFilename = "test.streamingimage";
+        const char* m_testImageFilename2 = "test.streamingimage2";
+
+        static void AddRenameAction(MaterialVersionUpdate& versionUpdate, const char* from, const char* to)
+        {
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "rename" },
+                {
+                    { Name{ "from" }, AZStd::string(from) },
+                    { Name{ "to"   }, AZStd::string(to)   }
+                } ));
+        };
+
+        static void AddSetValueAction(MaterialVersionUpdate& versionUpdate, const char* name, const MaterialPropertyValue& val)
+        {
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "setValue" },
+                {
+                    { Name{ "name"  }, AZStd::string(name) },
+                    { Name{ "value" }, val }
+                } ));
+        };
 
         void SetUp() override
         {
@@ -122,6 +145,11 @@ namespace UnitTest
             Data::AssetInfo imageAssetInfo;
             imageAssetInfo.m_assetId = m_testImageAsset.GetId();
             m_assetSystemStub.RegisterSourceInfo(m_testImageFilename, imageAssetInfo, "");
+
+            m_testImageAsset2 = Data::Asset<ImageAsset>{ Data::AssetId{ Uuid::CreateRandom(), StreamingImageAsset::GetImageAssetSubId() }, azrtti_typeid<StreamingImageAsset>() };
+            Data::AssetInfo imageAssetInfo2;
+            imageAssetInfo2.m_assetId = m_testImageAsset2.GetId();
+            m_assetSystemStub.RegisterSourceInfo(m_testImageFilename2, imageAssetInfo2, "");
         }
 
         void TearDown() override
@@ -147,13 +175,15 @@ namespace UnitTest
 
             // Version updates
             MaterialVersionUpdate versionUpdate(2);
-            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction(
-                {
-                    Name{ "EnableSpecialPassPrev" },
-                    Name{ "EnableSpecialPass" }
-                }));
+            AddRenameAction(versionUpdate, "EnableSpecialPassPrev", "EnableSpecialPass");
+            AddSetValueAction(versionUpdate, "FloatThatGetsSet", 1.234f);
             materialTypeCreator.SetVersion(versionUpdate.GetVersion());
             materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+            // Property for the setValue update
+
+            materialTypeCreator.BeginMaterialProperty(Name{ "FloatThatGetsSet" }, MaterialPropertyDataType::Float);
+            materialTypeCreator.EndMaterialProperty();
 
             // Built-in shader
 
@@ -199,7 +229,7 @@ namespace UnitTest
         // Validate the results
         {
             EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
-            EXPECT_EQ(5, materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyCount());
+            EXPECT_EQ(6, materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyCount());
             EXPECT_EQ(2, materialTypeAsset->GetVersion());
             // Check aliased properties
 
@@ -277,7 +307,7 @@ namespace UnitTest
         CheckPropertyValue<uint32_t>(materialTypeAsset, Name{"MyEnum"}, 0u);
     }
 
-    TEST_F(MaterialTypeAssetTests, SetPropertyValues)
+    TEST_F(MaterialTypeAssetTests, UpdatedPropertyValuesInMaterial)
     {
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -287,9 +317,9 @@ namespace UnitTest
         materialTypeCreator.Begin(assetId);
 
         materialTypeCreator.AddShader(m_testShaderAsset);
-
         AddCommonTestMaterialProperties(materialTypeCreator);
 
+        // Set some default values
         materialTypeCreator.SetPropertyValue(Name{"MyBool"},   true);
         materialTypeCreator.SetPropertyValue(Name{"MyFloat"},  1.2f);
         materialTypeCreator.SetPropertyValue(Name{"MyInt"},    -12);
@@ -301,18 +331,41 @@ namespace UnitTest
         materialTypeCreator.SetPropertyValue(Name{"MyImage"},  m_testImageAsset);
         materialTypeCreator.SetPropertyValue(Name{"MyEnum"}, 1u);
 
+        // Set update rules to new values that aren't the default
+        MaterialVersionUpdate versionUpdate(2);
+        AddSetValueAction(versionUpdate, "MyBool",   false);
+        AddSetValueAction(versionUpdate, "MyFloat",  2.0f);
+        AddSetValueAction(versionUpdate, "MyInt",    3);
+        AddSetValueAction(versionUpdate, "MyUInt",   4u);
+        AddSetValueAction(versionUpdate, "MyFloat2", Vector2{ 5.1f, 5.2f });
+        AddSetValueAction(versionUpdate, "MyFloat3", Vector3{ 6.1f, 6.2f, 6.3f });
+        AddSetValueAction(versionUpdate, "MyFloat4", Vector4{ 7.1f, 7.2f, 7.3f, 7.4f });
+        AddSetValueAction(versionUpdate, "MyColor",  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
+        AddSetValueAction(versionUpdate, "MyImage",  m_testImageAsset2);
+        AddSetValueAction(versionUpdate, "MyEnum",   2u);
+
+        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
         EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
 
-        CheckPropertyValue<bool>    (materialTypeAsset, Name{"MyBool"}, true);
-        CheckPropertyValue<float>   (materialTypeAsset, Name{"MyFloat"}, 1.2f);
-        CheckPropertyValue<int32_t> (materialTypeAsset, Name{"MyInt"}, -12);
-        CheckPropertyValue<uint32_t>(materialTypeAsset, Name{"MyUInt"}, 12u);
-        CheckPropertyValue<Vector2> (materialTypeAsset, Name{"MyFloat2"}, Vector2{ 1.1f, 2.2f });
-        CheckPropertyValue<Vector3> (materialTypeAsset, Name{"MyFloat3"}, Vector3{ 3.3f, 4.4f, 5.5f });
-        CheckPropertyValue<Vector4> (materialTypeAsset, Name{"MyFloat4"}, Vector4{ 6.6f, 7.7f, 8.8f, 9.9f });
-        CheckPropertyValue<Color>   (materialTypeAsset, Name{"MyColor"}, Color{ 0.1f, 0.2f, 0.3f, 0.4f });
-        CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{"MyImage"}, m_testImageAsset);
-        CheckPropertyValue<uint32_t>(materialTypeAsset, Name{"MyEnum"}, 1u);
+        // Add the MaterialTypeAsset to a MaterialAsset to trigger the value updates
+        Data::Asset<MaterialAsset> materialAsset;
+        MaterialAssetCreator materialCreator;
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        EXPECT_TRUE(materialCreator.End(materialAsset));
+
+        // Check the values of the material
+        CheckMaterialPropertyValue<bool>    (materialAsset, Name{"MyBool"},   false);
+        CheckMaterialPropertyValue<float>   (materialAsset, Name{"MyFloat"},  2.0f);
+        CheckMaterialPropertyValue<int32_t> (materialAsset, Name{"MyInt"},    3);
+        CheckMaterialPropertyValue<uint32_t>(materialAsset, Name{"MyUInt"},   4u);
+        CheckMaterialPropertyValue<Vector2> (materialAsset, Name{"MyFloat2"}, Vector2{ 5.1f, 5.2f });
+        CheckMaterialPropertyValue<Vector3> (materialAsset, Name{"MyFloat3"}, Vector3{ 6.1f, 6.2f, 6.3f });
+        CheckMaterialPropertyValue<Vector4> (materialAsset, Name{"MyFloat4"}, Vector4{ 7.1f, 7.2f, 7.3f, 7.4f });
+        CheckMaterialPropertyValue<Color>   (materialAsset, Name{"MyColor"},  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
+        CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAsset, Name{"MyImage"}, m_testImageAsset2);
+        CheckMaterialPropertyValue<uint32_t>(materialAsset, Name{"MyEnum"}, 2u);
     }
 
     TEST_F(MaterialTypeAssetTests, EnumPropertyValues)
@@ -492,7 +545,73 @@ namespace UnitTest
         });
     }
 
-    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_WrongName)
+    TEST_F(MaterialTypeAssetTests, VersionUpdateAlternativeActionConstructor_Rename)
+    {
+        MaterialVersionUpdate::Action action1(
+            AZ::Name{ "rename" },
+            {
+                { Name{ "from" }, AZStd::string("oldName") },
+                { Name{ "to"   }, AZStd::string("newName") }
+            } );
+        MaterialVersionUpdate::Action action2(
+            {
+                { AZStd::string("op"),   AZStd::string("rename") },
+                { AZStd::string("from"), AZStd::string("oldName") },
+                { AZStd::string("to"),   AZStd::string("newName") }
+            } );
+
+        EXPECT_TRUE(action1 == action2);
+    }
+
+    TEST_F(MaterialTypeAssetTests, VersionUpdateAlternativeActionConstructor_SetValue)
+    {
+        MaterialVersionUpdate::Action action1(
+            AZ::Name{ "setValue" },
+            {
+                { Name{ "name"  }, AZStd::string("MyInt") },
+                { Name{ "value" }, 123 }
+            } );
+        MaterialVersionUpdate::Action action2(
+            {
+                { AZStd::string("op"),    AZStd::string("setValue") },
+                { AZStd::string("name"),  AZStd::string("MyInt") },
+                { AZStd::string("value"), 123 }
+            } );
+
+        EXPECT_TRUE(action1 == action2);
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_VersionUpdateAlternativeActionConstructor_NoOperation)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("The operation type under the 'op' key was missing or empty");
+        errorMessageFinder.AddExpectedErrorMessage("Material version update action was not properly initialized: empty operation");
+
+        materialTypeCreator.Begin(assetId);
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            {
+                { AZStd::string("name"),  AZStd::string("MyInt") },
+                { AZStd::string("value"), 123 }
+            } ));
+        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_Rename_WrongName)
     {
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -503,11 +622,7 @@ namespace UnitTest
 
         // Invalid version updates
         MaterialVersionUpdate versionUpdate(2);
-        versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction(
-            {
-                Name{ "EnableSpecialPassPrev" },
-                Name{ "InvalidPropertyName" }
-            }));
+        AddRenameAction(versionUpdate, "EnableSpecialPassPrev", "InvalidPropertyName");
         materialTypeCreator.SetVersion(versionUpdate.GetVersion());
         materialTypeCreator.AddVersionUpdate(versionUpdate);
         materialTypeCreator.AddShader(m_testShaderAsset);
@@ -521,7 +636,7 @@ namespace UnitTest
         EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
     }
     
-    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_WrongOrder)
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_Rename_WrongOrder)
     {
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
@@ -536,19 +651,19 @@ namespace UnitTest
 
         {
             MaterialVersionUpdate versionUpdate(2);
-            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "a" },Name{ "b" }}));
+            AddRenameAction(versionUpdate, "a", "b");
             materialTypeCreator.AddVersionUpdate(versionUpdate);
         }
-        
+
         {
             MaterialVersionUpdate versionUpdate(4);
-            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "b" },Name{ "c" }}));
+            AddRenameAction(versionUpdate, "b", "c");
             materialTypeCreator.AddVersionUpdate(versionUpdate);
         }
-        
+
         {
             MaterialVersionUpdate versionUpdate(3);
-            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "c" },Name{ "d" }}));
+            AddRenameAction(versionUpdate, "c", "d");
             materialTypeCreator.AddVersionUpdate(versionUpdate);
         }
 
@@ -559,7 +674,367 @@ namespace UnitTest
 
         EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
     }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_UnknownProperty)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset);
+        AddCommonTestMaterialProperties(materialTypeCreator);
+
+        MaterialVersionUpdate versionUpdate(2);
+        AddSetValueAction(versionUpdate, "InvalidPropertyName", 123);
+
+        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage(
+                "setValue material version update: Could not find property 'InvalidPropertyName' in the material properties layout");
+
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_InvalidType)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset);
+        AddCommonTestMaterialProperties(materialTypeCreator);
+
+        MaterialVersionUpdate versionUpdate(2);
+        AddSetValueAction(versionUpdate, "MyFloat", "ThisIsNotAFloatingPointNumber");
+
+        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage(
+                "setValue material version update: Received value of wrong type");
+
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
     
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_WrongOperationType)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("The operation type under the 'op' key should be a string");
+        errorMessageFinder.AddExpectedErrorMessage("Material version update action was not properly initialized: empty operation");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action({ { AZStd::string("op"), 123 } }));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_UnknownOperation)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Unknown operation 'UnknownOperation' in material version update action");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(AZ::Name{ "UnknownOperation" }, { } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_Rename_NotEnoughArgs)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Expected 2 arguments in 'rename' version update ('from', 'to'), but found 1");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "rename" },
+            {
+                { Name{ "to" }, Name{ "newName" } }
+            } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_Rename_NoFromArg)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Requested argument that was not in map: from");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'from' field in 'rename' of type AZStd::string");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "rename" },
+            {
+                { Name{ "notFrom" }, Name{ "oldName" } },
+                { Name{ "to" }, Name{ "newName" } }
+            } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_Rename_NoToArg)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Requested argument that was not in map: to");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'to' field in 'rename' of type AZStd::string");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "rename" },
+            {
+                { Name{ "from" }, Name{ "oldName" } },
+                { Name{ "notTo" }, Name{ "newName" } }
+            } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_Rename_WrongFromType)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'from' field in 'rename' of type AZStd::string");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "rename" },
+            {
+                { Name{ "from" }, 123 },
+                { Name{ "to" }, Name{ "newName" } }
+            } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_Rename_WrongToType)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'to' field in 'rename' of type AZStd::string");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "rename" },
+            {
+                { Name{ "from" }, Name{ "oldName" } },
+                { Name{ "to" }, 123 }
+            } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_NotEnoughArgs)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Expected 2 arguments in 'setValue' version update ('name', 'value'), but found 1");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "setValue" },
+            {
+                { Name{ "name" }, AZStd::string("MyInt") },
+            } ));
+    materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_NoNameArg)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Requested argument that was not in map: name");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'name' field in 'setValue' of type AZStd::string");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "setValue" },
+            {
+                { Name{ "notName" }, AZStd::string("MyInt") },
+                { Name{ "value" }, 123 }
+            } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_NoValueArg)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+        AddCommonTestMaterialProperties(materialTypeCreator);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Requested argument that was not in map: value");
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'value' field in 'setValue'");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "setValue" },
+            {
+                { Name{ "name" }, AZStd::string("MyInt") },
+                { Name{ "notValue" }, 123 }
+            } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_SetValue_WrongNameType)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.SetVersion(2);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Expected a 'name' field in 'setValue' of type AZStd::string");
+
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(
+            AZ::Name{ "setValue" },
+            {
+                { Name{ "name" }, 123 },
+                { Name{ "value" }, 123 }
+            } ));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+
     TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_GoesTooFar)
     {
         MaterialTypeAssetCreator materialTypeCreator;
@@ -575,13 +1050,13 @@ namespace UnitTest
 
         {
             MaterialVersionUpdate versionUpdate(2);
-            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "a" },Name{ "b" }}));
+            AddRenameAction(versionUpdate, "a", "b");
             materialTypeCreator.AddVersionUpdate(versionUpdate);
         }
         
         {
             MaterialVersionUpdate versionUpdate(4);
-            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "b" },Name{ "c" }}));
+            AddRenameAction(versionUpdate, "b", "c");
             materialTypeCreator.AddVersionUpdate(versionUpdate);
         }
 
@@ -1034,14 +1509,80 @@ namespace UnitTest
     {
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
-        auto addRenameAction = [](MaterialVersionUpdate& versionUpdate, const char* from, const char* to)
-        {
-            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction(
-                {
-                    Name{ from },
-                    Name{ to }
-                }));
-        };
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        // Version updates
+        materialTypeCreator.SetVersion(10);
+
+        MaterialVersionUpdate versionUpdate2(2);
+        AddRenameAction(versionUpdate2, "general.fooA", "general.fooB");
+        materialTypeCreator.AddVersionUpdate(versionUpdate2);
+
+        MaterialVersionUpdate versionUpdate4(4);
+        AddRenameAction(versionUpdate4, "general.barA", "general.barB");
+        materialTypeCreator.AddVersionUpdate(versionUpdate4);
+
+        MaterialVersionUpdate versionUpdate6(6);
+        AddRenameAction(versionUpdate6, "general.fooB", "general.fooC");
+        AddRenameAction(versionUpdate6, "general.barB", "general.barC");
+        materialTypeCreator.AddVersionUpdate(versionUpdate6);
+
+        MaterialVersionUpdate versionUpdate7(7);
+        AddRenameAction(versionUpdate7, "general.bazA", "otherGroup.bazB");
+        materialTypeCreator.AddVersionUpdate(versionUpdate7);
+
+        materialTypeCreator.BeginMaterialProperty(Name{ "general.fooC" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{ "general.barC" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{ "otherGroup.bazB" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+
+        EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
+
+        AZ::Name propertyId;
+
+        propertyId = AZ::Name{"doesNotExist"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "doesNotExist");
+
+        propertyId = AZ::Name{"general.fooA"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.fooC");
+
+        propertyId = AZ::Name{"general.fooB"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.fooC");
+
+        propertyId = AZ::Name{"general.fooC"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.fooC");
+
+        propertyId = AZ::Name{"general.barA"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.barC");
+
+        propertyId = AZ::Name{"general.barB"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.barC");
+
+        propertyId = AZ::Name{"general.barC"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.barC");
+
+        propertyId = AZ::Name{"general.bazA"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "otherGroup.bazB");
+
+        propertyId = AZ::Name{"otherGroup.bazB"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "otherGroup.bazB");
+    }
+
+    TEST_F(MaterialTypeAssetTests, ApplySetValues)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
@@ -1050,20 +1591,20 @@ namespace UnitTest
         materialTypeCreator.SetVersion(10);
 
         MaterialVersionUpdate versionUpdate2(2);
-        addRenameAction(versionUpdate2, "general.fooA", "general.fooB");
+        AddRenameAction(versionUpdate2, "general.fooA", "general.fooB");
         materialTypeCreator.AddVersionUpdate(versionUpdate2);
 
         MaterialVersionUpdate versionUpdate4(4);
-        addRenameAction(versionUpdate4, "general.barA", "general.barB");
+        AddRenameAction(versionUpdate4, "general.barA", "general.barB");
         materialTypeCreator.AddVersionUpdate(versionUpdate4);
 
         MaterialVersionUpdate versionUpdate6(6);
-        addRenameAction(versionUpdate6, "general.fooB", "general.fooC");
-        addRenameAction(versionUpdate6, "general.barB", "general.barC");
+        AddRenameAction(versionUpdate6, "general.fooB", "general.fooC");
+        AddRenameAction(versionUpdate6, "general.barB", "general.barC");
         materialTypeCreator.AddVersionUpdate(versionUpdate6);
 
         MaterialVersionUpdate versionUpdate7(7);
-        addRenameAction(versionUpdate7, "general.bazA", "otherGroup.bazB");
+        AddRenameAction(versionUpdate7, "general.bazA", "otherGroup.bazB");
         materialTypeCreator.AddVersionUpdate(versionUpdate7);
         
         materialTypeCreator.BeginMaterialProperty(Name{ "general.fooC" }, MaterialPropertyDataType::Bool);

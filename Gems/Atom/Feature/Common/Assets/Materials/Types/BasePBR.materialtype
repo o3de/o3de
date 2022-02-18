@@ -5,7 +5,8 @@
         {
             "toVersion": 1,
             "actions": [
-                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"}
+                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"},
+                {"op": "setValue", "name": "irradiance.irradianceColorSource", "value": "Manual"}
             ]
         }
     ],

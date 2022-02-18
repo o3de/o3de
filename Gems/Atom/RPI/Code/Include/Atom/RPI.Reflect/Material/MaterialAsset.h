@@ -137,7 +137,7 @@ namespace AZ
 
             //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
             //! based on the MaterialTypeAsset's version update procedure.
-            void ApplyVersionUpdates();
+            void ApplyVersionUpdates(AZStd::function<void(const char*)> reportError);
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();

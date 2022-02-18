@@ -186,19 +186,11 @@ namespace AZ
                 AZStd::unordered_map<Name/*shaderOption*/, Name/*value*/> m_shaderOptionValues;
             };
 
-            struct VersionUpdatesRenameOperationDefinition
-            {
-                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdatesRenameOperationDefinition, "{F2295489-E15A-46CC-929F-8D42DEDBCF14}");
+            //! Generic structure for arbitrary version updates. The operation type is stored as a string under the "op" key.
+            using VersionUpdatesOperationDefinition = AZStd::map<AZStd::string, MaterialPropertyValue>; // not unordered_map to keep json deserialization deterministic
 
-                AZStd::string m_operation;
-                
-                AZStd::string m_renameFrom;
-                AZStd::string m_renameTo;
-            };
-
-            // TODO: Support script operations--At that point, we'll likely need to replace VersionUpdatesRenameOperationDefinition with a more generic
-            // data structure that has a custom JSON serialize. We will only be supporting rename for now.
-            using VersionUpdateActions = AZStd::vector<VersionUpdatesRenameOperationDefinition>;
+            // TODO: Support script operations
+            using VersionUpdateActions = AZStd::vector<VersionUpdatesOperationDefinition>;
 
             struct VersionUpdateDefinition
             {
