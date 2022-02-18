@@ -6,21 +6,14 @@
  *
  */
 
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
-
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
-
-#include <AzCore/Math/Color.h>
-#include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Vector4.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
 
 namespace AtomToolsFramework
 {
@@ -132,41 +125,6 @@ namespace AtomToolsFramework
         }
     }
 
-    template<typename T>
-    bool ComparePropertyValues(const AZStd::any& valueA, const AZStd::any& valueB)
-    {
-        return valueA.is<T>() && valueB.is<T>() && *AZStd::any_cast<T>(&valueA) == *AZStd::any_cast<T>(&valueB);
-    }
-
-    bool ArePropertyValuesEqual(const AZStd::any& valueA, const AZStd::any& valueB)
-    {
-        if (valueA.type() != valueB.type())
-        {
-            return false;
-        }
-
-        if (ComparePropertyValues<bool>(valueA, valueB) ||
-            ComparePropertyValues<int32_t>(valueA, valueB) ||
-            ComparePropertyValues<uint32_t>(valueA, valueB) ||
-            ComparePropertyValues<float>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Vector2>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Vector3>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Vector4>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Color>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Data::AssetId>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Data::Asset<AZ::Data::AssetData>>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::ImageAsset>>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>>(valueA, valueB) ||
-            ComparePropertyValues<AZStd::string>(valueA, valueB))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
         [[maybe_unused]] const AZ::Name& propertyId,
@@ -222,52 +180,5 @@ namespace AtomToolsFramework
         }
 
         return true;
-    }
-
-    AZStd::string GetExteralReferencePath(
-        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
-    {
-        if (referencePath.empty())
-        {
-            return {};
-        }
-
-        if (!relativeToExportPath)
-        {
-            AZStd::string watchFolder;
-            AZ::Data::AssetInfo assetInfo;
-            bool sourceInfoFound = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, referencePath.c_str(),
-                assetInfo, watchFolder);
-            if (sourceInfoFound)
-            {
-                return assetInfo.m_relativePath;
-            }
-        }
-
-        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
-        exportFolder.RemoveFilename();
-        return AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
-    }
-
-    const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode)
-    {
-        // Traverse up the hierarchy from the input node to search for an instance corresponding to material inspector property
-        for (const AzToolsFramework::InstanceDataNode* currentNode = pNode; currentNode; currentNode = currentNode->GetParent())
-        {
-            const AZ::SerializeContext* context = currentNode->GetSerializeContext();
-            const AZ::SerializeContext::ClassData* classData = currentNode->GetClassMetadata();
-            if (context && classData)
-            {
-                if (context->CanDowncast(
-                        classData->m_typeId, azrtti_typeid<AtomToolsFramework::DynamicProperty>(), classData->m_azRtti, nullptr))
-                {
-                    return static_cast<const AtomToolsFramework::DynamicProperty*>(currentNode->FirstInstance());
-                }
-            }
-        }
-
-        return nullptr;
     }
 } // namespace AtomToolsFramework

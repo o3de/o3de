@@ -11,13 +11,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/any.h>
-
-namespace AzToolsFramework
-{
-    class InstanceDataNode;
-}
 
 namespace AtomToolsFramework
 {
@@ -39,9 +33,6 @@ namespace AtomToolsFramework
     //! Convert and assign editor dynamic property configuration fields to material property meta data
     void ConvertToPropertyMetaData(AZ::RPI::MaterialPropertyDynamicMetadata& propertyMetaData, const AtomToolsFramework::DynamicPropertyConfig& propertyConfig);
 
-    //! Compare equality of data types and values of editor property stored in AZStd::any
-    bool ArePropertyValuesEqual(const AZStd::any& valueA, const AZStd::any& valueB);
-
     //! Convert the property value into the format that will be stored in the source data
     //! This is primarily needed to support conversions of special types like enums and images
     //! @param exportPath absolute path of the file being saved
@@ -52,14 +43,4 @@ namespace AtomToolsFramework
         [[maybe_unused]] const AZ::Name& propertyId,
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue);
-
-    //! Generate a file path that is relative to either the source asset root or the export path
-    //! @param exportPath absolute path of the file being saved
-    //! @param referencePath absolute path of a file that will be treated as an external reference
-    //! @param relativeToExportPath specifies if the path is relative to the source asset root or the export path
-    AZStd::string GetExteralReferencePath(
-        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath = false);
-
-    //! Traverse up the instance data node hierarchy to find the containing dynamic property object 
-    const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode);
 } // namespace AtomToolsFramework

@@ -9,6 +9,7 @@
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -17,7 +18,6 @@
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
 #include <Window/MaterialEditorWindowSettings.h>
-#include <Window/MaterialInspector/MaterialInspector.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
@@ -78,7 +78,20 @@ namespace MaterialEditor
             QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
         });
 
-        AddDockWidget("Inspector", new MaterialInspector(m_toolId), Qt::RightDockWidgetArea, Qt::Vertical);
+        m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
+        m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/MaterialInspector");
+        m_materialInspector->SetIndicatorFunction(
+            [](const AzToolsFramework::InstanceDataNode* node)
+            {
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
+                if (property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue))
+                {
+                    return ":/Icons/changed_property.svg";
+                }
+                return ":/Icons/blank.png";
+            });
+
+        AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
         AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
         SetDockWidgetVisible("Viewport Settings", false);
 
@@ -96,6 +109,12 @@ namespace MaterialEditor
         }
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
+    }
+
+    void MaterialEditorWindow::OnDocumentOpened(const AZ::Uuid& documentId)
+    {
+        Base::OnDocumentOpened(documentId);
+        m_materialInspector->SetDocumentId(documentId);
     }
 
     void MaterialEditorWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)

@@ -9,12 +9,20 @@
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -27,6 +35,49 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
+    bool SaveSettingsToFile(const AZ::IO::FixedMaxPath& savePath, const AZStd::vector<AZStd::string>& filters)
+    {
+        auto registry = AZ::SettingsRegistry::Get();
+        if (registry == nullptr)
+        {
+            AZ_Warning("AtomToolsFramework", false, "Unable to access global settings registry.");
+            return false;
+        }
+
+        AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+        dumperSettings.m_prettifyOutput = true;
+        dumperSettings.m_includeFilter = [filters](AZStd::string_view path)
+        {
+            for (const auto& filter : filters)
+            {
+                if (filter.starts_with(path.substr(0, filter.size())))
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        AZStd::string stringBuffer;
+        AZ::IO::ByteContainerStream stringStream(&stringBuffer);
+        if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
+        {
+            AZ_Warning("AtomToolsFramework", false, R"(Unable to save changes to the registry file at "%s"\n)", savePath.c_str());
+            return false;
+        }
+
+        bool saved = false;
+        constexpr auto configurationMode =
+            AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
+        if (AZ::IO::SystemFile outputFile; outputFile.Open(savePath.c_str(), configurationMode))
+        {
+            saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
+        }
+
+        AZ_Warning("AtomToolsFramework", saved, R"(Unable to save registry file to path "%s"\n)", savePath.c_str());
+        return saved;
+    }
+
     void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback)
     {
         AZ::Job* job = AZ::CreateJobFunction(
@@ -178,4 +229,63 @@ namespace AtomToolsFramework
 
         return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }
-}
+
+    AZStd::string GetExteralReferencePath(
+        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
+    {
+        if (referencePath.empty())
+        {
+            return {};
+        }
+
+        if (!relativeToExportPath)
+        {
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            bool sourceInfoFound = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, referencePath.c_str(),
+                assetInfo, watchFolder);
+            if (sourceInfoFound)
+            {
+                return assetInfo.m_relativePath;
+            }
+        }
+
+        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
+        exportFolder.RemoveFilename();
+        return AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
+    }
+
+    template<typename T>
+    bool ComparePropertyValues(const AZStd::any& valueA, const AZStd::any& valueB)
+    {
+        return valueA.is<T>() && valueB.is<T>() && *AZStd::any_cast<T>(&valueA) == *AZStd::any_cast<T>(&valueB);
+    }
+
+    bool ArePropertyValuesEqual(const AZStd::any& valueA, const AZStd::any& valueB)
+    {
+        if (valueA.type() != valueB.type())
+        {
+            return false;
+        }
+
+        if (ComparePropertyValues<bool>(valueA, valueB) || ComparePropertyValues<int32_t>(valueA, valueB) ||
+            ComparePropertyValues<uint32_t>(valueA, valueB) || ComparePropertyValues<float>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Vector2>(valueA, valueB) || ComparePropertyValues<AZ::Vector3>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Vector4>(valueA, valueB) || ComparePropertyValues<AZ::Color>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::AssetId>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::Data::AssetData>>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::ImageAsset>>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(valueA, valueB) ||
+            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>>(valueA, valueB) ||
+            ComparePropertyValues<AZStd::string>(valueA, valueB))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+} // namespace AtomToolsFramework
