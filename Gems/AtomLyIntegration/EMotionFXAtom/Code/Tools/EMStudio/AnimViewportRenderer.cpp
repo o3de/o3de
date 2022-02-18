@@ -86,15 +86,6 @@ namespace EMStudio
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_renderPipeline->SetDefaultView(viewportContext->GetDefaultView());
 
-        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
-        AZStd::string defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
-        AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *m_windowContext.get());
-        pipelineAsset.Release();
-        m_scene->AddRenderPipeline(m_renderPipeline);
-        m_renderPipeline->SetDefaultView(viewportContext->GetDefaultView());
-
         // Currently the scene has to be activated after render pipeline was added so some feature processors (i.e. imgui) can be
         // initialized properly with pipeline's pass information.
         m_scene->Activate();
