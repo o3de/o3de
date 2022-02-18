@@ -516,7 +516,7 @@ namespace AZ
                     m_path.GetCStr(),
                     connectedSlotName.GetCStr());
 
-                foundPass = true;
+                foundPass = true;   // Using the "Pipeline" keyword, no need to continue searching for passes
 
                 if (m_pipeline)
                 {

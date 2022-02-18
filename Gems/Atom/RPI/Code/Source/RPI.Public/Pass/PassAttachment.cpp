@@ -35,10 +35,9 @@ namespace AZ
 
         PassAttachment::PassAttachment(const PassBufferAttachmentDesc& attachmentDesc)
         {
+            m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_bufferDescriptor);
             m_name = attachmentDesc.m_name;
             m_lifetime = attachmentDesc.m_lifetime;
-
-            m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_bufferDescriptor);
         }
 
         Ptr<PassAttachment> PassAttachment::Clone() const

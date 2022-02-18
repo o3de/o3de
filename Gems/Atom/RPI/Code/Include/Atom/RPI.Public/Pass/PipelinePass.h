@@ -41,6 +41,8 @@ namespace AZ
             // --- Pass Behaviour Overrides ---
             void BuildInternal() override;
 
+            // Virtual function derived passes can use to add attachments and connections
+            // to the pipeline for global reference before any child passes are built. 
             virtual void AddPipelineAttachmentsAndConnectionsInternal() { }
 
         private:

@@ -16,19 +16,12 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
-#include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/PipelinePass.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
 
 namespace AZ
 {
-    namespace RHI
-    {
-        class SwapChain;
-        struct ImageScopeAttachmentDescriptor;
-    }
-
     namespace RPI
     {
         class WindowContext;
@@ -83,14 +76,6 @@ namespace AZ
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;
-
-            bool m_postProcess = false;
-
-            // The child pass used to drive rendering for this swapchain
-            Ptr<Pass> m_childPass = nullptr;
-
-            // Name of the template used to create the child pass. Needed for Recreate()
-            Name m_childTemplateName;
         };
 
     }   // namespace RPI

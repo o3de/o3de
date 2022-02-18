@@ -61,7 +61,7 @@ namespace AZ
             RHI::DrawListMask m_drawListMask;
         };
 
-        //! Points to a pass binding for global access with a name for reference
+        //! Points to a pass binding for global access through the pipeline using a name for reference
         struct GlobalBinding
         {
             // The name used to reference this binding in a global manner.
@@ -202,6 +202,7 @@ namespace AZ
             void AddPipelineAttachment(const Ptr<PassAttachment>& attachment);
             void RemovePipelineAttachment(const Ptr<PassAttachment>& attachment);
 
+            //! Finding, adding and removing pipeline connections/bindings (can be referenced directly by any pass in the pipeline)
             const GlobalBinding* GetPipelineConnection(const Name& name) const;
             void AddPipelineConnection(GlobalBinding connection);
             void RemovePipelineConnectionsFromPass(Pass* passOnwer);

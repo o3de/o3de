@@ -41,13 +41,13 @@ namespace AZ
 
                 Ptr<Pass> rootPass = passSystem->CreatePassFromRequest(&rootRequest);
                 pipeline->m_rootPass = azrtti_cast<PipelinePass*>(rootPass.get());
-                AZ_Assert(rootPass != nullptr, "Error creating root pass for pipeline!");
             }
             else
             {
                 // Otherwise create an empty root pass with pipeline name
                 pipeline->m_rootPass = passSystem->CreatePass<PipelinePass>(passName);
             }
+            AZ_Assert(pipeline->m_rootPass != nullptr, "Error creating root pass for pipeline!");
 
             InitializeRenderPipeline(pipeline, desc);
 
