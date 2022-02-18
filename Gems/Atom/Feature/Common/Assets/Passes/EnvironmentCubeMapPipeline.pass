@@ -5,14 +5,27 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "EnvironmentCubeMapPipeline",
-            "PassClass": "ParentPass",
-            "Slots": [
-                {
-                    "Name": "Output",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
-                }
-            ],
+            "PassClass": "PipelinePass",
+            "PassData": {
+                "$type": "PipelinePassData",
+                "PipelineConnections": [
+                    {
+                        "GlobalName": "Depth",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "Depth"
+                    },
+                    {
+                        "GlobalName": "DepthMSAA",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "DepthMSAA"
+                    },
+                    {
+                        "GlobalName": "DepthLinear",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "DepthLinear"
+                    }
+                ]
+            },
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",
@@ -477,13 +490,6 @@
                     "Name": "Ssao",
                     "TemplateName": "SsaoParentTemplate",
                     "Connections": [
-                        {
-                            "LocalSlot": "LinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "DepthPrePass",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
                         {
                             "LocalSlot": "Modulate",
                             "AttachmentRef": {

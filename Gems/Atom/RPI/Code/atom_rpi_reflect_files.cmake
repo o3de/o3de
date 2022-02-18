@@ -72,6 +72,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Pass/PassName.h
     Include/Atom/RPI.Reflect/Pass/PassRequest.h
     Include/Atom/RPI.Reflect/Pass/PassTemplate.h
+    Include/Atom/RPI.Reflect/Pass/PipelinePassData.h
     Include/Atom/RPI.Reflect/Pass/RasterPassData.h
     Include/Atom/RPI.Reflect/Pass/RenderPassData.h
     Include/Atom/RPI.Reflect/Pass/SlowClearPassData.h

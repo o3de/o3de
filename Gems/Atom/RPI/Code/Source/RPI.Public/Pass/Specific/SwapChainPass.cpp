@@ -9,6 +9,7 @@
 #include <Atom/RHI/FrameScheduler.h>
 
 #include <Atom/RPI.Public/WindowContext.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
@@ -18,35 +19,17 @@ namespace AZ
 {
     namespace RPI
     {
-        SwapChainPass::SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const Name& childTemplateName)
-            : ParentPass(descriptor)
+        SwapChainPass::SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext)
+            : PipelinePass(descriptor)
             , m_windowContext(windowContext)
-            , m_childTemplateName(childTemplateName)
         {
-            PassSystemInterface* passSystem = PassSystemInterface::Get();
-
-            // Create child pass
-
-            PassRequest childRequest;
-            childRequest.m_templateName = childTemplateName;
-            childRequest.m_passName = childTemplateName;
-
-            PassConnection childInputConnection;
-            childInputConnection.m_localSlot = "SwapChainOutput";
-            childInputConnection.m_attachmentRef.m_pass = "Parent";
-            childInputConnection.m_attachmentRef.m_attachment = "SwapChainOutput";
-            childRequest.m_connections.emplace_back(childInputConnection);
-
-            m_childPass = passSystem->CreatePassFromRequest(&childRequest);
-            AZ_Assert(m_childPass, "SwapChain child pass is invalid: check your passs pipeline, run configuration and your AssetProcessor set project (project_path)");
-
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
         }
 
         Ptr<ParentPass> SwapChainPass::Recreate() const
         {
             PassDescriptor desc = GetPassDescriptor();
-            Ptr<ParentPass> pass = aznew SwapChainPass(desc, m_windowContext, m_childTemplateName);
+            Ptr<ParentPass> pass = aznew SwapChainPass(desc, m_windowContext);
             return pass;
         }
 
@@ -91,19 +74,19 @@ namespace AZ
 
             PassAttachmentBinding swapChainOutput;
             swapChainOutput.m_name = "SwapChainOutput";
-            swapChainOutput.m_slotType = PassSlotType::Output;
+            swapChainOutput.m_slotType = PassSlotType::InputOutput;
             swapChainOutput.m_attachment = m_swapChainAttachment;
             swapChainOutput.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
 
             m_attachmentBindings.push_back(swapChainOutput);
         }
 
-        // --- Pass behavior overrides ---
-
-        void SwapChainPass::CreateChildPassesInternal()
-        {            
-            AddChild(m_childPass);
+        void SwapChainPass::AddPipelineAttachmentsAndConnectionsInternal()
+        {
+            m_pipeline->AddPipelineAttachment(m_swapChainAttachment);
         }
+
+        // --- Pass behavior overrides ---
 
         void SwapChainPass::BuildInternal()
         {
@@ -117,7 +100,7 @@ namespace AZ
 
             SetupSwapChainAttachment();
 
-            ParentPass::BuildInternal();
+            PipelinePass::BuildInternal();
         }
 
         void SwapChainPass::FrameBeginInternal(FramePrepareParams params)
@@ -135,7 +118,7 @@ namespace AZ
             // Import the SwapChain
             attachmentDatabase.ImportSwapChain(m_windowContext->GetSwapChainAttachmentId(), m_windowContext->GetSwapChain());
 
-            ParentPass::FrameBeginInternal(params);
+            PipelinePass::FrameBeginInternal(params);
         }
         
         void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)

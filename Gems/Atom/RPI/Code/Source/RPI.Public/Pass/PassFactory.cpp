@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/PipelinePass.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Pass/MSAAResolvePass.h>
 #include <Atom/RPI.Public/Pass/SlowClearPass.h>
@@ -60,6 +61,7 @@ namespace AZ
         void PassFactory::AddCorePasses()
         {
             AddPassCreator(Name("ParentPass"), &ParentPass::Create);
+            AddPassCreator(Name("PipelinePass"), &PipelinePass::Create);
             AddPassCreator(Name("RasterPass"), &RasterPass::Create);
             AddPassCreator(Name("SlowClearPass"), &SlowClearPass::Create);
             AddPassCreator(Name("CopyPass"), &CopyPass::Create);

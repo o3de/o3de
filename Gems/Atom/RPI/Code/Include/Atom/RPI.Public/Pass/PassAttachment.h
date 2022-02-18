@@ -112,7 +112,6 @@ namespace AZ
                     u8 m_getSizeFromPipeline : 1;
                     u8 m_getFormatFromPipeline : 1;
                     u8 m_getMultisampleStateFromPipeline : 1;
-                    u8 m_isPipelineAttachment : 1;
                 };
                 u8 m_allFlags = 0;
             };
@@ -139,6 +138,9 @@ namespace AZ
 
             //! Sets all formats to nearest device supported formats and warns if changes where made
             void ValidateDeviceFormats(const AZStd::vector<RHI::Format>& formatFallbacks);
+
+            //! Updates the set attachment from the binding connection
+            void UpdateConnection(bool useFallback);
 
             //! Name of the attachment binding so we can find it in a list of attachment binding
             Name m_name;

@@ -5,7 +5,27 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "ToolsPipeline",
-            "PassClass": "ParentPass",
+            "PassClass": "PipelinePass",
+            "PassData": {
+                "$type": "PipelinePassData",
+                "PipelineConnections": [
+                    {
+                        "GlobalName": "Depth",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "Depth"
+                    },
+                    {
+                        "GlobalName": "DepthMSAA",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "DepthMSAA"
+                    },
+                    {
+                        "GlobalName": "DepthLinear",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "DepthLinear"
+                    }
+                ]
+            },
             "Slots": [
                 {
                     "Name": "SwapChainOutput",

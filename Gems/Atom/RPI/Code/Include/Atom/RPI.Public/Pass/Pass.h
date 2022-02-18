@@ -35,8 +35,8 @@
     friend class PassFactory;                                                       \
     friend class PassLibrary;                                                       \
     friend class PassSystem;                                                        \
-    friend class PassFactory;                                                       \
     friend class ParentPass;                                                        \
+    friend class PipelinePass;                                                      \
     friend class RenderPipeline;                                                    \
     friend class UnitTest::PassTests;                                               \
 
@@ -299,6 +299,9 @@ namespace AZ
             // Called in pass's frame prepare function
             void ImportAttachments(RHI::FrameGraphAttachmentInterface attachmentDatabase);
 
+            Ptr<PassAttachment> CreateImageAttachment(const PassImageAttachmentDesc& desc);
+            Ptr<PassAttachment> CreateBufferAttachment(const PassBufferAttachmentDesc& desc);
+
             // --- Find functions ---
 
             // Searches for an adjacent pass with the given Name. An adjacent pass is either:
@@ -453,6 +456,9 @@ namespace AZ
 
                         // Whether the pass is the root pass for a pipeline. Used to control pipeline render tick rate
                         uint64_t m_isPipelineRoot : 1;
+
+                        // Whether this pass contains a binding that is referenced globally through the pipeline
+                        uint64_t m_containsGlobalReference : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
@@ -478,6 +484,9 @@ namespace AZ
 
             // For image attachment preview
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
+
+            //! Optional data used during pass initialization
+            AZStd::shared_ptr<PassData> m_passData = nullptr;
 
         private:
             // Return the Timestamp result of this pass

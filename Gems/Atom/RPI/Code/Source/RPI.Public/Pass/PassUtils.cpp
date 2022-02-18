@@ -37,6 +37,25 @@ namespace AZ
                 return passData;
             }
 
+            AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor)
+            {
+                AZStd::shared_ptr<PassData> passData = nullptr;
+
+                if (descriptor.m_passRequest != nullptr)
+                {
+                    passData = descriptor.m_passRequest->m_passData;
+                }
+                if (passData == nullptr && descriptor.m_passTemplate != nullptr)
+                {
+                    passData = descriptor.m_passTemplate->m_passData;
+                }
+                if (passData == nullptr)
+                {
+                    passData = descriptor.m_passData;
+                }
+                return passData;
+            }
+
             bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup)
             {
                 bool success = true;

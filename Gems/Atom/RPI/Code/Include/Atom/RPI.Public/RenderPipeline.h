@@ -11,7 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RPI.Public/Base.h>
-#include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/Pass/PipelinePass.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -59,6 +59,19 @@ namespace AZ
 
             //! Combined DrawListTags collected from passes which are associated with this pipeline view.
             RHI::DrawListMask m_drawListMask;
+        };
+
+        //! Points to a pass binding for global access with a name for reference
+        struct GlobalBinding
+        {
+            // The name used to reference this binding in a global manner.
+            Name m_name;
+
+            // The referenced binding
+            PassAttachmentBinding* m_binding;
+
+            // The pass that owns the binding. Used to remove the global binding from the list when the pass is orphaned
+            Pass* m_pass;
         };
 
         //! RenderPipeline describes how to render a scene. It has all the passes and views for rendering.
@@ -121,7 +134,7 @@ namespace AZ
 
             RenderPipelineId GetId() const;
 
-            const Ptr<ParentPass>& GetRootPass() const;
+            const Ptr<PipelinePass>& GetRootPass() const;
 
             //! This function need to be called by Pass class when any passes are added/removed in this pipeline's pass tree.
             void SetPassModified();
@@ -189,6 +202,13 @@ namespace AZ
             void AddPipelineAttachment(const Ptr<PassAttachment>& attachment);
             void RemovePipelineAttachment(const Ptr<PassAttachment>& attachment);
 
+            const GlobalBinding* GetPipelineConnection(const Name& name) const;
+            void AddPipelineConnection(GlobalBinding connection);
+            void RemovePipelineConnectionsFromPass(Pass* passOnwer);
+
+            // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
+            void ClearGlobalAttachmentsAndBindings();
+
         private:
             RenderPipeline() = default;
 
@@ -228,10 +248,13 @@ namespace AZ
             Scene* m_scene = nullptr;
 
             // Pass tree which contains all the passes in this render pipeline.
-            Ptr<ParentPass> m_rootPass;
+            Ptr<PipelinePass> m_rootPass;
 
-            // Attachments that can be referenced from any pass in the pipeline
+            // Attachments that can be referenced from any pass in the pipeline in a global manner
             AZStd::vector<Ptr<PassAttachment>> m_pipelineAttachments;
+
+            // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner
+            AZStd::vector<GlobalBinding> m_pipelineConnections;
 
             PipelineViewMap m_pipelineViewsByTag;
             

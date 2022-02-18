@@ -5,14 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "LowEndPipelineTemplate",
-            "PassClass": "ParentPass",
-            "Slots": [
-                {
-                    "Name": "SwapChainOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
-                }
-            ],
+            "PassClass": "PipelinePass",
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",
@@ -329,7 +322,7 @@
                                 "Pass": "DepthPrePass",
                                 "Attachment": "Depth"
                             }
-                        }                    
+                        }
                     ]
                 },
                 {

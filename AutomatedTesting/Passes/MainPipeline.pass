@@ -5,14 +5,27 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "MainPipeline",
-            "PassClass": "ParentPass",
-            "Slots": [
-                {
-                    "Name": "SwapChainOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
-                }
-            ],
+            "PassClass": "PipelinePass",
+            "PassData": {
+                "$type": "PipelinePassData",
+                "PipelineConnections": [
+                    {
+                        "GlobalName": "Depth",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "Depth"
+                    },
+                    {
+                        "GlobalName": "DepthMSAA",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "DepthMSAA"
+                    },
+                    {
+                        "GlobalName": "DepthLinear",
+                        "ChildPass": "DepthPrePass",
+                        "ChildPassSlot": "DepthLinear"
+                    }
+                ]
+            },
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",
@@ -66,7 +79,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -93,7 +106,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -120,7 +133,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -140,7 +153,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -209,7 +222,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -454,7 +467,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -574,7 +587,7 @@
                         {
                             "LocalSlot": "Output",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }

@@ -27,7 +27,6 @@ namespace AZ
         {
             m_name = attachmentDesc.m_name;
             m_lifetime = attachmentDesc.m_lifetime;
-            m_isPipelineAttachment = attachmentDesc.m_isPipelineAttachment;
             m_generateFullMipChain = attachmentDesc.m_generateFullMipChain;
 
             m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_imageDescriptor);
@@ -38,7 +37,6 @@ namespace AZ
         {
             m_name = attachmentDesc.m_name;
             m_lifetime = attachmentDesc.m_lifetime;
-            m_isPipelineAttachment = attachmentDesc.m_isPipelineAttachment;
 
             m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_bufferDescriptor);
         }
@@ -283,6 +281,31 @@ namespace AZ
 
             AZ_Error("PassSystem", m_unifiedScopeDesc.GetType() == attachment->GetAttachmentType(), 
                 "Attachment must have same type as unified scope descriptor");
+        }
+
+        void PassAttachmentBinding::UpdateConnection(bool useFallback)
+        {
+            Ptr<PassAttachment> targetAttachment = nullptr;
+
+            if (useFallback && m_fallbackBinding && m_slotType == PassSlotType::Output)
+            {
+                targetAttachment = m_fallbackBinding->m_attachment;
+            }
+            else if (m_connectedBinding)
+            {
+                targetAttachment = m_connectedBinding->m_attachment;
+            }
+            else if (m_originalAttachment != nullptr)
+            {
+                targetAttachment = m_originalAttachment;
+            }
+
+            if (targetAttachment == nullptr || targetAttachment == m_attachment)
+            {
+                return;
+            }
+
+            SetAttachment(targetAttachment);
         }
 
     }   // namespace RPI

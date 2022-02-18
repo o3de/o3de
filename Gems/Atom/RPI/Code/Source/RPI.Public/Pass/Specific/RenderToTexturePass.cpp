@@ -32,7 +32,7 @@ namespace AZ
         }
 
         RenderToTexturePass::RenderToTexturePass(const PassDescriptor& descriptor)
-            : ParentPass(descriptor)
+            : PipelinePass(descriptor)
         {
             // Save the pass data for easier access
             const RPI::RenderToTexturePassData* passData = RPI::PassUtils::GetPassData<RPI::RenderToTexturePassData>(descriptor);

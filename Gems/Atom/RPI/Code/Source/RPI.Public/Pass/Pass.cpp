@@ -26,6 +26,7 @@
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
@@ -48,6 +49,8 @@ namespace AZ
         {
             AZ_RPI_PASS_ASSERT((descriptor.m_passRequest == nullptr) || (descriptor.m_passTemplate != nullptr),
                 "Pass::Pass - request is valid but template is nullptr. This is not allowed. Passing a valid passRequest also requires a valid passTemplate.");
+
+            m_passData = PassUtils::GetPassDataPtr(descriptor);
 
             m_flags.m_enabled = true;
             m_flags.m_timestampQueryEnabled = false;
@@ -87,6 +90,7 @@ namespace AZ
             desc.m_passName = m_name;
             desc.m_passTemplate = m_template ? PassSystemInterface::Get()->GetPassTemplate(m_template->m_name) : nullptr;
             desc.m_passRequest = m_flags.m_createdByPassRequest ? &m_request : nullptr;
+            desc.m_passData = m_passData;
             return desc;
         }
 
@@ -164,15 +168,9 @@ namespace AZ
 
         void Pass::OnOrphan()
         {
-            if (m_pipeline)
+            if (m_flags.m_containsGlobalReference && m_pipeline != nullptr)
             {
-                for (Ptr<PassAttachment>& attachment : m_ownedAttachments)
-                {
-                    if (attachment->m_isPipelineAttachment)
-                    {
-                        m_pipeline->RemovePipelineAttachment(attachment);
-                    }
-                }
+                m_pipeline->RemovePipelineConnectionsFromPass(this);
             }
 
             m_parent = nullptr;
@@ -470,6 +468,8 @@ namespace AZ
 
         void Pass::ProcessConnection(const PassConnection& connection, uint32_t slotTypeMask)
         {
+            // --- Find Local Binding ---
+
             // Get the input from this pass that forms one end of the connection
             PassAttachmentBinding* localBinding = FindAttachmentBinding(connection.m_localSlot);
             if (!localBinding)
@@ -480,29 +480,35 @@ namespace AZ
                 return;
             }
 
+            // Slot type mask used to skip connections at various stages of initialization
             uint32_t bindingMask = (1 << uint32_t(localBinding->m_slotType));
             if (!(bindingMask & slotTypeMask))
             {
                 return;
             }
 
+            // --- Local Variables ---
+
             Name connectedPassName = connection.m_attachmentRef.m_pass;
             Name connectedSlotName = connection.m_attachmentRef.m_attachment;
-            Ptr<Pass> connectedPass;
+            Ptr<PassAttachment> attachment = nullptr;
             PassAttachmentBinding* connectedBinding = nullptr;
             bool foundPass = false;
+            bool slotTypeMismatch = false;
+
+            // --- Search This Pass ---
 
             if (connectedPassName == PassNameThis)
             {
                 foundPass = true;
-                const Ptr<PassAttachment> attachment = FindOwnedAttachment(connectedSlotName);
+                attachment = FindOwnedAttachment(connectedSlotName);
+
                 AZ_RPI_PASS_ERROR(attachment, "Pass::ProcessConnection - Pass [%s] doesn't own an attachment named [%s].",
                     m_path.GetCStr(),
                     connectedSlotName.GetCStr());
-                localBinding->SetAttachment(attachment);
-                localBinding->m_originalAttachment = attachment;
-                return;
             }
+
+            // --- Search Pipeline ---
 
             if (connectedPassName == PipelineKeyword)
             {
@@ -510,91 +516,103 @@ namespace AZ
                     m_path.GetCStr(),
                     connectedSlotName.GetCStr());
 
+                foundPass = true;
+
                 if (m_pipeline)
                 {
-                    Ptr<PassAttachment> attachment = m_pipeline->GetPipelineAttachment(connectedSlotName);
-                    if (attachment)
+                    const GlobalBinding* globalBinding = m_pipeline->GetPipelineConnection(connectedSlotName);
+                    if (globalBinding)
                     {
-                        localBinding->SetAttachment(attachment);
-                        localBinding->m_originalAttachment = attachment;
+                        connectedBinding = m_pipeline->GetPipelineConnection(connectedSlotName)->m_binding;
                     }
+                    if (!connectedBinding)
+                    {
+                        attachment = m_pipeline->GetPipelineAttachment(connectedSlotName);
+                    }
+
+                    AZ_RPI_PASS_ERROR(connectedBinding || attachment, "Pass::ProcessConnection - Pass [%s] cannot find attachment or binding named [%s] on pipeline.",
+                        m_path.GetCStr(),
+                        connectedSlotName.GetCStr());
                 }
             }
+
+            // --- Search Parent & Siblings ---
 
             // The (connectedPassName != m_name) avoids edge case where parent pass has child pass of same name.
             // In this case, parent pass would ask it's parent pass for a sibling with the given name and get a pointer to itself.
             // It would then try to connect to itself, which is obviously not the intention of the user
-            if (m_parent && connectedPassName != m_name)
+            if (!foundPass && m_parent && connectedPassName != m_name)
             {
                 if (connectedPassName == PassNameParent)
                 {
                     foundPass = true;
-
-                    // Get the connected binding from the parent
                     connectedBinding = m_parent->FindAttachmentBinding(connectedSlotName);
-
-                    bool slotTypeMismatch = connectedBinding != nullptr &&
-                        connectedBinding->m_slotType != localBinding->m_slotType &&
-                        connectedBinding->m_slotType != PassSlotType::InputOutput &&
-                        localBinding->m_slotType != PassSlotType::InputOutput;
-
-                    if (slotTypeMismatch)
+                    if (!connectedBinding)
                     {
-                        AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - When connecting to a parent slot, both slots must be of the same type (or one must be InputOutput)");
-                        connectedBinding = nullptr;
+                        attachment = m_parent->FindOwnedAttachment(connectedSlotName);
+                    }
+                    else
+                    {
+                        slotTypeMismatch = connectedBinding->m_slotType != localBinding->m_slotType &&
+                            connectedBinding->m_slotType != PassSlotType::InputOutput &&
+                            localBinding->m_slotType != PassSlotType::InputOutput;
                     }
                 }
                 else
                 {
                     // Use the connection Name to find a sibling pass
                     Ptr<Pass> siblingPass = m_parent->FindChildPass(connectedPassName);
-                    foundPass = foundPass || (siblingPass != nullptr);
                     if (siblingPass)
                     {
+                        foundPass = true;
                         connectedBinding = siblingPass->FindAttachmentBinding(connectedSlotName);
 
-                        bool slotTypeMismatch = connectedBinding != nullptr &&
+                        slotTypeMismatch = connectedBinding != nullptr &&
                             connectedBinding->m_slotType == localBinding->m_slotType &&
                             connectedBinding->m_slotType != PassSlotType::InputOutput;
-
-                        if (slotTypeMismatch)
-                        {
-                            AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - When connecting to a sibling slot, both slots must be of different types (or be InputOutputs)");
-                            connectedBinding = nullptr;
-                        }
                     }
                 }
             }
+
+            // --- Search Children ---
 
             ParentPass* asParent = AsParent();
             if (!foundPass && asParent)
             {
                 Ptr<Pass> childPass = asParent->FindChildPass(connectedPassName);
-                foundPass = foundPass || (childPass != nullptr);
                 if (childPass)
                 {
+                    foundPass = true;
                     connectedBinding = childPass->FindAttachmentBinding(connectedSlotName);
 
-                    bool slotTypeMismatch = connectedBinding != nullptr &&
+                    slotTypeMismatch = connectedBinding != nullptr &&
                         connectedBinding->m_slotType != localBinding->m_slotType &&
                         connectedBinding->m_slotType != PassSlotType::InputOutput &&
                         localBinding->m_slotType != PassSlotType::InputOutput;
 
-                    if (slotTypeMismatch)
-                    {
-                        AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - When connecting to a child slot, both slots must be of the same type (or one must be InputOutput)");
-                        connectedBinding = nullptr;
-                    }
                 }
             }
 
-            if (connectedPassName == PipelineKeyword)
+            // --- Finalize & Report Errors ---
+
+            if (slotTypeMismatch)
             {
-                AZ_RPI_PASS_ERROR(localBinding->m_attachment != nullptr, "Pass::ProcessConnection - Pass [%s] couldn't find pipeline attachment [%s].",
-                    m_path.GetCStr(),
-                    connectedSlotName.GetCStr());
+                AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - When connecting to a child slot, both slots must be of the same type (or one must be InputOutput)");
+                connectedBinding = nullptr;
             }
-            else if (!connectedBinding)
+
+            if (connectedBinding)
+            {
+                localBinding->m_connectedBinding = connectedBinding;
+                UpdateConnectedBinding(*localBinding);
+
+            }
+            else if (attachment)
+            {
+                localBinding->SetAttachment(attachment);
+                localBinding->m_originalAttachment = attachment;
+            }
+            else
             {
                 if (!m_flags.m_partOfHierarchy)
                 {
@@ -607,7 +625,7 @@ namespace AZ
                 }
                 else if (foundPass)
                 {
-                    AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - Pass [%s] couldn't find a valid binding [%s] on pass [%s].",
+                    AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - Pass [%s] couldn't find a valid binding [%s] on [%s].",
                         m_path.GetCStr(),
                         connectedSlotName.GetCStr(),
                         connectedPassName.GetCStr());
@@ -615,15 +633,11 @@ namespace AZ
                 else
                 {
                     AZ_RPI_PASS_ERROR(
-                        false, "Pass::ProcessConnection - Pass [%s] is trying to connect to but could not find neighbor or child pass named [%s].",
+                        false, "Pass::ProcessConnection - Pass [%s] could not find neighbor or child pass named [%s].",
                         m_path.GetCStr(),
                         connectedPassName.GetCStr());
                 }
-                return;
             }
-
-            localBinding->m_connectedBinding = connectedBinding;
-            UpdateConnectedBinding(*localBinding);
         }
 
         void Pass::ProcessFallbackConnection(const PassFallbackConnection& connection)
@@ -749,13 +763,17 @@ namespace AZ
             }
 
             attachment->m_ownerPass = this;
-
-            if (desc.m_isPipelineAttachment)
-            {
-                m_pipeline->AddPipelineAttachment(attachment);
-            }
-
             return attachment;
+        }
+
+        Ptr<PassAttachment> Pass::CreateImageAttachment(const PassImageAttachmentDesc& desc)
+        {
+            return CreateAttachmentFromDesc(desc);
+        }
+
+        Ptr<PassAttachment> Pass::CreateBufferAttachment(const PassBufferAttachmentDesc& desc)
+        {
+            return CreateAttachmentFromDesc(desc);
         }
 
         template<typename AttachmentDescType>
@@ -1042,39 +1060,8 @@ namespace AZ
 
         void Pass::UpdateConnectedBinding(PassAttachmentBinding& binding)
         {
-            Ptr<PassAttachment> targetAttachment = nullptr;
-
-            if (m_state != PassState::Building && !IsEnabled() && binding.m_slotType == PassSlotType::Output && binding.m_fallbackBinding)
-            {
-                targetAttachment = binding.m_fallbackBinding->m_attachment;
-            }
-            else if(binding.m_connectedBinding)
-            {
-                targetAttachment = binding.m_connectedBinding->m_attachment;
-            }
-            else if (binding.m_originalAttachment != nullptr)
-            {
-                targetAttachment = binding.m_originalAttachment;
-            }
-
-            if (targetAttachment == nullptr)
-            {
-                return;
-            }
-
-            // Check whether the template's slot allows this attachment
-            if (m_template && !m_template->AttachmentFitsSlot(targetAttachment->m_descriptor, binding.m_name))
-            {
-                AZ_RPI_PASS_ERROR(false, "Pass::UpdateConnectedBinding - Attachment [%s] did not match the filters of input slot [%s] on pass [%s].",
-                    targetAttachment->m_name.GetCStr(),
-                    binding.m_name.GetCStr(),
-                    m_path.GetCStr());
-
-                binding.m_attachment = nullptr;
-                return;
-            }
-
-            binding.SetAttachment(targetAttachment);
+            bool useFallback = (m_state != PassState::Building && !IsEnabled());
+            binding.UpdateConnection(useFallback);
         }
 
         void Pass::UpdateConnectedBindings()
