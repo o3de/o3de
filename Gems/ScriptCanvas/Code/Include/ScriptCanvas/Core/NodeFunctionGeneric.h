@@ -82,15 +82,30 @@ namespace ScriptCanvas
         static const size_t s_numNames = SCRIPT_CANVAS_FUNCTION_VAR_ARGS(__VA_ARGS__);\
         /*static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;*/\
         \
-        static const char* GetArgName(size_t i)\
+        static AZStd::string GetArgName(size_t i)\
         {\
-            return GetName(i).data();\
+            AZStd::string_view argName = GetName(i);\
+            if (!argName.empty())\
+            {\
+                return argName;\
+            }\
+            else\
+            {\
+                return AZStd::string::format("Input [%zu]", i);\
+            }\
         }\
         \
-        static const char* GetResultName(size_t i)\
+        static AZStd::string GetResultName(size_t i)\
         {\
-            AZStd::string_view result = GetName(i + s_numArgs);\
-            return !result.empty() ? result.data() : "Result";\
+            AZStd::string_view resultName = GetName(i + s_numArgs);\
+            if (!resultName.empty())\
+            {\
+                return resultName;\
+            }\
+            else\
+            {\
+                return AZStd::string::format("Result [%zu]", i);\
+            }\
         }\
         \
         static const char* GetDependency() { return CATEGORY; }\
@@ -260,7 +275,7 @@ namespace ScriptCanvas
             slotConfiguration.ConfigureDatum(AZStd::move(Datum(Data::FromAZType(Data::Traits<ArgType>::GetAZType()), Datum::eOriginality::Copy)));
 
             slotConfiguration.SetConnectionType(connectionType);
-            AddSlot(slotConfiguration);
+            AZ_VerifyError("ScriptCanvas", AddSlot(slotConfiguration).IsValid(), "NodeFunctionGenericMultiReturn failed to add a required data slot");
         }
 
         template<typename... t_Args, AZStd::size_t... Is>
@@ -278,12 +293,12 @@ namespace ScriptCanvas
         {
             {
                 ExecutionSlotConfiguration slotConfiguration("In", ConnectionType::Input);
-                AddSlot(slotConfiguration);
+                AZ_VerifyError("ScriptCanvas", AddSlot(slotConfiguration).IsValid(), "NodeFunctionGenericMultiReturn failed to add a required Execution In slot");
             }
 
             {
                 ExecutionSlotConfiguration slotConfiguration("Out", ConnectionType::Output);
-                AddSlot(slotConfiguration);
+                AZ_VerifyError("ScriptCanvas", AddSlot(slotConfiguration).IsValid(), "NodeFunctionGenericMultiReturn failed to add a required Execution Out slot");
             }
             
             AddInputDatumSlotHelper(typename AZStd::function_traits<t_Func>::arg_sequence{}, AZStd::make_index_sequence<AZStd::function_traits<t_Func>::arity>{});

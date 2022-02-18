@@ -12,6 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Math/Random.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/span.h>
@@ -20,8 +21,8 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
-#include <SurfaceDataSystemComponent.h>
-#include <Components/SurfaceDataShapeComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
 
 namespace UnitTest
 {
@@ -180,7 +181,7 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // This is declared outside the loop so that the list of points doesn't fully reallocate on every query.
             SurfaceData::SurfacePointList points;
@@ -190,7 +191,7 @@ namespace UnitTest
                 for (float x = 0.0f; x < worldSize; x += 1.0f)
                 {
                     AZ::Vector3 queryPosition(x, y, 0.0f);
-                    points.clear();
+                    points.Clear();
 
                     SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                         &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, filterTags, points);
@@ -210,9 +211,9 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
-            SurfaceData::SurfacePointLists points;
+            SurfaceData::SurfacePointList points;
 
             AZ::Aabb inRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(worldSize));
             AZ::Vector2 stepSize(1.0f);
@@ -234,7 +235,7 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::vector<AZ::Vector3> queryPositions;
             queryPositions.reserve(worldSizeInt * worldSizeInt);
@@ -247,7 +248,7 @@ namespace UnitTest
                 }
             }
 
-            SurfaceData::SurfacePointLists points;
+            SurfaceData::SurfacePointList points;
 
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, queryPositions, filterTags, points);
@@ -269,6 +270,88 @@ namespace UnitTest
         ->Arg( 1024 )
         ->Arg( 2048 )
         ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(SurfaceDataBenchmark, BM_AddSurfaceTagWeight)(benchmark::State& state)
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        AZ::Crc32 tags[AzFramework::SurfaceData::Constants::MaxSurfaceWeights];
+        AZ::SimpleLcgRandom randomGenerator(1234567);
+
+        // Declare this outside the loop so that we aren't benchmarking creation and destruction.
+        SurfaceData::SurfaceTagWeights weights;
+
+        bool clearEachTime = state.range(0) > 0;
+
+        // Create a list of randomly-generated tag values.
+        for (auto& tag : tags)
+        {
+            tag = randomGenerator.GetRandom();
+        }
+
+        for ([[maybe_unused]] auto _ : state)
+        {
+            // We'll benchmark this two ways:
+            // 1. We clear each time, which means each AddSurfaceWeightIfGreater call will search the whole list then add.
+            // 2. We don't clear, which means that after the first run, AddSurfaceWeightIfGreater will always try to replace values.
+            if (clearEachTime)
+            {
+                weights.Clear();
+            }
+
+            // For each tag, try to add it with a random weight.
+            for (auto& tag : tags)
+            {
+                weights.AddSurfaceTagWeight(tag, randomGenerator.GetRandomFloat());
+            }
+        }
+    }
+
+    BENCHMARK_REGISTER_F(SurfaceDataBenchmark, BM_AddSurfaceTagWeight)
+        ->Arg(false)
+        ->Arg(true)
+        ->ArgName("ClearEachTime");
+
+    BENCHMARK_DEFINE_F(SurfaceDataBenchmark, BM_HasAnyMatchingTags_NoMatches)(benchmark::State& state)
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        AZ::Crc32 tags[AzFramework::SurfaceData::Constants::MaxSurfaceWeights];
+        AZ::SimpleLcgRandom randomGenerator(1234567);
+
+        // Declare this outside the loop so that we aren't benchmarking creation and destruction.
+        SurfaceData::SurfaceTagWeights weights;
+
+        // Create a list of randomly-generated tag values.
+        for (auto& tag : tags)
+        {
+            // Specifically always set the last bit so that we can create comparison tags that won't match.
+            tag = randomGenerator.GetRandom() | 0x01;
+
+            // Add the tag to our weights list with a random weight.
+            weights.AddSurfaceTagWeight(tag, randomGenerator.GetRandomFloat());
+        }
+
+        // Create a set of similar comparison tags that won't match. We still want a random distribution of values though,
+        // because the SurfaceTagWeights might behave differently with ordered lists.
+        SurfaceData::SurfaceTagVector comparisonTags;
+        for (auto& tag : tags)
+        {
+            comparisonTags.emplace_back(tag ^ 0x01);
+        }
+
+        for ([[maybe_unused]] auto _ : state)
+        {
+            // Test to see if any of our tags match.
+            // All of comparison tags should get compared against all of the added tags.
+            bool result = weights.HasAnyMatchingTags(comparisonTags);
+            benchmark::DoNotOptimize(result);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(SurfaceDataBenchmark, BM_HasAnyMatchingTags_NoMatches);
+
+
 
 #endif
 }

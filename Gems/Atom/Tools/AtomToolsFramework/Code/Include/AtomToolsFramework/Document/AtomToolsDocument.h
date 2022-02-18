@@ -13,29 +13,27 @@
 
 namespace AtomToolsFramework
 {
-    /**
-     * AtomToolsDocument provides an API for modifying and saving documents.
-     */
+    //! AtomToolsDocument provides an API for modifying and saving documents.
     class AtomToolsDocument
         : public AtomToolsDocumentRequestBus::Handler
         , private AzToolsFramework::AssetSystemBus::Handler
     {
     public:
-        AZ_RTTI(AtomToolsDocument, "{8992DF74-88EC-438C-B280-6E71D4C0880B}");
+        AZ_RTTI(AtomToolsDocument, "{7E6CA0C4-077C-4849-B24C-6796AF3B640B}");
         AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(AtomToolsDocument);
+        AZ_DISABLE_COPY_MOVE(AtomToolsDocument);
 
-        AtomToolsDocument();
+        static void Reflect(AZ::ReflectContext* context);
+
+        AtomToolsDocument() = default;
+        AtomToolsDocument(const AZ::Crc32& toolId);
         virtual ~AtomToolsDocument();
 
         const AZ::Uuid& GetId() const;
 
         // AtomToolsDocumentRequestBus::Handler overrides...
         AZStd::string_view GetAbsolutePath() const override;
-        const AZStd::any& GetPropertyValue(const AZ::Name& propertyId) const override;
-        const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyId) const override;
-        bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
-        void SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value) override;
+        AZStd::vector<DocumentObjectInfo> GetObjectInfo() const override;
         bool Open(AZStd::string_view loadPath) override;
         bool Reopen() override;
         bool Save() override;
@@ -69,18 +67,16 @@ namespace AtomToolsFramework
         //! This can be overridden to restore additional data.
         virtual bool ReopenRestoreState();
 
+        const AZ::Crc32 m_toolId = {};
+
         //! The unique id of this document, used for all bus notifications and requests.
-        AZ::Uuid m_id = AZ::Uuid::CreateRandom();
+        const AZ::Uuid m_id = AZ::Uuid::CreateRandom();
 
         //! The absolute path to the document source file.
         AZStd::string m_absolutePath;
 
         //! The normalized, absolute path where the document will be saved.
         AZStd::string m_savePathNormalized;
-
-        AZStd::any m_invalidValue;
-        
-        AtomToolsFramework::DynamicProperty m_invalidProperty;
 
         //! This contains absolute paths of other source files that affect this document.
         //! If any of the source files in this container are modified, the document system is notified to reload this document.

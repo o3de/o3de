@@ -73,7 +73,7 @@ namespace AzToolsFramework
                         settings.m_keepDefaults = true;
                     }
 
-                    if ((flags & StoreFlags::StoreLinkIds) != StoreFlags::None)
+                    if ((flags & StoreFlags::StripLinkIds) != StoreFlags::StripLinkIds)
                     {
                         settings.m_metadata.Create<LinkIdMetadata>();
                     }
@@ -284,7 +284,7 @@ namespace AzToolsFramework
             }
 
             bool LoadInstanceFromPrefabDom(
-                Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom, LoadFlags flags)
+                Instance& instance, EntityList& newlyAddedEntities, const PrefabDom& prefabDom, LoadFlags flags)
             {
                 // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
                 // be released and reloaded once the entities are built up again. By suspending asset release temporarily the asset reload

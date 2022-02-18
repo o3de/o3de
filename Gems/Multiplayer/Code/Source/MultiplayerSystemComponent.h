@@ -9,6 +9,8 @@
 #pragma once
 
 #include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/Session/ISessionHandlingRequests.h>
+#include <Multiplayer/Session/SessionNotifications.h>
 #include <Editor/MultiplayerEditorConnection.h>
 #include <NetworkTime/NetworkTime.h>
 #include <NetworkEntity/NetworkEntityManager.h>
@@ -21,8 +23,6 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Session/ISessionHandlingRequests.h>
-#include <AzFramework/Session/SessionNotifications.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
 namespace AzFramework
@@ -41,8 +41,8 @@ namespace Multiplayer
     class MultiplayerSystemComponent final
         : public AZ::Component
         , public AZ::TickBus::Handler
-        , public AzFramework::SessionNotificationBus::Handler
-        , public AzFramework::ISessionHandlingClientRequests
+        , public SessionNotificationBus::Handler
+        , public ISessionHandlingClientRequests
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
     {
@@ -63,14 +63,14 @@ namespace Multiplayer
         void Deactivate() override;
         //! @}
 
-        //! AzFramework::SessionNotificationBus::Handler overrides.
+        //! SessionNotificationBus::Handler overrides.
         //! @{
         bool OnSessionHealthCheck() override;
-        bool OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig) override;
+        bool OnCreateSessionBegin(const SessionConfig& sessionConfig) override;
         void OnCreateSessionEnd() override;
         bool OnDestroySessionBegin() override;
         void OnDestroySessionEnd() override;
-        void OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason) override;
+        void OnUpdateSessionBegin(const SessionConfig& sessionConfig, const AZStd::string& updateReason) override;
         void OnUpdateSessionEnd() override;
         //! @}
 
@@ -101,7 +101,7 @@ namespace Multiplayer
 
         //! ISessionHandlingClientRequests interface
         //! @{
-        bool RequestPlayerJoinSession(const AzFramework::SessionConnectionConfig& sessionConnectionConfig) override;
+        bool RequestPlayerJoinSession(const SessionConnectionConfig& sessionConnectionConfig) override;
         void RequestPlayerLeaveSession() override;
         //! @}
 

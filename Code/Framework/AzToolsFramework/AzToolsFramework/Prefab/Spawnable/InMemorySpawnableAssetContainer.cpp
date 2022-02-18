@@ -235,10 +235,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
                     if (!asset->GetId().IsValid())
                     {
-                        AZ_Error(
-                            "Prefab", false,
-                            "Invalid asset found referenced in scene while entering game mode. The asset was stored in an instance of %s.",
-                            classData->m_name);
+                        // Invalid asset found referenced in scene while entering game mode.
                         return false;
                     }
 

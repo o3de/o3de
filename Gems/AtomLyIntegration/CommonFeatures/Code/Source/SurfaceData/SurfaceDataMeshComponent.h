@@ -80,9 +80,9 @@ namespace SurfaceData
         ////////////////////////////////////////////////////////////////////////
         // SurfaceDataProviderRequestBus
         void GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const override;
+        void GetSurfacePointsFromList(AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const override;
 
     private:
-        bool DoRayTrace(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const;
         void UpdateMeshData();
         void OnCompositionChanged();
 
@@ -103,6 +103,6 @@ namespace SurfaceData
         AZ::Transform m_meshWorldTMInverse = AZ::Transform::CreateIdentity();
         AZ::Vector3 m_meshNonUniformScale = AZ::Vector3::CreateOne();
         AZ::Aabb m_meshBounds = AZ::Aabb::CreateNull();
-        SurfaceTagWeightMap m_newPointWeights;
+        SurfaceTagWeights m_newPointWeights;
     };
 }

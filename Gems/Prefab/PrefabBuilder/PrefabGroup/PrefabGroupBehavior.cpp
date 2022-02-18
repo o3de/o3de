@@ -153,7 +153,7 @@ namespace AZ::SceneAPI::Behaviors
             // all mesh data nodes left in the meshIndexContainer do not have a matching TransformData node
             // since the nodes have an identity transform, so map the MeshData index with an Invalid mesh index to
             // indicate the transform should not be set to a default value
-            for( const auto meshIndex : meshIndexContainer)
+            for( const auto& meshIndex : meshIndexContainer)
             {
                 MeshTransformPair pair{ meshIndex, Containers::SceneGraph::NodeIndex{} };
                 meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(meshIndex), AZStd::move(pair) });

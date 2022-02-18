@@ -695,6 +695,7 @@ namespace AZ
                         {
                             attachment->m_path = buffer->GetAttachmentId();
                             attachment->m_importedResource = buffer;
+                            attachment->m_descriptor = buffer->GetRHIBuffer()->GetDescriptor();
                         }
                     }
                 }
@@ -709,6 +710,7 @@ namespace AZ
                         {
                             attachment->m_path = image->GetAttachmentId();
                             attachment->m_importedResource = image;
+                            attachment->m_descriptor = image->GetDescriptor();
                         }
                     }
                 }

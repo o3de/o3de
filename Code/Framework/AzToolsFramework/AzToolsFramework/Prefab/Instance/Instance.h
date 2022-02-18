@@ -18,6 +18,7 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AZ
@@ -37,7 +38,6 @@ namespace AzToolsFramework
 
         using AliasPath = AZ::IO::Path;
         using AliasPathView = AZ::IO::PathView;
-        using RootAliasPath = AliasPath;
         using EntityAlias = AZStd::string;
         using EntityAliasView = AZStd::string_view;
         using InstanceAlias = AZStd::string;
@@ -63,7 +63,6 @@ namespace AzToolsFramework
 
             using AliasToInstanceMap = AZStd::unordered_map<InstanceAlias, AZStd::unique_ptr<Instance>>;
             using AliasToEntityMap = AZStd::unordered_map<EntityAlias, AZStd::unique_ptr<AZ::Entity>>;
-            using EntityList = AZStd::vector<AZ::Entity*>;
 
             Instance();
             explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity);

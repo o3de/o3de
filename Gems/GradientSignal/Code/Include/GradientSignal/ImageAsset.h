@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
 {
@@ -60,7 +61,5 @@ namespace GradientSignal
         {
         }
     };
-
-    float GetValueFromImageAsset(const AZ::Data::Asset<ImageAsset>& imageAsset, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue);
 
 } // namespace GradientSignal

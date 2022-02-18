@@ -11,7 +11,6 @@
 #include <Editor/EditorSmoothStepGradientComponent.h>
 #include <Editor/EditorSurfaceSlopeGradientComponent.h>
 #include <Editor/EditorMixedGradientComponent.h>
-#include <Editor/EditorImageBuilderComponent.h>
 #include <Editor/EditorImageGradientComponent.h>
 #include <Editor/EditorConstantGradientComponent.h>
 #include <Editor/EditorThresholdGradientComponent.h>
@@ -24,11 +23,11 @@
 #include <Editor/EditorPerlinGradientComponent.h>
 #include <Editor/EditorRandomGradientComponent.h>
 #include <Editor/EditorGradientTransformComponent.h>
+#include <Editor/EditorStreamingImageAssetCtrl.h>
 #include <Editor/EditorSurfaceMaskGradientComponent.h>
 #include <Editor/EditorGradientSurfaceDataComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <UI/GradientPreviewDataWidget.h>
-#include <Editor/EditorImageProcessingSystemComponent.h>
 
 namespace GradientSignal
 {
@@ -36,13 +35,11 @@ namespace GradientSignal
     {
         m_descriptors.insert(m_descriptors.end(), {
             GradientSignalEditorSystemComponent::CreateDescriptor(),
-            EditorImageProcessingSystemComponent::CreateDescriptor(),
 
             EditorSurfaceAltitudeGradientComponent::CreateDescriptor(),
             EditorSmoothStepGradientComponent::CreateDescriptor(),
             EditorSurfaceSlopeGradientComponent::CreateDescriptor(),
             EditorMixedGradientComponent::CreateDescriptor(),
-            EditorImageBuilderPluginComponent::CreateDescriptor(),
             EditorImageGradientComponent::CreateDescriptor(),
             EditorConstantGradientComponent::CreateDescriptor(),
             EditorThresholdGradientComponent::CreateDescriptor(),
@@ -65,7 +62,6 @@ namespace GradientSignal
         AZ::ComponentTypeList requiredComponents = GradientSignalModule::GetRequiredSystemComponents();
 
         requiredComponents.push_back(azrtti_typeid<GradientSignalEditorSystemComponent>());
-        requiredComponents.push_back(azrtti_typeid<EditorImageProcessingSystemComponent>());
 
         return requiredComponents;
     }
@@ -112,11 +108,14 @@ namespace GradientSignal
     void GradientSignalEditorSystemComponent::Activate()
     {
         GradientPreviewDataWidgetHandler::Register();
+        StreamingImagePropertyHandler::Register();
     }
 
     void GradientSignalEditorSystemComponent::Deactivate()
     {
         GradientPreviewDataWidgetHandler::Unregister();
+        // We don't need to unregister the StreamingImagePropertyHandler
+        // because its set to auto-delete (default)
     }
 }
 
