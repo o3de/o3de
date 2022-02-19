@@ -99,13 +99,12 @@ namespace AZ
         Name::Hash CalcHash(AZStd::string_view name);
 
         void LoadLiteral(Name& name);
-        void UnregisterDeferredName(Name& name);
+        void UnregisterDeferredHead(Name& name);
         void UnloadDeferredNames();
 
         AZStd::unordered_map<Name::Hash, Internal::NameData*> m_dictionary;
         mutable AZStd::shared_mutex m_sharedMutex;
 
         Name* m_deferredHead;
-        static Name* s_deferredHead;
     };
 }

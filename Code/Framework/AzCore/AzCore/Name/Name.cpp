@@ -79,7 +79,7 @@ namespace AZ
 
     Name& Name::operator=(Name&& rhs)
     {
-        if (rhs.m_supportsDeferredLoad && rhs.m_data == nullptr)
+        if (rhs.m_supportsDeferredLoad)
         {
             m_hash = rhs.m_hash;
             m_data = rhs.m_data;
@@ -204,7 +204,7 @@ namespace AZ
     {
         if (NameDictionary::IsReady(false))
         {
-            NameDictionary::Instance().UnregisterDeferredName(*this);
+            NameDictionary::Instance().UnregisterDeferredHead(*this);
         }
 
         if (s_staticNameBegin == this)

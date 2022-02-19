@@ -57,13 +57,16 @@ namespace UnitTest
         
         static size_t GetEntryCount()
         {
-            // Subtract any static scope names that are expected to persist
+            // Subtract any static scope names hanging around
             AZ::Name* head = AZ::NameDictionary::Instance().m_deferredHead;
             size_t staticNameCount = 0;
             AZ::Name* current = head;
             while (current != nullptr)
             {
-                ++staticNameCount;
+                if (current->m_data != nullptr)
+                {
+                    ++staticNameCount;
+                }
                 current = current->m_nextName;
                 if (current == head)
                 {
@@ -515,7 +518,8 @@ namespace UnitTest
     {
         AZ::Internal::NameData* leakedNameData = nullptr;
         {
-            AZ::Name leakedName{ "hello" };
+            constexpr AZStd::string_view leakedNameContents{ "hello" };
+            AZ::Name leakedName{ leakedNameContents };
             AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::NameDictionary::Destroy();
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);

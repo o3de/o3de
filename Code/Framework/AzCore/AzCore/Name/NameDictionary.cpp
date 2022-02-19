@@ -17,7 +17,6 @@
 
 namespace AZ
 {
-    Name* NameDictionary::s_deferredHead = nullptr;
     static const char* NameDictionaryInstanceName = "NameDictionaryInstance";
 
     namespace NameDictionaryInternal
@@ -47,6 +46,8 @@ namespace AZ
         using namespace NameDictionaryInternal;
 
         AZ_Assert(s_instance, "NameDictionary not created!");
+        // Unload deferred names before destroying the name dictionary
+        // We need to do this because they may release their NameRefs, which require s_instance to be set
         s_instance->UnloadDeferredNames();
         s_instance.Reset();
     }
@@ -96,14 +97,19 @@ namespace AZ
     
     NameDictionary::NameDictionary()
     {
-        m_deferredHead = s_deferredHead;
-        LoadDeferredNames(AZ::Name::GetDeferredHead());
+        m_deferredHead = Name::s_staticNameBegin;
+        Name* current = m_deferredHead;
+        while (current != nullptr)
+        {
+            current->m_linkedToDictionary = true;
+            current = current->m_nextName;
+        }
         LoadDeferredNames(m_deferredHead);
     }
 
     NameDictionary::~NameDictionary()
     {
-        s_deferredHead = m_deferredHead;
+        Name::s_staticNameBegin = m_deferredHead;
 
         [[maybe_unused]] bool leaksDetected = false;
 
@@ -171,7 +177,7 @@ namespace AZ
         }
     }
 
-    void NameDictionary::UnregisterDeferredName(Name& name)
+    void NameDictionary::UnregisterDeferredHead(Name& name)
     {
         if (m_deferredHead == &name)
         {
