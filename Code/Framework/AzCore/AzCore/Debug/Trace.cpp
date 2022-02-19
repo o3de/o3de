@@ -71,7 +71,7 @@ namespace AZ::Debug
     static AZ::EnvironmentVariable<int> g_logVerbosityLevel;
 
     static const char* assertsAutoBreakUID = "assertsAutoBreak";
-    static const char* s_AssertsAutoBreakRegistryPath = "/O3DE/Core/asserts_auto_break";
+    static const char* AssertsAutoBreakRegistryPath = "/O3DE/Core/asserts_auto_break";
     static AZ::EnvironmentVariable<bool> s_AssertsAutoBreak;
 
     static constexpr auto PrintfEventId = EventNameHash("Printf");
@@ -340,7 +340,7 @@ namespace AZ::Debug
                     if (settingsRegistry)
                     {
                         bool assertsAutoBreak;
-                        if (!settingsRegistry->Get(assertsAutoBreak, s_AssertsAutoBreakRegistryPath))
+                        if (!settingsRegistry->Get(assertsAutoBreak, AssertsAutoBreakRegistryPath))
                         {
                             // Currently, asserts will not break in the debugger by default, however THIS IS EXPECTED TO CHANGE
                             // shortly after this settings registry parameter is introduced to discourage asserts firing unchecked
