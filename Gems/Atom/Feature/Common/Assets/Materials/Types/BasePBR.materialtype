@@ -4,28 +4,28 @@
     "propertyLayout": {
         "propertyGroups": [
             { 
-                "$import": "MaterialInputs/BaseColorProperties.json"
+                "$import": "MaterialInputs/BaseColorPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/MetallicProperties.json"
+                "$import": "MaterialInputs/MetallicPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/RoughnessProperties.json"
+                "$import": "MaterialInputs/RoughnessPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/SpecularProperties.json"
+                "$import": "MaterialInputs/SpecularPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/NormalProperties.json"
+                "$import": "MaterialInputs/NormalPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/UvProperties.json"
+                "$import": "MaterialInputs/UvPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/IrradianceProperties.json"
+                "$import": "MaterialInputs/IrradiancePropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/GeneralCommonProperties.json"
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
             }
         ]
     },

@@ -12,43 +12,43 @@
     "propertyLayout": {
         "propertyGroups": [
             { 
-                "$import": "MaterialInputs/BaseColorProperties.json"
+                "$import": "MaterialInputs/BaseColorPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/MetallicProperties.json"
+                "$import": "MaterialInputs/MetallicPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/RoughnessProperties.json"
+                "$import": "MaterialInputs/RoughnessPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/SpecularProperties.json"
+                "$import": "MaterialInputs/SpecularPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/NormalProperties.json"
+                "$import": "MaterialInputs/NormalPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/OcclusionProperties.json"
+                "$import": "MaterialInputs/OcclusionPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/EmissiveProperties.json"
+                "$import": "MaterialInputs/EmissivePropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/ClearCoatProperties.json"
+                "$import": "MaterialInputs/ClearCoatPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/ParallaxProperties.json"
+                "$import": "MaterialInputs/ParallaxPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/OpacityProperties.json"
+                "$import": "MaterialInputs/OpacityPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/UvProperties.json"
+                "$import": "MaterialInputs/UvPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/IrradianceProperties.json"
+                "$import": "MaterialInputs/IrradiancePropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/GeneralCommonProperties.json"
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
             }
         ]
     },
