@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import pytest
 import _pytest.python
+import _pytest.outcomes
 from _pytest.skipping import pytest_runtest_setup as skipping_pytest_runtest_setup
 
 import abc
@@ -37,6 +38,7 @@ import os
 import re
 import threading
 import types
+import warnings
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.editor_test_utils as editor_utils
@@ -599,7 +601,9 @@ class EditorTestSuite:
             try:
                 skipping_pytest_runtest_setup(item)
                 return True
-            except Exception:  # intentionally broad
+            except (Warning, Exception, _pytest.outcomes.OutcomeException) as ex:
+                # intentionally broad to avoid events other than system interrupts
+                warnings.warn(f"Test deselected from execution queue due to {ex}")
                 return False
         
         session_items_by_name = {item.originalname: item for item in session_items}
