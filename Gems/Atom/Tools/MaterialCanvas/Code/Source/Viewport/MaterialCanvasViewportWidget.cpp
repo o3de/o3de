@@ -41,12 +41,12 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h>
+#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/PanCameraBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateModelBehavior.h>
-#include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
@@ -57,7 +57,6 @@
 #include <Viewport/MaterialCanvasViewportRequestBus.h>
 #include <Viewport/MaterialCanvasViewportSettings.h>
 #include <Viewport/MaterialCanvasViewportWidget.h>
-#include <Viewport/ui_MaterialCanvasViewportWidget.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QWindow>
@@ -69,11 +68,8 @@ namespace MaterialCanvas
 
     MaterialCanvasViewportWidget::MaterialCanvasViewportWidget(const AZ::Crc32& toolId, QWidget* parent)
         : AtomToolsFramework::RenderViewportWidget(parent)
-        , m_ui(new Ui::MaterialCanvasViewportWidget)
         , m_toolId(toolId)
     {
-        m_ui->setupUi(this);
-
         // The viewport context created by AtomToolsFramework::RenderViewportWidget has no name.
         // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -95,9 +91,15 @@ namespace MaterialCanvas
         AZ_Assert(mainScene, "Main scenes missing during system component initialization");
         mainScene->SetSubsystem(m_scene);
 
-        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
+        // Load the render pipeline asset
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
             m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
+
+        // The default pipeline determines the initial MSAA state for the application
+        const AZ::RPI::RenderPipelineDescriptor* renderPipelineDescriptor = AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
+        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor->m_renderSettings.m_multisampleState);
+
+        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *GetViewportContext()->GetWindowContext().get());
         pipelineAsset.Release();
         m_scene->AddRenderPipeline(m_renderPipeline);

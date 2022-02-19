@@ -19,10 +19,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <Viewport/MaterialCanvasViewportNotificationBus.h>
-
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QWidget>
-AZ_POP_DISABLE_WARNING
 #endif
 
 namespace AZ
@@ -41,11 +37,6 @@ namespace AZ
         class WindowContext;
     } // namespace RPI
 } // namespace AZ
-
-namespace Ui
-{
-    class MaterialCanvasViewportWidget;
-}
 
 namespace MaterialCanvas
 {
@@ -117,7 +108,5 @@ namespace MaterialCanvas
         AZ::Render::SkyBoxFeatureProcessorInterface* m_skyboxFeatureProcessor = {};
 
         AZStd::shared_ptr<AtomToolsFramework::ViewportInputBehaviorController> m_viewportController;
-
-        QScopedPointer<Ui::MaterialCanvasViewportWidget> m_ui;
     };
 } // namespace MaterialCanvas

@@ -15,7 +15,7 @@
 #include <Document/MaterialCanvasDocumentRequestBus.h>
 #include <Viewport/MaterialCanvasViewportWidget.h>
 #include <Window/MaterialCanvasMainWindow.h>
-#include <Window/Inspector/MaterialCanvasInspector.h>
+#include <Window/MaterialCanvasMainWindowSettings.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
@@ -48,10 +48,10 @@ namespace MaterialCanvas
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
-        m_materialCanvasViewport = new MaterialCanvasViewportWidget(m_toolId, centralWidget());
-        m_materialCanvasViewport->setObjectName("Viewport");
-        m_materialCanvasViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        centralWidget()->layout()->addWidget(m_materialCanvasViewport);
+        m_materialViewport = new MaterialCanvasViewportWidget(m_toolId, centralWidget());
+        m_materialViewport->setObjectName("Viewport");
+        m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        centralWidget()->layout()->addWidget(m_materialViewport);
 
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
@@ -71,7 +71,15 @@ namespace MaterialCanvas
             QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
         });
 
-        AddDockWidget("Inspector", new MaterialCanvasInspector(m_toolId), Qt::RightDockWidgetArea, Qt::Vertical);
+        m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
+        m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/MaterialInspector");
+        m_materialInspector->SetIndicatorFunction(
+            [](const AzToolsFramework::InstanceDataNode* /*node*/)
+            {
+                return ":/Icons/blank.png";
+            });
+
+        AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
 
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();
@@ -89,21 +97,27 @@ namespace MaterialCanvas
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
+    void MaterialCanvasMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
+    {
+        Base::OnDocumentOpened(documentId);
+        m_materialInspector->SetDocumentId(documentId);
+    }
+
     void MaterialCanvasMainWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
     {
         QSize requestedViewportSize = QSize(width, height) / devicePixelRatioF();
-        QSize currentViewportSize = m_materialCanvasViewport->size();
+        QSize currentViewportSize = m_materialViewport->size();
         QSize offset = requestedViewportSize - currentViewportSize;
         QSize requestedWindowSize = size() + offset;
         resize(requestedWindowSize);
 
         AZ_Assert(
-            m_materialCanvasViewport->size() == requestedViewportSize,
+            m_materialViewport->size() == requestedViewportSize,
             "Resizing the window did not give the expected viewport size. Requested %d x %d but got %d x %d.",
-            requestedViewportSize.width(), requestedViewportSize.height(), m_materialCanvasViewport->size().width(),
-            m_materialCanvasViewport->size().height());
+            requestedViewportSize.width(), requestedViewportSize.height(), m_materialViewport->size().width(),
+            m_materialViewport->size().height());
 
-        [[maybe_unused]] QSize newDeviceSize = m_materialCanvasViewport->size();
+        [[maybe_unused]] QSize newDeviceSize = m_materialViewport->size();
         AZ_Warning(
             "Material Canvas", static_cast<uint32_t>(newDeviceSize.width()) == width && static_cast<uint32_t>(newDeviceSize.height()) == height,
             "Resizing the window did not give the expected frame size. Requested %d x %d but got %d x %d.", width, height,
@@ -112,12 +126,12 @@ namespace MaterialCanvas
 
     void MaterialCanvasMainWindow::LockViewportRenderTargetSize(uint32_t width, uint32_t height)
     {
-        m_materialCanvasViewport->LockRenderTargetSize(width, height);
+        m_materialViewport->LockRenderTargetSize(width, height);
     }
 
     void MaterialCanvasMainWindow::UnlockViewportRenderTargetSize()
     {
-        m_materialCanvasViewport->UnlockRenderTargetSize();
+        m_materialViewport->UnlockRenderTargetSize();
     }
 
     bool MaterialCanvasMainWindow::GetCreateDocumentParams(AZStd::string& /*openPath*/, AZStd::string& /*savePath*/)
