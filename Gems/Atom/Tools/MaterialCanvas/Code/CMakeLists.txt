@@ -22,7 +22,6 @@ ly_add_target(
     NAME MaterialCanvas EXECUTABLE
     NAMESPACE Gem
     AUTOMOC
-    AUTOUIC
     AUTORCC
     FILES_CMAKE
         materialcanvas_files.cmake

@@ -17,16 +17,14 @@ set(FILES
 
     Source/Viewport/MaterialCanvasViewportModule.h
     Source/Viewport/MaterialCanvasViewportModule.cpp
-    Source/Viewport/InputController/MaterialCanvasViewportInputControllerBus.h
     Source/Viewport/MaterialCanvasViewportSettings.h
     Source/Viewport/MaterialCanvasViewportRequestBus.h
     Source/Viewport/MaterialCanvasViewportNotificationBus.h
-   Source/Viewport/MaterialCanvasViewportSettings.cpp
+    Source/Viewport/MaterialCanvasViewportSettings.cpp
     Source/Viewport/MaterialCanvasViewportComponent.cpp
     Source/Viewport/MaterialCanvasViewportComponent.h
     Source/Viewport/MaterialCanvasViewportWidget.cpp
     Source/Viewport/MaterialCanvasViewportWidget.h
-    Source/Viewport/MaterialCanvasViewportWidget.ui
 
     Source/Window/MaterialCanvasMainWindow.h
     Source/Window/MaterialCanvasMainWindow.cpp
@@ -39,6 +37,4 @@ set(FILES
     Source/Window/ToolBar/ModelPresetComboBox.cpp
     Source/Window/ToolBar/LightingPresetComboBox.h
     Source/Window/ToolBar/LightingPresetComboBox.cpp
-    Source/Window/Inspector/MaterialCanvasInspector.h
-    Source/Window/Inspector/MaterialCanvasInspector.cpp
 )
