@@ -118,13 +118,13 @@ namespace AZ
                     inBinding.m_name = "Input";
                     inBinding.m_slotType = PassSlotType::Input;
                     inBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                    inBinding.m_attachment = inOutAttachment;
                     inBinding.m_connectedBinding = &inOutBinding;
 
                     RHI::ImageViewDescriptor inViewDesc;
                     inViewDesc.m_mipSliceMin = mip;
                     inViewDesc.m_mipSliceMax = mip;
                     inBinding.m_unifiedScopeDesc.SetAsImage(inViewDesc);
+                    inBinding.SetAttachment(inOutAttachment);
 
                     childPass->AddAttachmentBinding(inBinding);
                 }
@@ -135,13 +135,13 @@ namespace AZ
                     outBinding.m_name = "Output";
                     outBinding.m_slotType = PassSlotType::InputOutput;
                     outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                    outBinding.m_attachment = inOutAttachment;
                     outBinding.m_connectedBinding = &inOutBinding;
 
                     RHI::ImageViewDescriptor outViewDesc;
                     outViewDesc.m_mipSliceMin = mip + 1;
                     outViewDesc.m_mipSliceMax = mip + 1;
                     outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
+                    outBinding.SetAttachment(inOutAttachment);
 
                     childPass->AddAttachmentBinding(outBinding);
                 }

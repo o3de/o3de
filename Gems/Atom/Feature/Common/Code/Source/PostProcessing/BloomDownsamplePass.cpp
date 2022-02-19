@@ -57,15 +57,13 @@ namespace AZ
                 outBinding.m_shaderInputName = Name{ AZStd::string::format("m_targetMipLevel%d", i) };
                 outBinding.m_slotType = RPI::PassSlotType::Output;
                 outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-
-                outBinding.m_attachment = outAttachment;
                 
                 // Set image view descriptor
                 RHI::ImageViewDescriptor outViewDesc;
                 outViewDesc.m_mipSliceMin = i;
                 outViewDesc.m_mipSliceMax = i;
                 outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
-                outBinding.m_unifiedScopeDesc.m_attachmentId = outAttachment->GetAttachmentId();
+                outBinding.SetAttachment(outAttachment);
 
                 AddAttachmentBinding(outBinding);
             }

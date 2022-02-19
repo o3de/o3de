@@ -149,13 +149,13 @@ namespace AZ
             inBinding.m_shaderInputName = "m_inputTexture";
             inBinding.m_slotType = RPI::PassSlotType::Input;
             inBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            inBinding.m_attachment = parentInOutAttachment;
             inBinding.m_connectedBinding = isHorizontalPass ? &parentInOutBinding : &parentInBinding;
 
             RHI::ImageViewDescriptor viewDesc;
             viewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
             viewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
             inBinding.m_unifiedScopeDesc.SetAsImage(viewDesc);
+            inBinding.SetAttachment(parentInOutAttachment);
 
             pass->AddAttachmentBinding(inBinding);
 
@@ -165,11 +165,11 @@ namespace AZ
             outBinding.m_shaderInputName = "m_outputTexture";
             outBinding.m_slotType = RPI::PassSlotType::Output;
             outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            outBinding.m_attachment = parentWorkSpaceAttachment;
             outBinding.m_connectedBinding = isHorizontalPass ? &parentInBinding : &parentInOutBinding;
 
             // Output to the same mip level as input downsampled texture
             outBinding.m_unifiedScopeDesc.SetAsImage(viewDesc);
+            outBinding.SetAttachment(parentWorkSpaceAttachment);
 
             pass->AddAttachmentBinding(outBinding);
         }
