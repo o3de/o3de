@@ -374,7 +374,7 @@ namespace AzFramework
 
         void SetInitiateRotateFn(AZStd::function<void()> initiateRotateFn)
         {
-            m_clickDetector.m_downEvent = initiateRotateFn;
+            m_clickDetector.SetClickDownEventFn(AZStd::move(initiateRotateFn));
         }
 
     private:
