@@ -38,6 +38,16 @@ namespace AZ
             // after the AZ::Allocators have been destroyed
             // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
             s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
+
+            // Load any deferred names stored in our module's deferred name list
+            s_instance->m_deferredHead = Name::s_staticNameBegin;
+            Name* current = s_instance->m_deferredHead;
+            while (current != nullptr)
+            {
+                current->m_linkedToDictionary = true;
+                current = current->m_nextName;
+            }
+            s_instance->LoadDeferredNames(s_instance->m_deferredHead);
         }
     }
 
@@ -46,6 +56,7 @@ namespace AZ
         using namespace NameDictionaryInternal;
 
         AZ_Assert(s_instance, "NameDictionary not created!");
+
         // Unload deferred names before destroying the name dictionary
         // We need to do this because they may release their NameRefs, which require s_instance to be set
         s_instance->UnloadDeferredNames();
@@ -97,14 +108,6 @@ namespace AZ
     
     NameDictionary::NameDictionary()
     {
-        m_deferredHead = Name::s_staticNameBegin;
-        Name* current = m_deferredHead;
-        while (current != nullptr)
-        {
-            current->m_linkedToDictionary = true;
-            current = current->m_nextName;
-        }
-        LoadDeferredNames(m_deferredHead);
     }
 
     NameDictionary::~NameDictionary()

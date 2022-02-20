@@ -137,7 +137,7 @@ namespace AZ
             return m_hash;
         }
 
-        AZ_FORCE_INLINE static Name* GetDeferredHead()
+        static Name*& GetDeferredHead()
         {
             return s_staticNameBegin;
         }
