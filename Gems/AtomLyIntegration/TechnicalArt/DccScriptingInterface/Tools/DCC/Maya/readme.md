@@ -39,7 +39,9 @@ If pip is not available yet for your mayapy, there are a couple ways to address 
 
 First find out where the site-packages is located
 
-C:\Program Files\Autodesk\Maya2020\bin>`mayapy -m site`
+C:\Program Files\Autodesk\Maya2020\bin>
+    
+    mayapy -m site
 
     sys.path = [
         'C:\\Program Files\\Autodesk\\Maya2020\\bin',
@@ -81,9 +83,13 @@ Maya 2020 (Python 2.7.11)
 
 Use a cmd prompt with elevated Admin rights.
 
-    C:\WINDOWS\system32>cd C:\Program Files\Autodesk\Maya2020\bin
-    C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip
-    C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip --upgrade
+C:\WINDOWS\system32>
+    
+    cd C:\Program Files\Autodesk\Maya2020\bin
+
+    mayapy -m ensurepip
+
+    mayapy -m ensurepip --upgrade
 
 Now your local maya install is all set up with pip so you can install additional python packages to use in maya.  (note: not all packages are compatible with maya)
 
@@ -95,7 +101,9 @@ And you'll need to know where the DCCsi is located, we will install package depe
 
 Note: you may need to update the paths below to match your local o3de engine install!
 
-    C:\Program Files\Autodesk\Maya2020\bin>mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
+C:\Program Files\Autodesk\Maya2020\bin>
+
+    mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
     
 ![image](https://user-images.githubusercontent.com/23222931/155026402-ce35523b-ba05-423c-9e70-3e613732e034.png)
 
@@ -110,8 +118,12 @@ Method 2 above should still work, however you'd want to use this mayapy2:
 
 open a cmd with elevated admin rights (use windows start, type cmd, right-click on 'command prompt', choose 'Run as administrator')
 
-    C:\WINDOWS\system32>cd C:\Program Files\Autodesk\Maya2022\bin
+C:\WINDOWS\system32>
+
+    cd C:\Program Files\Autodesk\Maya2022\bin
+
     C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip
+
     C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip --upgrade
     
     mayapy2 -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
@@ -122,8 +134,12 @@ open a cmd with elevated admin rights (use windows start, type cmd, right-click 
 
 This also is not very different, you just need to modify some of the commands. Also because O3DE is also on a version of py3.7.x, we can re-use the requirements.txt file that is in the root of the DccScriptingInterface gem folder.
 
-    C:\WINDOWS\system32>cd C:\Program Files\Autodesk\Maya2022\bin
+C:\WINDOWS\system32>
+
+    cd C:\Program Files\Autodesk\Maya2022\bin
+
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip
+
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip --upgrade
     
     mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.7.x\site-packages
