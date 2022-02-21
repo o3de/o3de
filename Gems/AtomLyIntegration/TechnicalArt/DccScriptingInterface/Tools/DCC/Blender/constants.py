@@ -29,7 +29,7 @@ from pathlib import Path
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Blender.constants'
+_MODULENAME = 'Tools.DCC.Blender.constants'
 
 # Blender consts
 USER_HOME = Path.home()

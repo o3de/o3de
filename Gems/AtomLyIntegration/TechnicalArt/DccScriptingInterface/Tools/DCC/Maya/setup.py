@@ -11,38 +11,19 @@
 
 """! @brief
 Module Documentation:
-    < DCCsi >:: Tools//DCC//Blender//setup.py
+    < DCCsi >:: Tools/DCC/Maya/setup.py
     
-Running this module installs the DCCsi python requirements.txt for Blender.
+Running this module installs the DCCsi python requirements.txt for Maya.
 
 It installs based on the python version into a location (such as):
 <o3de>/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/3rdParty/Python/Lib/3.x
 
-This is to ensure that we are not modifying the users Blender install directly.
+This is to ensure that we are not modifying the users Maya install directly.
 
 For this script to function on windows you will need Administrator privledges.
 ^ You only have to start with Admin rights if you are running setup.py or otherwise updating packages
 
-1. Setup directly within Blender:
-    Launch Blender by Right-clicking on blender executable in the 'start menu' and select "Run as Administrator"
-    Open up the System Console (under the Window menu)
-	Select the 'scripting workspace' tab
-	Do one of the following:
-	    Use the 'open' button and open this script (the one you are reading):
-			<o3de path to>/DccScriptingInterface/Tools/DCC/Blender/setup.py
-	    Or copy/paste the contents of this script into the 'scripting workspace'
-	Then run the code
-
-Be sure to restart Blender! (you don't need Admin rights when not updating)
-
-2. On windows (automated .bat file):
-    Find the following file (it's right next to the script you are reading)
-    <o3de path to>/DccScriptingInterface/Tools/DCC/Blender/setup.bat
-    Right-click on the setup.bat and select "Run as Administrator"
-    (under the hood this just runs setup.py cli with default args)
-
-3. Or run the setup.py (this scripts) cli from a command terminal (with elevated Admin Privledges)
-    To Do: document
+To Do: document usage (how to install for Maya 2020 py2, Maya 2022 py2.7, Maya 2022 py3.7)
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -57,13 +38,13 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Tools.DCC.Blender.setup'
+_MODULENAME = 'Tools.DCC.Maya.setup'
 
 # Local access
 _MODULE_PATH = Path(__file__)                   # this script
-_DCCSI_BLENDER_PATH = Path(_MODULE_PATH.parent) # dcsi/tools/dcc/blender
-os.environ['PATH_DCCSI_BLENDER'] = _DCCSI_BLENDER_PATH.as_posix()
-site.addsitedir(_DCCSI_BLENDER_PATH.as_posix())  # python path
+_DCCSI_MAYA_PATH = Path(_MODULE_PATH.parent) # dcsi/tools/dcc/blender
+os.environ['PATH_DCCSI_BLENDER'] = _DCCSI_MAYA_PATH.as_posix()
+site.addsitedir(_DCCSI_MAYA_PATH.as_posix())  # python path
 
 import config # bootstraps the DCCsi
 # now we have azpy api access
@@ -170,7 +151,7 @@ if __name__ == '__main__':
         os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
 
 
-    _SETTINGS = config.get_dccsi_blender_settings()    
+    _SETTINGS = config.get_dccsi_maya_settings()    
 
     install(_SETTINGS)
 # --- END -----------------------------------------------------------------

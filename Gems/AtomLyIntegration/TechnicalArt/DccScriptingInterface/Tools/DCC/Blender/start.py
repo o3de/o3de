@@ -25,7 +25,7 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Blender.start'
+_MODULENAME = 'Tools.DCC.Blender.start'
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 

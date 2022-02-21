@@ -27,7 +27,7 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-_MODULENAME = 'Blender.config'
+_MODULENAME = 'Tools.DCC.Blender.config'
 
 # configure basic logger
 FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
