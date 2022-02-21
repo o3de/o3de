@@ -6,7 +6,7 @@
 #
 #
 
-o3de_pal_dir(source_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 ly_add_target(
     NAME GraphCanvas ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
@@ -79,27 +79,31 @@ ly_add_target(
 ly_create_alias(NAME GraphCanvas.Builders NAMESPACE Gem TARGETS Gem::GraphCanvas.Editor)
 ly_create_alias(NAME GraphCanvas.Tools    NAMESPACE Gem TARGETS Gem::GraphCanvas.Editor)
 
+endif()
+
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
-    ly_add_target(
-        NAME GraphCanvas.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            graphcanvas_tests_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Tests
-                Source
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzTest
-                GraphCanvasWidgets
-    )
-    ly_add_googletest(
-        NAME Gem::GraphCanvas.Tests
-    )
+        ly_add_target(
+            NAME GraphCanvas.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                graphcanvas_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    Source
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+                    Gem::GraphCanvasWidgets
+        )
+        ly_add_googletest(
+            NAME Gem::GraphCanvas.Tests
+        )
 
+    endif()
 endif()
