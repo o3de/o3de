@@ -96,6 +96,8 @@ And you'll need to know where the DCCsi is located, we will install package depe
 Note: you may need to update the paths below to match your local o3de engine install!
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
+    
+![image](https://user-images.githubusercontent.com/23222931/155026402-ce35523b-ba05-423c-9e70-3e613732e034.png)
 
 ## Other versions of Maya (2022 and beyond)
 
