@@ -6,6 +6,8 @@
 #
 #
 
+o3de_pal_dir(source_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+
 ly_add_target(
     NAME GraphCanvas ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
