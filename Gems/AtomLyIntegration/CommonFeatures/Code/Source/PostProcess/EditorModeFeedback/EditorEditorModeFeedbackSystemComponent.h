@@ -10,6 +10,7 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/functional.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -23,11 +24,11 @@ namespace AZ
     {
         class MeshDrawPacket;
         class Material;
-        class ShaderResourceGroup;
     }
 
     namespace Render
     {
+        //! Component for the editor mode feedback system.
         class EditorEditorModeFeedbackSystemComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorModeFeedbackInterface
@@ -64,15 +65,28 @@ namespace AZ
             //! Flag to specify whether or not the editor feedback effects are active.
             bool m_enabled = false;
 
-            //!
+            //! 
             struct MeshDrawPackets
             {
+                ~MeshDrawPackets();
+
                 const MeshFeatureProcessorInterface::MeshHandle* m_meshHandle;
                 AZStd::vector<RPI::MeshDrawPacket> m_drawPackets;
             };
-
+            
             //!
             AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, MeshDrawPackets>> m_entityComponentMeshDrawPackets;
+
+            //!
+            //struct ComponentDrawPackets
+            //{
+            //    using DrawPackets = AZStd::vector<RPI::MeshDrawPacket>;
+            //    AZStd::function<DrawPackets()> m_drawPacketBuilder;
+            //    DrawPackets m_drawPackets;
+            //};
+            //
+            ////!
+            //AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, ComponentDrawPackets>> m_entityComponentDrawPackets;
 
             //!
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;

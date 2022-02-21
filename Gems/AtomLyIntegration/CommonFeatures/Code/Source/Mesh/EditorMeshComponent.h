@@ -15,7 +15,6 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <Mesh/MeshComponent.h>
 #include <Mesh/EditorMeshStats.h>
-#include <Atom/RPI.Public/MeshDrawPacket.h>
 
 namespace AZ
 {

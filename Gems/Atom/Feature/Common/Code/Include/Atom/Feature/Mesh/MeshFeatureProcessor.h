@@ -130,10 +130,6 @@ namespace AZ
             MeshFeatureProcessor() = default;
             virtual ~MeshFeatureProcessor() = default;
 
-            TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const override
-            {
-                return meshHandle->m_objectId;
-            }
 
             // FeatureProcessor overrides ...
             //! Creates pools, buffers, and buffer views
@@ -147,6 +143,7 @@ namespace AZ
             void OnBeginPrepareRender() override;
             void OnEndPrepareRender() override;
 
+            TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const override;
             MeshHandle AcquireMesh(
                 const MeshHandleDescriptor& descriptor,
                 const MaterialAssignmentMap& materials = {}) override;

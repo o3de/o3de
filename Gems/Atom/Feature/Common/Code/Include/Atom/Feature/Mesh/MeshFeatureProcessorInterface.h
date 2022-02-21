@@ -44,6 +44,7 @@ namespace AZ
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
 
+            //! Returns the object id for a mesh handle.
             virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
 
             //! Acquires a model with an optional collection of material assignments.

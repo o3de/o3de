@@ -13,11 +13,6 @@
 
 namespace AZ
 {
-    namespace RPI
-    {
-        class ModelAsset;
-    }
-
     namespace Render
     {
         //! The interface for the visual feedback component of the central editor mode tracker for all viewports.
@@ -31,7 +26,9 @@ namespace AZ
             //! Returns true if the editor mode feedback effect is enabled, otherwise false.
             virtual bool IsEnabled() const = 0;
 
-            //! Registers 
+            //! Registers a drawable component to be associated with the provided entity id.
+            //! @param entityComponentId The id of the entity and drawable component to be registered.
+            //! @param meshHandle The handle of this drawable component's mesh.
             virtual void RegisterDrawableComponent(
                 EntityComponentIdPair entityComponentId, const MeshFeatureProcessorInterface::MeshHandle& meshHandle) = 0;
         };

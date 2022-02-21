@@ -13,8 +13,6 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 
 #include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
-#include <Atom/RPI.Public/Scene.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace AZ
@@ -257,6 +255,7 @@ namespace AZ
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
                 AzToolsFramework::Refresh_EntireTree);
 
+            // Register this component with the editor mode feedback system
             if (auto* editorModeFeedbackInterface = AZ::Interface<EditorModeFeedbackInterface>::Get())
             {
                 editorModeFeedbackInterface->RegisterDrawableComponent({ GetEntityId(), GetId() }, m_controller.m_meshHandle);
