@@ -95,12 +95,8 @@ namespace SurfaceData
             const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& weights);
 
         //! Modify the surface weights for each surface point in the list.
-        //! @param currentEntityId - The entity currently modifying the surface weights. This is used to prevent entities from modifying
-        //! any points they created.
-        //! @param modificationWeightCallback - The function to call for each surface point to process.
-        void ModifySurfaceWeights(
-            const AZ::EntityId& currentEntityId,
-            AZStd::function<void(const AZ::Vector3& position, SurfaceTagWeights& surfaceWeights)> modificationWeightCallback);
+        //! @param surfaceModifierHandle - The handle to the surface modifier that will modify the surface weights.
+        void ModifySurfaceWeights(const SurfaceDataRegistryHandle& surfaceModifierHandle);
 
         //! End construction of the SurfacePointList.
         //! After this is called, surface points can no longer be added or modified, and all of the query APIs can start getting used.

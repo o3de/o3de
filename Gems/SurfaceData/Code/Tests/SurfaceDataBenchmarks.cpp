@@ -49,7 +49,6 @@ namespace UnitTest
             AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
 
             auto transform = entity->CreateComponent<AzFramework::TransformComponent>();
-            transform->SetLocalTM(AZ::Transform::CreateTranslation(worldPos));
             transform->SetWorldTM(AZ::Transform::CreateTranslation(worldPos));
 
             SurfaceData::SurfaceDataShapeConfig surfaceConfig;
