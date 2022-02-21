@@ -10,6 +10,7 @@ import os
 from azlmbr.entity import EntityId
 from azlmbr.math import Vector3
 from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.prefab_utils import Prefab
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
 
@@ -17,6 +18,110 @@ import azlmbr.bus as bus
 import azlmbr.components as components
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
+
+def get_linear_nested_items_name(nested_items_name_prefix, current_layer):
+    return f"{nested_items_name_prefix}{current_layer}"
+
+def create_linear_nested_entities(nested_entities_name_prefix, layer_count, pos):
+    assert layer_count > 0, "Can't create nested entities with less than one layer"
+
+    current_entity = EditorEntity.create_editor_entity_at(
+        pos, name=get_linear_nested_items_name(nested_entities_name_prefix, 0))
+    root_entity = current_entity
+    for current_layer in range(1, layer_count):
+        current_entity = EditorEntity.create_editor_entity(
+            parent_id=current_entity.id, name=get_linear_nested_items_name(nested_entities_name_prefix, current_layer))
+
+    return root_entity
+
+def create_linear_nested_prefabs(entities, nested_prefabs_file_name_prefix, nested_prefabs_instance_name_prefix, layer_count):
+    assert layer_count > 0, "Can't create nested prefabs with less than one layer"
+
+    created_prefabs = []
+    created_prefab_instances = []
+
+    for current_layer in range(0, layer_count):
+        current_prefab, current_prefab_instance = Prefab.create_prefab(
+            entities, get_linear_nested_items_name(nested_prefabs_file_name_prefix, current_layer), 
+            prefab_instance_name=get_linear_nested_items_name(nested_prefabs_instance_name_prefix, current_layer))
+        created_prefabs.append(current_prefab)
+        created_prefab_instances.append(current_prefab_instance)
+        entities = current_prefab_instance.get_direct_child_entities()
+    
+    return created_prefabs, created_prefab_instances
+
+def validate_linear_nested_prefab_instances_hierarchy(nested_prefab_instances):
+    if len(nested_prefab_instances) == 0:
+        return
+
+    nested_prefab_instances_root = nested_prefab_instances[0]
+    assert nested_prefab_instances_root.container_entity.get_parent_id().IsValid(), \
+        "Root of nested prefabs should have a valid parent entity"
+
+    parent_prefab_instance = nested_prefab_instances_root
+    for current_layer in range(0, len(nested_prefab_instances) - 1):
+        current_prefab_instance = nested_prefab_instances[current_layer]
+        current_prefab_instance_container_entity = current_prefab_instance.container_entity
+        assert current_prefab_instance_container_entity.id.IsValid(), \
+            f"Prefab '{current_prefab_instance_container_entity.get_name()}' is not valid"
+
+        direct_child_entities = current_prefab_instance.get_direct_child_entities()
+        assert len(direct_child_entities) == 1, \
+            f"These prefab instances are not linearly nested. " \
+            f"Entity '{current_entity.get_name}' has {len(direct_child_entities)} direct child entities"
+
+        direct_child_entity = direct_child_entities[0]
+        inner_prefab_instance = nested_prefab_instances[current_layer + 1]
+        inner_prefab_instance_container_entity = inner_prefab_instance.container_entity
+        assert direct_child_entity.id == inner_prefab_instance_container_entity.id, \
+            f"Direct child entity of prefab '{current_prefab_instance_container_entity.get_name()}' " \
+            f"should be prefab '{inner_prefab_instance_container_entity.get_name()}', " \
+            f"not '{direct_child_entity.get_name()}'."
+        assert inner_prefab_instance_container_entity.get_parent_id() == current_prefab_instance_container_entity.id, \
+            f"Prefab '{inner_prefab_instance_container_entity.get_name()}' should be the inner prefab of " \
+            f"prefab '{current_prefab_instance_container_entity.get_name()}'"
+
+    most_inner_prefab_instance = nested_prefab_instances[-1]
+    most_inner_prefab_instance_container_entity = most_inner_prefab_instance.container_entity
+    assert most_inner_prefab_instance_container_entity.id.IsValid(), \
+        f"Prefab '{most_inner_prefab_instance_container_entity.get_name()}' is not valid"
+
+    direct_child_entities = most_inner_prefab_instance.get_direct_child_entities()
+    for entity in direct_child_entities:
+        assert entity.get_parent_id() == most_inner_prefab_instance_container_entity.id, \
+            f"Entity '{entity.get_name()}' should be under prefab '{most_inner_prefab_instance_container_entity.get_name()}'" 
+
+def validate_linear_nested_entities(nested_entities_root, expected_layer_count, expected_pos):
+    assert expected_layer_count > 0, "Can't validate nested entities with less than one layer"
+    assert nested_entities_root.get_parent_id().IsValid(), \
+        "Root of nested entities should have a valid parent entity"
+    
+    current_entity = nested_entities_root
+    layer_count = 1
+    while True:
+        assert current_entity.id.IsValid(), f"Entity '{current_entity.get_name()}' is not valid"
+
+        current_entity_pos = current_entity.get_world_translation()
+        assert current_entity_pos.IsClose(expected_pos), \
+            f"Entity '{current_entity.get_name()}' position '{current_entity_pos.ToString()}' " \
+            f"is not located at expected position '{expected_pos.ToString()}'"
+
+        child_entities = current_entity.get_children()
+        if len(child_entities) == 0:
+            break
+
+        assert len(child_entities) == 1, \
+            f"These entities are not linearly nested. Entity '{current_entity.get_name}' has {len(child_entities)} child entities"
+
+        layer_count += 1
+        child_entity = child_entities[0]
+        assert child_entity.get_parent_id() == current_entity.id, \
+            f"Entity '{child_entity.get_name()}' should be under entity '{current_entity.get_name()}'"
+
+        current_entity = child_entity
+        
+    assert layer_count == expected_layer_count, \
+        f"Number of layers of nested entities should be {expected_layer_count}, not {layer_count}"
 
 def check_entity_children_count(entity_id, expected_children_count):
     entity_children_count_matched_result = (
