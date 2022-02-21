@@ -323,6 +323,7 @@ namespace ScriptCanvasEditor
         // or the sub graph interface
         // the editor interface. that is
 
+        /*
         using namespace ScriptCanvasBuilder;
         CompleteDescriptionInPlace(m_sourceHandle);
 
@@ -352,6 +353,7 @@ namespace ScriptCanvasEditor
         m_variableOverrides = parseOutcome.TakeValue();
         m_variableOverrides.SetHandlesToDescription();
         m_runtimeDataIsValid = true;
+        */
     }
 
     void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
