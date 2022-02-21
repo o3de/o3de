@@ -117,7 +117,7 @@ C:\Program Files\Autodesk\Maya2020\bin>
 
     mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
     
-![image](https://user-images.githubusercontent.com/23222931/155026402-ce35523b-ba05-423c-9e70-3e613732e034.png)
+![image](https://user-images.githubusercontent.com/23222931/155037696-cab81e13-7910-433d-b038-75a07e6690ad.png)
 
 ## Other versions of Maya (2022 and beyond)
 
@@ -148,7 +148,7 @@ The following will install those requirements into a sandbox area that we can bo
     
     mayapy2 -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
 
-![image](https://user-images.githubusercontent.com/23222931/155027575-648ec8aa-d067-42a2-854a-2d985cec13a5.png)
+![image](https://user-images.githubusercontent.com/23222931/155037710-79bee421-1355-484b-8c96-f672157da40a.png)
 
 ### Maya 2022 (Python 3.7.7)
 
@@ -172,5 +172,5 @@ The following will install those requirements into a sandbox area that we can bo
     
     mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.7.x\site-packages
 
-![image](https://user-images.githubusercontent.com/23222931/155028674-bc0786e9-159d-42a0-8aba-deddbcfaf841.png)
+![image](https://user-images.githubusercontent.com/23222931/155037723-8f514a85-194f-46e8-b726-55a04f0860bb.png)
 
