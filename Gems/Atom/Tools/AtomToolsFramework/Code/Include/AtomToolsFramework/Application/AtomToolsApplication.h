@@ -43,7 +43,7 @@ namespace AtomToolsFramework
 
         using Base = AzFramework::Application;
 
-        AtomToolsApplication(const AZStd::string& targetName, int* argc, char*** argv);
+        AtomToolsApplication(const char* targetName, int* argc, char*** argv);
         ~AtomToolsApplication();
 
         virtual bool LaunchLocalServer();

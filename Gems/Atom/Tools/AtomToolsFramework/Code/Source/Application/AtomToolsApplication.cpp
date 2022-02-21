@@ -45,7 +45,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    AtomToolsApplication::AtomToolsApplication(const AZStd::string& targetName, int* argc, char*** argv)
+    AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
         , m_targetName(targetName)
@@ -70,9 +70,9 @@ namespace AtomToolsFramework
         m_styleManager->initialize(this, engineRootPath);
 
         const int updateIntervalWhenActive =
-            aznumeric_cast<int>(GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1));
+            aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1));
         const int updateIntervalWhenNotActive =
-            aznumeric_cast<int>(GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 64));
+            aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 64));
 
         m_timer.setInterval(updateIntervalWhenActive);
         connect(&m_timer, &QTimer::timeout, this, [this]()
@@ -188,7 +188,7 @@ namespace AtomToolsFramework
 
         Base::StartCommon(systemEntity);
 
-        const bool clearLogFile = GetSettingOrDefault("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
+        const bool clearLogFile = GetSettingsValue("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
         m_traceLogger.OpenLogFile(m_targetName + ".log", clearLogFile);
 
         ConnectToAssetProcessor();
@@ -197,7 +197,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
-        const bool enableSourceControl = GetSettingOrDefault("/O3DE/AtomToolsFramework/Application/EnableSourceControl", true);
+        const bool enableSourceControl = GetSettingsValue("/O3DE/AtomToolsFramework/Application/EnableSourceControl", true);
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
             &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
 
@@ -238,6 +238,12 @@ namespace AtomToolsFramework
     void AtomToolsApplication::Destroy()
     {
         m_styleManager.reset();
+
+        // Save application settings to settings registry file
+        AZ::IO::FixedMaxPath savePath = AZ::Utils::GetProjectPath();
+        savePath /= AZStd::string::format("user/Registry/%s.setreg", m_targetName.c_str());
+        SaveSettingsToFile(savePath, { "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) });
+
         UnloadSettings();
 
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();

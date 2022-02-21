@@ -15,8 +15,6 @@ set(FILES
     Source/UI/GradientPreviewDataWidget.h
     Source/UI/GradientPreviewWidget.cpp
     Source/UI/GradientPreviewWidget.h
-    Source/Editor/EditorImageProcessingSystemComponent.cpp
-    Source/Editor/EditorImageProcessingSystemComponent.h
     Source/Editor/EditorConstantGradientComponent.cpp
     Source/Editor/EditorConstantGradientComponent.h
     Source/Editor/EditorDitherGradientComponent.cpp
@@ -25,8 +23,6 @@ set(FILES
     Source/Editor/EditorGradientSurfaceDataComponent.h
     Source/Editor/EditorGradientTransformComponent.cpp
     Source/Editor/EditorGradientTransformComponent.h
-    Source/Editor/EditorImageBuilderComponent.cpp
-    Source/Editor/EditorImageBuilderComponent.h
     Source/Editor/EditorImageGradientComponent.cpp
     Source/Editor/EditorImageGradientComponent.h
     Source/Editor/EditorInvertGradientComponent.cpp

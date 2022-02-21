@@ -294,7 +294,7 @@ namespace AZ
         void PassLibrary::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
             // Handle pass asset reload
-            Data::Asset<PassAsset> passAsset = Data::static_pointer_cast<PassAsset>(asset);
+            Data::Asset<PassAsset> passAsset = { asset.GetAs<PassAsset>() , AZ::Data::AssetLoadBehavior::PreLoad};
             if (passAsset && passAsset->GetPassTemplate())
             {
                 LoadPassAsset(passAsset->GetPassTemplate()->m_name, passAsset, true);

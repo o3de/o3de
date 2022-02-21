@@ -106,9 +106,9 @@ namespace AtomToolsFramework
         const AZStd::vector<AssetBrowserEntry*> entries = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
 
         const bool promptToOpenMultipleFiles =
-            GetSettingOrDefault<bool>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles", true);
+            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles", true);
         const AZ::u64 promptToOpenMultipleFilesThreshold =
-            GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold", 10);
+            GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold", 10);
 
         if (promptToOpenMultipleFiles && promptToOpenMultipleFilesThreshold <= entries.size())
         {
