@@ -43,6 +43,8 @@ C:\Program Files\Autodesk\Maya2020\bin>
     
     mayapy -m site
 
+this will report something like the following
+
     sys.path = [
         'C:\\Program Files\\Autodesk\\Maya2020\\bin',
         'C:\\Program Files\\Autodesk\\Maya2020\\bin\\python27.zip',
@@ -83,11 +85,17 @@ Maya 2020 (Python 2.7.11)
 
 Use a cmd prompt with elevated Admin rights.
 
-C:\WINDOWS\system32>
-    
+    C:\WINDOWS\system32>
+
+This will change directories into Maya's binaries location (where mayapy lives)
+
     cd C:\Program Files\Autodesk\Maya2020\bin
 
+This command will ensure that pip is installed
+
     mayapy -m ensurepip
+
+This command will upgrade pip (for instance if a secutiry patch is released)
 
     mayapy -m ensurepip --upgrade
 
@@ -100,6 +108,10 @@ You'll need the repo/branch path of your O3DE (aka Lumberyard) install.
 And you'll need to know where the DCCsi is located, we will install package dependancies there.
 
 Note: you may need to update the paths below to match your local o3de engine install!
+
+This is py2.7 requirements: DccScriptingInterface\Tools\DCC\Maya\requirements.txt
+
+The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py2.7
 
 C:\Program Files\Autodesk\Maya2020\bin>
 
@@ -120,11 +132,19 @@ open a cmd with elevated admin rights (use windows start, type cmd, right-click 
 
 C:\WINDOWS\system32>
 
+This will change directories into Maya's binaries location (where mayapy lives)
+
     cd C:\Program Files\Autodesk\Maya2022\bin
+    
+This command will ensure that pip is installed
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip
+    
+This command will upgrade pip (for instance if a secutiry patch is released)
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip --upgrade
+    
+The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py2.7
     
     mayapy2 -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
 
@@ -134,13 +154,21 @@ C:\WINDOWS\system32>
 
 This also is not very different, you just need to modify some of the commands. Also because O3DE is also on a version of py3.7.x, we can re-use the requirements.txt file that is in the root of the DccScriptingInterface gem folder.
 
-C:\WINDOWS\system32>
+    C:\WINDOWS\system32>
+
+This will change directories into Maya's binaries location (where mayapy lives)
 
     cd C:\Program Files\Autodesk\Maya2022\bin
+    
+This command will ensure that pip is installed
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip
+    
+This command will upgrade pip (for instance if a secutiry patch is released)
 
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip --upgrade
+    
+The following will install those requirements into a sandbox area that we can boostrap in DCC tools running py3.7.x 
     
     mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.7.x\site-packages
 
