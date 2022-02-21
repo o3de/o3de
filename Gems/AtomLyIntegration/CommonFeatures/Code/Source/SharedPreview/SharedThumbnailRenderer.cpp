@@ -82,9 +82,9 @@ namespace AZ
             if (assetInfo.m_assetType == RPI::MaterialTypeAsset::RTTI_Type())
             {
                 static constexpr const char* ModelAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialAssetType/ModelAssetPath";
+                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialTypeAssetType/ModelAssetPath";
                 static constexpr const char* LightingAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialAssetType/LightingAssetPath";
+                    "/O3DE/Atom/CommonFeature/SharedPreview/MaterialTypeAssetType/LightingAssetPath";
 
                 // Material type assets are not renderable so we generate a material asset from the material type. 
                 ThumbnailConfig thumbnailConfig;
@@ -109,9 +109,9 @@ namespace AZ
             if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && AZ::StringFunc::EndsWith(path.c_str(), ".lightingpreset.azasset"))
             {
                 static constexpr const char* ModelAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/LightingAssetType/ModelAssetPath";
+                    "/O3DE/Atom/CommonFeature/SharedPreview/LightingPresetAssetType/ModelAssetPath";
                 static constexpr const char* MaterialAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/LightingAssetType/MaterialAssetPath";
+                    "/O3DE/Atom/CommonFeature/SharedPreview/LightingPresetAssetType/MaterialAssetPath";
 
                 ThumbnailConfig thumbnailConfig;
                 thumbnailConfig.m_modelAsset.Create(SharedPreviewUtils::GetAssetIdForProductPath(
@@ -126,9 +126,9 @@ namespace AZ
             if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type() && AZ::StringFunc::EndsWith(path.c_str(), ".modelpreset.azasset"))
             {
                 static constexpr const char* MaterialAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelAssetType/MaterialAssetPath";
+                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelPresetAssetType/MaterialAssetPath";
                 static constexpr const char* LightingAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelAssetType/LightingAssetPath";
+                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelAssetPresetType/LightingAssetPath";
 
                 // Model preset assets are relatively small JSON files containing a reference to a model asset and possibly other
                 // parameters. The preset must be loaded to get the model asset ID. Then the preview will be rendered like any other model.
