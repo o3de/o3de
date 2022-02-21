@@ -133,7 +133,6 @@ namespace AZ
 
             //! Getter and Setter for attachment
             void SetAttachment(const Ptr<PassAttachment>& attachment);
-            Ptr<PassAttachment>& GetAttachment() { return m_attachment; }
             const Ptr<PassAttachment>& GetAttachment() const { return m_attachment; }
 
             //! Set the attachment and the original attachment to the provided value

@@ -99,7 +99,7 @@ namespace AZ
             passData->m_shaderReference = m_passData.m_shaderReference;
 
             PassAttachmentBinding& inOutBinding = GetInputOutputBinding(0);
-            Ptr<PassAttachment>& inOutAttachment = inOutBinding.GetAttachment();
+            const Ptr<PassAttachment>& inOutAttachment = inOutBinding.GetAttachment();
 
             // We are downsampling a mip chain where the first mip is already written to
             // Create passes to write to the other [mipLevels - 1] mips
