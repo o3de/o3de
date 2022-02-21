@@ -91,6 +91,7 @@ namespace AZ
             bool HasCreatorForClass(Name passClassName) override;
 
             // PassSystemInterface library related functions...
+            bool HasTemplate(const Name& templateName) const override;
             bool HasPassesForTemplateName(const Name& templateName) const override;
             bool AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate) override;
             const AZStd::shared_ptr<const PassTemplate> GetPassTemplate(const Name& name) const override;

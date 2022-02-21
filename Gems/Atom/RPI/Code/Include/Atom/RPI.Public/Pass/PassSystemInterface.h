@@ -190,6 +190,9 @@ namespace AZ
 
             // --- Pass Library related functionality ---
 
+            //! Returns true if the pass library contains a pass template with the given template name
+            virtual bool HasTemplate(const Name& templateName) const = 0;
+
             //! Returns true if the pass factory contains passes created with the given template name
             virtual bool HasPassesForTemplateName(const Name& templateName) const = 0;
 

@@ -451,6 +451,11 @@ namespace AZ
 
         // --- Pass Library Functions --- 
 
+        bool PassSystem::HasTemplate(const Name& templateName) const
+        {
+            return m_passLibrary.HasTemplate(templateName);
+        }
+
         bool PassSystem::HasPassesForTemplateName(const Name& templateName) const
         {
             return m_passLibrary.HasPassesForTemplate(templateName);
