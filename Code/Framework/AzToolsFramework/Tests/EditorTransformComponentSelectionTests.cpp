@@ -3281,7 +3281,7 @@ namespace UnitTest
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, SurfaceManipulatorSelfIntersectsMeshWhenCtrlIsHeld)
     {
         // camera (go to position format) - 47.00, -52.00, 20.00, 0.00, -60.00
-        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
         // position camera
         AzFramework::SetCameraTransform(
             m_cameraState,
