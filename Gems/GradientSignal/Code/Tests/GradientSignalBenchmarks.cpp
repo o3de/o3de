@@ -196,7 +196,6 @@ namespace UnitTest
                 AZ::Vector3 worldPos(halfWorldSize, halfWorldSize, 10.0f);
 
                 auto transform = surface->CreateComponent<AzFramework::TransformComponent>();
-                transform->SetLocalTM(AZ::Transform::CreateTranslation(worldPos));
                 transform->SetWorldTM(AZ::Transform::CreateTranslation(worldPos));
 
                 LmbrCentral::BoxShapeConfig boxConfig(AZ::Vector3(worldSize, worldSize, 1.0f));
@@ -220,7 +219,6 @@ namespace UnitTest
                 AZ::Vector3 worldPos(halfWorldSize, halfWorldSize, 10.0f);
 
                 auto transform = modifier->CreateComponent<AzFramework::TransformComponent>();
-                transform->SetLocalTM(AZ::Transform::CreateTranslation(worldPos));
                 transform->SetWorldTM(AZ::Transform::CreateTranslation(worldPos));
 
                 GradientSignal::ConstantGradientConfig gradientConfig;
