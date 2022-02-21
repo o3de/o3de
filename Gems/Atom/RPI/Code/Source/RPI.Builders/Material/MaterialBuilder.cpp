@@ -187,7 +187,7 @@ namespace AZ
                     {
                         for (auto& functor : functors)
                         {
-                            auto dependencies = functor->GetActualSourceData()->GetAssetDependencies();
+                            const auto& dependencies = functor->GetActualSourceData()->GetAssetDependencies();
 
                             for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
                             {
