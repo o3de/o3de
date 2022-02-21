@@ -53,9 +53,9 @@ namespace AZ
 
                 thumbnailConfig.m_modelId = assetInfo.m_assetId;
                 thumbnailConfig.m_materialId = SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingOrDefault<AZStd::string>(MaterialAssetPathSetting, DefaultMaterialPath));
+                    AtomToolsFramework::GetSettingsValue<AZStd::string>(MaterialAssetPathSetting, DefaultMaterialPath));
                 thumbnailConfig.m_lightingId = SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingOrDefault<AZStd::string>(LightingAssetPathSetting, DefaultLightingPresetPath));
+                    AtomToolsFramework::GetSettingsValue<AZStd::string>(LightingAssetPathSetting, DefaultLightingPresetPath));
             }
             else if (assetInfo.m_assetType == RPI::MaterialAsset::RTTI_Type())
             {
@@ -65,10 +65,10 @@ namespace AZ
                     "/O3DE/Atom/CommonFeature/SharedPreview/MaterialAssetType/LightingAssetPath";
 
                 thumbnailConfig.m_modelId = SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingOrDefault<AZStd::string>(ModelAssetPathSetting, DefaultModelPath));
+                    AtomToolsFramework::GetSettingsValue<AZStd::string>(ModelAssetPathSetting, DefaultModelPath));
                 thumbnailConfig.m_materialId = assetInfo.m_assetId;
                 thumbnailConfig.m_lightingId = SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingOrDefault<AZStd::string>(LightingAssetPathSetting, DefaultLightingPresetPath));
+                    AtomToolsFramework::GetSettingsValue<AZStd::string>(LightingAssetPathSetting, DefaultLightingPresetPath));
             }
             else if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type())
             {
@@ -78,9 +78,9 @@ namespace AZ
                     "/O3DE/Atom/CommonFeature/SharedPreview/LightingAssetType/MaterialAssetPath";
 
                 thumbnailConfig.m_modelId = SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingOrDefault<AZStd::string>(ModelAssetPathSetting, DefaultModelPath));
+                    AtomToolsFramework::GetSettingsValue<AZStd::string>(ModelAssetPathSetting, DefaultModelPath));
                 thumbnailConfig.m_materialId = SharedPreviewUtils::GetAssetIdForProductPath(
-                    AtomToolsFramework::GetSettingOrDefault<AZStd::string>(MaterialAssetPathSetting, "materials/reflectionprobe/reflectionprobevisualization.azmaterial"));
+                    AtomToolsFramework::GetSettingsValue<AZStd::string>(MaterialAssetPathSetting, "materials/reflectionprobe/reflectionprobevisualization.azmaterial"));
                 thumbnailConfig.m_lightingId = assetInfo.m_assetId;
             }
 

@@ -14,8 +14,11 @@
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConfig.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -24,9 +27,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
-#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConfig.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
@@ -54,7 +54,6 @@ namespace AZ
 
             MaterialPropertyInspector::~MaterialPropertyInspector()
             {
-                AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
                 AZ::TickBus::Handler::BusDisconnect();
                 AZ::EntitySystemBus::Handler::BusDisconnect();
                 EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
@@ -137,7 +136,6 @@ namespace AZ
                 m_dirtyPropertyFlags.set();
                 m_internalEditNotification = {};
 
-                AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
                 AtomToolsFramework::InspectorWidget::Reset();
             }
 
@@ -590,7 +588,7 @@ namespace AZ
 
             bool MaterialPropertyInspector::IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const
             {
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(node);
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
                 return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
             }
 
@@ -719,7 +717,7 @@ namespace AZ
                 // This function is called continuously anytime a property changes until the edit has completed
                 // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has
                 // started and ended
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
                 if (property)
                 {
                     if (m_activeProperty != property)
@@ -731,7 +729,7 @@ namespace AZ
 
             void MaterialPropertyInspector::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
             {
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
                 if (property)
                 {
                     if (m_activeProperty == property)
@@ -748,7 +746,7 @@ namespace AZ
                 // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been
                 // completed but they are not being called following that pattern. when this function executes the changes to the property
                 // are ready to be committed or reverted
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
                 if (property)
                 {
                     if (m_activeProperty == property)
