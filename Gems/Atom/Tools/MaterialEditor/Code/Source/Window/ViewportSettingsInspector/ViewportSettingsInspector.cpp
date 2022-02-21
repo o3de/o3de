@@ -9,7 +9,7 @@
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <AtomToolsFramework/AssetGridDialog/AssetGridDialog.h>
+#include <AtomToolsFramework/AssetSelection/AssetSelectionGrid.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
@@ -149,14 +149,14 @@ namespace MaterialEditor
             "Model Preset Browser", selectableAssets, selectedAsset, QSize(itemSize, itemSize), QApplication::activeWindow());
 
         connect(
-            &dialog, &AtomToolsFramework::AssetGridDialog::AssetSelected, this,
-            [assetIdToPresetMap](const AZ::Data::AssetId& assetId)
+            &dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this,
+            [](const AZ::Data::AssetId& assetId)
             {
-                const auto presetItr = assetIdToPresetMap.find(assetId);
-                if (presetItr != assetIdToPresetMap.end())
-                {
-                    MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SelectModelPreset, presetItr->second);
-                }
+                MaterialViewportRequestBus::Broadcast(
+                    [assetId](MaterialViewportRequestBus::Events* viewportRequests)
+                    {
+                        viewportRequests->SelectModelPresetByAssetId(assetId);
+                    });
             });
 
         dialog.setFixedSize(800, 400);
@@ -247,42 +247,26 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::SelectLightingPreset()
     {
-        AZ::Data::AssetId selectedAsset;
-        AtomToolsFramework::AssetGridDialog::SelectableAssetVector selectableAssets;
-        AZStd::unordered_map<AZ::Data::AssetId, AZ::Render::LightingPresetPtr> assetIdToPresetMap;
-        MaterialViewportRequestBus::Broadcast(
-            [&](MaterialViewportRequestBus::Events* viewportRequests)
-            {
-                const auto& selectedPreset = viewportRequests->GetLightingPresetSelection();
-                const auto& selectedPresetPath = viewportRequests->GetLightingPresetLastSavePath(selectedPreset);
-                selectedAsset = AZ::RPI::AssetUtils::MakeAssetId(selectedPresetPath, 0).GetValue();
-
-                const auto& presets = viewportRequests->GetLightingPresets();
-                selectableAssets.reserve(presets.size());
-                for (const auto& preset : presets)
-                {
-                    const auto& path = viewportRequests->GetLightingPresetLastSavePath(preset);
-                    const auto& presetAssetId = AZ::RPI::AssetUtils::MakeAssetId(path, 0).GetValue();
-                    selectableAssets.push_back({ presetAssetId, preset->m_displayName.c_str() });
-                    assetIdToPresetMap[presetAssetId] = preset;
-                }
-            });
-
         const int itemSize = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/Atom/MaterialEditor/AssetGridDialog/LightingItemSize", 180));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/Atom/MaterialEditor/AssetSelectionGrid/LightingItemSize", 180));
 
-        AtomToolsFramework::AssetGridDialog dialog(
-            "Lighting Preset Browser", selectableAssets, selectedAsset, QSize(itemSize, itemSize), QApplication::activeWindow());
+        AtomToolsFramework::AssetSelectionGrid dialog(
+            "Lighting Preset Browser",
+            [](const AZ::Data::AssetInfo& assetInfo)
+            {
+                return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset");
+            },
+            QSize(itemSize, itemSize), QApplication::activeWindow());
 
         connect(
-            &dialog, &AtomToolsFramework::AssetGridDialog::AssetSelected, this,
-            [assetIdToPresetMap](const AZ::Data::AssetId& assetId)
+            &dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this,
+            [](const AZ::Data::AssetId& assetId)
             {
-                const auto presetItr = assetIdToPresetMap.find(assetId);
-                if (presetItr != assetIdToPresetMap.end())
-                {
-                    MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SelectLightingPreset, presetItr->second);
-                }
+                MaterialViewportRequestBus::Broadcast(
+                    [assetId](MaterialViewportRequestBus::Events* viewportRequests)
+                    {
+                        viewportRequests->SelectLightingPresetByAssetId(assetId);
+                    });
             });
 
         dialog.setFixedSize(800, 400);

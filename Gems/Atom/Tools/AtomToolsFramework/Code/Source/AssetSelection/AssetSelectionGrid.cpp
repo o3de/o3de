@@ -6,8 +6,9 @@
  *
  */
 
-#include <AssetGridDialog/ui_AssetGridDialog.h>
-#include <AtomToolsFramework/AssetGridDialog/AssetGridDialog.h>
+#include <AssetSelection/ui_AssetSelectionGrid.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <AtomToolsFramework/AssetSelection/AssetSelectionGrid.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
@@ -23,16 +24,14 @@
 
 namespace AtomToolsFramework
 {
-    AssetGridDialog::AssetGridDialog(
+    AssetSelectionGrid::AssetSelectionGrid(
         const QString& title,
-        const SelectableAssetVector& selectableAssets,
-        const AZ::Data::AssetId& selectedAsset,
+        const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback,
         const QSize& tileSize,
         QWidget* parent)
         : QDialog(parent)
         , m_tileSize(tileSize)
-        , m_initialSelectedAsset(selectedAsset)
-        , m_ui(new Ui::AssetGridDialog)
+        , m_ui(new Ui::AssetSelectionGrid)
     {
         m_ui->setupUi(this);
 
@@ -45,37 +44,101 @@ namespace AtomToolsFramework
         SetupDialogButtons();
         setModal(true);
 
-        QListWidgetItem* selectedItem = nullptr;
-        for (const auto& selectableAsset : selectableAssets)
+        SetFilterCallback(filterCallback);
+
+        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+    }
+
+    AssetSelectionGrid::~AssetSelectionGrid()
+    {
+        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+    }
+
+    void AssetSelectionGrid::Reset()
+    {
+        m_ui->m_assetList->clear();
+
+        if (m_filterCallback)
         {
-            QListWidgetItem* item = CreateListItem(selectableAsset);
-            if (!selectedItem || m_initialSelectedAsset == selectableAsset.m_assetId)
+            AZ::Data::AssetCatalogRequests::AssetEnumerationCB enumerateCB =
+                [&]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
             {
-                selectedItem = item;
+                if (m_filterCallback(assetInfo))
+                {
+                    CreateListItem(
+                        assetInfo.m_assetId,
+                        GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId).c_str()));
+                }
+            };
+
+            AZ::Data::AssetCatalogRequestBus::Broadcast(
+                &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
+
+            m_ui->m_assetList->sortItems();
+        }
+    }
+
+    void AssetSelectionGrid::SetFilterCallback(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback)
+    {
+        m_filterCallback = filterCallback;
+        Reset();
+    }
+
+    void AssetSelectionGrid::SelectAsset(const AZ::Data::AssetId& assetId)
+    {
+        for (int i = 0; i < m_ui->m_assetList->count(); ++i)
+        {
+            QListWidgetItem* item = m_ui->m_assetList->item(i);
+            if (assetId == AZ::Data::AssetId::CreateString(item->data(Qt::UserRole).toString().toUtf8().constData()))
+            {
+                m_ui->m_assetList->setCurrentItem(item);
+                return;
+
             }
         }
+    }
 
-        m_ui->m_assetList->sortItems();
+    void AssetSelectionGrid::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+    {
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            [this, assetId](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+            {
+                AZ::Data::AssetInfo assetInfo = assetCatalogRequests->GetAssetInfoById(assetId);
+                if (m_filterCallback && m_filterCallback(assetInfo))
+                {
+                    CreateListItem(
+                        assetInfo.m_assetId,
+                        GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId).c_str()));
+                }
+                m_ui->m_assetList->sortItems();
+            });
+    }
 
-        if (selectedItem)
+    void AssetSelectionGrid::OnCatalogAssetRemoved(
+        const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
+    {
+        if (m_filterCallback && m_filterCallback(assetInfo))
         {
-            m_ui->m_assetList->setCurrentItem(selectedItem);
-            m_ui->m_assetList->scrollToItem(selectedItem);
+            for (int i = 0; i < m_ui->m_assetList->count(); ++i)
+            {
+                QListWidgetItem* item = m_ui->m_assetList->item(i);
+                if (assetId == AZ::Data::AssetId::CreateString(item->data(Qt::UserRole).toString().toUtf8().constData()))
+                {
+                    m_ui->m_assetList->removeItemWidget(item);
+                    return;
+                }
+            }
         }
     }
 
-    AssetGridDialog::~AssetGridDialog()
-    {
-    }
-
-    QListWidgetItem* AssetGridDialog::CreateListItem(const SelectableAsset& selectableAsset)
+    QListWidgetItem* AssetSelectionGrid::CreateListItem(const AZ::Data::AssetId& assetId, const QString& title)
     {
         const int itemBorder = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetGridDialog/ItemBorder", 4));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetSelectionGrid/ItemBorder", 4));
         const int itemSpacing = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetGridDialog/ItemSpacing", 10));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetSelectionGrid/ItemSpacing", 10));
         const int headerHeight = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetGridDialog/HeaderHeight", 15));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetSelectionGrid/HeaderHeight", 15));
 
         const QSize gridSize = m_ui->m_assetList->gridSize();
         m_ui->m_assetList->setGridSize(QSize(
@@ -83,8 +146,8 @@ namespace AtomToolsFramework
             AZStd::max(gridSize.height(), m_tileSize.height() + itemSpacing + headerHeight)));
 
         QListWidgetItem* item = new QListWidgetItem(m_ui->m_assetList);
-        item->setData(Qt::DisplayRole, selectableAsset.m_title);
-        item->setData(Qt::UserRole, QString(selectableAsset.m_assetId.ToString<AZStd::string>().c_str()));
+        item->setData(Qt::DisplayRole, title);
+        item->setData(Qt::UserRole, QString(assetId.ToString<AZStd::string>().c_str()));
         item->setSizeHint(m_tileSize + QSize(itemBorder, itemBorder + headerHeight));
         m_ui->m_assetList->addItem(item);
 
@@ -94,7 +157,7 @@ namespace AtomToolsFramework
         itemWidget->layout()->setMargin(0);
 
         AzQtComponents::ElidingLabel* header = new AzQtComponents::ElidingLabel(itemWidget);
-        header->setText(selectableAsset.m_title);
+        header->setText(title);
         header->setFixedSize(QSize(m_tileSize.width(), headerHeight));
         header->setMargin(0);
         header->setStyleSheet("background-color: rgb(35, 35, 35)");
@@ -104,7 +167,7 @@ namespace AtomToolsFramework
 
         AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(itemWidget);
         thumbnail->setFixedSize(m_tileSize);
-        thumbnail->SetThumbnailKey(MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, selectableAsset.m_assetId));
+        thumbnail->SetThumbnailKey(MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, assetId));
         thumbnail->updateGeometry();
         itemWidget->layout()->addWidget(thumbnail);
 
@@ -113,7 +176,7 @@ namespace AtomToolsFramework
         return item;
     }
 
-    void AssetGridDialog::SetupAssetList()
+    void AssetSelectionGrid::SetupAssetList()
     {
         m_ui->m_assetList->setFlow(QListView::LeftToRight);
         m_ui->m_assetList->setResizeMode(QListView::Adjust);
@@ -123,7 +186,7 @@ namespace AtomToolsFramework
         QObject::connect(m_ui->m_assetList, &QListWidget::currentItemChanged, [this](){ SelectCurrentAsset(); });
     }
 
-    void AssetGridDialog::SetupSearchWidget()
+    void AssetSelectionGrid::SetupSearchWidget()
     {
         m_ui->m_searchWidget->setReadOnly(false);
         m_ui->m_searchWidget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -132,14 +195,13 @@ namespace AtomToolsFramework
         connect(m_ui->m_searchWidget, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos){ ShowSearchMenu(pos); });
     }
 
-    void AssetGridDialog::SetupDialogButtons()
+    void AssetSelectionGrid::SetupDialogButtons()
     {
         connect(m_ui->m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
         connect(m_ui->m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-        connect(this, &QDialog::rejected, this, [this](){ SelectInitialAsset(); });
     }
 
-    void AssetGridDialog::ApplySearchFilter()
+    void AssetSelectionGrid::ApplySearchFilter()
     {
         for (int index = 0; index < m_ui->m_assetList->count(); ++index)
         {
@@ -150,14 +212,14 @@ namespace AtomToolsFramework
         }
     }
 
-    void AssetGridDialog::ShowSearchMenu(const QPoint& pos)
+    void AssetSelectionGrid::ShowSearchMenu(const QPoint& pos)
     {
         QScopedPointer<QMenu> menu(m_ui->m_searchWidget->createStandardContextMenu());
         menu->setStyleSheet("background-color: #333333");
         menu->exec(m_ui->m_searchWidget->mapToGlobal(pos));
     }
 
-    void AssetGridDialog::SelectCurrentAsset()
+    void AssetSelectionGrid::SelectCurrentAsset()
     {
         auto item = m_ui->m_assetList->currentItem();
         if (item)
@@ -166,11 +228,6 @@ namespace AtomToolsFramework
             emit AssetSelected(assetId);
         }
     }
-
-    void AssetGridDialog::SelectInitialAsset()
-    {
-        emit AssetSelected(m_initialSelectedAsset);
-    }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/AssetGridDialog/moc_AssetGridDialog.cpp>
+#include <AtomToolsFramework/AssetSelection/moc_AssetSelectionGrid.cpp>

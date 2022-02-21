@@ -58,21 +58,17 @@ namespace MaterialEditor
         AZ::Render::LightingPresetPtr AddLightingPreset(const AZ::Render::LightingPreset& preset) override;
         AZ::Render::LightingPresetPtrVector GetLightingPresets() const override;
         bool SaveLightingPreset(AZ::Render::LightingPresetPtr preset, const AZStd::string& path) const override;
-        AZ::Render::LightingPresetPtr GetLightingPresetByName(const AZStd::string& name) const override;
         AZ::Render::LightingPresetPtr GetLightingPresetSelection() const override;
         void SelectLightingPreset(AZ::Render::LightingPresetPtr preset) override;
-        void SelectLightingPresetByName(const AZStd::string& name) override;
-        MaterialViewportPresetNameSet GetLightingPresetNames() const override;
+        void SelectLightingPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const override;
 
         AZ::Render::ModelPresetPtr AddModelPreset(const AZ::Render::ModelPreset& preset) override;
         AZ::Render::ModelPresetPtrVector GetModelPresets() const override;
         bool SaveModelPreset(AZ::Render::ModelPresetPtr preset, const AZStd::string& path) const override;
-        AZ::Render::ModelPresetPtr GetModelPresetByName(const AZStd::string& name) const override;
         AZ::Render::ModelPresetPtr GetModelPresetSelection() const override;
         void SelectModelPreset(AZ::Render::ModelPresetPtr preset) override;
-        void SelectModelPresetByName(const AZStd::string& name) override;
-        MaterialViewportPresetNameSet GetModelPresetNames() const override;
+        void SelectModelPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetModelPresetLastSavePath(AZ::Render::ModelPresetPtr preset) const override;
 
         void SetShadowCatcherEnabled(bool enable) override;

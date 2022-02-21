@@ -398,8 +398,7 @@ namespace MaterialEditor
 
         if (!preset->m_modelAsset.GetId().IsValid())
         {
-            AZ_Warning(
-                "MaterialViewportWidget", false, "Attempting to set invalid model for preset: '%s'\n.", preset->m_displayName.c_str());
+            AZ_Warning("MaterialViewportWidget", false, "Attempting to set invalid model for preset'\n.");
             return;
         }
 

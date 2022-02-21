@@ -58,20 +58,16 @@ namespace MaterialEditor
                 ->Event("AddLightingPreset", &MaterialViewportRequestBus::Events::AddLightingPreset)
                 ->Event("SaveLightingPreset", &MaterialViewportRequestBus::Events::SaveLightingPreset)
                 ->Event("GetLightingPresets", &MaterialViewportRequestBus::Events::GetLightingPresets)
-                ->Event("GetLightingPresetByName", &MaterialViewportRequestBus::Events::GetLightingPresetByName)
                 ->Event("GetLightingPresetSelection", &MaterialViewportRequestBus::Events::GetLightingPresetSelection)
                 ->Event("SelectLightingPreset", &MaterialViewportRequestBus::Events::SelectLightingPreset)
-                ->Event("SelectLightingPresetByName", &MaterialViewportRequestBus::Events::SelectLightingPresetByName)
-                ->Event("GetLightingPresetNames", &MaterialViewportRequestBus::Events::GetLightingPresetNames)
+                ->Event("SelectLightingPresetByAssetId", &MaterialViewportRequestBus::Events::SelectLightingPresetByAssetId)
                 ->Event("GetLightingPresetLastSavePath", &MaterialViewportRequestBus::Events::GetLightingPresetLastSavePath)
                 ->Event("AddModelPreset", &MaterialViewportRequestBus::Events::AddModelPreset)
                 ->Event("SaveModelPreset", &MaterialViewportRequestBus::Events::SaveModelPreset)
                 ->Event("GetModelPresets", &MaterialViewportRequestBus::Events::GetModelPresets)
-                ->Event("GetModelPresetByName", &MaterialViewportRequestBus::Events::GetModelPresetByName)
                 ->Event("GetModelPresetSelection", &MaterialViewportRequestBus::Events::GetModelPresetSelection)
                 ->Event("SelectModelPreset", &MaterialViewportRequestBus::Events::SelectModelPreset)
-                ->Event("SelectModelPresetByName", &MaterialViewportRequestBus::Events::SelectModelPresetByName)
-                ->Event("GetModelPresetNames", &MaterialViewportRequestBus::Events::GetModelPresetNames)
+                ->Event("SelectModelPresetByAssetId", &MaterialViewportRequestBus::Events::SelectModelPresetByAssetId)
                 ->Event("GetModelPresetLastSavePath", &MaterialViewportRequestBus::Events::GetModelPresetLastSavePath)
                 ->Event("SetShadowCatcherEnabled", &MaterialViewportRequestBus::Events::SetShadowCatcherEnabled)
                 ->Event("GetShadowCatcherEnabled", &MaterialViewportRequestBus::Events::GetShadowCatcherEnabled)
@@ -203,13 +199,6 @@ namespace MaterialEditor
         return presetPtr;
     }
 
-    AZ::Render::LightingPresetPtr MaterialViewportComponent::GetLightingPresetByName(const AZStd::string& name) const
-    {
-        const auto presetItr = AZStd::find_if(m_lightingPresetVector.begin(), m_lightingPresetVector.end(), [&name](const auto& preset) {
-            return preset && preset->m_displayName == name; });
-        return presetItr != m_lightingPresetVector.end() ? *presetItr : nullptr;
-    }
-
     AZ::Render::LightingPresetPtrVector MaterialViewportComponent::GetLightingPresets() const
     {
         return m_lightingPresetVector;
@@ -236,27 +225,22 @@ namespace MaterialEditor
         if (preset)
         {
             m_lightingPresetSelection = preset;
-            m_viewportSettings->m_selectedLightingPresetName = preset->m_displayName;
             MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnLightingPresetSelected, m_lightingPresetSelection);
         }
     }
 
-    void MaterialViewportComponent::SelectLightingPresetByName(const AZStd::string& name)
+    void MaterialViewportComponent::SelectLightingPresetByAssetId(const AZ::Data::AssetId& assetId)
     {
-        SelectLightingPreset(GetLightingPresetByName(name));
-    }
-
-    MaterialViewportPresetNameSet MaterialViewportComponent::GetLightingPresetNames() const
-    {
-        MaterialViewportPresetNameSet names;
-        for (const auto& preset : m_lightingPresetVector)
+        for (const auto& preset : GetLightingPresets())
         {
-            if (preset)
+            const auto& path = GetLightingPresetLastSavePath(preset);
+            const auto& presetAssetId = AZ::RPI::AssetUtils::MakeAssetId(path, 0).GetValue();
+            if (assetId == presetAssetId)
             {
-                names.insert(preset->m_displayName);
+                SelectLightingPreset(preset);
+                return;
             }
         }
-        return names;
     }
 
     AZStd::string MaterialViewportComponent::GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const
@@ -272,13 +256,6 @@ namespace MaterialEditor
 
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnModelPresetAdded, presetPtr);
         return presetPtr;
-    }
-
-    AZ::Render::ModelPresetPtr MaterialViewportComponent::GetModelPresetByName(const AZStd::string& name) const
-    {
-        const auto presetItr = AZStd::find_if(m_modelPresetVector.begin(), m_modelPresetVector.end(), [&name](const auto& preset) {
-            return preset && preset->m_displayName == name; });
-        return presetItr != m_modelPresetVector.end() ? *presetItr : nullptr;
     }
 
     AZ::Render::ModelPresetPtrVector MaterialViewportComponent::GetModelPresets() const
@@ -307,27 +284,22 @@ namespace MaterialEditor
         if (preset)
         {
             m_modelPresetSelection = preset;
-            m_viewportSettings->m_selectedModelPresetName = preset->m_displayName;
             MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnModelPresetSelected, m_modelPresetSelection);
         }
     }
 
-    void MaterialViewportComponent::SelectModelPresetByName(const AZStd::string& name)
+    void MaterialViewportComponent::SelectModelPresetByAssetId(const AZ::Data::AssetId& assetId)
     {
-        SelectModelPreset(GetModelPresetByName(name));
-    }
-
-    MaterialViewportPresetNameSet MaterialViewportComponent::GetModelPresetNames() const
-    {
-        MaterialViewportPresetNameSet names;
-        for (const auto& preset : m_modelPresetVector)
+        for (const auto& preset : GetModelPresets())
         {
-            if (preset)
+            const auto& path = GetModelPresetLastSavePath(preset);
+            const auto& presetAssetId = AZ::RPI::AssetUtils::MakeAssetId(path, 0).GetValue();
+            if (assetId == presetAssetId)
             {
-                names.insert(preset->m_displayName);
+                SelectModelPreset(preset);
+                return;
             }
         }
-        return names;
     }
 
     AZStd::string MaterialViewportComponent::GetModelPresetLastSavePath(AZ::Render::ModelPresetPtr preset) const
@@ -420,8 +392,6 @@ namespace MaterialEditor
         AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
         if (!AZ::Data::AssetBus::MultiHandler::BusIsConnected())
         {
-            SelectLightingPresetByName(m_viewportSettings->m_selectedLightingPresetName);
-            SelectModelPresetByName(m_viewportSettings->m_selectedModelPresetName);
             MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnEndReloadContent);
             AZ_TracePrintf("Material Editor", "Finished loading viewport configurations.\n");
         }
