@@ -190,9 +190,67 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void Cameras::AddCamera(AZStd::shared_ptr<CameraInput> cameraInput)
+    bool Cameras::AddCamera(AZStd::shared_ptr<CameraInput> cameraInput)
     {
-        m_idleCameraInputs.push_back(AZStd::move(cameraInput));
+        const auto idleCameraIt = AZStd::find(m_idleCameraInputs.begin(), m_idleCameraInputs.end(), cameraInput);
+        const auto activeCameraIt = AZStd::find(m_activeCameraInputs.begin(), m_activeCameraInputs.end(), cameraInput);
+
+        if (idleCameraIt == m_idleCameraInputs.end() && activeCameraIt == m_activeCameraInputs.end())
+        {
+            m_idleCameraInputs.push_back(AZStd::move(cameraInput));
+            return true;
+        }
+
+        return false;
+    }
+
+    bool Cameras::AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
+    {
+        bool allAdded = true;
+        for (auto cameraInput : cameraInputs)
+        {
+            allAdded = AddCamera(AZStd::move(cameraInput)) && allAdded;
+        }
+        return allAdded;
+    }
+
+    bool Cameras::RemoveCamera(const AZStd::shared_ptr<CameraInput>& cameraInput)
+    {
+        if (const auto idleCameraIt = AZStd::find(m_idleCameraInputs.begin(), m_idleCameraInputs.end(), cameraInput);
+            idleCameraIt != m_idleCameraInputs.end())
+        {
+            const auto idleIndex = idleCameraIt - m_idleCameraInputs.begin();
+            using AZStd::swap;
+            swap(m_idleCameraInputs[idleIndex], m_idleCameraInputs[m_idleCameraInputs.size() - 1]);
+            m_idleCameraInputs.pop_back();
+
+            return true;
+        }
+
+        if (const auto activeCameraIt = AZStd::find(m_activeCameraInputs.begin(), m_activeCameraInputs.end(), cameraInput);
+            activeCameraIt != m_activeCameraInputs.end())
+        {
+            (*activeCameraIt)->Reset();
+
+            const auto activeIndex = activeCameraIt - m_idleCameraInputs.begin();
+            using AZStd::swap;
+            swap(m_activeCameraInputs[activeIndex], m_activeCameraInputs[m_activeCameraInputs.size() - 1]);
+            m_activeCameraInputs.pop_back();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool Cameras::RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
+    {
+        bool allRemoved = true;
+        for (const auto& cameraInput : cameraInputs)
+        {
+            allRemoved = RemoveCamera(cameraInput) && allRemoved;
+        }
+        return allRemoved;
     }
 
     bool Cameras::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
@@ -645,7 +703,7 @@ namespace AzFramework
         m_orbitChannelId = orbitChanneId;
     }
 
-    OrbitDollyScrollCameraInput::OrbitDollyScrollCameraInput()
+    OrbitScrollDollyCameraInput::OrbitScrollDollyCameraInput()
     {
         m_scrollSpeedFn = []() constexpr
         {
@@ -653,7 +711,7 @@ namespace AzFramework
         };
     }
 
-    bool OrbitDollyScrollCameraInput::HandleEvents(
+    bool OrbitScrollDollyCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
@@ -691,7 +749,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    Camera OrbitDollyScrollCameraInput::StepCamera(
+    Camera OrbitScrollDollyCameraInput::StepCamera(
         const Camera& targetCamera,
         [[maybe_unused]] const ScreenVector& cursorDelta,
         const float scrollDelta,
@@ -702,7 +760,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    OrbitDollyMotionCameraInput::OrbitDollyMotionCameraInput(const InputChannelId& dollyChannelId)
+    OrbitMotionDollyCameraInput::OrbitMotionDollyCameraInput(const InputChannelId& dollyChannelId)
         : m_dollyChannelId(dollyChannelId)
     {
         m_motionSpeedFn = []() constexpr
@@ -711,14 +769,14 @@ namespace AzFramework
         };
     }
 
-    bool OrbitDollyMotionCameraInput::HandleEvents(
+    bool OrbitMotionDollyCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         HandleActivationEvents(event, m_dollyChannelId, cursorDelta, m_clickDetector, *this);
         return CameraInputUpdatingAfterMotion(*this);
     }
 
-    Camera OrbitDollyMotionCameraInput::StepCamera(
+    Camera OrbitMotionDollyCameraInput::StepCamera(
         const Camera& targetCamera,
         const ScreenVector& cursorDelta,
         [[maybe_unused]] const float scrollDelta,
@@ -727,7 +785,7 @@ namespace AzFramework
         return OrbitDolly(targetCamera, aznumeric_cast<float>(cursorDelta.m_y) * m_motionSpeedFn());
     }
 
-    void OrbitDollyMotionCameraInput::SetDollyInputChannelId(const InputChannelId& dollyChannelId)
+    void OrbitMotionDollyCameraInput::SetDollyInputChannelId(const InputChannelId& dollyChannelId)
     {
         m_dollyChannelId = dollyChannelId;
     }

@@ -18,19 +18,31 @@ namespace AZ
             // PreExportEventContext
             /////////////
 
-            PreExportEventContext::PreExportEventContext(ExportProductList& productList, const AZStd::string& outputDirectory, const Containers::Scene& scene, const char* platformIdentifier)
+            PreExportEventContext::PreExportEventContext(
+                    ExportProductList& productList,
+                    const AZStd::string& outputDirectory,
+                    const Containers::Scene& scene,
+                    const char* platformIdentifier,
+                    bool debug)
                 : m_outputDirectory(outputDirectory)
                 , m_productList(productList)
                 , m_scene(scene)
                 , m_platformIdentifier(platformIdentifier)
+                , m_debug(debug)
             {
             }
 
-            PreExportEventContext::PreExportEventContext(ExportProductList& productList, AZStd::string&& outputDirectory, const Containers::Scene& scene, const char* platformIdentifier)
+            PreExportEventContext::PreExportEventContext(
+                    ExportProductList& productList,
+                    AZStd::string&& outputDirectory,
+                    const Containers::Scene& scene,
+                    const char* platformIdentifier,
+                    bool debug)
                 : m_outputDirectory(AZStd::move(outputDirectory))
                 , m_productList(productList)
                 , m_scene(scene)
                 , m_platformIdentifier(platformIdentifier)
+                , m_debug(debug)
             {
             }
 
@@ -57,6 +69,11 @@ namespace AZ
             const char* PreExportEventContext::GetPlatformIdentifier() const
             {
                 return m_platformIdentifier;
+            }
+
+            bool PreExportEventContext::GetDebug() const
+            {
+                return m_debug;
             }
 
             /////////////

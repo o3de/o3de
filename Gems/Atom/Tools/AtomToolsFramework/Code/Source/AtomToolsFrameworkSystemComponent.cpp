@@ -13,6 +13,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystem.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
+#include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
 
 namespace AtomToolsFramework
@@ -23,6 +24,7 @@ namespace AtomToolsFramework
         DynamicPropertyGroup::Reflect(context);
         AtomToolsDocument::Reflect(context);
         AtomToolsDocumentSystem::Reflect(context);
+        InspectorWidget::Reflect(context);
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {

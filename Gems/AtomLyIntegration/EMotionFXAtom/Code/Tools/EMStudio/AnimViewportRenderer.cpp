@@ -224,6 +224,22 @@ namespace EMStudio
         return m_entityContext->GetContextId();
     }
 
+    void AnimViewportRenderer::CheckBounds()
+    {
+        AZ::Vector3 groundPos;
+        AZ::TransformBus::EventResult(groundPos, m_groundEntity->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
+
+        const AZ::Vector3 characterPos = GetCharacterCenter();
+        if (AZStd::abs(characterPos.GetX() - groundPos.GetX()) > BoundMaxDistance ||
+            AZStd::abs(characterPos.GetY() - groundPos.GetY()) > BoundMaxDistance)
+        {
+            const float tileOffsetX = AZStd::fmod(characterPos.GetX(), TileSize);
+            const float tileOffsetY = AZStd::fmod(characterPos.GetX(), TileSize);
+            const AZ::Vector3 newGroundPos(characterPos.GetX() - tileOffsetX, characterPos.GetY() - tileOffsetY, groundPos.GetZ());
+            AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, newGroundPos);
+        }
+    }
+
     void AnimViewportRenderer::ResetEnvironment()
     {
         // Reset environment
