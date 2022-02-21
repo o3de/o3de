@@ -221,11 +221,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     @revert_physics_config
-    def test_Physics_DynamicSliceWithPhysNotSpawnsStaticSlice(self, request, workspace, editor, launcher_platform):
-        from .tests import Physics_DynamicSliceWithPhysNotSpawnsStaticSlice as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    @revert_physics_config
     def test_ForceRegion_PositionOffset(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_PositionOffset as test_module
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
