@@ -24,6 +24,8 @@ namespace EMStudio::ViewportUtil
     constexpr AZStd::string_view CameraTranslateBoostIdSetting = "/Amazon/Preferences/Editor/Camera/TranslateBoostId";
     constexpr AZStd::string_view CameraOrbitIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitId";
     constexpr AZStd::string_view CameraDefaultOrbitDistanceSetting = "/Amazon/Preferences/Editor/Camera/DefaultOrbitDistance";
+    constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
+    constexpr AZStd::string_view CameraFreePanIdSetting = "/Amazon/Preferences/Editor/Camera/FreePanId";
 
     AzFramework::TranslateCameraInputChannelIds TranslateCameraInputChannelIds()
     {
@@ -78,12 +80,21 @@ namespace EMStudio::ViewportUtil
 
     AzFramework::InputChannelId OrbitCameraInputChannelId()
     {
-        return AzFramework::InputChannelId(
-            GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
     }
 
     AzFramework::InputChannelId OrbitLookCameraInputChannelId()
     {
         return AzFramework::InputChannelId(GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
     }
-}
+
+    AzFramework::InputChannelId OrbitDollyCameraInputChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraOrbitDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
+    }
+
+    AzFramework::InputChannelId PanCameraInputChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraFreePanIdSetting, AZStd::string("mouse_button_middle")).c_str());
+    }
+} // namespace EMStudio::ViewportUtil
