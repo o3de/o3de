@@ -15,7 +15,7 @@
 
 #include <Translation/TranslationBus.h>
 
-class GraphCanvasTest : public ::testing::Test
+class GraphCanvasTranslationTests : public ::testing::Test
 {
 protected:
 
@@ -30,60 +30,21 @@ protected:
             appDesc.m_stackRecordLevels = 20;
 
             m_app.Create(appDesc);
-
-            // Create the global job manager.
-            m_jobManagerEntity = CreateEntity();
-            CreateComponent<AZ::JobManagerComponent>(m_jobManagerEntity.get());
-            ActivateEntity(m_jobManagerEntity.get());
         }
 
         void TearDown() override
         {
-            // Destroy the global job manager.
-            m_jobManagerEntity->Deactivate();
-            m_jobManagerEntity.reset();
-
             m_app.Destroy();
 
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
-        AZStd::unique_ptr<AZ::Entity> CreateEntity()
-        {
-            return AZStd::make_unique<AZ::Entity>();
-        }
-
-
-        void ActivateEntity(AZ::Entity* entity)
-        {
-            entity->Init();
-            EXPECT_EQ(AZ::Entity::State::Init, entity->GetState());
-
-            entity->Activate();
-            EXPECT_EQ(AZ::Entity::State::Active, entity->GetState());
-        }
-
-        template<typename Component, typename Configuration>
-        AZ::Component* CreateComponent(AZ::Entity* entity, const Configuration& config)
-        {
-            m_app.RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>(config);
-        }
-
-        template<typename Component>
-        AZ::Component* CreateComponent(AZ::Entity* entity)
-        {
-            m_app.RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>();
-        }
-
         AZ::ComponentApplication m_app;
-        AZStd::unique_ptr<AZ::Entity> m_jobManagerEntity = nullptr;
 
 };
 
-TEST_F(GraphCanvasTest, Translation)
+TEST_F(GraphCanvasTranslationTests, TranslationKey)
 {
     GraphCanvas::TranslationKey key1("Constructed");
     EXPECT_STRCASEEQ(key1.ToString().c_str(), "Constructed");
