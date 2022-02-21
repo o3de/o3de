@@ -120,4 +120,13 @@ open a cmd with elevated admin rights (use windows start, type cmd, right-click 
 
 ### Maya 2022 (Python 3.7.7)
 
-(to do)
+This also is not very different, you just need to modify some of the commands. Also because O3DE is also on a version of py3.7.x, we can re-use the requirements.txt file that is in the root of the DccScriptingInterface gem folder.
+
+    C:\WINDOWS\system32>cd C:\Program Files\Autodesk\Maya2022\bin
+    C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip
+    C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip --upgrade
+    
+    mayapy -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.7.x\site-packages
+
+![image](https://user-images.githubusercontent.com/23222931/155028674-bc0786e9-159d-42a0-8aba-deddbcfaf841.png)
+
