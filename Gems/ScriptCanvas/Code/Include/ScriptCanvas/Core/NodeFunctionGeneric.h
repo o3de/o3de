@@ -84,7 +84,7 @@ namespace ScriptCanvas
         \
         static AZStd::string GetArgName(size_t i)\
         {\
-            if (s_numArgs < 2)\
+            if constexpr (s_numArgs < 2)\
             {\
                 return GetName(i);\
             }\
@@ -108,7 +108,7 @@ namespace ScriptCanvas
             }\
             else\
             {\
-                if (s_numResults < 2)\
+                if constexpr (s_numResults < 2)\
                 {\
                     return "Result";\
                 }\
