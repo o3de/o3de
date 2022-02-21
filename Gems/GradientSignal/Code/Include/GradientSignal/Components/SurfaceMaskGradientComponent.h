@@ -82,25 +82,6 @@ namespace GradientSignal
         void AddTag(AZStd::string tag) override;
 
     private:
-        static float GetMaxSurfaceWeight(const SurfaceData::SurfacePointList& points)
-        {
-            float result = 0.0f;
-            points.EnumeratePoints([&result](
-                [[maybe_unused]] size_t inPositionIndex, [[maybe_unused]] const AZ::Vector3& position,
-                [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
-            {
-                    masks.EnumerateWeights(
-                        [&result]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
-                        {
-                            result = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), result);
-                            return true;
-                        });
-                return true;
-            });
-
-            return result;
-        }
-
         SurfaceMaskGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };

@@ -15,6 +15,7 @@ set(FILES
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
     Include/AtomToolsFramework/Document/AtomToolsDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentInspector.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystem.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentApplication.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
@@ -51,6 +52,7 @@ set(FILES
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
     Source/Document/AtomToolsDocument.cpp
+    Source/Document/AtomToolsDocumentInspector.cpp
     Source/Document/AtomToolsDocumentApplication.cpp
     Source/Document/AtomToolsDocumentMainWindow.cpp
     Source/Document/AtomToolsDocumentSystem.cpp
@@ -95,6 +97,8 @@ set(FILES
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h
     Source/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.cpp
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/IdleBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h
     Source/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.cpp
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h
     Source/Viewport/ViewportInputBehaviorController/PanCameraBehavior.cpp

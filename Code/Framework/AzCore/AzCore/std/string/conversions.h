@@ -286,6 +286,13 @@ namespace AZStd
         str = buf;
     }
 
+    template<class Str, class BoolType>
+    auto to_string(Str& str, BoolType value)
+        -> enable_if_t<same_as<remove_cvref_t<BoolType>, bool>>
+    {
+        str = value ? "true" : "false";
+    }
+
     inline AZStd::string to_string(int val)                 { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(unsigned int val)        { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(float val)               { AZStd::string str; to_string(str, val); return str; }
@@ -295,6 +302,13 @@ namespace AZStd
     inline AZStd::string to_string(long long val)           { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(unsigned long long val)  { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(long double val)         { AZStd::string str; to_string(str, val); return str; }
+    template<class BoolType>
+    auto to_string(BoolType value) -> enable_if_t<same_as<remove_cvref_t<BoolType>, bool>, AZStd::string>
+    {
+        AZStd::string str;
+        to_string(str, value);
+        return str;
+    }
 
     // In our engine we assume AZStd::string is Utf8 encoded!
     template<class Allocator>

@@ -133,7 +133,7 @@ namespace AzToolsFramework
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
-                Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom,
+                Instance& instance, EntityList& newlyAddedEntities, const PrefabDom& prefabDom,
                 LoadFlags flags = LoadFlags::None);
 
             inline PrefabDomPath GetPrefabDomInstancePath(const char* instanceName)

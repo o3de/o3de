@@ -500,4 +500,4 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-//#include <Document/moc_AtomToolsDocumentMainWindow.cpp>
+//#include <AtomToolsFramework/Document/moc_AtomToolsDocumentMainWindow.cpp>
