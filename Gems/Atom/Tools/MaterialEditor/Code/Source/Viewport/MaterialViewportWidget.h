@@ -17,12 +17,9 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <Viewport/MaterialViewportNotificationBus.h>
-
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QWidget>
-AZ_POP_DISABLE_WARNING
 #endif
 
 namespace AZ
@@ -41,11 +38,6 @@ namespace AZ
         class WindowContext;
     } // namespace RPI
 } // namespace AZ
-
-namespace Ui
-{
-    class MaterialViewportWidget;
-}
 
 namespace MaterialEditor
 {
@@ -92,10 +84,14 @@ namespace MaterialEditor
 
         using DirectionalLightHandle = AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle;
 
-        AZ::Data::Instance<AZ::RPI::SwapChainPass> m_swapChainPass;
-        AZStd::string m_defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
-        AZ::RPI::RenderPipelinePtr m_renderPipeline;
+        AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
+
         AZ::RPI::ScenePtr m_scene;
+        AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
+        AZ::RPI::RenderPipelinePtr m_renderPipeline;
+        AZ::Data::Instance<AZ::RPI::SwapChainPass> m_swapChainPass;
+        AZStd::string m_mainPipelineAssetPath = "passes/MainRenderPipeline.azasset";
+
         AZ::Render::DirectionalLightFeatureProcessorInterface* m_directionalLightFeatureProcessor = {};
         AZ::Render::DisplayMapperFeatureProcessorInterface* m_displayMapperFeatureProcessor = {};
 
@@ -117,7 +113,5 @@ namespace MaterialEditor
         AZ::Render::SkyBoxFeatureProcessorInterface* m_skyboxFeatureProcessor = {};
 
         AZStd::shared_ptr<AtomToolsFramework::ViewportInputBehaviorController> m_viewportController;
-
-        QScopedPointer<Ui::MaterialViewportWidget> m_ui;
     };
 } // namespace MaterialEditor

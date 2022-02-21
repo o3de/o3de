@@ -64,7 +64,7 @@ namespace MaterialEditor
 
         m_ui->m_materialTypeComboBox->model()->sort(0, Qt::AscendingOrder); 
 
-        const AZStd::string defaultMaterialType = AtomToolsFramework::GetSettingOrDefault<AZStd::string>(
+        const AZStd::string defaultMaterialType = AtomToolsFramework::GetSettingsValue<AZStd::string>(
             "/O3DE/Atom/MaterialEditor/CreateMaterialDialog/DefaultMaterialType", "StandardPBR");
 
         const int index = m_ui->m_materialTypeComboBox->findText(defaultMaterialType.c_str());
