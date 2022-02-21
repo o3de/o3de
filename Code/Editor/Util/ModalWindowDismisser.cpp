@@ -15,6 +15,7 @@
 // Qt
 #include <QDialog>
 #include <QTimer>
+#include <QMetaEnum>
 
 ModalWindowDismisser::ModalWindowDismisser()
 {
@@ -27,6 +28,20 @@ ModalWindowDismisser::~ModalWindowDismisser()
     {
         qApp->removeEventFilter(this);
     }
+}
+
+template<typename EnumType>
+QString ToString(const EnumType& enumValue)
+{
+    const char* enumName = qt_getEnumName(enumValue);
+    const QMetaObject* metaObject = qt_getEnumMetaObject(enumValue);
+    if (metaObject)
+    {
+        const int enumIndex = metaObject->indexOfEnumerator(enumName);
+        return QString("%1::%2::%3").arg(metaObject->className(), enumName, metaObject->enumerator(enumIndex).valueToKey(enumValue));
+    }
+
+    return QString("%1::%2").arg(enumName).arg(static_cast<int>(enumValue));
 }
 
 void ModalWindowDismisser::DismissWindows()
@@ -46,6 +61,7 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
         if (dialog->isModal())
         {
             QEvent::Type test = event->type();
+            CLogFile::FormatLine("############ AssetImporterManager:: Event = '%s'", ToString(test).toStdString().c_str());
             if (test == QEvent::PolishRequest)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
