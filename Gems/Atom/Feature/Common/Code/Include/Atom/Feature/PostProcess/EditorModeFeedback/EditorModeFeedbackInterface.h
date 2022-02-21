@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 
 namespace AZ
 {
@@ -19,7 +20,7 @@ namespace AZ
 
     namespace Render
     {
-        //! The AZ::Interface of the central editor mode tracker for all viewports.
+        //! The interface for the visual feedback component of the central editor mode tracker for all viewports.
         class EditorModeFeedbackInterface
         {
         public:
@@ -30,11 +31,9 @@ namespace AZ
             //! Returns true if the editor mode feedback effect is enabled, otherwise false.
             virtual bool IsEnabled() const = 0;
 
-            //!
+            //! Registers 
             virtual void RegisterDrawableComponent(
-                EntityComponentIdPair entityComponentId,
-                uint32_t objectId,
-                const Data::Asset<RPI::ModelAsset>& modelAsset) = 0;
+                EntityComponentIdPair entityComponentId, const MeshFeatureProcessorInterface::MeshHandle& meshHandle) = 0;
         };
     } // namespace Render
 } // namespace AZ

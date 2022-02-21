@@ -259,10 +259,7 @@ namespace AZ
 
             if (auto* editorModeFeedbackInterface = AZ::Interface<EditorModeFeedbackInterface>::Get())
             {
-                auto featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(GetEntityId());
-                auto objectId = featureProcessor->GetObjectId(m_controller.m_meshHandle).GetIndex();
-                editorModeFeedbackInterface->RegisterDrawableComponent(
-                    { GetEntityId(), GetId() }, objectId, m_controller.GetConfiguration().m_modelAsset);
+                editorModeFeedbackInterface->RegisterDrawableComponent({ GetEntityId(), GetId() }, m_controller.m_meshHandle);
             }
         }
 

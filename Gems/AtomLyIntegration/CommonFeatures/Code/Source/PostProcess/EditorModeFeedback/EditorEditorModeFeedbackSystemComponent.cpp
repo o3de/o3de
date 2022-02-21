@@ -136,18 +136,15 @@ namespace AZ
         }
 
         void EditorEditorModeFeedbackSystemComponent::RegisterDrawableComponent(
-            EntityComponentIdPair entityComponentId,
-            uint32_t objectId,
-            const Data::Asset<RPI::ModelAsset>& modelAsset)
+            EntityComponentIdPair entityComponentId, const MeshFeatureProcessorInterface::MeshHandle& meshHandle)
         {
-            auto& [componentModelAsset, componentObjectId, componentDrawPackets] =
-                m_entityComponentDrawPackets[entityComponentId.GetEntityId()][entityComponentId.GetComponentId()];
-            componentObjectId = objectId;
-            componentModelAsset = &modelAsset;
+            auto& [componentMeshHandle, componentMeshDrawPackets] =
+                m_entityComponentMeshDrawPackets[entityComponentId.GetEntityId()][entityComponentId.GetComponentId()];
+            componentMeshHandle = &meshHandle;
  
             // The same component can call RegisterDrawableEntity multiple times in order to update its model asset so always
             // clear any existing draw packets for the component upon registration
-            componentDrawPackets.clear();
+            componentMeshDrawPackets.clear();
         }
 
         void EditorEditorModeFeedbackSystemComponent::OnEditorModeActivated(
@@ -156,12 +153,12 @@ namespace AZ
         {
             if (mode == AzToolsFramework::ViewportEditorMode::Focus)
             {
-                for (auto& it : m_entityComponentDrawPackets)
+                for (auto& it : m_entityComponentMeshDrawPackets)
                 {
                     for (auto& it2 : it.second)
                     {
-                        auto& [componentModelAsset, componentMeshHandle, componentDrawPackets] = it2.second;
-                        componentDrawPackets.clear();
+                        auto& [componentMeshHandle, componentMeshDrawPackets] = it2.second;
+                        componentMeshDrawPackets.clear();
                     }
                 }
 
@@ -202,8 +199,8 @@ namespace AZ
             const auto focusedEntityIds = focusModeInterface->GetFocusedEntities(AzToolsFramework::GetEntityContextId());
             for (const auto& focusedEntityId : focusedEntityIds)
             {
-                const auto it = m_entityComponentDrawPackets.find(focusedEntityId);
-                if (it == m_entityComponentDrawPackets.end())
+                const auto it = m_entityComponentMeshDrawPackets.find(focusedEntityId);
+                if (it == m_entityComponentMeshDrawPackets.end())
                 {
                     // No drawable data for this entity
                     continue;
@@ -213,23 +210,32 @@ namespace AZ
 
                 for (auto& it2 : componentModelAssetDrawPackets)
                 {
-                    auto& [componentId, modelAssetMeshDrawPackets] = it2;
-                    auto& [modelAsset, objectId, meshDrawPackets] = modelAssetMeshDrawPackets;
+                    auto& [componentId, meshDrawPackets] = it2;
 
                     const auto scene = RPI::Scene::GetSceneForEntityId(entityId);
-                    if (meshDrawPackets.empty())
-                    {
-                        auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(m_maskMaterial);
-                        SetMeshObjectId(objectId, maskMeshObjectSrg);
-                        const auto view = GetViewFromScene(scene);
+                    if (meshDrawPackets.m_drawPackets.empty())
+                    {                        
+                        if (auto featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(focusedEntityId))
+                        {
+                            auto objectId = featureProcessor->GetObjectId(*meshDrawPackets.m_meshHandle).GetIndex();
+                            auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(m_maskMaterial);
+                            SetMeshObjectId(objectId, maskMeshObjectSrg);
+                            const auto view = GetViewFromScene(scene);
 
-                        AZ::Transform worldTM;
-                        AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-                        meshDrawPackets = BuildMeshDrawPackets(view.get(), worldTM, *modelAsset, m_maskMaterial, maskMeshObjectSrg);
+                            AZ::Transform worldTM;
+                            AZ::TransformBus::EventResult(worldTM, focusedEntityId, &AZ::TransformBus::Events::GetWorldTM);
+                            auto modelAsset = featureProcessor->GetModelAsset(*meshDrawPackets.m_meshHandle);
+                            meshDrawPackets.m_drawPackets = BuildMeshDrawPackets(view.get(), worldTM, modelAsset, m_maskMaterial, maskMeshObjectSrg);
+                        }
+                        else
+                        {
+                            // This really shouldn't fail, but just in case...
+                            AZ_Error("EditorEditorModeFeedbackSystemComponent", false, AZStd::string::format("Could't get feature processor for entity '%s'", focusedEntityId.ToString().c_str()).c_str());
+                        }
                     }
 
                     AZ::RPI::DynamicDrawInterface* dynamicDraw = AZ::RPI::GetDynamicDraw();
-                    for (auto& drawPacket : meshDrawPackets)
+                    for (auto& drawPacket : meshDrawPackets.m_drawPackets)
                     {
                         drawPacket.Update(*scene);
                         dynamicDraw->AddDrawPacket(scene, drawPacket.GetRHIDrawPacket());

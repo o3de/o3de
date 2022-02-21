@@ -78,8 +78,6 @@ namespace AZ
 
             // Stats for current mesh asset
             EditorMeshStats m_stats;
-
-            AZStd::vector<RPI::MeshDrawPacket> m_meshDrawPackets;
         };
     } // namespace Render
 } // namespace AZ

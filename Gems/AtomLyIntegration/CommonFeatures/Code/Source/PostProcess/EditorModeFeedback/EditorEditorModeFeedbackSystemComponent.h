@@ -48,10 +48,7 @@ namespace AZ
 
             // EditorModeFeedbackInterface overrides ...
             bool IsEnabled() const override;
-            void RegisterDrawableComponent(
-                EntityComponentIdPair entityComponentId,
-                uint32_t objectId,
-                const Data::Asset<RPI::ModelAsset>& modelAsset) override;
+            void RegisterDrawableComponent(EntityComponentIdPair entityComponentId, const MeshFeatureProcessorInterface::MeshHandle& meshHandle) override;
 
         private:
             // ViewportEditorModeNotificationsBus overrides ...
@@ -68,10 +65,14 @@ namespace AZ
             bool m_enabled = false;
 
             //!
-            using ModelAssetMeshDrawPackets = AZStd::tuple<const Data::Asset<RPI::ModelAsset>*, uint32_t, AZStd::vector<RPI::MeshDrawPacket>>;
+            struct MeshDrawPackets
+            {
+                const MeshFeatureProcessorInterface::MeshHandle* m_meshHandle;
+                AZStd::vector<RPI::MeshDrawPacket> m_drawPackets;
+            };
 
             //!
-            AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, ModelAssetMeshDrawPackets>> m_entityComponentDrawPackets;
+            AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, MeshDrawPackets>> m_entityComponentMeshDrawPackets;
 
             //!
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;
