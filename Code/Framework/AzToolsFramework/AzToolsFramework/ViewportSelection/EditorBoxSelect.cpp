@@ -13,7 +13,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <QApplication>
-#include <QRectF>
 
 namespace AzToolsFramework
 {
@@ -94,12 +93,13 @@ namespace AzToolsFramework
 
             const auto screenSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
             const auto viewportSize = AzFramework::Vector2FromScreenSize(screenSize);
-            const auto boxSelectRegion = QRectF(m_boxSelectRegion.value());
+            const auto [x, y, width, height] = [boxSelectRegion = m_boxSelectRegion.value()]
+            {
+                return AZStd::tuple{ aznumeric_cast<float>(boxSelectRegion.x()), aznumeric_cast<float>(boxSelectRegion.y()),
+                                     aznumeric_cast<float>(boxSelectRegion.width()), aznumeric_cast<float>(boxSelectRegion.height()) };
+            }();
 
-            debugDisplay.DrawWireQuad2d(
-                AZ::Vector2(boxSelectRegion.x(), boxSelectRegion.y()) / viewportSize,
-                AZ::Vector2(boxSelectRegion.x() + boxSelectRegion.width(), boxSelectRegion.y() + boxSelectRegion.height()) / viewportSize,
-                0.0f);
+            debugDisplay.DrawWireQuad2d(AZ::Vector2(x, y) / viewportSize, AZ::Vector2(x + width, y + height) / viewportSize, 0.0f);
 
             debugDisplay.DepthTestOn();
 
