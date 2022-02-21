@@ -39,7 +39,7 @@
                 }
             ],
             "PassData": {
-                "$type": "Terrain::TerrainDetailTextureComputePassData",
+                "$type": "ComputePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Terrain/TerrainDetailTextureComputePass.shader"
                 },

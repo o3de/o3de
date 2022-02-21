@@ -1,0 +1,44 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#define WORLD_ORIGIN float2(0.0, 0.0)
+#define WORLD_SIZE 2048.0
+#define CLIPMAP_SIZE 1024
+#define CLIPMAP_STACK_SIZE 4
+
+// Clipmap levels
+// --------|--------------|-------- level 0 stack 0
+//   ------|--------------|------   level 1 stack 1
+//     ----|--------------|----     level 2 stack 2
+//       --|--------------|--       level 3 stack 3
+//         |--------------|         level 4 pyramid mip 0 (covers the whole map)
+//         |  ----------  |         level 5 pyramid mip 1
+//         |    ------    |         level 6 pyramid mip 2
+//         |      --      |         level 7 pyramid mip 3
+
+float2 CalculateWorldPosition(uint2 pixelPosition, float2 viewPosition, uint clipmapLevel)
+{
+    float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y);
+    normalizedPixelPosition = normalizedPixelPosition / ((float)CLIPMAP_SIZE) - 0.5;
+    
+    float2 viewRelativePosition = normalizedPixelPosition * (WORLD_SIZE / pow(2.0, CLIPMAP_STACK_SIZE - clipmapLevel));
+
+    return viewPosition + viewRelativePosition;
+}
+
+float2 ddxPosition(uint2 pixelPosition, float2 viewPosition, uint clipmapLevel)
+{
+    uint2 pixelPositionNextX = uint2(pixelPosition.x + 1, pixelPosition.y);
+    return CalculateWorldPosition(pixelPositionNextX, viewPosition, clipmapLevel) - CalculateWorldPosition(pixelPosition, viewPosition, clipmapLevel);
+}
+
+float2 ddyPosition(uint2 pixelPosition, float2 viewPosition, uint clipmapLevel)
+{
+    uint2 pixelPositionNextY = uint2(pixelPosition.x, pixelPosition.y + 1);
+    return CalculateWorldPosition(pixelPositionNextY, viewPosition, clipmapLevel) - CalculateWorldPosition(pixelPosition, viewPosition, clipmapLevel);
+}

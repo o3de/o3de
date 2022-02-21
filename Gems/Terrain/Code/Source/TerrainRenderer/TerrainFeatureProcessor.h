@@ -14,7 +14,6 @@
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
 #include <TerrainRenderer/TerrainMeshManager.h>
-#include <Terrain/Passes/TerrainMacroTextureComputePass.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
@@ -55,6 +54,9 @@ namespace Terrain
 
         void SetWorldSize(AZ::Vector2 sizeInMeters);
 
+        const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
+        const AZ::Aabb& GetTerrainBounds() const;
+        const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;
     private:
 
         static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
@@ -88,9 +90,7 @@ namespace Terrain
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
-        void CachePasses(AZ::RPI::RenderPipeline* pipeline);
-        // Enable passes owned by TerrainFeatureProcessor
-        void EnablePasses();
+        void CacheForwardPass();
 
         TerrainMeshManager m_meshManager;
         TerrainMacroMaterialManager m_macroMaterialManager;
@@ -119,6 +119,5 @@ namespace Terrain
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
 
         AZ::RPI::RenderPass* m_forwardPass;
-        TerrainMacroTextureComputePass* m_macroClipmapPass;
     };
 }
