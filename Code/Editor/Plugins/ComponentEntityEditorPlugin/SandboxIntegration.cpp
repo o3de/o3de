@@ -45,17 +45,17 @@
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Slice/SliceRequestBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
+#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Layer/AddToLayerMenu.h>
+#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
-#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
@@ -212,6 +212,8 @@ void SandboxIntegrationManager::Setup()
     AZ_Assert(m_readOnlyEntityPublicInterface, "SandboxIntegrationManager requires an ReadOnlyEntityPublicInterface instance to be present on Setup().");
 
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
+
+    m_contextMenuBottomHandler.Setup();
 }
 
 void SandboxIntegrationManager::SaveSlice(const bool& QuickPushToFirstLevel)
@@ -395,6 +397,8 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 
 void SandboxIntegrationManager::Teardown()
 {
+    m_contextMenuBottomHandler.Teardown();
+
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
@@ -651,12 +655,14 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     if (selected.size() == 0)
     {
         action = menu->addAction(QObject::tr("Create entity"));
+        action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
         QObject::connect(
             action, &QAction::triggered, action,
             [this]
             {
                 ContextMenu_NewEntity();
-            });
+            }
+        );
     }
     // when a single entity is selected, entity is created as its child
     else if (selected.size() == 1)
@@ -667,6 +673,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly))
         {
             action = menu->addAction(QObject::tr("Create entity"));
+            action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
             QObject::connect(
                 action, &QAction::triggered, action,
                 [selectedEntityId]
@@ -694,33 +701,30 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
 
         SetupSliceContextMenu(menu);
-    }
 
-    if (!selected.empty())
-    {
-        // Don't allow duplication if any of the selected entities are direct desendants of a read-only entity
-        bool selectionContainsDescendantOfReadOnlyEntity = false;
-        for (const auto& entityId : selected)
+        if (!selected.empty())
         {
-            AZ::EntityId parentEntityId;
-            AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
-
-            if (parentEntityId.IsValid() && m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+            // Don't allow duplication if any of the selected entities are direct descendants of a read-only entity
+            bool selectionContainsDescendantOfReadOnlyEntity = false;
+            for (const auto& entityId : selected)
             {
-                selectionContainsDescendantOfReadOnlyEntity = true;
-                break;
+                AZ::EntityId parentEntityId;
+                AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+                if (parentEntityId.IsValid() && m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+                {
+                    selectionContainsDescendantOfReadOnlyEntity = true;
+                    break;
+                }
+            }
+
+            if (!selectionContainsDescendantOfReadOnlyEntity)
+            {
+                action = menu->addAction(QObject::tr("Duplicate"));
+                QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
             }
         }
 
-        if (!selectionContainsDescendantOfReadOnlyEntity)
-        {
-            action = menu->addAction(QObject::tr("Duplicate"));
-            QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-        }
-    }
-
-    if (!prefabSystemEnabled)
-    {
         action = menu->addAction(QObject::tr("Delete"));
         QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_DeleteSelected(); });
         if (selected.size() == 0)
@@ -733,20 +737,14 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
 
     if (selected.size() > 0)
     {
-        action = menu->addAction(QObject::tr("Open pinned Inspector"));
-        QObject::connect(action, &QAction::triggered, action, [this, selected]
-        {
-            AzToolsFramework::EntityIdSet pinnedEntities(selected.begin(), selected.end());
-            OpenPinnedInspector(pinnedEntities);
-        });
-        if (selected.size() > 0)
-        {
-            action = menu->addAction(QObject::tr("Find in Entity Outliner"));
-            QObject::connect(action, &QAction::triggered, [selected]
+        action = menu->addAction(QObject::tr("Find in Entity Outliner"));
+        QObject::connect(
+            action, &QAction::triggered,
+            [selected]
             {
-                AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
+                AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
+                    &EditorEntityContextNotification::OnFocusInEntityOutliner, selected);
             });
-        }
         menu->addSeparator();
     }
 }

@@ -82,6 +82,7 @@ namespace SurfaceData
         ////////////////////////////////////////////////////////////////////////
         // SurfaceDataProviderRequestBus
         void GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const override;
+        void GetSurfacePointsFromList(AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const override;
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceDataModifierRequestBus

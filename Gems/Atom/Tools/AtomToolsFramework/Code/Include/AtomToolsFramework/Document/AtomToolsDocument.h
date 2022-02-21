@@ -13,19 +13,20 @@
 
 namespace AtomToolsFramework
 {
-    /**
-     * AtomToolsDocument provides an API for modifying and saving documents.
-     */
+    //! AtomToolsDocument provides an API for modifying and saving documents.
     class AtomToolsDocument
         : public AtomToolsDocumentRequestBus::Handler
         , private AzToolsFramework::AssetSystemBus::Handler
     {
     public:
-        AZ_RTTI(AtomToolsDocument, "{8992DF74-88EC-438C-B280-6E71D4C0880B}");
+        AZ_RTTI(AtomToolsDocument, "{7E6CA0C4-077C-4849-B24C-6796AF3B640B}");
         AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(AtomToolsDocument);
+        AZ_DISABLE_COPY_MOVE(AtomToolsDocument);
 
-        AtomToolsDocument();
+        static void Reflect(AZ::ReflectContext* context);
+
+        AtomToolsDocument() = default;
+        AtomToolsDocument(const AZ::Crc32& toolId);
         virtual ~AtomToolsDocument();
 
         const AZ::Uuid& GetId() const;
@@ -66,8 +67,10 @@ namespace AtomToolsFramework
         //! This can be overridden to restore additional data.
         virtual bool ReopenRestoreState();
 
+        const AZ::Crc32 m_toolId = {};
+
         //! The unique id of this document, used for all bus notifications and requests.
-        AZ::Uuid m_id = AZ::Uuid::CreateRandom();
+        const AZ::Uuid m_id = AZ::Uuid::CreateRandom();
 
         //! The absolute path to the document source file.
         AZStd::string m_absolutePath;

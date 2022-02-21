@@ -39,6 +39,9 @@
 #include <AzNetworking/Framework/INetworking.h>
 
 #include <cmath>
+#include <AzCore/Debug/Profiler.h>
+
+AZ_DEFINE_BUDGET(MULTIPLAYER);
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -283,22 +286,28 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const SessionConfig& sessionConfig)
     {
         // Check if session manager has a certificate for us and pass it along if so
-        if (AZ::Interface<ISessionHandlingProviderRequests>::Get() != nullptr)
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(
-                AZ::Interface<ISessionHandlingProviderRequests>::Get()->GetExternalSessionCertificate().c_str());
-            if (!externalCertPath.empty())
+            bool tcpUseEncryption = false;
+            console->GetCvarValue("net_TcpUseEncryption", tcpUseEncryption);
+            bool udpUseEncryption = false;
+            console->GetCvarValue("net_UdpUseEncryption", udpUseEncryption);
+            auto sessionProviderHandler = AZ::Interface<ISessionHandlingProviderRequests>::Get();
+            if ((tcpUseEncryption || udpUseEncryption) && sessionProviderHandler != nullptr)
             {
-                AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
-                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
-            }
+                AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(sessionProviderHandler->GetExternalSessionCertificate().c_str());
+                if (!externalCertPath.empty())
+                {
+                    AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
+                    console->PerformCommand(commandString.c_str());
+                }
 
-            AZ::CVarFixedString internalCertPath = AZ::CVarFixedString(
-                AZ::Interface<ISessionHandlingProviderRequests>::Get()->GetInternalSessionCertificate().c_str());
-            if (!internalCertPath.empty())
-            {
-                AZ::CVarFixedString commandString = "net_SslInternalCertificateFile " + internalCertPath;
-                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+                AZ::CVarFixedString externalKeyPath = AZ::CVarFixedString(sessionProviderHandler->GetExternalSessionPrivateKey().c_str());
+                if (!externalKeyPath.empty())
+                {
+                    AZ::CVarFixedString commandString = "net_SslExternalPrivateKeyFile " + externalKeyPath;
+                    console->PerformCommand(commandString.c_str());
+                }
             }
         }
 
@@ -347,6 +356,8 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick");
+
         if (bg_multiplayerDebugDraw)
         {
             m_networkEntityManager.DebugDraw();
@@ -388,7 +399,9 @@ namespace Multiplayer
         stats.m_clientConnectionCount = 0;
 
         // Send out the game state update to all connections
-        {
+        {            
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
+
             auto sendNetworkUpdates = [&stats](IConnection& connection)
             {
                 if (connection.GetUserData() != nullptr)
@@ -434,6 +447,7 @@ namespace Multiplayer
 
         if (!packet.GetCommandSet().empty())
         {
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendReliablePackets");
             m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         }
     }
@@ -1012,6 +1026,8 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds)
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: TickVisibleNetworkEntities");
+
         m_tickFactor += deltaTime / serverRateSeconds;
         // Linear close to the origin, but asymptote at y = 1
         m_renderBlendFactor = AZStd::clamp(1.0f - (std::pow(cl_renderTickBlendBase, m_tickFactor)), 0.0f, m_tickFactor);

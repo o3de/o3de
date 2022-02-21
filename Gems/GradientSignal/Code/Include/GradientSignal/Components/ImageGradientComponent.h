@@ -99,6 +99,7 @@ namespace GradientSignal
         void SetupDependencies();
 
         void GetSubImageData();
+        float GetValueFromImageData(const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue) const;
 
         // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;

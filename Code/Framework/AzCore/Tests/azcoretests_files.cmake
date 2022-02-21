@@ -76,6 +76,7 @@ set(FILES
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Settings/CommandLineTests.cpp
+    Settings/ConfigurableStackTests.cpp
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
     Settings/SettingsRegistryMergeUtilsTests.cpp
@@ -140,6 +141,7 @@ set(FILES
     Math/FrustumPerformanceTests.cpp
     Math/IntersectionTests.cpp
     Math/MathIntrinsicsTests.cpp
+    Math/MathStringsTests.cpp
     Math/MathUtilsTests.cpp
     Math/Matrix3x3PerformanceTests.cpp
     Math/Matrix3x3Tests.cpp
@@ -206,7 +208,9 @@ set(FILES
     AZStd/Optional.cpp
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
+    AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
+    AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp
     AZStd/SmartPtr.cpp
@@ -228,6 +232,8 @@ set(FILES
     DOM/DomPatchBenchmarks.cpp
     DOM/DomValueTests.cpp
     DOM/DomValueBenchmarks.cpp
+    DOM/DomPrefixTreeTests.cpp
+    DOM/DomPrefixTreeBenchmarks.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

@@ -28,7 +28,7 @@ namespace AtomToolsFramework
 
         using Base = AtomToolsMainWindow;
 
-        AtomToolsDocumentMainWindow(QWidget* parent = 0);
+        AtomToolsDocumentMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~AtomToolsDocumentMainWindow();
 
     protected:
