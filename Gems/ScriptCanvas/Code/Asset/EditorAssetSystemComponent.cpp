@@ -16,7 +16,9 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
+#include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
+#include <Builder/ScriptCanvasBuilderWorkerUtility.h>
 #include <LyViewPaneNames.h>
 
  // Undo this
@@ -63,9 +65,16 @@ namespace ScriptCanvasEditor
 
     void EditorAssetSystemComponent::Activate()
     {
-        m_editorAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler, ScriptCanvas::SubgraphInterfaceAssetDescription>();
+        m_editorAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset
+            , ScriptCanvas::SubgraphInterfaceAssetHandler
+            , ScriptCanvas::SubgraphInterfaceAssetDescription>();
+
+        m_editorAssetRegistry.Register<ScriptCanvasBuilder::BuildVariableOverridesData
+            , ScriptCanvasBuilder::BuildVariableOverridesAssetHandler
+            , ScriptCanvasBuilder::BuildVariableOverridesAssetDescription>();
 
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+
         EditorAssetConversionBus::Handler::BusConnect();
     }
 

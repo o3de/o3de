@@ -896,6 +896,10 @@ namespace ScriptCanvasEditor
             {
                 scriptCanvasEntities.emplace(scriptCanvasEntity);
             }
+            else
+            {
+                AZ_Error("ScriptCanvas", false, "::OnEntitiesSerialized missing connetions user data when entities serialized");
+            }
         }
 
         auto& userDataMap = serializationTarget.GetUserDataMapRef();
@@ -1016,9 +1020,24 @@ namespace ScriptCanvasEditor
     {
         AZStd::any* connectionUserData = nullptr;
         GraphCanvas::ConnectionRequestBus::EventResult(connectionUserData, connectionId, &GraphCanvas::ConnectionRequests::GetUserData);
+
+        AZ_Error("ScriptCanvas", connectionUserData != nullptr, "::DisconnectConnection Connection had no user data, can't refer back to graph canvas");
+
+        if (connectionUserData)
+        {
+            AZ_Error("ScriptCanvas", connectionUserData->is<AZ::EntityId>(), "::DisconnectConnection Connection had user data, but it was not an EntityID, can't refer back to graph canvas");
+        }
+
         auto scConnectionId = connectionUserData && connectionUserData->is<AZ::EntityId>()
             ? *AZStd::any_cast<AZ::EntityId>(connectionUserData)
             : AZ::EntityId();
+
+        AZ::Entity* entity{};
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, scConnectionId);
+        if (scConnectionId.IsValid() && !entity)
+        {
+            AZ_Error("ScriptCanvas", false, "The SC entity has been deleted, but the connection id remains in user data");
+        }
 
         if (ScriptCanvas::Connection* connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
         {
@@ -1026,7 +1045,16 @@ namespace ScriptCanvasEditor
                 ( GetScriptCanvasId()
                 , &ScriptCanvas::GraphNotifications::OnDisonnectionComplete
                 , connectionId);
-            DisconnectById(scConnectionId);
+
+            AZ_VerifyError("ScriptCanvas", DisconnectById(scConnectionId), "::DisconnectConnection Failed to disconnect even with good data");
+        }
+        else if (scConnectionId.IsValid())
+        {
+            AZ_Error("ScriptCanvas", false, "::DisconnectConnection failed to find SC connection component from valid graph canvas id: %s ", scConnectionId.ToString().c_str());
+        }
+        else
+        {
+            AZ_Error("ScriptCanvas", false, "::DisconnectConnection failed to find SC connection component from invalid graph canvas id");
         }
     }
 
@@ -1470,6 +1498,10 @@ namespace ScriptCanvasEditor
                 *connectionUserData = scConnectionEntity->GetId();
                 SceneMemberMappingConfigurationRequestBus::Event(connectionId, &SceneMemberMappingConfigurationRequests::ConfigureMapping, scConnectionEntity->GetId());
             }
+            else
+            {
+                AZ_Error("ScriptCanvas", false, "::ConfigureConnectionUserData Failed to configure conneciton data but reported otherwise");
+            }
         }
         else
         {
@@ -1630,6 +1662,40 @@ namespace ScriptCanvasEditor
             {
                 delete iter->second;
                 m_graphCanvasSaveData.erase(iter);
+            }
+            else
+            {
+                AZ_Error("ScriptCanvas", false, "::OnPreConnectionDeleted Failed to delete connection id from from graphcanvas save data, not found in list");
+
+                auto iter2 = m_graphCanvasSaveData.find(connectionId);
+                if (iter2 != m_graphCanvasSaveData.end())
+                {
+                    AZ_Error("ScriptCanvas", false, "::OnPreConnectionDeleted this connection might need to be mapped BACK to a graph canvas ID");
+
+
+                    delete iter2->second;
+                    m_graphCanvasSaveData.erase(iter2);
+                }
+                else
+                {
+                    AZ_Error("ScriptCanvas", false, "::OnPreConnectionDeleted Failed to delete connection id from from graphcanvas save data, no user data");
+                }
+            }
+        }
+        else
+        {
+            auto iter = m_graphCanvasSaveData.find(connectionId);
+            if (iter != m_graphCanvasSaveData.end())
+            {
+                AZ_Error("ScriptCanvas", false, "::OnPreConnectionDeleted this connection might need to be mapped BACK to a graph canvas ID");
+
+
+                delete iter->second;
+                m_graphCanvasSaveData.erase(iter);
+            }
+            else
+            {
+                AZ_Error("ScriptCanvas", false, "::OnPreConnectionDeleted Failed to delete connection id from from graphcanvas save data, no user data");
             }
         }
 
@@ -1806,8 +1872,7 @@ namespace ScriptCanvasEditor
                     AZStd::any* userData = nullptr;
                     GraphCanvas::NodeRequestBus::EventResult(userData, nodeId, &GraphCanvas::NodeRequests::GetUserData);
                     AZ::EntityId scSourceNodeId = (userData && userData->is<AZ::EntityId>()) ? *AZStd::any_cast<AZ::EntityId>(userData) : AZ::EntityId();
-                        
-                        ScriptCanvas::Nodes::Core::FunctionDefinitionNode* nodeling = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(FindNode(scSourceNodeId));
+                    ScriptCanvas::Nodes::Core::FunctionDefinitionNode* nodeling = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(FindNode(scSourceNodeId));
 
                     if (nodeling)
                     {
@@ -3739,6 +3804,7 @@ namespace ScriptCanvasEditor
                 {
                     AZStd::any* userData = nullptr;
                     GraphCanvas::ConnectionRequestBus::EventResult(userData, graphCanvasConnectionId, &GraphCanvas::ConnectionRequests::GetUserData);
+                    AZ_Error("ScriptCanvas", userData != nullptr, "DisplayGraphCanvasScene:: UserData not found! Cannot make proper graph canvas data!");
 
                     if (userData)
                     {
@@ -3746,6 +3812,10 @@ namespace ScriptCanvasEditor
 
                         SceneMemberMappingConfigurationRequestBus::Event(graphCanvasConnectionId, &SceneMemberMappingConfigurationRequests::ConfigureMapping, connectionId);
                     }
+                }
+                else
+                {
+                    AZ_Error("ScriptCanvas", false, "DisplayGraphCanvasScene::Graph canvas connection ID not found, graph connetion will not properly delete");
                 }
             }
 

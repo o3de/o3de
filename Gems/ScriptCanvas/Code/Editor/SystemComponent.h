@@ -117,8 +117,6 @@ namespace ScriptCanvasEditor
 
         AZStd::unordered_set<ScriptCanvas::Data::Type> m_creatableTypes;
 
-        AZStd::vector<AZ::Data::AssetId> m_assetsThatNeedManualUpgrade;
-
         bool m_isUpgrading = false;
         bool m_upgradeDisabled = false;
     };

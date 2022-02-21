@@ -10,33 +10,15 @@
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <ScriptCanvas/Translation/Translation.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+
 
 namespace AZ
 {
-    class ScriptAsset;
-
     namespace Data
     {
         class AssetHandler;
     }
-}
-
-namespace ScriptCanvas
-{
-    class RuntimeAsset;
-    class SubgraphInterfaceAsset;
-}
-
-namespace ScriptCanvasEditor
-{
-    class EditorGraph;
-    class SourceHandle;
 }
 
 namespace ScriptCanvasBuilder
@@ -64,84 +46,7 @@ namespace ScriptCanvasBuilder
         Current,
     };
 
-    using HandlerOwnership = AZStd::pair<AZ::Data::AssetHandler*, bool>;
-
-    struct SharedHandlers;
-
-    struct AssetHandlers
-    {
-        AZ::Data::AssetHandler* m_editorFunctionAssetHandler = nullptr;
-        AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
-        AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
-
-        AssetHandlers() = default;
-        explicit AssetHandlers(SharedHandlers& source);
-    };
-
-    struct SharedHandlers
-    {
-        HandlerOwnership m_editorFunctionAssetHandler{};
-        HandlerOwnership m_runtimeAssetHandler{};
-        HandlerOwnership m_subgraphInterfaceHandler{};
-
-        void DeleteOwnedHandlers();
-
-    private:
-        void DeleteIfOwned(HandlerOwnership& handler);
-    };
-
-    struct ProcessTranslationJobInput
-    {
-        AZ::Data::AssetId assetID;
-        const AssetBuilderSDK::ProcessJobRequest* request = nullptr;
-        AssetBuilderSDK::ProcessJobResponse* response = nullptr;
-        AZStd::string runtimeScriptCanvasOutputPath;
-        AZ::Data::AssetHandler* assetHandler = nullptr;
-        AZ::Entity* buildEntity = nullptr;
-        AZStd::string fullPath;
-        AZStd::string fileNameOnly;
-        AZStd::string namespacePath;
-        bool saveRawLua = false;
-        ScriptCanvas::RuntimeData runtimeDataOut;
-        ScriptCanvas::Grammar::SubgraphInterface interfaceOut;
-    };
-
-    class JobDependencyVerificationHandler : public ScriptCanvas::RuntimeAssetHandler
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(JobDependencyVerificationHandler, AZ::SystemAllocator, 0);
-        AZ_RTTI(JobDependencyVerificationHandler, "{3997EF50-350A-46F0-9D84-7FA403855CC5}", ScriptCanvas::RuntimeAssetHandler);
-
-        void InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload) override
-        {
-            AZ_UNUSED(asset);
-            AZ_UNUSED(loadStageSucceeded);
-            AZ_UNUSED(isReload);
-            // do nothing, this just verifies the asset existed
-        }
-    };
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const ScriptCanvasEditor::SourceHandle& asset);
-
-    AZ::Outcome<ScriptCanvas::GraphData, AZStd::string> CompileGraphData(AZ::Entity* scriptCanvasEntity);
-
-    AZ::Outcome<ScriptCanvas::VariableData, AZStd::string> CompileVariableData(AZ::Entity* scriptCanvasEntity);
-
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
-
-    int GetBuilderVersion();
-
-    AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath);
-
-    AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input);
-
-    ScriptCanvasEditor::EditorGraph* PrepareSourceGraph(AZ::Entity* const buildEntity);
-
-    AZ::Outcome<void, AZStd::string> SaveSubgraphInterface(ProcessTranslationJobInput& input, ScriptCanvas::SubgraphInterfaceData& subgraphInterface);
-
-    AZ::Outcome<void, AZStd::string> SaveRuntimeAsset(ProcessTranslationJobInput& input, ScriptCanvas::RuntimeData& runtimeData);
-
-    ScriptCanvas::Translation::Result TranslateToLua(ScriptCanvas::Grammar::Request& request);
+    struct AssetHandlers;
 
     class Worker
         : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
@@ -168,6 +73,7 @@ namespace ScriptCanvasBuilder
     private:
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
+        AZ::Data::AssetHandler* m_builderHandler = nullptr;
 
         mutable AZStd::vector<AZ::Data::AssetFilterInfo> m_processEditorAssetDependencies;
         // cached on first time query

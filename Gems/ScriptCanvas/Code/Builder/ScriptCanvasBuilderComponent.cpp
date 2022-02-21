@@ -12,6 +12,7 @@
 #include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderComponent.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
+#include <Builder/ScriptCanvasBuilderWorkerUtility.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 
@@ -20,7 +21,7 @@
 namespace ScriptCanvasBuilder
 {
     template<typename t_Asset, typename t_Handler>
-    HandlerOwnership RegisterHandler(const char* extension, bool enableCatalog)
+    HandlerOwnership RegisterHandler(t_Handler* handler, const char* extension, bool enableCatalog)
     {
         AZ::Data::AssetType assetType(azrtti_typeid<t_Asset>());
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddAssetType, assetType);
@@ -38,10 +39,14 @@ namespace ScriptCanvasBuilder
         }
         else
         {
-            t_Handler* ownedHandler = aznew t_Handler();
-            AZ::Data::AssetManager::Instance().RegisterHandler(ownedHandler, assetType);
-            return { ownedHandler, true };
+            return { handler, true };
         }
+    }
+
+    template<typename t_Asset, typename t_Handler>
+    HandlerOwnership RegisterHandler(const char* extension, bool enableCatalog)
+    {
+        return RegisterHandler<t_Asset, t_Handler>(aznew t_Handler(), extension, enableCatalog);
     }
 
     SharedHandlers HandleAssetTypes()
@@ -49,11 +54,10 @@ namespace ScriptCanvasBuilder
         SharedHandlers handlers;
         handlers.m_subgraphInterfaceHandler = RegisterHandler<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler>("scriptcanvas_fn_compiled", true);
         handlers.m_runtimeAssetHandler = RegisterHandler<ScriptCanvas::RuntimeAsset, JobDependencyVerificationHandler>("scriptcanvas_compiled", true);
-
+        handlers.m_builderHandler = RegisterHandler<ScriptCanvasBuilder::BuildVariableOverridesData, ScriptCanvasBuilder::BuildVariableOverridesAssetHandler>("scriptcanvas_builder", true);
         // \todo make it so we can load script events in the builder: expose the SE handler?
         // const AZStd::string description = ScriptCanvas::AssetDescription::GetExtension<ScriptCanvas::RuntimeAsset>();
         // handlers.m_scriptEventAssetHandler = RegisterHandler<ScriptEvents::ScriptEventsAsset, ScriptEventsEditor::ScriptEventAssetHandler>(description.data());
-
         return handlers;
     }
 

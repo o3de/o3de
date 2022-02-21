@@ -258,11 +258,11 @@ namespace ScriptCanvasEditor
             {
                 AZStd::any* userData = nullptr;
                 GraphCanvas::ConnectionRequestBus::EventResult(userData, graphCanvasConnectionId, &GraphCanvas::ConnectionRequests::GetUserData);
+                AZ_Error("ScriptCanvas", userData != nullptr, "UpgradeConnections::Run UserData not found! Cannot make proper graph canvas data!");
 
                 if (userData)
                 {
                     (*userData) = connectionId;
-
                     SceneMemberMappingConfigurationRequestBus::Event(graphCanvasConnectionId, &SceneMemberMappingConfigurationRequests::ConfigureMapping, connectionId);
                 }
             }

@@ -17,6 +17,7 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
+#include <Builder/ScriptCanvasBuilderWorkerUtility.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
@@ -31,13 +32,13 @@
 #include <ScriptCanvas/Core/Core.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 
-
 namespace ScriptCanvasBuilder
 {
     AssetHandlers::AssetHandlers(SharedHandlers& source)
         : m_editorFunctionAssetHandler(source.m_editorFunctionAssetHandler.first)
         , m_runtimeAssetHandler(source.m_runtimeAssetHandler.first)
         , m_subgraphInterfaceHandler(source.m_subgraphInterfaceHandler.first)
+        , m_builderHandler(source.m_builderHandler.first)
     {}
 
     void SharedHandlers::DeleteOwnedHandlers()
@@ -45,6 +46,7 @@ namespace ScriptCanvasBuilder
         DeleteIfOwned(m_editorFunctionAssetHandler);
         DeleteIfOwned(m_runtimeAssetHandler);
         DeleteIfOwned(m_subgraphInterfaceHandler);
+        DeleteIfOwned(m_builderHandler);
     }
 
     void SharedHandlers::DeleteIfOwned(HandlerOwnership& handler)
@@ -166,9 +168,7 @@ namespace ScriptCanvasBuilder
 
         AZStd::unordered_set<ScriptCanvas::Endpoint> disabledEndpoints;
         AZStd::unordered_set<AZ::Entity*> disabledNodeEntities;
-
         AZStd::unordered_map<AZ::EntityId, NodeEntityPair > nodeLookUpMap;
-
         AZStd::unordered_set<AZ::EntityId> deletedNodeEntities;
 
         {
@@ -432,6 +432,14 @@ namespace ScriptCanvasBuilder
         return sourceGraph;
     }
 
+    AZ::Outcome<void, AZStd::string> ProcessBuilderData(ProcessTranslationJobInput& /*input*/)
+    {
+        // load / parse editor tree replacement:
+        // get the top level results from the source file and ACM, then, go ONLY ONE LEVEL DEEP
+        // and get dependent results, because then the list should be flattened...I think
+        return AZ::Failure(AZStd::string("this will look a lot like build overrides"));
+    }
+
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input)
     {
         auto sourceGraph = PrepareSourceGraph(input.buildEntity);
@@ -517,7 +525,46 @@ namespace ScriptCanvasBuilder
         return AZ::Success();
     }
 
-    AZ::Outcome<void, AZStd::string> SaveSubgraphInterface(ProcessTranslationJobInput& input, ScriptCanvas::SubgraphInterfaceData& subgraphInterface)
+    AZ::Outcome<void, AZStd::string> SaveBuilderAsset
+        ( ProcessTranslationJobInput& input
+        , ScriptCanvasBuilder::BuildVariableOverrides&& builderData)
+    {
+        AZ::Data::Asset<ScriptCanvasBuilder::BuildVariableOverridesData> builderAsset;
+        builderAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC_CE("BuilderData")));
+        builderAsset.Get()->m_overrides = AZStd::move(builderData);
+
+        AZStd::vector<AZ::u8> byteBuffer;
+        AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
+
+        bool assetSaved = input.assetHandler->SaveAssetData(builderAsset, &byteStream);
+        if (!assetSaved)
+        {
+            return AZ::Failure(AZStd::string("Failed to save script canvas builder data to object stream"));
+        }
+
+        AZ::IO::FileIOStream outFileStream(input.runtimeScriptCanvasOutputPath.data(), AZ::IO::OpenMode::ModeWrite);
+        if (!outFileStream.IsOpen())
+        {
+            return AZ::Failure(AZStd::string::format("Failed to open output file %s", input.runtimeScriptCanvasOutputPath.data()));
+        }
+
+        assetSaved = outFileStream.Write(byteBuffer.size(), byteBuffer.data()) == byteBuffer.size() && assetSaved;
+        if (!assetSaved)
+        {
+            return AZ::Failure(AZStd::string::format("Unable to save script canvas builder data file %s", input.runtimeScriptCanvasOutputPath.data()));
+        }
+
+        AssetBuilderSDK::JobProduct jobProduct;
+        jobProduct.m_dependenciesHandled = true;
+        jobProduct.m_productFileName = input.runtimeScriptCanvasOutputPath;
+        jobProduct.m_productAssetType = azrtti_typeid<ScriptCanvasBuilder::BuildVariableOverridesData>();
+        jobProduct.m_productSubID = AZ_CRC_CE("BuilderData");
+        input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
+        return AZ::Success();
+    }
+
+
+    AZ::Outcome<void, AZStd::string> SaveSubgraphInterfaceAsset(ProcessTranslationJobInput& input, ScriptCanvas::SubgraphInterfaceData& subgraphInterface)
     {
         AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> runtimeAsset;
         runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72)));

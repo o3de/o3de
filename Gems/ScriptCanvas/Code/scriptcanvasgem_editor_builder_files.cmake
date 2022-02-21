@@ -14,4 +14,5 @@ set(FILES
     Builder/ScriptCanvasBuilderWorker.cpp
     Builder/ScriptCanvasBuilderWorker.h
     Builder/ScriptCanvasBuilderWorkerUtility.cpp
+    Builder/ScriptCanvasBuilderWorkerUtility.h
 )

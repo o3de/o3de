@@ -318,6 +318,11 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::BuildGameEntityData()
     {
+        // replace with functionality to do the same thing by loading
+        // the new editor asset the describes the exposed variables
+        // or the sub graph interface
+        // the editor interface. that is
+
         using namespace ScriptCanvasBuilder;
         CompleteDescriptionInPlace(m_sourceHandle);
 

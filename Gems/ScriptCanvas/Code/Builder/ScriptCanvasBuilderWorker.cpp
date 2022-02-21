@@ -12,22 +12,48 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
+#include <Builder/ScriptCanvasBuilderWorkerUtility.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Connection.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/GraphData.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Results/ErrorText.h>
+#include <ScriptCanvas/Translation/Translation.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
-#include <ScriptCanvas/Core/Core.h>
+
+namespace ScriptCanvasBuilderWorkerCpp
+{
+    template<typename Callable>
+    class TerminateJob
+    {
+    public:
+        Callable m_callable;
+
+        TerminateJob(Callable&& callable)
+            : m_callable(callable)
+        {}
+
+        ~TerminateJob()
+        {
+            m_callable();
+        }
+    };
+}
 
 namespace ScriptCanvasBuilder
 {
@@ -35,6 +61,7 @@ namespace ScriptCanvasBuilder
     {
         m_runtimeAssetHandler = handlers.m_runtimeAssetHandler;
         m_subgraphInterfaceHandler = handlers.m_subgraphInterfaceHandler;
+        m_builderHandler = handlers.m_builderHandler;
     }
 
     void Worker::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
@@ -187,7 +214,20 @@ namespace ScriptCanvasBuilder
 
     void Worker::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
     {
+        auto onComplete = ScriptCanvasBuilderWorkerCpp::TerminateJob([this]()
+        {
+            m_processEditorAssetDependencies.clear();
+            AZ_TracePrintf(s_scriptCanvasBuilder, "Finish Processing Job");
+        });
+
         AZ_TracePrintf(s_scriptCanvasBuilder, "Start Processing Job");
+
+        if (request.m_jobDescription.m_jobKey != s_scriptCanvasProcessJobKey)
+        {
+            AZ_ErrorOnce(s_scriptCanvasBuilder, false, "Recieved an invalid job key");
+            return;
+        }
+
         // A runtime script canvas component is generated, which creates a .scriptcanvas_compiled file
         AZStd::string fullPath;
         AZStd::string fileNameOnly;
@@ -230,75 +270,93 @@ namespace ScriptCanvasBuilder
 
         auto sourceHandle = loadOutcome.TakeValue();
 
-        if (request.m_jobDescription.m_jobKey == s_scriptCanvasProcessJobKey)
+        AZ::Entity* buildEntity = sourceHandle.Get()->GetEntity();
+        ProcessTranslationJobInput input;
+        input.assetID = AZ::Data::AssetId(request.m_sourceFileUUID, AZ_CRC("RuntimeData", 0x163310ae));
+        input.request = &request;
+        input.response = &response;
+        input.runtimeScriptCanvasOutputPath = runtimeScriptCanvasOutputPath;
+        input.assetHandler = m_runtimeAssetHandler;
+        input.buildEntity = buildEntity;
+        input.fullPath = fullPath;
+        input.fileNameOnly = fileNameOnly;
+        input.namespacePath = relativePath;
+        input.saveRawLua = true;
+
+        auto translationOutcome = ProcessTranslationJob(input);
+        if (!translationOutcome.IsSuccess())
         {
-            AZ::Entity* buildEntity = sourceHandle.Get()->GetEntity();
-            ProcessTranslationJobInput input;
-            input.assetID = AZ::Data::AssetId(request.m_sourceFileUUID, AZ_CRC("RuntimeData", 0x163310ae));
-            input.request = &request;
-            input.response = &response;
-            input.runtimeScriptCanvasOutputPath = runtimeScriptCanvasOutputPath;
-            input.assetHandler = m_runtimeAssetHandler;
-            input.buildEntity = buildEntity;
-            input.fullPath = fullPath;
-            input.fileNameOnly = fileNameOnly;
-            input.namespacePath = relativePath;
-            input.saveRawLua = true;
-
-            auto translationOutcome = ProcessTranslationJob(input);
-            if (translationOutcome.IsSuccess())
+            if (AzFramework::StringFunc::Find(translationOutcome.GetError().c_str(), ScriptCanvas::ParseErrors::SourceUpdateRequired)
+                != AZStd::string::npos)
             {
-                auto saveOutcome = SaveRuntimeAsset(input, input.runtimeDataOut);
-                if (saveOutcome.IsSuccess())
-                {
-                    // save function interface
-                    AzFramework::StringFunc::Path::StripExtension(fileNameOnly);
-                    ScriptCanvas::SubgraphInterfaceData functionInterface;
-                    functionInterface.m_name = fileNameOnly;
-                    functionInterface.m_interface = AZStd::move(input.interfaceOut);
-                    input.assetHandler = m_subgraphInterfaceHandler;
-
-                    AzFramework::StringFunc::Path::ReplaceExtension(input.runtimeScriptCanvasOutputPath, ScriptCanvas::SubgraphInterfaceAsset::GetFileExtension());
-                    auto saveInterfaceOutcome = SaveSubgraphInterface(input, functionInterface);
-                    if (saveInterfaceOutcome.IsSuccess())
-                    {
-                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                    }
-                    else
-                    {
-                        AZ_Error(s_scriptCanvasBuilder, false, saveInterfaceOutcome.GetError().data());
-                    }
-                }
-                else
-                {
-                    AZ_Error(s_scriptCanvasBuilder, false, saveOutcome.GetError().c_str());
-                }
+                AZ_Warning(s_scriptCanvasBuilder, false, ScriptCanvas::ParseErrors::SourceUpdateRequired);
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+            }
+            else if (AzFramework::StringFunc::Find(translationOutcome.GetError().c_str(), ScriptCanvas::ParseErrors::EmptyGraph)
+                != AZStd::string::npos)
+            {
+                // do not fail on empty graphs, but do not try and create an asset
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+            }
+            else if (!ScriptCanvas::Grammar::g_processingErrorsForUnitTestsEnabled
+                && AzFramework::StringFunc::Find(fileNameOnly, s_unitTestParseErrorPrefix) != AZStd::string::npos)
+            {
+                // do not fail expected unit test parse failures
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
             }
             else
             {
-                if (AzFramework::StringFunc::Find(translationOutcome.GetError().c_str(), ScriptCanvas::ParseErrors::SourceUpdateRequired) != AZStd::string::npos)
-                {
-                    AZ_Warning(s_scriptCanvasBuilder, false, ScriptCanvas::ParseErrors::SourceUpdateRequired);
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                }
-                else if (AzFramework::StringFunc::Find(translationOutcome.GetError().c_str(), ScriptCanvas::ParseErrors::EmptyGraph) != AZStd::string::npos)
-                {
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                }
-                else
-                {
-                    if (!ScriptCanvas::Grammar::g_processingErrorsForUnitTestsEnabled
-                        && AzFramework::StringFunc::Find(fileNameOnly, s_unitTestParseErrorPrefix) != AZStd::string::npos)
-                    {
-                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                    }
-                    AZ_Error(s_scriptCanvasBuilder, false, translationOutcome.GetError().c_str());
-                }
+                AZ_Error(s_scriptCanvasBuilder, false, translationOutcome.GetError().c_str());
             }
 
-            m_processEditorAssetDependencies.clear();
+            // do not create any of these assets
+            return;
         }
 
-        AZ_TracePrintf(s_scriptCanvasBuilder, "Finish Processing Job");
+        auto saveOutcome = SaveRuntimeAsset(input, input.runtimeDataOut);
+        if (!saveOutcome.IsSuccess())
+        {
+            AZ_Error(s_scriptCanvasBuilder, false, saveOutcome.GetError().c_str());
+            return;
+        }
+    
+        // save function interface
+        AzFramework::StringFunc::Path::StripExtension(fileNameOnly);
+        ScriptCanvas::SubgraphInterfaceData functionInterface;
+        functionInterface.m_name = fileNameOnly;
+        functionInterface.m_interface = AZStd::move(input.interfaceOut);
+        input.assetHandler = m_subgraphInterfaceHandler;
+        AzFramework::StringFunc::Path::ReplaceExtension
+            ( input.runtimeScriptCanvasOutputPath, ScriptCanvas::SubgraphInterfaceAsset::GetFileExtension());
+
+        auto saveInterfaceOutcome = SaveSubgraphInterfaceAsset(input, functionInterface);
+        if (!saveInterfaceOutcome.IsSuccess())
+        {
+            AZ_Error(s_scriptCanvasBuilder, false, saveInterfaceOutcome.GetError().c_str());
+            return;
+        }
+
+        // process builder data
+        // sourceHandle has the loaded graph source, build entity has the entity
+        auto processBuilderOutcome = ProcessBuilderData(input);
+        if (!processBuilderOutcome.IsSuccess())
+        {
+            AZ_Error(s_scriptCanvasBuilder, false, processBuilderOutcome.GetError().c_str());
+            return;
+        }
+
+        // save builder asset
+        input.assetHandler = m_builderHandler;
+        AzFramework::StringFunc::Path::ReplaceExtension
+            (input.runtimeScriptCanvasOutputPath, ScriptCanvasBuilder::BuildVariableOverridesData::GetFileExtension());
+
+        auto saveBuilderOutcome = SaveBuilderAsset(input, AZStd::move(input.builderDataOut));
+        if (!saveBuilderOutcome.IsSuccess())
+        {
+            AZ_Error(s_scriptCanvasBuilder, false, saveBuilderOutcome.GetError().c_str());
+            return;
+        }
+
+        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
     }
 }

@@ -10,6 +10,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
+#include <Builder/ScriptCanvasBuilderWorkerUtility.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Components/EditorDeprecationData.h>
 #include <ScriptCanvas/Components/EditorGraph.h>

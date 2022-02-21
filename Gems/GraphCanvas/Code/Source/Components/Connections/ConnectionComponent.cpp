@@ -149,14 +149,22 @@ namespace GraphCanvas
         return entity;
     }    
 
+    ConnectionComponent::~ConnectionComponent()
+    {
+        AZ_TracePrintf("ScriptCanvas", "Destroyed a ConnectionComponent, and maybe just by saving");
+    }
+
     ConnectionComponent::ConnectionComponent()
         : m_dragContext(DragContext::Unknown)
     {
+        AZ_TracePrintf("ScriptCanvas", "Created a new connection component without endpoints");
     }
 
     ConnectionComponent::ConnectionComponent(const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint, bool createModelConnection)
         : AZ::Component()
     {
+        AZ_TracePrintf("ScriptCanvas", "Created a new connection component WITH endpoints");
+
         m_sourceEndpoint = sourceEndpoint;
         m_targetEndpoint = targetEndpoint;
 

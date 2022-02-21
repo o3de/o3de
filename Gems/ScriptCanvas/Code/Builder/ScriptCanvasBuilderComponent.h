@@ -12,6 +12,7 @@
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include "ScriptCanvasBuilderWorker.h"
+#include "ScriptCanvasBuilderWorkerUtility.h"
 
 namespace ScriptCanvasBuilder
 {
