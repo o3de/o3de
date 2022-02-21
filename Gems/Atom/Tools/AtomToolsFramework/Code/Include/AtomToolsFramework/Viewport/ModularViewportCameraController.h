@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
@@ -120,6 +121,8 @@ namespace AtomToolsFramework
         void SetCameraPivotAttached(const AZ::Vector3& pivot) override;
         void SetCameraPivotDetached(const AZ::Vector3& pivot) override;
         void SetCameraOffset(const AZ::Vector3& offset) override;
+        bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
+        bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
 
     private:
         //! Combine the current camera transform with any potential roll from the tracked

@@ -287,16 +287,16 @@ namespace SandboxEditor
             return SandboxEditor::CameraBoostMultiplier();
         };
 
-        m_orbitDollyScrollCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
+        m_orbitScrollDollyCamera = AZStd::make_shared<AzFramework::OrbitScrollDollyCameraInput>();
 
-        m_orbitDollyScrollCamera->m_scrollSpeedFn = []
+        m_orbitScrollDollyCamera->m_scrollSpeedFn = []
         {
             return SandboxEditor::CameraScrollSpeed();
         };
 
-        m_orbitDollyMoveCamera = AZStd::make_shared<AzFramework::OrbitDollyMotionCameraInput>(SandboxEditor::CameraOrbitDollyChannelId());
+        m_orbitMotionDollyCamera = AZStd::make_shared<AzFramework::OrbitMotionDollyCameraInput>(SandboxEditor::CameraOrbitDollyChannelId());
 
-        m_orbitDollyMoveCamera->m_motionSpeedFn = []
+        m_orbitMotionDollyCamera->m_motionSpeedFn = []
         {
             return SandboxEditor::CameraDollyMotionSpeed();
         };
@@ -326,8 +326,8 @@ namespace SandboxEditor
 
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitRotateCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitTranslateCamera);
-        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitDollyScrollCamera);
-        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitDollyMoveCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitScrollDollyCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitMotionDollyCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitPanCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitFocusCamera);
     }
@@ -344,7 +344,7 @@ namespace SandboxEditor
         m_orbitTranslateCamera->SetTranslateCameraInputChannelIds(translateCameraInputChannelIds);
         m_orbitPanCamera->SetPanInputChannelId(SandboxEditor::CameraOrbitPanChannelId());
         m_orbitRotateCamera->SetRotateInputChannelId(SandboxEditor::CameraOrbitLookChannelId());
-        m_orbitDollyMoveCamera->SetDollyInputChannelId(SandboxEditor::CameraOrbitDollyChannelId());
+        m_orbitMotionDollyCamera->SetDollyInputChannelId(SandboxEditor::CameraOrbitDollyChannelId());
         m_orbitFocusCamera->SetFocusInputChannelId(SandboxEditor::CameraFocusChannelId());
     }
 

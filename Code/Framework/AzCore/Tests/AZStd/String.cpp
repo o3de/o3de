@@ -656,18 +656,6 @@ namespace UnitTest
         fval = AZStd::stof(wfloatStr);
         AZ_TEST_ASSERT_FLOAT_CLOSE(fval, 2.32f);
 
-        AZStd::to_string(intStr, 20);
-        AZ_TEST_ASSERT(intStr == "20");
-
-        EXPECT_EQ("20", AZStd::to_string(static_cast<int16_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<uint16_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<int32_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<uint32_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<int64_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<uint64_t>(20)));
-        EXPECT_EQ("false", AZStd::to_string(false));
-        EXPECT_EQ("true", AZStd::to_string(true));
-
         // wstring to string
         AZStd::string str1;
         AZStd::to_string(str1, wstr);
@@ -976,6 +964,47 @@ namespace UnitTest
         AZ_TEST_ASSERT(*vecIt++ == "Xiph Xlater 2000");
         AZ_TEST_ASSERT(*vecIt++ == "Xiph Xlater 5000");
         AZ_TEST_ASSERT(*vecIt++ == "Xiph Xlater 10000");
+    }
+
+    // Concept to model if AZStd::to_string(<type>) is a valid expression
+    template<class T, class = void>
+    constexpr bool IsToStringInvocable = false;
+
+    template<class T>
+    constexpr bool IsToStringInvocable<T, AZStd::void_t<decltype(AZStd::to_string(AZStd::declval<T>()))>> = true;
+
+    TEST_F(String, String_to_stringOverload_DoesNotImplicitlyConvertToBool)
+    {
+        AZStd::string intStr;
+        AZStd::to_string(intStr, 20);
+        EXPECT_EQ("20", intStr);
+
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int16_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint16_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int32_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint32_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int64_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint64_t>(20)));
+        EXPECT_EQ("false", AZStd::to_string(false));
+        EXPECT_EQ("true", AZStd::to_string(true));
+
+        // AZStd::to_string should not be invocable with a char or wchar_t literal
+        static_assert(!IsToStringInvocable<decltype("NarrowStrLiteral")>);
+        static_assert(!IsToStringInvocable<decltype(L"WideStrLiteral")>);
+
+        // AZStd::to_string should
+        static_assert(IsToStringInvocable<bool>);
+        static_assert(IsToStringInvocable<AZ::s8>);
+        static_assert(IsToStringInvocable<AZ::u8>);
+        static_assert(IsToStringInvocable<AZ::s16>);
+        static_assert(IsToStringInvocable<AZ::u16>);
+        static_assert(IsToStringInvocable<AZ::s32>);
+        static_assert(IsToStringInvocable<AZ::u32>);
+        static_assert(IsToStringInvocable<AZ::s64>);
+        static_assert(IsToStringInvocable<AZ::u64>);
+        static_assert(IsToStringInvocable<float>);
+        static_assert(IsToStringInvocable<double>);
+        static_assert(IsToStringInvocable<long double>);
     }
 
     class Regex

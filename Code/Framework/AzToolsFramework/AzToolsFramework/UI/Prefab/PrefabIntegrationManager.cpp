@@ -253,6 +253,68 @@ namespace AzToolsFramework
                 }
             }
 
+            // Edit/Inspect/Close Prefab
+            {
+                if (selectedEntities.size() == 1)
+                {
+                    AZ::EntityId selectedEntity = selectedEntities[0];
+
+                    if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
+                    {
+                        if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
+                        {
+                            if (s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntity))
+                            {
+                                // Inspect Prefab
+                                QAction* editAction = menu->addAction(QObject::tr("Inspect Procedural Prefab"));
+                                editAction->setShortcut(QKeySequence(Qt::Key_Plus));
+                                editAction->setToolTip(QObject::tr("See the procedural prefab contents in focus mode."));
+
+                                QObject::connect(
+                                    editAction, &QAction::triggered, editAction,
+                                    [selectedEntity]
+                                    {
+                                        ContextMenu_EditPrefab(selectedEntity);
+                                    }
+                                );
+                            }
+                            else
+                            {
+                                // Edit Prefab
+                                QAction* editAction = menu->addAction(QObject::tr("Open/Edit Prefab"));
+                                editAction->setShortcut(QKeySequence(Qt::Key_Plus));
+                                editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
+
+                                QObject::connect(
+                                    editAction, &QAction::triggered, editAction,
+                                    [selectedEntity]
+                                    {
+                                        ContextMenu_EditPrefab(selectedEntity);
+                                    }
+                                );
+                            }
+                        }
+                        else
+                        {
+                            // Close Prefab
+                            QAction* closeAction = menu->addAction(QObject::tr("Close Prefab"));
+                            closeAction->setShortcut(QKeySequence(Qt::Key_Minus));
+                            closeAction->setToolTip(QObject::tr("Close focus mode for this prefab and move one level up."));
+
+                            QObject::connect(
+                                closeAction, &QAction::triggered, closeAction,
+                                []
+                                {
+                                    ContextMenu_ClosePrefab();
+                                }
+                            );
+                        }
+
+                        menu->addSeparator();
+                    }
+                }
+            }
+
             bool itemWasShown = false;
 
             // Create Prefab
@@ -291,12 +353,28 @@ namespace AzToolsFramework
                                 [selectedEntities]
                                 {
                                     ContextMenu_CreatePrefab(selectedEntities);
-                                });
+                                }
+                            );
 
                             itemWasShown = true;
                         }
                     }
                 }
+            }
+
+            // Detach Prefab
+            if (onlySelectedEntityIsClosedPrefabContainer)
+            {
+                AZ::EntityId selectedEntityId = selectedEntities.front();
+
+                QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+                QObject::connect(
+                    detachPrefabAction, &QAction::triggered, detachPrefabAction,
+                    [selectedEntityId]
+                    {
+                        ContextMenu_DetachPrefab(selectedEntityId);
+                    }
+                );
             }
 
             // Instantiate Prefab
@@ -311,7 +389,8 @@ namespace AzToolsFramework
                     []
                     {
                         ContextMenu_InstantiatePrefab();
-                    });
+                    }
+                );
 
                 // Instantiate Procedural Prefab
                 if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs())
@@ -324,7 +403,8 @@ namespace AzToolsFramework
                         []
                         {
                             ContextMenu_InstantiateProceduralPrefab();
-                        });
+                        }
+                    );
                 }
 
                 itemWasShown = true;
@@ -335,9 +415,7 @@ namespace AzToolsFramework
                 menu->addSeparator();
             }
 
-            itemWasShown = false;
-
-            // Edit/Save Prefab
+            // Save Prefab
             {
                 if (selectedEntities.size() == 1)
                 {
@@ -345,52 +423,6 @@ namespace AzToolsFramework
 
                     if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
                     {
-                        if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
-                        {
-                            if (s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntity))
-                            {
-                                // Inspect Prefab
-                                QAction* editAction = menu->addAction(QObject::tr("Inspect Procedural Prefab"));
-                                editAction->setShortcut(QKeySequence(Qt::Key_Plus));
-                                editAction->setToolTip(QObject::tr("See the procedural prefab contents in focus mode."));
-
-                                QObject::connect(
-                                    editAction, &QAction::triggered, editAction,
-                                    [selectedEntity]
-                                    {
-                                        ContextMenu_EditPrefab(selectedEntity);
-                                    });
-                            }
-                            else
-                            {
-                                // Edit Prefab
-                                QAction* editAction = menu->addAction(QObject::tr("Open/Edit Prefab"));
-                                editAction->setShortcut(QKeySequence(Qt::Key_Plus));
-                                editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
-
-                                QObject::connect(
-                                    editAction, &QAction::triggered, editAction,
-                                    [selectedEntity]
-                                    {
-                                        ContextMenu_EditPrefab(selectedEntity);
-                                    });
-                            }
-                        }
-                        else
-                        {
-                            // Close Prefab
-                            QAction* closeAction = menu->addAction(QObject::tr("Close Prefab"));
-                            closeAction->setShortcut(QKeySequence(Qt::Key_Minus));
-                            closeAction->setToolTip(QObject::tr("Close focus mode for this prefab and move one level up."));
-
-                            QObject::connect(
-                                closeAction, &QAction::triggered, closeAction,
-                                []
-                                {
-                                    ContextMenu_ClosePrefab();
-                                });
-                        }
-
                         // Save Prefab
                         AZ::IO::Path prefabFilePath = s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntity);
                         auto dirtyOutcome = s_prefabPublicInterface->HasUnsavedChanges(prefabFilePath);
@@ -405,17 +437,43 @@ namespace AzToolsFramework
                                 [selectedEntity]
                                 {
                                     ContextMenu_SavePrefab(selectedEntity);
-                                });
-                        }
+                                }
+                            );
 
-                        itemWasShown = true;
+                            menu->addSeparator();
+                        }
                     }
                 }
             }
 
-            if (itemWasShown)
+            if (!selectedEntities.empty())
             {
-                menu->addSeparator();
+                // Don't allow duplication if any of the selected entities are direct descendants of a read-only entity
+                bool selectionContainsDescendantOfReadOnlyEntity = false;
+                for (const auto& entityId : selectedEntities)
+                {
+                    AZ::EntityId parentEntityId;
+                    AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+                    if (parentEntityId.IsValid() && m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+                    {
+                        selectionContainsDescendantOfReadOnlyEntity = true;
+                        break;
+                    }
+                }
+
+                if (!selectionContainsDescendantOfReadOnlyEntity)
+                {
+                    QAction* duplicateAction = menu->addAction(QObject::tr("Duplicate"));
+                    duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+                    QObject::connect(
+                        duplicateAction, &QAction::triggered, duplicateAction,
+                        []
+                        {
+                            ContextMenu_Duplicate();
+                        }
+                    );
+                }
             }
 
             if (!selectedEntities.empty() &&
@@ -424,27 +482,17 @@ namespace AzToolsFramework
                 !readOnlyEntityInSelection)
             {
                 QAction* deleteAction = menu->addAction(QObject::tr("Delete"));
+                deleteAction->setShortcut(QKeySequence(Qt::Key_Delete));
                 QObject::connect(
                     deleteAction, &QAction::triggered, deleteAction,
                     []
                     {
                         ContextMenu_DeleteSelected();
-                    });
+                    }
+                );
             }
 
-            // Detach Prefab
-            if (onlySelectedEntityIsClosedPrefabContainer)
-            {
-                AZ::EntityId selectedEntityId = selectedEntities.front();
-
-                QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
-                QObject::connect(
-                    detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                    [selectedEntityId]
-                    {
-                        ContextMenu_DetachPrefab(selectedEntityId);
-                    });
-            }
+            menu->addSeparator();
         }
 
         void PrefabIntegrationManager::OnEscape()
@@ -651,6 +699,12 @@ namespace AzToolsFramework
             {
                 WarningDialog("Prefab Save Error", savePrefabOutcome.GetError());
             }
+        }
+
+        void PrefabIntegrationManager::ContextMenu_Duplicate()
+        {
+            bool handled = true;
+            AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::CloneSelection, handled);
         }
 
         void PrefabIntegrationManager::ContextMenu_DeleteSelected()
