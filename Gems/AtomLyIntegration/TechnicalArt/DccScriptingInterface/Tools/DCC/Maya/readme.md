@@ -71,7 +71,7 @@ Now you should be able to run the following command and verify pip:
 C:\Program Files\Autodesk\Maya2020\bin>`mayapy -m pip --version
 pip 20.3.4 from C:\Users\< you >\AppData\Roaming\Python\Python27\site-packages\pip (python 2.7)`
 
-## Method 2, use ensure pip
+## Method 2, use ensurepip
 
 Note: these steps are pretty similar for any version of Maya with any version of python.
 You just need to be careful to make sure you are using the correct requirements.txt
@@ -83,7 +83,7 @@ Use a cmd prompt with elevated Admin rights.
 
     C:\WINDOWS\system32>cd C:\Program Files\Autodesk\Maya2020\bin
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip
-    C:\Program Files\Autodesk\Maya2020\bin>python -m ensurepip --upgrade
+    C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip --upgrade
 
 Now your local maya install is all set up with pip so you can install additional python packages to use in maya.  (note: not all packages are compatible with maya)
 
@@ -106,7 +106,17 @@ Maya 2022 finally brings us to Python3, however to facilitate the transition May
 ### Maya 2022 (Python 2.7.11)
 
 Method 2 above should still work, however you'd want to use this mayapy2:
-    `"C:\Program Files\Autodesk\Maya2022\bin\mayapy2.exe"`
+    `C:\Program Files\Autodesk\Maya2022\bin\mayapy2.exe`
+
+open a cmd with elevated admin rights (use windows start, type cmd, right-click on 'command prompt', choose 'Run as administrator')
+
+    C:\WINDOWS\system32>cd C:\Program Files\Autodesk\Maya2022\bin
+    C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip
+    C:\Program Files\Autodesk\Maya2020\bin>mayapy2 -m ensurepip --upgrade
+    
+    mayapy2 -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
+
+![image](https://user-images.githubusercontent.com/23222931/155027575-648ec8aa-d067-42a2-854a-2d985cec13a5.png)
 
 ### Maya 2022 (Python 3.7.7)
 
