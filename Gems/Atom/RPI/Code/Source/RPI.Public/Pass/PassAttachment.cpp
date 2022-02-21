@@ -118,18 +118,18 @@ namespace AZ
                 {
                     m_descriptor.m_image.m_format = m_renderPipelineSource->GetRenderSettings().m_format;
                 }
-                else if (m_formatSource && m_formatSource->m_attachment)
+                else if (m_formatSource && m_formatSource->GetAttachment())
                 {
-                    m_descriptor.m_image.m_format = m_formatSource->m_attachment->m_descriptor.m_image.m_format;
+                    m_descriptor.m_image.m_format = m_formatSource->GetAttachment()->m_descriptor.m_image.m_format;
                 }
 
                 if (m_getMultisampleStateFromPipeline && m_renderPipelineSource)
                 {
                     m_descriptor.m_image.m_multisampleState = m_renderPipelineSource->GetRenderSettings().m_multisampleState;
                 }
-                else if (m_multisampleSource && m_multisampleSource->m_attachment)
+                else if (m_multisampleSource && m_multisampleSource->GetAttachment())
                 {
-                    m_descriptor.m_image.m_multisampleState = m_multisampleSource->m_attachment->m_descriptor.m_image.m_multisampleState;
+                    m_descriptor.m_image.m_multisampleState = m_multisampleSource->GetAttachment()->m_descriptor.m_image.m_multisampleState;
                 }
 
                 if (m_getSizeFromPipeline && m_renderPipelineSource)
@@ -137,15 +137,15 @@ namespace AZ
                     RHI::Size sourceSize = m_renderPipelineSource->GetRenderSettings().m_size;
                     m_descriptor.m_image.m_size = m_sizeMultipliers.ApplyModifiers(sourceSize);
                 }
-                else if(m_sizeSource && m_sizeSource->m_attachment)
+                else if(m_sizeSource && m_sizeSource->GetAttachment())
                 {
-                    RHI::Size sourceSize = m_sizeSource->m_attachment->m_descriptor.m_image.m_size;
+                    RHI::Size sourceSize = m_sizeSource->GetAttachment()->m_descriptor.m_image.m_size;
                     m_descriptor.m_image.m_size = m_sizeMultipliers.ApplyModifiers(sourceSize);
                 }
 
-                if (m_arraySizeSource && m_arraySizeSource->m_attachment)
+                if (m_arraySizeSource && m_arraySizeSource->GetAttachment())
                 {
-                    uint16_t arraySize = m_arraySizeSource->m_attachment->m_descriptor.m_image.m_arraySize;
+                    uint16_t arraySize = m_arraySizeSource->GetAttachment()->m_descriptor.m_image.m_arraySize;
                     m_descriptor.m_image.m_arraySize = arraySize;
                 }
 
@@ -230,6 +230,12 @@ namespace AZ
             RHI::ScopeAttachmentAccess access = RPI::GetAttachmentAccess(m_slotType);
             access = AdjustAccessBasedOnUsage(access, m_scopeAttachmentUsage);
             return access;
+        }
+
+        void PassAttachmentBinding::SetOriginalAttachment(Ptr<PassAttachment>& attachment)
+        {
+            m_originalAttachment = attachment;
+            SetAttachment(attachment);
         }
 
         void PassAttachmentBinding::SetAttachment(const Ptr<PassAttachment>& attachment)

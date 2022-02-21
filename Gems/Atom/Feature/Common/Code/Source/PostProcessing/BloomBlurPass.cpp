@@ -76,7 +76,7 @@ namespace AZ
         void BloomBlurPass::GetInputInfo()
         {
             AZ_Assert(GetInputOutputCount() > 0, "[BloomBlurPass '%s']: must have an input/output", GetPathName().GetCStr());
-            RPI::PassAttachment* attachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* attachment = GetInputOutputBinding(0).GetAttachment().get();
 
             if (attachment != nullptr)
             {
@@ -138,10 +138,10 @@ namespace AZ
         void BloomBlurPass::CreateBinding(BloomBlurChildPass* pass, uint32_t mipLevel, bool isHorizontalPass)
         {
             RPI::PassAttachmentBinding& parentInOutBinding = GetInputOutputBinding(0);
-            RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.m_attachment;
+            const RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.GetAttachment();
 
             RPI::PassAttachmentBinding& parentInBinding = GetInputBinding(0);
-            RPI::Ptr<RPI::PassAttachment>& parentWorkSpaceAttachment = parentInBinding.m_attachment;
+            const RPI::Ptr<RPI::PassAttachment>& parentWorkSpaceAttachment = parentInBinding.GetAttachment();
 
             // Create input binding, from downsampling pass
             RPI::PassAttachmentBinding inBinding;
@@ -275,7 +275,7 @@ namespace AZ
             m_offsetData.clear();
             m_kernelRadiusData.clear();
 
-            RPI::PassAttachment* inOutAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inOutAttachment = GetInputOutputBinding(0).GetAttachment().get();
             uint32_t imageWidth = inOutAttachment->m_descriptor.m_image.m_size.m_width;
 
             // Horizontal & vertical pass shared the same kernel

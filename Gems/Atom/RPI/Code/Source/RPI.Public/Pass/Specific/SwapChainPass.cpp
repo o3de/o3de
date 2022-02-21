@@ -40,9 +40,9 @@ namespace AZ
 
         RHI::Format SwapChainPass::GetSwapChainFormat() const
         {
-            if (m_attachmentBindings.size() > 0 && m_attachmentBindings[0].m_attachment)
+            if (m_attachmentBindings.size() > 0 && m_attachmentBindings[0].GetAttachment())
             {
-                return m_attachmentBindings[0].m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+                return m_attachmentBindings[0].GetAttachment()->GetTransientImageDescriptor().m_imageDescriptor.m_format;
             }
             return RHI::Format::Unknown;
         }
@@ -75,8 +75,8 @@ namespace AZ
             PassAttachmentBinding swapChainOutput;
             swapChainOutput.m_name = "SwapChainOutput";
             swapChainOutput.m_slotType = PassSlotType::InputOutput;
-            swapChainOutput.m_attachment = m_swapChainAttachment;
             swapChainOutput.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
+            swapChainOutput.SetAttachment(m_swapChainAttachment);
 
             m_attachmentBindings.push_back(swapChainOutput);
         }

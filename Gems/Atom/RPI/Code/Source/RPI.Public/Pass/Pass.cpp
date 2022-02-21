@@ -356,7 +356,7 @@ namespace AZ
         {
             if (const PassAttachmentBinding* binding = FindAttachmentBinding(slotName))
             {
-                return binding->m_attachment;
+                return binding->GetAttachment();
             }
 
             return FindOwnedAttachment(slotName);
@@ -415,10 +415,10 @@ namespace AZ
             // We can't handle the case that there is already an attachment attached yet.
             // We could consider to add it later if there are needs. It may require remove from the owned attachment list and
             // handle the connected bindings
-            if (localBinding->m_attachment)
+            if (localBinding->GetAttachment())
             {
                 AZ_RPI_PASS_ERROR(false, "Pass::AttachBufferToSlot - Slot [%s] already has attachment [%s].",
-                    slot.GetCStr(), localBinding->m_attachment->m_name.GetCStr());
+                    slot.GetCStr(), localBinding->GetAttachment()->m_name.GetCStr());
                 return;
             }
 
@@ -430,8 +430,7 @@ namespace AZ
             attachment->m_importedResource = buffer;
             m_ownedAttachments.push_back(attachment);
 
-            localBinding->SetAttachment(attachment);
-            localBinding->m_originalAttachment = attachment;
+            localBinding->SetOriginalAttachment(attachment);
         }
         
         void Pass::AttachImageToSlot(const Name& slot, Data::Instance<AttachmentImage> image)
@@ -447,10 +446,10 @@ namespace AZ
             // We can't handle the case that there is already an attachment attached yet.
             // We could consider to add it later if there are needs. It may require remove from the owned attachment list and
             // handle the connected bindings
-            if (localBinding->m_attachment)
+            if (localBinding->GetAttachment())
             {
                 AZ_RPI_PASS_ERROR(false, "Pass::AttachImageToSlot - Slot [%s] already has attachment [%s].",
-                    slot.GetCStr(), localBinding->m_attachment->m_name.GetCStr());
+                    slot.GetCStr(), localBinding->GetAttachment()->m_name.GetCStr());
                 return;
             }
 
@@ -462,8 +461,7 @@ namespace AZ
             attachment->m_importedResource = image;
             m_ownedAttachments.push_back(attachment);
 
-            localBinding->SetAttachment(attachment);
-            localBinding->m_originalAttachment = attachment;
+            localBinding->SetOriginalAttachment(attachment);
         }               
 
         void Pass::ProcessConnection(const PassConnection& connection, uint32_t slotTypeMask)
@@ -609,8 +607,7 @@ namespace AZ
             }
             else if (attachment)
             {
-                localBinding->SetAttachment(attachment);
-                localBinding->m_originalAttachment = attachment;
+                localBinding->SetOriginalAttachment(attachment);
             }
             else
             {
@@ -1038,8 +1035,8 @@ namespace AZ
                     haveSameConnection = haveSameConnection && binding01.m_connectedBinding != nullptr;
 
                     // ... Or if they point to the same attachment
-                    bool isSameAttachment = binding01.m_attachment == binding02.m_attachment;
-                    isSameAttachment = isSameAttachment && binding01.m_attachment != nullptr;
+                    bool isSameAttachment = binding01.GetAttachment() == binding02.GetAttachment();
+                    isSameAttachment = isSameAttachment && binding01.GetAttachment() != nullptr;
 
                     // If binding 01 and binding 02 have the same attachment, update the attachment usage index on binding 02
                     if (haveSameConnection || isSameAttachment)
@@ -1280,7 +1277,7 @@ namespace AZ
                 // Log passes with missing input
                 for (uint8_t idx : m_inputBindingIndices)
                 {
-                    if (!m_attachmentBindings[idx].m_attachment)
+                    if (!m_attachmentBindings[idx].GetAttachment())
                     {
                         validationResults.m_passesWithMissingInputs.push_back(this);
                         break;
@@ -1289,7 +1286,7 @@ namespace AZ
                 // Log passes with missing input/output
                 for (uint8_t idx : m_inputOutputBindingIndices)
                 {
-                    if (!m_attachmentBindings[idx].m_attachment)
+                    if (!m_attachmentBindings[idx].GetAttachment())
                     {
                         validationResults.m_passesWithMissingInputOutputs.push_back(this);
                         break;
@@ -1298,7 +1295,7 @@ namespace AZ
                 // Log passes with missing output (note that missing output connections are not considered an error)
                 for (uint8_t idx : m_outputBindingIndices)
                 {
-                    if (!m_attachmentBindings[idx].m_attachment)
+                    if (!m_attachmentBindings[idx].GetAttachment())
                     {
                         validationResults.m_passesWithMissingOutputs.push_back(this);
                         break;
@@ -1512,15 +1509,15 @@ namespace AZ
             {
                 if (slotName == binding.m_name)
                 {
-                    RHI::AttachmentType type = binding.m_attachment->GetAttachmentType();
+                    RHI::AttachmentType type = binding.GetAttachment()->GetAttachmentType();
                     if (type == RHI::AttachmentType::Buffer || type == RHI::AttachmentType::Image)
                     {
-                        RHI::AttachmentId attachmentId = binding.m_attachment->GetAttachmentId();
+                        RHI::AttachmentId attachmentId = binding.GetAttachment()->GetAttachmentId();
 
                         // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
                         AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
                             bindingIndex, GetName().GetCStr());
-                        if (readback->ReadPassAttachment(binding.m_attachment.get(), AZ::Name(readbackName)))
+                        if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName)))
                         {
                             m_readbackOption = PassAttachmentReadbackOption::Output;
                             // The m_readbackOption is only meaningful if the attachment is used for InputOutput.
@@ -1636,7 +1633,7 @@ namespace AZ
                 for (const PassAttachmentBinding& binding : m_attachmentBindings)
                 {
                     uint32_t bindingMask = (1 << uint32_t(binding.m_slotType));
-                    if ((bindingMask & slotTypeMask) && (binding.m_attachment == nullptr))
+                    if ((bindingMask & slotTypeMask) && (binding.GetAttachment() == nullptr))
                     {
                         // Print the name of the slot
                         PrintIndent(stringOutput, 1);
@@ -1657,15 +1654,15 @@ namespace AZ
 
                 // Print the attachment type and size, for example:
                 // (Image, 1920, 1080)   or  (Buffer, 4096 bytes)
-                if (binding.m_attachment != nullptr)
+                if (binding.GetAttachment() != nullptr)
                 {
                     stringOutput += " (";
 
                     // Images will have the format: AttachmentName (Image, 1920, 1080)
-                    if (binding.m_attachment->m_descriptor.m_type == RHI::AttachmentType::Image)
+                    if (binding.GetAttachment()->m_descriptor.m_type == RHI::AttachmentType::Image)
                     {
                         stringOutput += "Image";
-                        RHI::ImageDescriptor& desc = binding.m_attachment->m_descriptor.m_image;
+                        RHI::ImageDescriptor& desc = binding.GetAttachment()->m_descriptor.m_image;
                         uint32_t dimensions = static_cast<uint32_t>(desc.m_dimension);
                         for (uint32_t i = 0; i < dimensions; ++i)
                         {
@@ -1687,10 +1684,10 @@ namespace AZ
                         }
                     }
                     // Buffers will have the format: AttachmentName (Buffer, 4092 bytes)
-                    else if (binding.m_attachment->m_descriptor.m_type == RHI::AttachmentType::Buffer)
+                    else if (binding.GetAttachment()->m_descriptor.m_type == RHI::AttachmentType::Buffer)
                     {
                         stringOutput += "Buffer, ";
-                        stringOutput += AZStd::to_string(binding.m_attachment->m_descriptor.m_buffer.m_byteCount);
+                        stringOutput += AZStd::to_string(binding.GetAttachment()->m_descriptor.m_buffer.m_byteCount);
                         stringOutput += " bytes";
                     }
 

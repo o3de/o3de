@@ -67,7 +67,7 @@ namespace AZ
         {
             // Get the input/output mip chain attachment for this pass (at binding 0)
             AZ_Assert(GetInputOutputCount() > 0, "[DownsampleMipChainPass '%s']: must have an input/output", GetPathName().GetCStr());
-            PassAttachment* attachment = GetInputOutputBinding(0).m_attachment.get();
+            PassAttachment* attachment = GetInputOutputBinding(0).GetAttachment().get();
 
             if (attachment != nullptr)
             {
@@ -99,7 +99,7 @@ namespace AZ
             passData->m_shaderReference = m_passData.m_shaderReference;
 
             PassAttachmentBinding& inOutBinding = GetInputOutputBinding(0);
-            Ptr<PassAttachment>& inOutAttachment = inOutBinding.m_attachment;
+            Ptr<PassAttachment>& inOutAttachment = inOutBinding.GetAttachment();
 
             // We are downsampling a mip chain where the first mip is already written to
             // Create passes to write to the other [mipLevels - 1] mips

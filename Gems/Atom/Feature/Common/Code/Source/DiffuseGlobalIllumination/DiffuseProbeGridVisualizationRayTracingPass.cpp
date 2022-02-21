@@ -239,7 +239,7 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationRayTracingPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {           
-            const RHI::ImageView* outputImageView = context.GetImageView(GetOutputBinding(0).m_attachment->GetAttachmentId());
+            const RHI::ImageView* outputImageView = context.GetImageView(GetOutputBinding(0).GetAttachment()->GetAttachmentId());
             AZ_Assert(outputImageView, "Failed to retrieve output ImageView");
 
             RPI::Scene* scene = m_pipeline->GetScene();

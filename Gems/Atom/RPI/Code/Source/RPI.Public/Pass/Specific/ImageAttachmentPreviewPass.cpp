@@ -145,9 +145,9 @@ namespace AZ
             uint32_t bindingIndex = 0;
             for (auto& binding : pass->GetAttachmentBindings())
             {
-                if (passAttachment == binding.m_attachment)
+                if (passAttachment == binding.GetAttachment())
                 {
-                    RHI::AttachmentId attachmentId = binding.m_attachment->GetAttachmentId();
+                    RHI::AttachmentId attachmentId = binding.GetAttachment()->GetAttachmentId();
                     
                     // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
                     AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
@@ -181,7 +181,7 @@ namespace AZ
                         if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget
                             && binding.m_slotType == PassSlotType::Output)
                         {
-                            SetOutputColorAttachment(binding.m_attachment);
+                            SetOutputColorAttachment(binding.GetAttachment());
                         }
                     }
                 }

@@ -76,8 +76,8 @@ namespace AZ
             // in the pass file, which could result in errors during following passes' initialization
             AZ_Assert(GetInputOutputCount() > 0, "[BloomCompositePass '%s']: must have an output", GetPathName().GetCStr());
 
-            RPI::PassAttachment* inAttachment = GetInputBinding(0).m_attachment.get();
-            RPI::PassAttachment* outAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inAttachment = GetInputBinding(0).GetAttachment().get();
+            RPI::PassAttachment* outAttachment = GetInputOutputBinding(0).GetAttachment().get();
 
             if (inAttachment != nullptr && outAttachment != nullptr)
             {
@@ -118,10 +118,10 @@ namespace AZ
         void BloomCompositePass::CreateBinding(BloomCompositeChildPass* pass, uint32_t mipLevel)
         {
             RPI::PassAttachmentBinding& parentInBinding = GetInputBinding(0);
-            RPI::Ptr<RPI::PassAttachment>& parentInAttachment = parentInBinding.m_attachment;
+            const RPI::Ptr<RPI::PassAttachment>& parentInAttachment = parentInBinding.GetAttachment();
 
             RPI::PassAttachmentBinding& parentInOutBinding = GetInputOutputBinding(0);
-            RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.m_attachment;
+            const RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.GetAttachment();
 
             // Create input binding, from downsampling pass
             RPI::PassAttachmentBinding inBinding;

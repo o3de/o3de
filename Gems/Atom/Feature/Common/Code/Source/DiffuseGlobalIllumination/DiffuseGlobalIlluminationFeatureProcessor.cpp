@@ -94,7 +94,7 @@ namespace AZ
                         // update the downsample pass size multipliers
                         for (uint32_t attachmentIndex = 0; attachmentIndex < pass->GetOutputCount(); ++attachmentIndex)
                         {
-                            RPI::Ptr<RPI::PassAttachment> attachment = pass->GetOutputBinding(attachmentIndex).m_attachment;
+                            RPI::Ptr<RPI::PassAttachment> attachment = pass->GetOutputBinding(attachmentIndex).GetAttachment();
                             RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
 
                             sizeMultipliers.m_widthMultiplier = sizeMultiplier;
@@ -112,7 +112,7 @@ namespace AZ
                         RPI::Ptr<RPI::PassAttachment> irradianceImageAttachment;
                         for (uint32_t attachmentIndex = 0; attachmentIndex < parentPass->GetInputOutputCount(); ++attachmentIndex)
                         {
-                            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetInputOutputBinding(attachmentIndex).m_attachment;
+                            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetInputOutputBinding(attachmentIndex).GetAttachment();
                             if (attachment->m_name == Name("IrradianceImage"))
                             {
                                 irradianceImageAttachment = attachment;

@@ -111,14 +111,14 @@ namespace AZ
             RHI::Size targetImageSize;
             if (m_isFullscreenPass)
             {
-                RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+                RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
                 targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
                 SetTargetThreadCounts(targetImageSize.m_width, targetImageSize.m_height, targetImageSize.m_depth);
             }
 
             RHI::Size sourceImageSize;
-            RPI::PassAttachment* inputAttachment = GetInputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inputAttachment = GetInputBinding(0).GetAttachment().get();
             sourceImageSize = inputAttachment->m_descriptor.m_image.m_size;
 
             // Update shader constant

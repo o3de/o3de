@@ -131,7 +131,13 @@ namespace AZ
             PassAttachmentBinding(const PassSlot& slot);
             ~PassAttachmentBinding() { };
 
+            //! Getter and Setter for attachment
             void SetAttachment(const Ptr<PassAttachment>& attachment);
+            Ptr<PassAttachment>& GetAttachment() { return m_attachment; }
+            const Ptr<PassAttachment>& GetAttachment() const { return m_attachment; }
+
+            //! Set the attachment and the original attachment to the provided value
+            void SetOriginalAttachment(Ptr<PassAttachment>& attachment);
 
             //! Returns the corresponding ScopeAttachmentAccess for this binding
             RHI::ScopeAttachmentAccess GetAttachmentAccess() const;
@@ -161,12 +167,6 @@ namespace AZ
             //! The scope descriptor to be used for this binding during rendering
             RHI::UnifiedScopeAttachmentDescriptor m_unifiedScopeDesc;
 
-            //! Pointer to the attachment used by the scope
-            Ptr<PassAttachment> m_attachment = nullptr;
-
-            //! Save the original attachment when using fallback
-            Ptr<PassAttachment> m_originalAttachment = nullptr;
-
             //! Pointer to the binding slot connected to this binding slot
             PassAttachmentBinding* m_connectedBinding = nullptr;
 
@@ -189,6 +189,13 @@ namespace AZ
             //! An attachment can be used multiple times by the same pass (for example reading an writing to different
             //! mips of the same texture). This indicates which number usage this binding corresponds to.
             uint8_t m_attachmentUsageIndex = 0;
+
+        private:
+            //! Pointer to the attachment used by the scope
+            Ptr<PassAttachment> m_attachment = nullptr;
+
+            //! Save the original attachment when using fallback
+            Ptr<PassAttachment> m_originalAttachment = nullptr;
         };
 
         using PassAttachmentBindingList = AZStd::vector<PassAttachmentBinding>;
