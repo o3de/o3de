@@ -11,6 +11,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
+#include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
+#include <SurfaceData/SurfacePointList.h>
 
 namespace GradientSignal
 {
@@ -61,6 +63,12 @@ namespace GradientSignal
 
     void EditorGradientSurfaceDataComponent::Deactivate()
     {
+        // Make sure any previews for this entity aren't currently trying to refresh. Otherwise, the preview job could call
+        // back into our FilterFunc lambda below after the entity has already been destroyed.
+        AZ::EntityId canceledEntity;
+        GradientSignal::GradientPreviewRequestBus::EventResult(
+            canceledEntity, GetEntityId(), &GradientSignal::GradientPreviewRequestBus::Events::CancelRefresh);
+
         // If the preview shouldn't be active, use an invalid entityId
         m_gradientEntityId = AZ::EntityId();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
@@ -98,10 +106,10 @@ namespace GradientSignal
         return [this]([[maybe_unused]] float sampleValue, const GradientSampleParams& params)
         {
             // Create a fake surface point with the position we're sampling.
-            SurfaceData::SurfacePoint point;
+            AzFramework::SurfaceData::SurfacePoint point;
             point.m_position = params.m_position;
-            SurfaceData::SurfacePointList pointList;
-            pointList.emplace_back(point);
+            point.m_normal = AZ::Vector3::CreateAxisZ();
+            SurfaceData::SurfacePointList pointList = AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1);
 
             // Send it into the component, see what emerges
             m_component.ModifySurfacePoints(pointList);
@@ -110,10 +118,18 @@ namespace GradientSignal
             // Technically, they should all have the same value, but we'll grab the max from all of them in case
             // the underlying logic ever changes to allow separate ranges per tag.
             float result = 0.0f;
-            for (auto& mask : pointList[0].m_masks)
+            pointList.EnumeratePoints([&result](
+                [[maybe_unused]] size_t inPositionIndex, [[maybe_unused]] const AZ::Vector3& position,
+                [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
             {
-                result = AZ::GetMax(result, mask.second);
-            }
+                masks.EnumerateWeights(
+                    [&result]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
+                    {
+                        result = AZ::GetMax(result, weight);
+                        return true;
+                    });
+                return true;
+            });
             return result;
         };
     }

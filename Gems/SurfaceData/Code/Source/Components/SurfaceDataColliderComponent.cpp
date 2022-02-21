@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceDataColliderComponent.h"
+#include <SurfaceData/Components/SurfaceDataColliderComponent.h>
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -132,6 +132,7 @@ namespace SurfaceData
         Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
 
         // Update the cached collider data and bounds, then register the surface data provider / modifier
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f);
         UpdateColliderData();
     }
 
@@ -157,7 +158,7 @@ namespace SurfaceData
 
         // Clear the cached mesh data
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
             m_colliderBounds = AZ::Aabb::CreateNull();
         }
     }
@@ -184,8 +185,6 @@ namespace SurfaceData
 
     bool SurfaceDataColliderComponent::DoRayTrace(const AZ::Vector3& inPosition, bool queryPointOnly, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
     {
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
-
         // test AABB as first pass to claim the point
         const AZ::Vector3 testPosition = AZ::Vector3(
             inPosition.GetX(),
@@ -228,45 +227,67 @@ namespace SurfaceData
 
     void SurfaceDataColliderComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
-        AZ::Vector3 hitPosition;
-        AZ::Vector3 hitNormal;
-
-        // We want a full raycast, so don't just query the start point.
-        constexpr bool queryPointOnly = false;
-
-        if (DoRayTrace(inPosition, queryPointOnly, hitPosition, hitNormal))
-        {
-            SurfacePoint point;
-            point.m_entityId = GetEntityId();
-            point.m_position = hitPosition;
-            point.m_normal = hitNormal;
-            AddMaxValueForMasks(point.m_masks, m_configuration.m_providerTags, 1.0f);
-            surfacePointList.push_back(point);
-        }
+        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
     }
+
+    void SurfaceDataColliderComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
+    {
+        AzPhysics::SimulatedBodyComponentRequestsBus::Event(
+            GetEntityId(),
+            [this, inPositions, &surfacePointList](AzPhysics::SimulatedBodyComponentRequestsBus::Events* simBody)
+            {
+                AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+                AzPhysics::RayCastRequest request;
+                request.m_direction = -AZ::Vector3::CreateAxisZ();
+
+                for (auto& inPosition : inPositions)
+                {
+                    // test AABB as first pass to claim the point
+                    if (SurfaceData::AabbContains2D(m_colliderBounds, inPosition))
+                    {
+                        // We're casting the ray to look for a collision, so start at the top of the collider and cast downwards
+                        // the full height of the collider.
+                        request.m_start = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_colliderBounds.GetMax().GetZ());
+                        request.m_distance = m_colliderBounds.GetExtents().GetZ();
+
+                        AzPhysics::SceneQueryHit result = simBody->RayCast(request);
+
+                        if (result)
+                        {
+                            surfacePointList.AddSurfacePoint(
+                                GetEntityId(), inPosition, result.m_position, result.m_normal, m_newPointWeights);
+                        }
+                    }
+                }
+
+            });
+    }
+
 
     void SurfaceDataColliderComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_colliderBounds.IsValid() && !m_configuration.m_modifierTags.empty())
         {
-            const AZ::EntityId entityId = GetEntityId();
-            for (auto& point : surfacePointList)
-            {
-                if (point.m_entityId != entityId && m_colliderBounds.Contains(point.m_position))
+            surfacePointList.ModifySurfaceWeights(
+                GetEntityId(),
+                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
                 {
-                    AZ::Vector3 hitPosition;
-                    AZ::Vector3 hitNormal;
-                    constexpr bool queryPointOnly = true;
-                    if (DoRayTrace(point.m_position, queryPointOnly, hitPosition, hitNormal))
+                    if (m_colliderBounds.Contains(position))
                     {
-                        AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                        AZ::Vector3 hitPosition;
+                        AZ::Vector3 hitNormal;
+                        constexpr bool queryPointOnly = true;
+                        if (DoRayTrace(position, queryPointOnly, hitPosition, hitNormal))
+                        {
+                            // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
+                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
+                        }
                     }
-                }
-            }
+                });
         }
     }
 
@@ -307,7 +328,7 @@ namespace SurfaceData
         bool colliderValidAfterUpdate = false;
 
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
             colliderValidBeforeUpdate = m_colliderBounds.IsValid();
 
@@ -321,10 +342,11 @@ namespace SurfaceData
         providerRegistryEntry.m_entityId = GetEntityId();
         providerRegistryEntry.m_bounds = m_colliderBounds;
         providerRegistryEntry.m_tags = m_configuration.m_providerTags;
+        providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
 
         SurfaceDataRegistryEntry modifierRegistryEntry(providerRegistryEntry);
         modifierRegistryEntry.m_tags = m_configuration.m_modifierTags;
-
+        modifierRegistryEntry.m_maxPointsCreatedPerInput = 0;
 
         if (!colliderValidBeforeUpdate && !colliderValidAfterUpdate)
         {

@@ -6,11 +6,11 @@
  *
  */
 
-#include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -19,7 +19,6 @@
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
 #include <Window/MaterialEditorWindowSettings.h>
-#include <Window/MaterialInspector/MaterialInspector.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
@@ -37,11 +36,9 @@ AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
 {
-    MaterialEditorWindow::MaterialEditorWindow(QWidget* parent /* = 0 */)
-        : Base(parent)
+    MaterialEditorWindow::MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent)
+        : Base(toolId, parent)
     {
-        resize(1280, 1024);
-
         // Among other things, we need the window wrapper to save the main window size, position, and state
         auto mainWindowWrapper =
             new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
@@ -53,36 +50,24 @@ namespace MaterialEditor
 
         QApplication::setWindowIcon(QIcon(":/Icons/materialeditor.svg"));
 
-        AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
-        if (!apiName.IsEmpty())
-        {
-            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
-            setWindowTitle(title);
-        }
-        else
-        {
-            AZ_Assert(false, "Render API name not found");
-            setWindowTitle(QApplication::applicationName());
-        }
-
         setObjectName("MaterialEditorWindow");
 
         m_toolBar = new MaterialEditorToolBar(this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
-        m_materialViewport = new MaterialViewportWidget(centralWidget());
+        m_materialViewport = new MaterialViewportWidget(m_toolId, centralWidget());
         m_materialViewport->setObjectName("Viewport");
         m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         centralWidget()->layout()->addWidget(m_materialViewport);
 
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
-        m_assetBrowser->SetOpenHandler([](const AZStd::string& absolutePath) {
+        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
             if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
             {
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-                    &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
                 return;
             }
 
@@ -94,7 +79,20 @@ namespace MaterialEditor
             QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
         });
 
-        AddDockWidget("Inspector", new MaterialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
+        m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
+        m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/MaterialInspector");
+        m_materialInspector->SetIndicatorFunction(
+            [](const AzToolsFramework::InstanceDataNode* node)
+            {
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
+                if (property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue))
+                {
+                    return ":/Icons/changed_property.svg";
+                }
+                return ":/Icons/blank.png";
+            });
+
+        AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
         AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
         SetDockWidgetVisible("Viewport Settings", false);
 
@@ -112,14 +110,12 @@ namespace MaterialEditor
         }
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
-
-        SetupMetrics();
     }
 
-    MaterialEditorWindow::~MaterialEditorWindow()
+    void MaterialEditorWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
-            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
+        Base::OnDocumentOpened(documentId);
+        m_materialInspector->SetDocumentId(documentId);
     }
 
     void MaterialEditorWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
@@ -155,7 +151,7 @@ namespace MaterialEditor
 
     bool MaterialEditorWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
     {
-        CreateMaterialDialog createDialog(this);
+        CreateMaterialDialog createDialog(openPath.c_str(), this);
         createDialog.adjustSize();
 
         if (createDialog.exec() == QDialog::Accepted &&
@@ -212,38 +208,6 @@ namespace MaterialEditor
         windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());
 
         Base::closeEvent(closeEvent);
-    }
-
-    void MaterialEditorWindow::SetupMetrics()
-    {
-        m_statusBarCpuTime = new QLabel(this);
-        statusBar()->addPermanentWidget(m_statusBarCpuTime);
-        m_statusBarGpuTime = new QLabel(this);
-        statusBar()->addPermanentWidget(m_statusBarGpuTime);
-        m_statusBarFps = new QLabel(this);
-        statusBar()->addPermanentWidget(m_statusBarFps);
-
-        static constexpr int UpdateIntervalMs = 1000;
-        m_metricsTimer.setInterval(UpdateIntervalMs);
-        m_metricsTimer.start();
-        connect(&m_metricsTimer, &QTimer::timeout, this, &MaterialEditorWindow::UpdateMetrics);
-
-        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
-            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, true);
-
-        UpdateMetrics();
-    }
-
-    void MaterialEditorWindow::UpdateMetrics()
-    {
-        AtomToolsFramework::PerformanceMetrics metrics = {};
-        AtomToolsFramework::PerformanceMonitorRequestBus::BroadcastResult(
-            metrics, &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::GetMetrics);
-
-        m_statusBarCpuTime->setText(tr("CPU Time %1 ms").arg(QString::number(metrics.m_cpuFrameTimeMs, 'f', 2)));
-        m_statusBarGpuTime->setText(tr("GPU Time %1 ms").arg(QString::number(metrics.m_gpuFrameTimeMs, 'f', 2)));
-        int frameRate = metrics.m_cpuFrameTimeMs > 0 ? aznumeric_cast<int>(1000 / metrics.m_cpuFrameTimeMs) : 0;
-        m_statusBarFps->setText(tr("FPS %1").arg(QString::number(frameRate)));
     }
 } // namespace MaterialEditor
 

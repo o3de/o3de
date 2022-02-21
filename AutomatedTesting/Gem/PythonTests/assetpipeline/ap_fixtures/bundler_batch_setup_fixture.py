@@ -79,7 +79,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                                                        workspace.asset_processor_platform)
             )
             # Useful sizes
-            self.max_bundle_size_in_mib = 5
+            self.max_bundle_size_in_mib = 35
             self.number_of_bytes_in_mib = 1024 * 1024
             self.workspace = workspace
             self.platforms = platforms
@@ -271,11 +271,13 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
             for rel_path in self.get_asset_relative_paths(self.asset_info_file_result):
                 assets_from_file.append(os.path.normpath(rel_path))
 
+            expected_size = self.max_bundle_size_in_mib * self.number_of_bytes_in_mib
             # extract all files from the bundles
             for bundle in dependent_bundle_name:
                 file_info = os.stat(bundle)
                 # Verify that the size of all bundles is less than the max size specified
-                assert file_info.st_size <= (self.max_bundle_size_in_mib * self.number_of_bytes_in_mib)
+                assert file_info.st_size <= expected_size, \
+                    f"file_info.st_size {file_info.st_size} for bundle {bundle} was expected to be smaller than {expected_size}"
                 with zipfile.ZipFile(bundle) as bundle_zip:
                     bundle_zip.extractall(extract_dir)
 

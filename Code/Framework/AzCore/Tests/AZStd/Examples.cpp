@@ -443,7 +443,7 @@ namespace UnitTest
                     : m_data(data) { /* expensive operations */ }
 
             private:
-                int m_data;
+                [[maybe_unused]] int m_data;
             };
             //////////////////////////////////////////////////////////////////////////
 

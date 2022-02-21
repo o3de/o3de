@@ -44,8 +44,6 @@ ly_add_target(
             AZ::AssetBuilderSDK
             AZ::AssetBuilder.Static
             ${additional_dependencies}
-    RUNTIME_DEPENDENCIES
-        AZ::AssetBuilder
 )
 
 # Aggregates all combined AssetBuilders into a single LY_ASSET_BUILDERS #define
@@ -76,6 +74,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AssetProcessor.Static
+    RUNTIME_DEPENDENCIES
+        AZ::AssetBuilder
 )
 
 # Adds the AssetProcessor target as a C preprocessor define so that it can be used as a Settings Registry
@@ -122,6 +122,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AssetProcessorBatch.Static
+    RUNTIME_DEPENDENCIES
+        AZ::AssetBuilder
 )
 
 if(LY_DEFAULT_PROJECT_PATH)

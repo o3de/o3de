@@ -113,7 +113,6 @@ namespace Benchmark
         {
         }
 
-        // IAllocatorAllocate
         static void* Allocate(size_t byteSize, size_t)
         {
             s_numAllocatedBytes += byteSize;
@@ -157,10 +156,8 @@ namespace Benchmark
         }
 
     private:
-        static size_t s_numAllocatedBytes;
+         inline static size_t s_numAllocatedBytes = 0;
     };
-
-    size_t TestAllocatorWrapper<RawMallocAllocator>::s_numAllocatedBytes = 0;
 
     // Some allocator are not fully declared, those we simply setup from the schema
     class MallocSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::MallocSchema>
@@ -291,10 +288,10 @@ namespace Benchmark
     public:
         void Benchmark(benchmark::State& state)
         {
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 state.PauseTiming();
-                
+
                 AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
                 const size_t numberOfAllocations = perThreadAllocations.size();
                 size_t totalAllocationSize = 0;
@@ -303,7 +300,7 @@ namespace Benchmark
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     totalAllocationSize += allocationSize;
-                    
+
                     state.ResumeTiming();
                     perThreadAllocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
                     state.PauseTiming();
@@ -322,6 +319,8 @@ namespace Benchmark
                 TestAllocatorType::GarbageCollect();
 
                 state.SetItemsProcessed(numberOfAllocations);
+
+                state.ResumeTiming();
             }
         }
     };
@@ -336,7 +335,7 @@ namespace Benchmark
     public:
         void Benchmark(benchmark::State& state)
         {
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 state.PauseTiming();
                 AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
@@ -367,6 +366,8 @@ namespace Benchmark
                 state.SetItemsProcessed(numberOfAllocations);
 
                 TestAllocatorType::GarbageCollect();
+
+                state.ResumeTiming();
             }
         }
     };
@@ -423,7 +424,7 @@ namespace Benchmark
 
         void Benchmark(benchmark::State& state)
         {
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 state.PauseTiming();
 
@@ -522,6 +523,8 @@ namespace Benchmark
                 state.SetItemsProcessed(itemsProcessed);
 
                 TestAllocatorType::GarbageCollect();
+
+                state.ResumeTiming();
             }
         }
     };
@@ -581,6 +584,7 @@ namespace Benchmark
     //BM_REGISTER_ALLOCATOR(BestFitExternalMapAllocator, BestFitExternalMapAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
     //BM_REGISTER_ALLOCATOR(HeapSchemaAllocator, TestHeapSchemaAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
     //BM_REGISTER_SCHEMA(PoolSchema); // Requires special alignment requests while allocating
+    // BM_REGISTER_ALLOCATOR(OSAllocator, OSAllocator); // Requires special treatment to initialize since it will be already initialized, maybe creating a different instance?
 
 #undef BM_REGISTER_ALLOCATOR
 #undef BM_REGISTER_SIZE_FIXTURES

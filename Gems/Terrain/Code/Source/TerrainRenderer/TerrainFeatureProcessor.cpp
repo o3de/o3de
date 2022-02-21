@@ -6,12 +6,13 @@
  *
  */
 
+#include <Terrain/Passes/TerrainDetailTextureComputePass.h>
+#include <Terrain/Passes/TerrainMacroTextureComputePass.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 #include <Atom/Utils/Utils.h>
-
 #include <Atom/RHI/RHISystemInterface.h>
-
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -21,9 +22,6 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
-
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-
 #include <Atom/Feature/RenderCommon.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
@@ -55,6 +53,9 @@ namespace Terrain
                 ->Version(0)
                 ;
         }
+
+        TerrainDetailTextureComputePassData::Reflect(context);
+        TerrainMacroTextureComputePassData::Reflect(context);
     }
 
     void TerrainFeatureProcessor::Activate()
@@ -159,11 +160,10 @@ namespace Terrain
         m_dirtyRegion.AddAabb(regionToUpdate);
         m_dirtyRegion.Clamp(worldBounds);
 
-        AZ::Vector2 queryResolution2D = AZ::Vector2(1.0f);
+        float queryResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution2D, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
         // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
-        float queryResolution = queryResolution2D.GetX();
 
         m_terrainBounds = worldBounds;
         m_sampleSpacing = queryResolution;
@@ -209,7 +209,7 @@ namespace Terrain
         
         int32_t xStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetX() / m_sampleSpacing));
         int32_t yStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetY() / m_sampleSpacing));
-
+        
         AZ::Vector2 stepSize(m_sampleSpacing);
         AZ::Vector3 maxBound(
             m_dirtyRegion.GetMax().GetX() + m_sampleSpacing, m_dirtyRegion.GetMax().GetY() + m_sampleSpacing, 0.0f);

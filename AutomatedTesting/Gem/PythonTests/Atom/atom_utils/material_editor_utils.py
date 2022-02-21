@@ -114,11 +114,11 @@ def get_property(document_id, property_name):
     """
     :return: property value or invalid value if the document is not open or the property_name can't be found
     """
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
+    return azlmbr.materialeditor.MaterialDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
 
 
 def set_property(document_id, property_name, value):
-    azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
+    azlmbr.materialeditor.MaterialDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
 
 
 def is_pane_visible(pane_name):
@@ -162,11 +162,11 @@ def select_model_config(configname):
     azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectModelPresetByName", configname)
 
 
-def destroy_main_window():
+def exit():
     """
-    Closes the Material Editor window
+    Closes the Material Editor
     """
-    azlmbr.atomtools.AtomToolsMainWindowFactoryRequestBus(azlmbr.bus.Broadcast, "DestroyMainWindow")
+    azlmbr.atomtools.general.exit()
 
 
 def wait_for_condition(function, timeout_in_seconds=1.0):

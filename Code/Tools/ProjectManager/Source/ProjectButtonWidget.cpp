@@ -330,6 +330,11 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ShowWarning(bool show, const QString& warning)
     {
+        if (show)
+        {
+            // hide any overlay text, we cannot show the warning and an overlay at the same time 
+            m_projectImageLabel->GetOverlayLabel()->setVisible(false);
+        }
         m_projectImageLabel->GetWarningLabel()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
         m_projectImageLabel->GetWarningLabel()->setText(warning);
         m_projectImageLabel->GetWarningLabel()->setVisible(show);
@@ -361,6 +366,9 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->SetEnabled(false);
         m_projectImageLabel->SetOverlayText(tr("Building...\n\n"));
         m_projectMenuButton->setVisible(false);
+
+        // hide the warning label about this project needing to be built while building 
+        ShowWarning(false, "");
 
         QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
         progressBar->setVisible(true);

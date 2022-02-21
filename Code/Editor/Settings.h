@@ -378,10 +378,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SGUI_Settings gui;
 
-    bool              bApplyConfigSpecInEditor;
-
-    ESystemConfigSpec editorConfigSpec;
-
     //! Terrain Texture Export/Import filename.
     QString terrainTextureExport;
 
@@ -451,7 +447,6 @@ private:
     void LoadValue(const char* sSection, const char* sKey, float& value);
     void LoadValue(const char* sSection, const char* sKey, bool& value);
     void LoadValue(const char* sSection, const char* sKey, QString& value);
-    void LoadValue(const char* sSection, const char* sKey, ESystemConfigSpec& value);
 
     void SaveCloudSettings();
 

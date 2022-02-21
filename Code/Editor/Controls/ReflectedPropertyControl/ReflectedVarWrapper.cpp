@@ -15,7 +15,6 @@
 
 // Editor
 #include "ReflectedPropertyCtrl.h"
-#include "UIEnumsDatabase.h"
 
 namespace {
 
@@ -254,41 +253,6 @@ void ReflectedVarEnumAdapter::OnVariableChange([[maybe_unused]] IVariable* pVari
     }
 }
 
-void ReflectedVarDBEnumAdapter::SetVariable(IVariable *pVariable)
-{
-    Prop::Description desc(pVariable);
-    m_pEnumDBItem = desc.m_pEnumDBItem;
-    m_reflectedVar.reset(new CReflectedVarEnum<AZStd::string>(pVariable->GetHumanName().toUtf8().data()));
-    if (m_pEnumDBItem)
-    {
-        for (int i = 0; i < m_pEnumDBItem->strings.size(); i++)
-        {
-            QString name = m_pEnumDBItem->strings[i];
-            m_reflectedVar->addEnum( m_pEnumDBItem->NameToValue(name).toUtf8().data(), name.toUtf8().data() );
-        }
-    }
-}
-
-void ReflectedVarDBEnumAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
-{
-    const AZStd::string valueStr = pVariable->GetDisplayValue().toUtf8().data();
-    const AZStd::string value = m_pEnumDBItem ? AZStd::string(m_pEnumDBItem->ValueToName(valueStr.c_str()).toUtf8().data()) : valueStr;
-    m_reflectedVar->setEnumByName(value);
-
-}
-
-void ReflectedVarDBEnumAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
-{
-    QString iVarVal = m_reflectedVar->m_selectedEnumName.c_str();
-    if (m_pEnumDBItem)
-    {
-        iVarVal = m_pEnumDBItem->NameToValue(iVarVal);
-    }
-    pVariable->SetDisplayValue(iVarVal);
-}
-
-
-
 void ReflectedVarVector2Adapter::SetVariable(IVariable *pVariable)
 {
     m_reflectedVar.reset(new CReflectedVarVector2(pVariable->GetHumanName().toUtf8().data()));
@@ -347,50 +311,6 @@ void ReflectedVarVector4Adapter::SyncIVarToReflectedVar(IVariable *pVariable)
 {
     pVariable->Set(Vec4(m_reflectedVar->m_value.GetX(), m_reflectedVar->m_value.GetY(), m_reflectedVar->m_value.GetZ(), m_reflectedVar->m_value.GetW()));
 }
-
-
-void ReflectedVarColorAdapter::SetVariable(IVariable *pVariable)
-{
-    m_reflectedVar.reset(new CReflectedVarColor(pVariable->GetHumanName().toUtf8().data()));
-    m_reflectedVar->m_description = pVariable->GetDescription().toUtf8().data();
-}
-
-void ReflectedVarColorAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
-{
-    if (pVariable->GetType() == IVariable::VECTOR)
-    {
-        Vec3 v(0, 0, 0);
-        pVariable->Get(v);
-        const QColor col = ColorLinearToGamma(ColorF(v.x, v.y, v.z));
-        m_reflectedVar->m_color.Set(static_cast<float>(col.redF()), static_cast<float>(col.greenF()), static_cast<float>(col.blueF()));
-    }
-    else
-    {
-        int col(0);
-        pVariable->Get(col);
-        const QColor qcolor = ColorToQColor((uint32)col);
-        m_reflectedVar->m_color.Set(static_cast<float>(qcolor.redF()), static_cast<float>(qcolor.greenF()), static_cast<float>(qcolor.blueF()));
-    }
-}
-
-void ReflectedVarColorAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
-{
-    if (pVariable->GetType() == IVariable::VECTOR)
-    {
-        ColorF colLin = ColorGammaToLinear(QColor::fromRgbF(m_reflectedVar->m_color.GetX(), m_reflectedVar->m_color.GetY(), m_reflectedVar->m_color.GetZ()));
-        pVariable->Set(Vec3(colLin.r, colLin.g, colLin.b));
-    }
-    else
-    {
-        int ir = static_cast<int>(m_reflectedVar->m_color.GetX() * 255.0f);
-        int ig = static_cast<int>(m_reflectedVar->m_color.GetY() * 255.0f);
-        int ib = static_cast<int>(m_reflectedVar->m_color.GetZ() * 255.0f);
-
-        pVariable->Set(static_cast<int>(RGB(ir, ig, ib)));
-    }
-}
-
-
 
 void ReflectedVarResourceAdapter::SetVariable(IVariable *pVariable)
 {

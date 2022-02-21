@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+    
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
@@ -17,7 +17,7 @@ namespace AZ
 
     JsonSerializationResult::Result EditorScriptCanvasComponentSerializer::Load
         ( void* outputValue
-        , const Uuid& outputValueTypeId
+        , [[maybe_unused]] const Uuid& outputValueTypeId
         , const rapidjson::Value& inputValue
         , JsonDeserializerContext& context)
     {
@@ -32,9 +32,7 @@ namespace AZ
         JsonSerializationResult::ResultCode result = BaseJsonSerializer::Load(outputValue
             , azrtti_typeid<AzToolsFramework::Components::EditorComponentBase>(), inputValue, context);
 
-        // load child data one by one...
-        result.Combine(BaseJsonSerializer::Load(outputValue, outputValueTypeId, inputValue, context));
-
+        // load child data one by one
         if (result.GetProcessing() != JSR::Processing::Halted)
         {
             result.Combine(ContinueLoadingFromJsonObjectField

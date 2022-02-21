@@ -482,10 +482,10 @@ QTabBar::tab:focus {
 
 #labelButtonOverlay {
     background-color: rgba(50,50,50,200);
-    min-width:210px;
-    max-width:210px;;
-    min-height:278px;
-    max-height:278px;
+    min-width:208px;
+    max-width:208px;;
+    min-height:270px;
+    max-height:270px;
 }
 
 QProgressBar {
@@ -499,6 +499,10 @@ QProgressBar::chunk {
 }
 
 /************** Gem Catalog **************/
+
+#GemCatalogScreen {
+    background-color: #333333;
+}
 
 #GemCatalogTitle {
     font-size: 18px;
@@ -546,9 +550,8 @@ QProgressBar::chunk {
     min-height:24px;
 }
 
-#GemCatalogHeaderLabel {
-    font-size: 12px;
-    color: #FFFFFF;
+#adjustableHeaderWidget QHeaderView::section { 
+    background-color: transparent;
 }
 
 #GemCatalogHeaderShowCountLabel {
@@ -730,15 +733,6 @@ QProgressBar::chunk {
 #gemRepoAddButton:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #555555, stop: 1.0 #777777);
-}
-
-#gemRepoHeaderTable {
-    background-color: transparent;
-    max-height: 30px;
-}
-
-#gemRepoListHeader {
-    background-color: transparent;
 }
 
 #gemRepoInspector {

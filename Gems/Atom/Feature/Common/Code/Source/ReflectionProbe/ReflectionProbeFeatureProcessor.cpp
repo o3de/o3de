@@ -6,12 +6,13 @@
  *
  */
 
+#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -162,6 +163,18 @@ namespace AZ
                 AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
                 reflectionProbe->Simulate(probeIndex);
+            }
+        }
+
+        void ReflectionProbeFeatureProcessor::OnRenderEnd()
+        {
+            // call OnRenderEnd on all reflection probes
+            for (uint32_t probeIndex = 0; probeIndex < m_reflectionProbes.size(); ++probeIndex)
+            {
+                AZStd::shared_ptr<ReflectionProbe>& reflectionProbe = m_reflectionProbes[probeIndex];
+                AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
+
+                reflectionProbe->OnRenderEnd();
             }
         }
 

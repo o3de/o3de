@@ -33,7 +33,9 @@ GLOBAL_ILLUMINATION_QUALITY = {
 }
 
 # Level list used in Editor Level Load Test
-LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest", "Sponza"]
+# WARNING: "Sponza" level is sandboxed due to an intermittent failure.
+LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
+
 
 class AtomComponentProperties:
     """
@@ -87,12 +89,18 @@ class AtomComponentProperties:
     def decal(property: str = 'name') -> str:
         """
         Decal component properties.
+          - 'Attenuation Angle' controls how much the angle between geometry and decal impacts opacity. 0-1 Radians
+          - 'Opacity' where one is opaque and zero is transparent
+          - 'Sort Key' 0-255 stacking z-sort like key to define which decal is on top of another
           - 'Material' the material Asset.id of the decal.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Decal',
+            'Attenuation Angle': 'Controller|Configuration|Attenuation Angle',
+            'Opacity': 'Controller|Configuration|Opacity',
+            'Sort Key': 'Controller|Configuration|Sort Key',
             'Material': 'Controller|Configuration|Material',
         }
         return properties[property]
@@ -242,12 +250,14 @@ class AtomComponentProperties:
     def grid(property: str = 'name') -> str:
         """
         Grid component properties.
+          - 'Grid Size': The size of the grid, default value is 32
           - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
+            'Grid Size': 'Controller|Configuration|Grid Size',
             'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
         }
         return properties[property]
@@ -378,11 +388,13 @@ class AtomComponentProperties:
     def physical_sky(property: str = 'name') -> str:
         """
         Physical Sky component properties.
+        - 'Sky Intensity' float that determines sky intensity value, default value is 4.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Physical Sky',
+            'Sky Intensity': 'Controller|Configuration|Sky Intensity',
         }
         return properties[property]
 
