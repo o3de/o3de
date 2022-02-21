@@ -109,6 +109,24 @@ namespace AzToolsFramework
                     return true;
                 }
 
+                // Some assets may come in from the JSON serializer with no AssetID, but have an asset hint.
+                // This attempts to fix up the assets using the assetHint field
+                static void FixUpInvalidAssets(AZ::Data::Asset<AZ::Data::AssetData>& asset)
+                {
+                    if (!asset.GetId().IsValid() && !asset.GetHint().empty())
+                    {
+                        AZ::Data::AssetId assetId;
+                        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                            assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, asset.GetHint().c_str(),
+                            AZ::Data::s_invalidAssetType, false);
+
+                        if (assetId.IsValid())
+                        {
+                            asset.Create(assetId, false);
+                        }
+                    }
+                }
+
                 static bool LoadInstanceHelper(
                     Instance& instance,
                     const PrefabDom& prefabDom,
@@ -221,24 +239,6 @@ namespace AzToolsFramework
                     prefabDom, prefabDom.GetAllocator(), entity, settings);
 
                 return result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success;
-            }
-
-            // some assets may come in from the JSON serializer with no AssetID, but have an asset hint
-            // this attempts to fix up the assets using the assetHint field
-            void FixUpInvalidAssets(AZ::Data::Asset<AZ::Data::AssetData>& asset)
-            {
-                if (!asset.GetId().IsValid() && !asset.GetHint().empty())
-                {
-                    AZ::Data::AssetId assetId;
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                        assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, asset.GetHint().c_str(),
-                        AZ::Data::s_invalidAssetType, false);
-
-                    if (assetId.IsValid())
-                    {
-                        asset.Create(assetId, false);
-                    }
-                }
             }
 
             bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, LoadFlags flags)
