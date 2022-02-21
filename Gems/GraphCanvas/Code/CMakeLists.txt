@@ -91,9 +91,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             graphcanvas_tests_files.cmake
-        COMPILE_DEFINITIONS
-            PRIVATE
-                GRAPHCANVAS_TESTS
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
@@ -104,7 +101,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::GraphCanvas
                 Gem::GraphCanvasWidgets
         RUNTIME_DEPENDENCIES
-                Gem::GraphCanvas
                 Gem::GraphCanvasWidgets
     )
     ly_add_googletest(
