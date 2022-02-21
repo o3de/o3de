@@ -200,10 +200,7 @@ bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade
 }
 
 float DirectionalLightShadow::GetVisibilityFromLightNoFilter(float2 screenUv)
-{
-    Texture2D<float> fullscreenShadow = PassSrg::m_fullscreenShadow;
-    return fullscreenShadow.Load(float3(screenUv, 0));
-    
+{  
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
     {
@@ -383,10 +380,6 @@ float DirectionalLightShadow::GetVisibility(
     float2 screenUv,
     out DirectionalLightShadow::DebugInfo debugInfo)
 {
-    Texture2D<float> fullscreenShadow = PassSrg::m_fullscreenShadow;
-    return fullscreenShadow.Load(float3(screenUv, 0));
-
-
     DirectionalLightShadow shadow;
     shadow.m_lightIndex = lightIndex;
     shadow.m_shadowCoords = shadowCoords;
@@ -432,8 +425,22 @@ float DirectionalLightShadow::GetVisibility(
             visibility = shadow.GetVisibilityFromLightEsmPcf();
             break;
     }
-
+    
     debugInfo = shadow.m_debugInfo;
+
+    uint fullScreenShadowWidth, fullScreenShadowHeight, fullScreenShadowNumSamples;
+    PassSrg::m_fullscreenShadow.GetDimensions(fullScreenShadowWidth, fullScreenShadowHeight, fullScreenShadowNumSamples);
+    if (fullScreenShadowNumSamples == 0)
+    {
+        return 1;
+    }
+    
+    visibility = 1;
+    for(int i = 0 ; i < fullScreenShadowNumSamples; ++i)
+    {     
+        visibility = min(visibility, PassSrg::m_fullscreenShadow.Load(screenUv.xy, i));
+    }
+
     return visibility;
 }
 

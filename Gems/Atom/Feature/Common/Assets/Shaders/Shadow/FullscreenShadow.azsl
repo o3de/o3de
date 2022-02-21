@@ -66,7 +66,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Constants m_constantData;
     Texture2DArray<float> m_directionalLightShadowmap;   
     Texture2DArray<float> m_directionalLightExponentialShadowmap;    
-    Texture2D<float> m_depth;
+    Texture2DMS<float> m_depth;
 }
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
@@ -216,7 +216,7 @@ class DirectionalLightShadow
         param.invShadowMapSize = rcp(size); 
         param.comparisonValue = shadowCoord.z;
         param.samplerState = SceneSrg::m_hwPcfSampler;
-        param.receiverPlaneDepthBias = PassSrg::m_constantData.m_blendBetweenCascadesEnable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
+        param.receiverPlaneDepthBias = PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
         
         [branch]     
         if (filteringSampleCount <= 4)       
@@ -375,37 +375,48 @@ class DirectionalLightShadow
 
 float3 ComputeWorldNormal(VSOutput IN)
 {
-    const float2 uv0 = IN.m_texCoord; // center
-    const float2 uv1 = IN.m_texCoord + float2(1, 0) / PassSrg::m_constantData.m_screenSize; // right 
-    const float2 uv2 = IN.m_texCoord + float2(0, 1) / PassSrg::m_constantData.m_screenSize; // top
+    const float offset = 1;
+    const float2 invScreenSize = rcp(PassSrg::m_constantData.m_screenSize);
 
-    const float depth0 = PassSrg::m_depth.Sample(PassSrg::PointSampler, uv0);
-    const float depth1 = PassSrg::m_depth.Sample(PassSrg::PointSampler, uv1);
-    const float depth2 = PassSrg::m_depth.Sample(PassSrg::PointSampler, uv2);
+    const int2 texCoord = IN.m_position;
+
+    const float2 uv0 = IN.m_texCoord; // center
+    const float2 uv1 = IN.m_texCoord + float2(offset, 0) * invScreenSize; // right 
+    const float2 uv2 = IN.m_texCoord + float2(0, offset) * invScreenSize; // top
+
+
+    const float depth0 = PassSrg::m_depth.Load(texCoord, 0);
+    const float depth1 = PassSrg::m_depth.Load(texCoord + int2(1,0), 0);
+    const float depth2 = PassSrg::m_depth.Load(texCoord + int2(0,1), 0);
+
+
 
     const float3 P0 = WorldPositionFromDepthBuffer(uv0, depth0).xyz;
     const float3 P1 = WorldPositionFromDepthBuffer(uv1, depth1).xyz;
     const float3 P2 = WorldPositionFromDepthBuffer(uv2, depth2).xyz;
 
-    return normalize(cross(P2 - P0, P1 - P0));        
+
+    return normalize(cross(P2 - P0, P1 - P0));   
+
+
 }
 
-PSOutput MainPS(VSOutput IN)
+PSOutput MainPS(VSOutput IN, uint sampleIndex : SV_SampleIndex)
 {
-    float3 worldNormal = ComputeWorldNormal(IN);    
-    worldNormal = float3(0,0,1);
+    const float3 worldNormal = ComputeWorldNormal(IN);    
 
     DirectionalLightShadow directionalLightShadow;
     directionalLightShadow.SetLightIndex(PassSrg::m_constantData.m_lightIndex);
     directionalLightShadow.SetWorldNormal(worldNormal);
 
-    const float zDepth = PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord);
-    const float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_constantData.m_screenSize, zDepth, IN.m_position.xy).xyz;      
+    const float zDepth = PassSrg::m_depth.Load(IN.m_position, sampleIndex); 
     
+    const float3 surfacePosWS = WorldPositionFromDepthBuffer(IN.m_texCoord, zDepth).xyz;     
+
     directionalLightShadow.ComputeShadowCoords(surfacePosWS, worldNormal);
    
     PSOutput OUT;   
-    OUT.m_color.rgb = directionalLightShadow.GetVisibility();
+    OUT.m_color = directionalLightShadow.GetVisibility();
     return OUT; 
 }
 

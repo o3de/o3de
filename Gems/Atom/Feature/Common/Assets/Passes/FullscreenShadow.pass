@@ -48,9 +48,12 @@
                         } 
                     },
                     "ImageDescriptor": {
-                        "Format": "R16G16B16A16_FLOAT", 
-                        "SharedQueueMask": "Graphics"
-                    }             
+                        "Format": "R16_FLOAT", 
+                        "SharedQueueMask": "Graphics"                      
+                    },
+                    "MultisampleSource": {
+                        "Pass": "Pipeline"
+                    }                                    
                 }
             ],
             "Connections": [
