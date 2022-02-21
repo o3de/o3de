@@ -190,7 +190,7 @@ namespace UnitTest
             // filtered out.
             SurfaceData::SurfacePointList pointList;
             pointList.StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&input, 1));
-            SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
+            pointList.ModifySurfaceWeights(modifierHandle);
             pointList.EndListConstruction();
             ASSERT_EQ(pointList.GetSize(), 1);
             pointList.EnumeratePoints([this, expectedOutput](
