@@ -55,8 +55,8 @@ this will report something like the following
         'C:\\Program Files\\Autodesk\\Maya2020\\Python',
         'C:\\Program Files\\Autodesk\\Maya2020\\Python\\lib\\site-packages',
     ]
-    USER_BASE: 'C:\\Users\\gallowj\\AppData\\Roaming\\Python' (exists)
-    USER_SITE: 'C:\\Users\\gallowj\\AppData\\Roaming\\Python\\Python27\\site-packages' (doesn't exist)
+    USER_BASE: 'C:\\Users\\< you >\\AppData\\Roaming\\Python' (exists)
+    USER_SITE: 'C:\\Users\\< you >\\AppData\\Roaming\\Python\\Python27\\site-packages' (doesn't exist)
     ENABLE_USER_SITE: True
 
 This is the location we are looking for:
