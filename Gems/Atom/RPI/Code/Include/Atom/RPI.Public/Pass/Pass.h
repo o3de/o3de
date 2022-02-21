@@ -405,7 +405,7 @@ namespace AZ
 
             // The PassTemplate used to create this pass
             // Null if this pass was not created by a PassTemplate
-            AZStd::shared_ptr<PassTemplate> m_template = nullptr;
+            AZStd::shared_ptr<const PassTemplate> m_template = nullptr;
 
             // The PassRequest used to create this pass
             // Only valid if m_createdByPassRequest flag is set
