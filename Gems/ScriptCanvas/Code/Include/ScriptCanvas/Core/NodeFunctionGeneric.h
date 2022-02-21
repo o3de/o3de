@@ -80,10 +80,14 @@ namespace ScriptCanvas
         using ResultType = FunctionTraits::result_type;\
         static const size_t s_numArgs = FunctionTraits::arity;\
         static const size_t s_numNames = SCRIPT_CANVAS_FUNCTION_VAR_ARGS(__VA_ARGS__);\
-        /*static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;*/\
+        static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;\
         \
         static AZStd::string GetArgName(size_t i)\
         {\
+            if (s_numArgs < 2)\
+            {\
+                return GetName(i);\
+            }\
             AZStd::string_view argName = GetName(i);\
             if (!argName.empty())\
             {\
@@ -104,6 +108,10 @@ namespace ScriptCanvas
             }\
             else\
             {\
+                if (s_numResults < 2)\
+                {\
+                    return "Result";\
+                }\
                 return AZStd::string::format("Result [%zu]", i);\
             }\
         }\
