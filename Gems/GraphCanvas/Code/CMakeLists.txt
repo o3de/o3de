@@ -100,8 +100,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::GraphCanvas
                 Gem::GraphCanvasWidgets
-        RUNTIME_DEPENDENCIES
-                Gem::GraphCanvasWidgets
     )
     ly_add_googletest(
         NAME Gem::GraphCanvas.Tests
