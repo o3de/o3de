@@ -5,13 +5,13 @@
         <property name="minimumSize">
             <size>
                 <width>1000</width>
-                <height>615</height>
+                <height>600</height>
             </size>
         </property>
         <property name="maximumSize">
             <size>
                 <width>1000</width>
-                <height>615</height>
+                <height>600</height>
             </size>
         </property>
         <property name="windowTitle">
@@ -24,7 +24,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>535</width>
-                    <height>585</height>
+                    <height>600</height>
                 </rect>
             </property>
             <layout class="QVBoxLayout" name="mainLayout"/>
@@ -36,7 +36,7 @@
                     <x>535</x>
                     <y>0</y>
                     <width>465</width>
-                    <height>585</height>
+                    <height>565</height>
                 </rect>
             </property>
             <layout class="QVBoxLayout" name="settingsLayout"/>
@@ -45,24 +45,21 @@
         <widget class="QWidget" name="buttonArea">
             <property name="geometry">
                 <rect>
-                    <x>0</x>
-                    <y>585</y>
-                    <width>1000</width>
-                    <height>30</height>
+                    <x>535</x>
+                    <y>565</y>
+                    <width>465</width>
+                    <height>35</height>
                 </rect>
             </property>
 <!-- Help Button -->
             <widget class="QToolButton" name="helpBtn">
                 <property name="geometry">
                     <rect>
-                        <x>8</x>
+                        <x>293</x>
                         <y>0</y>
                         <width>24</width>
                         <height>24</height>
                     </rect>
-                </property>
-                <property name="text">
-                    <string/>
                 </property>
                 <property name="icon">
                     <iconset>
@@ -74,7 +71,7 @@
             <widget class="QPushButton" name="saveBtn">
                 <property name="geometry">
                     <rect>
-                        <x>860</x>
+                        <x>325</x>
                         <y>0</y>
                         <width>60</width>
                         <height>24</height>
@@ -88,7 +85,7 @@
             <widget class="QPushButton" name="cancelBtn">
                 <property name="geometry">
                     <rect>
-                        <x>928</x>
+                        <x>393</x>
                         <y>0</y>
                         <width>60</width>
                         <height>24</height>

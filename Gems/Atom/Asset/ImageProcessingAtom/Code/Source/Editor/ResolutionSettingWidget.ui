@@ -12,13 +12,7 @@
       </property>
       <layout class="QVBoxLayout" name="listLayout">
         <item>
-          <layout class="QGridLayout" name="gridLayout" columnminimumwidth="108,133,133,91">
-            <property name="horizontalSpacing">
-                <number>0</number>
-            </property>
-            <property name="verticalSpacing">
-                <number>0</number>
-            </property>
+          <layout class="QGridLayout" name="gridLayout" columnminimumwidth="120,137,137,91">
             <property name="leftMargin">
                 <number>0</number>
             </property>
@@ -38,21 +32,21 @@
             <item row="0" column="1">
               <widget class="QLabel" name="downResLabel">
                 <property name="text">
-                  <string>Resolution Limit</string>
+                  <string>Res Limit</string>
                 </property>
               </widget>
             </item>
             <item row="0" column="2">
               <widget class="QLabel" name="resolutionLabel">
                 <property name="text">
-                  <string>Max Resolution</string>
+                  <string>Max Res</string>
                 </property>
               </widget>
             </item>
             <item row="0" column="3">
               <widget class="QLabel" name="formatLabel">
                 <property name="text">
-                  <string>Pixel Format</string>
+                  <string>Format</string>
                 </property>
               </widget>
             </item>
