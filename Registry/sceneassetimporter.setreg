@@ -8,7 +8,9 @@
 				"SupportedFileTypeExtensions":
 				[
 					".fbx",
-					".stl"
+					".stl",
+					".gltf",
+					".glb"
 				]
 			},
 			"MaterialConverter": 

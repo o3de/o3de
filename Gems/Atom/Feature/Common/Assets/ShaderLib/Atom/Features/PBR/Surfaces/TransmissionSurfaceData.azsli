@@ -14,7 +14,8 @@ class TransmissionSurfaceData
 {
     float3 tint;
     float thickness;                 //!< pre baked local thickness, used for transmission
-    float4 transmissionParams;       //!< parameters: thick mode->(attenuation coefficient, power, distortion, scale), thin mode:  (float3 scatter distance, scale)
+    float4 transmissionParams;       //!< parameters: thick mode->(attenuation coefficient, power, distortion, scale), thin mode:  (shrinkFactor, transmissionNdLBias, distanceAttenuation, scale)
+    float3 scatterDistance;          //!< scatter distance (same as in MaterialSrg) > 
 
     void InitializeToZero();
 };
@@ -24,6 +25,7 @@ void TransmissionSurfaceData::InitializeToZero()
     tint = float3(0.0f, 0.0f, 0.0f);
     thickness = 0.0f;
     transmissionParams = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    scatterDistance = float3(0.0f, 0.0f, 0.0f);
 }
 
 #endif

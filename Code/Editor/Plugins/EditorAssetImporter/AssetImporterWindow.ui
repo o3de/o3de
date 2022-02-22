@@ -25,7 +25,8 @@
           <string>&amp;Edit</string>
         </property>
         <addaction name="m_actionResetSettings"/>
-      </widget>
+		<addaction name="m_actionAssignScript"/>
+	  </widget>
       <widget class="QMenu" name="helpMenu">
         <property name="title">
           <string>&amp;Help</string>
@@ -49,7 +50,7 @@
           <enum>QLayout::SetMaximumSize</enum>
         </property>
 
-        <!-- When an fbx is loaded -->
+        <!-- When a source scene file (i.e. FBX) is loaded -->
         <item>
           <widget class="QWidget" name="m_mainArea">
             <property name="sizePolicy">
@@ -175,7 +176,16 @@
         <string>Reset the settings for this file (note: you will have to update to commit)</string>
       </property>
     </action>
-  
+
+    <action name="m_actionAssignScript">
+      <property name="text">
+        <string>Assign Build Script...</string>
+      </property>
+      <property name="toolTip">
+        <string>Assign a Python build script that will override the scene's build rules</string>
+      </property>
+    </action>
+	  
     <action name="actionOpenDocumentation">
       <property name="text">
         <string>Documentation</string>
@@ -203,6 +213,12 @@
       <signal>triggered()</signal>
       <receiver>AssetImporterWindow</receiver>
       <slot>OnSceneResetRequested()</slot>
+    </connection>
+    <connection>
+      <sender>m_actionAssignScript</sender>
+      <signal>triggered()</signal>
+      <receiver>AssetImporterWindow</receiver>
+      <slot>OnAssignScript()</slot>
     </connection>
     <connection>
       <sender>m_actionInspect</sender>

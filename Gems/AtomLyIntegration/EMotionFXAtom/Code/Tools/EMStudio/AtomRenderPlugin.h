@@ -42,6 +42,8 @@ namespace EMStudio
         AtomRenderPlugin();
         ~AtomRenderPlugin();
 
+        void Reflect(AZ::ReflectContext* context) override;
+
         // Plugin information
         const char* GetName() const override;
         uint32 GetClassID() const override;
@@ -60,8 +62,9 @@ namespace EMStudio
         void LoadRenderOptions();
         void SaveRenderOptions();
         RenderOptions* GetRenderOptions();
+        PluginOptions* GetOptions() override;
 
-        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
+        void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
 
     private:
@@ -70,8 +73,6 @@ namespace EMStudio
 
         void SetupManipulators();
         void OnManipulatorMoved(const AZ::Vector3& position);
-        void OnManipulatorRotated(const AZ::Quaternion& rotation);
-        void OnManipulatorScaled(const AZ::Vector3& scale, const AZ::Vector3& scaleOffset);
 
         QWidget* m_innerWidget = nullptr;
         AnimViewportWidget* m_animViewportWidget = nullptr;
@@ -82,6 +83,7 @@ namespace EMStudio
         AzToolsFramework::RotationManipulators m_rotateManipulators;
         AzToolsFramework::ScaleManipulators m_scaleManipulators;
         AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
+        AZ::Transform m_mouseDownStartTransform;
 
         MCORE_DEFINECOMMANDCALLBACK(ImportActorCallback);
         MCORE_DEFINECOMMANDCALLBACK(RemoveActorCallback);

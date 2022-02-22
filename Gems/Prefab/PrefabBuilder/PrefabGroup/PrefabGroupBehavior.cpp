@@ -153,7 +153,7 @@ namespace AZ::SceneAPI::Behaviors
             // all mesh data nodes left in the meshIndexContainer do not have a matching TransformData node
             // since the nodes have an identity transform, so map the MeshData index with an Invalid mesh index to
             // indicate the transform should not be set to a default value
-            for( const auto meshIndex : meshIndexContainer)
+            for( const auto& meshIndex : meshIndexContainer)
             {
                 MeshTransformPair pair{ meshIndex, Containers::SceneGraph::NodeIndex{} };
                 meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(meshIndex), AZStd::move(pair) });
@@ -553,6 +553,28 @@ namespace AZ::SceneAPI::Behaviors
             context.GetOutputDirectory(),
             AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
 
+        bool result = WriteOutProductAssetFile(filePath, context, prefabGroup, doc, false);
+
+        if (context.GetDebug())
+        {
+            AZStd::string debugFilePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
+                prefabGroup->GetName().c_str(),
+                context.GetOutputDirectory(),
+                AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
+            debugFilePath.append(".json");
+            WriteOutProductAssetFile(debugFilePath, context, prefabGroup, doc, true);
+        }
+
+        return result;
+    }
+
+    bool PrefabGroupBehavior::WriteOutProductAssetFile(
+        const AZStd::string& filePath,
+        Events::PreExportEventContext& context,
+        const SceneData::PrefabGroup* prefabGroup,
+        const rapidjson::Document& doc,
+        bool debug) const
+    {
         AZ::IO::FileIOStream fileStream(filePath.c_str(), AZ::IO::OpenMode::ModeWrite);
         if (fileStream.IsOpen() == false)
         {
@@ -561,9 +583,23 @@ namespace AZ::SceneAPI::Behaviors
         }
 
         // write to a UTF-8 string buffer
+        Data::AssetType assetType = azrtti_typeid<Prefab::ProceduralPrefabAsset>();
+        AZStd::string productPath {prefabGroup->GetName()};
         rapidjson::StringBuffer sb;
-        rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
-        if (doc.Accept(writer) == false)
+        bool writerResult = false;
+        if (debug)
+        {
+            rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
+            writerResult = doc.Accept(writer);
+            productPath.append(".json");
+            assetType = {};
+        }
+        else
+        {
+            rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
+            writerResult = doc.Accept(writer);
+        }
+        if (writerResult == false)
         {
             AZ_Error("prefab", false, "PrefabGroup(%s) Could not buffer JSON", prefabGroup->GetName().c_str());
             return false;
@@ -572,11 +608,11 @@ namespace AZ::SceneAPI::Behaviors
         const auto bytesWritten = fileStream.Write(sb.GetSize(), sb.GetString());
         if (bytesWritten > 1)
         {
-            AZ::u32 subId = AZ::Crc32(prefabGroup->GetName().c_str());
+            AZ::u32 subId = AZ::Crc32(productPath.c_str());
             context.GetProductList().AddProduct(
                 filePath,
                 context.GetScene().GetSourceGuid(),
-                azrtti_typeid<Prefab::ProceduralPrefabAsset>(),
+                assetType,
                 {},
                 AZStd::make_optional(subId));
 
