@@ -128,6 +128,11 @@ AzQtComponents--DockBarButton.maximize
     titlebar-maximize-icon: url(:/stylesheet/img/UI20/titlebar-maximize.svg);
 }
 
+AzQtComponents--DockBarButton.restore
+{
+    titlebar-maximize-icon: url(:/stylesheet/img/UI20/titlebar-restore.svg);
+}
+
 AzQtComponents--TabWidget QToolButton#minimizeButton
 {
     qproperty-icon: url(:/stylesheet/img/UI20/titlebar-minimize.svg);
