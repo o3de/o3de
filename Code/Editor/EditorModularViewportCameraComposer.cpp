@@ -324,6 +324,12 @@ namespace SandboxEditor
 
                     const float distance = pickedEntity ? closestDistance : AzToolsFramework::GetDefaultEntityPlacementDistance();
                     m_pivot = origin + direction * distance;
+
+                    // ensure we immediately set the camera pivot to ensure no interpolation of current to target occurs
+                    AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                        m_viewportId,
+                        &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotDetachedImmediate,
+                        m_pivot.value());
                 }
             });
 
