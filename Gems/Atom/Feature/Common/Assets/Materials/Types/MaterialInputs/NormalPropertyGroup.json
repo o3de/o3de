@@ -1,0 +1,82 @@
+{
+    "name": "normal",
+    "displayName": "Normal",
+    "description": "Properties related to configuring surface normal.",
+    "properties": [
+        {
+            "name": "textureMap",
+            "displayName": "Texture",
+            "description": "Texture for defining surface normal direction.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_normalMap"
+            }
+        },
+        {
+            "name": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to use the texture, or just rely on vertex normals.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "textureMapUv",
+            "displayName": "UV",
+            "description": "Normal map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_normalMapUvIndex"
+            }
+        },
+        {
+            "name": "flipX",
+            "displayName": "Flip X Channel",
+            "description": "Flip tangent direction for this normal map.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_flipNormalX"
+            }
+        },
+        {
+            "name": "flipY",
+            "displayName": "Flip Y Channel",
+            "description": "Flip bitangent direction for this normal map.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_flipNormalY"
+            }
+        },
+        {
+            "name": "factor",
+            "displayName": "Factor",
+            "description": "Strength factor for scaling the values",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "softMax": 2.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_normalFactor"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "textureMap",
+                "useTextureProperty": "useTexture",
+                "dependentProperties": ["textureMapUv", "factor", "flipX", "flipY"],
+                "shaderOption": "o_normal_useTexture"    
+            }
+        }
+    ]
+}
