@@ -10,10 +10,40 @@
                 <height>300</height>
             </rect>
         </property>
-        <widget class="QCheckBox" name="enableCheckBox">
-            <property name="text">
-                <string>Generate Mipmaps</string>
+        <widget class="QFrame" name="textureInfo">
+            <property name="geometry">
+                <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>465</width>
+                    <height>56</height>
+                </rect>
             </property>
+            <layout class="QGridLayout" name="gridLayout" columnminimumwidth="120,345">
+                <item row="0" column="0">
+                    <widget class="QLabel" name="genMpmaps">
+                        <property name="text">
+                            <string>Create Mipmaps</string>
+                        </property>
+                    </widget>
+                </item>
+                <item row="0" column="1">
+                    <widget class="QCheckBox" name="enableCheckBox"/>
+                </item>
+                <item row="1" column="0">
+                    <spacer name="propertySpacer">
+                        <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                            <size>
+                                <width>4</width>
+                                <height>24</height>
+                            </size>
+                        </property>
+                    </spacer>
+                </item>-->
+            </layout>
         </widget>
         <widget class="AzToolsFramework::ReflectedPropertyEditor" name="propertyEditor">
             <property name="geometry">

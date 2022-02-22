@@ -24,13 +24,13 @@ AZ_POP_DISABLE_WARNING
 // warning C4244: 'argument': conversion from 'UINT64' to 'AZ::u32',
 AZ_PUSH_DISABLE_WARNING(4244 4800 4251, "-Wunknown-warning-option")
 #include <QBoxLayout>
-#include <QUrl>
-#include <QDesktopServices>
 #include <QKeyEvent>
 #include <QPushButton>
 #include <QToolButton>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QUrl>
+#include <QDesktopServices>
 AZ_POP_DISABLE_WARNING
 
 namespace ImageProcessingAtomEditor
@@ -74,8 +74,8 @@ namespace ImageProcessingAtomEditor
         m_mipmapSettingWidget.reset(aznew MipmapSettingWidget(m_textureSetting, this));
         m_ui->settingsLayout->layout()->addWidget(m_mipmapSettingWidget.data());
 
-        QObject::connect(m_ui->saveBtn, &QPushButton::clicked, this, &TexturePropertyEditor::OnSave);
         QObject::connect(m_ui->helpBtn, &QToolButton::clicked, this, &TexturePropertyEditor::OnHelp);
+        QObject::connect(m_ui->saveBtn, &QPushButton::clicked, this, &TexturePropertyEditor::OnSave);
         QObject::connect(m_ui->cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 
         EditorInternalNotificationBus::Handler::BusConnect();
@@ -108,6 +108,12 @@ namespace ImageProcessingAtomEditor
     void TexturePropertyEditor::OnEditorSettingsChanged([[maybe_unused]] bool needRefresh, const AZStd::string& /*platform*/)
     {
         m_textureSetting.m_modified = true;
+    }
+
+    void TexturePropertyEditor::OnHelp()
+    {
+        QString webLink = tr("https://o3de.org/docs/user-guide/assets/texture-settings/");
+        QDesktopServices::openUrl(QUrl(webLink));
     }
 
     void TexturePropertyEditor::OnSave()
@@ -168,13 +174,6 @@ namespace ImageProcessingAtomEditor
             AZ_Error("Texture Editor", false, "Cannot save texture settings to %s!", outputPath.data());
         }
     }
-    
-    void TexturePropertyEditor::OnHelp()
-    {
-        QString webLink = tr("https://o3de.org/docs/user-guide/assets/texture-settings/");
-        QDesktopServices::openUrl(QUrl(webLink));
-    }
-
 
     bool TexturePropertyEditor::event(QEvent* event)
     {

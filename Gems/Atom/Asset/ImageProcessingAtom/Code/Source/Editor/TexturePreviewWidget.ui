@@ -20,7 +20,7 @@
                     <x>10</x>
                     <y>10</y>
                     <width>70</width>
-                    <height>20</height>
+                    <height>24</height>
                 </rect>
             </property>
         </widget>
@@ -30,12 +30,15 @@
                 <rect>
                     <x>90</x>
                     <y>10</y>
-                    <width>100</width>
-                    <height>20</height>
+                    <width>130</width>
+                    <height>24</height>
                 </rect>
             </property>
             <property name="text">
                 <string>Tiled Preview</string>
+            </property>
+            <property name="layoutDirection">
+                <enum>Qt::RightToLeft</enum>
             </property>
         </widget>
 <!-- Refresh Button -->
@@ -79,82 +82,99 @@
                 <bool>false</bool>
             </property>
         </widget>
-<!-- Resolution -->
-        <widget class="QLabel" name="imageSizeLabel">
-            <property name="text">
-                <string>Resolution: 2048 x 2048</string>
-            </property>
+<!-- Texture Info -->
+        <widget class="QFrame" name="textureInfo">
             <property name="geometry">
                 <rect>
-                    <x>8</x>
+                    <x>0</x>
                     <y>560</y>
-                    <width>220</width>
-                    <height>24</height>
+                    <width>535</width>
+                    <height>35</height>
                 </rect>
             </property>
-        </widget>
-<!-- Size -->>
-        <widget class="QLabel" name="fileSizeLabel">
-            <property name="text">
-                <string>Size: 4,096 KB</string>
-            </property>
-            <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>302</x>
-                    <y>560</y>
-                    <width>220</width>
-                    <height>24</height>
-                </rect>
-            </property>
-        </widget>
-<!-- Previous Mipmap Button -->
-        <widget class="QToolButton" name="prevMipBtn">
-            <property name="geometry">
-                <rect>
-                    <x>182</x>
-                    <y>560</y>
-                    <width>24</width>
-                    <height>24</height>
-                </rect>
-            </property>
-            <property name="icon">
-                <iconset>
-                    <normalon>:/arrow_left-default.svg</normalon>
-                </iconset>
-            </property>
-        </widget>
-<!-- Current Mipmap Level -->
-        <widget class="QLabel" name="mipLevelLabel">
-            <property name="text">
-                <string>Mipmap Level: 0</string>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>218</x>
-                    <y>560</y>
-                    <width>96</width>
-                    <height>24</height>
-                </rect>
-            </property>
-        </widget>
-<!-- Next Mipmap Button -->
-        <widget class="QToolButton" name="nextMipBtn">
-            <property name="geometry">
-                <rect>
-                    <x>326</x>
-                    <y>560</y>
-                    <width>24</width>
-                    <height>24</height>
-                </rect>
-            </property>
-            <property name="icon">
-                <iconset>
-                    <normalon>:/arrow_right-default.svg</normalon>
-                </iconset>
-            </property>
+<!-- Resolution -->            
+            <widget class="QLabel" name="imageSizeLabel">
+                <property name="text">
+                    <string>Resolution: 2048 x 2048</string>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>0</y>
+                        <width>170</width>
+                        <height>34</height>
+                    </rect>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignVCenter</set>
+                </property>
+            </widget>
+<!-- Previous Mip Button -->
+            <widget class="QToolButton" name="prevMipBtn">
+                <property name="icon">
+                    <iconset>
+                        <normalon>:/arrow_left-default.svg</normalon>
+                    </iconset>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>180</x>
+                        <y>0</y>
+                        <width>36</width>
+                        <height>34</height>
+                    </rect>
+                </property>
+            </widget>
+<!-- Mip Level -->
+            <widget class="QLabel" name="mipLevelLabel">
+                <property name="text">
+                    <string>Mipmap Level: 0</string>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>216</x>
+                        <y>0</y>
+                        <width>116</width>
+                        <height>34</height>
+                    </rect>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+<!-- Next Mip Button -->
+            <widget class="QToolButton" name="nextMipBtn">
+                <property name="icon">
+                    <iconset>
+                        <normalon>:/arrow_right-default.svg</normalon>
+                    </iconset>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>332</x>
+                        <y>0</y>
+                        <width>36</width>
+                        <height>34</height>
+                    </rect>
+                </property>
+            </widget>
+<!-- File Size -->
+            <widget class="QLabel" name="fileSizeLabel">
+                <property name="text">
+                    <string>Size: 4,096 KB</string>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>368</x>
+                        <y>0</y>
+                        <width>154</width>
+                        <height>34</height>
+                    </rect>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignVCenter|Qt::AlignRight</set>
+                </property>
+            </widget>
         </widget>
 <!-- Preview Window-->
         <widget class="QWidget" name="mainWidget" native="true">

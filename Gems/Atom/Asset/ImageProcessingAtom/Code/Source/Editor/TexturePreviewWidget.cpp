@@ -10,6 +10,7 @@
 #include <Processing/PixelFormatInfo.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QCheckBox>
@@ -36,10 +37,10 @@ namespace ImageProcessingAtomEditor
 {
     using namespace ImageProcessingAtom;
 
-    TexturePreviewWidget::TexturePreviewWidget(EditorTextureSetting& texureSetting, QWidget* parent /*= nullptr*/)
+    TexturePreviewWidget::TexturePreviewWidget(EditorTextureSetting& textureSetting, QWidget* parent /*= nullptr*/)
         : QWidget(parent)
         , m_ui(new Ui::TexturePreviewWidget)
-        , m_textureSetting(&texureSetting)
+        , m_textureSetting(&textureSetting)
     {
         m_ui->setupUi(this);
 
@@ -82,6 +83,9 @@ namespace ImageProcessingAtomEditor
         QObject::connect(m_ui->prevMipBtn, &QPushButton::clicked, this, &TexturePreviewWidget::OnPrevMip);
         QObject::connect(m_ui->previewComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TexturePreviewWidget::OnChangePreviewMode);
 
+        // Style the Checkbox
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_ui->previewCheckBox);
+
         // Set up Refresh button
         m_alwaysRefreshAction = new QAction("Automatic update", this);
         m_alwaysRefreshAction->setCheckable(true);
@@ -108,7 +112,7 @@ namespace ImageProcessingAtomEditor
         SetImageLabelText(QString(), false);
 
         // Tooltips
-        m_ui->mainWidget->setToolTip(QString("Display hotkeys:\n\nShift - RGBA\nAlt - Alpha\nSpace - Full Resolution"));
+        m_ui->mainWidget->setToolTip(QString("Display hotkeys:\nShift - RGBA\nAlt - Alpha\nSpace - Full Resolution"));
         m_ui->previewComboBox->setToolTip(QString("Select the texture channel(s) to preview."));
         m_ui->previewCheckBox->setToolTip(QString("When enabled, a 2x2 tiled texture preview is displayed."));
         m_ui->refreshBtn->setToolTip(QString("Select automatic or manual preview update.\nClick on the button to refresh manually."));
