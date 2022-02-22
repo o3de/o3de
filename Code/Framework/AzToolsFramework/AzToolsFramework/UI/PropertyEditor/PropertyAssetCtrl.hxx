@@ -246,7 +246,7 @@ namespace AzToolsFramework
         virtual void PopupAssetPicker();
         virtual void PickAssetSelectionFromDialog(AssetSelectionModel& selection, QWidget* parent);
         void OnClearButtonClicked();
-        void UpdateAssetDisplay();
+        virtual void UpdateAssetDisplay();
         void OnLineEditFocus(bool focus);
         virtual void OnEditButtonClicked();
         void OnThumbnailClicked();

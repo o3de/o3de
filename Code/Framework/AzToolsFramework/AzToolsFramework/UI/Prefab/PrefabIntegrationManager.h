@@ -28,6 +28,7 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
+        class PrefabFocusInterface;
         class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
@@ -65,8 +66,8 @@ namespace AzToolsFramework
 
             // PrefabIntegrationInterface overrides ...
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
-            int ExecuteClosePrefabDialog(TemplateId templateId) override;
-            void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
+            int HandleRootPrefabClosure(TemplateId templateId) override;
+            void SaveCurrentPrefab() override;
 
         private:
             // Handles the UI for prefab save operations.
@@ -91,6 +92,7 @@ namespace AzToolsFramework
             static void ContextMenu_ClosePrefab();
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
+            static void ContextMenu_Duplicate();
             static void ContextMenu_DeleteSelected();
             static void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
 
@@ -113,6 +115,7 @@ namespace AzToolsFramework
 
             static ContainerEntityInterface* s_containerEntityInterface;
             static EditorEntityUiInterface* s_editorEntityUiInterface;
+            static PrefabFocusInterface* s_prefabFocusInterface;
             static PrefabFocusPublicInterface* s_prefabFocusPublicInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;

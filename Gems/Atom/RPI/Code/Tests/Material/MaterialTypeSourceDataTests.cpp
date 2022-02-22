@@ -917,6 +917,7 @@ namespace UnitTest
         property->m_max = 1.0f;
         property->m_softMin = 0.2f;
         property->m_softMax = 1.0f;
+        property->m_value = 0.0f; 
         property->m_step = 0.01f;
         property->m_dataType = MaterialPropertyDataType::Float;
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderInput, AZStd::string("m_float") });
@@ -943,6 +944,7 @@ namespace UnitTest
         property->m_displayName = "My Image";
         property->m_description = "This is an image";
         property->m_dataType = MaterialPropertyDataType::Image;
+        property->m_value = AZStd::string{};
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderInput, AZStd::string("m_image") });
         
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
@@ -966,6 +968,7 @@ namespace UnitTest
         MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyInt");
         property->m_displayName = "My Integer";
         property->m_dataType = MaterialPropertyDataType::Int;
+        property->m_value = 0;
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("o_foo"), 0});
         
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
@@ -1184,6 +1187,7 @@ namespace UnitTest
         property->m_displayName = "Integer";
         property->m_description = "Integer property that is connected to multiple shader settings";
         property->m_dataType = MaterialPropertyDataType::Int;
+        property->m_value = 0;
 
         // The value maps to m_int in the SRG
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{ MaterialPropertyOutputType::ShaderInput, AZStd::string("m_int") });
@@ -1243,6 +1247,7 @@ namespace UnitTest
         property->m_displayName = "Float for Functor";
         property->m_description = "This float is processed by a functor, not with a direct connection";
         property->m_dataType = MaterialPropertyDataType::Float;
+        property->m_value = 0.0f;
         // Note that we don't fill property->m_outputConnections because this is not an aliased property
         
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
@@ -1289,6 +1294,7 @@ namespace UnitTest
         property1->m_displayName = property2->m_displayName = "Enable Special Pass";
         property1->m_description = property2->m_description = "This is a bool to enable an extra shader/pass";
         property1->m_dataType    = property2->m_dataType    = MaterialPropertyDataType::Bool;
+        property1->m_value       = property2->m_value       = false;
 
         sourceData.m_materialFunctorSourceData.push_back(
             Ptr<MaterialFunctorSourceDataHolder>
@@ -1344,6 +1350,7 @@ namespace UnitTest
         MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyProperty");
 
         property->m_dataType = MaterialPropertyDataType::Bool;
+        property->m_value = false;
         // Note that we don't fill property->m_outputConnections because this is not a direct-connected property
         
         sourceData.m_materialFunctorSourceData.push_back(
@@ -1376,6 +1383,7 @@ namespace UnitTest
         MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("floatForFunctor");
 
         property->m_dataType = MaterialPropertyDataType::Float;
+        property->m_value = 0.0f;
 
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
 

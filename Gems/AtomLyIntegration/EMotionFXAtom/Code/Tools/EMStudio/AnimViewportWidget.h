@@ -55,12 +55,22 @@ namespace EMStudio
         AtomRenderPlugin* m_plugin;
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
 
-        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
-        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
-        AZStd::shared_ptr<AzFramework::LookScrollTranslationCameraInput> m_lookScrollCamera;
-        AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_lookRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_lookTranslateCamera;
+        AZStd::shared_ptr<AzFramework::LookScrollTranslationCameraInput> m_lookScrollTranslationCamera;
+        AZStd::shared_ptr<AzFramework::PanCameraInput> m_lookPanCamera;
+
         AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
+        AZStd::shared_ptr<AzFramework::OrbitScrollDollyCameraInput> m_orbitScrollDollyCamera;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_orbitTranslateCamera;
+        AZStd::shared_ptr<AzFramework::OrbitMotionDollyCameraInput> m_orbitMotionDollyCamera;
+        AZStd::shared_ptr<AzFramework::PanCameraInput> m_orbitPanCamera;
+
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_followRotateCamera;
+        AZStd::shared_ptr<AzFramework::OrbitScrollDollyCameraInput> m_followScrollDollyCamera;
+        AZStd::shared_ptr<AzFramework::OrbitMotionDollyCameraInput> m_followScrollMotionCamera;
+
         AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero();
     };
 }
