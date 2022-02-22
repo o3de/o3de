@@ -20,17 +20,14 @@ class Tests:
         "Light Entity successfully created",
         "P0: Light Entity failed to be created")
     light_component_removal = (
-        "Light component successfully removed\n",
+        "Light component successfully removed",
         "P1: Light component failed to be removed")
     light_component = (
         "Entity has a Light component",
         "P0: Entity failed to find Light component")
-    creation_undo = (
-        "UNDO Entity creation success",
-        "P0: UNDO Entity creation failed")
-    creation_redo = (
-        "REDO Entity creation success\n",
-        "P0: REDO Entity creation failed")
+    removal_undo = (
+        "UNDO Light component removal success",
+        "P0: UNDO Light component removal failed")
     edit_light_color = (
         f"Light color updated",
         f"P1: Light color failed to update")
@@ -121,41 +118,40 @@ def AtomEditorComponents_Light_AddedToEntity():
 
     Test Steps:
     1) Create a Light entity with no components.
-    2) Remove existing Light components on the entity.
-    3) Add Light component to the Light entity.
-    4) UNDO the entity creation and component addition.
-    5) REDO the entity creation and component addition.
-    6) Set the light type.
-    7) Verify presence of shape component (if applicable).
-    8) Edit the Color parameter.
-    9) Set the Intensity mode parameter.
-    10) Edit the Intensity parameter.
-    11) Set the Attenuation radius Mode.
-    12) Edit the Attenuation radius Radius parameter.
-    13) Enable shadows (if applicable).
-    14) Edit the Shadows Bias parameter.
-    15) Edit the Normal shadow bias parameter.
-    16) Set the Shadowmap size.
-    17) Set the Shadow filter method.
-    18) Edit the Filtering sample count parameter.
-    19) Edit the ESM Exponent parameter.
-    20) Disable Shadows (re-enabled after test for game mode verification).
-    21) Edit the Inner angle parameter.
-    22) Edit the Outer angle parameter.
-    23) Disable Shutters.
-    24) Enable Shutters.
-    25) Enable Both directions.
-    26) Disable Both directions (re-enabled after test for game mode verification).
-    27) Enable Fast approximation.
-    28) Disable Fast approximation.
-    29) Enter/Exit game mode.
-    30) Test IsHidden.
-    31) Test IsVisible.
-    REPEAT tests 2-31 for all applicable light types.
-    32) Delete Light entity.
-    33) UNDO deletion.
-    34) REDO deletion.
-    35) Look for errors.
+    2) Add Light component to the Light entity.
+    3) Remove existing Light component on the entity.
+    4) UNDO the light component removal.
+    5) Set the light type.
+    6) Check for Shape component.
+    7) Edit the Color parameter.
+    8) Set the Intensity mode parameter.
+    9) Edit the Intensity parameter.
+    10) Set the Attenuation radius Mode.
+    11) Edit the Attenuation radius Radius parameter.
+    12) Enable shadows (if applicable).
+    13) Edit the Shadows Bias parameter.
+    14) Edit the Normal shadow bias parameter.
+    15) Set the Shadowmap size.
+    16) Set the Shadow filter method.
+    17) Edit the Filtering sample count parameter.
+    18) Edit the ESM Exponent parameter.
+    19) Disable Shadows (re-enabled after test for game mode verification).
+    20) Edit the Inner angle parameter.
+    21) Edit the Outer angle parameter.
+    22) Disable Shutters.
+    23) Enable Shutters.
+    24) Enable Both directions.
+    25) Disable Both directions (re-enabled after test for game mode verification).
+    26) Enable Fast approximation.
+    27) Disable Fast approximation.
+    28) Enter/Exit game mode.
+    29) Test IsHidden.
+    30) Test IsVisible.
+    REPEAT tests 2-30 for all applicable light types.
+    31) Delete Light entity.
+    32) UNDO deletion.
+    33) REDO deletion.
+    34) Look for errors.
 
     :return: None
     """
@@ -168,8 +164,6 @@ def AtomEditorComponents_Light_AddedToEntity():
     from Atom.atom_utils.atom_constants import (AtomComponentProperties, LIGHT_TYPES, INTENSITY_MODE,
                                                 ATTENUATION_RADIUS_MODE, SHADOWMAP_SIZE, SHADOW_FILTER_METHOD)
 
-    # Set cycle iterations to limit running of tests.
-    iterations = 0
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -182,65 +176,49 @@ def AtomEditorComponents_Light_AddedToEntity():
         light_entity = EditorEntity.create_editor_entity(AtomComponentProperties.light())
         Report.critical_result(Tests.light_creation, light_entity.exists())
 
+        # 2. Add a Light component to the Light entity.
+        light_entity.add_component(AtomComponentProperties.light())
+        Report.critical_result(Tests.light_component,
+                               light_entity.has_component(AtomComponentProperties.light()))
+
+        # 3. Remove the light component.
+        light_entity.remove_component(AtomComponentProperties.light())
+        Report.critical_result(Tests.light_component_removal,
+                               not light_entity.has_component(AtomComponentProperties.light()))
+
+        # 4. Undo the Light component removal.
+        general.undo()
+        general.idle_wait_frames(1)
+        Report.result(Tests.removal_undo,
+                      light_entity.has_component(AtomComponentProperties.light()))
+
         # Cycle through light types to test component properties.
         for light_type in LIGHT_TYPES.keys():
 
-            # 2. Remove existing light component from entity.
-            if light_entity.has_component(AtomComponentProperties.light()):
-                light_entity.remove_component(AtomComponentProperties.light())
-                Report.critical_result(Tests.light_component_removal,
-                                       not light_entity.has_component(AtomComponentProperties.light()))
-
-            # 3. Add Light component to the Light entity.
-            light_component = light_entity.add_component(AtomComponentProperties.light())
-            if iterations == 0:
-                Report.critical_result(Tests.light_component,
-                                       light_entity.has_component(AtomComponentProperties.light()))
-
-                # 4. UNDO the entity creation and component addition.
-                # -> UNDO component addition.
-                general.undo()
-                # -> UNDO naming entity.
-                general.undo()
-                # -> UNDO selecting entity.
-                general.undo()
-                # -> UNDO entity creation.
-                general.undo()
-                general.idle_wait_frames(1)
-                Report.result(Tests.creation_undo, not light_entity.exists())
-
-                # 5. REDO the entity creation and component addition.
-                # -> REDO entity creation.
-                general.redo()
-                # -> REDO selecting entity.
-                general.redo()
-                # -> REDO naming entity.
-                general.redo()
-                # -> REDO component addition.
-                general.redo()
-                general.idle_wait_frames(1)
-                Report.result(Tests.creation_redo, light_entity.exists())
-
-                # Update loop iterations to prevent additional running of these tests
-                iterations += 1
-
-            # 6. Set light type.
-            light_component.set_component_property_value(
-                AtomComponentProperties.light('Light type'), LIGHT_TYPES[light_type])
-            current_light_type = light_component.get_component_property_value(
-                AtomComponentProperties.light('Light type'))
-            test_light_type = (
-                f"Set light type: {light_type.upper()}",
-                f"P0: Light component failed to set {light_type} type")
-            general.idle_wait_frames(1)
-            Report.result(test_light_type, current_light_type == LIGHT_TYPES[light_type])
-
-            # Exit loop for unknown light type.
-            if current_light_type == 0:
+            if light_type == 'unknown':
                 continue
 
-            # 7. Check for Shape component.
-            if current_light_type in (1, 2, 3, 4, 5):
+            # Remove the Light component to begin loop with a clean component.
+            light_entity.remove_component(AtomComponentProperties.light())
+            Report.critical_result(Tests.light_component_removal,
+                                   not light_entity.has_component(AtomComponentProperties.light()))
+
+            # Add a new Light component to begin parameter tests.
+            light_component = light_entity.add_component(AtomComponentProperties.light())
+
+            # 5. Set light type.
+            light_component.set_component_property_value(
+                AtomComponentProperties.light('Light type'), LIGHT_TYPES[light_type])
+            test_light_type = (
+                f"Set light type: {light_type.upper()}",
+                f"P0: Light component failed to set {light_type.upper()} type")
+            general.idle_wait_frames(1)
+            Report.result(test_light_type,
+                          light_component.get_component_property_value(
+                              AtomComponentProperties.light('Light type')) == LIGHT_TYPES[light_type])
+
+            # 6. Check for Shape component.
+            if light_type in ('sphere', 'spot_disk', 'capsule', 'quad', 'polygon'):
                 light_shape = LIGHT_SHAPES[light_type]
                 test_light_shape = (
                     f"{light_shape} present",
@@ -248,7 +226,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                 Report.result(test_light_shape,
                               light_entity.has_component(light_shape))
 
-            # 8. Edit Color parameter.
+            # 7. Edit Color parameter.
             color_value = math.Color(1.0, 0.0, 0.0, 1.0)
             light_component.set_component_property_value(AtomComponentProperties.light('Color'), color_value)
             light_color = light_component.get_component_property_value(
@@ -256,8 +234,8 @@ def AtomEditorComponents_Light_AddedToEntity():
             general.idle_wait_frames(1)
             Report.result(Tests.edit_light_color, light_color.IsClose(color_value))
 
-            # 9. Set Intensity mode.
-            # if current_light_type < 6:
+            # 8. Set Intensity mode.
+            # if light_type not in ('simple_point', 'simple_spot'):
             #     for intensity_mode in INTENSITY_MODE.keys():
             #         light_component.set_component_property_value(
             #             AtomComponentProperties.light('Intensity mode'), INTENSITY_MODE[intensity_mode])
@@ -269,13 +247,13 @@ def AtomEditorComponents_Light_AddedToEntity():
             #         Report.result(test_intensity_mode,
             #                       current_intensity_mode == INTENSITY_MODE[intensity_mode])
 
-            # 10. Edit the Intensity parameter.
+            # 9. Edit the Intensity parameter.
             light_component.set_component_property_value(AtomComponentProperties.light('Intensity'), 1000)
             Report.result(Tests.edit_intensity_value,
                           light_component.get_component_property_value(
                               AtomComponentProperties.light('Intensity')) == 1000)
 
-            # 11. Set the Attenuation radius Mode:
+            # 10. Set the Attenuation radius Mode:
             for radius_mode in ATTENUATION_RADIUS_MODE.keys():
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Attenuation radius Mode'), ATTENUATION_RADIUS_MODE[radius_mode])
@@ -288,7 +266,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                 Report.result(test_attenuation_mode,
                               current_radius_mode == ATTENUATION_RADIUS_MODE[radius_mode])
 
-                # 12. Edit the Attenuation radius Radius parameter.
+                # 11. Edit the Attenuation radius Radius parameter.
                 if current_radius_mode == 0:
                     light_component.set_component_property_value(
                         AtomComponentProperties.light('Attenuation radius Radius'), 1000)
@@ -297,8 +275,8 @@ def AtomEditorComponents_Light_AddedToEntity():
                                       AtomComponentProperties.light('Attenuation radius Radius')) == 1000)
 
             # Shadow tests for applicable light types:
-            if current_light_type in (1, 2):
-                # 13. Enable Shadows:
+            if light_type in ('sphere', 'spot_disk'):
+                # 12. Enable Shadows:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Enable shadow'), True)
                 general.idle_wait_frames(1)
@@ -307,7 +285,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     light_component.get_component_property_value(
                         AtomComponentProperties.light('Enable shadow')) is True)
 
-                # 14. Edit the Shadows Bias parameter.
+                # 13. Edit the Shadows Bias parameter.
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Shadows Bias'), 100)
                 Report.result(
@@ -315,7 +293,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     light_component.get_component_property_value(
                         AtomComponentProperties.light('Shadows Bias')) == 100)
 
-                # 15. Edit the Normal shadow bias parameter.
+                # 14. Edit the Normal shadow bias parameter.
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Normal shadow bias'), 10)
                 Report.result(
@@ -323,7 +301,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     light_component.get_component_property_value(
                         AtomComponentProperties.light('Normal shadow bias')) == 10)
 
-                # 16. Set the Shadowmap size.
+                # 15. Set the Shadowmap size.
                 # for shadowmap_size in SHADOWMAP_SIZE.keys():
                 #     light_component.set_component_property_value(
                 #         AtomComponentProperties.light('Shadowmap size'), SHADOWMAP_SIZE[shadowmap_size])
@@ -335,7 +313,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                 #     Report.result(test_shadowmap_size, current_shadowmap_size == SHADOWMAP_SIZE[shadowmap_size])
 
                 # Shadow filter method tests.
-                # 17. Set the Shadow filter method.
+                # 16. Set the Shadow filter method.
                 for filter_method in SHADOW_FILTER_METHOD.keys():
                     light_component.set_component_property_value(
                         AtomComponentProperties.light('Shadow filter method'), SHADOW_FILTER_METHOD[filter_method])
@@ -347,7 +325,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     Report.result(test_shadow_filter_method,
                                   current_filter_method == SHADOW_FILTER_METHOD[filter_method])
 
-                    # 18. Edit the Filtering sample count parameter.
+                    # 17. Edit the Filtering sample count parameter.
                     if current_filter_method in (1, 3):
                         light_component.set_component_property_value(
                             AtomComponentProperties.light('Filtering sample count'), 64)
@@ -355,7 +333,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                                       light_component.get_component_property_value(
                                           AtomComponentProperties.light('Filtering sample count')) == 64)
 
-                    # 19. Edit the ESM Exponent parameter.
+                    # 18. Edit the ESM Exponent parameter.
                     if current_filter_method in (2, 3):
                         light_component.set_component_property_value(
                             AtomComponentProperties.light('ESM exponent'), 5000)
@@ -363,7 +341,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                                       light_component.get_component_property_value(
                                           AtomComponentProperties.light('ESM exponent')) == 5000)
 
-                # 20. Disable Shadows (re-enabled after test for game mode verification):
+                # 19. Disable Shadows (re-enabled after test for game mode verification):
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Enable shadow'), False)
                 general.idle_wait_frames(1)
@@ -375,15 +353,15 @@ def AtomEditorComponents_Light_AddedToEntity():
                     AtomComponentProperties.light('Enable shadow'), True)
 
             # Shutter tests for applicable light types:
-            if current_light_type in (2, 7):
-                # 21. Edit the Inner angle parameter:
+            if light_type in ('spot_disk', 'simple_spot'):
+                # 20. Edit the Inner angle parameter:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Inner angle'), 0.5)
                 Report.result(Tests.edit_inner_angle,
                               light_component.get_component_property_value(
                                   AtomComponentProperties.light('Inner angle')) == 0.5)
 
-                # 22. Edit the Outer angle parameter:
+                # 21. Edit the Outer angle parameter:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Outer angle'), 90)
                 Report.result(Tests.edit_outer_angle,
@@ -391,8 +369,8 @@ def AtomEditorComponents_Light_AddedToEntity():
                                   AtomComponentProperties.light('Outer angle')) == 90)
 
             # Disable/Enable Shutters tests:
-            if current_light_type == 2:
-                # 23. Disable Shutters:
+            if light_type == 'spot_disk':
+                # 22. Disable Shutters:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Enable shutters'), False)
                 Report.result(
@@ -400,7 +378,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     light_component.get_component_property_value(
                         AtomComponentProperties.light('Enable shutters')) is False)
 
-                # 24. Enable Shutters:
+                # 23. Enable Shutters:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Enable shutters'), True)
                 Report.result(
@@ -409,8 +387,8 @@ def AtomEditorComponents_Light_AddedToEntity():
                         AtomComponentProperties.light('Enable shutters')) is True)
 
             # Enable/Disable Both directions tests:
-            if current_light_type in (4, 5):
-                # 25. Enable Both directions:
+            if light_type in ('quad', 'polygon'):
+                # 24. Enable Both directions:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Both directions'), True)
                 Report.result(
@@ -418,7 +396,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     light_component.get_component_property_value(
                         AtomComponentProperties.light('Both directions')) is True)
 
-                # 26. Disable Both directions parameter (re-enabled after test for game-mode verification):
+                # 25. Disable Both directions parameter (re-enabled after test for game-mode verification):
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Both directions'), False)
                 Report.result(
@@ -429,8 +407,8 @@ def AtomEditorComponents_Light_AddedToEntity():
                     AtomComponentProperties.light('Both directions'), True)
 
             # Enable/Disable Fast approximation tests:
-            if current_light_type == 4:
-                # 27. Enable Fast approximation:
+            if light_type == 'quad':
+                # 26. Enable Fast approximation:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Fast approximation'), True)
                 Report.result(
@@ -438,7 +416,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     light_component.get_component_property_value(
                         AtomComponentProperties.light('Fast approximation')) is True)
 
-                # 28. Disable Fast approximation:
+                # 27. Disable Fast approximation:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Fast approximation'), False)
                 Report.result(
@@ -446,35 +424,35 @@ def AtomEditorComponents_Light_AddedToEntity():
                     light_component.get_component_property_value(
                         AtomComponentProperties.light('Fast approximation')) is False)
 
-            # 29. Enter/Exit game mode.
+            # 28. Enter/Exit game mode.
             TestHelper.enter_game_mode(Tests.enter_game_mode)
             general.idle_wait_frames(1)
             TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-            # 30. Test IsHidden.
+            # 29. Test IsHidden.
             light_entity.set_visibility_state(False)
             Report.result(Tests.is_hidden, light_entity.is_hidden() is True)
 
-            # 31. Test IsVisible.
+            # 30. Test IsVisible.
             light_entity.set_visibility_state(True)
             general.idle_wait_frames(1)
             Report.result(Tests.is_visible, light_entity.is_visible() is True)
 
-        # 32. Delete Light entity.
+        # 31. Delete Light entity.
         light_entity.delete()
         Report.result(Tests.entity_deleted, not light_entity.exists())
 
-        # 33. UNDO deletion.
+        # 32. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, light_entity.exists())
 
-        # 34. REDO deletion.
+        # 33. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not light_entity.exists())
 
-        # 35. Look for errors asserts.
+        # 34. Look for errors asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

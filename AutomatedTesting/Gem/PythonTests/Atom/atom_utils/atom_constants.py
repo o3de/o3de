@@ -9,12 +9,12 @@ Holds constants used across both hydra and non-hydra scripts.
 
 # Light type options for the Light component.
 LIGHT_TYPES = {
+    'unknown': 0,
     'sphere': 1,
     'spot_disk': 2,
     'capsule': 3,
     'quad': 4,
     'polygon': 5,
-    'unknown': 0,
     'simple_point': 6,
     'simple_spot': 7,
 }
@@ -322,7 +322,7 @@ class AtomComponentProperties:
         """
         Light component properties.
           - 'Light type' from atom_constants.py LIGHT_TYPES
-          - 'Color' the RGB value to set for the color of the light.
+          - 'Color' the RGBA value to set for the color of the light using azlmbr.math.Color tuple.
           - 'Intensity mode' from atom_constants.py INTENSITY_MODE
           - 'Intensity' the intensity of the light in the set photometric unit (float with no ceiling).
           - 'Attenuation radius Mode' from atom_constants.py ATTENUATION_RADIUS_MODE
