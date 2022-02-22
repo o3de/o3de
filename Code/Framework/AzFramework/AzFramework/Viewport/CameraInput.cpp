@@ -867,7 +867,7 @@ namespace AzFramework
 
         if (cameraProps.m_translateSmoothingEnabledFn())
         {
-            const float moveTime = SmoothValueTime(cameraProps.m_rotateSmoothnessFn(), deltaTime);
+            const float moveTime = SmoothValueTime(cameraProps.m_translateSmoothnessFn(), deltaTime);
             camera.m_pivot = targetCamera.m_pivot.Lerp(currentCamera.m_pivot, moveTime);
             camera.m_offset = targetCamera.m_offset.Lerp(currentCamera.m_offset, moveTime);
         }
