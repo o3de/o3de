@@ -31,6 +31,8 @@ import subprocess
 import sys
 import os
 import site
+import inspect
+import traceback
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -39,14 +41,38 @@ import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
 _MODULENAME = 'Tools.DCC.Maya.setup'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+# -------------------------------------------------------------------------
 
-# Local access
-_MODULE_PATH = Path(__file__)                   # this script
-_DCCSI_MAYA_PATH = Path(_MODULE_PATH.parent) # dcsi/tools/dcc/blender
-os.environ['PATH_DCCSI_BLENDER'] = _DCCSI_MAYA_PATH.as_posix()
-site.addsitedir(_DCCSI_MAYA_PATH.as_posix())  # python path
 
-import config # bootstraps the DCCsi
+# -------------------------------------------------------------------------
+# Maya is frozen
+#_MODULE_PATH = Path(__file__)
+# https://tinyurl.com/y49t3zzn
+# module path when frozen
+_MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
+_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
+
+# we need to set up basic access to the DCCsi
+_DCCSI_TOOLS_MAYA_PATH = Path(_MODULE_PATH.parent)
+_DCCSI_TOOLS_MAYA_PATH = Path(os.getenv('DCCSI_TOOLS_MAYA_PATH', _DCCSI_TOOLS_MAYA_PATH.as_posix()))
+site.addsitedir(_DCCSI_TOOLS_MAYA_PATH.as_posix())
+
+# we need to set up basic access to the DCCsi
+_PATH_DCCSI_TOOLS_DCC = Path(_DCCSI_TOOLS_MAYA_PATH.parent)
+_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
+site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
+
+# we need to set up basic access to the DCCsi
+_PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
+_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
+
+# we need to set up basic access to the DCCsi
+_PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
+_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
+site.addsitedir(_PATH_DCCSIG.as_posix())
+
 # now we have azpy api access
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
@@ -54,6 +80,9 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
+
+# bootstraps the DCCsi
+import Tools.DCC.Maya.config as maya_config
 # -------------------------------------------------------------------------
 
 
@@ -132,6 +161,31 @@ def install_pkg(pkg_name='pathlib'):
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as main (external commandline for testing)"""
+    
+    #os.environ['PYTHONINSPECT'] = 'True'
+    
+    _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+    _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+    _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+    
+    # default loglevel to info unless set
+    _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
+    if _DCCSI_GDEBUG:
+        # override loglevel if runnign debug
+        _DCCSI_LOGLEVEL = _logging.DEBUG
+    
+    # configure basic logger
+    # note: not using a common logger to reduce cyclical imports
+    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                         format=FRMT_LOG_LONG,
+                        datefmt='%m-%d %H:%M')
+    
+    _LOGGER = _logging.getLogger(_MODULENAME)
+    _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+    _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
+    _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
+    _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+    
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -149,7 +203,6 @@ if __name__ == '__main__':
     if args.global_debug:
         _DCCSI_GDEBUG = True
         os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-
 
     _SETTINGS = config.get_dccsi_maya_settings()    
 

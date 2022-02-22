@@ -18,8 +18,10 @@ This module manages the dynamic config and settings for boostrapping Blender
 # standard imports
 import sys
 import os
-import site
 import re
+import site
+import inspect
+import traceback
 import importlib.util
 from pathlib import Path
 import logging as _logging
@@ -27,40 +29,61 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
+# global scope
 _MODULENAME = 'Tools.DCC.Maya.config'
-
-# configure basic logger
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-_logging.basicConfig(level=_logging.DEBUG,
-                     format=FRMT_LOG_LONG,
-                    datefmt='%m-%d %H:%M')
+_MODULENAME = 'Tools.DCC.Maya.setup'
 _LOGGER = _logging.getLogger(_MODULENAME)
-
 _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# we don't use dynaconf setting here as we might not yet have access
-# we need to set up basic access to the DCCsi
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
-_PATH_DCCSIG = Path(_MODULE_PATH, '../../../..')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG.resolve()}')
-site.addsitedir(_PATH_DCCSIG.resolve())
+# Maya is frozen
+#_MODULE_PATH = Path(__file__)
+# https://tinyurl.com/y49t3zzn
+# module path when frozen
+_MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
+_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
 
-# set envar so DCCsi synthetic env bootstraps with it (config.py)
-from azpy.constants import ENVAR_PATH_DCCSIG
-os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.resolve())
+# we need to set up basic access to the DCCsi
+_DCCSI_TOOLS_MAYA_PATH = Path(_MODULE_PATH.parent)
+_DCCSI_TOOLS_MAYA_PATH = Path(os.getenv('DCCSI_TOOLS_MAYA_PATH', _DCCSI_TOOLS_MAYA_PATH.as_posix()))
+site.addsitedir(_DCCSI_TOOLS_MAYA_PATH.as_posix())
+
+# we need to set up basic access to the DCCsi
+_PATH_DCCSI_TOOLS_DCC = Path(_DCCSI_TOOLS_MAYA_PATH.parent)
+_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
+site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
+
+# we need to set up basic access to the DCCsi
+_PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
+_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
+
+# we need to set up basic access to the DCCsi
+_PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
+_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
+site.addsitedir(_PATH_DCCSIG.as_posix())
+
+# now we have azpy api access
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import ENVAR_DCCSI_LOGLEVEL
+from azpy.constants import ENVAR_DCCSI_GDEBUGGER
+from azpy.constants import FRMT_LOG_LONG
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # _settings.setenv()  # doing this will add the additional DYNACONF_ envars
-def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG.resolve()):
+def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG.as_posix()):
     """Convenience method to set and retreive settings directly from module."""
+    
+    _PATH_DCCSIG = Path(PATH_DCCSIG)
+    _PATH_DCCSI_CONFIG = Path(PATH_DCCSIG, "config.py")
 
     try:
-        Path(PATH_DCCSIG).exists()
+        _PATH_DCCSIG.exists()
     except FileNotFoundError as e:
         _LOGGER.debug(f"File does not exist: {PATH_DCCSIG}")
         return None
@@ -68,8 +91,7 @@ def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG.resolve()):
     # we can go ahead and just make sure the the DCCsi env is set
     # _config is SO generic this ensures we are importing a specific one
     _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi._config",
-                                                                Path(PATH_DCCSIG,
-                                                                     "config.py"))
+                                                                _PATH_DCCSI_CONFIG.as_posix())
     _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
     _spec_dccsi_config.loader.exec_module(_dccsi_config)
 

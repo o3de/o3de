@@ -26,7 +26,12 @@ import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
 _MODULENAME = 'Tools.DCC.Maya.start'
-
 _LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+# -------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------
+_LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.info(f'Not Implemented: {_MODULENAME}')
+# -------------------------------------------------------------------------

@@ -192,6 +192,7 @@ _DCCSI_SYS_PATH = list()
 _DCCSI_PYTHONPATH = list()
 
 # this is a dict bucket to store none-managed settings (fully local to module)
+global _DCCSI_LOCAL_SETTINGS
 _DCCSI_LOCAL_SETTINGS = {}
 
 # this will retreive the O3DE engine root
@@ -316,6 +317,9 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
     """
     time_start = time.process_time() # start tracking
     
+    # we don't do this often but we want to stash to global dict
+    global _DCCSI_LOCAL_SETTINGS # non-dynaconf managed settings
+    
     _PATH_DCCSIG = Path(dccsi_path)
     _PATH_O3DE_BIN = Path(engine_bin_path)
 
@@ -331,14 +335,15 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
     # site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
 
     QT_PLUGIN_PATH = Path.joinpath(_PATH_O3DE_BIN,'EditorPlugins')
-    os.environ["DYNACONF_QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH.as_posix())
+    os.environ["QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH.as_posix())
+    _DCCSI_LOCAL_SETTINGS['QT_PLUGIN_PATH'] = str(QT_PLUGIN_PATH.as_posix())
     dccsi_sys_path.append(QT_PLUGIN_PATH)
 
     QT_QPA_PLATFORM_PLUGIN_PATH = Path.joinpath(QT_PLUGIN_PATH, 'platforms')
-    os.environ["DYNACONF_QT_QPA_PLATFORM_PLUGIN_PATH"] = str(QT_QPA_PLATFORM_PLUGIN_PATH.as_posix())
     # if the line below is removed external standalone apps can't load PySide2
     os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(QT_QPA_PLATFORM_PLUGIN_PATH.as_posix())
     # ^^ bypass trying to set only with DYNACONF environment
+    _DCCSI_LOCAL_SETTINGS['QT_QPA_PLATFORM_PLUGIN_PATH'] = str(QT_QPA_PLATFORM_PLUGIN_PATH.as_posix())
     dccsi_sys_path.append(QT_QPA_PLATFORM_PLUGIN_PATH)
     
     # Access to QtForPython:
@@ -765,6 +770,7 @@ def export_settings(settings,
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
+    
     import time
     main_start = time.process_time() # start tracking
     
@@ -952,8 +958,8 @@ if __name__ == '__main__':
     if args.enable_qt:
         _LOGGER.info(STR_CROSSBAR)
         # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
-        _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
-        _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))
+        _LOGGER.info('QT_PLUGIN_PATH: {}'.format(_DCCSI_LOCAL_SETTINGS['QT_PLUGIN_PATH']))
+        _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(_DCCSI_LOCAL_SETTINGS['QT_QPA_PLATFORM_PLUGIN_PATH']))
         try:
             settings.DCCSI_PYSIDE2_TOOLS
             _LOGGER.info('DCCSI_PYSIDE2_TOOLS: {}'.format(settings.DCCSI_PYSIDE2_TOOLS))  

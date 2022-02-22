@@ -39,11 +39,11 @@ _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _PATH_DCCSI_TOOLS = Path(_MODULE_PATH.parent)
 _PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS',
                                        _PATH_DCCSI_TOOLS.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS)
+site.addsitedir(_PATH_DCCSI_TOOLS.as_posix())
 
 _PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
 _PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
-site.addsitedir(_PATH_DCCSIG)
+site.addsitedir(_PATH_DCCSIG.as_posix())
 # -------------------------------------------------------------------------
 
 

@@ -62,7 +62,7 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 # https://tinyurl.com/y49t3zzn
 # module path when frozen
 _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
-_LOGGER.debug('_MODULE_FILEPATH: {}'.format(_MODULE_PATH))
+_LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
 
 _DCCSI_TOOLS_MAYA_SCRIPTS_PATH = Path(_MODULE_PATH.parent.as_posix())
 _LOGGER.debug('_DCCSI_TOOLS_MAYA_SCRIPTS_PATH: {}'.format(_DCCSI_TOOLS_MAYA_SCRIPTS_PATH))

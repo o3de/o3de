@@ -10,5 +10,11 @@
         "settings.json",
         ".secrets.json"
     ],
-    "DCCSI_IMAGE_TYPES": [".tif", ".tiff", ".png", ".jpg", ".jpeg", ".tga"]
+    "DCCSI_IMAGE_TYPES": [
+        ".tif",
+        ".tiff",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".tga"]
 }
