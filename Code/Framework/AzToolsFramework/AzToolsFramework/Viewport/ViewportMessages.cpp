@@ -69,10 +69,11 @@ namespace AzToolsFramework
     {
         using AzFramework::RenderGeometry::IntersectorBus;
         using AzFramework::RenderGeometry::RayResult;
+        using AzFramework::RenderGeometry::RayResultClosestAggregator;
         using AzFramework::Terrain::TerrainDataRequestBus;
 
         // attempt a ray intersection with any visible mesh or terrain and return the intersection position if successful
-        AZ::EBusReduceResult<RayResult, AzFramework::RenderGeometry::RayResultClosestAggregator> renderGeometryIntersectionResult;
+        AZ::EBusReduceResult<RayResult, RayResultClosestAggregator> renderGeometryIntersectionResult;
         IntersectorBus::EventResult(
             renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(), &IntersectorBus::Events::RayIntersect, rayRequest);
         TerrainDataRequestBus::BroadcastResult(
