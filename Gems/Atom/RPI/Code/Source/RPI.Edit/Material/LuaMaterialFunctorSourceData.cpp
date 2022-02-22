@@ -204,7 +204,7 @@ namespace AZ
                 MaterialPropertyIndex index = propertiesLayout->FindPropertyIndex(propertyName);
                 if (!index.IsValid())
                 {
-                    AZ_Error("LuaMaterialFunctorSourceData", false, "Property '%s' is not found in material type.", materialProperty.GetCStr());
+                    AZ_Error("LuaMaterialFunctorSourceData", false, "Property '%s' is not found in material type.", propertyName.GetCStr());
                     return Failure();
                 }
 

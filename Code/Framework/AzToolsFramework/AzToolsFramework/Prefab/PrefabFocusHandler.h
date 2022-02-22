@@ -83,8 +83,6 @@ namespace AzToolsFramework::Prefab
 
         //! The alias path for the instance the editor is currently focusing on, starting from the root instance.
         RootAliasPath m_rootAliasFocusPath = RootAliasPath();
-        //! The templateId of the focused instance.
-        TemplateId m_focusedTemplateId = Prefab::InvalidTemplateId;
         //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
         AZ::IO::Path m_filenameFocusPath;
         //! The length of the current focus path. Stored to simplify internal checks.
