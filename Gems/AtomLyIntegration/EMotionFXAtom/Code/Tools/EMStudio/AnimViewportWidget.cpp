@@ -313,6 +313,10 @@ namespace EMStudio
             QAction* rightAction = cameraMenu->addAction("Right");
             cameraMenu->addSeparator();
             QAction* resetCamAction = cameraMenu->addAction("Reset Camera");
+            cameraMenu->addSeparator();
+            QAction* followAction = cameraMenu->addAction("Follow Character");
+            followAction->setCheckable(true);
+            followAction->setChecked(m_plugin->GetRenderOptions()->GetCameraFollowUp());
             connect(frontAction, &QAction::triggered, this, [this]()
                 {
                     UpdateCameraViewMode(RenderOptions::CameraViewMode::FRONT);
@@ -340,6 +344,11 @@ namespace EMStudio
             connect(resetCamAction, &QAction::triggered, this, [this]()
                 {
                     UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
+                });
+            connect(followAction, &QAction::triggered, this, [this, followAction]()
+                {
+                    m_plugin->GetRenderOptions()->SetCameraFollowUp(followAction->isChecked());
+                    AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::UpdateCameraFollowUp, followAction->isChecked());
                 });
         }
 
