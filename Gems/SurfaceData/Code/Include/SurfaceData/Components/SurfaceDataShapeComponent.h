@@ -70,7 +70,10 @@ namespace SurfaceData
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceDataModifierRequestBus
-        void ModifySurfacePoints(SurfacePointList& surfacePointList) const override;
+        void ModifySurfacePoints(
+            AZStd::span<const AZ::Vector3> positions,
+            AZStd::span<const AZ::EntityId> creatorEntityIds,
+            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::TransformNotificationBus

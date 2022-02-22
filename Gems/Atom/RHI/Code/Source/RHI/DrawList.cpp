@@ -20,7 +20,7 @@ namespace AZ
                 return DrawListView{};
             }
 
-            const size_t itemsPerPartition = DivideByMultiple(drawList.size(), partitionCount);
+            const size_t itemsPerPartition = AZ::DivideAndRoundUp(drawList.size(), partitionCount);
             const size_t itemOffset = partitionIndex * itemsPerPartition;
             const size_t itemCount = AZStd::min(drawList.size() - itemOffset, itemsPerPartition);
             return DrawListView(&drawList[itemOffset], itemCount);

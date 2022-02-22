@@ -17,7 +17,6 @@
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
-#include <SurfaceData/SurfaceDataModifierRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 
 
@@ -324,9 +323,7 @@ namespace SurfaceData
 
             if (hasInfiniteBounds || AabbOverlaps2D(modifier.m_bounds, surfacePointLists.GetSurfacePointAabb()))
             {
-                SurfaceDataModifierRequestBus::Event(
-                    modifierHandle, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints,
-                    surfacePointLists);
+                surfacePointLists.ModifySurfaceWeights(modifierHandle);
             }
         }
 
