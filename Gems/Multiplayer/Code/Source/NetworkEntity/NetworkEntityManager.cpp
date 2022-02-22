@@ -362,7 +362,7 @@ namespace Multiplayer
     }
     
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
-        const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, AutoActivate autoActivate)
+        const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, const AZ::Transform& transform, AutoActivate autoActivate)
     {
         INetworkEntityManager::EntityList returnList;
 
@@ -412,6 +412,7 @@ namespace Multiplayer
 
                 const NetEntityId netEntityId = NextId();
                 netBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
+                transformComponent->SetWorldTM(transform);
 
                 if (autoActivate == AutoActivate::DoNotActivate)
                 {
@@ -473,7 +474,7 @@ namespace Multiplayer
 
         if (entityIndex == PrefabEntityId::AllIndices)
         {
-            return CreateEntitiesImmediate(*netSpawnable, netEntityRole, autoActivate);
+            return CreateEntitiesImmediate(*netSpawnable, netEntityRole, transform, autoActivate);
         }
 
         const AzFramework::Spawnable::EntityList& entities = netSpawnable->GetEntities();
