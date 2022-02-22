@@ -733,6 +733,9 @@ set(FILES
     Prefab/Template/Template.cpp
     Prefab/ViewBookmarkComponent.h
     Prefab/ViewBookmarkComponent.cpp
+    Prefab/ViewBookmarkLoader.h
+    Prefab/ViewBookmarkLoader.cpp
+    Prefab/ViewBookmarkLoaderInterface.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx

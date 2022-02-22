@@ -42,6 +42,7 @@ namespace AzToolsFramework
 
             ViewBookmark m_lastKnownLocation;
             AZStd::vector<ViewBookmark> m_viewBookmarks;
+
         };
 
         class ViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
@@ -59,9 +60,11 @@ namespace AzToolsFramework
             void Deactivate() override{};
             //////////////////////////////////////////////////////////////////////////
 
-            ViewBookmark GetBookmarkAtIndex(int index);
+            ViewBookmark GetBookmarkAtIndex(int index) const;
             void AddBookmark(ViewBookmark viewBookmark);
             void SaveLastKnownLocation(ViewBookmark newLastKnownLocation);
+            ViewBookmark GetLastKnownLocation() const;
+            void ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark);
 
         protected:
 

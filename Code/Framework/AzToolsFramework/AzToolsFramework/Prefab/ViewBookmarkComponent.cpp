@@ -8,6 +8,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Prefab/ViewBookmarkComponent.h>
 
 namespace AzToolsFramework
@@ -55,12 +56,30 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &EditorViewBookmarks::GetBookmarkLabel);
                 }
             }
+            //if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            //{
+            //    behaviorContext->Class<EditorViewBookmarks>()
+            //        ->Property(
+            //        "LocalBookmarksDirectory",
+            //        []([[maybe_unused]]EditorViewBookmarks* thisPtr)
+            //        {
+            //            return "ViewBookmarkUniqueID";
+            //        },
+            //        nullptr);
+            //}
         }
 
         AZStd::string EditorViewBookmarks::GetBookmarkLabel(int index) const
         {
             return AZStd::string::format("View Bookmark %d", index);
         }
+
+        //void EditorViewBookmarks::OnPathChanged()
+        //{
+        //    AZ::IO::FixedMaxPath path = AZ::Utils::GetO3deManifestDirectory();
+        //    path /= m_localBookmarksSubPath;
+        //    m_localBookmarksPath = path.c_str();
+        //}
 
         void ViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
         {
@@ -97,7 +116,7 @@ namespace AzToolsFramework
             }
         }
 
-        ViewBookmark ViewBookmarkComponent::GetBookmarkAtIndex(int index)
+        ViewBookmark ViewBookmarkComponent::GetBookmarkAtIndex(int index) const
         {
             auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
             return bookmarkVector[index];
@@ -112,6 +131,17 @@ namespace AzToolsFramework
         void ViewBookmarkComponent::SaveLastKnownLocation(ViewBookmark newLastKnownLocation)
         {
             m_viewBookmark.m_lastKnownLocation = newLastKnownLocation;
+        }
+
+        ViewBookmark ViewBookmarkComponent::GetLastKnownLocation() const
+        {
+            return m_viewBookmark.m_lastKnownLocation;
+        }
+
+        void ViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
+        {
+            auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
+            bookmarkVector[index] = newBookmark;
         }
 
         void ViewBookmarkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)

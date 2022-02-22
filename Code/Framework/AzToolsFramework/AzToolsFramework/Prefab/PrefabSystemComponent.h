@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
+#include <AzToolsFramework/Prefab/ViewBookmarkLoader.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicRequestHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -406,6 +407,9 @@ namespace AzToolsFramework
 
             // Used for loading/saving Prefab Template files.
             PrefabLoader m_prefabLoader;
+
+            //Used for loading/saving Prefab View Bookmarks.
+            ViewBookmarkLoader m_viewBookmarkLoader;
 
             // Handles the public Prefab API used by UI and scripting.
             PrefabPublicHandler m_prefabPublicHandler;
