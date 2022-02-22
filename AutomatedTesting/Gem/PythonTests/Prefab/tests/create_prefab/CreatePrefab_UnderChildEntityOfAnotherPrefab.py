@@ -12,7 +12,7 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
     - Creates a prefab "Outer_prefab" and an instance based of the entities
     - Creates a prefab "Inner_prefab" inside "Outer_prefab" based the child entity contained inside of it
 
-    Checks that the parent/child entity is correctly handlded by the prefab system checking the name and that it contains the physx collider
+    Checks that the parent/child entity is correctly handled by the prefab system checking the name and that it contains the physx collider
     """
 
     from pathlib import Path
@@ -26,22 +26,22 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
     INNER_PREFAB_NAME = 'Inner_prefab'
     OUTER_PREFAB_FILE_NAME = Path(__file__).stem + OUTER_PREFAB_NAME
     INNER_PREFAB_FILE_NAME = Path(__file__).stem + INNER_PREFAB_NAME
-    PARENT_ENTITY_NAME = "ParentEntity"
-    CHILD_ENTITY_NAME = "ChildEntity"
-    PHYSX_COLLIDER_NAME = "PhysX Collider"
+    PARENT_ENTITY_NAME = 'ParentEntity'
+    CHILD_ENTITY_NAME = 'ChildEntity'
+    PHYSX_COLLIDER_NAME = 'PhysX Collider'
 
     prefab_test_utils.open_base_tests_level()
 
     # Creates new parent/child Entities at the root level
     # Asserts if creation didn't succeed
     parent_entity = EditorEntity.create_editor_entity_at((100.0, 100.0, 100.0), name=PARENT_ENTITY_NAME)
-    assert parent_entity.id.IsValid(), "Couldn't create parententity"
+    assert parent_entity.id.IsValid(), "Couldn't create parent entity"
     parent_entity.add_component(PHYSX_COLLIDER_NAME)
-    assert parent_entity.has_component(PHYSX_COLLIDER_NAME), "Attempted to add a PhysX Collider but no physx collider collider was found afterwards"
+    assert parent_entity.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
     child_entity = EditorEntity.create_editor_entity(parent_id=parent_entity.id, name=CHILD_ENTITY_NAME)
     assert child_entity.id.IsValid(), "Couldn't create child entity"
     child_entity.add_component(PHYSX_COLLIDER_NAME)
-    assert child_entity.has_component(PHYSX_COLLIDER_NAME), "Attempted to add a PhysX Collider but no physx collider collider was found afterwards"
+    assert child_entity.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
 
     # Create a prefab based on that entity
     _, outer_instance = Prefab.create_prefab([parent_entity], OUTER_PREFAB_FILE_NAME)

@@ -11,7 +11,7 @@ def CreatePrefab_UnderAnotherPrefab():
     - Creates an entity with a physx collider
     - Creates a prefab "Outer_prefab" and an instance based of that entity 
     - Creates a prefab "Inner_prefab" inside "Outer_prefab" based the entity contained inside of it
-    Checks that the entity is correctly handlded by the prefab system checking the name and that it contains the physx collider
+    Checks that the entity is correctly handled by the prefab system checking the name and that it contains the physx collider
     """
     
     from pathlib import Path
@@ -31,7 +31,7 @@ def CreatePrefab_UnderAnotherPrefab():
     entity = EditorEntity.create_editor_entity_at((100.0, 100.0, 100.0), name="TestEntity")
     assert entity.id.IsValid(), "Couldn't create entity"
     entity.add_component("PhysX Collider")
-    assert entity.has_component("PhysX Collider"), "Attempted to add a PhysX Collider but no physx collider collider was found afterwards"
+    assert entity.has_component("PhysX Collider"), "Failed to add a PhysX Collider"
 
     # Create a prefab based on that entity
     outer_prefab, outer_instance = Prefab.create_prefab([entity], OUTER_PREFAB_FILE_NAME)

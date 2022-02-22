@@ -9,9 +9,11 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
     """
     Test description:
     - Creates linear nested entities. 
-    - Creates a prefab from the nested entities.
+    - Creates linear nested prefabs based of an entity with a physx collider.
+    - Creates a prefab from the nested entities and the nested prefabs.
 
-    Test passed if the newly instanced prefab of the 3 entities have correct hierarchy and positions.
+    Test passed if the the nested entities/prefabs under the newly instanced prefab 
+    have correct hierarchy and positions.
     """
 
     from pathlib import Path
@@ -27,18 +29,18 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
     NESTED_PREFABS_NAME_PREFIX = 'NestedPrefabs_Prefab_'
     FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS = Path(__file__).stem + '_' + 'new_prefab'
     NESTED_PREFABS_TEST_ENTITY_NAME = 'TestEntity'
-    PHYSX_COLLIDER_NAME = "PhysX Collider"
+    PHYSX_COLLIDER_NAME = 'PhysX Collider'
     CREATION_POSITION = azlmbr.math.Vector3(100.0, 100.0, 100.0)
-    NUM_NESTED_ENTITIES_LAYERS = 3
-    NUM_NESTED_PREFABS_LAYERS = 3
+    NUM_NESTED_ENTITIES_LEVELS = 3
+    NUM_NESTED_PREFABS_LEVELS = 3
 
     prefab_test_utils.open_base_tests_level()
 
     # Creates new nested entities at the root level
     # Asserts if creation didn't succeed
     nested_entities_root = prefab_test_utils.create_linear_nested_entities(
-        NESTED_ENTITIES_NAME_PREFIX, NUM_NESTED_ENTITIES_LAYERS, CREATION_POSITION)
-    prefab_test_utils.validate_linear_nested_entities(nested_entities_root, NUM_NESTED_ENTITIES_LAYERS, CREATION_POSITION)
+        NESTED_ENTITIES_NAME_PREFIX, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
+    prefab_test_utils.validate_linear_nested_entities(nested_entities_root, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
     nested_entities_root_name = nested_entities_root.get_name()
 
     # Creates a new nested prefabs at the root level
@@ -46,9 +48,9 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
     entity = EditorEntity.create_editor_entity_at(CREATION_POSITION, name=NESTED_PREFABS_TEST_ENTITY_NAME)
     assert entity.id.IsValid(), "Couldn't create TestEntity"
     entity.add_component(PHYSX_COLLIDER_NAME)
-    assert entity.has_component(PHYSX_COLLIDER_NAME), "Attempted to add a PhysX Collider but no physx collider collider was found afterwards"
+    assert entity.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
     _, nested_prefab_instances = prefab_test_utils.create_linear_nested_prefabs(
-        [entity], NESTED_PREFABS_FILE_NAME_PREFIX, NESTED_PREFABS_NAME_PREFIX, NUM_NESTED_PREFABS_LAYERS)
+        [entity], NESTED_PREFABS_FILE_NAME_PREFIX, NESTED_PREFABS_NAME_PREFIX, NUM_NESTED_PREFABS_LEVELS)
     prefab_test_utils.validate_linear_nested_prefab_instances_hierarchy(nested_prefab_instances)
 
     # Asserts if prefab creation doesn't succeed
@@ -67,14 +69,14 @@ def CreatePrefab_WithNestedEntitiesAndNestedPrefabs():
         f"The name of the first child entity of the new prefab '{new_prefab_container_entity.get_name()}' " \
         f"should be '{nested_entities_root_name}', " \
         f"not '{nested_entities_root_on_instance.get_name()}'"
-    prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LAYERS, CREATION_POSITION)
+    prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
 
     parent_prefab_container_entity_on_instance = new_prefab_container_entity
     child_entity_on_inner_instance = nested_prefabs_root_container_entity_on_instance
-    for current_layer in range(0, NUM_NESTED_PREFABS_LAYERS):
-        assert child_entity_on_inner_instance.get_name() == prefab_test_utils.get_linear_nested_items_name(NESTED_PREFABS_NAME_PREFIX, current_layer), \
+    for current_level in range(0, NUM_NESTED_PREFABS_LEVELS):
+        assert child_entity_on_inner_instance.get_name() == prefab_test_utils.get_linear_nested_items_name(NESTED_PREFABS_NAME_PREFIX, current_level), \
             f"The name of a prefab inside the nested prefabs should be " \
-            f"'{prefab_test_utils.get_linear_nested_items_name(NESTED_PREFABS_NAME_PREFIX, current_layer)}', " \
+            f"'{prefab_test_utils.get_linear_nested_items_name(NESTED_PREFABS_NAME_PREFIX, current_level)}', " \
             f"not '{child_entity_on_inner_instance.get_name()}'"
         assert child_entity_on_inner_instance.get_parent_id() == parent_prefab_container_entity_on_instance.id, \
             f"Prefab '{child_entity_on_inner_instance.get_name()}' should be the direct inner prefab of " \
