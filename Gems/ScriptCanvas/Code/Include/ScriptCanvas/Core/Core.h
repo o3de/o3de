@@ -276,7 +276,9 @@ namespace ScriptCanvas
     struct OrderedDependencies
     {
         DependencyReport source;
-        AZStd::vector<AZ::Data::AssetId> orderedAssetIds;
+        // this contains all of the user SC asset dependencies, even duplicates, since users can use multiple instances
+        // of the same user node/variable in a graph, and each one may provide its own overrideable builder data
+        AZStd::vector<AZ::Data::AssetId> orderedUserGraphAssetIds;
     };
 
     //! Globally accessible Script Canvas settings, we use these to pass user provided settings

@@ -21,7 +21,7 @@
 namespace ScriptCanvasBuilder
 {
     template<typename t_Asset, typename t_Handler>
-    HandlerOwnership RegisterHandler(t_Handler* handler, const char* extension, bool enableCatalog)
+    HandlerOwnership RegisterHandler(const char* extension, bool enableCatalog)
     {
         AZ::Data::AssetType assetType(azrtti_typeid<t_Asset>());
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddAssetType, assetType);
@@ -39,14 +39,10 @@ namespace ScriptCanvasBuilder
         }
         else
         {
-            return { handler, true };
+            t_Handler* ownedHandler = aznew t_Handler();
+            AZ::Data::AssetManager::Instance().RegisterHandler(ownedHandler, assetType);
+            return { ownedHandler, true };
         }
-    }
-
-    template<typename t_Asset, typename t_Handler>
-    HandlerOwnership RegisterHandler(const char* extension, bool enableCatalog)
-    {
-        return RegisterHandler<t_Asset, t_Handler>(aznew t_Handler(), extension, enableCatalog);
     }
 
     SharedHandlers HandleAssetTypes()

@@ -764,9 +764,9 @@ namespace ScriptCanvas
             auto iter = m_dependencyByVariable.find(variable);
             if (iter != m_dependencyByVariable.end())
             {
-                for (size_t index = 0; index != m_orderedDependencies.orderedAssetIds.size(); ++index)
+                for (size_t index = 0; index != m_orderedDependencies.orderedUserGraphAssetIds.size(); ++index)
                 {
-                    if (iter->second.assetId == m_orderedDependencies.orderedAssetIds[index])
+                    if (iter->second.assetId == m_orderedDependencies.orderedUserGraphAssetIds[index])
                     {
                         return AZStd::make_pair(index, iter->second);
                     }
@@ -2921,12 +2921,13 @@ namespace ScriptCanvas
             {
                 const auto& dependencies = dependencyOutcome.GetValue();
 
-                // #functions2 this search needs to recurse, this layer of dependencies will only be one step deep
-                // currently this problem is found by the asset processor
+                // #functions2 this search needs to recurse, and currently does not, this layer of dependencies is currently only be one
+                // step deep.
+                // However, the problem of circular dependencies is discovered by the asset processor, when it comes up.
                 if (dependencies.userSubgraphs.find(m_source.m_namespacePath) != dependencies.userSubgraphs.end())
                 {
                     AZStd::string circularDependency = AZStd::string::format
-                    (ParseErrors::CircularDependencyFormat
+                        ( ParseErrors::CircularDependencyFormat
                         , m_source.m_name.data()
                         , node.GetDebugName().data()
                         , m_source.m_name.data());
@@ -2934,8 +2935,8 @@ namespace ScriptCanvas
                     AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), circularDependency));
                 }
 
-                // #functions2 make this use an identifier for the node, for property window display and easier find/replace updates
-                // this part must NOT recurse, the dependency tree should remain a tree and not be flattened
+                // #functions2 make this use an identifier for the node, for property window display and easier find/replace updates.
+                // This part does NOT and must NOT recurse, the dependency tree msut remain a tree and not be flattened.
                 m_orderedDependencies.source.MergeWith(dependencies);
             }
             else
@@ -2963,7 +2964,7 @@ namespace ScriptCanvas
         {
             for (const auto& subgraphAssetID : m_orderedDependencies.source.userSubgraphAssetIds)
             {
-                m_orderedDependencies.orderedAssetIds.push_back(subgraphAssetID);
+                m_orderedDependencies.orderedUserGraphAssetIds.push_back(subgraphAssetID);
             }
         }
 

@@ -82,9 +82,10 @@ namespace ScriptCanvasBuilder
         AZStd::string fileNameOnly;
         AZStd::string namespacePath;
         bool saveRawLua = false;
-        ScriptCanvas::RuntimeData runtimeDataOut;
+        ScriptCanvas::Grammar::AbstractCodeModelConstPtr modelOut;
         ScriptCanvas::Grammar::SubgraphInterface interfaceOut;
-        ScriptCanvasBuilder::BuildVariableOverrides builderDataOut;
+        ScriptCanvas::RuntimeData runtimeDataOut;
+        ScriptCanvasBuilder::BuildVariableOverrides builderOut;
     };
 
     class JobDependencyVerificationHandler : public ScriptCanvas::RuntimeAssetHandler

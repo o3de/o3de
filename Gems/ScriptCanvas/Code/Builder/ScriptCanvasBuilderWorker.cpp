@@ -336,8 +336,7 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        // process builder data
-        // sourceHandle has the loaded graph source, build entity has the entity
+        // process & save builder asset
         auto processBuilderOutcome = ProcessBuilderData(input);
         if (!processBuilderOutcome.IsSuccess())
         {
@@ -345,12 +344,11 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        // save builder asset
         input.assetHandler = m_builderHandler;
         AzFramework::StringFunc::Path::ReplaceExtension
-            (input.runtimeScriptCanvasOutputPath, ScriptCanvasBuilder::BuildVariableOverridesData::GetFileExtension());
+            ( input.runtimeScriptCanvasOutputPath, ScriptCanvasBuilder::BuildVariableOverridesData::GetFileExtension());
 
-        auto saveBuilderOutcome = SaveBuilderAsset(input, AZStd::move(input.builderDataOut));
+        auto saveBuilderOutcome = SaveBuilderAsset(input, AZStd::move(input.builderOut));
         if (!saveBuilderOutcome.IsSuccess())
         {
             AZ_Error(s_scriptCanvasBuilder, false, saveBuilderOutcome.GetError().c_str());

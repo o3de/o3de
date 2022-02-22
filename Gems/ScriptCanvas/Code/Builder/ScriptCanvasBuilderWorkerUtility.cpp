@@ -38,7 +38,6 @@ namespace ScriptCanvasBuilder
         : m_editorFunctionAssetHandler(source.m_editorFunctionAssetHandler.first)
         , m_runtimeAssetHandler(source.m_runtimeAssetHandler.first)
         , m_subgraphInterfaceHandler(source.m_subgraphInterfaceHandler.first)
-        , m_builderHandler(source.m_builderHandler.first)
     {}
 
     void SharedHandlers::DeleteOwnedHandlers()
@@ -46,7 +45,6 @@ namespace ScriptCanvasBuilder
         DeleteIfOwned(m_editorFunctionAssetHandler);
         DeleteIfOwned(m_runtimeAssetHandler);
         DeleteIfOwned(m_subgraphInterfaceHandler);
-        DeleteIfOwned(m_builderHandler);
     }
 
     void SharedHandlers::DeleteIfOwned(HandlerOwnership& handler)
@@ -168,7 +166,9 @@ namespace ScriptCanvasBuilder
 
         AZStd::unordered_set<ScriptCanvas::Endpoint> disabledEndpoints;
         AZStd::unordered_set<AZ::Entity*> disabledNodeEntities;
+
         AZStd::unordered_map<AZ::EntityId, NodeEntityPair > nodeLookUpMap;
+
         AZStd::unordered_set<AZ::EntityId> deletedNodeEntities;
 
         {
@@ -432,12 +432,39 @@ namespace ScriptCanvasBuilder
         return sourceGraph;
     }
 
-    AZ::Outcome<void, AZStd::string> ProcessBuilderData(ProcessTranslationJobInput& /*input*/)
+    AZ::Outcome<void, AZStd::string> ProcessBuilderData(ProcessTranslationJobInput& input)
     {
-        // load / parse editor tree replacement:
-        // get the top level results from the source file and ACM, then, go ONLY ONE LEVEL DEEP
-        // and get dependent results, because then the list should be flattened...I think
-        return AZ::Failure(AZStd::string("this will look a lot like build overrides"));
+        if (!input.modelOut)
+        {
+            return AZ::Failure(AZStd::string("missing abstract code model result in translation input"));
+        }
+
+        auto buildEntity = input.buildEntity;
+        if (!buildEntity)
+        {
+            return AZ::Failure(AZStd::string("No entity from source asset"));
+        }
+
+        auto variableComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::GraphVariableManagerComponent>(buildEntity);
+        if (!variableComponent)
+        {
+            return AZ::Failure(AZStd::string("No GraphVariableManagerComponent in source Entity"));
+        }
+
+        const ScriptCanvas::VariableData* variableData = variableComponent->GetVariableDataConst();
+        if (!variableData)
+        {
+            return AZ::Failure(AZStd::string("No variableData in source GraphVariableManagerComponent"));
+        }
+
+        auto populateOverridesResult = input.builderOut.PopulateFromParsedResults(input.modelOut, *variableData);
+        if (!populateOverridesResult.IsSuccess())
+        {
+            return AZ::Failure(AZStd::string::format("ProcessBuilderData failed to populate builder overrides from parsed results"));
+        }
+
+        input.builderOut.m_source = ScriptCanvasEditor::SourceHandle(nullptr, input.assetID.m_guid, {});
+        return AZ::Success();
     }
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input)
@@ -445,8 +472,8 @@ namespace ScriptCanvasBuilder
         auto sourceGraph = PrepareSourceGraph(input.buildEntity);
 
         auto version = sourceGraph->GetVersion();
-        if (version.grammarVersion == ScriptCanvas::GrammarVersion::Initial
-            || version.runtimeVersion == ScriptCanvas::RuntimeVersion::Initial)
+        if (version.grammarVersion == ScriptCanvas::GrammarVersion::Initial 
+        || version.runtimeVersion == ScriptCanvas::RuntimeVersion::Initial)
         {
             return AZ::Failure(AZStd::string(ScriptCanvas::ParseErrors::SourceUpdateRequired));
         }
@@ -505,7 +532,7 @@ namespace ScriptCanvasBuilder
         const ScriptCanvas::OrderedDependencies& orderedDependencies = translationResult.m_model->GetOrderedDependencies();
         const ScriptCanvas::DependencyReport& dependencyReport = orderedDependencies.source;
 
-        for (const auto& subgraphAssetID : orderedDependencies.orderedAssetIds)
+        for (const auto& subgraphAssetID : orderedDependencies.orderedUserGraphAssetIds)
         {
             const AZ::Data::AssetId dependentSubgraphAssetID(subgraphAssetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
             const AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
@@ -521,23 +548,21 @@ namespace ScriptCanvasBuilder
         input.runtimeDataOut.m_input = AZStd::move(translation.m_runtimeInputs);
         input.runtimeDataOut.m_debugMap = AZStd::move(translation.m_debugMap);
         input.interfaceOut = AZStd::move(translation.m_subgraphInterface);
+        input.modelOut = translationResult.m_model;
 
         return AZ::Success();
     }
 
-    AZ::Outcome<void, AZStd::string> SaveBuilderAsset
-        ( ProcessTranslationJobInput& input
-        , ScriptCanvasBuilder::BuildVariableOverrides&& builderData)
+    AZ::Outcome<void, AZStd::string> SaveBuilderAsset(ProcessTranslationJobInput& input, ScriptCanvasBuilder::BuildVariableOverrides&& builderData)
     {
-        AZ::Data::Asset<ScriptCanvasBuilder::BuildVariableOverridesData> builderAsset;
-        builderAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC_CE("BuilderData")));
-        builderAsset.Get()->m_overrides = AZStd::move(builderData);
+        AZ::Data::Asset<ScriptCanvasBuilder::BuildVariableOverridesData> asset;
+        asset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC_CE("BuilderData")));
+        asset.Get()->m_overrides = AZStd::move(builderData);
 
         AZStd::vector<AZ::u8> byteBuffer;
         AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
 
-        bool assetSaved = input.assetHandler->SaveAssetData(builderAsset, &byteStream);
-        if (!assetSaved)
+        if (!input.assetHandler->SaveAssetData(asset, &byteStream))
         {
             return AZ::Failure(AZStd::string("Failed to save script canvas builder data to object stream"));
         }
@@ -548,8 +573,7 @@ namespace ScriptCanvasBuilder
             return AZ::Failure(AZStd::string::format("Failed to open output file %s", input.runtimeScriptCanvasOutputPath.data()));
         }
 
-        assetSaved = outFileStream.Write(byteBuffer.size(), byteBuffer.data()) == byteBuffer.size() && assetSaved;
-        if (!assetSaved)
+        if (outFileStream.Write(byteBuffer.size(), byteBuffer.data()) != byteBuffer.size())
         {
             return AZ::Failure(AZStd::string::format("Unable to save script canvas builder data file %s", input.runtimeScriptCanvasOutputPath.data()));
         }
@@ -562,7 +586,6 @@ namespace ScriptCanvasBuilder
         input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
         return AZ::Success();
     }
-
 
     AZ::Outcome<void, AZStd::string> SaveSubgraphInterfaceAsset(ProcessTranslationJobInput& input, ScriptCanvas::SubgraphInterfaceData& subgraphInterface)
     {

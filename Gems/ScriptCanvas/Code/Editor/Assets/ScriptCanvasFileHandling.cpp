@@ -53,6 +53,7 @@ namespace ScriptCanvasFileHandlingCpp
 
 namespace ScriptCanvasEditor
 {
+    /*
     EditorAssetTree* EditorAssetTree::ModRoot()
     {
         if (!m_parent)
@@ -84,6 +85,7 @@ namespace ScriptCanvasEditor
 
         return result;
     }
+    */
 
     AZ::Outcome<void, AZStd::string> LoadDataFromJson
         ( ScriptCanvas::ScriptCanvasData& dataTarget
@@ -128,7 +130,7 @@ namespace ScriptCanvasEditor
         return AZ::Success();
     }
 
-
+    /*
     AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, EditorAssetTree* parent)
     {
         if (!CompleteDescriptionInPlace(handle))
@@ -205,6 +207,7 @@ namespace ScriptCanvasEditor
         result.m_asset = AZStd::move(handle);
         return AZ::Success(result);
     }
+    */
 
     AZ::Outcome<ScriptCanvasEditor::SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path)
     {

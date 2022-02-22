@@ -318,42 +318,31 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::BuildGameEntityData()
     {
-        // replace with functionality to do the same thing by loading
-        // the new editor asset the describes the exposed variables
-        // or the sub graph interface
-        // the editor interface. that is
-
-        /*
         using namespace ScriptCanvasBuilder;
         CompleteDescriptionInPlace(m_sourceHandle);
 
         m_runtimeDataIsValid = false;
 
-        auto assetTreeOutcome = LoadEditorAssetTree(m_sourceHandle);
-        if (!assetTreeOutcome.IsSuccess())
+        auto builderDataOutcome = LoadBuilderData(m_sourceHandle);
+        if (!builderDataOutcome.IsSuccess())
         {
-            AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", assetTreeOutcome.GetError().c_str());
+            AZ_Warning
+                ( "ScriptCanvas"
+                , false
+                , "EditorScriptCanvasComponent::BuildGameEntityData fail to load builder asset data: %s"
+                , builderDataOutcome.GetError().c_str());
             return;
         }
 
-        EditorAssetTree& editorAssetTree = assetTreeOutcome.GetValue();
-
-        auto parseOutcome = ParseEditorAssetTree(editorAssetTree);
-        if (!parseOutcome.IsSuccess())
-        {
-            AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", parseOutcome.GetError().c_str());
-            return;
-        }
+        BuildVariableOverrides& builderData = builderDataOutcome.GetValue();
 
         if (!m_variableOverrides.IsEmpty())
         {
-            parseOutcome.GetValue().CopyPreviousOverriddenValues(m_variableOverrides);
+            builderData.CopyPreviousOverriddenValues(m_variableOverrides);
         }
 
-        m_variableOverrides = parseOutcome.TakeValue();
-        m_variableOverrides.SetHandlesToDescription();
+        m_variableOverrides = builderDataOutcome.TakeValue();
         m_runtimeDataIsValid = true;
-        */
     }
 
     void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)

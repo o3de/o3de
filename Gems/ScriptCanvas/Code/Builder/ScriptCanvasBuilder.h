@@ -17,7 +17,8 @@
 
 namespace ScriptCanvasEditor
 {
-    class EditorAssetTree;
+    // class EditorAssetTree;
+    class SourceHandle;
 }
 
 namespace ScriptCanvasBuilder
@@ -41,7 +42,7 @@ namespace ScriptCanvasBuilder
         bool IsEmpty() const;
 
         // use this to initialize the new data, and make sure they have a editor graph variable for proper editor display
-        void PopulateFromParsedResults(ScriptCanvas::Grammar::AbstractCodeModelConstPtr abstractCodeModel, const ScriptCanvas::VariableData& variables);
+        AZ::Outcome<void, AZStd::string> PopulateFromParsedResults(ScriptCanvas::Grammar::AbstractCodeModelConstPtr abstractCodeModel, const ScriptCanvas::VariableData& variables);
 
         void SetHandlesToDescription();
 
@@ -63,7 +64,7 @@ namespace ScriptCanvasBuilder
     // copy the variables overridden during editor / prefab build time back to runtime data
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
 
-    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
+    // AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
 
     class BuildVariableOverridesData;
 
@@ -120,4 +121,7 @@ namespace ScriptCanvasBuilder
                 , "scriptcanvas_builder")
         {}
     };
+
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> LoadBuilderData(const ScriptCanvasEditor::SourceHandle& sourceHandle);
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> LoadBuilderDataAsset(const AZ::Data::AssetId& assetId);
 }

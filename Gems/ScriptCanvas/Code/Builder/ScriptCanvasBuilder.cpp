@@ -178,12 +178,11 @@ namespace ScriptCanvasBuilder
     }
 
     // use this to initialize the new data, and make sure they have a editor graph variable for proper editor display
-    void BuildVariableOverrides::PopulateFromParsedResults(ScriptCanvas::Grammar::AbstractCodeModelConstPtr abstractCodeModel, const ScriptCanvas::VariableData& variables)
+    AZ::Outcome<void, AZStd::string> BuildVariableOverrides::PopulateFromParsedResults(ScriptCanvas::Grammar::AbstractCodeModelConstPtr abstractCodeModel, const ScriptCanvas::VariableData& variables)
     {
         if (!abstractCodeModel)
         {
-            AZ_Error("ScriptCanvasBuider", false, "null abstract code model");
-            return;
+            return AZ::Failure(AZStd::string("null abstract code model input"));
         }
 
         const ScriptCanvas::Grammar::ParsedRuntimeInputs& inputs = abstractCodeModel->GetRuntimeInputs();
@@ -193,8 +192,7 @@ namespace ScriptCanvasBuilder
             auto graphVariable = variables.FindVariable(variable.first);
             if (!graphVariable)
             {
-                AZ_Error("ScriptCanvasBuilder", false, "Missing Variable from graph data that was just parsed");
-                continue;
+                return AZ::Failure(AZStd::string("Missing Variable from graph data that was just parsed"));
             }
 
             m_variables.push_back(*graphVariable);
@@ -231,8 +229,7 @@ namespace ScriptCanvasBuilder
             auto graphVariable = variables.FindVariable(variable->m_sourceVariableId);
             if (!graphVariable)
             {
-                AZ_Error("ScriptCanvasBuilder", false, "Missing Variable from graph data that was just parsed");
-                continue;
+                return AZ::Failure(AZStd::string("Missing unused Variable from graph data that was just parsed"));
             }
 
             if (graphVariable->IsComponentProperty())
@@ -245,6 +242,24 @@ namespace ScriptCanvasBuilder
                 overrideValue.SetAllowSignalOnChange(false);
             }
         }
+
+        const ScriptCanvas::OrderedDependencies& orderedDependencies = abstractCodeModel->GetOrderedDependencies();
+        for (auto& dependency : orderedDependencies.orderedUserGraphAssetIds)
+        {
+            // Populating the immediate dependencies is enough, recursion is not necessary. Each
+            // previous dependency has populated its immediate dependencies and stored them directly,
+            // rather than storing their dependencies as asset references.
+            auto result = LoadBuilderDataAsset(AZ::Data::AssetId(dependency.m_guid, AZ_CRC_CE("BuilderData")));
+            if (!result.IsSuccess())
+            {
+                return AZ::Failure(AZStd::string::format("Failed to load dependency for builder: %s",
+                    result.GetError().c_str()));
+            }
+
+            m_dependencies.push_back(result.TakeValue());
+        }
+
+        return AZ::Success();
     }
 
     void BuildVariableOverrides::SetHandlesToDescription()
@@ -260,9 +275,10 @@ namespace ScriptCanvasBuilder
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& buildOverrides)
     {
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;
-
         runtimeOverrides.m_runtimeAsset = AZ::Data::Asset<ScriptCanvas::RuntimeAsset>
-            (AZ::Data::AssetId(buildOverrides.m_source.Id(), AZ_CRC("RuntimeData", 0x163310ae)), azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+            ( AZ::Data::AssetId(buildOverrides.m_source.Id(), AZ_CRC_CE("RuntimeData"))
+            , azrtti_typeid<ScriptCanvas::RuntimeAsset>()
+            , {});
         runtimeOverrides.m_runtimeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         runtimeOverrides.m_variableIndices.resize(buildOverrides.m_variables.size());
 
@@ -325,6 +341,32 @@ namespace ScriptCanvasBuilder
         return runtimeOverrides;
     }
 
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> LoadBuilderData(const ScriptCanvasEditor::SourceHandle& sourceHandle)
+    {
+        const AZ::Data::AssetId builderAssetId(sourceHandle.Id(), AZ_CRC_CE("BuilderData"));
+        return LoadBuilderDataAsset(builderAssetId);
+    }
+
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> LoadBuilderDataAsset(const AZ::Data::AssetId& assetId)
+    {
+        AZ::Data::Asset<BuildVariableOverridesData> sourceAsset
+            = AZ::Data::AssetManager::Instance().GetAsset<BuildVariableOverridesData>
+                ( assetId
+                , AZ::Data::AssetLoadBehavior::PreLoad);
+
+        // use the asset handler directly? Asset manager may not be running, see RunUnitTestGraph loading mechanism
+        auto assetStatus = sourceAsset.BlockUntilLoadComplete();
+        if (assetStatus != AZ::Data::AssetData::AssetStatus::Ready || !sourceAsset.GetAs<BuildVariableOverrides>())
+        {
+            return AZ::Failure(AZStd::string::format("Failed to load builder asset: %s", assetId.ToString<AZStd::string>().c_str()));
+        }
+
+        // No recursion is necessary, as the AP has populated the assets through all dependencies during processing.
+        BuildVariableOverrides& result = *sourceAsset.GetAs<BuildVariableOverrides>();
+        return AZ::Success(result);
+    }
+
+    /*
     AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree)
     {
         auto buildEntity = editorAssetTree.m_asset.Get()->GetEntity();
@@ -372,6 +414,6 @@ namespace ScriptCanvasBuilder
         }
 
         return AZ::Success(result);
-    }
+    }*/
 
 }

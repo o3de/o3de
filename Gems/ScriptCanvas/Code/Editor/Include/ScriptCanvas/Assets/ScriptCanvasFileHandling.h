@@ -25,6 +25,7 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
+    /*
     class EditorAssetTree
     {
     public:
@@ -40,6 +41,7 @@ namespace ScriptCanvasEditor
 
         AZStd::string ToString(size_t depth = 0) const;
     };
+    */
 
     AZ::Outcome<SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path);
 
@@ -48,7 +50,7 @@ namespace ScriptCanvasEditor
         , AZStd::string_view source
         , AZ::SerializeContext& serializeContext);
 
-    AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, EditorAssetTree* parent = nullptr);
+    // AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, EditorAssetTree* parent = nullptr);
         
     AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream);
 }
