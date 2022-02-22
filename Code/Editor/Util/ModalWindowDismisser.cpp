@@ -48,7 +48,7 @@ void ModalWindowDismisser::DismissWindows()
 {
     for (QDialog* dialog : m_windows)
     {
-        dialog->close();
+        dialog->reject();
     }
     m_windows.clear();
     m_dismiss = false;
