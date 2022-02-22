@@ -32,9 +32,7 @@ namespace MaterialEditor
         m_viewportSettings =
             AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
 
-        m_windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
-            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
-
+        SetGroupSettingsPrefix("/O3DE/Atom/MaterialEditor/ViewportSettingsInspector");
         MaterialViewportNotificationBus::Handler::BusConnect();
     }
 
@@ -43,7 +41,6 @@ namespace MaterialEditor
         m_lightingPreset.reset();
         m_modelPreset.reset();
         MaterialViewportNotificationBus::Handler::BusDisconnect();
-        AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
     }
 
     void ViewportSettingsInspector::Populate()
@@ -144,7 +141,7 @@ namespace MaterialEditor
             });
 
         const int itemSize = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/MaterialEditor/AssetGridDialog/ModelItemSize", 180));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/Atom/MaterialEditor/AssetGridDialog/ModelItemSize", 180));
 
         AtomToolsFramework::AssetGridDialog dialog(
             "Model Preset Browser", selectableAssets, selectedAsset, QSize(itemSize, itemSize), QApplication::activeWindow());
@@ -270,7 +267,7 @@ namespace MaterialEditor
             });
 
         const int itemSize = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/MaterialEditor/AssetGridDialog/LightingItemSize", 180));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/Atom/MaterialEditor/AssetGridDialog/LightingItemSize", 180));
 
         AtomToolsFramework::AssetGridDialog dialog(
             "Lighting Preset Browser", selectableAssets, selectedAsset, QSize(itemSize, itemSize), QApplication::activeWindow());
@@ -338,7 +335,6 @@ namespace MaterialEditor
                 m_viewportSettings->m_displayMapperOperationType = viewportRequests->GetDisplayMapperOperationType();
             });
 
-        AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
     }
 
@@ -433,23 +429,6 @@ namespace MaterialEditor
     {
         return AZ::Crc32(AZStd::string::format("ViewportSettingsInspector::PropertyGroup::%s", groupName.c_str()));
     }
-
-    bool ViewportSettingsInspector::ShouldGroupAutoExpanded(const AZStd::string& groupName) const
-    {
-        auto stateItr = m_windowSettings->m_inspectorCollapsedGroups.find(GetGroupSaveStateKey(groupName));
-        return stateItr == m_windowSettings->m_inspectorCollapsedGroups.end();
-    }
-
-    void ViewportSettingsInspector::OnGroupExpanded(const AZStd::string& groupName)
-    {
-        m_windowSettings->m_inspectorCollapsedGroups.erase(GetGroupSaveStateKey(groupName));
-    }
-
-    void ViewportSettingsInspector::OnGroupCollapsed(const AZStd::string& groupName)
-    {
-        m_windowSettings->m_inspectorCollapsedGroups.insert(GetGroupSaveStateKey(groupName));
-    }
-
 } // namespace MaterialEditor
 
 #include <Window/ViewportSettingsInspector/moc_ViewportSettingsInspector.cpp>

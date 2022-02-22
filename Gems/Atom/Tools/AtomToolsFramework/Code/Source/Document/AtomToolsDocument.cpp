@@ -9,21 +9,59 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 namespace AtomToolsFramework
 {
-    AtomToolsDocument::AtomToolsDocument()
+    void AtomToolsDocument::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<AtomToolsDocument>()
+                ->Version(0);
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<AtomToolsDocumentRequestBus>("AtomToolsDocumentRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
+                ->Event("GetAbsolutePath", &AtomToolsDocumentRequestBus::Events::GetAbsolutePath)
+                ->Event("Open", &AtomToolsDocumentRequestBus::Events::Open)
+                ->Event("Reopen", &AtomToolsDocumentRequestBus::Events::Reopen)
+                ->Event("Close", &AtomToolsDocumentRequestBus::Events::Close)
+                ->Event("Save", &AtomToolsDocumentRequestBus::Events::Save)
+                ->Event("SaveAsChild", &AtomToolsDocumentRequestBus::Events::SaveAsChild)
+                ->Event("SaveAsCopy", &AtomToolsDocumentRequestBus::Events::SaveAsCopy)
+                ->Event("IsOpen", &AtomToolsDocumentRequestBus::Events::IsOpen)
+                ->Event("IsModified", &AtomToolsDocumentRequestBus::Events::IsModified)
+                ->Event("IsSavable", &AtomToolsDocumentRequestBus::Events::IsSavable)
+                ->Event("CanUndo", &AtomToolsDocumentRequestBus::Events::CanUndo)
+                ->Event("CanRedo", &AtomToolsDocumentRequestBus::Events::CanRedo)
+                ->Event("Undo", &AtomToolsDocumentRequestBus::Events::Undo)
+                ->Event("Redo", &AtomToolsDocumentRequestBus::Events::Redo)
+                ->Event("BeginEdit", &AtomToolsDocumentRequestBus::Events::BeginEdit)
+                ->Event("EndEdit", &AtomToolsDocumentRequestBus::Events::EndEdit)
+                ;
+        }
+    }
+
+    AtomToolsDocument::AtomToolsDocument(const AZ::Crc32& toolId)
+        : m_toolId(toolId)
     {
         AtomToolsDocumentRequestBus::Handler::BusConnect(m_id);
-        AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsDocumentNotificationBus::Events::OnDocumentCreated, m_id);
+        AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentCreated, m_id);
     }
 
     AtomToolsDocument::~AtomToolsDocument()
     {
-        AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
-        AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
+        AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
         AtomToolsDocumentRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
     }
 
     const AZ::Uuid& AtomToolsDocument::GetId() const
@@ -80,10 +118,10 @@ namespace AtomToolsFramework
             return false;
         }
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
         return true;
     }
 
@@ -169,8 +207,8 @@ namespace AtomToolsFramework
 
         AZ_TracePrintf("AtomToolsDocument", "Document closed: '%s'.\n", m_absolutePath.c_str());
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentClosed, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentClosed, m_id);
 
         // Clearing after notification so paths are still available
         Clear();
@@ -211,8 +249,8 @@ namespace AtomToolsFramework
             // The history index is one beyond the last executed command. Decrement the index then execute undo.
             m_undoHistory[--m_undoHistoryIndex].first();
             AZ_TracePrintf("AtomToolsDocument", "Document undo: '%s'.\n", m_absolutePath.c_str());
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
             return true;
         }
         return false;
@@ -225,8 +263,8 @@ namespace AtomToolsFramework
             // Execute the current redo command then move the history index to the next position.
             m_undoHistory[m_undoHistoryIndex++].second();
             AZ_TracePrintf("AtomToolsDocument", "Document redo: '%s'.\n", m_absolutePath.c_str());
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
             return true;
         }
         return false;
@@ -259,8 +297,8 @@ namespace AtomToolsFramework
     {
         AZ_TracePrintf("AtomToolsDocument", "Document opened: '%s'.\n", m_absolutePath.c_str());
         AzToolsFramework::AssetSystemBus::Handler::BusConnect();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
         return true;
     }
 
@@ -282,8 +320,8 @@ namespace AtomToolsFramework
             &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, m_savePathNormalized.c_str(), true,
             [](bool, const AzToolsFramework::SourceControlFileInfo&) {});
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
         return true;
     }
 
@@ -319,8 +357,8 @@ namespace AtomToolsFramework
 
         // Assign the index to the end of history
         m_undoHistoryIndex = aznumeric_cast<int>(m_undoHistory.size());
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
     }
 
     void AtomToolsDocument::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
@@ -333,16 +371,16 @@ namespace AtomToolsFramework
             if (!m_ignoreSourceFileChangeToSelf)
             {
                 AZ_TracePrintf("AtomToolsDocument", "Document changed externally: '%s'.\n", m_absolutePath.c_str());
-                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                    &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
             }
             m_ignoreSourceFileChangeToSelf = false;
         }
         else if (m_sourceDependencies.find(sourcePath) != m_sourceDependencies.end())
         {
             AZ_TracePrintf("AtomToolsDocument", "Document dependency changed: '%s'.\n", m_absolutePath.c_str());
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
-                &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
         }
     }
 

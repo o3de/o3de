@@ -58,6 +58,7 @@ namespace Terrain
 
         enum DetailTextureFlags : uint32_t
         {
+            None                =  0b0000'0000'0000'0000'0000'0000'0000'0000,
             UseTextureBaseColor =  0b0000'0000'0000'0000'0000'0000'0000'0001,
             UseTextureNormal =     0b0000'0000'0000'0000'0000'0000'0000'0010,
             UseTextureMetallic =   0b0000'0000'0000'0000'0000'0000'0000'0100,
@@ -69,11 +70,11 @@ namespace Terrain
             FlipNormalX =          0b0000'0000'0000'0001'0000'0000'0000'0000,
             FlipNormalY =          0b0000'0000'0000'0010'0000'0000'0000'0000,
 
-            BlendModeMask =        0b0000'0000'0000'1100'0000'0000'0000'0000,
-            BlendModeLerp =        0b0000'0000'0000'0000'0000'0000'0000'0000,
-            BlendModeLinearLight = 0b0000'0000'0000'0100'0000'0000'0000'0000,
-            BlendModeMultiply =    0b0000'0000'0000'1000'0000'0000'0000'0000,
-            BlendModeOverlay =     0b0000'0000'0000'1100'0000'0000'0000'0000,
+            BlendModeMask =        0b0000'0000'0001'1100'0000'0000'0000'0000,
+            BlendModeLerp =        0b0000'0000'0000'0100'0000'0000'0000'0000,
+            BlendModeLinearLight = 0b0000'0000'0000'1000'0000'0000'0000'0000,
+            BlendModeMultiply =    0b0000'0000'0000'1100'0000'0000'0000'0000,
+            BlendModeOverlay =     0b0000'0000'0001'0000'0000'0000'0000'0000,
         };
         
         struct DetailMaterialShaderData
@@ -94,11 +95,11 @@ namespace Terrain
             float m_baseColorFactor{ 1.0f };
 
             float m_normalFactor{ 1.0f };
-            float m_metalFactor{ 1.0f };
+            float m_metalFactor{ 0.0f };
             float m_roughnessScale{ 1.0f };
             float m_roughnessBias{ 0.0f };
 
-            float m_specularF0Factor{ 1.0f };
+            float m_specularF0Factor{ 0.5f };
             float m_occlusionFactor{ 1.0f };
             float m_heightFactor{ 1.0f };
             float m_heightOffset{ 0.0f };
@@ -119,9 +120,9 @@ namespace Terrain
             uint16_t m_heightImageIndex{ InvalidImageIndex };
 
             // 16 byte aligned
-            uint16_t m_padding1;
-            uint32_t m_padding2;
-            uint32_t m_padding3;
+            uint16_t m_padding1{ 0 };
+            uint32_t m_padding2{ 0 };
+            uint32_t m_padding3{ 0 };
         };
         static_assert(sizeof(DetailMaterialShaderData) % 16 == 0, "DetailMaterialShaderData must be 16 byte aligned.");
 
@@ -129,7 +130,7 @@ namespace Terrain
         {
             AZ::Data::AssetId m_assetId;
             AZ::RPI::Material::ChangeId m_materialChangeId{AZ::RPI::Material::DEFAULT_CHANGE_ID};
-            uint32_t refCount = 0;
+            uint32_t m_refCount = 0;
             uint16_t m_detailMaterialBufferIndex{ 0xFFFF };
 
             AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
@@ -152,11 +153,16 @@ namespace Terrain
             AZ::EntityId m_entityId;
             AZ::Aabb m_region{AZ::Aabb::CreateNull()};
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
-            uint16_t m_defaultDetailMaterialId;
-        };
+            uint16_t m_defaultDetailMaterialId{ 0xFFFF };
 
+            bool HasMaterials()
+            {
+                return m_defaultDetailMaterialId != InvalidDetailMaterialId || !m_materialsForSurfaces.empty();
+            }
+        };
+        
         using DetailMaterialContainer = AZ::Render::IndexedDataVector<DetailMaterialData>;
-        static constexpr auto InvalidDetailMaterailId = DetailMaterialContainer::NoFreeSlot;
+        static constexpr auto InvalidDetailMaterialId = DetailMaterialContainer::NoFreeSlot;
         
         // System-level parameters
         static constexpr int32_t DetailTextureSize{ 1024 };
@@ -175,6 +181,8 @@ namespace Terrain
         void OnTerrainSurfaceMaterialMappingMaterialChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
         void OnTerrainSurfaceMaterialMappingTagChanged(
             AZ::EntityId entityId, SurfaceData::SurfaceTag oldSurfaceTag, SurfaceData::SurfaceTag newSurfaceTag) override;
+        void OnTerrainSurfaceMaterialMappingRegionCreated(AZ::EntityId entityId, const AZ::Aabb& region) override;
+        void OnTerrainSurfaceMaterialMappingRegionDestroyed(AZ::EntityId entityId, const AZ::Aabb& oldRegion) override;
         void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
         //! Removes all images from all detail materials from the bindless image array

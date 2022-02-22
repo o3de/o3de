@@ -17,5 +17,7 @@
     "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/ui/message-popup/",
-    "dependencies": []
+    "dependencies": [
+        "LyShine"
+    ]
 }

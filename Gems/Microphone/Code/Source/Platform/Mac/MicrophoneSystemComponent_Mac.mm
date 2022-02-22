@@ -84,7 +84,7 @@ public:
         AudioObjectPropertyAddress theAddress = {
             kAudioHardwarePropertyDefaultInputDevice,
             kAudioObjectPropertyScopeGlobal,
-            kAudioObjectPropertyElementMaster
+            kAudioObjectPropertyElementMain
         };
         
         status = AudioObjectGetPropertyData(kAudioObjectSystemObject,

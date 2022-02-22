@@ -31,18 +31,58 @@ namespace UnitTest
         EXPECT_EQ(m_focusModeInterface->GetFocusRoot(m_editorEntityContextId), AZ::EntityId());
     }
 
+    TEST_F(EditorFocusModeFixture, GetFocusedEntitiesRoot)
+    {
+        AzToolsFramework::EntityIdList entities = m_focusModeInterface->GetFocusedEntities(m_editorEntityContextId);
+        
+        using ::testing::UnorderedElementsAre;
+        EXPECT_EQ(entities.size(), 6);
+        EXPECT_THAT(
+            entities,
+            UnorderedElementsAre(
+                m_entityMap[CityEntityName],
+                m_entityMap[StreetEntityName],
+                m_entityMap[CarEntityName],
+                m_entityMap[Passenger1EntityName],
+                m_entityMap[SportsCarEntityName],
+                m_entityMap[Passenger2EntityName]
+            )
+        );
+    }
+
+    TEST_F(EditorFocusModeFixture, GetFocusedEntitiesClear)
+    {
+        m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
+
+        AzToolsFramework::EntityIdList entities = m_focusModeInterface->GetFocusedEntities(m_editorEntityContextId);
+
+        using ::testing::UnorderedElementsAre;
+        EXPECT_EQ(entities.size(), 6);
+        EXPECT_THAT(
+            entities,
+            UnorderedElementsAre(
+                m_entityMap[CityEntityName], m_entityMap[StreetEntityName], m_entityMap[CarEntityName], m_entityMap[Passenger1EntityName],
+                m_entityMap[SportsCarEntityName], m_entityMap[Passenger2EntityName]));
+    }
+
     TEST_F(EditorFocusModeFixture, GetFocusedEntitiesBase)
     {
         m_focusModeInterface->SetFocusRoot(m_entityMap[StreetEntityName]);
 
         AzToolsFramework::EntityIdList entities = m_focusModeInterface->GetFocusedEntities(m_editorEntityContextId);
 
+        using ::testing::UnorderedElementsAre;
         EXPECT_EQ(entities.size(), 5);
-        EXPECT_TRUE(AZStd::find(entities.begin(), entities.end(), m_entityMap[StreetEntityName]) != entities.end());
-        EXPECT_TRUE(AZStd::find(entities.begin(), entities.end(), m_entityMap[CarEntityName]) != entities.end());
-        EXPECT_TRUE(AZStd::find(entities.begin(), entities.end(), m_entityMap[Passenger1EntityName]) != entities.end());
-        EXPECT_TRUE(AZStd::find(entities.begin(), entities.end(), m_entityMap[SportsCarEntityName]) != entities.end());
-        EXPECT_TRUE(AZStd::find(entities.begin(), entities.end(), m_entityMap[Passenger2EntityName]) != entities.end());
+        EXPECT_THAT(
+            entities,
+            UnorderedElementsAre(
+                m_entityMap[StreetEntityName],
+                m_entityMap[CarEntityName],
+                m_entityMap[Passenger1EntityName],
+                m_entityMap[SportsCarEntityName],
+                m_entityMap[Passenger2EntityName]
+            )
+        );
     }
 
     TEST_F(EditorFocusModeFixture, GetFocusedEntitiesSiblings)
@@ -51,9 +91,9 @@ namespace UnitTest
 
         AzToolsFramework::EntityIdList entities = m_focusModeInterface->GetFocusedEntities(m_editorEntityContextId);
 
+        using ::testing::UnorderedElementsAre;
         EXPECT_EQ(entities.size(), 2);
-        EXPECT_TRUE(AZStd::find(entities.begin(), entities.end(), m_entityMap[SportsCarEntityName]) != entities.end());
-        EXPECT_TRUE(AZStd::find(entities.begin(), entities.end(), m_entityMap[Passenger2EntityName]) != entities.end());
+        EXPECT_THAT(entities, UnorderedElementsAre(m_entityMap[SportsCarEntityName], m_entityMap[Passenger2EntityName]));
     }
 
     TEST_F(EditorFocusModeFixture, GetFocusedEntitiesAddEntity)
