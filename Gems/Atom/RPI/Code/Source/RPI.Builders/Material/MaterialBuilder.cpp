@@ -183,18 +183,29 @@ namespace AZ
                             outputJobDescriptor.m_jobDependencyList);
                     }
 
-                    for (auto& functor : materialTypeSourceData.GetValue().m_materialFunctorSourceData)
+                    auto addFunctorDependencies = [&outputJobDescriptor, &request](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
                     {
-                        auto dependencies = functor->GetActualSourceData()->GetAssetDependencies();
-
-                        for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
+                        for (auto& functor : functors)
                         {
-                            AddPossibleDependencies(request.m_sourceFile,
-                                dependency.m_sourceFilePath,
-                                dependency.m_jobKey.c_str(),
-                                outputJobDescriptor.m_jobDependencyList);
+                            const auto& dependencies = functor->GetActualSourceData()->GetAssetDependencies();
+
+                            for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
+                            {
+                                AddPossibleDependencies(request.m_sourceFile,
+                                    dependency.m_sourceFilePath,
+                                    dependency.m_jobKey.c_str(),
+                                    outputJobDescriptor.m_jobDependencyList);
+                            }
                         }
-                    }
+                    };
+
+                    addFunctorDependencies(materialTypeSourceData.GetValue().m_materialFunctorSourceData);
+
+                    materialTypeSourceData.GetValue().EnumeratePropertyGroups([addFunctorDependencies](const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
+                        {
+                            addFunctorDependencies(propertyGroupStack.back()->GetFunctors());
+                            return true;
+                        });
                 }
                 else // it's a .material file
                 {
