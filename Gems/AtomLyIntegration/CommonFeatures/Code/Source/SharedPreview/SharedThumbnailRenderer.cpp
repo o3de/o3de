@@ -128,7 +128,7 @@ namespace AZ
                 static constexpr const char* MaterialAssetPathSetting =
                     "/O3DE/Atom/CommonFeature/SharedPreview/ModelPresetAssetType/MaterialAssetPath";
                 static constexpr const char* LightingAssetPathSetting =
-                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelAssetPresetType/LightingAssetPath";
+                    "/O3DE/Atom/CommonFeature/SharedPreview/ModelPresetAssetType/LightingAssetPath";
 
                 // Model preset assets are relatively small JSON files containing a reference to a model asset and possibly other
                 // parameters. The preset must be loaded to get the model asset ID. Then the preview will be rendered like any other model.
