@@ -301,10 +301,10 @@ namespace EMStudio
 
     void AnimViewportWidget::OnContextMenuEvent(QMouseEvent* event)
     {
-        QMenu menu(this);
+        QMenu* menu = new QMenu(this);
 
         {
-            QMenu* cameraMenu = menu.addMenu("Camera Options");
+            QMenu* cameraMenu = menu->addMenu("Camera Options");
             QAction* frontAction = cameraMenu->addAction("Front");
             QAction* backAction = cameraMenu->addAction("Back");
             QAction* topAction = cameraMenu->addAction("Top");
@@ -352,13 +352,16 @@ namespace EMStudio
                 });
         }
 
-        QAction* resetAction = menu.addAction("Reset Character");
+        QAction* resetAction = menu->addAction("Reset Character");
         connect(resetAction, &QAction::triggered, this, [this]()
             {
                 m_renderer->Reinit();
                 UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
             });
 
-        menu.popup(event->globalPos());
+        if (!menu->isEmpty())
+        {
+            menu->popup(event->globalPos());
+        }
     }
 } // namespace EMStudio
