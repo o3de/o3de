@@ -322,11 +322,11 @@ def AtomEditorComponents_Light_AddedToEntity():
                     test_shadow_filter_method = (
                         f"Shadow filter method set to {filter_method}",
                         f"P1: Shadow filter method set to {filter_method}")
-                    Report.result(test_shadow_filter_method,
-                                  current_filter_method == SHADOW_FILTER_METHOD[filter_method])
+                    Report.result(test_shadow_filter_method, light_component.get_component_property_value(
+                        AtomComponentProperties.light('Shadow filter method')) == SHADOW_FILTER_METHOD[filter_method])
 
                     # 17. Edit the Filtering sample count parameter.
-                    if current_filter_method in (1, 3):
+                    if filter_method in ('PCF', 'PCF+ESM'):
                         light_component.set_component_property_value(
                             AtomComponentProperties.light('Filtering sample count'), 64)
                         Report.result(Tests.edit_filtering_sample_count,
@@ -334,7 +334,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                                           AtomComponentProperties.light('Filtering sample count')) == 64)
 
                     # 18. Edit the ESM Exponent parameter.
-                    if current_filter_method in (2, 3):
+                    if filter_method in ('ESM', 'PCF+ESM'):
                         light_component.set_component_property_value(
                             AtomComponentProperties.light('ESM exponent'), 5000)
                         Report.result(Tests.edit_esm_exponent,
