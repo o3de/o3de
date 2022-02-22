@@ -356,6 +356,7 @@ namespace EMStudio
         connect(resetAction, &QAction::triggered, this, [this]()
             {
                 m_renderer->Reinit();
+                UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
             });
 
         menu.exec(event->globalPos());
