@@ -8,6 +8,7 @@
     "DEFAULT_SETTINGS_PATHS": [
         "settings.py",
         "settings.json",
+        ".secrets.py",
         ".secrets.json"
     ],
     "DCCSI_IMAGE_TYPES": [

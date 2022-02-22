@@ -186,10 +186,16 @@ _PATH_DCCSI_PYTHON_LIB = Path(_PATH_DCCSI_PYTHON_LIB)
 # these global variables are passed as defaults into methods within the module
 
 # special, a global home for stashing PATHs for managed settings
+global _DCCSI_SYS_PATH
 _DCCSI_SYS_PATH = list()
 
 # special, a global home for stashing PYTHONPATHs for managed settings
+global _DCCSI_PYTHONPATH
 _DCCSI_PYTHONPATH = list()
+
+# special, stash local PYTHONPATHs in a non-managed way (won't end up in settings.local.json)
+global _DCCSI_PYTHONPATH_EXCLUDE
+_DCCSI_PYTHONPATH_EXCLUDE = list()
 
 # this is a dict bucket to store none-managed settings (fully local to module)
 global _DCCSI_LOCAL_SETTINGS
@@ -364,6 +370,7 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
 
 # -------------------------------------------------------------------------
 def init_o3de_pyside2_tools():
+    global _DCCSI_PYTHONPATH
     # set up the pyside2-tools (pyside2uic)
     _DCCSI_PYSIDE2_TOOLS = Path(_PATH_DCCSI_PYTHON,'pyside2-tools')
     if _DCCSI_PYSIDE2_TOOLS.exists():
@@ -579,6 +586,9 @@ def init_o3de_python(engine_path=_O3DE_DEV,
     """Initialize the O3DE dynamic Python env and settings.
     Note: """
     
+    global _DCCSI_LOCAL_SETTINGS
+    global _DCCSI_PYTHONPATH_EXCLUDE
+    
     time_start = time.process_time() 
     
     # pathify
@@ -591,8 +601,11 @@ def init_o3de_python(engine_path=_O3DE_DEV,
     os.environ["DYNACONF_PATH_DCCSI_PYTHON"] = str(_PATH_DCCSI_PYTHON.as_posix())
     
     _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs(_PATH_DCCSIG)
-    os.environ["DYNACONF_PATH_DCCSI_PYTHON_LIB"] = str(_PATH_DCCSI_PYTHON_LIB.as_posix())
-    dccsi_pythonpath.append(_PATH_DCCSI_PYTHON_LIB)
+    os.environ["PATH_DCCSI_PYTHON_LIB"] = str(_PATH_DCCSI_PYTHON_LIB.as_posix())
+    _DCCSI_LOCAL_SETTINGS['PATH_DCCSI_PYTHON_LIB']= str(_PATH_DCCSI_PYTHON_LIB.as_posix())
+    #dccsi_pythonpath.append(_PATH_DCCSI_PYTHON_LIB)
+    # ^ adding here will cause this to end up in settings.local.json
+    # and we don't want that, since this LIB location is transient/procedural
         
     # this is transient and will always track the exe this script is executing on
     _O3DE_PY_EXE = Path(sys.executable)
@@ -943,7 +956,7 @@ if __name__ == '__main__':
     if args.enable_python:
         _LOGGER.info(STR_CROSSBAR)
         _LOGGER.info('PATH_DCCSI_PYTHON'.format(settings.PATH_DCCSI_PYTHON))
-        _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(settings.PATH_DCCSI_PYTHON_LIB))
+        _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(_DCCSI_LOCAL_SETTINGS['PATH_DCCSI_PYTHON_LIB']))
         _LOGGER.info('O3DE_PYTHONHOME'.format(settings.O3DE_PYTHONHOME))
         _LOGGER.info('PATH_O3DE_PYTHON_INSTALL'.format(settings.PATH_O3DE_PYTHON_INSTALL))
         _LOGGER.info('DCCSI_PY_BASE: {}'.format(settings.DCCSI_PY_BASE))
