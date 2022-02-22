@@ -406,10 +406,10 @@ namespace AssetProcessor
         void ProcessJob(JobDetails& jobDetails);
 
         // Returns true if the path is inside the Cache and *not* inside the Intermediate Assets folder
-        bool IsInCacheFolder(AZ::IO::PathView path);
+        bool IsInCacheFolder(AZ::IO::PathView path) const;
 
         // Returns true if the path is inside the Intermediate Assets folder
-        bool IsInIntermediateAssetsFolder(AZ::IO::PathView path);
+        bool IsInIntermediateAssetsFolder(AZ::IO::PathView path) const;
 
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 

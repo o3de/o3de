@@ -263,7 +263,7 @@ namespace AssetUtilities
 
     // Returns true if the path is in the cachePath and *not* in the intermediate assets folder.
     // If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
-    bool IsInCacheFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath = "");
+    bool IsInCacheFolder(AZ::IO::PathView path, AZ::IO::Path cachePath = "");
 
     // Returns true if the path is in the intermediate assets folder.
     // If cachePath is empty, it will be computed using ComputeProjectCacheRoot.

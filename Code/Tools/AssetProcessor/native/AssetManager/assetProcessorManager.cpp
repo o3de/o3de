@@ -3206,12 +3206,12 @@ namespace AssetProcessor
         }
     }
 
-    bool AssetProcessorManager::IsInCacheFolder(AZ::IO::PathView path)
+    bool AssetProcessorManager::IsInCacheFolder(AZ::IO::PathView path) const
     {
         return AssetUtilities::IsInCacheFolder(path, m_normalizedCacheRootPath.toUtf8().constData());
     }
 
-    bool AssetProcessorManager::IsInIntermediateAssetsFolder(AZ::IO::PathView path)
+    bool AssetProcessorManager::IsInIntermediateAssetsFolder(AZ::IO::PathView path) const
     {
         return AssetUtilities::IsInIntermediateAssetsFolder(path, m_normalizedCacheRootPath.toUtf8().constData());
     }
