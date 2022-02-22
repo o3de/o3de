@@ -78,17 +78,19 @@ namespace SandboxEditor
                 AzFramework::WindowRequestBus::EventResult(
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                if (m_virtualNormalizedPosition) {
+                if (m_virtualNormalizedPosition && (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority))
+                {
                     (*m_virtualNormalizedPosition) += position->m_normalizedPositionDelta;
-                } else {
-                    m_virtualNormalizedPosition =
-                        AZStd::optional<AZ::Vector2>{position->m_normalizedPosition};
                 }
-                
+                else
+                {
+                    m_virtualNormalizedPosition = AZStd::optional<AZ::Vector2>{ position->m_normalizedPosition };
+                }
+
                 const auto normalizedPosition = m_virtualNormalizedPosition.value_or(position->m_normalizedPosition);
                 auto screenPoint = AzFramework::ScreenPointFromVector2(AZ::Vector2(
                     normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width),
-                    normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height))); 
+                    normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height)));
 
                 ProjectedViewportRay ray{};
                 ViewportInteractionRequestBus::EventResult(
@@ -127,7 +129,6 @@ namespace SandboxEditor
                     eventType = MouseEvent::Down;
                 }
 
-                m_virtualNormalizedPosition = AZStd::nullopt;
                 if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
                 {
                     AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
@@ -151,6 +152,7 @@ namespace SandboxEditor
                 }
                 if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
                 {
+                    m_virtualNormalizedPosition = AZStd::nullopt;
                     AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
                         GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
                         AzToolsFramework::CursorInputMode::CursorModeNone);
