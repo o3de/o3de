@@ -153,9 +153,25 @@ namespace AZ
     {
         if (nameLiteral.m_data == nullptr)
         {
+            // Load name data for the literal, but ensure its m_view is still referring to the original literal.
             Name nameData = MakeName(nameLiteral.m_view);
             nameLiteral.m_data = AZStd::move(nameData.m_data);
             nameLiteral.m_hash = nameData.m_hash;
+        }
+    }
+
+    void NameDictionary::LoadDeferredName(Name& deferredName)
+    {
+        // Ensure this name has m_data loaded
+        LoadLiteral(deferredName);
+
+        // Link this name to the Name linked list for our module, if it isn't already.
+        // This ensures that static Names are restored if the NameDictionary is ever destroyed
+        // and then recreated, as the new dictionary will read from our static name list.
+        if (!deferredName.m_linkedToDictionary)
+        {
+            deferredName.m_linkedToDictionary = true;
+            deferredName.LinkStaticName(&m_deferredHead);
         }
     }
 
@@ -166,22 +182,25 @@ namespace AZ
             return;
         }
 
-        Name* current = deferredHead;
+        // Ensure this list entry is linked into our global name dictionary.
+        LoadDeferredName(*deferredHead);
+
+        // Ensure all Names in the list have their data loaded and are flagged as
+        // linked to our static name list.
+        Name* current = deferredHead->m_nextName;
         while (current != nullptr)
         {
             LoadLiteral(*deferredHead);
+            current->m_linkedToDictionary = true;
             current = current->m_nextName;
-        }
-
-        if (!deferredHead->m_linkedToDictionary)
-        {
-            deferredHead->m_linkedToDictionary = true;
-            deferredHead->LinkStaticName(&m_deferredHead);
         }
     }
 
     void NameDictionary::UnregisterDeferredHead(Name& name)
     {
+        // Occasionally, static names may be destroyed before the NameDictionary is
+        // We check here to see if the destroyed name is our current deferred head,
+        // and update the deferred head if so, so that we don't lose our static name list
         if (m_deferredHead == &name)
         {
             m_deferredHead = name.m_nextName;
@@ -190,6 +209,8 @@ namespace AZ
 
     void NameDictionary::UnloadDeferredNames()
     {
+        // Iterate through all names that still exist at static scope and clear their data
+        // They'll retain m_view, so will be able to be recreated by LoadDeferredName
         Name* staticName = m_deferredHead;
         while (staticName != nullptr)
         {

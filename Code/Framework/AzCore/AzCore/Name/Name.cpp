@@ -20,6 +20,76 @@ namespace AZ
 {
     Name* Name::s_staticNameBegin = nullptr;
 
+    NameRef::NameRef()
+    {
+    }
+
+    NameRef::NameRef(const NameRef& nameRef)
+        : m_data(nameRef.m_data)
+    {
+    }
+
+    NameRef::NameRef(NameRef&& nameRef)
+        : m_data(AZStd::move(nameRef.m_data))
+    {
+    }
+
+    NameRef::NameRef(Name name)
+        : m_data(AZStd::move(name.m_data))
+    {
+    }
+
+    NameRef::NameRef(const AZStd::intrusive_ptr<Internal::NameData>& nameData)
+        : m_data(nameData)
+    {
+    }
+
+    NameRef::NameRef(AZStd::intrusive_ptr<Internal::NameData>&& nameData)
+        : m_data(nameData)
+    {
+    }
+
+    NameRef& NameRef::operator=(Name name)
+    {
+        m_data = AZStd::move(name.m_data);
+        return *this;
+    }
+
+    bool NameRef::operator==(const NameRef& other) const
+    {
+        return m_data == other.m_data;
+    }
+
+    bool NameRef::operator!=(const NameRef& other) const
+    {
+        return m_data != other.m_data;
+    }
+
+    bool NameRef::operator==(const Name& other) const
+    {
+        return m_data == other.m_data;
+    }
+
+    bool NameRef::operator!=(const Name& other) const
+    {
+        return m_data != other.m_data;
+    }
+
+    AZStd::string_view NameRef::GetStringView() const
+    {
+        return m_data == nullptr ? "" : m_data->GetName();
+    }
+
+    const char* NameRef::GetCStr() const
+    {
+        return m_data == nullptr ? "" : m_data->GetName().data();
+    }
+
+    Internal::NameData::Hash NameRef::GetHash() const
+    {
+        return m_data == nullptr ? 0 : m_data->GetHash();
+    }
+
     Name::Name()
         : m_view("")
     {
@@ -47,9 +117,9 @@ namespace AZ
     }
 
     Name::Name(NameRef name)
-        : m_data(AZStd::move(name))
-        , m_hash(name->GetHash())
-        , m_view(name->GetName())
+        : m_data(AZStd::move(name.m_data))
+        , m_hash(name.GetHash())
+        , m_view(name.GetStringView())
     {
     }
 
@@ -62,6 +132,8 @@ namespace AZ
 
     Name& Name::operator=(const Name& rhs)
     {
+        // If we're copying a string literal and it's not yet initialized,
+        // we need to flag ourselves as a string literal
         if (rhs.m_supportsDeferredLoad && rhs.m_data == nullptr)
         {
             m_hash = rhs.m_hash;
@@ -79,6 +151,11 @@ namespace AZ
 
     Name& Name::operator=(Name&& rhs)
     {
+        // If we're moving a string literal (generally from FromStringLiteral)
+        // we promote outselves to a string literal so that we respect all deferred initialization
+        // This covers cases like a static Name being created at function scope while the dictionary is
+        // active, when a test then destroys and recreates the name dictionary, meaning the Name needs to be
+        // restored via the deferred initialization logic.
         if (rhs.m_supportsDeferredLoad)
         {
             m_hash = rhs.m_hash;
@@ -115,14 +192,8 @@ namespace AZ
         }
     }
 
-    void Name::SetName(AZStd::string_view name, bool isLiteral)
+    void Name::SetName(AZStd::string_view name)
     {
-        if (isLiteral && !NameDictionary::IsReady(false))
-        {
-            SetNameLiteral(name);
-            return;
-        }
-
         if (!name.empty())
         {
             AZ_Assert(NameDictionary::IsReady(), "Attempted to initialize Name '%.*s' before the NameDictionary is ready.", AZ_STRING_ARG(name));
@@ -150,7 +221,7 @@ namespace AZ
             }
             else
             {
-                NameDictionary::Instance().LoadDeferredNames(this);
+                NameDictionary::Instance().LoadDeferredName(*this);
             }
 
             m_supportsDeferredLoad = true;

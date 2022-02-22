@@ -33,7 +33,7 @@
 
 namespace UnitTest
 {
-    static AZ::Name globalName("global");
+    static AZ::Name globalName = AZ::Name::FromStringLiteral("global");
 
     class NameDictionaryTester
     {
@@ -657,11 +657,11 @@ namespace UnitTest
     TEST_F(NameTest, NameRef)
     {
         AZ::NameRef fromRValue = AZ::Name("test");
-        EXPECT_EQ("test", fromRValue->GetName());
+        EXPECT_EQ("test", fromRValue.GetStringView());
 
         AZ::Name name("foo");
         AZ::NameRef fromLValue = name;
-        EXPECT_EQ("foo", fromLValue->GetName());
+        EXPECT_EQ("foo", fromLValue.GetStringView());
 
         AZ::Name fromRefLValue = fromLValue;
         EXPECT_EQ("foo", fromRefLValue.GetStringView());
@@ -670,7 +670,10 @@ namespace UnitTest
         EXPECT_EQ("test", fromRefRValue.GetStringView());
 
         EXPECT_TRUE(AZ::Name(fromLValue) == fromRefLValue);
-        EXPECT_TRUE(AZ::Name(fromLValue) == AZ::Name("foo"));
+        EXPECT_TRUE(fromLValue == fromRefLValue);
+        EXPECT_TRUE(fromRefLValue == AZ::Name(fromLValue));
+        EXPECT_TRUE(fromLValue == AZ::Name("foo"));
+        EXPECT_TRUE(AZ::Name("foo") == fromLValue);
     }
 
     TEST_F(NameTest, NameLiteral)

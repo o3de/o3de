@@ -18,6 +18,8 @@ namespace UnitTest
 
 namespace AZ
 {
+    class Module;
+    class Name;
     class NameDictionary;
     class ScriptDataContext;
     class ReflectContext;
@@ -26,7 +28,33 @@ namespace AZ
     //! Smaller than Name but requires a memory indirection to look up
     //! the name text or hash.
     //! \see Name
-    using NameRef = AZStd::intrusive_ptr<Internal::NameData>;
+    class NameRef final
+    {
+        friend Name;
+
+    public:
+        NameRef();
+        NameRef(const NameRef& nameRef);
+        NameRef(NameRef&& nameRef);
+
+        NameRef(Name name);
+        NameRef& operator=(Name name);
+
+        bool operator==(const NameRef& other) const;
+        bool operator!=(const NameRef& other) const;
+        bool operator==(const Name& other) const;
+        bool operator!=(const Name& other) const;
+
+        AZStd::string_view GetStringView() const;
+        const char* GetCStr() const;
+        Internal::NameData::Hash GetHash() const;
+
+    private:
+        NameRef(const AZStd::intrusive_ptr<Internal::NameData>& nameRef);
+        NameRef(AZStd::intrusive_ptr<Internal::NameData>&& nameRef);
+
+        AZStd::intrusive_ptr<Internal::NameData> m_data = nullptr;
+    };
 
     //! The Name class provides very fast string equality comparison, so that names can be used as IDs without sacrificing performance.
     //! It is a smart pointer to a NameData held in a NameDictionary, where names are tracked, de-duplicated, and ref-counted.
@@ -36,10 +64,12 @@ namespace AZ
     //! Copy-constructing a Name object is very fast.
     //! Equality-comparison of two Name objects is very fast.
     //!
-    //! The dictionary must be initialized before Name objects are created.
-    //! A Name instance must not be statically declared.
+    //! Names require the dictionary to be initialized before they are created, unless they are created from a
+    //! string literal via Name::FromStringLiteral, in which they'll store their string for deferred initialization.
+    //! A Name instance may only be statically declared using Name::FromStringLiteral (or the AZ_NAME_LITERAL helper macro).
     class Name final
     {
+        friend NameRef;
         friend NameDictionary;
         friend UnitTest::NameTest;
         friend UnitTest::NameDictionaryTester;
@@ -54,29 +84,20 @@ namespace AZ
         Name();
         Name(const Name& name);
         Name(Name&& name);
-        template<size_t N>
-        explicit Name(const char (&literalString)[N])
-        {
-            SetName(literalString, true);
-        }
 
+        //! Creates a Name from a string literal.
+        //! FromStringLiteral is suitable for creating Names that live at a global or static
+        //! scope.
+        //! 
+        //! Names created from string literals may exist without a NameDictionary, and may
+        //! continue to persist after the NameDictionary is destroyed (even if it is destroyed
+        //! multiple times, as in some text fixtures).
         static Name FromStringLiteral(AZStd::string_view name);
 
         Name& operator=(const Name&);
         Name& operator=(Name&&);
 
         ~Name();
-
-        //! Creates a NameRef from this Name, exposing its internal NameData pointer with no cached hash/string.
-        inline operator const NameRef&() const&
-        {
-            return m_data;
-        }
-
-        operator NameRef&() &
-        {
-            return m_data;
-        }
 
         //! Creates an instance of a name from a string.
         //! The name string is used as a key to lookup an entry in the dictionary, and is not
@@ -116,12 +137,12 @@ namespace AZ
 
         bool operator==(const NameRef& other) const
         {
-            return m_data == other;
+            return m_data == other.m_data;
         }
 
         bool operator!=(const NameRef& other) const
         {
-            return m_data != other;
+            return m_data != other.m_data;
         }
 
         // We delete these operators because using Name in ordered containers is not supported.
@@ -137,6 +158,10 @@ namespace AZ
             return m_hash;
         }
 
+        //! For internal use:
+        //! Gets a reference to the current head of the deferred Name linked list.
+        //! The list is used to initialize Names created before the NameDictionary when
+        //! their modules are loaded.
         static Name*& GetDeferredHead()
         {
             return s_staticNameBegin;
@@ -147,8 +172,12 @@ namespace AZ
         // The name string is used as a key to lookup an entry in the dictionary, and is not
         // internally held after the call.
         // This is needed for reflection into behavior context.
-        void SetName(AZStd::string_view name, bool isLiteral = false);
+        void SetName(AZStd::string_view name);
 
+        // Assigns a new name.
+        // The name string is stored persistently and used as a key to look up an entry in the dictionary.
+        // If this is called before the dictionary is available, the key will be used when the name dictionary
+        // becomes available.
         void SetNameLiteral(AZStd::string_view name);
 
         // This constructor is used by NameDictionary to construct from a dictionary-held NameData instance.
@@ -159,10 +188,15 @@ namespace AZ
         void LinkStaticName(Name** name);
         void UnlinkStaticName();
 
-        //! If set, this name has been linked to the global name dictionary's static list
-        bool m_linkedToDictionary = false;
-        //! If set, this name can be used for deferred loading
+        //! If set, this name can be stored at a static scope and defer loading its NameData
+        //! until the NameDictionary is actually created. If set, this Name must hold a persistent pointer
+        //! to a string literal in m_view, and the NameDictionary will create m_data when this name is registered
+        //! and destroy m_data when it is destroyed. m_view will remain for the lifetime of this name.
         bool m_supportsDeferredLoad = false;
+        //! If set, this name has been linked to the name list of the NameDictionary.
+        //! This means this Name can have its data stripped and restored if the NameDictionary is ever
+        //! recreated; currently, this should only occur in unit tests.
+        bool m_linkedToDictionary = false;
 
         //! The internal hash used by this name.
         Hash m_hash = 0;
@@ -174,17 +208,16 @@ namespace AZ
         AZStd::string_view m_view;
 
         //! Pointer to NameData in the NameDictionary. This holds both the hash and string pair.
-        NameRef m_data;
+        AZStd::intrusive_ptr<Internal::NameData> m_data;
 
         //! Describes the begin of the static list of Names that were initialized before the NameDictionary was available.
         //! On module initialization, these names are linked into the NameDictionary's static pool and created.
         static Name* s_staticNameBegin;
-        //! Describes the next name entry in the static list of Names, if needed.
+        //! Describes the next name entry in the static list of Names.
         Name* m_nextName = nullptr;
-        //! Describes the previous name entry in the static list of Names, if needed.
+        //! Describes the previous name entry in the static list of Names.
         Name* m_previousName = nullptr;
     };
-
 } // namespace AZ
 
 //! Defines a cached name literal that describes an AZ::Name. Subsequent calls to this macro will retrieve the cached name from the
@@ -207,6 +240,15 @@ namespace AZStd
     struct hash<AZ::Name>
     {
         AZ::Name::Hash operator()(const AZ::Name& value) const
+        {
+            return value.GetHash();
+        }
+    };
+
+    template<>
+    struct hash<AZ::NameRef>
+    {
+        AZ::Name::Hash operator()(const AZ::NameRef& value) const
         {
             return value.GetHash();
         }
