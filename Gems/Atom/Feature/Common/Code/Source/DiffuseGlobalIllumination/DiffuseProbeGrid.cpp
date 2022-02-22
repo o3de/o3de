@@ -733,7 +733,6 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_relocationSrg->GetLayout();
-            RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
             RHI::ShaderInputBufferIndex bufferIndex;
 
