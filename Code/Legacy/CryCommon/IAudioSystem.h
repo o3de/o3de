@@ -413,10 +413,6 @@ namespace Audio
 
         Audio::ListenerRequest::SetWorldTransform>;
 
-    //~ NEW AUDIO REQUESTS
-
-
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct IAudioProxy
@@ -466,12 +462,13 @@ namespace Audio
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    class AudioSystemRequests
+    class IAudioSystem
     {
+        // This interface is registered with AZ::Interface<>
     public:
-        AZ_RTTI(AudioSystemRequests, "{27F054BF-B51C-472C-9ECF-BBBB710C5AC1}");
+        AZ_RTTI(IAudioSystem, "{4AF3417B-C264-4970-96C5-EBB888EA922D}");
 
-        virtual ~AudioSystemRequests() = default;
+        virtual ~IAudioSystem() = default;
 
         virtual bool Initialize() = 0;
         virtual void Release() = 0;
@@ -506,19 +503,6 @@ namespace Audio
         virtual const char* GetAudioSwitchStateName(TAudioControlID switchID, TAudioSwitchStateID stateID) const = 0;
     };
 
-    class AudioSystemEBusTraits
-        : public AZ::EBusTraits
-    {
-    public:
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-        // EBusTraits - Single Bus Address, Single Handler
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-    };
-
-    using AudioSystemRequestBus = AZ::EBus<AudioSystemRequests, AudioSystemEBusTraits>;
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class AudioTriggerNotifications
@@ -547,19 +531,6 @@ namespace Audio
     };
 
     using AudioTriggerNotificationBus = AZ::EBus<AudioTriggerNotifications>;
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    class IAudioSystem
-        : public AudioSystemRequestBus::Handler
-    {
-    public:
-        // This interface is registered with AZ::Interface<>
-        AZ_RTTI(
-            IAudioSystem,
-            "{4AF3417B-C264-4970-96C5-EBB888EA922D}",
-            AudioSystemRequestBus::Handler);
-    };
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

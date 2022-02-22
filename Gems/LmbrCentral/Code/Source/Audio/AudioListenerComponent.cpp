@@ -23,7 +23,6 @@ namespace LmbrCentral
 {
     //=========================================================================
     //! Script Interface
-
     //=========================================================================
     void AudioListenerComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -202,8 +201,6 @@ namespace LmbrCentral
             Audio::ListenerRequest::SetWorldTransform setListenerTransform;
             setListenerTransform.m_transform = transform;
             setListenerTransform.m_audioObjectId = m_listenerObjectId;
-            // TODO:
-            // request.pOwner = this;
             audioSystem->PushRequest(AZStd::move(setListenerTransform));
         }
     }

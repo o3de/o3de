@@ -164,7 +164,9 @@ namespace LmbrCentral
             {
                 Audio::ObjectRequest::ExecuteTrigger execTrigger;
                 execTrigger.m_triggerId = triggerId;
-                execTrigger.m_owner = this;
+                execTrigger.m_owner = (callbackOwnerEntityId.IsValid()
+                    ? reinterpret_cast<void*>(static_cast<uintptr_t>(callbackOwnerEntityId))
+                    : this);
 
                 AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(execTrigger));
             }
@@ -181,9 +183,10 @@ namespace LmbrCentral
             {
                 Audio::ObjectRequest::StopTrigger stopTrigger;
                 stopTrigger.m_triggerId = triggerId;
+                stopTrigger.m_owner = (callbackOwnerEntityId.IsValid()
+                    ? reinterpret_cast<void*>(static_cast<uintptr_t>(callbackOwnerEntityId))
+                    : this);
 
-                // TODO:
-                // Hookup trigger finished callback
                 AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(stopTrigger));
             }
         }
@@ -308,21 +311,5 @@ namespace LmbrCentral
     {
         LevelUnloadAudio();
     }
-
-    // TODO: hookup trigger finished callback
-    ////////////////////////////////////////////////////////////////////////
-    // static
-    //void AudioSystemComponent::OnAudioEvent(const SAudioRequestInfo* const requestInfo)
-    //{
-    //    if (requestInfo->eAudioRequestType == eART_AUDIO_CALLBACK_MANAGER_REQUEST)
-    //    {
-    //        const auto notificationType = static_cast<EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
-    //        if (notificationType == eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE && requestInfo->eResult == EAudioRequestResult::Success)
-    //        {
-    //            AZ::EntityId callbackOwnerEntityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
-    //            AudioTriggerComponentNotificationBus::Event(callbackOwnerEntityId, &AudioTriggerComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);
-    //        }
-    //    }
-    //}
 
 } // namespace LmbrCentral

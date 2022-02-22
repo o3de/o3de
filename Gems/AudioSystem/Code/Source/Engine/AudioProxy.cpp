@@ -61,8 +61,6 @@ namespace Audio
         }
         else
         {
-            // TODO:
-            // This request used flags eARF_PRIORITY_HIGH and eARF_EXECUTE_BLOCKING !!
             AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(reserveObject));
 
             // TODO:
@@ -161,8 +159,6 @@ namespace Audio
         if (HasId())
         {
             setSwitch.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            //oRequest.pOwner = this;
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setSwitch));
         }
         else
@@ -181,8 +177,6 @@ namespace Audio
         if (HasId())
         {
             setParameter.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            //oRequest.pOwner = this;
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setParameter));
         }
         else
@@ -194,11 +188,11 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioProxy::SetObstructionCalcType(ObstructionType eObstructionType)
     {
-        const size_t nObstructionCalcIndex = static_cast<size_t>(eObstructionType);
+        const size_t obstructionType = static_cast<size_t>(eObstructionType);
 
-        if (nObstructionCalcIndex < AZ_ARRAY_SIZE(ATLInternalControlIDs::OOCStateIDs))
+        if (obstructionType < AZ_ARRAY_SIZE(ATLInternalControlIDs::OOCStateIDs))
         {
-            SetSwitchState(ATLInternalControlIDs::ObstructionOcclusionCalcSwitchID, ATLInternalControlIDs::OOCStateIDs[nObstructionCalcIndex]);
+            SetSwitchState(ATLInternalControlIDs::ObstructionOcclusionCalcSwitchID, ATLInternalControlIDs::OOCStateIDs[obstructionType]);
         }
     }
 
@@ -221,14 +215,12 @@ namespace Audio
 
                 setPosition.m_audioObjectId = m_nAudioObjectID;
                 setPosition.m_position = m_oPosition;
-                // TODO:
-                //oRequest.pOwner = this;
                 AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setPosition));
             }
         }
         else
         {
-            // If a SetPosition is queued during init, we don't worry about the position update threshold gating.
+            // If a SetPosition is queued during init, don't need to check threshold.
             m_oPosition = refPosition;
 
             // Make sure the forward/up directions are normalized
@@ -255,8 +247,6 @@ namespace Audio
         if (HasId())
         {
             setMultiPosition.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            //request.pOwner = this;
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setMultiPosition));
         }
         else
@@ -275,8 +265,6 @@ namespace Audio
         if (HasId())
         {
             setEnvironment.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            //oRequest.pOwner = this;
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setEnvironment));
         }
         else
@@ -293,8 +281,6 @@ namespace Audio
         if (HasId())
         {
             resetEnvironments.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            //oRequest.pOwner = this;
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(resetEnvironments));
         }
         else
@@ -311,8 +297,6 @@ namespace Audio
         if (HasId())
         {
             resetParameters.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            //request.pOwner = this;
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(resetParameters));
         }
         else
@@ -324,7 +308,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioProxy::Release()
     {
-        // Should just have a Release function, no reset.
         // If it has ID, push a Release request and reset info
         // No Queueing of this type of call/request, it should be considered an immediate reset/recycle
         if (HasId())
@@ -365,6 +348,9 @@ namespace Audio
         return (m_nAudioObjectID != INVALID_AUDIO_OBJECT_ID);
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    // Find Functors - Helpers for async queueing
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct FindSetSwitchValue
@@ -444,6 +430,13 @@ namespace Audio
                 found = true;
                 setPositionRequest->m_position = m_position;
             }
+            if (auto setPositionRequest = AZStd::get_if<Audio::ObjectRequest::SetMultiplePositions>(&refRequest);
+                setPositionRequest != nullptr)
+            {
+                // A multi-position request exists, setting a single position can't overwrite it.
+                found = true;
+            }
+
             return found;
         }
 

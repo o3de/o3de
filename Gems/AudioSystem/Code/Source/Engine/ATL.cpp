@@ -125,46 +125,9 @@ namespace Audio
         AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::Update, elapsedMs);
     }
 
-    //! NEW AUDIO REQUESTS
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::ProcessRequest(AudioRequestVariant&& requestVariant)
     {
-        // Version A - AZStd::visit w/ a processor object
-        // Pros: No wonky syntax, the processor class can be implemented elsewhere
-        // Cons: No easy way to connect to the ATL
-        //
-        // Version B - AZStd::visit w/ a lambda and if constexpr on type
-        // Pros: Syntax is a little more messy and it looks like a big switch statement, but
-        //   we can pass the ATL in the lambda capture
-        // Cons: Seems like it can only be an inline lambda because of the 'auto&&' parameter
-
-        // Version A...
-        //struct RequestProcessor
-        //{
-        //    void operator()([[maybe_unused]] Audio::SystemRequest::Initialize& request)
-        //    {
-        //        AZ_Printf("ATL Request Processor", "Initialize Audio System\n");
-        //        request.SetStatus(EAudioRequestStatus::Pending);
-        //        // do stuff ...
-        //    }
-        //    void operator()([[maybe_unused]] Audio::SystemRequest::Shutdown& request)
-        //    {
-        //        AZ_Printf("ATL Request Processor", "Shutdown Audio System\n");
-        //    }
-        //
-        // ... ...
-        //
-        //    void operator()([[maybe_unused]] Audio::ObjectRequest::SetMultiplePositions& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::ListenerRequest::SetWorldTransform& request)
-        //    {
-        //    }
-        //};
-        //AZStd::visit(RequestProcessor{}, request);
-
-
-        // VERSION B...
         bool hasCallback = false;
         EAudioRequestStatus status = AZStd::visit(
             [this, &hasCallback]([[maybe_unused]] auto&& request) -> EAudioRequestStatus
@@ -229,7 +192,6 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::LoadBank>)
                 {
-                    //!  NEED A BLOCKING FLAG TO INDICATE WHETHER IT SHOULD LOAD ASYNC OR NOT  !//
                     result = m_oFileCacheMgr.TryLoadRequest(request.m_preloadRequestId, !request.m_asyncLoad, request.m_autoLoadOnly);
                 }
 
@@ -638,7 +600,6 @@ namespace Audio
             g_audioLogger.Log(LogType::Error, "Audio Request did not succeed!\n");
         }
     }
-    //~ NEW AUDIO REQUESTS
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     TAudioControlID CAudioTranslationLayer::GetAudioTriggerID(const char* const audioTriggerName) const
@@ -837,7 +798,6 @@ namespace Audio
             AudioSystemImplementationRequestBus::BroadcastResult(
                 m_implSubPath, &AudioSystemImplementationRequestBus::Events::GetImplSubPath);
         }
-
 #if !defined(AUDIO_RELEASE)
         else
         {
@@ -974,7 +934,6 @@ namespace Audio
                 m_oAudioEventMgr.ReleaseEvent(pEvent);
             }
         }
-
 #if !defined(AUDIO_RELEASE)
         if (eResult != EAudioRequestStatus::Success)
         {

@@ -48,7 +48,7 @@ namespace EMotionFX
             , protected AZ::TransformNotificationBus::Handler
             , protected ActorNotificationBus::Handler
             , protected AnimAudioComponentRequestBus::Handler
-            , protected AnimAudioComponentNotificationBus::Handler
+            , protected Audio::AudioTriggerNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(AnimAudioComponent, "{E39F772F-FE4C-405E-9008-A5B8F27CB57D}");
@@ -83,9 +83,9 @@ namespace EMotionFX
             void SetSwitchState(const Audio::TAudioControlID switchID, const Audio::TAudioSwitchStateID stateID, const AZStd::string* jointName) override;
             void SetEnvironmentAmount(const Audio::TAudioEnvironmentID environmentID, float amount, const AZStd::string* jointName) override;
 
-            // AnimAudioComponentNotificationBus interface implementation
-            void OnTriggerStarted(const Audio::TAudioControlID triggerID) override;
-            void OnTriggerFinished(const Audio::TAudioControlID triggerID) override;
+            // Audio::AudioTriggerNotificationBus interface implementation
+            void ReportTriggerStarted(Audio::TAudioControlID triggerId) override;
+            void ReportTriggerFinished(Audio::TAudioControlID triggerId) override;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -124,9 +124,6 @@ namespace EMotionFX
 
             void ActivateJointProxies();
             void DeactivateJointProxies();
-
-            // TODO: Hook up trigger finished callback
-            //static void OnAudioEvent(const Audio::SAudioRequestInfo* const requestInfo);
 
             AZ::u32 m_activeVoices = 0;
 

@@ -25,7 +25,6 @@ namespace EMotionFX
             : public AZ::ComponentBus
         {
         public:
-
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
             /// Adds audio support to when an anim event is fired
@@ -64,14 +63,5 @@ namespace EMotionFX
 
         using AnimAudioComponentRequestBus = AZ::EBus<AnimAudioComponentRequests>;
 
-        class AnimAudioComponentNotifications
-            : public AZ::ComponentBus
-        {
-        public:
-            virtual void OnTriggerStarted(const Audio::TAudioControlID triggerID) = 0;
-            virtual void OnTriggerFinished(const Audio::TAudioControlID triggerID) = 0;
-        };
-
-        using AnimAudioComponentNotificationBus = AZ::EBus<AnimAudioComponentNotifications>;
     } // namespace Integration
 } // namespace EMotionFX

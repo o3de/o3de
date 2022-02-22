@@ -44,17 +44,14 @@ namespace Audio
         : public AZ::Interface<Audio::IAudioSystem>::Registrar
     {
     public:
+        AZ_RTTI(NullAudioSystem, "{27F054BF-B51C-472C-9ECF-BBBB710C5AC1}", IAudioSystem);
         AZ_CLASS_ALLOCATOR(Audio::NullAudioSystem, AZ::SystemAllocator, 0)
 
         NullAudioSystem()
         {
-            AudioSystemRequestBus::Handler::BusConnect();
             AZ_TracePrintf(AZ::Debug::Trace::GetDefaultSystemWindow(), "<Audio>: Running with Null Audio System!\n");
         }
-        ~NullAudioSystem() override
-        {
-            AudioSystemRequestBus::Handler::BusDisconnect();
-        }
+        ~NullAudioSystem() override = default;
 
         bool Initialize() override { return true; }
         void Release() override {}

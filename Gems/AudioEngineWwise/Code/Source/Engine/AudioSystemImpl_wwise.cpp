@@ -107,7 +107,7 @@ namespace Audio
     extern CAudioLogger g_audioImplLogger_wwise;
 
     const char* const CAudioSystemImpl_wwise::WwiseImplSubPath = "wwise/";
-    const char* const CAudioSystemImpl_wwise::WwiseGlobalAudioObjectName = "LY-GlobalAudioObject";
+    const char* const CAudioSystemImpl_wwise::WwiseGlobalAudioObjectName = "GlobalAudioObject";
     const float CAudioSystemImpl_wwise::ObstructionOcclusionMin = 0.0f;
     const float CAudioSystemImpl_wwise::ObstructionOcclusionMax = 1.0f;
 
