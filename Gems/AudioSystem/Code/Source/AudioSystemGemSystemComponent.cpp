@@ -102,6 +102,7 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::Init()
     {
+    #if defined(AUDIO_SYSTEM_EDITOR)
         m_cameraTransformHandler = AZ::RPI::MatrixChangedEvent::Handler(
             []([[maybe_unused]] const AZ::Matrix4x4& matrix)
             {
@@ -116,6 +117,7 @@ namespace AudioSystemGem
                     audioSystem->PushRequest(AZStd::move(setWorldTM));
                 }
             });
+    #endif // AUDIO_SYSTEM_EDITOR
     }
 
     void AudioSystemGemSystemComponent::Activate()
