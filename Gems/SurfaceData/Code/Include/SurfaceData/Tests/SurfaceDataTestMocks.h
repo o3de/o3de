@@ -193,12 +193,12 @@ namespace UnitTest
             BusDisconnect();
         }
 
-        AZStd::unordered_map<AZStd::pair<float, float>, SurfaceData::SurfacePointList> m_GetSurfacePoints;
+        AZStd::unordered_map<AZStd::pair<float, float>, SurfaceData::SurfacePointList> m_surfacePoints;
         void GetSurfacePoints(const AZ::Vector3& inPosition, [[maybe_unused]] const SurfaceData::SurfaceTagVector& masks, SurfaceData::SurfacePointList& surfacePointList) const override
         {
-            auto surfacePoints = m_GetSurfacePoints.find(AZStd::make_pair(inPosition.GetX(), inPosition.GetY()));
+            auto surfacePoints = m_surfacePoints.find(AZStd::make_pair(inPosition.GetX(), inPosition.GetY()));
 
-            if (surfacePoints != m_GetSurfacePoints.end())
+            if (surfacePoints != m_surfacePoints.end())
             {
                 surfacePointList = surfacePoints->second;
             }

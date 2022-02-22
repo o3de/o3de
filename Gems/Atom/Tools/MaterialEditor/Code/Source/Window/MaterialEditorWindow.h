@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AtomToolsFramework/Document/AtomToolsDocumentInspector.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -35,10 +36,15 @@ namespace MaterialEditor
         MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
 
     protected:
+        // AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler overrides...
         void ResizeViewportRenderTarget(uint32_t width, uint32_t height) override;
         void LockViewportRenderTargetSize(uint32_t width, uint32_t height) override;
         void UnlockViewportRenderTargetSize() override;
 
+        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
+        void OnDocumentOpened(const AZ::Uuid& documentId) override;
+
+        // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath) override;
         bool GetOpenDocumentParams(AZStd::string& openPath) override;
         void OpenSettings() override;
@@ -47,6 +53,7 @@ namespace MaterialEditor
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
+        AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
         MaterialViewportWidget* m_materialViewport = {};
         MaterialEditorToolBar* m_toolBar = {};
     };

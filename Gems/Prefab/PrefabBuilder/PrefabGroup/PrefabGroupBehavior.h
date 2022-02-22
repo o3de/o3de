@@ -50,6 +50,13 @@ namespace AZ::SceneAPI::Behaviors
             const SceneData::PrefabGroup* prefabGroup,
             const rapidjson::Document& doc) const;
 
+        bool WriteOutProductAssetFile(
+            const AZStd::string& filePath,
+            Events::PreExportEventContext& context,
+            const SceneData::PrefabGroup* prefabGroup,
+            const rapidjson::Document& doc,
+            bool debug) const;
+
         struct ExportEventHandler;
         AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;
     };
