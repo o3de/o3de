@@ -88,8 +88,7 @@ if _DCCSI_TESTS:
     
     _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
     test_imports(__all__,
-                 _pkg=_PACKAGENAME,
-                 _logger=_LOGGER)
+                 _pkg=_PACKAGENAME)
     
     _LOGGER.info(STR_CROSSBAR)
 # -------------------------------------------------------------------------

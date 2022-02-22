@@ -265,7 +265,7 @@ _fix_paths = None
 def startup():
     """Early starup execution before mayautils.executeDeferred(). 
     Some things like UI and plugins should be defered to avoid failure"""
-    _LOGGER.info('startup() fired')
+    _LOGGER.info('{}.startup() fired'.format(_MODULENAME))
 
     # get known paths
     _KNOWN_PATHS = site._init_pathinfo()
@@ -286,9 +286,11 @@ def startup():
 # -------------------------------------------------------------------------
 # verify Shared\Python exists and add it as a site dir. Begin imports and config.
 def post_startup():
-    """Allows for a defered execution startup sequence"""
-
-    _LOGGER.info('post_startup() fired')
+    """Allows for a defered execution startup sequence (post UI boot)"""
+    
+    # note: at this point, in Maya 2022, the logging will show in script editor
+    # to do: investigate if we want to figure out how to stream into output console also
+    _LOGGER.info('{}.post_startup() fired'.format(_MODULENAME))
 
     # plugins, To Do: these should be moved to bootstrapping config
     try:

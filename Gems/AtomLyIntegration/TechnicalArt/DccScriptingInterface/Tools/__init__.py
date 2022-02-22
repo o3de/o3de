@@ -214,8 +214,7 @@ if __name__ == '__main__':
         
         _LOGGER.info('Testing Imports from {0}'.format(_PACKAGENAME))
         test_imports(__all__,
-                     _pkg=_PACKAGENAME,
-                     _logger=_LOGGER)
+                     _pkg=_PACKAGENAME)
         
     # -- DONE ----
     _LOGGER.info(STR_CROSSBAR)

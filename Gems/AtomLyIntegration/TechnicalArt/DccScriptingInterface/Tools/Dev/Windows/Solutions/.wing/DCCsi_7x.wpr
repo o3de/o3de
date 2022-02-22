@@ -80,4 +80,7 @@ proj.launch-config = {loc('../../../../DCC/Blender/__init__.py'): ('custom',
          'launch-0L6se5pxC9AWvpY0')),
                       loc('../../../../../azpy/core/py3/utils.py'): ('custom',
         (u'',
+         'launch-0L6se5pxC9AWvpY0')),
+                      loc('../../../../../config.py'): ('custom',
+        (u'',
          'launch-0L6se5pxC9AWvpY0'))}

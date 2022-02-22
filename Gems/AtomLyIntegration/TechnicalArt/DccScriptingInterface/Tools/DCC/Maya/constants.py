@@ -19,6 +19,7 @@ We can make an update here easily that is propogated elsewhere.
 # built-ins
 from os.path import expanduser
 from pathlib import Path
+import logging as _logging
 # -------------------------------------------------------------------------
 
 
@@ -32,7 +33,7 @@ _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
 # -------------------------------------------------------------------------
 # Maya consts
-USER_HOME = Path.home()
+#USER_HOME = Path.home()
 
 # mimicing all values from: "DccScriptingInterface\Tools\Dev\Windows\Env_DCC_Maya.bat"
 DCCSI_PY_VERSION_MAJOR=3
@@ -41,7 +42,7 @@ DCCSI_PY_VERSION_RELEASE=7
 
 MAYA_VERSION=2022
 
-MAYA_PROJECT
+MAYA_PROJECT='foo'
 
 # Note: we've developed and tested with Blender 3.0 (experimental)
 # change at your own risk, we are just future proofing.
