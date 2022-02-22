@@ -214,21 +214,17 @@ def initialize_logger(name,
     # optionally add the log file handler (off by default)
     if log_to_file:
         _logger.info('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
-        try:
-            # exist_ok, isn't available in py2.7 pathlib
-            # because it doesn't exist for os.makedirs
-            # pathlib2 backport used instead (see above)
-            if sys.version_info.major >= 3:
-                _DCCSI_LOG_PATH.mkdir(parents=True, exist_ok=True)
+        if not _DCCSI_LOG_PATH.exists():  
+            try:
+                os.makedirs(_DCCSI_LOG_PATH.as_posix())
+            except FileExistsError:
+                # except FileExistsError: doesn't exist in py2.7
+                _logger.debug("Folder is already there")
             else:
-                makedirs(str(_DCCSI_LOG_PATH.resolve())) # py2.7
-        except FileExistsError:
-            # except FileExistsError: doesn't exist in py2.7
-            _logger.debug("Folder is already there")
-        else:
-            _logger.debug("Folder was created")
+                _logger.debug("Folder was created")
 
         _log_filepath = Path(_DCCSI_LOG_PATH, '{}.log'.format(name))
+        
         try:
             _log_filepath.touch(mode=0o666, exist_ok=True)
         except FileExistsError:

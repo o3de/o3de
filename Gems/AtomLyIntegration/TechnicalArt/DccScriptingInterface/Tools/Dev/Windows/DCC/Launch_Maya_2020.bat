@@ -24,27 +24,29 @@ set DCCSI_PY_VERSION_MINOR=7
 set DCCSI_PY_VERSION_RELEASE=11
 
 CALL %~dp0..\Env_O3DE_Core.bat
-CALL %~dp0..\Env_O3DE_Python.bat
+
+:: add to the PATH here (this is global)
+SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
+
 CALL %~dp0..\Env_DCC_Maya.bat
 
 :: ide and debugger plug
-set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
-
-:: Default BASE DCCsi python 3.7 location
-:: Can be overridden (example, Launch_mayaPy_2020.bat :: MayaPy.exe)
-set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%Launch_mayaPy_2020.bat
-echo     DCCSI_PY_DCCSI = %DCCSI_PY_DCCSI%
+set "DCCSI_PY_DEFAULT=%MAYA_BIN_PATH%\mayapy.exe"
+echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 
 :: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
-IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe")
+set "DCCSI_PY_IDE=%MAYA_BIN_PATH%\mayapy.exe"
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
+
+SET PATH=%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
+
+CALL %~dp0..\Env_O3DE_Python.bat
 
 :: add to the PATH
 SET PATH=%MAYA_BIN_PATH%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%DCCSI_MAYA_SCRIPT_PY_PATH%;%PYTHONPATH%
-echo     PYTHONPATH = %PYTHONPATH%
+set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
 
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
@@ -62,6 +64,12 @@ echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
 echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
 echo     MAYA_LOCATION = %MAYA_LOCATION%
 echo     MAYA_BIN_PATH = %MAYA_BIN_PATH%
+
+echo.
+echo     PATH = %PATH%
+echo.
+echo     PYTHONPATH = %PYTHONPATH%
+echo.
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%

@@ -85,21 +85,24 @@ Use a cmd prompt with elevated Admin rights.
     C:\Program Files\Autodesk\Maya2020\bin>mayapy -m ensurepip
     C:\Program Files\Autodesk\Maya2020\bin>python -m ensurepip --upgrade
 
-Now your local maya install is all set up with pip so you can install additional python packages to use in maya.  (note: not all packages are compatible with maya)
+Now your local maya install is all set up with pip so you can install additional python packages to use in maya.
+(note: not all packages are compatible with maya)
 
 Now you will want to run the following file to finish setup...
-
 We have a requirements.txt file with the extension packages we use in the DCCsi.
 You'll need the repo/branch path of your O3DE (aka Lumberyard) install.
 And you'll need to know where the DCCsi is located, we will install package dependancies there.
 
 Note: you may need to update the paths below to match your local o3de engine install!
 
-    C:\Program Files\Autodesk\Maya2020\bin>mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
+C:\Program Files\Autodesk\Maya2020\bin>
+
+    mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
 
 ## Other versions of Maya (2022 and beyond)
 
-Maya 2022 finally brings us to Python3, however to facilitate the transition Maya 2022 also has a backwards compatible implementation of Py2.7 (effectively it has support for both py2.7 and py3.7) 
+Maya 2022 finally brings us to Python3, however to facilitate the transition Maya 2022 also has a backwards compatible
+implementation of Py2.7 (effectively it has support for both py2.7 and py3.7) 
 
 ### Maya 2022 (Python 2.7.11)
 
@@ -108,4 +111,4 @@ Method 2 above should still work, however you'd want to use this mayapy2:
 
 ### Maya 2022 (Python 3.7.7)
 
-(to do)
+( To Do )

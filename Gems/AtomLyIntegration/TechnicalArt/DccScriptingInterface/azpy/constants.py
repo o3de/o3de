@@ -23,7 +23,8 @@ So we can make an update here once that is used elsewhere.
 import os
 import sys
 import site
-import time
+import timeit
+
 from os.path import expanduser
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -33,7 +34,7 @@ import logging as _logging
 # global scope
 _MODULENAME = 'azpy.constants'
 
-start = time.process_time() # start tracking
+start = timeit.default_timer() # start tracking
 
 os.environ['PYTHONINSPECT'] = 'True'
 # for this module to perform standalone
@@ -435,5 +436,5 @@ if __name__ == '__main__':
     # custom prompt
     sys.ps1 = "[azpy]>>"
 
-_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, time.process_time() - start)) 
+_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - start)) 
 # --- END -----------------------------------------------------------------

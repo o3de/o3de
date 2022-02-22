@@ -42,19 +42,22 @@ _LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
 
 
 # -------------------------------------------------------------------------
-def init(_all=__all__):
+def init(_all=list()):
     """If the {} or other apis are required for a package/module to
     import, then it should be initialized and added here so general imports
     don't fail""".format(_PKG_DCC_NAME)
-
-    # extend all with submodules
-    _all.append('callbacks', # populate modules here
-                'helpers',
-                'toolbits',
-                'utils')
+    
+    _add_all_ = ('callbacks',
+                 'helpers',
+                 'toolbits',
+                 'utils') # populate modules here
     
     # ^ as moldules are created, add them to the list above
-    # like _all.append('foo', 'bar')
+    # like _add_all_ = list('foo', 'bar')
+
+    for each in _add_all_:
+        # extend all with submodules
+        _all.append(each) 
     
     # Importing local packages/modules
     return _all
