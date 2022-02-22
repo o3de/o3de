@@ -65,7 +65,7 @@ namespace AZ
             //! Flag to specify whether or not the editor feedback effects are active.
             bool m_enabled = false;
 
-            //! 
+            //! Data to construct draw packets for meshes.
             struct MeshDrawPackets
             {
                 ~MeshDrawPackets();
@@ -74,21 +74,10 @@ namespace AZ
                 AZStd::vector<RPI::MeshDrawPacket> m_drawPackets;
             };
             
-            //!
+            //! Map for entities and their drawable components.
             AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, MeshDrawPackets>> m_entityComponentMeshDrawPackets;
 
-            //!
-            //struct ComponentDrawPackets
-            //{
-            //    using DrawPackets = AZStd::vector<RPI::MeshDrawPacket>;
-            //    AZStd::function<DrawPackets()> m_drawPacketBuilder;
-            //    DrawPackets m_drawPackets;
-            //};
-            //
-            ////!
-            //AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, ComponentDrawPackets>> m_entityComponentDrawPackets;
-
-            //!
+            //! Material for sending draw packets to the entity mask pass.
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;
         };
     }
