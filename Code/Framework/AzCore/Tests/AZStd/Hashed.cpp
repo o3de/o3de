@@ -18,9 +18,6 @@
 #include <benchmark/benchmark.h>
 #endif // HAVE_BENCHMARK
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
     AZ_HAS_MEMBER(HashValidate, validate, void, ());

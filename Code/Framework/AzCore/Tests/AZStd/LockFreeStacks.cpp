@@ -15,9 +15,6 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/functional.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
     class LockFreeStack
