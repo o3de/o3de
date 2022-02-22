@@ -37,14 +37,14 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
     float2 offset = disp * PassSrg::m_constants.m_strength;
 
     // crop and scale the image correctly by using offset pixel as base (needed to remove border artifacts due to out of bounds r values)
-    float3 base = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)].rgb;
+    float4 base = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 0.5f)];
 
     // retrieve the desired values for each channel, mindful of the cropping (note the absence of g channel)
-    float2 ca = float2(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 2)].b);
+    float2 ca = float2(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)].b);
     
     // weight it according to m_blend and add it to the base (note the absence of g channel)
     ca *= PassSrg::m_constants.m_blend;
     ca += base.rb * (1 - PassSrg::m_constants.m_blend);
 
-    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(ca.x, base.g, ca.y, 1.0);
+    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(ca.x, base.g, ca.y, base.a);
 }
