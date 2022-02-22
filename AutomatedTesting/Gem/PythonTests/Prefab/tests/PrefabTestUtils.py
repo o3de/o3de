@@ -25,7 +25,7 @@ def get_linear_nested_items_name(nested_items_name_prefix, current_level):
 def create_linear_nested_entities(nested_entities_name_prefix, level_count, pos):
     """
     This is a helper function which helps create nested entities 
-    where each nested entity has only one child entity most. For example:
+    where each nested entity has only one child entity at most. For example:
 
     Entity_0
     |- Entity_1 
@@ -91,7 +91,7 @@ def validate_linear_nested_entities(nested_entities_root, expected_level_count, 
 def create_linear_nested_prefabs(entities, nested_prefabs_file_name_prefix, nested_prefabs_instance_name_prefix, level_count):
     """
     This is a helper function which helps create nested prefabs 
-    where each nested prefab has only one child prefab most. For example:
+    where each nested prefab has only one child prefab at most. For example:
 
     Prefab_0
     |- Prefab_1 
