@@ -181,7 +181,9 @@ namespace SurfaceData
         [[maybe_unused]] const mixed_stack_heap_allocator<Node, NumNodes>& a,
         [[maybe_unused]] const mixed_stack_heap_allocator<Node, NumNodes>& b)
     {
-        return true;
+        // Allocators should compare as equal if they can interchangeably handle each other's allocations.
+        // Since this allocator can allocate from a private static buffer, it can only process its own allocations.
+        return (&a == &b);
     }
 
     template<class Node, AZStd::size_t NumNodes>
@@ -189,7 +191,7 @@ namespace SurfaceData
         [[maybe_unused]] const mixed_stack_heap_allocator<Node, NumNodes>& a,
         [[maybe_unused]] const mixed_stack_heap_allocator<Node, NumNodes>& b)
     {
-        return false;
+        return (&a != &b);
     }
 
 } // namespace AZStd
