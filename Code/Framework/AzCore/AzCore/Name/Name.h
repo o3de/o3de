@@ -92,6 +92,9 @@ namespace AZ
         //! Names created from string literals may exist without a NameDictionary, and may
         //! continue to persist after the NameDictionary is destroyed (even if it is destroyed
         //! multiple times, as in some text fixtures).
+        //!
+        //! \warning FromStringLiteral is not thread-safe and should only be called from the
+        //! main thread.
         static Name FromStringLiteral(AZStd::string_view name);
 
         Name& operator=(const Name&);

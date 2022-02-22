@@ -196,7 +196,7 @@ namespace AZ
     {
         if (!name.empty())
         {
-            AZ_Assert(NameDictionary::IsReady(), "Attempted to initialize Name '%.*s' before the NameDictionary is ready.", AZ_STRING_ARG(name));
+            AZ_Assert(NameDictionary::IsReady(), "Attempted to initialize Name '%.*s' before the NameDictionary is ready.\nIf this name is being constructed from a string literal, consider using AZ::Name::FromStringLiteral instead.", AZ_STRING_ARG(name));
 
             *this = AZStd::move(NameDictionary::Instance().MakeName(name));
         }
