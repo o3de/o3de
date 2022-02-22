@@ -58,7 +58,7 @@ namespace AZ
 
         void ChromaticAberrationPass::FrameBeginInternal(FramePrepareParams params)
         {
-            // Must match the struct in .azsl
+            // Must match the struct in ChromaticAberration.azsl
             struct Constants
             {
                 AZStd::array<u32, 2> m_outputSize;
@@ -69,9 +69,9 @@ namespace AZ
 
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
             if (fp)
             {
+                RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
                 if (postProcessSettings)
                 {
