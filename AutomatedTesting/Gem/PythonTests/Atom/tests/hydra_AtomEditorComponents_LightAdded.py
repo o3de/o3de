@@ -127,7 +127,7 @@ def AtomEditorComponents_Light_AddedToEntity():
     8) Set the Intensity mode parameter.
     9) Edit the Intensity parameter.
     10) Set the Attenuation radius Mode.
-    11) Edit the Attenuation radius Radius parameter.
+    11) Edit the Attenuation radius Radius parameter (explicit only).
     12) Enable shadows (if applicable).
     13) Edit the Shadows Bias parameter.
     14) Edit the Normal shadow bias parameter.
@@ -177,12 +177,12 @@ def AtomEditorComponents_Light_AddedToEntity():
         Report.critical_result(Tests.light_creation, light_entity.exists())
 
         # 2. Add a Light component to the Light entity.
-        light_entity.add_component(AtomComponentProperties.light())
+        light_component = light_entity.add_component(AtomComponentProperties.light())
         Report.critical_result(Tests.light_component,
                                light_entity.has_component(AtomComponentProperties.light()))
 
         # 3. Remove the light component.
-        light_entity.remove_component(AtomComponentProperties.light())
+        light_component.remove()
         Report.critical_result(Tests.light_component_removal,
                                not light_entity.has_component(AtomComponentProperties.light()))
 
@@ -195,6 +195,7 @@ def AtomEditorComponents_Light_AddedToEntity():
         # Cycle through light types to test component properties.
         for light_type in LIGHT_TYPES.keys():
 
+            # Exit loop for unknown light type.
             if light_type == 'unknown':
                 continue
 
@@ -257,17 +258,15 @@ def AtomEditorComponents_Light_AddedToEntity():
             for radius_mode in ATTENUATION_RADIUS_MODE.keys():
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Attenuation radius Mode'), ATTENUATION_RADIUS_MODE[radius_mode])
-                current_radius_mode = light_component.get_component_property_value(
-                   AtomComponentProperties.light('Attenuation radius Mode'))
+                general.idle_wait_frames(1)
                 test_attenuation_mode = (
                     f"Attenuation radius Mode set to {radius_mode}",
                     f"P1: Attenuation radius Mode failed to be set to {radius_mode}")
-                general.idle_wait_frames(1)
-                Report.result(test_attenuation_mode,
-                              current_radius_mode == ATTENUATION_RADIUS_MODE[radius_mode])
+                Report.result(test_attenuation_mode, light_component.get_component_property_value(
+                    AtomComponentProperties.light('Attenuation radius Mode')) == ATTENUATION_RADIUS_MODE[radius_mode])
 
-                # 11. Edit the Attenuation radius Radius parameter.
-                if current_radius_mode == 0:
+                # 11. Edit the Attenuation radius Radius parameter (explicit only).
+                if radius_mode == 'explicit':
                     light_component.set_component_property_value(
                         AtomComponentProperties.light('Attenuation radius Radius'), 1000)
                     Report.result(Tests.edit_attenuation_radius,
