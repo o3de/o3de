@@ -33,14 +33,15 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
     }
 
     // determine offset using m_strength parameter and distance from screen center (as float2)
+    // offset is *0.5f since we will be using *2 later for the blue and want to remain within bounds (consider strength>=0.5)
     float2 disp = dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter;
-    float2 offset = disp * PassSrg::m_constants.m_strength;
+    float2 offset = disp * PassSrg::m_constants.m_strength * 0.5f;
 
     // crop and scale the image correctly by using offset pixel as base (needed to remove border artifacts due to out of bounds r values)
-    float4 base = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 0.5f)];
+    float4 base = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)];
 
     // retrieve the desired values for each channel, mindful of the cropping (note the absence of g channel)
-    float2 ca = float2(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)].b);
+    float2 ca = float2(PassSrg::m_inputColor[dispatchThreadID.xy].r, PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 2)].b);
     
     // weight it according to m_blend and add it to the base (note the absence of g channel)
     ca *= PassSrg::m_constants.m_blend;

@@ -9,10 +9,10 @@
 #pragma once
 
 #include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h>
+#include <PostProcess/ChromaticAberration/ChromaticAberrationComponentController.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Components/ComponentAdapter.h>
-#include <PostProcess/ChromaticAberration/ChromaticAberrationComponentController.h>
 
 namespace AZ
 {

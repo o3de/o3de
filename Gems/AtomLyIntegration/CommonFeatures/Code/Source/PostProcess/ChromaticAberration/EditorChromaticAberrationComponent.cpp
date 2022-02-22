@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {

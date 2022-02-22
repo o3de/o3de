@@ -6,11 +6,11 @@
  *
  */
 
+#include <PostProcess/ChromaticAberration/ChromaticAberrationComponentController.h>
+
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <Atom/RPI.Public/Scene.h>
-
-#include <PostProcess/ChromaticAberration/ChromaticAberrationComponentController.h>
 
 namespace AZ
 {

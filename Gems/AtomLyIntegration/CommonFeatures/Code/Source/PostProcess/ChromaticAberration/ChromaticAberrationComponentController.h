@@ -8,16 +8,17 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/TransformBus.h>
-
-#include <AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h>
-#include <AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h>
-
 #include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h>
 #include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>
+
+#include <AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h>
+
+#include <AzCore/Component/Component.h>
+#include <AzCore/Component/TransformBus.h>
+
 
 namespace AZ
 {

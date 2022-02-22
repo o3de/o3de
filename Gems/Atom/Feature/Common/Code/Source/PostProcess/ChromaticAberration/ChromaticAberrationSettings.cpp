@@ -6,7 +6,11 @@
  *
  */
 
-#include <AzCore/Math/MathUtils.h>
+#include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
+#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h>
+
+#include <PostProcess/PostProcessFeatureProcessor.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -16,11 +20,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
-
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h>
-
-#include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
-#include <PostProcess/PostProcessFeatureProcessor.h>
 
 namespace AZ
 {
