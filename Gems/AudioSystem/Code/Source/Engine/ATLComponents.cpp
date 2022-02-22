@@ -433,12 +433,14 @@ namespace Audio
                     ReleaseInstance(audioObject);
                 }
             }
+#if !defined(AUDIO_RELEASE)
             else
             {
                 g_audioLogger.Log(
                     LogType::Warning, "Removing Event %llu from object '%s': Object no longer exists!", atlEvent->GetID(),
                     m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID));
             }
+#endif // !AUDIO_RELEASE
         }
     }
 
@@ -1783,9 +1785,8 @@ namespace Audio
 
         static const char* headerFormat = "Audio Objects [Active : %3zu | Alive: %3zu | Pool: %3zu | Remaining: %3zu]";
         const bool overloaded = (m_cAudioObjects.size() > m_cObjectPool.m_nReserveSize);
-        str = AZStd::string::format(
-            "Audio Objects [Active : %3zu | Alive: %3zu | Pool: %3zu | Remaining: %3zu]",
-            activeObjects, aliveObjects, m_cObjectPool.m_nReserveSize, remainingObjects);
+        str = AZStd::string::format(headerFormat, activeObjects, aliveObjects,
+            m_cObjectPool.m_nReserveSize, remainingObjects);
         debugDisplay.SetColor(overloaded ? overloadColor : headerColor);
         debugDisplay.Draw2dTextLabel(fPosX, fHeaderPosY, textSize, str.c_str());
     }

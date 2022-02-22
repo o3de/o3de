@@ -57,7 +57,7 @@ namespace LmbrCentral
         if (m_audioProxy)
         {
             AZStd::string proxyName = AZStd::string::format("%s_audioproxy", GetEntity()->GetName().c_str());
-            m_audioProxy->Initialize(proxyName.c_str(), reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId())));
+            m_audioProxy->Initialize(proxyName.c_str(), reinterpret_cast<void*>(static_cast<uintptr_t>(static_cast<AZ::u64>(GetEntityId()))));
             m_audioProxy->SetObstructionCalcType(Audio::ObstructionType::Ignore);
 
             // don't need to set position on the proxy now, but initialize the transform from the entity.

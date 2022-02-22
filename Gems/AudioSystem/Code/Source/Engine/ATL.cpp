@@ -575,7 +575,7 @@ namespace Audio
 
                 else
                 {
-                    static_assert(false, "AudioRequestVariant visitor is non-exhaustive across all variant types!");
+                    static_assert(AZStd::is_void_v<T>, "AudioRequestVariant visitor is non-exhaustive across all variant types!");
                     result = EAudioRequestStatus::FailureInvalidRequest;
                 }
 
@@ -688,10 +688,12 @@ namespace Audio
     {
         const bool bSuccess = m_oAudioObjectMgr.ReserveID(rAudioObjectID, sAudioObjectName);
 
+#if !defined(AUDIO_RELEASE)
         if (bSuccess && sAudioObjectName && sAudioObjectName[0] != '\0')
         {
             m_oDebugNameStore.AddAudioObject(rAudioObjectID, sAudioObjectName);
         }
+#endif // !AUDIO_RELEASE
 
         return bSuccess;
     }
@@ -1816,8 +1818,6 @@ namespace Audio
                 "Audio Engine Mem:  %.2f / %.2f MiB", (oMemoryInfo.nPrimaryPoolUsedSize / 1024) / 1024.f,
                 (oMemoryInfo.nPrimaryPoolSize / 1024) / 1024.f);
             debugDisplay->Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
-
-            static const float SMOOTHING_ALPHA = 0.2f;
 
             const AZ::Vector3 vPos = m_oSharedData.m_oActiveListenerPosition.GetPositionVec();
             const AZ::Vector3 vFwd = m_oSharedData.m_oActiveListenerPosition.GetForwardVec();

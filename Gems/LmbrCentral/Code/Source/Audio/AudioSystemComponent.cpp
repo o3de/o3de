@@ -165,7 +165,7 @@ namespace LmbrCentral
                 Audio::ObjectRequest::ExecuteTrigger execTrigger;
                 execTrigger.m_triggerId = triggerId;
                 execTrigger.m_owner = (callbackOwnerEntityId.IsValid()
-                    ? reinterpret_cast<void*>(static_cast<uintptr_t>(callbackOwnerEntityId))
+                    ? reinterpret_cast<void*>(static_cast<uintptr_t>(static_cast<AZ::u64>(callbackOwnerEntityId)))
                     : this);
 
                 AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(execTrigger));
@@ -184,7 +184,7 @@ namespace LmbrCentral
                 Audio::ObjectRequest::StopTrigger stopTrigger;
                 stopTrigger.m_triggerId = triggerId;
                 stopTrigger.m_owner = (callbackOwnerEntityId.IsValid()
-                    ? reinterpret_cast<void*>(static_cast<uintptr_t>(callbackOwnerEntityId))
+                    ? reinterpret_cast<void*>(static_cast<uintptr_t>(static_cast<AZ::u64>(callbackOwnerEntityId)))
                     : this);
 
                 AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(stopTrigger));
