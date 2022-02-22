@@ -142,7 +142,6 @@ namespace ImageProcessingAtomEditor
             if (presetSetting)
             {
                 SetCheckBoxReadOnly(m_ui->serCheckBox, presetSetting->m_suppressEngineReduce);
-                //SetPresetConvention(presetSetting);
                 // If there is preset info dialog open, update the text
                 if (m_presetPopup && m_presetPopup->isVisible())
                 {
