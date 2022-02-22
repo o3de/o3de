@@ -359,6 +359,6 @@ namespace EMStudio
                 UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
             });
 
-        menu.exec(event->globalPos());
+        menu.popup(event->globalPos());
     }
 } // namespace EMStudio
