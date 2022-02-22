@@ -131,10 +131,10 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         3. Verify that bad assets fail to process
         4. Fix a bad asset & delete the others
         5. Run Asset Processor
-        6. Verify Asset Processor does not have any asset failues
+        6. Verify Asset Processor does not have any asset failures
         """
         env = ap_setup_fixture
-        error_search_terms = ["WWWWWWWWWWWW"]
+        error_search_terms = ["JSON parse error at line 1: Invalid value."]
 
         # # Setup Start # #
         # Add the working asset to the project folder
@@ -143,37 +143,38 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Ensure that the project is built in cache
         asset_processor.batch_process()
 
-        # Find any WORKING .slice asset in the projects folders (not the cache)
-        # Make a new folder there and copy the WORKING slice to that new folder
-        test_dir = os.path.join(workspace.project, "Slices", "Test_C4874121")
+        # Find any WORKING .prefab asset in the projects folders (not the cache)
+        # Make a new folder there and copy the WORKING prefab to that new folder
+        test_dir = os.path.join(workspace.project, "Prefab", "Test_C4874121")
 
         test_dir = asset_processor.add_scan_folder(test_dir)
 
         test_source_folder = os.path.join(asset_processor.temp_asset_root(), workspace.project, "C4874121")
-        copied_asset = os.path.join(test_source_folder, "working_slice.slice")
-        asset_processor.copy_assets_to_project(["working_slice.slice"], test_source_folder, test_dir)
+        copied_asset = os.path.join(test_source_folder, "working_prefab.prefab")
+        asset_processor.copy_assets_to_project(["working_prefab.prefab"], test_source_folder, test_dir)
 
         # Ensure that the test file did not fail to process
         asset_processor.run_and_check_output(False, error_search_terms)
-        # Open the slice file and make an intentional error in it to test reprocessing steps
-        original_slice = ""
-        corrupted_slice = ""
+        # Open the prefab file and make an intentional error in it to test reprocessing steps
+        original_prefab = ""
+        corrupted_prefab = ""
 
         with open(copied_asset, "r") as file:
-            original_slice = file.read()
-            # This creates an intentional error in the slice file which corrupts it and makes the asset fail
-            corrupted_slice = original_slice.replace("Components", "WWWWWWWWWWWW", 1)
+            original_prefab = file.read()
+            # This creates an intentional error in the prefab file which corrupts it and makes the asset fail
+            corrupted_prefab = original_prefab.replace("{}", "WWWWWWWWWWWW", 1)
 
         with open(copied_asset, "w") as file:
-            file.write(corrupted_slice)
+            file.write(corrupted_prefab)
 
+        print(corrupted_prefab)
         asset_processor.run_and_check_output(True, error_search_terms)
-        # # Setup End # #
+        # Setup End #
 
         # Reprocessing Test Step Variations
         if clear_type == "rewrite":
             with open(copied_asset, "w") as file:
-                file.write(original_slice)
+                file.write(original_prefab)
         elif clear_type == "delete_asset":
             fs.delete([copied_asset], True, False)
         elif clear_type == "delete_dir":
