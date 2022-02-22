@@ -563,7 +563,8 @@ namespace EMotionFX
                             AZ_Assert(proxy, "Failed to get free audio proxy");
 
                             AZStd::string proxyName = AZStd::string::format("%s:%d", name.c_str(), jointId);
-                            proxy->Initialize(proxyName.c_str(), reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId())));
+                            proxy->Initialize(proxyName.c_str(),
+                                reinterpret_cast<void*>(static_cast<uintptr_t>(static_cast<AZ::u64>(GetEntityId()))));
                             proxy->SetObstructionCalcType(Audio::ObstructionType::Ignore);
                             m_jointProxies.emplace(jointId, proxy);
                         }
