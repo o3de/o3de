@@ -42,8 +42,6 @@ namespace AssetProcessor
 
         AssetUtilities::ComputeProjectPath();
 
-        AssetUtilities::ComputeProjectCacheRoot(m_cacheRootDir);
-
         if (!ConnectToDatabase())
         {
             AZ_Error("AssetCatalog", false, "Failed to connect to sqlite database");
