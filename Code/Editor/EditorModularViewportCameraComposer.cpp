@@ -252,16 +252,6 @@ namespace SandboxEditor
 
         m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(SandboxEditor::CameraOrbitChannelId());
 
-        const auto beginPickRotatePivot = [this]
-        {
-            m_pivotDisplayState = PivotDisplayState::Full;
-        };
-
-        const auto endPickRotatePivot = [this]
-        {
-            m_pivotDisplayState = PivotDisplayState::Faded;
-        };
-
         m_orbitCamera->SetPivotFn(
             [this]([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
             {
@@ -274,11 +264,13 @@ namespace SandboxEditor
                 AZ::TickBus::Handler::BusConnect();
                 AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
 
+                // pivot should be displayed but not be 'active' (full when rotation behavior is happening)
                 m_pivotDisplayState = PivotDisplayState::Faded;
             });
         m_orbitCamera->SetActivationEndedFn(
             [this]
             {
+                // when the orbit behavior ends the pivot point should fade out and no longer display
                 m_pivotDisplayState = PivotDisplayState::Hidden;
             });
 
@@ -309,13 +301,42 @@ namespace SandboxEditor
 
                 if (screenPoint.has_value())
                 {
-                    m_pivot = AzToolsFramework::FindClosestPickIntersection(
-                        m_viewportId, screenPoint.value(), AzToolsFramework::EditorPickRayLength, 10.0f);
+                    const auto [origin, direction] =
+                        AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_viewportId, screenPoint.value());
+
+                    AzToolsFramework::EntityIdList visibleEntityIds;
+                    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
+                        m_viewportId,
+                        &AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
+                        visibleEntityIds);
+
+                    bool pickedEntity = false;
+                    float closestDistance = AZStd::numeric_limits<float>::max();
+                    for (const auto& entityId : visibleEntityIds)
+                    {
+                        float distance;
+                        if (AzToolsFramework::PickEntity(entityId, origin, direction, distance, m_viewportId))
+                        {
+                            pickedEntity = true;
+                            closestDistance = AZStd::min(distance, closestDistance);
+                        }
+                    }
+
+                    const float distance = pickedEntity ? closestDistance : AzToolsFramework::GetDefaultEntityPlacementDistance();
+                    m_pivot = origin + direction * distance;
                 }
             });
 
-        m_orbitRotateCamera->SetActivationBeganFn(beginPickRotatePivot);
-        m_orbitRotateCamera->SetActivationEndedFn(endPickRotatePivot);
+        m_orbitRotateCamera->SetActivationBeganFn(
+            [this]
+            {
+                m_pivotDisplayState = PivotDisplayState::Full;
+            });
+        m_orbitRotateCamera->SetActivationEndedFn(
+            [this]
+            {
+                m_pivotDisplayState = PivotDisplayState::Faded;
+            });
 
         m_orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
             translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslateOffsetOrbit);
