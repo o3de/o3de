@@ -212,16 +212,14 @@ def AtomEditorComponents_Light_AddedToEntity():
             light_component.set_component_property_value(
                 AtomComponentProperties.light('Light type'), LIGHT_TYPES[light_type])
             general.idle_wait_frames(1)
-            current_light_type = light_component.get_component_property_value(
-                              AtomComponentProperties.light('Light type'))
             test_light_type = (
                 f"Set light type: {light_type.upper()}",
                 f"P0: Light component failed to set {light_type.upper()} type")
-            Report.result(test_light_type,
-                          current_light_type == LIGHT_TYPES[light_type])
+            Report.result(test_light_type, light_component.get_component_property_value(
+                              AtomComponentProperties.light('Light type')) == LIGHT_TYPES[light_type])
 
             # 6. Check for Shape component.
-            if current_light_type in (LIGHT_TYPES['sphere'], LIGHT_TYPES['spot_disk'], LIGHT_TYPES['capsule'],
+            if LIGHT_TYPES[light_type] in (LIGHT_TYPES['sphere'], LIGHT_TYPES['spot_disk'], LIGHT_TYPES['capsule'],
                                       LIGHT_TYPES['quad'], LIGHT_TYPES['polygon']):
                 light_shape = LIGHT_SHAPES[light_type]
                 test_light_shape = (
@@ -238,7 +236,7 @@ def AtomEditorComponents_Light_AddedToEntity():
             Report.result(Tests.edit_light_color, light_color.IsClose(color_value))
 
             # 8. Set Intensity mode.
-            # if current_light_type not in (LIGHT_TYPES['simple_point'], LIGHT_TYPES['simple_spot']):
+            # if LIGHT_TYPES[light_type] not in (LIGHT_TYPES['simple_point'], LIGHT_TYPES['simple_spot']):
             #     for intensity_mode in INTENSITY_MODE.keys():
             #         light_component.set_component_property_value(
             #             AtomComponentProperties.light('Intensity mode'), INTENSITY_MODE[intensity_mode])
@@ -261,15 +259,14 @@ def AtomEditorComponents_Light_AddedToEntity():
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Attenuation radius Mode'), ATTENUATION_RADIUS_MODE[radius_mode])
                 general.idle_wait_frames(1)
-                current_radius_mode = light_component.get_component_property_value(
-                    AtomComponentProperties.light('Attenuation radius Mode'))
                 test_attenuation_mode = (
                     f"Attenuation radius Mode set to {radius_mode}",
                     f"P1: Attenuation radius Mode failed to be set to {radius_mode}")
-                Report.result(test_attenuation_mode, current_radius_mode == ATTENUATION_RADIUS_MODE[radius_mode])
+                Report.result(test_attenuation_mode, light_component.get_component_property_value(
+                    AtomComponentProperties.light('Attenuation radius Mode')) == ATTENUATION_RADIUS_MODE[radius_mode])
 
                 # 11. Edit the Attenuation radius Radius parameter (explicit only).
-                if current_radius_mode == ATTENUATION_RADIUS_MODE['explicit']:
+                if ATTENUATION_RADIUS_MODE[radius_mode] == ATTENUATION_RADIUS_MODE['explicit']:
                     light_component.set_component_property_value(
                         AtomComponentProperties.light('Attenuation radius Radius'), 1000)
                     general.idle_wait_frames(1)
@@ -278,7 +275,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                                       AtomComponentProperties.light('Attenuation radius Radius')) == 1000)
 
             # Shadow tests for applicable light types:
-            if current_light_type in (LIGHT_TYPES['sphere'], LIGHT_TYPES['spot_disk']):
+            if LIGHT_TYPES[light_type] in (LIGHT_TYPES['sphere'], LIGHT_TYPES['spot_disk']):
                 # 12. Enable Shadows:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Enable shadow'), True)
@@ -323,16 +320,15 @@ def AtomEditorComponents_Light_AddedToEntity():
                     light_component.set_component_property_value(
                         AtomComponentProperties.light('Shadow filter method'), SHADOW_FILTER_METHOD[filter_method])
                     general.idle_wait_frames(1)
-                    current_filter_method = light_component.get_component_property_value(
-                        AtomComponentProperties.light('Shadow filter method'))
                     test_shadow_filter_method = (
                         f"Shadow filter method set to {filter_method}",
                         f"P1: Shadow filter method set to {filter_method}")
-                    Report.result(test_shadow_filter_method,
-                                  current_filter_method == SHADOW_FILTER_METHOD[filter_method])
+                    Report.result(test_shadow_filter_method, light_component.get_component_property_value(
+                        AtomComponentProperties.light('Shadow filter method')) == SHADOW_FILTER_METHOD[filter_method])
 
                     # 17. Edit the Filtering sample count parameter.
-                    if current_filter_method in (SHADOW_FILTER_METHOD['PCF'], SHADOW_FILTER_METHOD['PCF+ESM']):
+                    if SHADOW_FILTER_METHOD[filter_method] in (SHADOW_FILTER_METHOD['PCF'],
+                                                               SHADOW_FILTER_METHOD['PCF+ESM']):
                         light_component.set_component_property_value(
                             AtomComponentProperties.light('Filtering sample count'), 64)
                         general.idle_wait_frames(1)
@@ -341,7 +337,8 @@ def AtomEditorComponents_Light_AddedToEntity():
                                           AtomComponentProperties.light('Filtering sample count')) == 64)
 
                     # 18. Edit the ESM Exponent parameter.
-                    if current_filter_method in (SHADOW_FILTER_METHOD['ESM'], SHADOW_FILTER_METHOD['PCF+ESM']):
+                    if SHADOW_FILTER_METHOD[filter_method] in (SHADOW_FILTER_METHOD['ESM'],
+                                                               SHADOW_FILTER_METHOD['PCF+ESM']):
                         light_component.set_component_property_value(
                             AtomComponentProperties.light('ESM exponent'), 5000)
                         general.idle_wait_frames(1)
@@ -361,7 +358,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     AtomComponentProperties.light('Enable shadow'), True)
 
             # Shutter tests for applicable light types:
-            if current_light_type in (LIGHT_TYPES['spot_disk'], LIGHT_TYPES['simple_spot']):
+            if LIGHT_TYPES[light_type] in (LIGHT_TYPES['spot_disk'], LIGHT_TYPES['simple_spot']):
                 # 20. Edit the Inner angle parameter:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Inner angle'), 0.5)
@@ -379,7 +376,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                                   AtomComponentProperties.light('Outer angle')) == 90)
 
             # Disable/Enable Shutters tests:
-            if current_light_type == LIGHT_TYPES['spot_disk']:
+            if LIGHT_TYPES[light_type] == LIGHT_TYPES['spot_disk']:
                 # 22. Disable Shutters:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Enable shutters'), False)
@@ -399,7 +396,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                         AtomComponentProperties.light('Enable shutters')) is True)
 
             # Enable/Disable Both directions tests:
-            if current_light_type in (LIGHT_TYPES['quad'], LIGHT_TYPES['polygon']):
+            if LIGHT_TYPES[light_type] in (LIGHT_TYPES['quad'], LIGHT_TYPES['polygon']):
                 # 24. Enable Both directions:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Both directions'), True)
@@ -421,7 +418,7 @@ def AtomEditorComponents_Light_AddedToEntity():
                     AtomComponentProperties.light('Both directions'), True)
 
             # Enable/Disable Fast approximation tests:
-            if current_light_type == LIGHT_TYPES['quad']:
+            if LIGHT_TYPES[light_type] == LIGHT_TYPES['quad']:
                 # 26. Enable Fast approximation:
                 light_component.set_component_property_value(
                     AtomComponentProperties.light('Fast approximation'), True)
