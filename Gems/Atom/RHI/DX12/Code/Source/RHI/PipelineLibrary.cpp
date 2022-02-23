@@ -248,15 +248,19 @@ namespace AZ
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
             AZStd::vector<uint8_t> serializedData(m_library->GetSerializedSize());
-
-            HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
-
-            if (!AssertSuccess(hr))
+            if (serializedData.size())
             {
-                return nullptr;
-            }
+            
+                HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
 
-            return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
+                if (!AssertSuccess(hr))
+                {
+                    return nullptr;
+                }
+
+                return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
+            }
+            return nullptr;
 #else
             return nullptr;
 #endif
