@@ -684,7 +684,7 @@ namespace AZ
                 // Parse and set the property's value...
                 if (!property->m_value.IsValid())
                 {
-                    AZ_Warning("Material source data", false, "Source data for material property value is invalid.");
+                    materialTypeAssetCreator.ReportWarning("Default value for material property '%s' is invalid.", propertyId.GetCStr());
                 }
                 else
                 {
