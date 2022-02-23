@@ -66,18 +66,61 @@ namespace ImageProcessingAtom
          */
         struct TgaHeader
         {
-            AZ::u8                      m_idLength;
-            AZ::u8                      m_colorMapType;
-            ImageTypeCode               m_dataTypeCode;
-            AZ::u16                     m_colorMapOrigin;
-            AZ::u16                     m_colorMapLength;
-            AZ::u8                      m_colorMapDepth;
-            AZ::u16                     m_xOrigin;
-            AZ::u16                     m_yOrigin;
-            AZ::u16                     m_width;
-            AZ::u16                     m_height;
-            ImagePixelSize              m_bitsPerPixel;
-            AZ::u8                      m_imageDescriptor;
+            AZ::u64 m_idLength : 8;
+            AZ::u64 m_colorMapType : 8;
+            AZ::u64 m_dataTypeCode : 8;
+            AZ::u64 m_colorMapOrigin : 16;
+            AZ::u64 m_colorMapLength : 16;
+            AZ::u64 m_colorMapDepth : 8;
+            AZ::u64 m_xOrigin : 16;
+            AZ::u64 m_yOrigin : 16;
+            AZ::u64 m_width : 16;
+            AZ::u64 m_height : 16;
+            AZ::u32 m_bitsPerPixel : 8;
+            AZ::u32 m_imageDescriptor : 8;
+
+            ImageTypeCode GetDataTypeCode()
+            {
+                ImageTypeCode imageTypeCode = static_cast<ImageTypeCode>(m_dataTypeCode);
+                return imageTypeCode;
+            }
+
+            bool IsDataTypeCodeSupported()
+            {
+                ImageTypeCode imageTypeCode = GetDataTypeCode();
+                return imageTypeCode == ImageTypeCode::UnmappedRGB || imageTypeCode == ImageTypeCode::RGBRLE;
+            }
+
+            ImagePixelSize GetImagePixelSize() const
+            {
+                ImagePixelSize pixelSize = static_cast<ImagePixelSize>(m_bitsPerPixel);
+                return pixelSize;
+            }
+
+            bool IsImagePixelSizeSupported()
+            {
+                ImagePixelSize pixelSize = GetImagePixelSize();
+                return pixelSize == ImagePixelSize::Targa24 || pixelSize == ImagePixelSize::Targa32;
+            }
+
+            AZ::u8 GetBitsPerPixel() const
+            {
+                return aznumeric_cast<AZ::u8>(m_bitsPerPixel);
+            }
+
+            AZ::u32 GetBytesPerPixel() const
+            {
+                return GetBitsPerPixel() / 8;
+            }
+
+            AZ::u32 GetImageBytesSize()
+            {
+                AZ::u32 bytesPerPixel = GetBytesPerPixel();
+                AZ::u32 width = aznumeric_cast<AZ::u32>(m_width);
+                AZ::u32 height = aznumeric_cast<AZ::u32>(m_height);
+                AZ::u32 imageBytesSize = width * height * bytesPerPixel;
+                return imageBytesSize;
+            }
         };
 #pragma pack()
 
