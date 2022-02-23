@@ -49,9 +49,6 @@ namespace AZ
             static constexpr const char Extension[] = "material";
 
             static void Reflect(ReflectContext* context);
-            
-            //! Creates a MaterialSourceData object that includes the default values for every possible property in the material type.
-            static MaterialSourceData CreateAllPropertyDefaultsMaterial(const Data::Asset<MaterialTypeAsset>& materialType, const AZStd::string& materialTypeSourcePath);
 
             MaterialSourceData() = default;
             

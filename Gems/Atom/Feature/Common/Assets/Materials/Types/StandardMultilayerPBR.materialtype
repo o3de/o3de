@@ -2701,7 +2701,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Metallic.lua",
-                "propertyNamePrefix": "layer1_metallic.",
+                "propertyNamePrefix": "layer1_",
                 "srgNamePrefix": "m_layer1_",
                 "optionsNamePrefix": "o_layer1_"
             }
@@ -2710,7 +2710,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Roughness.lua",
-                "propertyNamePrefix": "layer1_roughness.",
+                "propertyNamePrefix": "layer1_",
                 "srgNamePrefix": "m_layer1_",
                 "optionsNamePrefix": "o_layer1_"
             }
@@ -2745,7 +2745,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_ClearCoatState.lua",
-                "propertyNamePrefix": "layer1_clearCoat.",
+                "propertyNamePrefix": "layer1_",
                 "srgNamePrefix": "m_layer1_",
                 "optionsNamePrefix": "o_layer1_"
             }
@@ -2772,7 +2772,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_EmissiveState.lua",
-                "propertyNamePrefix": "layer1_emissive.",
+                "propertyNamePrefix": "layer1_",
                 "srgNamePrefix": "m_layer1_",
                 "optionsNamePrefix": "o_layer1_"
             }
@@ -2834,7 +2834,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Metallic.lua",
-                "propertyNamePrefix": "layer2_metallic.",
+                "propertyNamePrefix": "layer2_",
                 "srgNamePrefix": "m_layer2_",
                 "optionsNamePrefix": "o_layer2_"
             }
@@ -2843,7 +2843,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Roughness.lua",
-                "propertyNamePrefix": "layer2_roughness.",
+                "propertyNamePrefix": "layer2_",
                 "srgNamePrefix": "m_layer2_",
                 "optionsNamePrefix": "o_layer2_"
             }
@@ -2878,7 +2878,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_ClearCoatState.lua",
-                "propertyNamePrefix": "layer2_clearCoat.",
+                "propertyNamePrefix": "layer2_",
                 "srgNamePrefix": "m_layer2_",
                 "optionsNamePrefix": "o_layer2_"
             }
@@ -2905,7 +2905,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_EmissiveState.lua",
-                "propertyNamePrefix": "layer2_emissive.",
+                "propertyNamePrefix": "layer2_",
                 "srgNamePrefix": "m_layer2_",
                 "optionsNamePrefix": "o_layer2_"
             }
@@ -2967,7 +2967,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Metallic.lua",
-                "propertyNamePrefix": "layer3_metallic.",
+                "propertyNamePrefix": "layer3_",
                 "srgNamePrefix": "m_layer3_",
                 "optionsNamePrefix": "o_layer3_"
             }
@@ -2976,7 +2976,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Roughness.lua",
-                "propertyNamePrefix": "layer3_roughness.",
+                "propertyNamePrefix": "layer3_",
                 "srgNamePrefix": "m_layer3_",
                 "optionsNamePrefix": "o_layer3_"
             }
@@ -3011,7 +3011,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_ClearCoatState.lua",
-                "propertyNamePrefix": "layer3_clearCoat.",
+                "propertyNamePrefix": "layer3_",
                 "srgNamePrefix": "m_layer3_",
                 "optionsNamePrefix": "o_layer3_"
             }
@@ -3038,7 +3038,7 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_EmissiveState.lua",
-                "propertyNamePrefix": "layer3_emissive.",
+                "propertyNamePrefix": "layer3_",
                 "srgNamePrefix": "m_layer3_",
                 "optionsNamePrefix": "o_layer3_"
             }

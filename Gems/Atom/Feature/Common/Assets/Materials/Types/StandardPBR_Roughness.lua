@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"textureMap", "useTexture"}
+    return {"roughness.textureMap", "roughness.useTexture"}
 end
  
 function GetShaderOptionDependencies()
@@ -18,39 +18,38 @@ function GetShaderOptionDependencies()
 end
 
 function Process(context)
-    local textureMap = context:GetMaterialPropertyValue_Image("textureMap")
-    local useTexture = context:GetMaterialPropertyValue_bool("useTexture")
+    local textureMap = context:GetMaterialPropertyValue_Image("roughness.textureMap")
+    local useTexture = context:GetMaterialPropertyValue_bool("roughness.useTexture")
     context:SetShaderOptionValue_bool("o_roughness_useTexture", useTexture and textureMap ~= nil)
 end
 
 function ProcessEditor(context)
-    local textureMap = context:GetMaterialPropertyValue_Image("textureMap")
-    local useTexture = context:GetMaterialPropertyValue_bool("useTexture")
+    local textureMap = context:GetMaterialPropertyValue_Image("roughness.textureMap")
+    local useTexture = context:GetMaterialPropertyValue_bool("roughness.useTexture")
 
     if(nil == textureMap) then
-        context:SetMaterialPropertyVisibility("useTexture", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("textureMapUv", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("roughness.useTexture", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("roughness.textureMapUv", MaterialPropertyVisibility_Hidden)
 
-        context:SetMaterialPropertyVisibility("lowerBound", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("upperBound", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("roughness.lowerBound", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("roughness.upperBound", MaterialPropertyVisibility_Hidden)
         
-        context:SetMaterialPropertyVisibility("factor", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("roughness.factor", MaterialPropertyVisibility_Enabled)
     elseif(not useTexture) then
-        context:SetMaterialPropertyVisibility("useTexture", MaterialPropertyVisibility_Enabled)
-        context:SetMaterialPropertyVisibility("textureMapUv", MaterialPropertyVisibility_Disabled)
+        context:SetMaterialPropertyVisibility("roughness.useTexture", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("roughness.textureMapUv", MaterialPropertyVisibility_Disabled)
 
-        context:SetMaterialPropertyVisibility("lowerBound", MaterialPropertyVisibility_Disabled)
-        context:SetMaterialPropertyVisibility("upperBound", MaterialPropertyVisibility_Disabled)
+        context:SetMaterialPropertyVisibility("roughness.lowerBound", MaterialPropertyVisibility_Disabled)
+        context:SetMaterialPropertyVisibility("roughness.upperBound", MaterialPropertyVisibility_Disabled)
         
-        context:SetMaterialPropertyVisibility("factor", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("roughness.factor", MaterialPropertyVisibility_Enabled)
     else
-        context:SetMaterialPropertyVisibility("useTexture", MaterialPropertyVisibility_Enabled)
-        context:SetMaterialPropertyVisibility("textureMapUv", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("roughness.useTexture", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("roughness.textureMapUv", MaterialPropertyVisibility_Enabled)
 
-        context:SetMaterialPropertyVisibility("lowerBound", MaterialPropertyVisibility_Enabled)
-        context:SetMaterialPropertyVisibility("upperBound", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("roughness.lowerBound", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("roughness.upperBound", MaterialPropertyVisibility_Enabled)
         
-        context:SetMaterialPropertyVisibility("factor", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("roughness.factor", MaterialPropertyVisibility_Hidden)
     end
 end
-

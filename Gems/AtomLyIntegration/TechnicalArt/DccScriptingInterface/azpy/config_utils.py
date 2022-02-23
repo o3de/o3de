@@ -28,8 +28,8 @@ get_check_global_project() :get global project path from user .o3de data
 get_o3de_project_path()    :get the project path while within editor
 bootstrap_dccsi_py_libs()  :extends code access (mainly used in Maya py27)
 """
-import time
-start = time.process_time() # start tracking
+import timeit
+start = timeit.default_timer() # start tracking
 
 import sys
 import os
@@ -293,20 +293,21 @@ def get_o3de_build_path(root_directory=get_o3de_engine_root(),
     Output: the path of the build folder (if found)
     """
     
-    if _DCCSI_GDEBUG:
-        import time
-        start = time.process_time()        
+    root_directory = Path(root_directory)
     
-    for root, dirs, files in os.walk(root_directory):
+    import timeit
+    start = timeit.default_timer()        
+    
+    for root, dirs, files in os.walk(root_directory.as_posix()):
         if marker in files:
             if _DCCSI_GDEBUG:
                 _LOGGER.debug('Find PATH_O3DE_BUILD took: {} sec'
-                              ''.format(time.process_time() - start))            
+                              ''.format(timeit.default_timer() - start))            
             return Path(root)
     else:
         if _DCCSI_GDEBUG:
             _LOGGER.debug('Not fidning PATH_O3DE_BUILD took: {} sec'
-                          ''.format(time.process_time() - start))
+                          ''.format(timeit.default_timer() - start))
         return None
     
 # note: if we use this method to find PATH_O3DE_BUILD
@@ -319,9 +320,9 @@ def get_o3de_build_path(root_directory=get_o3de_engine_root(),
 #
 # other ways to deal with it:
 # 1 - Use the running application .exe to discover the build path?
-# 2 - Set PATH_O3DE_BUILD envar in
+# 2 - If developer set PATH_O3DE_BUILD envar in
 #        "C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\.env"
-# 3 - Set in commandline (or from .bat file)
+# 3 - Set envar in commandline before executing script (or from .bat file)
 # 4 - To Do (maybe): Set in a dccsi_configuration.setreg? 
 # -------------------------------------------------------------------------
 
@@ -341,14 +342,14 @@ def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
             import importlib.util
             #from importlib import util
             _spec_dccsi_config = importlib.util.spec_from_file_location(_module_tag,
-                                                                        str(_dccsi_path.resolve()))
+                                                                        str(_dccsi_path.as_posix()))
             _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
             _spec_dccsi_config.loader.exec_module(_dccsi_config)
 
             _LOGGER.debug('Executed config: {}'.format(_spec_dccsi_config))
         else:  # py2.x
             import imp
-            _dccsi_config = imp.load_source(_module_tag, str(_dccsi_path.resolve()))
+            _dccsi_config = imp.load_source(_module_tag, str(_dccsi_path.as_posix()))
             _LOGGER.debug('Imported config: {}'.format(_spec_dccsi_config))
         return _dccsi_config
 
@@ -380,19 +381,19 @@ def get_check_global_project():
     """Gets o3de project via .o3de data in user directory"""
 
     from collections import OrderedDict
-    from box import Box
+    import box
     
     bootstrap_box = None
     json_file_path = Path(PATH_USER_O3DE_BOOTSTRAP)
     if json_file_path.exists():
         try:
-            bootstrap_box = Box.from_json(filename=str(json_file_path.resolve()),
-                                          encoding="utf-8",
-                                          errors="strict",
-                                          object_pairs_hook=OrderedDict)
+            bootstrap_box = box.Box.from_json(filename=str(json_file_path.as_posix()),
+                                              encoding="utf-8",
+                                              errors="strict",
+                                              object_pairs_hook=OrderedDict)
         except IOError as e:
             # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
-            _LOGGER.error('Bad file interaction: {}'.format(json_file_path.resolve()))
+            _LOGGER.error('Bad file interaction: {}'.format(json_file_path.as_posix()))
             _LOGGER.error('Exception is: {}'.format(e))
             pass
     if bootstrap_box:
@@ -425,7 +426,7 @@ def get_o3de_project_path():
         
         if _DCCSI_GDEBUG: # to verbose, used often
             # note: can't use fstrings as this module gets called with py2.7 in maya
-            _LOGGER.debug('O3DE project root: {}'.format(_PATH_O3DE_PROJECT.resolve()))
+            _LOGGER.debug('O3DE project root: {}'.format(_PATH_O3DE_PROJECT.as_posix()))
     return _PATH_O3DE_PROJECT
 # -------------------------------------------------------------------------
 
@@ -438,9 +439,9 @@ def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
                                                                    sys.version_info[1]))
 
     if _PATH_DCCSI_PYTHON_LIB.exists():
-        site.addsitedir(_PATH_DCCSI_PYTHON_LIB.resolve())  # PYTHONPATH
+        site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())  # PYTHONPATH
         _LOGGER.debug('Performed site.addsitedir({})'
-                      ''.format(_PATH_DCCSI_PYTHON_LIB.resolve()))
+                      ''.format(_PATH_DCCSI_PYTHON_LIB.as_posix()))
         return _PATH_DCCSI_PYTHON_LIB
     else:
         message = "Doesn't exist: {}".format(_PATH_DCCSI_PYTHON_LIB)
@@ -518,22 +519,22 @@ if __name__ == '__main__':
     _O3DE_DEV = get_o3de_engine_root(check_stub='engine.json')
     _LOGGER.info('O3DE_DEV: {}'.format(_O3DE_DEV.resolve()))
     
-    _PATH_O3DE_BUILD = get_o3de_build_path(_O3DE_DEV, 'CMakeCache.txt')
+    _PATH_O3DE_BUILD = get_o3de_build_path(_O3DE_DEV.as_posix(), 'CMakeCache.txt')
     _LOGGER.info('PATH_O3DE_BUILD: {}'.format(_PATH_O3DE_BUILD.resolve()))
 
     # new o3de version
     _PATH_O3DE_PROJECT = get_check_global_project()
     _LOGGER.info('PATH_O3DE_PROJECT: {}'.format(_PATH_O3DE_PROJECT.resolve()))
 
-    _PATH_DCCSI_PYTHON_LIB = bootstrap_dccsi_py_libs(_PATH_DCCSIG)
+    _PATH_DCCSI_PYTHON_LIB = bootstrap_dccsi_py_libs(_PATH_DCCSIG.as_posix())
     _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(_PATH_DCCSI_PYTHON_LIB.resolve()))
 
-    _DCCSI_CONFIG = get_dccsi_config(_PATH_DCCSIG)
+    _DCCSI_CONFIG = get_dccsi_config(_PATH_DCCSIG.as_posix())
     _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(_DCCSI_CONFIG))
     # ---------------------------------------------------------------------
     
     # custom prompt
     sys.ps1 = "[azpy]>>"
     
-_LOGGER.debug('DCCsi: config_utils.py took: {} sec'.format(time.process_time() - start)) 
+_LOGGER.debug('DCCsi: config_utils.py took: {} sec'.format(timeit.default_timer() - start)) 
 # --- END -----------------------------------------------------------------

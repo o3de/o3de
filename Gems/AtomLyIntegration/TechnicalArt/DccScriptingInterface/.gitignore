@@ -5,9 +5,11 @@ __pycache__
 *.pyc
 *.pyo
 workspace.xml
+azpy/_sample_package_/*
 # Ignore dynaconf secret files
 .secrets.*
-settings.local.json
-azpy/_sample_package_/*
 .env
 settings_export.json.tmp
+settings.local.json
+**/*.local*
+user
