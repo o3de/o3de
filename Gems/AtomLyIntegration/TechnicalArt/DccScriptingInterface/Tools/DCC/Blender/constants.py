@@ -48,7 +48,7 @@ DCCSI_BLENDER_LAUNCHER =  f"{DCCSI_BLENDER_LOCATION}/blender-launcher.exe"
 DCCSI_BLENDER_PYTHON =    f"{DCCSI_BLENDER_LOCATION}/{DCCSI_BLENDER_VERSION}/python"
 DCCSI_BLENDER_PY_EXE =    f"{DCCSI_BLENDER_PYTHON}/bin/python.exe"
 
-DCCSI_BLENDER_WIKI_URL =  'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Blender'
+DCCSI_BLENDER_WIKI_URL =  'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC-Blender'
 
 DCCSI_TOOLS_BLENDER_PATH = 'foo'
 

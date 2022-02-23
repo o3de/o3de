@@ -46,19 +46,17 @@ _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS_MAYA = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', _PATH_DCCSI_TOOLS_MAYA.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_MAYA.as_posix())
+_PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA',
+                                        _PATH_DCCSI_TOOLS_MAYA.as_posix()))
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS_DCC = Path(_PATH_DCCSI_TOOLS_MAYA.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
+_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC',
+                                       _PATH_DCCSI_TOOLS_DCC.as_posix()))
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
-_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
+_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS',
+                                   _PATH_DCCSI_TOOLS.as_posix()))
 
 # we need to set up basic access to the DCCsi
 _PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
@@ -66,6 +64,11 @@ _PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
 site.addsitedir(_PATH_DCCSIG.as_posix())
 
 _LOGGER.debug('_PATH_DCCSIG: {}'.format(_PATH_DCCSIG.as_posix()))
+
+# this is the shared default requirements.txt file to install for python 3.6.x+
+DCCSI_PYTHON_REQUIREMENTS = Path(_PATH_DCCSIG, 'requirements.txt').as_posix()
+# if using maya 2020 or less with py2.7 override with and use the one here:
+# "DccScriptingInterface\Tools\DCC\Maya\requirements.txt"
 
 # now we have azpy api access
 from azpy.env_bool import env_bool
@@ -192,17 +195,17 @@ DCCSI_MAYA_PLUG_IN_PATH = Path(PATH_DCCSI_TOOLS_MAYA,'plugins').as_posix()
 
 # is a maya envar
 MAYA_PLUG_IN_PATH = Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix() # extend %MAYA_PLUG_IN_PATH%
-while MAYA_PLUG_IN_PATH:
-    if ENVAR_MAYA_PLUG_IN_PATH in os.environ:
-        maya_plug_pathlist = os.getenv(ENVAR_MAYA_PLUG_IN_PATH).split(os.pathsep)
-        maya_plug_new_pathlist = maya_plug_pathlist.copy()
-        maya_plug_new_pathlist.insert(0, Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix())
-        os.environ[ENVAR_MAYA_PLUG_IN_PATH] = os.pathsep.join(maya_plug_new_pathlist)
-    else:
-        os.environ[ENVAR_MAYA_PLUG_IN_PATH] = DCCSI_MAYA_PLUG_IN_PATH
+#while MAYA_PLUG_IN_PATH:
+    #if ENVAR_MAYA_PLUG_IN_PATH in os.environ:
+        #maya_plug_pathlist = os.getenv(ENVAR_MAYA_PLUG_IN_PATH).split(os.pathsep)
+        #maya_plug_new_pathlist = maya_plug_pathlist.copy()
+        #maya_plug_new_pathlist.insert(0, Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix())
+        #os.environ[ENVAR_MAYA_PLUG_IN_PATH] = os.pathsep.join(maya_plug_new_pathlist)
+    #else:
+        #os.environ[ENVAR_MAYA_PLUG_IN_PATH] = DCCSI_MAYA_PLUG_IN_PATH
     
-    MAYA_PLUG_IN_PATH = os.getenv(ENVAR_MAYA_PLUG_IN_PATH, "< NOT SET >")
-    break
+    #MAYA_PLUG_IN_PATH = os.getenv(ENVAR_MAYA_PLUG_IN_PATH, "< NOT SET >")
+    #break
 
 DCCSI_MAYA_SHELF_PATH = Path(PATH_DCCSI_TOOLS_MAYA, 'Prefs', 'Shelves').as_posix()
 
@@ -211,42 +214,44 @@ DCCSI_MAYA_XBMLANGPATH = Path(PATH_DCCSI_TOOLS_MAYA, 'Prefs', 'icons').as_posix(
 # is a maya envar
 # maya resources, very oddly named
 XBMLANGPATH = Path(DCCSI_MAYA_XBMLANGPATH).as_posix() # extend %XBMLANGPATH%
-while XBMLANGPATH:
-    if ENVAR_XBMLANGPATH in os.environ:
-        maya_xbm_pathlist = os.getenv(ENVAR_XBMLANGPATH).split(os.pathsep)
-        maya_xbm_new_pathlist = maya_xbm_pathlist.copy()
-        maya_xbm_new_pathlist.insert(0, Path(DCCSI_MAYA_XBMLANGPATH).as_posix())
-        os.environ[ENVAR_XBMLANGPATH] = os.pathsep.join(maya_xbm_new_pathlist)
-    else:
-        os.environ[ENVAR_XBMLANGPATH] = DCCSI_MAYA_XBMLANGPATH
+#while XBMLANGPATH:
+    #if ENVAR_XBMLANGPATH in os.environ:
+        #maya_xbm_pathlist = os.getenv(ENVAR_XBMLANGPATH).split(os.pathsep)
+        #maya_xbm_new_pathlist = maya_xbm_pathlist.copy()
+        #maya_xbm_new_pathlist.insert(0, Path(DCCSI_MAYA_XBMLANGPATH).as_posix())
+        #os.environ[ENVAR_XBMLANGPATH] = os.pathsep.join(maya_xbm_new_pathlist)
+    #else:
+        #os.environ[ENVAR_XBMLANGPATH] = DCCSI_MAYA_XBMLANGPATH
     
-    XBMLANGPATH = os.getenv(ENVAR_XBMLANGPATH, "< NOT SET >")
-    break
+    #XBMLANGPATH = os.getenv(ENVAR_XBMLANGPATH, "< NOT SET >")
+    #break
 
 DCCSI_MAYA_SCRIPT_PATH = Path(PATH_DCCSI_TOOLS_MAYA, 'Scripts').as_posix()
 DCCSI_MAYA_SCRIPT_MEL_PATH = Path(PATH_DCCSI_TOOLS_MAYA, 'Scripts', 'Mel').as_posix()
 DCCSI_MAYA_SCRIPT_PY_PATH = Path(PATH_DCCSI_TOOLS_MAYA, 'Scripts', 'Python').as_posix()
 
 MAYA_SCRIPT_PATH = Path(DCCSI_MAYA_SCRIPT_PATH).as_posix() # extend %MAYA_SCRIPT_PATH%
-while MAYA_SCRIPT_PATH:
-    if ENVAR_MAYA_SCRIPT_PATH in os.environ:
-        maya_script_pathlist = os.getenv(ENVAR_MAYA_SCRIPT_PATH).split(os.pathsep)
-        maya_script_new_pathlist = maya_script_pathlist.copy()
-        maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_MEL_PATH)
-        maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_PY_PATH)
-        maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_PATH)
-        os.environ[ENVAR_MAYA_SCRIPT_PATH] = os.pathsep.join(maya_script_new_pathlist)
-    else:
-        os.environ[ENVAR_MAYA_SCRIPT_PATH] = os.pathsep.join( (DCCSI_MAYA_SCRIPT_PATH,
-                                                               DCCSI_MAYA_SCRIPT_PY_PATH,
-                                                               DCCSI_MAYA_SCRIPT_MEL_PATH) )
+#while MAYA_SCRIPT_PATH:
+    #if ENVAR_MAYA_SCRIPT_PATH in os.environ:
+        #maya_script_pathlist = os.getenv(ENVAR_MAYA_SCRIPT_PATH).split(os.pathsep)
+        #maya_script_new_pathlist = maya_script_pathlist.copy()
+        #maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_MEL_PATH)
+        #maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_PY_PATH)
+        #maya_script_new_pathlist.insert(0, DCCSI_MAYA_SCRIPT_PATH)
+        #os.environ[ENVAR_MAYA_SCRIPT_PATH] = os.pathsep.join(maya_script_new_pathlist)
+    #else:
+        #os.environ[ENVAR_MAYA_SCRIPT_PATH] = os.pathsep.join( (DCCSI_MAYA_SCRIPT_PATH,
+                                                               #DCCSI_MAYA_SCRIPT_PY_PATH,
+                                                               #DCCSI_MAYA_SCRIPT_MEL_PATH) )
     
-    MAYA_SCRIPT_PATH = os.getenv(ENVAR_MAYA_SCRIPT_PATH, "< NOT SET >")
-    break
+    #MAYA_SCRIPT_PATH = os.getenv(ENVAR_MAYA_SCRIPT_PATH, "< NOT SET >")
+    #break
 
 # is a maya envar
 MAYA_VP2_DEVICE_OVERRIDE="VirtualDeviceDx11"
 MAYA_OGS_DEVICE_OVERRIDE="VirtualDeviceDx11"
+
+DCCSI_MAYA_WIKI_URL =  'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC-Maya'
 
 # reference, here is a list of Maya envars
 # https://github.com/mottosso/Maya-Environment-Variables/blob/master/README.md
@@ -290,8 +295,9 @@ if __name__ == '__main__':
     
     # override based on current executable
     PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
-                                                             TAG_PY_MAJOR,
-                                                             TAG_PY_MINOR)
+                                                             sys.version_info.major,
+                                                             sys.version_info.minor)
+    PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSI_PYTHON_LIB).as_posix()
 
     #  test anything procedurally generated
     _LOGGER.info('Testing procedural env paths ...')
