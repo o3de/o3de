@@ -1000,10 +1000,6 @@ namespace ScriptCanvas
             AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, connectionId);
             return true;
         }
-        else
-        {
-            AZ_Error("ScriptCanvas", false, "Failed to remove connection!");
-        }
 
         return false;
     }

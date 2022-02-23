@@ -99,8 +99,7 @@ namespace GraphCanvas
 
         ConnectionComponent();
         ConnectionComponent(const Endpoint& sourceEndpoint,const Endpoint& targetEndpoint, bool createModelConnection = true);
-        ~ConnectionComponent() override;
-
+        
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {

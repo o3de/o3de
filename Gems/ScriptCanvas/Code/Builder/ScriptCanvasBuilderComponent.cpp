@@ -51,9 +51,6 @@ namespace ScriptCanvasBuilder
         handlers.m_subgraphInterfaceHandler = RegisterHandler<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler>("scriptcanvas_fn_compiled", true);
         handlers.m_runtimeAssetHandler = RegisterHandler<ScriptCanvas::RuntimeAsset, JobDependencyVerificationHandler>("scriptcanvas_compiled", true);
         handlers.m_builderHandler = RegisterHandler<ScriptCanvasBuilder::BuildVariableOverridesData, ScriptCanvasBuilder::BuildVariableOverridesAssetHandler>("scriptcanvas_builder", true);
-        // \todo make it so we can load script events in the builder: expose the SE handler?
-        // const AZStd::string description = ScriptCanvas::AssetDescription::GetExtension<ScriptCanvas::RuntimeAsset>();
-        // handlers.m_scriptEventAssetHandler = RegisterHandler<ScriptEvents::ScriptEventsAsset, ScriptEventsEditor::ScriptEventAssetHandler>(description.data());
         return handlers;
     }
 

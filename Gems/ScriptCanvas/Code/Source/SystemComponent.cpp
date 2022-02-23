@@ -27,7 +27,6 @@
 #include <ScriptCanvas/Serialization/RuntimeVariableSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
-#include <AzCore/Asset/AssetSerializer.h>
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
@@ -72,9 +71,6 @@ namespace ScriptCanvas
                 ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))
                 ->Field("m_infiniteLoopDetectionMaxIterations", &SystemComponent::m_infiniteLoopDetectionMaxIterations)
                 ->Field("maxHandlerStackDepth", &SystemComponent::m_maxHandlerStackDepth)
-//                 ->Field("reflectSubgraph", &SystemComponent::m_reflectSubgraph)
-//                 ->Field("reflectRuntime", &SystemComponent::m_reflectRuntime)
-//                 ->Field("reflectBuilder", &SystemComponent::m_reflectBuilder)
                 ;
 
             if (AZ::EditContext* ec = serialize->GetEditContext())

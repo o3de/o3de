@@ -39,16 +39,16 @@
 namespace ScriptCanvasBuilderWorkerCpp
 {
     template<typename Callable>
-    class TerminateJob
+    class OnScopeEnd
     {
     public:
         Callable m_callable;
 
-        TerminateJob(Callable&& callable)
+        OnScopeEnd(Callable&& callable)
             : m_callable(callable)
         {}
 
-        ~TerminateJob()
+        ~OnScopeEnd()
         {
             m_callable();
         }
@@ -214,7 +214,7 @@ namespace ScriptCanvasBuilder
 
     void Worker::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
     {
-        auto onComplete = ScriptCanvasBuilderWorkerCpp::TerminateJob([this]()
+        ScriptCanvasBuilderWorkerCpp::OnScopeEnd onScopeEnd([this]()
         {
             m_processEditorAssetDependencies.clear();
             AZ_TracePrintf(s_scriptCanvasBuilder, "Finish Processing Job");

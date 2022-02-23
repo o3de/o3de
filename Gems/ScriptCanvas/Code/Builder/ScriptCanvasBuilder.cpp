@@ -341,12 +341,6 @@ namespace ScriptCanvasBuilder
         return runtimeOverrides;
     }
 
-    AZ::Outcome<BuildVariableOverrides, AZStd::string> LoadBuilderData(const ScriptCanvasEditor::SourceHandle& sourceHandle)
-    {
-        const AZ::Data::AssetId builderAssetId(sourceHandle.Id(), AZ_CRC_CE("BuilderData"));
-        return LoadBuilderDataAsset(builderAssetId);
-    }
-
     AZ::Outcome<BuildVariableOverrides, AZStd::string> LoadBuilderDataAsset(const AZ::Data::AssetId& assetId)
     {
         AZ::Data::Asset<BuildVariableOverridesData> sourceAsset
@@ -365,57 +359,6 @@ namespace ScriptCanvasBuilder
         BuildVariableOverrides& result = *sourceAsset.GetAs<BuildVariableOverrides>();
         return AZ::Success(result);
     }
-
-    /*
-    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree)
-    {
-        auto buildEntity = editorAssetTree.m_asset.Get()->GetEntity();
-        if (!buildEntity)
-        {
-            return AZ::Failure(AZStd::string("No entity from source asset"));
-        }
-
-        auto variableComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::GraphVariableManagerComponent>(buildEntity);
-        if (!variableComponent)
-        {
-            return AZ::Failure(AZStd::string("No GraphVariableManagerComponent in source Entity"));
-        }
-
-        const ScriptCanvas::VariableData* variableData = variableComponent->GetVariableDataConst(); // get this from the entity
-        if (!variableData)
-        {
-            return AZ::Failure(AZStd::string("No variableData in source GraphVariableManagerComponent"));
-        }
-
-        auto parseOutcome = ScriptCanvasBuilder::ParseGraph(*buildEntity, "");
-        if (!parseOutcome.IsSuccess() || !parseOutcome.GetValue())
-        {
-            return AZ::Failure(AZStd::string("graph failed to parse"));
-        }
-
-        BuildVariableOverrides result;
-        result.m_source = editorAssetTree.m_asset;
-        result.PopulateFromParsedResults(parseOutcome.GetValue(), *variableData);
-
-        // recurse...
-        for (auto& dependentAsset : editorAssetTree.m_dependencies)
-        {
-            // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
-            auto parseDependentOutcome = ParseEditorAssetTree(dependentAsset);
-            if (!parseDependentOutcome.IsSuccess())
-            {
-                return AZ::Failure(AZStd::string::format
-                    ( "ParseEditorAssetTree failed to parse dependent graph from %s: %s"
-                    , dependentAsset.m_asset.ToString().c_str()
-                    , parseDependentOutcome.GetError().c_str()));
-            }
-
-            result.m_dependencies.push_back(parseDependentOutcome.TakeValue());
-        }
-
-        return AZ::Success(result);
-    }*/
-
 
     AZ::Data::AssetHandler::LoadResult BuildVariableOverridesAssetHandler::LoadAssetData
         ( const AZ::Data::Asset<AZ::Data::AssetData>& asset

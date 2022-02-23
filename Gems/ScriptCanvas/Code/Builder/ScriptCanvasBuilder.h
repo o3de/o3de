@@ -21,9 +21,6 @@ namespace ScriptCanvasEditor
 
 namespace ScriptCanvasBuilder
 {
-    // make asset for this... build it in the AP...save it out...
-    // load from asset, and DO NOT build it out during edit and prefab build time
-    // instead, listen for changes to the asset...and...populate from parsed results there
     class BuildVariableOverrides
     {
     public:
@@ -46,9 +43,7 @@ namespace ScriptCanvasBuilder
 
         // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
         ScriptCanvasEditor::SourceHandle m_source;
-        // make the above...what...an asset...reference...? someway to recurse the structure
-        // but it won't need to be a source reference anymore...
-                
+
         // all of the variables here are overrides
         AZStd::vector<ScriptCanvas::GraphVariable> m_variables;
         // the values here may or may not be overrides
@@ -114,22 +109,16 @@ namespace ScriptCanvasBuilder
             , "scriptcanvas_builder")
         {}
 
-        // Called by the asset database to perform actual asset load.
         AZ::Data::AssetHandler::LoadResult LoadAssetData
                 ( const AZ::Data::Asset<AZ::Data::AssetData>& asset
                 , AZStd::shared_ptr<AZ::Data::AssetDataStream> stream
                 , const AZ::Data::AssetFilterCB& assetLoadFilterCB) override;
 
-        // Called by the asset database to perform actual asset save. Returns true if successful otherwise false (default - as we don't require support save).
         bool SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream) override;
     };
 
     // copy the variables overridden during editor / prefab build time back to runtime data
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
 
-    // AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
-
-
-    AZ::Outcome<BuildVariableOverrides, AZStd::string> LoadBuilderData(const ScriptCanvasEditor::SourceHandle& sourceHandle);
     AZ::Outcome<BuildVariableOverrides, AZStd::string> LoadBuilderDataAsset(const AZ::Data::AssetId& assetId);
 }

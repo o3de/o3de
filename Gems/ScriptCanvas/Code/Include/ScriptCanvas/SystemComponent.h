@@ -19,7 +19,6 @@
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <ScriptCanvas/PerformanceTracker.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
-#include <Builder/ScriptCanvasBuilder.h>
 
 namespace AZ
 {
@@ -54,11 +53,11 @@ namespace ScriptCanvas
         void Activate() override;
         void Deactivate() override;
         ////
-                 
+
         void AddOwnedObjectReference(const void* object, BehaviorContextObject* behaviorContextObject) override;
         BehaviorContextObject* FindOwnedObjectReference(const void* object) override;
         void RemoveOwnedObjectReference(const void* object) override;
-        
+
     protected:
 
         inline bool IsAnyScriptInterpreted() const { return true; }
@@ -92,28 +91,23 @@ namespace ScriptCanvas
         ////
 
     private:
-        using MutexType = AZStd::recursive_mutex;
-        using LockType = AZStd::lock_guard<MutexType>;
-
-        static AZ::EnvironmentVariable<Execution::PerformanceTracker*> s_perfTracker;
-        static AZStd::shared_mutex s_perfTrackerMutex;
-        static constexpr const char* s_trackerName = "ScriptCanvasPerformanceTracker";
-
-        static void SafeRegisterPerformanceTracker();
-        static void SafeUnregisterPerformanceTracker();
+        void RegisterCreatableTypes();
 
         bool m_scriptBasedUnitTestingInProgress = false;
+
+        using MutexType = AZStd::recursive_mutex;
+        using LockType = AZStd::lock_guard<MutexType>;
         AZStd::unordered_map<const void*, BehaviorContextObject*> m_ownedObjectsByAddress;
         MutexType m_ownedObjectsByAddressMutex;
         int m_infiniteLoopDetectionMaxIterations = 1000000;
         int m_maxHandlerStackDepth = 50;
-        Execution::PerformanceTracker* m_registeredTracker = nullptr;
-        // Reflect these assets to make sure they are available serialization during asset processing
-        // as they don't have to be, and may never be used as reflected member variables.
-//         AZ::Data::Asset<SubgraphInterfaceAsset> m_reflectSubgraph;
-//         AZ::Data::Asset<RuntimeAsset> m_reflectRuntime;
-//         AZ::Data::Asset<ScriptCanvasBuilder::BuildVariableOverridesData> m_reflectBuilder;
 
-        void RegisterCreatableTypes();
+        static void SafeRegisterPerformanceTracker();
+        static void SafeUnregisterPerformanceTracker();
+
+        Execution::PerformanceTracker* m_registeredTracker = nullptr;
+        static AZ::EnvironmentVariable<Execution::PerformanceTracker*> s_perfTracker;
+        static AZStd::shared_mutex s_perfTrackerMutex;
+        static constexpr const char* s_trackerName = "ScriptCanvasPerformanceTracker";
     };
 }

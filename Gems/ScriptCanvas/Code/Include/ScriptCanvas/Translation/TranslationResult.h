@@ -110,7 +110,6 @@ namespace ScriptCanvas
             bool IsModelValid() const;
             bool IsSourceValid() const;
             AZ::Outcome<void, AZStd::string> IsSuccess(TargetFlags flag) const;
-            Grammar::AbstractCodeModelConstPtr ReleaseModel();
             bool TranslationSucceed(TargetFlags flag) const;
         };
 
