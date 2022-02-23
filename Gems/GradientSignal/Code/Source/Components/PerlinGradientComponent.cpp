@@ -152,7 +152,7 @@ namespace GradientSignal
         PerlinGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
 
-        AZStd::unique_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        AZStd::unique_lock lock(m_transformMutex);
         m_perlinImprovedNoise.reset();
     }
 
