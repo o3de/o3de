@@ -12,7 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Prefab/ViewBookmarkComponent.h>
 
- /*!
+/*!
  * ViewBookmarkIntereface
  * Interface for saving/loading View Bookmarks.
  */

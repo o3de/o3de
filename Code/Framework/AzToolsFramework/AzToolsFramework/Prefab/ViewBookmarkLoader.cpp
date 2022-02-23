@@ -6,10 +6,10 @@
  *
  */
 
-#include <Prefab/ViewBookmarkLoader.h>
 #include "API/ToolsApplicationAPI.h"
+#include <Prefab/ViewBookmarkLoader.h>
 
- /*!
+/*!
  * ViewBookmarkIntereface
  * Interface for saving/loading View Bookmarks.
  */
@@ -68,7 +68,7 @@ namespace AzToolsFramework
                 return bookmarkComponent->GetBookmarkAtIndex(index);
             }
 
-            //TODO: return invalid bookmark;
+            // TODO: return invalid bookmark;
             return ViewBookmark();
         }
 

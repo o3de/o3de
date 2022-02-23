@@ -56,30 +56,12 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &EditorViewBookmarks::GetBookmarkLabel);
                 }
             }
-            //if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            //{
-            //    behaviorContext->Class<EditorViewBookmarks>()
-            //        ->Property(
-            //        "LocalBookmarksDirectory",
-            //        []([[maybe_unused]]EditorViewBookmarks* thisPtr)
-            //        {
-            //            return "ViewBookmarkUniqueID";
-            //        },
-            //        nullptr);
-            //}
         }
 
         AZStd::string EditorViewBookmarks::GetBookmarkLabel(int index) const
         {
             return AZStd::string::format("View Bookmark %d", index);
         }
-
-        //void EditorViewBookmarks::OnPathChanged()
-        //{
-        //    AZ::IO::FixedMaxPath path = AZ::Utils::GetO3deManifestDirectory();
-        //    path /= m_localBookmarksSubPath;
-        //    m_localBookmarksPath = path.c_str();
-        //}
 
         void ViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
         {
@@ -90,9 +72,8 @@ namespace AzToolsFramework
             {
                 serializeContext->RegisterGenericType<EditorViewBookmarks>();
 
-                serializeContext->Class<ViewBookmarkComponent, EditorComponentBase>()
-                    ->Version(0)
-                    ->Field("ViewBookmarks", &ViewBookmarkComponent::m_viewBookmark);
+                serializeContext->Class<ViewBookmarkComponent, EditorComponentBase>()->Version(0)->Field(
+                    "ViewBookmarks", &ViewBookmarkComponent::m_viewBookmark);
 
                 serializeContext->RegisterGenericType<AZStd::vector<AZ::Uuid>>();
 
@@ -110,7 +91,8 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Default, &ViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
                 }
             }
@@ -153,7 +135,6 @@ namespace AzToolsFramework
         {
             services.push_back(AZ_CRC("EditoViewbookmarkingService"));
         }
-
 
     } // namespace Prefab
 } // namespace AzToolsFramework

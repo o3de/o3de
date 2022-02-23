@@ -13,7 +13,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-
         struct ViewBookmark
         {
             AZ_CLASS_ALLOCATOR(ViewBookmark, AZ::SystemAllocator, 0);
@@ -42,7 +41,6 @@ namespace AzToolsFramework
 
             ViewBookmark m_lastKnownLocation;
             AZStd::vector<ViewBookmark> m_viewBookmarks;
-
         };
 
         class ViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
@@ -53,7 +51,7 @@ namespace AzToolsFramework
             AZ_COMPONENT(ViewBookmarkComponent, ViewBookmarkComponentTypeId, EditorComponentBase);
 
             static void Reflect(AZ::ReflectContext* context);
-            
+
             //////////////////////////////////////////////////////////////////////////
             // AZ::Component interface implementation
             void Activate() override{};
@@ -67,12 +65,11 @@ namespace AzToolsFramework
             void ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark);
 
         protected:
-
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
 
         private:
-            // A user editable view Bookmark
+            // A user editable list of View Bookmarks
             EditorViewBookmarks m_viewBookmark;
         };
 
