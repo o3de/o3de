@@ -78,6 +78,11 @@ namespace AZ
                 m_aspectFlags == other.m_aspectFlags;
         }
 
+        AZ::HashValue64 ImageSubresourceRange::GetHash(AZ::HashValue64 seed) const
+        {
+            return TypeHash64(*this, seed);
+        }
+
         void ImageSubresourceRange::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -358,8 +363,7 @@ namespace AZ
             }
             else
             {
-                const uint32_t bitsPerPixel = RHI::GetFormatSize(imageFormat) * 8;
-                subresourceLayout.m_bytesPerRow = (imageSize.m_width * bitsPerPixel + 7) / 8; // round up to nearest byte
+                subresourceLayout.m_bytesPerRow = imageSize.m_width * RHI::GetFormatSize(imageFormat);
                 subresourceLayout.m_rowCount = imageSize.m_height;
                 subresourceLayout.m_size.m_width = imageSize.m_width;
                 subresourceLayout.m_size.m_height = imageSize.m_height;

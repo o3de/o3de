@@ -142,6 +142,12 @@ namespace EMStudio
                     ;
                 });
 
+            connect(cameraMenu, &QMenu::aboutToShow, this,
+                [this]()
+                {
+                    m_followCharacterAction->setChecked(m_plugin->GetRenderOptions()->GetCameraFollowUp());
+                });
+
             cameraButton->setMenu(cameraMenu);
             cameraButton->setText("Camera Option");
             cameraButton->setPopupMode(QToolButton::InstantPopup);

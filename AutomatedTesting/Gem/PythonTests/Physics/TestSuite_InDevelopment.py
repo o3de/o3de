@@ -150,10 +150,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.force_region import ForceRegion_ImpulsesBoxShapedRigidBody as test_module
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
-    def test_Terrain_SpawnSecondTerrainComponentWarning(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_SpawnSecondTerrainComponentWarning as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
     def test_Terrain_AddPhysTerrainComponent(self, request, workspace, editor, launcher_platform):
         from .tests.terrain import Terrain_AddPhysTerrainComponent as test_module
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
