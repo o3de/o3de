@@ -9,12 +9,12 @@
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
-#include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderComponent.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <Builder/ScriptCanvasBuilderWorkerUtility.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
@@ -93,7 +93,7 @@ namespace ScriptCanvasBuilder
             builderDescriptor.m_analysisFingerprint = AZStd::string(m_scriptCanvasBuilder.GetFingerprintString())
                 .append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
             builderDescriptor.AddFlags(AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure, s_scriptCanvasProcessJobKey);
-            builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC("SubgraphInterface", 0xdfe6dc72) };
+            builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC_CE("SubgraphInterface"), AZ_CRC_CE("BuilderData") };
             m_scriptCanvasBuilder.BusConnect(builderDescriptor.m_busId);
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
         }
@@ -119,7 +119,7 @@ namespace ScriptCanvasBuilder
         {
             serializeContext->Class<PluginComponent, AZ::Component>()
                 ->Version(0)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }))
                 ;
         }
     }

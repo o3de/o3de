@@ -2936,7 +2936,7 @@ namespace ScriptCanvas
                 }
 
                 // #functions2 make this use an identifier for the node, for property window display and easier find/replace updates.
-                // This part does NOT and must NOT recurse, the dependency tree msut remain a tree and not be flattened.
+                // This part does NOT and must NOT recurse, the dependency tree must remain a tree and not be flattened.
                 m_orderedDependencies.source.MergeWith(dependencies);
             }
             else

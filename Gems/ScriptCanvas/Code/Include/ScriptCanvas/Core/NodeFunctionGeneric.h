@@ -88,14 +88,17 @@ namespace ScriptCanvas
             {\
                 return GetName(i);\
             }\
-            AZStd::string_view argName = GetName(i);\
-            if (!argName.empty())\
-            {\
-                return argName;\
-            }\
             else\
             {\
-                return AZStd::string::format("Input [%zu]", i);\
+                AZStd::string_view argName = GetName(i);\
+                if (!argName.empty())\
+                {\
+                    return argName;\
+                }\
+                else\
+                {\
+                    return AZStd::string::format("Input [%zu]", i);\
+                }\
             }\
         }\
         \
@@ -112,7 +115,10 @@ namespace ScriptCanvas
                 {\
                     return "Result";\
                 }\
-                return AZStd::string::format("Result [%zu]", i);\
+                else\
+                {\
+                    return AZStd::string::format("Result [%zu]", i);\
+                }\
             }\
         }\
         \

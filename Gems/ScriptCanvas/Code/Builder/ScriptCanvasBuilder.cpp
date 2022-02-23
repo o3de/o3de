@@ -416,4 +416,44 @@ namespace ScriptCanvasBuilder
         return AZ::Success(result);
     }*/
 
+
+    AZ::Data::AssetHandler::LoadResult BuildVariableOverridesAssetHandler::LoadAssetData
+        ( const AZ::Data::Asset<AZ::Data::AssetData>& asset
+        , AZStd::shared_ptr<AZ::Data::AssetDataStream> stream
+        , const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+    {
+        auto* builderData = asset.GetAs<BuildVariableOverridesData>();
+        AZ_Assert(builderData, "This should be a Script Canvas builder data asset, as this is the only type we process!");
+
+        if (builderData && m_serializeContext)
+        {
+            stream->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+            bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*stream, builderData->m_overrides, m_serializeContext
+                , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB));
+            return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
+        }
+
+        return AZ::Data::AssetHandler::LoadResult::Error;
+    }
+
+    bool BuildVariableOverridesAssetHandler::SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream)
+    {
+        auto builderData = asset.GetAs<BuildVariableOverridesData>();
+        AZ_Assert(builderData, "This should be Script Canvas builder data, as this is the only type we process!");
+
+        if (builderData && m_serializeContext)
+        {
+            AZ::ObjectStream* binaryObjStream = AZ::ObjectStream::Create
+                ( stream
+                , *m_serializeContext
+                , ScriptCanvas::g_saveEditorAssetsAsPlainTextForDebug
+                    ? AZ::ObjectStream::ST_XML
+                    : AZ::ObjectStream::ST_BINARY);
+            bool graphSaved = binaryObjStream->WriteClass(&builderData->m_overrides);
+            binaryObjStream->Finalize();
+            return graphSaved;
+        }
+
+        return false;
+    }
 }
