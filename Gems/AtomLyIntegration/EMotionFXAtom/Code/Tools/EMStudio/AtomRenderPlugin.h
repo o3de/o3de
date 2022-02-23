@@ -42,8 +42,6 @@ namespace EMStudio
         AtomRenderPlugin();
         ~AtomRenderPlugin();
 
-        void Reflect(AZ::ReflectContext* context) override;
-
         // Plugin information
         const char* GetName() const override;
         uint32 GetClassID() const override;
