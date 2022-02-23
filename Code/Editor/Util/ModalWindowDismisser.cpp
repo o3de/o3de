@@ -61,7 +61,7 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
         if (dialog->isModal())
         {
             QEvent::Type test = event->type();
-            CLogFile::FormatLine("############ AssetImporterManager:: Event = '%s'", ToString(test).toStdString().c_str());
+            Log("############ AssetImporterManager:: Event = %s", ToString(test).toStdString().c_str());
             if (test == QEvent::PolishRequest)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
