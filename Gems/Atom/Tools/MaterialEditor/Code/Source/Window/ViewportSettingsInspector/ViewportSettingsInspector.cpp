@@ -73,13 +73,11 @@ namespace MaterialEditor
         auto addButtonWidget = new QPushButton("Add", buttonGroupWidget);
         auto selectButtonWidget = new QPushButton("Select", buttonGroupWidget);
         auto saveButtonWidget = new QPushButton("Save", buttonGroupWidget);
-        auto refreshButtonWidget = new QPushButton("Refresh", buttonGroupWidget);
 
         buttonGroupWidget->setLayout(new QHBoxLayout(buttonGroupWidget));
         buttonGroupWidget->layout()->addWidget(addButtonWidget);
         buttonGroupWidget->layout()->addWidget(selectButtonWidget);
         buttonGroupWidget->layout()->addWidget(saveButtonWidget);
-        buttonGroupWidget->layout()->addWidget(refreshButtonWidget);
 
         groupWidget->setLayout(new QVBoxLayout(groupWidget));
         groupWidget->layout()->addWidget(buttonGroupWidget);
@@ -168,13 +166,11 @@ namespace MaterialEditor
         auto addButtonWidget = new QPushButton("Add", buttonGroupWidget);
         auto selectButtonWidget = new QPushButton("Select", buttonGroupWidget);
         auto saveButtonWidget = new QPushButton("Save", buttonGroupWidget);
-        auto refreshButtonWidget = new QPushButton("Refresh", buttonGroupWidget);
 
         buttonGroupWidget->setLayout(new QHBoxLayout(buttonGroupWidget));
         buttonGroupWidget->layout()->addWidget(addButtonWidget);
         buttonGroupWidget->layout()->addWidget(selectButtonWidget);
         buttonGroupWidget->layout()->addWidget(saveButtonWidget);
-        buttonGroupWidget->layout()->addWidget(refreshButtonWidget);
 
         groupWidget->setLayout(new QVBoxLayout(groupWidget));
         groupWidget->layout()->addWidget(buttonGroupWidget);
