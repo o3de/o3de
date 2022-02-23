@@ -18,7 +18,7 @@ import ly_test_tools.launchers.platforms.base as base_launcher
 # These are the launchers *currently* supported by the test tools. While other launchers exist, they are not supported
 # by the test tools.
 GAME_LAUNCHERS = ['windows', 'linux', 'android']
-SERVER_LAUNCHERS = ['linux', 'linux_dedicated']
+SERVER_LAUNCHERS = ['windows_dedicated', 'linux_dedicated']
 
 log = logging.getLogger(__name__)
 
