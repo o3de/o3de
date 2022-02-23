@@ -280,9 +280,28 @@ namespace ScriptCanvasEditor
     void EditorScriptCanvasComponent::InitializeSource(const SourceHandle& sourceHandle)
     {
         m_sourceHandle = sourceHandle.Describe();
+        ConnectToAssetBus();
+        LoadAsset();
     }
 
-    //=========================================================================
+    void EditorScriptCanvasComponent::LoadAsset()
+    {
+        if (!m_sourceHandle.Id().IsNull())
+        {
+            m_builderAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasBuilder::BuildVariableOverridesData>
+                ( AZ::Data::AssetId(m_sourceHandle.Id(), AZ_CRC_CE("BuilderData"))
+                , AZ::Data::AssetLoadBehavior::QueueLoad);
+        }
+    }
+
+    void EditorScriptCanvasComponent::LoadAssetBlocking()
+    {
+        m_builderAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasBuilder::BuildVariableOverridesData>
+                ( AZ::Data::AssetId(m_sourceHandle.Id(), AZ_CRC_CE("BuilderData"))
+                , AZ::Data::AssetLoadBehavior::QueueLoad);
+        m_builderAsset.BlockUntilLoadComplete();
+    }
+
     void EditorScriptCanvasComponent::Activate()
     {
         EditorComponentBase::Activate();
@@ -298,11 +317,22 @@ namespace ScriptCanvasEditor
         EditorLoggingComponentNotificationBus::Broadcast(&EditorLoggingComponentNotifications::OnEditorScriptCanvasComponentActivated, GetNamedEntityId(), GetGraphIdentifier());
 
         CompleteDescriptionInPlace(m_sourceHandle);
+        ConnectToAssetBus();
+        LoadAsset();
 
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
-    //=========================================================================
+    void EditorScriptCanvasComponent::ConnectToAssetBus()
+    {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
+
+        if (!m_sourceHandle.Id().IsNull())
+        {
+            AZ::Data::AssetBus::Handler::BusConnect(AZ::Data::AssetId(m_sourceHandle.Id(), AZ_CRC_CE("BuilderData")));
+        }
+    }
+
     void EditorScriptCanvasComponent::Deactivate()
     {
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
@@ -319,30 +349,40 @@ namespace ScriptCanvasEditor
     void EditorScriptCanvasComponent::BuildGameEntityData()
     {
         using namespace ScriptCanvasBuilder;
-        CompleteDescriptionInPlace(m_sourceHandle);
-
         m_runtimeDataIsValid = false;
-
-        auto builderDataOutcome = LoadBuilderData(m_sourceHandle);
-        if (!builderDataOutcome.IsSuccess())
+        CompleteDescriptionInPlace(m_sourceHandle);
+        
+        if (!m_builderAsset.IsReady() || !m_builderAsset.GetAs<BuildVariableOverridesData>())
         {
             AZ_Warning
                 ( "ScriptCanvas"
                 , false
-                , "EditorScriptCanvasComponent::BuildGameEntityData fail to load builder asset data: %s"
-                , builderDataOutcome.GetError().c_str());
+                , "EditorScriptCanvasComponent::BuildGameEntityData failed to load builder asset data: %s"
+                , m_sourceHandle.ToString().c_str());
             return;
         }
 
-        BuildVariableOverrides& builderData = builderDataOutcome.GetValue();
+        BuildVariableOverrides builderData = m_builderAsset.GetAs<BuildVariableOverridesData>()->m_overrides;
 
         if (!m_variableOverrides.IsEmpty())
         {
             builderData.CopyPreviousOverriddenValues(m_variableOverrides);
         }
 
-        m_variableOverrides = builderDataOutcome.TakeValue();
+        m_variableOverrides = AZStd::move(builderData);
+        AZ_TracePrintf("ScriptCanvas", "EditorScriptCanvasComponent::BuildGameEntityData Used: %d, Unused: %d"
+            , m_variableOverrides.m_overrides.size(), m_variableOverrides.m_overridesUnused.size());
         m_runtimeDataIsValid = true;
+    }
+
+    void EditorScriptCanvasComponent::BuildGameEntityData(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        m_builderAsset = asset;
+        BuildGameEntityData();
+        AZ::TickBus::QueueFunction([]()
+        {
+            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
+        });
     }
 
     void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
@@ -354,6 +394,7 @@ namespace ScriptCanvasEditor
         }
 
         // build everything again as a sanity check against dependencies. All of the variable overrides that were valid will be copied over
+        LoadAssetBlocking();
         BuildGameEntityData();
 
         if (!m_runtimeDataIsValid)
@@ -373,12 +414,44 @@ namespace ScriptCanvasEditor
         CompleteDescriptionInPlace(m_sourceHandle);
         OnScriptCanvasAssetChanged(SourceChangeDescription::SelectionChanged);
         SetName(m_sourceHandle.Path().Filename().Native());
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
+            , AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     AZ::Data::AssetId EditorScriptCanvasComponent::GetAssetId() const
     {
         return m_sourceHandle.Id();
+    }
+
+    void EditorScriptCanvasComponent::OnAssetError([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        m_runtimeDataIsValid = false;
+    }
+
+    void EditorScriptCanvasComponent::OnAssetReady([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        BuildGameEntityData(asset);
+    }
+
+    void EditorScriptCanvasComponent::OnAssetReloadError([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        m_runtimeDataIsValid = false;
+    }
+
+    void EditorScriptCanvasComponent::OnAssetReloaded([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        BuildGameEntityData(asset);
+    }
+
+    void EditorScriptCanvasComponent::OnAssetSaved
+        ( [[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset
+        , bool isSuccessful)
+    {
+        if (isSuccessful)
+        {
+            m_builderAsset = asset;
+            asset.QueueLoad();
+        }
     }
 
     AZ::u32 EditorScriptCanvasComponent::OnFileSelectionChanged()
@@ -393,6 +466,8 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::OnScriptCanvasAssetChanged(SourceChangeDescription changeDescription)
     {
+        m_runtimeDataIsValid = false;
+
         ScriptCanvas::GraphIdentifier newIdentifier = GetGraphIdentifier();
         newIdentifier.m_assetId = m_sourceHandle.Id();
 
@@ -402,20 +477,25 @@ namespace ScriptCanvasEditor
         EditorLoggingComponentNotificationBus::Broadcast(&EditorLoggingComponentNotifications::OnAssetSwitched, GetNamedEntityId(), newIdentifier, oldIdentifier);
 
         m_previousHandle = m_sourceHandle.Describe();
+        m_sourceHandle = m_previousHandle;
+
+        ConnectToAssetBus();
 
         if (changeDescription == SourceChangeDescription::SelectionChanged)
         {
             ClearVariables();
+            UpdateName();
+
+            AZ::TickBus::QueueFunction([]()
+            {
+                AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
+            });
         }
 
-        m_sourceHandle = m_previousHandle;
-
-        if (m_sourceHandle.IsDescriptionValid())
+        if (changeDescription == SourceChangeDescription::SelectionChanged || changeDescription == SourceChangeDescription::Modified)
         {
-            UpdatePropertyDisplay();
+            LoadAsset();
         }
-
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
     void EditorScriptCanvasComponent::SetAssetId(const SourceHandle& assetId)
@@ -472,13 +552,6 @@ namespace ScriptCanvasEditor
         // For now we don't want to deal with disambiguating duplicates of the same script running on one entity.
         // Should that change we need to add the component id back into this.
         return ScriptCanvas::GraphIdentifier(m_sourceHandle.Id(), 0);
-    }
-
-    void EditorScriptCanvasComponent::UpdatePropertyDisplay()
-    {
-        BuildGameEntityData();
-        UpdateName();
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
     void EditorScriptCanvasComponent::ClearVariables()

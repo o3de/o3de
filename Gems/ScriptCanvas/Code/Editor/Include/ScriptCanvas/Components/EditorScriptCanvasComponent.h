@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -32,6 +33,7 @@ namespace ScriptCanvasEditor
         , private EditorScriptCanvasComponentLoggingBus::Handler
         , private EditorScriptCanvasComponentRequestBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , private AZ::Data::AssetBus::Handler
     {
     public:
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
@@ -108,25 +110,33 @@ namespace ScriptCanvasEditor
             (void)incompatible;
         }
 
+        void ConnectToAssetBus();
+        void LoadAsset();
+        void LoadAssetBlocking();
+
         // complete the id, load call OnScriptCanvasAssetChanged
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         // update the display icon for failure, save the values in the graph
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
 
+        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, bool isSuccessful) override;
+        
         AZ::u32 OnFileSelectionChanged();
 
         void OnScriptCanvasAssetChanged(SourceChangeDescription changeDescription);
 
         void UpdateName();
 
-        //=====================================================================
-        void UpdatePropertyDisplay();
-        //=====================================================================
-
         void BuildGameEntityData();
+        void BuildGameEntityData(AZ::Data::Asset<AZ::Data::AssetData> asset);
         void ClearVariables();
-
+        
     private:
         AZStd::string m_name;
         bool m_runtimeDataIsValid = false;
@@ -134,5 +144,6 @@ namespace ScriptCanvasEditor
         SourceHandle m_sourceHandle;
         SourceHandle m_previousHandle;
         SourceHandle m_removedHandle;
+        AZ::Data::Asset<ScriptCanvasBuilder::BuildVariableOverridesData> m_builderAsset;
     };
 }
