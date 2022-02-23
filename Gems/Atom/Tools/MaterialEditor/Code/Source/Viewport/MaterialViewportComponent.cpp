@@ -54,12 +54,14 @@ namespace MaterialEditor
                 ->Event("GetLightingPreset", &MaterialViewportRequestBus::Events::GetLightingPreset)
                 ->Event("SaveLightingPreset", &MaterialViewportRequestBus::Events::SaveLightingPreset)
                 ->Event("LoadLightingPreset", &MaterialViewportRequestBus::Events::LoadLightingPreset)
+                ->Event("LoadLightingPresetByAssetId", &MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId)
                 ->Event("GetLastLightingPresetPath", &MaterialViewportRequestBus::Events::GetLastLightingPresetPath)
                 ->Event("GetLastLightingPresetAssetId", &MaterialViewportRequestBus::Events::GetLastLightingPresetAssetId)
                 ->Event("SetModelPreset", &MaterialViewportRequestBus::Events::SetModelPreset)
                 ->Event("GetModelPreset", &MaterialViewportRequestBus::Events::GetModelPreset)
                 ->Event("SaveModelPreset", &MaterialViewportRequestBus::Events::SaveModelPreset)
                 ->Event("LoadModelPreset", &MaterialViewportRequestBus::Events::LoadModelPreset)
+                ->Event("LoadModelPresetByAssetId", &MaterialViewportRequestBus::Events::LoadModelPresetByAssetId)
                 ->Event("GetLastModelPresetPath", &MaterialViewportRequestBus::Events::GetLastModelPresetPath)
                 ->Event("GetLastModelPresetAssetId", &MaterialViewportRequestBus::Events::GetLastModelPresetAssetId)
                 ->Event("SetShadowCatcherEnabled", &MaterialViewportRequestBus::Events::SetShadowCatcherEnabled)
@@ -193,6 +195,11 @@ namespace MaterialEditor
         return false;
     }
 
+    bool MaterialViewportComponent::LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId)
+    {
+        return LoadLightingPreset(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
+    }
+
     AZStd::string MaterialViewportComponent::GetLastLightingPresetPath() const
     {
         return AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetLastLightingPresetAssetId());
@@ -249,6 +256,11 @@ namespace MaterialEditor
             return true;
         }
         return false;
+    }
+
+    bool MaterialViewportComponent::LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId)
+    {
+        return LoadModelPreset(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
     AZStd::string MaterialViewportComponent::GetLastModelPresetPath() const

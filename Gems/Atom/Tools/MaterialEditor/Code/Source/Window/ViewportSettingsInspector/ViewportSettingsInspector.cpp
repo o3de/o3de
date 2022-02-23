@@ -122,8 +122,7 @@ namespace MaterialEditor
         }, QSize(itemSize, itemSize), QApplication::activeWindow());
 
         connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::LoadModelPreset, AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadModelPresetByAssetId, assetId);
         });
 
         AZ::Data::AssetId assetId;
@@ -218,8 +217,7 @@ namespace MaterialEditor
         }, QSize(itemSize, itemSize), QApplication::activeWindow());
 
         connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::LoadLightingPreset, AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId, assetId);
         });
 
         AZ::Data::AssetId assetId;

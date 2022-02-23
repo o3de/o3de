@@ -85,8 +85,7 @@ namespace MaterialEditor
             return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset");
         }, this);
         connect(m_lightingPresetComboBox, &AtomToolsFramework::AssetSelectionComboBox::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::LoadLightingPreset, AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId, assetId);
         });
         addWidget(m_lightingPresetComboBox);
 
@@ -95,8 +94,7 @@ namespace MaterialEditor
             return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset");
         }, this);
         connect(m_modelPresetComboBox, &AtomToolsFramework::AssetSelectionComboBox::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::LoadModelPreset, AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadModelPresetByAssetId, assetId);
         });
         addWidget(m_modelPresetComboBox);
 

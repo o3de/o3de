@@ -65,6 +65,12 @@ namespace MaterialEditor
         : AtomToolsFramework::RenderViewportWidget(parent)
         , m_toolId(toolId)
     {
+        // The viewport context created by AtomToolsFramework::RenderViewportWidget has no name.
+        // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
+        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
+        viewportContextManager->RenameViewportContext(GetViewportContext(), defaultContextName);
+
         // Create a custom entity context for the entities in this viewport 
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
         m_entityContext->InitContext();

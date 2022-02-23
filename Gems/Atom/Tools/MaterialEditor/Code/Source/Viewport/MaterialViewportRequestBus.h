@@ -9,11 +9,9 @@
 
 #include <ACES/Aces.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <QImage>
 
 namespace MaterialEditor
 {
@@ -40,6 +38,10 @@ namespace MaterialEditor
         //! @returns true if preset was loaded, otherwise false
         virtual bool LoadLightingPreset(const AZStd::string& path) = 0;
 
+        //! Load lighting preset
+        //! @returns true if preset was loaded, otherwise false
+        virtual bool LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId) = 0;
+
         //! Get last lighting preset path
         virtual AZStd::string GetLastLightingPresetPath() const = 0;
 
@@ -61,6 +63,10 @@ namespace MaterialEditor
         //! Load model preset
         //! @returns true if preset was loaded, otherwise false
         virtual bool LoadModelPreset(const AZStd::string& path) = 0;
+
+        //! Load model preset
+        //! @returns true if preset was loaded, otherwise false
+        virtual bool LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId) = 0;
 
         //! Get last model preset path
         virtual AZStd::string GetLastModelPresetPath() const = 0;

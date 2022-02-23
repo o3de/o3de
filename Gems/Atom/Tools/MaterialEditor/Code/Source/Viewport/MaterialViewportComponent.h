@@ -56,6 +56,7 @@ namespace MaterialEditor
         const AZ::Render::LightingPreset& GetLightingPreset() const override;
         bool SaveLightingPreset(const AZStd::string& path) const override;
         bool LoadLightingPreset(const AZStd::string& path) override;
+        bool LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastLightingPresetPath() const override;
         AZ::Data::AssetId GetLastLightingPresetAssetId() const override;        
 
@@ -63,6 +64,7 @@ namespace MaterialEditor
         const AZ::Render::ModelPreset& GetModelPreset() const override;
         bool SaveModelPreset(const AZStd::string& path) const override;
         bool LoadModelPreset(const AZStd::string& path) override;
+        bool LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastModelPresetPath() const override;
         AZ::Data::AssetId GetLastModelPresetAssetId() const override;        
 
