@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <SurfaceData/MixedStackHeapAllocator.h>
 
 namespace GradientSignal
 {
@@ -239,8 +240,12 @@ namespace GradientSignal
             shapeConstraintBounds = m_cachedShapeConstraintBounds;
         }
 
+        // Optimization: For our temporary vectors, if the input is below a certain size, allocate the temporary data off the stack.
+        // Otherwise, allocate from the heap.
+        constexpr size_t SmallQuerySize = 16;
+
         // Start by assuming an unbounded surface modifier and default to allowing *all* points through the shape check.
-        AZStd::vector<bool> inBounds;
+        AZStd::vector<bool, SurfaceData::mixed_stack_heap_allocator<bool, SmallQuerySize>> inBounds;
 
         // If we have an optional shape bounds, adjust the inBounds flags based on whether or not each point is inside the bounds.
         if (shapeConstraintBounds.IsValid())
@@ -264,7 +269,7 @@ namespace GradientSignal
         }
 
         // Get all of the potential gradient values in one bulk call.
-        AZStd::vector<float> gradientValues(positions.size());
+        AZStd::vector<float, SurfaceData::mixed_stack_heap_allocator<float, SmallQuerySize>> gradientValues(positions.size());
         m_gradientSampler.GetValues(positions, gradientValues);
 
         for (size_t index = 0; index < positions.size(); index++)

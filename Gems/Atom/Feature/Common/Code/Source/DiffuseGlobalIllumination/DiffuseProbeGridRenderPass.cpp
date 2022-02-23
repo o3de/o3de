@@ -116,6 +116,16 @@ namespace AZ
                     continue;
                 }
 
+                // grid data
+                {
+                    RHI::BufferScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = diffuseProbeGrid->GetGridDataBufferAttachmentId();
+                    desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                }
+
                 // probe irradiance image
                 {
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked)
