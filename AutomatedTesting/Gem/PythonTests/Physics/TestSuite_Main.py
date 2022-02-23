@@ -30,7 +30,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_RigidBody_EnablingGravityWorksUsingNotificationsPoC(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_LocalSpaceForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
