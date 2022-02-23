@@ -119,8 +119,11 @@ namespace AtomToolsFramework
         void StopTrackingTransform() override;
         bool IsTrackingTransform() const override;
         void SetCameraPivotAttached(const AZ::Vector3& pivot) override;
+        void SetCameraPivotAttachedImmediate(const AZ::Vector3& pivot) override;
         void SetCameraPivotDetached(const AZ::Vector3& pivot) override;
+        void SetCameraPivotDetachedImmediate(const AZ::Vector3& pivot) override;
         void SetCameraOffset(const AZ::Vector3& offset) override;
+        void SetCameraOffsetImmediate(const AZ::Vector3& offset) override;
         bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
         bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
 
