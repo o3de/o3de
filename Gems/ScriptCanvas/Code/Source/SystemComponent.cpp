@@ -63,8 +63,6 @@ namespace ScriptCanvas
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
         ReflectLibraries(context);
-        ScriptCanvasBuilder::BuildVariableOverrides::Reflect(context);
-
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
