@@ -57,14 +57,6 @@ namespace EMotionFX
         //! Deprecated: All legacy render function is tied to openGL. Will be removed after openGLPlugin is completely removed.
         void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
         void LegacyRenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo);
-        void LegacyRenderJointLimit(
-            const AzPhysics::JointConfiguration& jointConfiguration,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const Node* parentNode,
-            EMStudio::RenderPlugin* renderPlugin,
-            EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-            const MCore::RGBAColor& color);
         void LegacyRenderJointFrame(
             const AzPhysics::JointConfiguration& jointConfiguration,
             const ActorInstance* actorInstance,
@@ -72,26 +64,6 @@ namespace EMotionFX
             const Node* parentNode,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
             const MCore::RGBAColor& color);
-
-        //! Those function replaces legacyRender function and calls atom auxGeom render internally.
-        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
-        void RenderRagdoll(
-            ActorInstance* actorInstance,
-            bool renderColliders,
-            bool renderJointLimits);
-        void RenderJointLimit(
-            const AzPhysics::JointConfiguration& jointConfiguration,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const Node* parentNode,
-            const AZ::Color& regularColor,
-            const AZ::Color& violatedColor);
-        void RenderJointFrame(
-            const AzPhysics::JointConfiguration& jointConfiguration,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const Node* parentNode,
-            const AZ::Color& color);
 
     public slots:
         void OnAddToRagdoll();
@@ -103,14 +75,6 @@ namespace EMotionFX
     private:
         bool IsPhysXGemAvailable() const;
 
-        RagdollNodeWidget*          m_nodeWidget;
-
-        static float                s_scale;
-        static AZ::u32              s_angularSubdivisions;
-        static AZ::u32              s_radialSubdivisions;
-        AZStd::vector<AZ::Vector3>  m_vertexBuffer;
-        AZStd::vector<AZ::u32>      m_indexBuffer;
-        AZStd::vector<AZ::Vector3>  m_lineBuffer;
-        AZStd::vector<bool>         m_lineValidityBuffer;
+        RagdollNodeWidget* m_nodeWidget;
     };
 } // namespace EMotionFX

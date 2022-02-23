@@ -231,23 +231,13 @@ namespace AzToolsFramework
                 }
             }
 
-            using AzFramework::ViewportInfo;
-            // check if components provide an aabb
-            if (const AZ::Aabb aabb = CalculateEditorEntitySelectionBounds(entityId, ViewportInfo{ viewportId }); aabb.IsValid())
+            float closestBoundDifference;
+            if (PickEntity(entityId, mouseInteraction.m_mouseInteraction, closestBoundDifference, viewportId))
             {
-                // coarse grain check
-                if (AabbIntersectMouseRay(mouseInteraction.m_mouseInteraction, aabb))
+                if (closestBoundDifference < closestDistance)
                 {
-                    // if success, pick against specific component
-                    float closestBoundDifference = AZStd::numeric_limits<float>::max();
-                    if (PickEntity(entityId, mouseInteraction.m_mouseInteraction, closestBoundDifference, viewportId))
-                    {
-                        if (closestBoundDifference < closestDistance)
-                        {
-                            closestDistance = closestBoundDifference;
-                            entityIdUnderCursor = entityId;
-                        }
-                    }
+                    closestDistance = closestBoundDifference;
+                    entityIdUnderCursor = entityId;
                 }
             }
         }

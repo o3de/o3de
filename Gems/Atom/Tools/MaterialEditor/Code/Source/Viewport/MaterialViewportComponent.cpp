@@ -394,7 +394,7 @@ namespace MaterialEditor
         return m_viewportSettings->m_displayMapperOperationType;
     }
 
-    inline void MaterialViewportComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void MaterialViewportComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         if (AZ::Data::Asset<AZ::RPI::AnyAsset> anyAsset = asset)
         {

@@ -49,6 +49,11 @@ namespace EMStudio
         AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
     }
 
+    void AtomRenderPlugin::Reflect(AZ::ReflectContext* context)
+    {
+        RenderOptions::Reflect(context);
+    }
+
     const char* AtomRenderPlugin::GetName() const
     {
         return "Atom Render Window";
@@ -300,7 +305,12 @@ namespace EMStudio
         return &m_renderOptions;
     }
 
-    void AtomRenderPlugin::Render([[maybe_unused]]EMotionFX::ActorRenderFlagBitset renderFlags)
+    PluginOptions* AtomRenderPlugin::GetOptions()
+    {
+        return &m_renderOptions;
+    }
+
+    void AtomRenderPlugin::Render([[maybe_unused]]EMotionFX::ActorRenderFlags renderFlags)
     {
         if (!m_animViewportWidget)
         {

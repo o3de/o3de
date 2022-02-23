@@ -111,24 +111,6 @@ namespace JsonSerializationTests
             features.EnableJsonType(rapidjson::kObjectType);
         }
 
-        bool CompareFloatAny(const AZStd::any& lhs, const AZStd::any& rhs)
-        {
-            if (!lhs.is<float>() || !rhs.is<float>())
-            {
-                return lhs.empty() && rhs.empty();
-            }
-
-            const float* lhsValue = AZStd::any_cast<float>(&lhs);
-            const float* rhsValue = AZStd::any_cast<float>(&rhs);
-
-            if (lhsValue == nullptr || rhsValue == nullptr)
-            {
-                return false;
-            }
-
-            return *lhsValue == *rhsValue;
-        }
-
         bool AreEqual(
             const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& lhs,
             const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& rhs) override

@@ -43,6 +43,15 @@ namespace AzFramework::AssetSystem::Platform
 
             if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
             {
+                // Now try with the "Default" permutation
+                constexpr const char* BuildPermutation = "Default";
+
+                assetProcessorPath = AZ::IO::FixedMaxPath{ engineRoot } / installedBinariesPath / BuildPermutation
+                    / "AssetProcessor.app/Contents/MacOS/AssetProcessor";
+            }
+
+            if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+            {
                 return false;
             }
         }

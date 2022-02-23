@@ -13,7 +13,6 @@
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
@@ -72,11 +71,11 @@ namespace AtomToolsFramework
     QListWidgetItem* AssetGridDialog::CreateListItem(const SelectableAsset& selectableAsset)
     {
         const int itemBorder = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/AtomToolsFramework/AssetGridDialog/ItemBorder", 4));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetGridDialog/ItemBorder", 4));
         const int itemSpacing = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/AtomToolsFramework/AssetGridDialog/ItemSpacing", 10));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetGridDialog/ItemSpacing", 10));
         const int headerHeight = aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/AtomToolsFramework/AssetGridDialog/HeaderHeight", 15));
+            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetGridDialog/HeaderHeight", 15));
 
         const QSize gridSize = m_ui->m_assetList->gridSize();
         m_ui->m_assetList->setGridSize(QSize(
@@ -105,9 +104,7 @@ namespace AtomToolsFramework
 
         AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(itemWidget);
         thumbnail->setFixedSize(m_tileSize);
-        thumbnail->SetThumbnailKey(
-            MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, selectableAsset.m_assetId),
-            AzToolsFramework::Thumbnailer::ThumbnailContext::DefaultContext);
+        thumbnail->SetThumbnailKey(MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, selectableAsset.m_assetId));
         thumbnail->updateGeometry();
         itemWidget->layout()->addWidget(thumbnail);
 
