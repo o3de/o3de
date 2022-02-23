@@ -106,7 +106,6 @@ namespace AzAssetBrowserRequestHandlerPrivate
         EntityIdList& spawnList,
         AzFramework::SliceInstantiationTicket& spawnTicket)
     {
-        // Calculate the drop location.
         if ((!viewportDragContext) || products.empty())
         {
             return;
