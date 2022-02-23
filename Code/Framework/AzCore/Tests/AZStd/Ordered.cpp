@@ -15,9 +15,6 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 #define AZ_TEST_VALIDATE_EMPTY_TREE(_Tree_) \
     EXPECT_EQ(0, _Tree_.size());     \
     EXPECT_TRUE(_Tree_.empty());         \
@@ -31,6 +28,9 @@ using namespace UnitTestInternal;
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     /**
      * Setup the red-black tree. To achieve fixed_rbtree all you need is to use \ref AZStd::static_pool_allocator with
      * the node (Internal::rb_tree_node<T>).

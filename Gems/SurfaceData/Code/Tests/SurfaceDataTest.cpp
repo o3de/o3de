@@ -54,14 +54,14 @@ class MockSurfaceProvider
         }
 
     private:
-        AZStd::unordered_map<AZStd::pair<float, float>, AZStd::vector<AzFramework::SurfaceData::SurfacePoint>> m_GetSurfacePoints;
+        AZStd::unordered_map<AZStd::pair<float, float>, AZStd::vector<AzFramework::SurfaceData::SurfacePoint>> m_surfacePoints;
         SurfaceData::SurfaceTagVector m_tags;
         ProviderType m_providerType;
         AZ::EntityId m_id;
 
         void SetPoints(AZ::Vector3 start, AZ::Vector3 end, AZ::Vector3 stepSize)
         {
-            m_GetSurfacePoints.clear();
+            m_surfacePoints.clear();
 
             // Create a set of points that go from start to end (exclusive), with one
             // point per step size.
@@ -83,7 +83,7 @@ class MockSurfaceProvider
                         }
                         points.push_back(point);
                     }
-                    m_GetSurfacePoints[AZStd::pair<float, float>(x, y)] = points;
+                    m_surfacePoints[AZStd::pair<float, float>(x, y)] = points;
                 }
             }
         }
@@ -92,7 +92,7 @@ class MockSurfaceProvider
         {
             AZ::Aabb bounds = AZ::Aabb::CreateNull();
 
-            for (auto& entry : m_GetSurfacePoints)
+            for (auto& entry : m_surfacePoints)
             {
                 for (auto& point : entry.second)
                 {
@@ -117,7 +117,7 @@ class MockSurfaceProvider
                 // If the mock provider is generating points, examine the size of the points lists we've added to the mock provider
                 // to determine the maximum number of points that we will output from a single input position.
                 registryEntry.m_maxPointsCreatedPerInput = 1;
-                for (auto& entry : m_GetSurfacePoints)
+                for (auto& entry : m_surfacePoints)
                 {
                     registryEntry.m_maxPointsCreatedPerInput = AZ::GetMax(registryEntry.m_maxPointsCreatedPerInput, entry.second.size());
                 }
@@ -153,9 +153,9 @@ class MockSurfaceProvider
         // SurfaceDataProviderRequestBus
         void GetSurfacePoints(const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const override
         {
-            auto surfacePoints = m_GetSurfacePoints.find(AZStd::make_pair(inPosition.GetX(), inPosition.GetY()));
+            auto surfacePoints = m_surfacePoints.find(AZStd::make_pair(inPosition.GetX(), inPosition.GetY()));
 
-            if (surfacePoints != m_GetSurfacePoints.end())
+            if (surfacePoints != m_surfacePoints.end())
             {
                 for (auto& point : surfacePoints->second)
                 {
@@ -167,19 +167,20 @@ class MockSurfaceProvider
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceDataModifierRequestBus
-        void ModifySurfacePoints(SurfaceData::SurfacePointList& surfacePointList) const override
+        void ModifySurfacePoints(
+            AZStd::span<const AZ::Vector3> positions,
+            [[maybe_unused]] AZStd::span<const AZ::EntityId> creatorEntityIds,
+            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const override
         {
-            surfacePointList.ModifySurfaceWeights(
-                AZ::EntityId(),
-                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
-                {
-                    auto surfacePoints = m_GetSurfacePoints.find(AZStd::make_pair(position.GetX(), position.GetY()));
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                auto surfacePoints = m_surfacePoints.find(AZStd::make_pair(positions[index].GetX(), positions[index].GetY()));
 
-                    if (surfacePoints != m_GetSurfacePoints.end())
-                    {
-                        weights.AddSurfaceTagWeights(m_tags, 1.0f);
-                    }
-                });
+                if (surfacePoints != m_surfacePoints.end())
+                {
+                    weights[index].AddSurfaceTagWeights(m_tags, 1.0f);
+                }
+            }
         }
 
         SurfaceData::SurfaceDataRegistryHandle m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;

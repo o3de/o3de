@@ -8,6 +8,7 @@
 
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <SurfaceData/SurfacePointList.h>
+#include <SurfaceData/SurfaceDataModifierRequestBus.h>
 
 namespace SurfaceData
 {
@@ -187,27 +188,13 @@ namespace SurfaceData
         m_surfaceCreatorIdList.emplace_back(entityId);
     }
 
-    void SurfacePointList::ModifySurfaceWeights(
-        const AZ::EntityId& currentEntityId,
-        AZStd::function<void(const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& surfaceWeights)> modificationWeightCallback)
+    void SurfacePointList::ModifySurfaceWeights(const SurfaceDataRegistryHandle& surfaceModifierHandle)
     {
         AZ_Assert(m_listIsBeingConstructed, "Trying to modify surface weights on a SurfacePointList that isn't under construction.");
 
-        // For every valid output point, call the modification callback only if it doesn't match the entity that created the point.
-        for (size_t inputIndex = 0; (inputIndex < m_inputPositionSize); inputIndex++)
-        {
-            size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputIndex);
-            for (size_t index = surfacePointStartIndex; (index < (surfacePointStartIndex + m_numSurfacePointsPerInput[inputIndex]));
-                 index++)
-            {
-                if (m_surfaceCreatorIdList[m_sortedSurfacePointIndices[index]] != currentEntityId)
-                {
-                    modificationWeightCallback(
-                        m_surfacePositionList[m_sortedSurfacePointIndices[index]],
-                        m_surfaceWeightsList[m_sortedSurfacePointIndices[index]]);
-                }
-            }
-        }
+        SurfaceDataModifierRequestBus::Event( surfaceModifierHandle,
+            &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints,
+            m_surfacePositionList, m_surfaceCreatorIdList, m_surfaceWeightsList);
     }
 
     void SurfacePointList::FilterPoints(AZStd::span<const SurfaceTag> desiredTags)

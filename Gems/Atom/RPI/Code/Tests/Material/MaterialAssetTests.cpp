@@ -288,6 +288,7 @@ namespace UnitTest
         MaterialAssetCreator creator;
         const bool shouldFinalize = false;
         creator.Begin(assetId, testMaterialTypeAssetV1, shouldFinalize);
+        creator.SetMaterialTypeVersion(1);
         creator.SetPropertyValue(Name{ "MyInt" }, 7);
         creator.SetPropertyValue(Name{ "MyUInt" }, 8u);
         creator.SetPropertyValue(Name{ "MyFloat" }, 9.0f);
@@ -318,7 +319,7 @@ namespace UnitTest
 
         // This can find errors and warnings, we are looking for a warning when the version update is applied
         ErrorMessageFinder warningFinder; 
-        warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
+        warningFinder.AddExpectedErrorMessage("Automatic updates have been applied. Consider updating the .material source file");
         warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
         warningFinder.AddExpectedErrorMessage("material type is now at version '2'");
         

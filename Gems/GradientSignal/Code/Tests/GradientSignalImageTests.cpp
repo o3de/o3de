@@ -106,7 +106,6 @@ namespace UnitTest
 
             // Create a transform that locates our gradient in the center of our desired mock Shape.
             auto transform = entity->CreateComponent<AzFramework::TransformComponent>();
-            transform->SetLocalTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
             transform->SetWorldTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
 
             // All components are created, so activate the entity

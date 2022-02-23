@@ -26,7 +26,7 @@ namespace AZ
         {
             if (m_assetInfo.m_assetId.IsValid())
             {
-                AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusConnect(key);
+                AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusConnect(m_key);
                 AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                 return;
             }
