@@ -76,16 +76,12 @@ VSOutput EyeVS(VSInput IN)
  
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
-    // UV0 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
-    // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 
-    // because it will usually be used for the detail layer which has its own dedicated transform. If a use does case come up, we 
-    // could consider adding the main layer UV transform back in.
-    // Note, even though the "unwrapped" stream is considered the main stream from a material perspective (it is the default), we
-    // still use UV0 for "tiled" because UV0 has pre-generated tangent vectors which is important for detail maps, which usually
-    // use the "tiled" stream, and need better quality tangents because of the high frequency.
+    // UV0 is for tiled UVs. 
+    // Even though the "unwrapped" stream is considered the main stream from a material perspective, we
+    // still define UV0 in order to match the default UV set order in most DCC tools for higher compatibility.
     OUT.m_uv[0] = IN.m_uv0_tiled;
 
-    // UV1 is for unwrapped UVs. The main textures in a skin material will almost always use this UV set.
+    // UV1 is for unwrapped UVs. The main textures in the Eye material will almost always use this UV set.
     OUT.m_uv[1] = IN.m_uv1_unwrapped;
 
     VertexHelper(IN, OUT, worldPosition, false);
@@ -104,16 +100,18 @@ PbrLightingOutput EyePS_Common(VSOutput IN)
     float3x3 uvMatrix = CreateIdentity3x3();
 
     // ------- Tangents & Bitangets -------
-    float3 tangent = IN.m_tangent.xyz;
-    float3 bitangent = IN.m_bitangent.xyz;
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+
+    if (o_iris_o_normal_useTexture || o_sclera_o_normal_useTexture)
+    {
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
+    }
     
     Surface surface;
     surface.position = IN.m_worldPosition;
 
     // ------- Iris/Sclera Layer Setup -------
-    
-    // It is mandatory for all maps to have unwrapped UV mapping in the eye shader, so we can already assign the global uvs.
-    float2 unwrapped_uv = IN.m_uv[1];
 
     // Use a sigmoid to determine the sclera/iris contribution for each point
     float distFromCenter = length(IN.m_localPosition.xz);
@@ -123,13 +121,13 @@ PbrLightingOutput EyePS_Common(VSOutput IN)
     
     surface.vertexNormal = normalize(IN.m_normal);
     
-    // Normal maps used for (1) the iris or (2) the sclera should be (1) symmetrical or (2) sinusoidal procedural.
-    // Therefore it is not worth exposing a flipX/flipY parameter, since it will have no influence on the outcome.
-    const bool flipX, flipY = false;
-    float3 irisNormal = GetNormalInputWS(MaterialSrg::m_irisNormalMap, MaterialSrg::m_sampler, unwrapped_uv, flipX, flipY, isFrontFace, IN.m_normal,
-                                    tangent, bitangent, uvMatrix, o_irisNormal_useTexture, MaterialSrg::m_irisNormalFactor);
-    float3 scleraNormal = GetNormalInputWS(MaterialSrg::m_scleraNormalMap, MaterialSrg::m_sampler, unwrapped_uv, flipX, flipY, isFrontFace, IN.m_normal,
-                                    tangent, bitangent, uvMatrix, o_scleraNormal_useTexture, MaterialSrg::m_scleraNormalFactor);
+    float2 irisNormalUv = IN.m_uv[MaterialSrg::m_iris_m_normalMapUvIndex];
+    float3 irisNormal = GetNormalInputWS(MaterialSrg::m_iris_m_normalMap, MaterialSrg::m_sampler, irisNormalUv, MaterialSrg::m_iris_m_flipNormalX, MaterialSrg::m_iris_m_flipNormalY, isFrontFace, IN.m_normal,
+                                    tangents[MaterialSrg::m_iris_m_normalMapUvIndex], bitangents[MaterialSrg::m_iris_m_normalMapUvIndex], uvMatrix, o_iris_o_normal_useTexture, MaterialSrg::m_iris_m_normalFactor);
+    
+    float2 scleraNormalUv = IN.m_uv[MaterialSrg::m_sclera_m_normalMapUvIndex];
+    float3 scleraNormal = GetNormalInputWS(MaterialSrg::m_sclera_m_normalMap, MaterialSrg::m_sampler, scleraNormalUv, MaterialSrg::m_sclera_m_flipNormalX, MaterialSrg::m_sclera_m_flipNormalY, isFrontFace, IN.m_normal,
+                                    tangents[MaterialSrg::m_sclera_m_normalMapUvIndex], bitangents[MaterialSrg::m_sclera_m_normalMapUvIndex], uvMatrix, o_sclera_o_normal_useTexture, MaterialSrg::m_sclera_m_normalFactor);
     
     surface.normal = normalize(lerp(irisNormal, scleraNormal, mask));
 
@@ -170,41 +168,50 @@ PbrLightingOutput EyePS_Common(VSOutput IN)
     // Convert ray to object local space and fetch XZ coordinates (which map to -XY in texture space)
     float2 refractionUVOffset = -mul(refractedRay, ObjectSrg::GetWorldMatrixInverseTranspose()).xz;
 
-    // Apply offset to both unwrapped UVs
-    unwrapped_uv += refractionUVOffset;
+    // Apply offset to the current UVs
+    for (int uvIdx = 0; uvIdx < UvSetCount; uvIdx++)
+    {
+        IN.m_uv[uvIdx] += refractionUVOffset;
+    }
 
     //--------------------- Base Color ----------------------
 
     // Sample iris color map and blend with the base iris color 
-    float3 irisSampledColor = GetBaseColorInput(MaterialSrg::m_irisColorMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_irisBaseColor, o_irisBaseColor_useTexture);    
-    float3 irisColor = BlendBaseColor(irisSampledColor, MaterialSrg::m_irisBaseColor, MaterialSrg::m_irisBaseColorFactor, o_irisColorTextureBlendMode, o_irisBaseColor_useTexture);
+    float2 irisBaseColorUv = IN.m_uv[MaterialSrg::m_iris_m_baseColorMapUvIndex];
+    float3 irisSampledColor = GetBaseColorInput(MaterialSrg::m_iris_m_baseColorMap, MaterialSrg::m_sampler, irisBaseColorUv, MaterialSrg::m_iris_m_baseColor, o_iris_o_baseColor_useTexture);    
+    float3 irisColor = BlendBaseColor(irisSampledColor, MaterialSrg::m_iris_m_baseColor, MaterialSrg::m_iris_m_baseColorFactor, o_iris_o_baseColorTextureBlendMode, o_iris_o_baseColor_useTexture);
     
     // Sample sclera color map and blend with the base sclera color 
-    float3 scleraSampledColor = GetBaseColorInput(MaterialSrg::m_scleraColorMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_scleraBaseColor, o_scleraBaseColor_useTexture);    
-    float3 scleraColor = BlendBaseColor(scleraSampledColor, MaterialSrg::m_scleraBaseColor, MaterialSrg::m_scleraBaseColorFactor, o_scleraColorTextureBlendMode, o_scleraBaseColor_useTexture);
+    float2 scleraBaseColorUv = IN.m_uv[MaterialSrg::m_sclera_m_baseColorMapUvIndex];
+    float3 scleraSampledColor = GetBaseColorInput(MaterialSrg::m_sclera_m_baseColorMap, MaterialSrg::m_sampler, scleraBaseColorUv, MaterialSrg::m_sclera_m_baseColor, o_sclera_o_baseColor_useTexture);    
+    float3 scleraColor = BlendBaseColor(scleraSampledColor, MaterialSrg::m_sclera_m_baseColor, MaterialSrg::m_sclera_m_baseColorFactor, o_sclera_o_baseColorTextureBlendMode, o_sclera_o_baseColor_useTexture);
     
     // Blend iris and sclera output colors
     float3 baseColor = lerp(irisColor, scleraColor, mask);
 
     // ------- Specular -------
 
-    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+    float2 specularUv = IN.m_uv[MaterialSrg::m_specularF0MapUvIndex];
+    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
 
     // ------- Roughness -------
 
-    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_roughnessFactor,
+    float2 roughnessUv = IN.m_uv[MaterialSrg::m_roughnessMapUvIndex];
+    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, MaterialSrg::m_roughnessFactor,
                                         MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
     surface.CalculateRoughnessA();
 
     // ------- Subsurface -------
 
-    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_subsurfaceScatteringFactor);
+    float2 subsurfaceUv = IN.m_uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
+    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
 
     // ------- Transmission -------
 
-    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_transmissionTintThickness);
+    float2 transmissionUv = IN.m_uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
+    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
@@ -238,8 +245,8 @@ PbrLightingOutput EyePS_Common(VSOutput IN)
 
     // ------- Occlusion -------
     
-    lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
-    lightingData.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
+    lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
+    lightingData.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
 
     // ------- Lighting Calculation -------
 

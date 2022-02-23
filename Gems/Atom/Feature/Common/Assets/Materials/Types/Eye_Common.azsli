@@ -12,13 +12,9 @@
 #include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
-#include "MaterialInputs/BaseColorInput.azsli"
 #include "MaterialInputs/RoughnessInput.azsli"
-#include "MaterialInputs/MetallicInput.azsli"
 #include "MaterialInputs/SpecularInput.azsli"
-#include "MaterialInputs/NormalInput.azsli"
 #include "MaterialInputs/OcclusionInput.azsli"
-#include "MaterialInputs/EmissiveInput.azsli"
 #include "MaterialInputs/UvSetCount.azsli"
 #include "MaterialInputs/EyeInput.azsli"
 

@@ -1,0 +1,58 @@
+{
+    "name": "eye",
+    "displayName": "Eye parameters",
+    "description": "Properties to control eye-specific rendering behavior",
+    "properties": [
+        {
+            "name": "irisDepth",
+            "displayName": "Iris Depth",
+            "description": "Distance from the origin to the plane (XZ) where the iris lays.",
+            "type": "float",
+            "defaultValue": 1.4,
+            "min": 0.0,
+            "max": 2.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_irisDepth"
+            }
+        },
+        {
+            "name": "irisRadius",
+            "displayName": "Iris Radius",
+            "description": "Radius of the iris (it samples the same color texture, it should be smaller than the actual iris size in the texture).",
+            "type": "float",
+            "defaultValue": 0.6,
+            "min": 0.0,
+            "softMax": 5.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_eyeIrisRadius"
+            }
+        },
+        {
+            "name": "innerEyeIOR",
+            "displayName": "IOR Inner Eye",
+            "description": "Index of Refraction (IOR) of the watery fluid inside the cornea known as the aqueous humor",
+            "type": "float",
+            "defaultValue": 1.336, // http://hyperphysics.phy-astr.gsu.edu/hbase/vision/eyescal.html
+            "min": 1.0,
+            "max": 3.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_innerEyeIOR"
+            }
+        },
+        {
+            "name": "limbusSize",
+            "displayName": "Limbus Size",
+            "type": "float",
+            "defaultValue": 0.03,
+            "min": 0.0,
+            "softMax": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_limbusSize"
+            }
+        }
+    ]
+}

@@ -8,8 +8,8 @@
 
 #pragma once
 
-// #include <Atom/Features/ColorManagement/TransformColor.azsli>
-// #include <Atom/Features/BlendUtility.azsli>
+#include "MaterialInputs/BaseColorInput.azsli"
+#include "MaterialInputs/NormalInput.azsli"
 
 // This file provides utilities for common handling of inputs for eye-specific parameters of Eye materials.
 
@@ -18,21 +18,13 @@
 // You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
 
 #define COMMON_SRG_INPUTS_EYE(prefix) \
-float3    prefix##m_irisBaseColor; \
-float     prefix##m_irisBaseColorFactor; \
-Texture2D prefix##m_irisColorMap; \
-float3    prefix##m_scleraBaseColor; \
-float     prefix##m_scleraBaseColorFactor; \
-Texture2D prefix##m_scleraColorMap; \
-Texture2D prefix##m_irisNormalMap; \
-float     prefix##m_irisNormalFactor; \
-Texture2D prefix##m_scleraNormalMap; \
-float     prefix##m_scleraNormalFactor; \
+COMMON_SRG_INPUTS_BASE_COLOR(m_iris_) \
+COMMON_SRG_INPUTS_NORMAL(m_iris_) \
+COMMON_SRG_INPUTS_BASE_COLOR(m_sclera_) \
+COMMON_SRG_INPUTS_NORMAL(m_sclera_)
 
 #define COMMON_OPTIONS_EYE(prefix) \
-option bool prefix##o_irisBaseColor_useTexture; \
-option TextureBlendMode prefix##o_irisColorTextureBlendMode = TextureBlendMode::Multiply; \
-option bool prefix##o_scleraBaseColor_useTexture; \
-option TextureBlendMode prefix##o_scleraColorTextureBlendMode = TextureBlendMode::Multiply; \
-option bool prefix##o_irisNormal_useTexture; \
-option bool prefix##o_scleraNormal_useTexture; 
+COMMON_OPTIONS_BASE_COLOR(o_iris_) \
+COMMON_OPTIONS_NORMAL(o_iris_) \
+COMMON_OPTIONS_BASE_COLOR(o_sclera_) \
+COMMON_OPTIONS_NORMAL(o_sclera_)
