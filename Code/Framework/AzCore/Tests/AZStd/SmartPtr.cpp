@@ -27,11 +27,11 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     class SmartPtr
         : public AllocatorsFixture
     {
