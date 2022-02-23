@@ -64,7 +64,7 @@ class TestAutomation(TestAutomationBase):
         # Fixme: This test previously relied on unexpected lines log reading with is now not supported.
         # Now the log reading must be done inside the test, preferably with the Tracer() utility
         #  unexpected_lines = ["Assert"] + test_module.Lines.unexpected
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_DiffCollisionGroupDiffCollidingLayersNotCollide.setreg_override',
