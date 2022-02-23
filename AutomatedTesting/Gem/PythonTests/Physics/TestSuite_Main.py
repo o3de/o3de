@@ -42,7 +42,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_DynamicFriction(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_DynamicFriction as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_SameCollisionGroupDiffLayersCollide(self, request, workspace, editor, launcher_platform):
