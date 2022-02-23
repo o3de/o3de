@@ -107,6 +107,7 @@ void AssetImporterManager::OnDragAndDropFiles(const QStringList* fileList)
 
 bool AssetImporterManager::OnBrowseFiles()
 {
+    Log("############ AssetImporterManager:: OnBrowseFiles");
     QFileDialog fileDialog;
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
     fileDialog.setWindowModality(Qt::WindowModality::ApplicationModal);
@@ -115,7 +116,10 @@ bool AssetImporterManager::OnBrowseFiles()
     fileDialog.setLabelText(QFileDialog::Accept, "Select");
     volatile int returnFlag = -1;
     connect( &fileDialog, &QDialog::finished, [&returnFlag](int resultcode) { returnFlag = resultcode; });
-
+    if (returnFlag)
+    {
+        return false;
+    }
     QSettings settings;
     QString currentAbsolutePath = settings.value(AssetImporterManagerPrivate::g_selectFilesPath).toString();
 
