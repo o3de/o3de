@@ -98,8 +98,9 @@ namespace GraphCanvas
         static AZ::Entity* CreateGeneralConnection(const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint, bool createModelConnection, const AZStd::string& substyle = "");
 
         ConnectionComponent();
-        ConnectionComponent(const Endpoint& sourceEndpoint,const Endpoint& targetEndpoint, bool createModelConnection = true);
-        
+        ConnectionComponent(const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint, bool createModelConnection = true);
+        ~ConnectionComponent() override = default;
+
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
@@ -185,7 +186,7 @@ namespace GraphCanvas
         const ConnectionComponent& operator=(const ConnectionComponent&) = delete;
 
         void SetGroupTarget(AZ::EntityId groupTarget);
-        
+
         void FinalizeMove();
 
         virtual void OnConnectionMoveStart();
@@ -243,7 +244,7 @@ namespace GraphCanvas
         AZ::EntityId m_groupTarget;
         StateSetter< RootGraphicsItemDisplayState > m_forcedGroupDisplayStateStateSetter;
         StateSetter< AZStd::string > m_forcedLayerStateSetter;
-    }; 
+    };
 
     class ConnectionEventFilter
         : public SceneEventFilter

@@ -14,11 +14,6 @@
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <AzCore/Asset/AssetCommon.h>
 
-namespace ScriptCanvasEditor
-{
-    class SourceHandle;
-}
-
 namespace ScriptCanvasBuilder
 {
     class BuildVariableOverrides
