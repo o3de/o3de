@@ -291,9 +291,24 @@ namespace EMStudio
         return GetViewportContext()->GetId();
     }
 
+    void AnimViewportWidget::mousePressEvent(QMouseEvent* event)
+    {
+        m_pixelsSinceClick = 0;
+        m_prevMouseX = event->globalX();
+        m_prevMouseY = event->globalY();
+    }
+
+    void AnimViewportWidget::mouseMoveEvent(QMouseEvent* event)
+    {
+        int deltaX = event->globalX() - m_prevMouseX;
+        int deltaY = event->globalY() - m_prevMouseY;
+
+        m_pixelsSinceClick += AZStd::abs(deltaX) + AZStd::abs(deltaY);
+    }
+
     void AnimViewportWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        if (event->button() == Qt::RightButton)
+        if (event->button() == Qt::RightButton && m_pixelsSinceClick < MinMouseMovePixes)
         {
             OnContextMenuEvent(event);
         }

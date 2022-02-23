@@ -55,6 +55,8 @@ namespace EMStudio
         AZ::s32 GetViewportId() const;
 
         // MouseEvent
+        void mousePressEvent(QMouseEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* event) override;
         void mouseReleaseEvent(QMouseEvent* event) override;
 
         static constexpr float CameraDistance = 2.0f;
@@ -79,5 +81,12 @@ namespace EMStudio
         AZStd::shared_ptr<AzFramework::OrbitMotionDollyCameraInput> m_followScrollMotionCamera;
 
         AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero();
+
+        // Properties related to the mouse event.
+        // Used to prevent right click option showing up when mouse moved between press and release.
+        int m_prevMouseX = 0.0f;
+        int m_prevMouseY = 0.0f;
+        int m_pixelsSinceClick = 0;
+        const int MinMouseMovePixes = 5;
     };
 }
