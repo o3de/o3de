@@ -59,7 +59,8 @@ namespace ScriptCanvas::Nodeables::Spawning
                            ->Constructor()
                            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                            ->Attribute(AZ::Script::Attributes::Category, "Spawning")
-                           ->Attribute(AZ::Script::Attributes::Module, "Spawning");
+                           ->Attribute(AZ::Script::Attributes::Module, "Spawning")
+                           ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true);
 
             AZ::BehaviorClass* behaviorClass =
                 AZ::BehaviorContextHelper::GetClass(behaviorContext, azrtti_typeid<BehaviorClassReflection<SpawnTicketInstance>>());

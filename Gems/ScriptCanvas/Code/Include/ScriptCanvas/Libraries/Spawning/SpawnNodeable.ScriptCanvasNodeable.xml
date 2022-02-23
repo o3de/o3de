@@ -13,17 +13,15 @@
          Description="Spawns a selected prefab">
 
     <Input Name="Request Spawn" OutputName="Spawn Requested">
-      <Parameter Name="SpawnTicketInstance" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance assosiated with spawnable asset."/>
-	  <Return Name="SpawnTicketInstance" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Shared="true"/>
+      <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance assosiated with spawnable asset."/>
+	  <Parameter Name="ParentId" Type="AZ::EntityId" Description="Optional parent to assign spawned container entity to."/>
+	  <Parameter Name="Local Translation" Type="Data::Vector3Type" Description="Position to spawn."/>
+      <Parameter Name="Local Rotation" Type="Data::Vector3Type" Description="Rotation of spawn (in degrees)."/>
+      <Parameter Name="Local Scale" Type="Data::NumberType" DefaultValue="1" Description="Scale of spawn."/>
     </Input>
 
-	<Output Name="On Insertion" Description="Called after instances of entities have been created, but before they're spawned into the world. gives the opportunity to modify the entities if needed such as injecting additional components or modifying components.">
-	  <Parameter Name="InsertedTicketId" Type="AzFramework::EntitySpawnTicket::Id" Description="Ticket Id of the spawn result."/>
-      <Parameter Name="InsertedEntitiesList" Type="AZStd::vector&lt;Data::EntityIDType&gt;" Description="List of spawned entities sorted by hierarchy with the root being first"/>
-    </Output>/>
-	
-    <Output Name="On Completion" Description="Called when spawning entities is completed.">
-	  <Parameter Name="SpawnedTicketId" Type="AzFramework::EntitySpawnTicket::Id" Description="Ticket Id of the spawn result."/>
+    <Output Name="On Spawn Completed" Description="Called when spawning entities is completed.">
+	  <Parameter Name="SpawnTicket" Type="ScriptCanvas::Nodeables::Spawning::SpawnTicketInstance" Description="Ticket instance of the spawn result."/>
       <Parameter Name="SpawnedEntitiesList" Type="AZStd::vector&lt;Data::EntityIDType&gt;" Description="List of spawned entities sorted by hierarchy with the root being first"/>
     </Output>/>
     

@@ -41,10 +41,9 @@ namespace ScriptCanvas::Nodeables::Spawning
         struct SpawnableResult
         {
             AZStd::vector<Data::EntityIDType> m_entityList;
-            AzFramework::EntitySpawnTicket::Id m_spawnTicketId;
+            SpawnTicketInstance m_spawnTicket;
         };
         
-        AZStd::vector<SpawnableResult> m_preInsertionResults;
         AZStd::vector<SpawnableResult> m_completionResults;
         AZStd::recursive_mutex m_idBatchMutex;
     };

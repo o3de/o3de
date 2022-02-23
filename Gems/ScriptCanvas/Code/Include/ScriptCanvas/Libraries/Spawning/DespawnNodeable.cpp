@@ -29,42 +29,45 @@ namespace ScriptCanvas::Nodeables::Spawning
     void DespawnNodeable::OnDeactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
+
+        m_despawnedTicketList = {};
     }
     
     void DespawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
-        if (m_despawnedTicketIdList.empty())
+        if (m_despawnedTicketList.empty())
         {
             return;
         }
 
-        AZStd::vector<AzFramework::EntitySpawnTicket::Id> swappedDespawnedTicketIdList;
+        AZStd::vector<SpawnTicketInstance> swappedDespawnedTicketList;
         {
             AZStd::lock_guard lock(m_idBatchMutex);
-            swappedDespawnedTicketIdList.swap(m_despawnedTicketIdList);
+            swappedDespawnedTicketList.swap(m_despawnedTicketList);
         }
 
-        for (AzFramework::EntitySpawnTicket::Id ticketId : swappedDespawnedTicketIdList)
+        for (auto spawnTicket : swappedDespawnedTicketList)
         {
-            CallOnDespawn(ticketId);
+            CallOnDespawn(spawnTicket);
         }
     }
     
-    void DespawnNodeable::RequestDespawn(SpawnTicketInstance spawnTicketInstance)
+    void DespawnNodeable::RequestDespawn(SpawnTicketInstance spawnTicket)
     {
-        auto despawnCompleteCB = [this](AzFramework::EntitySpawnTicket::Id ticketId)
+        auto despawnCompleteCB = [this, spawnTicket]
+        ([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId)
         {
             AZStd::lock_guard lock(m_idBatchMutex);
-            m_despawnedTicketIdList.push_back(ticketId);
+            m_despawnedTicketList.push_back(spawnTicket);
         };
 
-        if (!spawnTicketInstance.m_ticket)
+        if (!spawnTicket.m_ticket)
         {
             return;
         }
 
         AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(despawnCompleteCB);
-        AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(*spawnTicketInstance.m_ticket, AZStd::move(optionalArgs));
+        AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(*spawnTicket.m_ticket, AZStd::move(optionalArgs));
     }
 } // namespace ScriptCanvas::Nodeables::Spawning

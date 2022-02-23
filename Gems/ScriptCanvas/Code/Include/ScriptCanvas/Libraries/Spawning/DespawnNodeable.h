@@ -38,7 +38,7 @@ namespace ScriptCanvas::Nodeables::Spawning
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
         
     private:
-        AZStd::vector<AzFramework::EntitySpawnTicket::Id> m_despawnedTicketIdList;
+        AZStd::vector<SpawnTicketInstance> m_despawnedTicketList;
         AZStd::recursive_mutex m_idBatchMutex;
     };
 }
