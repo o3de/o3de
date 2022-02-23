@@ -128,13 +128,15 @@ namespace MaterialEditor
             [&](MaterialViewportRequestBus::Events* viewportRequests)
             {
                 const auto& selectedPreset = viewportRequests->GetModelPresetSelection();
-                selectedAsset = selectedPreset->m_modelAsset.GetId();
+                const auto& selectedPresetPath = viewportRequests->GetModelPresetLastSavePath(selectedPreset);
+                selectedAsset = AZ::RPI::AssetUtils::MakeAssetId(selectedPresetPath, 0).GetValue();
 
                 const auto& presets = viewportRequests->GetModelPresets();
                 selectableAssets.reserve(presets.size());
                 for (const auto& preset : presets)
                 {
-                    const auto& presetAssetId = preset->m_modelAsset.GetId();
+                    const auto& path = viewportRequests->GetModelPresetLastSavePath(preset);
+                    const auto& presetAssetId = AZ::RPI::AssetUtils::MakeAssetId(path, 0).GetValue();
                     selectableAssets.push_back({ presetAssetId, preset->m_displayName.c_str() });
                     assetIdToPresetMap[presetAssetId] = preset;
                 }

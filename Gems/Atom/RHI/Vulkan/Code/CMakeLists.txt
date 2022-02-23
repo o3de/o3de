@@ -108,7 +108,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
-            AZ::AzTest
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI_Vulkan.Reflect
