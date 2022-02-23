@@ -47,6 +47,7 @@ namespace AtomToolsFramework
 
     Q_SIGNALS:
         void AssetSelected(const AZ::Data::AssetId& assetId);
+        void AssetRejected();
 
     private:
         AZ_DISABLE_COPY_MOVE(AssetSelectionGrid);

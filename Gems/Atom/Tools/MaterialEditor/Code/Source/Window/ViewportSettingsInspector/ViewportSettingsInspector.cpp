@@ -113,19 +113,23 @@ namespace MaterialEditor
     void ViewportSettingsInspector::SelectModelPreset()
     {
         const int itemSize = aznumeric_cast<int>(AtomToolsFramework::GetSettingsValue<AZ::u64>(
-            "/O3DE/Atom/MaterialEditor/ViewportSettingsInspector/AssetSelectionGrid/ModelItemSize", 180));
+            "/O3DE/Atom/MaterialEditor/ViewportSettingsInspector/AssetSelectionGrid/ModelItemSize", 128));
 
         AtomToolsFramework::AssetSelectionGrid dialog("Model Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
             return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset");
         }, QSize(itemSize, itemSize), QApplication::activeWindow());
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadModelPresetByAssetId, assetId);
-        });
-
         AZ::Data::AssetId assetId;
         MaterialViewportRequestBus::BroadcastResult(assetId, &MaterialViewportRequestBus::Events::GetLastModelPresetAssetId);
         dialog.SelectAsset(assetId);
+
+        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetRejected, this, [assetId]() {
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadModelPresetByAssetId, assetId);
+        });
+
+        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadModelPresetByAssetId, assetId);
+        });
 
         dialog.setFixedSize(800, 400);
         dialog.show();
@@ -206,19 +210,23 @@ namespace MaterialEditor
     void ViewportSettingsInspector::SelectLightingPreset()
     {
         const int itemSize = aznumeric_cast<int>(AtomToolsFramework::GetSettingsValue<AZ::u64>(
-            "/O3DE/Atom/MaterialEditor/ViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 180));
+            "/O3DE/Atom/MaterialEditor/ViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
 
         AtomToolsFramework::AssetSelectionGrid dialog("Lighting Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
             return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset");
         }, QSize(itemSize, itemSize), QApplication::activeWindow());
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId, assetId);
-        });
-
         AZ::Data::AssetId assetId;
         MaterialViewportRequestBus::BroadcastResult(assetId, &MaterialViewportRequestBus::Events::GetLastLightingPresetAssetId);
         dialog.SelectAsset(assetId);
+
+        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetRejected, this, [assetId]() {
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+        });
+
+        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+        });
 
         dialog.setFixedSize(800, 400);
         dialog.show();

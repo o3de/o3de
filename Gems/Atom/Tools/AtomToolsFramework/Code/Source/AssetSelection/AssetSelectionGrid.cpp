@@ -200,6 +200,7 @@ namespace AtomToolsFramework
     {
         connect(m_ui->m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
         connect(m_ui->m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+        connect(this, &QDialog::rejected, this, &AssetSelectionGrid::AssetRejected);
     }
 
     void AssetSelectionGrid::ApplySearchFilter()
