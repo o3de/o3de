@@ -120,11 +120,12 @@ namespace AZ
                             }
                         }
 
-                        AZ_Assert(irradianceImageAttachment != nullptr, "Unable to find IrradianceImage attachment");
-
-                        RPI::PassAttachmentSizeMultipliers& sizeMultipliers = irradianceImageAttachment->m_sizeMultipliers;
-                        sizeMultipliers.m_widthMultiplier = sizeMultiplier;
-                        sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                        if (irradianceImageAttachment)
+                        {
+                            RPI::PassAttachmentSizeMultipliers& sizeMultipliers = irradianceImageAttachment->m_sizeMultipliers;
+                            sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                            sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                        }
 
                         // handle all downsample passes
                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;

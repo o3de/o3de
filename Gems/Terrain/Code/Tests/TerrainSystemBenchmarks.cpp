@@ -299,6 +299,9 @@ namespace UnitTest
             const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution));
             const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution));
 
+            positions.clear();
+            positions.reserve(numSamplesX * numSamplesY);
+
             for (size_t y = 0; y < numSamplesY; y++)
             {
                 float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution));

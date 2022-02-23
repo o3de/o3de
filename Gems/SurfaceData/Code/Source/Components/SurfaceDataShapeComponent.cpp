@@ -185,8 +185,15 @@ namespace SurfaceData
     }
 
 
-    void SurfaceDataShapeComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
+    void SurfaceDataShapeComponent::ModifySurfacePoints(
+        AZStd::span<const AZ::Vector3> positions,
+        AZStd::span<const AZ::EntityId> creatorEntityIds,
+        AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
     {
+        AZ_Assert(
+            (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
+            "Sizes of the passed-in spans don't match");
+
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_shapeBoundsIsValid && !m_configuration.m_modifierTags.empty())
@@ -194,18 +201,22 @@ namespace SurfaceData
             const AZ::EntityId entityId = GetEntityId();
             LmbrCentral::ShapeComponentRequestsBus::Event(
                 entityId,
-                [entityId, this, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
+                [entityId, this, positions, creatorEntityIds, &weights](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    surfacePointList.ModifySurfaceWeights(
-                        entityId,
-                        [this, shape](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
+                    for (size_t index = 0; index < positions.size(); index++)
                     {
-                        if (m_shapeBounds.Contains(position) && shape->IsPointInside(position))
+                        // Don't bother modifying points that this component created.
+                        if (creatorEntityIds[index] == entityId)
+                        {
+                            continue;
+                        }
+
+                        if (m_shapeBounds.Contains(positions[index]) && shape->IsPointInside(positions[index]))
                         {
                             // If the point is inside our shape, add all our modifier tags with a weight of 1.0f.
-                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
+                            weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
                         }
-                    });
+                    }
                 });
         }
     }

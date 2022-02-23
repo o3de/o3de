@@ -26,7 +26,6 @@ namespace AtomToolsFramework
 
     protected:
         // AtomToolsApplication overrides...
-        void Reflect(AZ::ReflectContext* context) override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
