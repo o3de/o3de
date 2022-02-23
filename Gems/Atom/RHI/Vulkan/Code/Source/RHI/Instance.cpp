@@ -9,7 +9,7 @@
 #include <RHI/Instance.h>
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzTest/Utils.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace AZ
 {
@@ -49,8 +49,11 @@ namespace AZ
             m_descriptor = descriptor;
             if (GetValidationMode() != RHI::ValidationMode::Disabled)
             {
+                char exeDirectory[AZ_MAX_PATH_LEN];
+                AZ::Utils::GetExecutableDirectory(exeDirectory, AZ_ARRAY_SIZE(exeDirectory));
+
                 //This env var (VK_LAYER_PATH) is used by the drivers to look for VkLayer_khronos_validation.dll
-                AZ::Test::SetEnv("VK_LAYER_PATH", AZ::Test::GetCurrentExecutablePath().c_str(), 1);
+                AZ::Utils::SetEnv("VK_LAYER_PATH", exeDirectory, 1);
 
                 RawStringList validationLayers = Debug::GetValidationLayers();
                 m_descriptor.m_optionalLayers.insert(m_descriptor.m_requiredLayers.end(), validationLayers.begin(), validationLayers.end());
