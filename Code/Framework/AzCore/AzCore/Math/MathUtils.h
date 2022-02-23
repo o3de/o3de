@@ -467,6 +467,8 @@ namespace AZ
     //! Example: alignment: 4
     //! Value:  0 1 2 3 4 5 6 7 8
     //! Result: 0 1 1 1 1 2 2 2 2
+    //! @param value The numerator.
+    //! @param alignment The denominator. The result will be rounded up to the nearest multiple of alignment. Must be non-zero or it will lead to undefined behavior
     template<typename T>
     constexpr T DivideAndRoundUp(T value, T alignment)
     {
@@ -483,6 +485,8 @@ namespace AZ
     //! Example: roundTo: 4
     //! Value:  0 1 2 3 4 5 6 7 8
     //! Result: 0 4 4 4 4 8 8 8 8
+    //! @param value The number to round up.
+    //! @param alignment Round up to the nearest multiple of alignment. Must be non-zero or it will lead to undefined behavior
     template<typename T>
     constexpr T RoundUpToMultiple(T value, T alignment)
     {
