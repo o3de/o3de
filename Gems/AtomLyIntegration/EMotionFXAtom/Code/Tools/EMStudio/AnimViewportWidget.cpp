@@ -100,8 +100,6 @@ namespace EMStudio
 
         m_followRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::OrbitLookCameraInputChannelId());
         m_followScrollDollyCamera = AZStd::make_shared<AzFramework::OrbitScrollDollyCameraInput>();
-        m_followScrollMotionCamera =
-            AZStd::make_shared<AzFramework::OrbitMotionDollyCameraInput>(EMStudio::ViewportUtil::OrbitDollyCameraInputChannelId());
     }
 
     void AnimViewportWidget::SetupCameraController()
@@ -199,12 +197,11 @@ namespace EMStudio
     void AnimViewportWidget::UpdateCameraFollowUp(bool followUp)
     {
         const auto lookAndOrbitCameras =
-            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_lookRotateCamera, m_lookTranslateCamera,
+            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_lookTranslateCamera,
                                                                         m_lookScrollTranslationCamera, m_lookPanCamera, m_orbitCamera };
 
         const auto followCameras =
-            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_followRotateCamera, m_followScrollDollyCamera,
-                                                                        m_followScrollMotionCamera };
+            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_followRotateCamera, m_followScrollDollyCamera};
         if (followUp)
         {
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(

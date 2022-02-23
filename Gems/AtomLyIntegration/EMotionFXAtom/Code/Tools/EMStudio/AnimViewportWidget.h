@@ -76,7 +76,6 @@ namespace EMStudio
 
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_followRotateCamera;
         AZStd::shared_ptr<AzFramework::OrbitScrollDollyCameraInput> m_followScrollDollyCamera;
-        AZStd::shared_ptr<AzFramework::OrbitMotionDollyCameraInput> m_followScrollMotionCamera;
 
         AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero();
     };
