@@ -7,6 +7,7 @@
  */
 
 #include <native/ui/BuilderListModel.h>
+#include <utilities/AssetUtilEBusHelper.h>
 
 int BuilderListModel::rowCount(const QModelIndex& /*parent*/) const
 {
