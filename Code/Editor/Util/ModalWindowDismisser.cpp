@@ -48,6 +48,7 @@ void ModalWindowDismisser::DismissWindows()
 {
     for (QDialog* dialog : m_windows)
     {
+        Log("************ AssetImporterManager:: Rejecting dialog");
         dialog->done(QDialog::Rejected);
     }
     m_windows.clear();
@@ -61,7 +62,7 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
         if (dialog->isModal())
         {
             QEvent::Type test = event->type();
-            Log("############ AssetImporterManager:: Event = %s", ToString(test).toStdString().c_str());
+            Log("************ AssetImporterManager:: Event = %s", ToString(test).toStdString().c_str());
             if (test == QEvent::PolishRequest)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);

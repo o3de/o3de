@@ -107,7 +107,7 @@ void AssetImporterManager::OnDragAndDropFiles(const QStringList* fileList)
 
 bool AssetImporterManager::OnBrowseFiles()
 {
-    Log("############ AssetImporterManager:: OnBrowseFiles");
+    Log("************ AssetImporterManager:: OnBrowseFiles");
     QFileDialog fileDialog;
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
     fileDialog.setWindowModality(Qt::WindowModality::ApplicationModal);
@@ -125,7 +125,7 @@ bool AssetImporterManager::OnBrowseFiles()
 
     QDir gameRoot(Path::GetEditingGameDataFolder().c_str());
     QString gameRootAbsPath = gameRoot.absolutePath();
-    Log("############ AssetImporterManager:: gameRootAbsPath = %s", gameRootAbsPath.toStdString().c_str());
+    Log("************ AssetImporterManager:: gameRootAbsPath = %s", gameRootAbsPath.toStdString().c_str());
     // Case 1: if currentAbsolutePath is empty at this point, that means this is the first time
     //         users using the Asset Importer, set the default directory to be users' PC's desktop.
     // Case 2: if the current folder directory stored in the registry doesn't exist anymore,
@@ -136,10 +136,10 @@ bool AssetImporterManager::OnBrowseFiles()
     {
         currentAbsolutePath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     }
-    Log("############ AssetImporterManager:: Setting Directory");
+    Log("************ AssetImporterManager:: Setting Directory");
     fileDialog.setDirectory(currentAbsolutePath);
 
-    Log("############ AssetImporterManager:: Going to fileDialog Exec");
+    Log("************ AssetImporterManager:: Going to fileDialog Exec");
     fileDialog.open();
     while (returnFlag < 0)
     {
@@ -147,11 +147,11 @@ bool AssetImporterManager::OnBrowseFiles()
     }
     if (returnFlag == QDialog::Rejected)
     {
-        Log("############ AssetImporterManager:: fileDialog Exec returned false");
+        Log("************ AssetImporterManager:: fileDialog Exec returned false");
         return false;
     }
 
-    Log("############ AssetImporterManager:: fileDialog Exec returned true");
+    Log("************ AssetImporterManager:: fileDialog Exec returned true");
     bool encounteredCrate = false;
     QStringList invalidFiles;
 
