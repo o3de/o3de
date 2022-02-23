@@ -113,18 +113,8 @@ bool AssetImporterManager::OnBrowseFiles()
     fileDialog.setViewMode(QFileDialog::Detail);
     fileDialog.setWindowTitle(tr("Select files to import"));
     fileDialog.setLabelText(QFileDialog::Accept, "Select");
-    volatile bool finished = false;
-    volatile bool rejected = true;
-    connect(
-        &fileDialog, &QDialog::finished,
-        [&finished, &rejected](int resultcode)
-        {
-            finished = true;
-            if (resultcode == QDialog::Accepted)
-            {
-                rejected = false;
-            }
-        });
+    volatile int returnFlag = -1;
+    connect( &fileDialog, &QDialog::finished, [&returnFlag](int resultcode) { returnFlag = resultcode; });
 
     QSettings settings;
     QString currentAbsolutePath = settings.value(AssetImporterManagerPrivate::g_selectFilesPath).toString();
@@ -147,11 +137,11 @@ bool AssetImporterManager::OnBrowseFiles()
 
     CLogFile::FormatLine("############ AssetImporterManager:: Going to fileDialog Exec");
     fileDialog.open();
-    while (! finished)
+    while (returnFlag < 0)
     {
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
     }
-    if (rejected)
+    if (returnFlag == QDialog::Rejected)
     {
         CLogFile::FormatLine("############ AssetImporterManager:: fileDialog Exec returned false");
         return false;
