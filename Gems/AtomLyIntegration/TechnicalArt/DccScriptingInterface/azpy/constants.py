@@ -256,7 +256,9 @@ ENVAR_DCCSI_WING_VERSION_MINOR = str('DCCSI_WING_VERSION_MINOR')
 
 
 # -------------------------------------------------------------------------
-# dcc:Maya API constants
+# To do: deprecate this block and redcode it, it has moved to:
+# DccScriptingInterface\Tools\DCC\Maya\constants.py
+# dcc: Maya ENVAR constants
 TAG_O3DE_DCC_MAYA_MEL = 'dccsi_setup.mel'
 TAG_MAYA_WORKSPACE = 'workspace.mel'
 
@@ -265,7 +267,7 @@ ENVAR_DCCSI_PY_MAYA = str('DCCSI_PY_MAYA')
 ENVAR_MAYA_VERSION = str('MAYA_VERSION')
 ENVAR_MAYA_LOCATION = str('MAYA_LOCATION')
 
-ENVAR_DCCSI_TOOLS_MAYA_PATH = str('DCCSI_TOOLS_MAYA_PATH')
+ENVAR_PATH_DCCSI_TOOLS_MAYA = str('PATH_DCCSI_TOOLS_MAYA')
 ENVAR_MAYA_MODULE_PATH = str('MAYA_MODULE_PATH')
 ENVAR_MAYA_BIN_PATH = str('MAYA_BIN_PATH')
 

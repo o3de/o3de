@@ -46,12 +46,12 @@ _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
 
 # we need to set up basic access to the DCCsi
-_DCCSI_TOOLS_MAYA_PATH = Path(_MODULE_PATH.parent)
-_DCCSI_TOOLS_MAYA_PATH = Path(os.getenv('DCCSI_TOOLS_MAYA_PATH', _DCCSI_TOOLS_MAYA_PATH.as_posix()))
-site.addsitedir(_DCCSI_TOOLS_MAYA_PATH.as_posix())
+_PATH_DCCSI_TOOLS_MAYA = Path(_MODULE_PATH.parent)
+_PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', _PATH_DCCSI_TOOLS_MAYA.as_posix()))
+site.addsitedir(_PATH_DCCSI_TOOLS_MAYA.as_posix())
 
 # we need to set up basic access to the DCCsi
-_PATH_DCCSI_TOOLS_DCC = Path(_DCCSI_TOOLS_MAYA_PATH.parent)
+_PATH_DCCSI_TOOLS_DCC = Path(_PATH_DCCSI_TOOLS_MAYA.parent)
 _PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
 site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
 

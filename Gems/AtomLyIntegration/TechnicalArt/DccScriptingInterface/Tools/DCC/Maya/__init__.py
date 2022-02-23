@@ -44,10 +44,10 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 # module path when frozen
 _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
-_DCCSI_TOOLS_MAYA_PATH = Path(_MODULE_PATH.parent)
+_PATH_DCCSI_TOOLS_MAYA = Path(_MODULE_PATH.parent)
 
 # we need to set up basic access to the DCCsi
-_PATH_DCCSI_TOOLS_DCC = Path(_DCCSI_TOOLS_MAYA_PATH.parent)
+_PATH_DCCSI_TOOLS_DCC = Path(_PATH_DCCSI_TOOLS_MAYA.parent)
 _PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
 site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
 
@@ -97,7 +97,7 @@ if _DCCSI_DEV_MODE:
 # message collection
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'DCCSI_TOOLS_MAYA_PATH: {_DCCSI_TOOLS_MAYA_PATH}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_MAYA: {_PATH_DCCSI_TOOLS_MAYA}')
 _LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
