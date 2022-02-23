@@ -28,19 +28,19 @@ namespace AzFramework
 
     //! Returns a position in screen space (in the range [0-viewportSize.x, 0-viewportSize.y]) from normalized device
     //! coordinates (in the range 0.0-1.0).
-    inline ScreenPoint ScreenPointFromNdc(const AZ::Vector2& screenNdc, const AZ::Vector2& viewportSize)
+    inline ScreenPoint ScreenPointFromNdc(const AZ::Vector2& screenNdc, const ScreenSize& viewportSize)
     {
         return ScreenPoint(
-            aznumeric_cast<int>(AZStd::lround(screenNdc.GetX() * viewportSize.GetX())),
-            aznumeric_cast<int>(AZStd::lround((1.0f - screenNdc.GetY()) * viewportSize.GetY())));
+            aznumeric_cast<int>(AZStd::lround(screenNdc.GetX() * viewportSize.Widthf())),
+            aznumeric_cast<int>(AZStd::lround((1.0f - screenNdc.GetY()) * viewportSize.Heightf())));
     }
 
     //! Returns a position in normalized device coordinates (in the range [0.0-1.0, 0.0-1.0]) from a
     //! screen space position (in the range [0-viewportSize.x, 0-viewportSize.y]).
-    inline AZ::Vector2 NdcFromScreenPoint(const ScreenPoint& screenPoint, const AZ::Vector2& viewportSize)
+    inline AZ::Vector2 NdcFromScreenPoint(const ScreenPoint& screenPoint, const ScreenSize& viewportSize)
     {
-        return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), viewportSize.GetY() - aznumeric_cast<float>(screenPoint.m_y)) /
-            viewportSize;
+        return Vector2FromScreenPoint(ScreenPoint(screenPoint.m_x, viewportSize.m_height - screenPoint.m_y)) /
+            Vector2FromScreenSize(viewportSize);
     }
 
     //! Projects a position in world space to screen space normalized device coordinates for the given camera.
@@ -55,7 +55,7 @@ namespace AzFramework
         const AZ::Vector3& worldPosition,
         const AZ::Matrix3x4& cameraView,
         const AZ::Matrix4x4& cameraProjection,
-        const AZ::Vector2& viewportSize);
+        const ScreenSize& viewportSize);
 
     //! Unprojects a position in screen space pixel coordinates to world space.
     //! Note: The position returned will be on the near clip plane of the camera in world space.
@@ -67,7 +67,7 @@ namespace AzFramework
         const ScreenPoint& screenPosition,
         const AZ::Matrix3x4& inverseCameraView,
         const AZ::Matrix4x4& inverseCameraProjection,
-        const AZ::Vector2& viewportSize);
+        const ScreenSize& viewportSize);
 
     //! Unprojects a position in screen space normalized device coordinates to world space.
     //! Note: The position returned will be on the near clip plane of the camera in world space.
@@ -110,11 +110,11 @@ namespace AzFramework
     //! Returns a structure representing frustum attributes for the current camera state.
     AZ::ViewFrustumAttributes ViewFrustumAttributesFromCameraState(const CameraState& cameraState);
 
-    //! Returns the aspect ratio of the viewport dimensions.
-    //! @note Ensure a valid viewport size is provided to this function.
-    inline float AspectRatio(const AZ::Vector2& viewportSize)
+    //! Returns the aspect ratio of the screen/viewport dimensions.
+    //! @note Ensure ScreenSize represents a valid viewport size/dimension before calling this function.
+    inline float AspectRatio(const ScreenSize& screenSize)
     {
-        AZ_Assert(viewportSize.GetY() > 0.0f, "AspectRatio called with invalid viewport size");
-        return viewportSize.GetX() / viewportSize.GetY();
+        AZ_Assert(screenSize.m_height > 0.0f && screenSize.m_width > 0.0f, "AspectRatio called with invalid viewport size");
+        return aznumeric_cast<float>(screenSize.m_width) / aznumeric_cast<float>(screenSize.m_height);
     }
 } // namespace AzFramework

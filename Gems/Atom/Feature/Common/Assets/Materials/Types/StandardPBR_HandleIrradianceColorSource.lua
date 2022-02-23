@@ -10,19 +10,19 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"irradiance.irradianceColorSource", "irradiance.manualColor"}
+    return {"irradianceColorSource", "manualColor"}
 end
  
 IrradianceColorSource_BaseColor = 0
 IrradianceColorSource_ManualColor = 1
 
 function ProcessEditor(context)
-    local irradianceColorSource = context:GetMaterialPropertyValue_enum("irradiance.irradianceColorSource")
+    local irradianceColorSource = context:GetMaterialPropertyValue_enum("irradianceColorSource")
     
     if(irradianceColorSource == IrradianceColorSource_BaseColor) then
-        context:SetMaterialPropertyVisibility("irradiance.manualColor", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("manualColor", MaterialPropertyVisibility_Hidden)
     elseif(irradianceColorSource == IrradianceColorSource_ManualColor) then
-        context:SetMaterialPropertyVisibility("irradiance.manualColor", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("manualColor", MaterialPropertyVisibility_Enabled)
     end
 end
 

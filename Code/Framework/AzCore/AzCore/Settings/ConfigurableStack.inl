@@ -45,9 +45,21 @@ namespace AZ
     }
 
     template<typename StackBaseType>
+    bool ConfigurableStack<StackBaseType>::empty() const
+    {
+        return m_nodes.empty();
+    }
+
+    template<typename StackBaseType>
     size_t ConfigurableStack<StackBaseType>::size() const
     {
         return m_nodes.size();
+    }
+
+    template<typename StackBaseType>
+    void ConfigurableStack<StackBaseType>::clear()
+    {
+        return m_nodes.clear();
     }
 
     template<typename StackBaseType>

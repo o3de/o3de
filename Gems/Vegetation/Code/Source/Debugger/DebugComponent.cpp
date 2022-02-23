@@ -334,16 +334,11 @@ void DebugComponent::FillSectorEnd([[maybe_unused]] int sectorX, [[maybe_unused]
 
 namespace DebugComponentUtilities
 {
-    constexpr uint32 RoundUpAndDivide(uint32 value, uint32 divide)
-    {
-        return (value + divide - 1) / divide;
-    }
-
     template <typename ValueType>
     union LocalAliasingUnion
     {
         ValueType aliasedValue;
-        AZStd::size_t aliasedValueArray[RoundUpAndDivide(sizeof(ValueType), sizeof(AZStd::size_t))] = {};
+        AZStd::size_t aliasedValueArray[AZ::DivideAndRoundUp(sizeof(ValueType), sizeof(AZStd::size_t))] = {};
     };
 
     template <typename ValueType>

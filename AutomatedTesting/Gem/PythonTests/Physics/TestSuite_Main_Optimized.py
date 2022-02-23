@@ -276,9 +276,6 @@ class TestAutomation(EditorTestSuite):
     class C6090555_ForceRegion_SplineFollowOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
 
-    class C6131473_StaticSlice_OnDynamicSliceSpawn(EditorSharedTest):
-        from .tests import Physics_DynamicSliceWithPhysNotSpawnsStaticSlice as test_module
-
     class C5959808_ForceRegion_PositionOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_PositionOffset as test_module
 
