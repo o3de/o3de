@@ -11,11 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include <Builder/ScriptCanvasBuilder.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
-
 #include "ScriptCanvasBuilderWorker.h"
-#include "ScriptCanvasBuilderWorkerUtility.h"
 
 namespace ScriptCanvasBuilder
 {
