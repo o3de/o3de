@@ -28,6 +28,9 @@
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     // IntrusiveListContainerTest-Begin
 
     // My intrusive list class.

@@ -17,6 +17,9 @@
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     class LockFreeStack
         : public AllocatorsFixture
     {

@@ -20,6 +20,9 @@
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+    
     AZ_HAS_MEMBER(HashValidate, validate, void, ());
 
     /**
