@@ -8,12 +8,14 @@
 #pragma once
 
 #include <QSettings>
+#include <QMouseEvent>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
 
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <EMStudio/AnimViewportRequestBus.h>
 #include <Integration/Rendering/RenderFlag.h>
+
 
 namespace EMStudio
 {
@@ -42,6 +44,8 @@ namespace EMStudio
         void SetupCameras();
         void SetupCameraController();
 
+        void OnContextMenuEvent(QMouseEvent* event);
+
         // AnimViewportRequestBus::Handler overrides
         void UpdateCameraViewMode(RenderOptions::CameraViewMode mode);
         void UpdateCameraFollowUp(bool follow);
@@ -49,6 +53,9 @@ namespace EMStudio
 
         // ViewportPluginRequestBus::Handler overrides
         AZ::s32 GetViewportId() const;
+
+        // MouseEvent
+        void mouseReleaseEvent(QMouseEvent* event) override;
 
         static constexpr float CameraDistance = 2.0f;
 

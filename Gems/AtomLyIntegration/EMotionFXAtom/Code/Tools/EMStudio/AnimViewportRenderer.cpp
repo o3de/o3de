@@ -264,13 +264,19 @@ namespace EMStudio
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
 
         // Reset ground entity
-        AZ::Transform groundTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, groundTransform);
+        AZ::Transform identityTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, identityTransform);
 
         auto modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
             "objects/groudplane/groundplane_512x512m.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
         AZ::Render::MeshComponentRequestBus::Event(
             m_groundEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, modelAsset);
+
+        // Reset actor position
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetLocalTM, identityTransform);
+        }
     }
 
     void AnimViewportRenderer::ReinitActorEntities()
