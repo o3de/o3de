@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ShaderSemantic.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/Utils/TypeHash.h>
 
@@ -158,10 +158,10 @@ namespace AZ
             const PrimitiveTopology GetTopology() const;
 
             /// Returns the list of stream channels.
-            AZStd::array_view<StreamChannelDescriptor> GetStreamChannels() const;
+            AZStd::span<const StreamChannelDescriptor> GetStreamChannels() const;
 
             /// Returns the list of stream buffers.
-            AZStd::array_view<StreamBufferDescriptor> GetStreamBuffers() const;
+            AZStd::span<const StreamBufferDescriptor> GetStreamBuffers() const;
 
             /// Returns the hash computed in Finalize(), which must be called first.
             HashValue64 GetHash() const;

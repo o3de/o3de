@@ -120,17 +120,18 @@ namespace AzManipulatorTestFramework
     void ImmediateModeActionDispatcher::MousePositionImpl(const AzFramework::ScreenPoint& position)
     {
         const auto cameraState = m_manipulatorViewportInteraction.GetViewportInteraction().GetCameraState();
-        GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick = BuildMousePick(position, cameraState);
+        GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick =
+            AzToolsFramework::ViewportInteraction::BuildMousePick(cameraState, position);
         GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Move;
         m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
     }
 
-    void ImmediateModeActionDispatcher::KeyboardModifierDownImpl(const KeyboardModifier& keyModifier)
+    void ImmediateModeActionDispatcher::KeyboardModifierDownImpl(const KeyboardModifier keyModifier)
     {
         ToggleOn(GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers.m_keyModifiers, keyModifier);
     }
 
-    void ImmediateModeActionDispatcher::KeyboardModifierUpImpl(const KeyboardModifier& keyModifier)
+    void ImmediateModeActionDispatcher::KeyboardModifierUpImpl(const KeyboardModifier keyModifier)
     {
         ToggleOff(GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers.m_keyModifiers, keyModifier);
     }

@@ -8,9 +8,7 @@
 
 #include <LinkWidget.h>
 #include <ExternalLinkDialog.h>
-#include <ProjectManagerSettings.h>
-
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <SettingsInterface.h>
 
 #include <QDesktopServices>
 #include <QEvent>
@@ -33,13 +31,7 @@ namespace O3DE::ProjectManager
         {
             // Check if user request not to be shown external link warning dialog
             bool skipDialog = false;
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-
-            if (settingsRegistry)
-            {
-                QString settingsKey = GetExternalLinkWarningKey();
-                settingsRegistry->Get(skipDialog, settingsKey.toStdString().c_str());
-            }
+            SettingsInterface::Get()->Get(skipDialog, ISettings::ExternalLinkWarningKey);
 
             if (!skipDialog)
             {

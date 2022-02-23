@@ -408,7 +408,7 @@ namespace O3DE::ProjectManager
             }
 
             // check if engine path is registered
-            auto allEngines = m_manifest.attr("get_engines")();
+            auto allEngines = m_manifest.attr("get_manifest_engines")();
             if (pybind11::isinstance<pybind11::list>(allEngines))
             {
                 const AZ::IO::FixedMaxPath enginePathFixed(Py_To_String(enginePath));
@@ -459,6 +459,9 @@ namespace O3DE::ProjectManager
             if (!pybind11::isinstance<pybind11::none>(enginePathResult))
             {
                 engineInfo = EngineInfoFromPath(enginePathResult);
+
+                // it is possible an engine is registered in o3de_manifest.json but the engine.json is
+                // missing or corrupt in which case we do not consider it a registered engine
             }
         });
 
@@ -729,9 +732,9 @@ namespace O3DE::ProjectManager
 
             auto createProjectResult = m_engineTemplate.attr("create_project")(
                 projectPath,
-                QString_To_Py_String(projectInfo.m_projectName),
-                QString_To_Py_Path(projectTemplatePath)
-                );
+                QString_To_Py_String(projectInfo.m_projectName), // project_path
+                QString_To_Py_Path(projectTemplatePath)          // template_path
+            );
             if (createProjectResult.cast<int>() == 0)
             {
                 createdProjectInfo = ProjectInfoFromPath(projectPath);
@@ -864,6 +867,7 @@ namespace O3DE::ProjectManager
             {
                 projectInfo.m_projectName = Py_To_String(projectData["project_name"]);
                 projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
+                projectInfo.m_id = Py_To_String_Optional(projectData, "project_id", projectInfo.m_id);
                 projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
                 projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
                 projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
@@ -890,7 +894,7 @@ namespace O3DE::ProjectManager
 
         bool result = ExecuteWithLock([&] {
             // external projects
-            for (auto path : m_manifest.attr("get_projects")())
+            for (auto path : m_manifest.attr("get_manifest_projects")())
             {
                 projects.push_back(ProjectInfoFromPath(path));
             }
@@ -968,6 +972,7 @@ namespace O3DE::ProjectManager
                     QString_To_Py_Path(projectInfo.m_path),
                     pybind11::none(), // proj_name not used
                     QString_To_Py_String(projectInfo.m_projectName),
+                    QString_To_Py_String(projectInfo.m_id),
                     QString_To_Py_String(projectInfo.m_origin),
                     QString_To_Py_String(projectInfo.m_displayName),
                     QString_To_Py_String(projectInfo.m_summary),
@@ -1219,7 +1224,7 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                for (auto repoUri : m_manifest.attr("get_repos")())
+                for (auto repoUri : m_manifest.attr("get_manifest_repos")())
                 {
                     gemRepos.push_back(GetGemRepoInfo(repoUri));
                 }
@@ -1351,11 +1356,18 @@ namespace O3DE::ProjectManager
 
     IPythonBindings::ErrorPair PythonBindings::GetErrorPair()
     {
-        AZStd::string detailedString = m_pythonErrorStrings.size() == 1
-            ? ""
-            : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
+        if (const size_t errorSize = m_pythonErrorStrings.size())
+        {
+            AZStd::string detailedString =
+                errorSize == 1 ? "" : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
 
-        return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+            return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+        }
+        // If no error was found
+        else
+        {
+            return IPythonBindings::ErrorPair(AZStd::string("Unknown Python Bindings Error"), AZStd::string(""));
+        }
     }
 
     void PythonBindings::AddErrorString(AZStd::string errorString)

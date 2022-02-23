@@ -17,8 +17,6 @@
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 
-#include <MathConversion.h>
-
 namespace SurfaceData
 {
     void SurfaceDataMeshConfig::Reflect(AZ::ReflectContext* context)
@@ -97,6 +95,7 @@ namespace SurfaceData
         m_refresh = false;
 
         // Update the cached mesh data and bounds, then register the surface data provider
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_tags, 1.0f);
         UpdateMeshData();
     }
 
@@ -117,7 +116,7 @@ namespace SurfaceData
 
         // Clear the cached mesh data
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
             m_meshAssetData = {};
             m_meshBounds = AZ::Aabb::CreateNull();
             m_meshWorldTM = AZ::Transform::CreateIdentity();
@@ -145,48 +144,45 @@ namespace SurfaceData
         return false;
     }
 
-    bool SurfaceDataMeshComponent::DoRayTrace(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
+    void SurfaceDataMeshComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
+    }
 
-        // test AABB as first pass to claim the point
-        const AZ::Vector3 testPosition = AZ::Vector3(
-            inPosition.GetX(),
-            inPosition.GetY(),
-            (m_meshBounds.GetMax().GetZ() + m_meshBounds.GetMin().GetZ()) * 0.5f);
+    void SurfaceDataMeshComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
+    {
+        AZ::Vector3 hitPosition;
+        AZ::Vector3 hitNormal;
 
-        if (!m_meshBounds.Contains(testPosition))
-        {
-            return false;
-        }
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         AZ::RPI::ModelAsset* mesh = m_meshAssetData.GetAs<AZ::RPI::ModelAsset>();
         if (!mesh)
         {
-            return false;
+            return;
         }
 
-        const AZ::Vector3 rayStart = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_meshBounds.GetMax().GetZ() + s_rayAABBHeightPadding);
-        const AZ::Vector3 rayEnd = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_meshBounds.GetMin().GetZ() - s_rayAABBHeightPadding);
-        return GetMeshRayIntersection(
-            *mesh, m_meshWorldTM, m_meshWorldTMInverse, m_meshNonUniformScale, rayStart, rayEnd, outPosition, outNormal);
-    }
-
-
-    void SurfaceDataMeshComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
-    {
-        AZ::Vector3 hitPosition;
-        AZ::Vector3 hitNormal;
-        if (DoRayTrace(inPosition, hitPosition, hitNormal))
+        for (auto& inPosition : inPositions)
         {
-            SurfacePoint point;
-            point.m_entityId = GetEntityId();
-            point.m_position = hitPosition;
-            point.m_normal = hitNormal;
-            AddMaxValueForMasks(point.m_masks, m_configuration.m_tags, 1.0f);
-            surfacePointList.push_back(point);
+            // test AABB as first pass to claim the point
+            if (SurfaceData::AabbContains2D(m_meshBounds, inPosition))
+            {
+                const AZ::Vector3 rayStart =
+                    AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_meshBounds.GetMax().GetZ() + s_rayAABBHeightPadding);
+                const AZ::Vector3 rayEnd =
+                    AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_meshBounds.GetMin().GetZ() - s_rayAABBHeightPadding);
+                bool rayHit = GetMeshRayIntersection(
+                    *mesh, m_meshWorldTM, m_meshWorldTMInverse, m_meshNonUniformScale, rayStart, rayEnd, hitPosition, hitNormal);
+
+                if (rayHit)
+                {
+                    surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, hitPosition, hitNormal, m_newPointWeights);
+                }
+            }
         }
     }
+
 
     AZ::Aabb SurfaceDataMeshComponent::GetSurfaceAabb() const
     {
@@ -237,7 +233,7 @@ namespace SurfaceData
         bool meshValidAfterUpdate = false;
 
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
             meshValidBeforeUpdate = (m_meshAssetData.GetAs<AZ::RPI::ModelAsset>() != nullptr) && (m_meshBounds.IsValid());
 
@@ -261,6 +257,7 @@ namespace SurfaceData
         registryEntry.m_entityId = GetEntityId();
         registryEntry.m_bounds = GetSurfaceAabb();
         registryEntry.m_tags = GetSurfaceTags();
+        registryEntry.m_maxPointsCreatedPerInput = 1;
 
         if (!meshValidBeforeUpdate && !meshValidAfterUpdate)
         {

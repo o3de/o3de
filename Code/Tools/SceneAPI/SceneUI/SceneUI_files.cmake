@@ -13,10 +13,7 @@ set(FILES
     ManifestMetaInfoHandler.cpp
     GraphMetaInfoHandler.h
     GraphMetaInfoHandler.cpp
-    SceneUIStandaloneAllocator.h
-    SceneUIStandaloneAllocator.cpp
     CommonWidgets/OverlayWidget.h
-    CommonWidgets/OverlayWidgetLayer.h
     CommonWidgets/JobWatcher.h
     CommonWidgets/JobWatcher.cpp
     CommonWidgets/ProcessingOverlayWidget.h

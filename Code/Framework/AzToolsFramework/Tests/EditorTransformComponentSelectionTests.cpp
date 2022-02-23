@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Math/IntersectSegment.h>
-#include <AzCore/Math/ToString.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -40,16 +39,12 @@
 
 #include <Tests/BoundsTestComponent.h>
 
-namespace AZ
-{
-    std::ostream& operator<<(std::ostream& os, const EntityId entityId)
-    {
-        return os << entityId.ToString().c_str();
-    }
-} // namespace AZ
-
 namespace UnitTest
 {
+    using AzToolsFramework::ViewportInteraction::BuildMouseButtons;
+    using AzToolsFramework::ViewportInteraction::BuildMouseInteraction;
+    using AzToolsFramework::ViewportInteraction::BuildMousePick;
+
     AzToolsFramework::EntityIdList SelectedEntities()
     {
         AzToolsFramework::EntityIdList selectedEntitiesBefore;
@@ -137,6 +132,18 @@ namespace UnitTest
         AzToolsFramework::EntityIdList m_entityIds;
     };
 
+    AZ::EntityId CreateEntityWithBounds(const char* entityName)
+    {
+        AZ::Entity* entity = nullptr;
+        AZ::EntityId entityId = CreateDefaultEditorEntity(entityName, &entity);
+
+        entity->Deactivate();
+        entity->CreateComponent<BoundsTestComponent>();
+        entity->Activate();
+
+        return entityId;
+    }
+
     class EditorTransformComponentSelectionViewportPickingFixture : public ToolsApplicationFixture
     {
     public:
@@ -146,21 +153,9 @@ namespace UnitTest
             // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
             app->RegisterComponentDescriptor(BoundsTestComponent::CreateDescriptor());
 
-            auto createEntityWithBoundsFn = [](const char* entityName)
-            {
-                AZ::Entity* entity = nullptr;
-                AZ::EntityId entityId = CreateDefaultEditorEntity(entityName, &entity);
-
-                entity->Deactivate();
-                entity->CreateComponent<BoundsTestComponent>();
-                entity->Activate();
-
-                return entityId;
-            };
-
-            m_entityId1 = createEntityWithBoundsFn("Entity1");
-            m_entityId2 = createEntityWithBoundsFn("Entity2");
-            m_entityId3 = createEntityWithBoundsFn("Entity3");
+            m_entityId1 = CreateEntityWithBounds("Entity1");
+            m_entityId2 = CreateEntityWithBounds("Entity2");
+            m_entityId3 = CreateEntityWithBounds("Entity3");
         }
 
         void PositionEntities()
@@ -269,7 +264,7 @@ namespace UnitTest
         using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
         EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
-            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+            [](const AzToolsFramework::EditorVisibleEntityDataCacheInterface* entityDataCache,
                [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
@@ -959,6 +954,9 @@ namespace UnitTest
 
         const auto entity2ScreenPosition = AzFramework::WorldToScreen(AzToolsFramework::GetWorldTranslation(m_entityId2), m_cameraState);
 
+        // ensure icons are not enabled to avoid them interfering with bound detection
+        m_viewportManipulatorInteraction->GetViewportInteraction().SetIconsVisible(false);
+
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(true)
             ->CameraState(m_cameraState)
@@ -972,6 +970,137 @@ namespace UnitTest
         const AzToolsFramework::EntityIdList selectedEntities = SelectedEntities();
         const AzToolsFramework::EntityIdList expectedSelectedEntities = { m_entityId2 };
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
+    }
+
+    // entity can be selected using icon
+    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, CursorOverEntityIconReturnsThatEntityId)
+    {
+        const AZ::EntityId boundlessEntityId = CreateDefaultEditorEntity("BoundlessEntity");
+
+        // camera (go to position format) -5.00, -8.00, 5.00, 0.00, 0.00
+        AzFramework::SetCameraTransform(m_cameraState, AZ::Transform::CreateTranslation(AZ::Vector3(-5.0f, -8.0f, 5.0f)));
+        // position entity in the world
+        AZ::TransformBus::Event(boundlessEntityId, &AZ::TransformBus::Events::SetWorldTranslation, AZ::Vector3(-5.0f, -1.0f, 5.0f));
+
+        const float distanceFromCamera = m_cameraState.m_position.GetDistance(AzToolsFramework::GetWorldTranslation(boundlessEntityId));
+
+        const auto quaterIconSize = AzToolsFramework::GetIconSize(distanceFromCamera) * 0.25f;
+        const auto entity1ScreenPosition =
+            AzFramework::WorldToScreen(AzToolsFramework::GetWorldTranslation(boundlessEntityId), m_cameraState) +
+            AzFramework::ScreenVectorFromVector2(AZ::Vector2(quaterIconSize));
+
+        AzToolsFramework::EditorVisibleEntityDataCache editorVisibleEntityDataCache;
+        AzToolsFramework::EditorHelpers editorHelpers(&editorVisibleEntityDataCache);
+
+        const auto viewportId = m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId();
+        const auto mousePick = BuildMousePick(m_cameraState, entity1ScreenPosition);
+        const auto mouseInteraction = BuildMouseInteraction(
+            mousePick, BuildMouseButtons(AzToolsFramework::ViewportInteraction::MouseButton::None),
+            AzToolsFramework::ViewportInteraction::InteractionId(AZ::EntityId(), viewportId),
+            AzToolsFramework::ViewportInteraction::KeyboardModifiers());
+        const auto mouseInteractionEvent = AzToolsFramework::ViewportInteraction::BuildMouseInteractionEvent(
+            mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Move, false);
+
+        // mimic mouse move
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(entity1ScreenPosition);
+
+        // simulate hovering over an icon in the viewport
+        editorVisibleEntityDataCache.CalculateVisibleEntityDatas(AzFramework::ViewportInfo{ viewportId });
+        auto entityIdUnderCursor = editorHelpers.FindEntityIdUnderCursor(m_cameraState, mouseInteractionEvent);
+
+        using ::testing::Eq;
+        EXPECT_THAT(entityIdUnderCursor.EntityIdUnderCursor(), Eq(boundlessEntityId));
+    }
+
+    // overlapping icons, nearest is detected
+    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, CursorOverOverlappingEntityIconsReturnsClosestEntityId)
+    {
+        const AZ::EntityId boundlessEntityId1 = CreateDefaultEditorEntity("BoundlessEntity1");
+        const AZ::EntityId boundlessEntityId2 = CreateDefaultEditorEntity("BoundlessEntity2");
+
+        // camera (go to position format) -5.00, -8.00, 5.00, 0.00, 0.00
+        AzFramework::SetCameraTransform(m_cameraState, AZ::Transform::CreateTranslation(AZ::Vector3(-5.0f, -8.0f, 5.0f)));
+        // position entities in the world
+        AZ::TransformBus::Event(boundlessEntityId1, &AZ::TransformBus::Events::SetWorldTranslation, AZ::Vector3(-5.0f, -1.0f, 5.0f));
+        // note: boundlessEntityId2 is closer to the camera
+        AZ::TransformBus::Event(boundlessEntityId2, &AZ::TransformBus::Events::SetWorldTranslation, AZ::Vector3(-5.0f, -3.0f, 5.0f));
+
+        const float distanceFromCamera = m_cameraState.m_position.GetDistance(AzToolsFramework::GetWorldTranslation(boundlessEntityId2));
+
+        const auto quaterIconSize = AzToolsFramework::GetIconSize(distanceFromCamera) * 0.25f;
+        const auto entity2ScreenPosition =
+            AzFramework::WorldToScreen(AzToolsFramework::GetWorldTranslation(boundlessEntityId2), m_cameraState) +
+            AzFramework::ScreenVectorFromVector2(AZ::Vector2(quaterIconSize));
+
+        AzToolsFramework::EditorVisibleEntityDataCache editorVisibleEntityDataCache;
+        AzToolsFramework::EditorHelpers editorHelpers(&editorVisibleEntityDataCache);
+
+        const auto viewportId = m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId();
+        const auto mousePick = BuildMousePick(m_cameraState, entity2ScreenPosition);
+        const auto mouseInteraction = BuildMouseInteraction(
+            mousePick, BuildMouseButtons(AzToolsFramework::ViewportInteraction::MouseButton::None),
+            AzToolsFramework::ViewportInteraction::InteractionId(AZ::EntityId(), viewportId),
+            AzToolsFramework::ViewportInteraction::KeyboardModifiers());
+        const auto mouseInteractionEvent = AzToolsFramework::ViewportInteraction::BuildMouseInteractionEvent(
+            mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Move, false);
+
+        // mimic mouse move
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(entity2ScreenPosition);
+
+        // simulate hovering over an icon in the viewport
+        editorVisibleEntityDataCache.CalculateVisibleEntityDatas(AzFramework::ViewportInfo{ viewportId });
+        auto entityIdUnderCursor = editorHelpers.FindEntityIdUnderCursor(m_cameraState, mouseInteractionEvent);
+
+        using ::testing::Eq;
+        EXPECT_THAT(entityIdUnderCursor.EntityIdUnderCursor(), Eq(boundlessEntityId2));
+    }
+
+    // if an entity with an icon is behind an entity with a bound, the entity with the icon will be selected
+    // even if the bound is closer (this is because icons are treated as if they are on the near clip plane)
+    TEST_F(
+        EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, FurtherAwayEntityWithIconReturnedWhenBoundEntityIsInFront)
+    {
+        const AZ::EntityId boundEntityId = CreateEntityWithBounds("BoundEntity");
+        const AZ::EntityId boundlessEntityId = CreateDefaultEditorEntity("BoundlessEntity");
+
+        auto* boundTestComponent = AzToolsFramework::GetEntityById(boundEntityId)->FindComponent<BoundsTestComponent>();
+        boundTestComponent->m_localBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-1.5f, -0.5f, -0.5f), AZ::Vector3(1.5f, 0.5, 0.5f));
+
+        // camera (go to position format) -5.00, -8.00, 5.00, 0.00, 0.00
+        AzFramework::SetCameraTransform(m_cameraState, AZ::Transform::CreateTranslation(AZ::Vector3(-5.0f, -8.0f, 5.0f)));
+        // position entities in the world
+        AZ::TransformBus::Event(boundEntityId, &AZ::TransformBus::Events::SetWorldTranslation, AZ::Vector3(-4.0f, -3.0f, 5.0f));
+        // note: boundlessEntityId2 is closer to the camera
+        AZ::TransformBus::Event(boundlessEntityId, &AZ::TransformBus::Events::SetWorldTranslation, AZ::Vector3(-5.0f, -1.0f, 5.0f));
+
+        const float distanceFromCamera = m_cameraState.m_position.GetDistance(AzToolsFramework::GetWorldTranslation(boundlessEntityId));
+
+        const auto quaterIconSize = AzToolsFramework::GetIconSize(distanceFromCamera) * 0.25f;
+        const auto entity2ScreenPosition =
+            AzFramework::WorldToScreen(AzToolsFramework::GetWorldTranslation(boundlessEntityId), m_cameraState) +
+            AzFramework::ScreenVectorFromVector2(AZ::Vector2(quaterIconSize));
+
+        AzToolsFramework::EditorVisibleEntityDataCache editorVisibleEntityDataCache;
+        AzToolsFramework::EditorHelpers editorHelpers(&editorVisibleEntityDataCache);
+
+        const auto viewportId = m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId();
+        const auto mousePick = BuildMousePick(m_cameraState, entity2ScreenPosition);
+        const auto mouseInteraction = BuildMouseInteraction(
+            mousePick, BuildMouseButtons(AzToolsFramework::ViewportInteraction::MouseButton::None),
+            AzToolsFramework::ViewportInteraction::InteractionId(AZ::EntityId(), viewportId),
+            AzToolsFramework::ViewportInteraction::KeyboardModifiers());
+        const auto mouseInteractionEvent = AzToolsFramework::ViewportInteraction::BuildMouseInteractionEvent(
+            mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Move, false);
+
+        // mimic mouse move
+        m_actionDispatcher->CameraState(m_cameraState)->MousePosition(entity2ScreenPosition);
+
+        // simulate hovering over an icon in the viewport
+        editorVisibleEntityDataCache.CalculateVisibleEntityDatas(AzFramework::ViewportInfo{ viewportId });
+        auto entityIdUnderCursor = editorHelpers.FindEntityIdUnderCursor(m_cameraState, mouseInteractionEvent);
+
+        using ::testing::Eq;
+        EXPECT_THAT(entityIdUnderCursor.EntityIdUnderCursor(), Eq(boundlessEntityId));
     }
 
     class EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam
@@ -1709,8 +1838,9 @@ namespace UnitTest
         using MouseInteractionResult = AzToolsFramework::ViewportInteraction::MouseInteractionResult;
 
     public:
-        WheelEventWidget(QWidget* parent = nullptr)
+        WheelEventWidget(const AzFramework::ViewportId viewportId, QWidget* parent = nullptr)
             : QWidget(parent)
+            , m_viewportId(viewportId)
         {
         }
 
@@ -1719,7 +1849,7 @@ namespace UnitTest
             namespace vi = AzToolsFramework::ViewportInteraction;
             vi::MouseInteraction mouseInteraction;
             mouseInteraction.m_interactionId.m_cameraId = AZ::EntityId();
-            mouseInteraction.m_interactionId.m_viewportId = 0;
+            mouseInteraction.m_interactionId.m_viewportId = m_viewportId;
             mouseInteraction.m_mouseButtons = vi::BuildMouseButtons(ev->buttons());
             mouseInteraction.m_mousePick = vi::MousePick();
             mouseInteraction.m_keyboardModifiers = vi::BuildKeyboardModifiers(ev->modifiers());
@@ -1731,15 +1861,15 @@ namespace UnitTest
         }
 
         MouseInteractionResult m_mouseInteractionResult;
+        AzFramework::ViewportId m_viewportId;
     };
 
-    TEST_F(EditorTransformComponentSelectionFixture, MouseScrollWheelSwitchesTransformMode)
+    TEST_F(EditorTransformComponentSelectionManipulatorTestFixture, MouseScrollWheelSwitchesTransformMode)
     {
-        using ::testing::Eq;
         namespace vi = AzToolsFramework::ViewportInteraction;
         using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
 
-        const auto transformMode = []()
+        const auto transformMode = []
         {
             EditorTransformComponentSelectionRequestBus::Events::Mode transformMode;
             EditorTransformComponentSelectionRequestBus::EventResult(
@@ -1752,7 +1882,7 @@ namespace UnitTest
         // preconditions
         EXPECT_THAT(transformMode(), EditorTransformComponentSelectionRequestBus::Events::Mode::Translation);
 
-        auto wheelEventWidget = WheelEventWidget();
+        auto wheelEventWidget = WheelEventWidget(m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId());
         // attach the global event filter to the placeholder widget
         AzQtComponents::GlobalEventFilter globalEventFilter(QApplication::instance());
         wheelEventWidget.installEventFilter(&globalEventFilter);
@@ -1768,6 +1898,7 @@ namespace UnitTest
 
         // then
         // transform mode has changed and mouse event was handled
+        using ::testing::Eq;
         EXPECT_THAT(transformMode(), Eq(EditorTransformComponentSelectionRequestBus::Events::Mode::Rotation));
         EXPECT_THAT(wheelEventWidget.m_mouseInteractionResult, Eq(vi::MouseInteractionResult::Viewport));
     }
@@ -3029,7 +3160,7 @@ namespace UnitTest
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, BoxCanBePlacedOnMeshSurfaceUsingSurfaceManipulator)
     {
         // camera (go to position format) - 0.00, 20.00, 12.00, -35.00, -180.00
-        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
@@ -3069,7 +3200,7 @@ namespace UnitTest
         SurfaceManipulatorFollowsMouseAtDefaultEditorDistanceFromCameraWhenNoMeshIntersection)
     {
         // camera (go to position format) - 0.00, 25.00, 12.00, 0.00, -180.00
-        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
@@ -3100,7 +3231,7 @@ namespace UnitTest
         const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
 
         const auto viewportRay = AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_cameraState, initialPositionScreen);
-        const auto distanceAway = (finalEntityTransform.GetTranslation() - viewportRay.origin).GetLength();
+        const auto distanceAway = (finalEntityTransform.GetTranslation() - viewportRay.m_origin).GetLength();
 
         // ensure final world positions match
         EXPECT_THAT(finalEntityTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
@@ -3113,7 +3244,7 @@ namespace UnitTest
         MiddleMouseButtonWithShiftAndCtrlHeldOnMeshSurfaceWillSnapSelectedEntityToIntersectionPoint)
     {
         // camera (go to position format) - 21.00, 8.00, 11.00, -22.00, 150.00
-        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
@@ -3144,5 +3275,46 @@ namespace UnitTest
         // read back the current entity transform after placement
         const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
         EXPECT_THAT(finalEntityTransform.GetTranslation(), IsCloseTolerance(expectedWorldPosition, 0.01f));
+    }
+
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, SurfaceManipulatorSelfIntersectsMeshWhenCtrlIsHeld)
+    {
+        // camera (go to position format) - 47.00, -52.00, 20.00, 0.00, -60.00
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
+        // position camera
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(-60.0f)), AZ::Vector3(47.0f, -52.0f, 20.0f)));
+        // position box
+        AzToolsFramework::SetWorldTransform(m_entityIdBox, AZ::Transform::CreateTranslation(AZ::Vector3(50.0f, -50.0f, 20.0f)));
+
+        // the initial starting position of the entity
+        const auto initialTransformWorld = AzToolsFramework::GetWorldTransform(m_entityIdBox);
+        // where the surface manipulator should end up (surface of the box)
+        const auto finalTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(49.5f, -49.6337357f, 19.5793953f));
+
+        // calculate the position in screen space of the initial position of the entity
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+        // calculate the position in screen space of the final position of the entity
+        const auto finalPositionScreen = AzFramework::WorldToScreen(finalTransformWorld.GetTranslation(), m_cameraState);
+
+        // select the entity (this will cause the manipulators to appear in EditorTransformComponentSelection)
+        AzToolsFramework::SelectEntity(m_entityIdBox);
+
+        // press and drag the mouse (starting where the surface manipulator is)
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(initialPositionScreen)
+            ->KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier::Control)
+            ->MouseLButtonDown()
+            ->MousePosition(finalPositionScreen)
+            ->MouseLButtonUp();
+
+        // read back the position of the entity now
+        const AZ::Transform finalManipulatorTransform = GetManipulatorTransform().value_or(AZ::Transform::CreateIdentity());
+
+        // ensure final world positions match
+        EXPECT_THAT(finalManipulatorTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
     }
 } // namespace UnitTest

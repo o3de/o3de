@@ -49,9 +49,9 @@ namespace ScriptCanvas
             , config.asset.GetId().ToString<AZStd::string>().data());
 #endif
 
-        if (!runtimeAsset->GetData().m_areStaticsInitialized)
+        if (!runtimeAsset->m_runtimeData.m_areStaticsInitialized)
         {
-            Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
+            Execution::InitializeInterpretedStatics(runtimeAsset->m_runtimeData);
         }
     }
 
@@ -70,8 +70,8 @@ namespace ScriptCanvas
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const
     {
         auto asset = ExecutionStateInterpretedCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->GetData().m_debugMap.m_ins.size()
-            ? &(asset.Get()->GetData().m_debugMap.m_ins[index])
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_ins.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_ins[index])
             : nullptr;
     }
 
@@ -85,8 +85,8 @@ namespace ScriptCanvas
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolOut(size_t index, const AZ::Data::AssetId& id) const
     {
         auto asset = ExecutionStateInterpretedCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->GetData().m_debugMap.m_outs.size()
-            ? &(asset.Get()->GetData().m_debugMap.m_outs[index])
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_outs.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_outs[index])
             : nullptr;
     }
 
@@ -100,8 +100,8 @@ namespace ScriptCanvas
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolReturn(size_t index, const AZ::Data::AssetId& id) const
     {
         auto asset = ExecutionStateInterpretedCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->GetData().m_debugMap.m_returns.size()
-            ? &(asset.Get()->GetData().m_debugMap.m_returns[index])
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_returns.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_returns[index])
             : nullptr;
     }
 
@@ -115,8 +115,8 @@ namespace ScriptCanvas
     const Grammar::DebugDataSource* ExecutionStateInterpreted::GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const
     {
         auto asset = ExecutionStateInterpretedCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->GetData().m_debugMap.m_variables.size()
-            ? &(asset.Get()->GetData().m_debugMap.m_variables[index])
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_variables.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_variables[index])
             : nullptr;
     }
 

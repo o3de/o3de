@@ -30,6 +30,10 @@ namespace AZ
 {
     namespace RPI
     {
+        //! This is a variant data type that represents the value of a material property.
+        //! For convenience, it supports all the types necessary for *both* the runtime data (MaterialAsset) as well as .material file data (MaterialSourceData).
+        //! For example, Instance<Image> is exclusive to the runtime data and AZStd::string is primarily for image file paths in .material files. Most other
+        //! data types are relevant in both contexts.
         class MaterialPropertyValue final
         {
         public:
@@ -63,6 +67,7 @@ namespace AZ
             MaterialPropertyValue(const Data::Asset<ImageAsset>& value) : m_value(value) {}
             MaterialPropertyValue(const Data::Instance<Image>& value) : m_value(value) {}
             MaterialPropertyValue(const AZStd::string& value) : m_value(value) {}
+            MaterialPropertyValue(const Name& value) : m_value(AZStd::string{value.GetStringView()}) {}
 
             //! Copy constructor
             MaterialPropertyValue(const MaterialPropertyValue& value) : m_value(value.m_value) {}
@@ -71,9 +76,10 @@ namespace AZ
             //! The type will be restricted to those defined in the variant at compile time.
             //! If out-of-definition type is used, the compiler will report error.
             template<typename T>
-            void operator=(const T& value)
+            MaterialPropertyValue& operator=(const T& value)
             {
                 m_value = value;
+                return *this;
             }
 
             //! Get actual value from the variant.

@@ -24,6 +24,8 @@ namespace AZ
         static const uint32_t RayTracingSceneSrgBindingSlot = 1;
         static const uint32_t RayTracingMaterialSrgBindingSlot = 2;
 
+        static const uint32_t RayTracingTlasInstanceElementSize = 64;
+
         enum class RayTracingSubMeshBufferFlags : uint32_t
         {
             None = 0,
@@ -127,9 +129,6 @@ namespace AZ
 
                 // mesh non-uniform scale
                 AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
-
-                // flag indicating if the Blas objects in the sub-meshes are built
-                bool m_blasBuilt = false;
             };
 
             using MeshMap = AZStd::map<uint32_t, Mesh>;
@@ -183,6 +182,23 @@ namespace AZ
 
             //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the RayTracingAccelerationStructurePass
             void UpdateRayTracingSrgs();
+
+            struct SubMeshBlasInstance
+            {
+                RHI::Ptr<RHI::RayTracingBlas> m_blas;
+            };
+
+            struct MeshBlasInstance
+            {
+                uint32_t m_count = 0;
+                AZStd::vector<SubMeshBlasInstance> m_subMeshes;
+
+                // flag indicating if the Blas objects in the sub-mesh list are built
+                bool m_blasBuilt = false;
+            };
+
+            using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
+            BlasInstanceMap& GetBlasInstances() { return m_blasInstanceMap; }
 
         private:
 
@@ -266,18 +282,6 @@ namespace AZ
             bool m_materialInfoBufferNeedsUpdate = false;
 
             // side list for looking up existing BLAS objects so they can be re-used when the same mesh is added multiple times
-            struct SubMeshBlasInstance
-            {
-                RHI::Ptr<RHI::RayTracingBlas> m_blas;
-            };
-
-            struct MeshBlasInstance
-            {
-                uint32_t m_count = 0;
-                AZStd::vector<SubMeshBlasInstance> m_subMeshes;
-            };
-
-            using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
             BlasInstanceMap m_blasInstanceMap;
 
             // Cache view pointers so we dont need to update them if none changed from frame to frame.

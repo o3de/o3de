@@ -83,18 +83,6 @@ namespace UnitTest
             widget->setMaximum(widget->maximum() - 1);
         }
 
-        static std::string GetToolTipStringAtLimits()
-        {
-            if constexpr (std::is_signed<ValueType>::value)
-            {
-                return "[-INF, INF]";
-            }
-            else
-            {
-                return "[0, INF]";
-            }
-        }
-
         void PropertyCtrlHandlersCreated()
         {
             using ::testing::Ne;
@@ -125,11 +113,13 @@ namespace UnitTest
             auto& widget = m_widget;
             auto& handler = m_handler;
             QString tooltip;
-            std::string expected;
 
             // Retrieve the tooltip string for this widget
             auto success = handler->ModifyTooltip(widget, tooltip);
-            expected = GetToolTipStringAtLimits();
+
+            const QString minString = QLocale().toString(widget->minimum());
+            const QString maxString = QLocale().toString(widget->maximum());
+            const AZStd::string expected = AZStd::string::format("[%s, %s]", minString.toStdString().c_str(), maxString.toStdString().c_str());
 
             // Expect the operation to be successful and a valid limit tooltip string generated
             EXPECT_TRUE(success);
@@ -142,18 +132,21 @@ namespace UnitTest
             auto& widget = m_widget;
             auto& handler = m_handler;
             QString tooltip;
-            std::stringstream expected;
 
             // That is not at the extremeties of the type range limit
             SetWidgetRangeToNonExtremeties(widget);
 
             // Retrieve the tooltip string for this widget
             auto success = handler->ModifyTooltip(widget, tooltip);
-            expected << "[" << widget->minimum() << ", " << widget->maximum() << "]";
+
+            const QString minString = QLocale().toString(widget->minimum());
+            const QString maxString = QLocale().toString(widget->maximum());
+
+            const AZStd::string expected = AZStd::string::format("[%s, %s]", minString.toStdString().c_str(), maxString.toStdString().c_str());
 
             // Expect the operation to be successful and a valid less than limit tooltip string generated
             EXPECT_TRUE(success);
-            EXPECT_STREQ(tooltip.toStdString().c_str(), expected.str().c_str());
+            EXPECT_STREQ(tooltip.toStdString().c_str(), expected.c_str());
         }
 
         void EmitWidgetValueChanged()

@@ -840,8 +840,6 @@ namespace AzToolsFramework
                     richLabel->setTextFormat(Qt::RichText);
                 }
 
-                richLabel->setText(data);
-
                 richLabel->setGeometry(options.rect);
                 richLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
                 richLabel->setPalette(options.palette);

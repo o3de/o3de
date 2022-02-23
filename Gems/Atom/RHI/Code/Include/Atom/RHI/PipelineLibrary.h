@@ -19,7 +19,15 @@ namespace AZ
         /// A handle typed to the pipeline library. Used by the PipelineStateCache to abstract access.
         using PipelineLibraryHandle = Handle<uint32_t, class PipelineLibrary>;
 
-        
+        struct PipelineLibraryDescriptor
+        {
+            //Serialized data with which to init the PipelineLibrary
+            ConstPtr<PipelineLibraryData> m_serializedData = nullptr;
+            //The file path name associated with serialized data. It can be passed
+            //to the RHI backend to do load/save operation via the drivers.
+            AZStd::string m_filePath;
+        };
+            
         //! PipelineState initialization is an expensive operation on certain platforms. If multiple pipeline states
         //! are created with little variation between them, the contents are still duplicated. This class is an allocation
         //! context for pipeline states, provided at PipelineState::Init, which will perform de-duplication of
@@ -50,21 +58,24 @@ namespace AZ
             //! serialized and the contents saved to disk. Subsequent loads will experience much faster pipeline
             //! state creation times (on supported platforms). On success, the library is transitioned to the
             //! initialized state. On failure, the library remains uninitialized.
-            //! @param serializedData The initial serialized data used to initialize the library. It can be null.
-            ResultCode Init(Device& device, const PipelineLibraryData* serializedData);
+            //! @param descriptor The descriptor needed to init the PipelineLibrary.
+            ResultCode Init(Device& device, const PipelineLibraryDescriptor& descriptor);
 
             //! Merges the contents of other libraries into this library. This method must be called
             //! on an initialized library. A common use case for this method is to construct thread-local
             //! libraries and merge them into a single unified library. The serialized data can then be
             //! extracted from the unified library. An error code is returned on failure and the behavior
             //! is as if the method was never called.
-            ResultCode MergeInto(AZStd::array_view<const PipelineLibrary*> librariesToMerge);
+            ResultCode MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge);
 
             //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance.
             //! The data is opaque to the user and can only be used to re-initialize the library. Use
             //! this method to extract serialized data prior to application shutdown, save it to disk, and
             //! use it when initializing on subsequent runs.
             ConstPtr<PipelineLibraryData> GetSerializedData() const;
+            
+            //! Saves the platform-specific data to disk using the filePath provided. This is done through RHI backend drivers.
+            bool SaveSerializedData(const AZStd::string& filePath) const;
 
             //! Returns whether the current library need to be merged
             virtual bool IsMergeRequired() const;
@@ -79,16 +90,19 @@ namespace AZ
             // Platform API
 
             /// Called when the library is being created.
-            virtual ResultCode InitInternal(Device& device, const PipelineLibraryData* serializedData) = 0;
+            virtual ResultCode InitInternal(Device& device, const PipelineLibraryDescriptor& descriptor) = 0;
 
             /// Called when the library is being shutdown.
             virtual void ShutdownInternal() = 0;
 
             /// Called when libraries are being merged into this one.
-            virtual ResultCode MergeIntoInternal(AZStd::array_view<const PipelineLibrary*> libraries) = 0;
+            virtual ResultCode MergeIntoInternal(AZStd::span<const PipelineLibrary* const> libraries) = 0;
 
             /// Called when the library is serializing out platform-specific data.
             virtual ConstPtr<PipelineLibraryData> GetSerializedDataInternal() const = 0;
+            
+            /// Called when we want the RHI backend to save out the Pipeline Library via the drivers
+            virtual bool SaveSerializedDataInternal(const AZStd::string& filePath) const = 0;
 
             //////////////////////////////////////////////////////////////////////////
         };

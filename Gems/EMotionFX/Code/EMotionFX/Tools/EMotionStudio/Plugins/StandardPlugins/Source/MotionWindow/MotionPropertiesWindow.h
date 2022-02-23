@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_MOTIONPROPERTIESWINDOW_H
-#define __EMSTUDIO_MOTIONPROPERTIESWINDOW_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -48,6 +47,3 @@ namespace EMStudio
         void FinalizeSubProperties();
     };
 } // namespace EMStudio
-
-
-#endif

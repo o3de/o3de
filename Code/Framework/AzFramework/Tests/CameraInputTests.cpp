@@ -416,4 +416,114 @@ namespace UnitTest
         using ::testing::FloatNear;
         EXPECT_THAT(m_camera.m_pitch, FloatNear(expectedPitch, 0.001f));
     }
+
+    TEST_F(CameraInputFixture, InvalidTranslationInputKeyCannotBeginTranslateCameraInputAgain)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        const bool consumed =
+            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(consumed, IsTrue());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Beginning(), IsFalse());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Active(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, InvalidTranslationInputKeyDownCannotBeginTranslateCameraInputAgain)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        const bool consumed =
+            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(consumed, IsTrue());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Beginning(), IsFalse());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Active(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, InvalidTranslationInputKeyUpDoesNotAffectTranslateCameraInputEnd)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        const bool consumed =
+            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Ended });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(consumed, IsTrue());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Idle(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, OrbitCameraInputCannotBeLeftInInvalidStateIfItCannotFullyBeginAfterInputChannelBegin)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(m_orbitCamera->Beginning(), IsFalse());
+        EXPECT_THAT(m_orbitCamera->Idle(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, OrbitCameraInputCannotBeLeftInInvalidStateIfItCannotFullyBeginAfterInputChannelBeginAndEnd)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Ended });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(m_orbitCamera->Ending(), IsFalse());
+        EXPECT_THAT(m_orbitCamera->Idle(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, NewCameraInputCanBeAddedToCameraSystem)
+    {
+        auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
+            AzFramework::InputDeviceMouse::Button::Middle, AzFramework::LookPan, AzFramework::TranslatePivotLook);
+        const bool added =
+            m_cameraSystem->m_cameras.AddCameras(AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ firstPersonPanCamera });
+
+        EXPECT_THAT(added, ::testing::IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, ExistingCameraInputCannotBeAddedToCameraSystem)
+    {
+        const bool added =
+            m_cameraSystem->m_cameras.AddCameras(AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_firstPersonRotateCamera });
+
+        EXPECT_THAT(added, ::testing::IsFalse());
+    }
+
+    TEST_F(CameraInputFixture, ExistingCameraInputCanBeRemovedFromCameraSystem)
+    {
+        const bool removed = m_cameraSystem->m_cameras.RemoveCameras(
+            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_firstPersonRotateCamera });
+
+        EXPECT_THAT(removed, ::testing::IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, NonExistentCameraInputCannotBeRemovedFromCameraSystem)
+    {
+        auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
+            AzFramework::InputDeviceMouse::Button::Middle, AzFramework::LookPan, AzFramework::TranslatePivotLook);
+        const bool removed = m_cameraSystem->m_cameras.RemoveCameras(
+            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ firstPersonPanCamera });
+
+        EXPECT_THAT(removed, ::testing::IsFalse());
+    }
 } // namespace UnitTest

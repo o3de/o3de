@@ -115,7 +115,9 @@ void ImGuiManager::Initialize()
 
     // Set config file
     ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = "imgui.ini";
+#if defined(IMGUI_DISABLE_AUTOMATIC_INI_SAVING_LOADING)
+    io.IniFilename = nullptr;
+#endif
 
     // Enable Nav Keyboard by default and allow 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;

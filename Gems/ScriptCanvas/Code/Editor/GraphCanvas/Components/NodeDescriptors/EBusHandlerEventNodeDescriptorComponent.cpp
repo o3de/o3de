@@ -219,7 +219,7 @@ namespace ScriptCanvasEditor
 
                             if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                             {
-                                int& index = (scriptCanvasSlot->IsData() && scriptCanvasSlot->IsOutput()) ? paramIndex : outputIndex;
+                                int& index = (scriptCanvasSlot->IsData() && scriptCanvasSlot->IsOutput()) ? outputIndex : paramIndex;
 
                                 auto graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot), index);
 

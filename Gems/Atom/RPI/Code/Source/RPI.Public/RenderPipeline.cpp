@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -97,12 +98,12 @@ namespace AZ
 
         void RenderPipeline::InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc)
         {
+            pipeline->m_descriptor = desc;
             pipeline->m_mainViewTag = Name(desc.m_mainViewTagName);
             pipeline->m_nameId = desc.m_name.data();
-            pipeline->m_executeOnce = desc.m_executeOnce;
-            pipeline->m_originalRenderSettings = desc.m_renderSettings;
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
+            pipeline->m_rootPass->m_flags.m_isPipelineRoot = true;
             pipeline->m_rootPass->ManualPipelineBuildAndInitialize();
         }
 
@@ -320,8 +321,7 @@ namespace AZ
                 // Attempt to re-create hierarchy under root pass
                 Ptr<ParentPass> newRoot = m_rootPass->Recreate();
                 newRoot->SetRenderPipeline(this);
-
-                // Manually build the pipeline
+                newRoot->m_flags.m_isPipelineRoot = true;
                 newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root
@@ -336,6 +336,10 @@ namespace AZ
                     // Set new root
                     m_rootPass = newRoot;
                     passSystem->GetRootPass()->AddChild(m_rootPass);
+
+                    // Re-Apply render pipeline change
+                    m_wasModifiedByScene = false;
+                    m_scene->TryApplyRenderPipelineChanges(this);
 
                     m_wasPassModified = true;
                 }
@@ -366,7 +370,7 @@ namespace AZ
 
         bool RenderPipeline::IsExecuteOnce()
         {
-            return m_executeOnce;
+            return m_descriptor.m_executeOnce;
         }
 
         void RenderPipeline::RemoveFromScene()
@@ -477,25 +481,22 @@ namespace AZ
 
         void RenderPipeline::RevertRenderSettings()
         {
-            m_activeRenderSettings = m_originalRenderSettings;
+            m_activeRenderSettings = m_descriptor.m_renderSettings;
         }
 
         void RenderPipeline::AddToRenderTickOnce()
         {
-            m_rootPass->SetEnabled(true);
             m_renderMode = RenderMode::RenderOnce;
         }
 
         void RenderPipeline::AddToRenderTick()
         {
-            m_rootPass->SetEnabled(true);
             m_renderMode = RenderMode::RenderEveryTick;
         }
 
         void RenderPipeline::RemoveFromRenderTick()
         {
             m_renderMode = RenderMode::NoRender;
-            m_rootPass->SetEnabled(false);
         }
 
         RenderPipeline::RenderMode RenderPipeline::GetRenderMode() const
@@ -529,6 +530,61 @@ namespace AZ
             {
                 m_drawFilterMask = 0;
             }
+        }
+
+        const RenderPipelineDescriptor& RenderPipeline::GetDescriptor() const
+        {
+            return m_descriptor;
+        }
+
+        bool RenderPipeline::AddPassBefore(Ptr<Pass> newPass, const AZ::Name& referencePassName)
+        {
+            auto foundPass = FindFirstPass(referencePassName);
+
+            if (!foundPass)
+            {
+                AZ_Warning("RenderPipeline", false, "Add pass to render pipeline failed: can't find reference pass [%s] in render pipeline [%s]",
+                    referencePassName.GetCStr(), GetId().GetCStr());
+                return false;
+            }
+
+            // insert the pass 
+            auto parentPass = foundPass->GetParent();
+            auto passIndex = parentPass->FindChildPassIndex(referencePassName);
+            // Note: no need to check if passIndex is valid since the pass was already found
+            return parentPass->InsertChild(newPass, passIndex.GetIndex());
+        }
+
+        bool RenderPipeline::AddPassAfter(Ptr<Pass> newPass, const AZ::Name& referencePassName)
+        {            
+            auto foundPass = FindFirstPass(referencePassName);
+
+            if (!foundPass)
+            {
+                AZ_Warning("RenderPipeline", false, "Add pass to render pipeline failed: can't find reference pass [%s] in render pipeline [%s]",
+                    referencePassName.GetCStr(), GetId().GetCStr());
+                return false;
+            }
+
+            // insert the pass 
+            auto parentPass = foundPass->GetParent();
+            auto passIndex = parentPass->FindChildPassIndex(referencePassName);
+            // Note: no need to check if passIndex is valid since the pass was already found
+            return parentPass->InsertChild(newPass, passIndex.GetIndex()+1);
+        }
+
+        Ptr<Pass> RenderPipeline::FindFirstPass(const AZ::Name& passName)
+        {
+            auto passFilter = RPI::PassFilter::CreateWithPassHierarchy({passName});
+            passFilter.SetOwnerRenderPipeline(this);
+            RPI::Ptr<RPI::Pass> foundPass = nullptr;
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&foundPass](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    foundPass = pass;
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                });
+
+            return foundPass;
         }
     }
 }

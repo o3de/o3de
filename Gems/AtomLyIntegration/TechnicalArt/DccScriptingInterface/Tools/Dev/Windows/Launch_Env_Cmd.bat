@@ -29,6 +29,9 @@ PUSHD %~dp0
 
 SETLOCAL ENABLEDELAYEDEXPANSION
 
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+
 CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
 CALL %~dp0\Env_Qt.bat
@@ -36,11 +39,8 @@ CALL %~dp0\Env_Maya.bat
 CALL %~dp0\Env_Substance.bat
 CALL %~dp0\Env_WingIDE.bat
 
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
-
 :: Change to root dir
-CD /D %O3DE_PROJECT_PATH%
+CD /D %PATH_O3DE_PROJECT%
 
 :: Create command prompt with environment
 CALL %windir%\system32\cmd.exe

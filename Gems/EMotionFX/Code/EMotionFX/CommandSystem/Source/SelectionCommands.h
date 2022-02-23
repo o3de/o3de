@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMFX_SELECTIONCOMMANDS_H
-#define __EMFX_SELECTIONCOMMANDS_H
+#pragma once
 
 // include the required headers
 #include "CommandSystemConfig.h"
@@ -49,6 +48,3 @@ public:
     bool COMMANDSYSTEM_API CheckIfHasAnimGraphSelectionParameter(const MCore::CommandLine& parameters);
     bool COMMANDSYSTEM_API CheckIfHasActorSelectionParameter(const MCore::CommandLine& parameters, bool ignoreInstanceParameters = false);
 } // namespace CommandSystem
-
-
-#endif

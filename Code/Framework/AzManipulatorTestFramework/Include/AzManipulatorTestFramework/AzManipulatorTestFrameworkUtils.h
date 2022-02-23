@@ -27,29 +27,6 @@ namespace AzManipulatorTestFramework
         const AZ::Vector3& position = AZ::Vector3::CreateZero(),
         float radius = 1.0f);
 
-    //! Create a mouse pick from the specified ray and screen point.
-    AzToolsFramework::ViewportInteraction::MousePick CreateMousePick(
-        const AZ::Vector3& origin, const AZ::Vector3& direction, const AzFramework::ScreenPoint& screenPoint);
-
-    //! Build a mouse pick from the specified mouse position and camera state.
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(
-        const AzFramework::ScreenPoint& screenPoint, const AzFramework::CameraState& cameraState);
-
-    //! Create a mouse interaction from the specified pick, buttons, interaction id and keyboard modifiers.
-    AzToolsFramework::ViewportInteraction::MouseInteraction CreateMouseInteraction(
-        const AzToolsFramework::ViewportInteraction::MousePick& mousePick,
-        AzToolsFramework::ViewportInteraction::MouseButtons buttons,
-        AzToolsFramework::ViewportInteraction::InteractionId interactionId,
-        AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers);
-
-    //! Create a mouse buttons from the specified mouse button.
-    AzToolsFramework::ViewportInteraction::MouseButtons CreateMouseButtons(AzToolsFramework::ViewportInteraction::MouseButton button);
-
-    //! Create a mouse interaction event from the specified interaction and event.
-    AzToolsFramework::ViewportInteraction::MouseInteractionEvent CreateMouseInteractionEvent(
-        const AzToolsFramework::ViewportInteraction::MouseInteraction& mouseInteraction,
-        AzToolsFramework::ViewportInteraction::MouseEvent event);
-
     //! Dispatch a mouse event to the main manipulator manager via a bus call.
     void DispatchMouseInteractionEvent(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& event);
 
@@ -63,5 +40,5 @@ namespace AzManipulatorTestFramework
     AzFramework::ScreenPoint GetCameraStateViewportCenter(const AzFramework::CameraState& cameraState);
 
     //! Default viewport size (1080p) in 16:9 aspect ratio.
-    inline const auto DefaultViewportSize = AZ::Vector2(1920.0f, 1080.0f);
+    inline const auto DefaultViewportSize = AzFramework::ScreenSize(1920, 1080);
 } // namespace AzManipulatorTestFramework

@@ -9,7 +9,8 @@
   },
   "validation_pipe": {
     "TAGS": [
-      "default"
+      "default",
+      "snapshot"
     ],
     "steps": [
       "validation"
@@ -27,7 +28,8 @@
   },
   "profile_pipe": {
     "TAGS": [
-      "default"
+      "default",
+      "snapshot"
     ],
     "steps": [
       "profile",
@@ -57,26 +59,6 @@
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
       "SCRIPT_PARAMETERS": "--platform=Windows --repository=%REPOSITORY_NAME% --jobname=%JOB_NAME% --jobnumber=%BUILD_NUMBER% --jobnode=%NODE_LABEL% --changelist=%CHANGE_ID%"
-    }
-  },
-  "windows_packaging_all": {
-    "TAGS": [
-      "packaging"
-    ],
-    "COMMAND": "python_windows.cmd",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/build/package/package.py",
-      "SCRIPT_PARAMETERS": "--platform Windows --type all"
-    }
-  },
-  "3rdParty_all": {
-    "TAGS": [
-      "packaging"
-    ],
-    "COMMAND": "python_windows.cmd",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/build/package/package.py",
-      "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
     }
   },
   "test_impact_analysis_profile": {
@@ -257,7 +239,29 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test --no-tests=error",
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -LE \"(REQUIRES_gpu)\"  -T Test --no-tests=error",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
+    }
+  },
+  "periodic_test_gpu_profile": {
+    "TAGS": [
+        "nightly-incremental",
+        "nightly-clean",
+        "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-gpu"
+    },
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_periodic",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic_REQUIRES_gpu)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
@@ -308,7 +312,8 @@
       "default",
       "nightly-incremental",
       "nightly-clean",
-      "weekly-build-metrics"
+      "weekly-build-metrics",
+      "snapshot"
     ],
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {

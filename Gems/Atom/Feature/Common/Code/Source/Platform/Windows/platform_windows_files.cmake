@@ -9,5 +9,4 @@
 set(FILES
     Atom_Feature_Traits_Platform.h
     Atom_Feature_Traits_Windows.h
-    LaunchLuxCoreUI_Windows.cpp
 )

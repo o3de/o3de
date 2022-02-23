@@ -7,6 +7,16 @@
 #
 
 set(FILES
+    Source/Document/ShaderManagementConsoleDocumentRequestBus.h
+    Source/Document/ShaderManagementConsoleDocument.cpp
+    Source/Document/ShaderManagementConsoleDocument.h
+
+    Source/Window/ShaderManagementConsoleTableView.h
+    Source/Window/ShaderManagementConsoleTableView.cpp
+    Source/Window/ShaderManagementConsoleWindow.h
+    Source/Window/ShaderManagementConsoleWindow.cpp
+    Source/Window/ShaderManagementConsole.qrc
+
     Source/main.cpp
     Source/ShaderManagementConsoleApplication.cpp
     Source/ShaderManagementConsoleApplication.h

@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
@@ -154,8 +155,14 @@ namespace AzToolsFramework
     {
         initEntityOutlinerWidgetResources();
 
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerWidget requires a EditorEntityUiInterface instance on Initialize.");
+
+        m_focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
+        AZ_Assert(m_focusModeInterface != nullptr, "EntityOutlinerWidget requires a FocusModeInterface instance on Initialize.");
 
         m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
         AZ_Assert(
@@ -186,7 +193,6 @@ namespace AzToolsFramework
         m_listModel->SetSortMode(m_sortMode);
 
         const int autoExpandDelayMilliseconds = 2500;
-        m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         SetDefaultTreeViewEditTriggers();
         m_gui->m_objectTree->setAutoExpandDelay(autoExpandDelayMilliseconds);
         m_gui->m_objectTree->setDragEnabled(true);
@@ -201,6 +207,7 @@ namespace AzToolsFramework
         m_gui->m_objectTree->setAutoScrollMargin(20);
         m_gui->m_objectTree->setIndentation(24);
         m_gui->m_objectTree->setRootIsDecorated(false);
+        m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
         connect(m_gui->m_objectTree, &QTreeView::customContextMenuRequested, this, &EntityOutlinerWidget::OnOpenTreeContextMenu);
 
         // custom item delegate
@@ -217,7 +224,6 @@ namespace AzToolsFramework
         connect(m_gui->m_objectTree, &QTreeView::expanded, this, &EntityOutlinerWidget::OnTreeItemExpanded);
         connect(m_gui->m_objectTree, &QTreeView::collapsed, this, &EntityOutlinerWidget::OnTreeItemCollapsed);
         connect(m_gui->m_objectTree, &EntityOutlinerTreeView::ItemDropped, this, &EntityOutlinerWidget::OnDropEvent);
-        connect(m_listModel, &EntityOutlinerListModel::ExpandEntity, this, &EntityOutlinerWidget::OnExpandEntity);
         connect(m_listModel, &EntityOutlinerListModel::SelectEntity, this, &EntityOutlinerWidget::OnSelectEntity);
         connect(m_listModel, &EntityOutlinerListModel::EnableSelectionUpdates, this, &EntityOutlinerWidget::OnEnableSelectionUpdates);
         connect(m_listModel, &EntityOutlinerListModel::ResetFilter, this, &EntityOutlinerWidget::ClearFilter);
@@ -254,6 +260,8 @@ namespace AzToolsFramework
         m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnVisibilityToggle, 20);
         m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnLockToggle, QHeaderView::Fixed);
         m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnLockToggle, 24);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnSpacing, QHeaderView::Fixed);
+        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnSpacing, 16);
 
         connect(m_gui->m_objectTree->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -609,23 +617,27 @@ namespace AzToolsFramework
             {
                 AZ::EntityId entityId = m_selectedEntityIds[0];
 
-                AZ::EntityId parentId;
-                EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-                EntityOrderArray entityOrderArray = GetEntityChildOrder(parentId);
-
-                if (entityOrderArray.size() > 1)
+                // Don't allow moving the entity if it's the focus root.
+                if (m_focusModeInterface->GetFocusRoot(m_editorEntityContextId) != entityId)
                 {
-                    if (AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), entityId) != entityOrderArray.end())
-                    {
-                        if (entityOrderArray.front() != entityId)
-                        {
-                            contextMenu->addAction(m_actionToMoveEntityUp);
-                        }
+                    AZ::EntityId parentId;
+                    EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
 
-                        if (entityOrderArray.back() != entityId)
+                    EntityOrderArray entityOrderArray = GetEntityChildOrder(parentId);
+
+                    if (entityOrderArray.size() > 1)
+                    {
+                        if (AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), entityId) != entityOrderArray.end())
                         {
-                            contextMenu->addAction(m_actionToMoveEntityDown);
+                            if (entityOrderArray.front() != entityId)
+                            {
+                                contextMenu->addAction(m_actionToMoveEntityUp);
+                            }
+
+                            if (entityOrderArray.back() != entityId)
+                            {
+                                contextMenu->addAction(m_actionToMoveEntityDown);
+                            }
                         }
                     }
                 }
@@ -879,6 +891,7 @@ namespace AzToolsFramework
 
         m_actionGoToEntitiesInViewport = new QAction(tr("Find in viewport"), this);
         m_actionGoToEntitiesInViewport->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        m_actionGoToEntitiesInViewport->setShortcut(tr("Z"));
         connect(m_actionGoToEntitiesInViewport, &QAction::triggered, this, &EntityOutlinerWidget::GoToEntitiesInViewport);
         addAction(m_actionGoToEntitiesInViewport);
     }
@@ -934,7 +947,7 @@ namespace AzToolsFramework
     {
         if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
         {
-            entityUiHandler->OnEntityDoubleClick(entityId);
+            entityUiHandler->OnOutlinerItemDoubleClick(index);
         }
     }
 
@@ -960,10 +973,6 @@ namespace AzToolsFramework
         m_listModel->OnEntityCollapsed(entityId);
     }
 
-    void EntityOutlinerWidget::OnExpandEntity(const AZ::EntityId& entityId, bool expand)
-    {
-        m_gui->m_objectTree->setExpanded(GetIndexFromEntityId(entityId), expand);
-    }
 
     void EntityOutlinerWidget::OnSelectEntity(const AZ::EntityId& entityId, bool selected)
     {
@@ -1106,6 +1115,8 @@ namespace AzToolsFramework
 
         m_listModel->SearchStringChanged(filterString);
         m_proxyModel->UpdateFilter();
+
+        m_gui->m_objectTree->expandAll();
     }
 
     void EntityOutlinerWidget::OnFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters)
@@ -1193,6 +1204,12 @@ namespace AzToolsFramework
             m_gui->m_objectTree->setUpdatesEnabled(true);
             m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
         });
+    }
+
+    void EntityOutlinerWidget::OnPrefabTemplateDirtyFlagUpdated(
+        [[maybe_unused]] Prefab::TemplateId templateId, [[maybe_unused]] bool status)
+    {
+        m_gui->m_objectTree->update();
     }
 
     void EntityOutlinerWidget::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId childId)

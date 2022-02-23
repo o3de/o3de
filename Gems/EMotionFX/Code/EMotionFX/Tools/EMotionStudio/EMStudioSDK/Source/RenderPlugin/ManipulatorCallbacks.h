@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MCOMMON_MANIPULATORCALLBACKS_H
-#define __MCOMMON_MANIPULATORCALLBACKS_H
+#pragma once
 
 // include the Core system
 #include "../EMStudioConfig.h"
@@ -142,7 +141,4 @@ namespace EMStudio
 
         bool GetResetFollowMode() const override                { return true; }
     };
-} // namespace MCommon
-
-
-#endif
+} // namespace EMStudio

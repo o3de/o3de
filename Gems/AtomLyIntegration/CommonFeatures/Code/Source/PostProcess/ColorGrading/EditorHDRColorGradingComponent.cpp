@@ -11,6 +11,9 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <Atom/RPI.Public/ViewportContextManager.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Base.h>
 
 namespace AZ
 {
@@ -37,7 +40,7 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [TODO ATOM-2672][PostFX] need to create page for PostProcessing.
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/atom-guide/features/#post-processing-effects-postfx")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "LUT Generation")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->UIElement(AZ::Edit::UIHandlers::Button, "Generate LUT", "Generates a LUT from the scene's enabled color grading blend.")
@@ -199,7 +202,14 @@ namespace AZ
             }
 
             const char* LutAttachment = "LutOutput";
-            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{ "LutGenerationPass" };
+            auto renderPipelineName = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()
+                                            ->GetDefaultViewportContext()
+                                            ->GetCurrentPipeline()
+                                            ->GetId();
+            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{
+                renderPipelineName.GetCStr(),
+                "LutGenerationPass"
+            };
 
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);

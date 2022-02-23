@@ -14,7 +14,7 @@
 
 #include <Psapi.h>
 
-AZ_CVAR(bool, ap_tether_lifetime, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(bool, ap_tether_lifetime, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, a parent process that launches the AP will terminate the AP on exit");
 
 namespace AzFramework::AssetSystem::Platform
@@ -76,7 +76,18 @@ namespace AzFramework::AssetSystem::Platform
 
             if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
             {
-                return false;
+                // Now try with the "Default" permutation
+                // The Monolithic permutation will not have tools such as the AssetProcessor
+                // so need to check there
+                constexpr const char* BuildPermutation = "Default";
+
+                assetProcessorPath =
+                    AZ::IO::FixedMaxPath{ engineRoot } / "bin" / AZ_TRAIT_OS_PLATFORM_NAME /
+                    AZ_BUILD_CONFIGURATION_TYPE / BuildPermutation / "AssetProcessor.exe";
+                if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+                {
+                    return false;
+                }
             }
         }
 

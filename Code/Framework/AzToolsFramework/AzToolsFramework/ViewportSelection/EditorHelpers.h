@@ -24,7 +24,7 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    class EditorVisibleEntityDataCache;
+    class EditorVisibleEntityDataCacheInterface;
     class FocusModeInterface;
 
     namespace ViewportInteraction
@@ -64,7 +64,7 @@ namespace AzToolsFramework
 
         //! An EditorVisibleEntityDataCache must be passed to EditorHelpers to allow it to
         //! efficiently read entity data without resorting to EBus calls.
-        explicit EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache);
+        explicit EditorHelpers(const EditorVisibleEntityDataCacheInterface* entityDataCache);
         EditorHelpers(const EditorHelpers&) = delete;
         EditorHelpers& operator=(const EditorHelpers&) = delete;
         ~EditorHelpers() = default;
@@ -103,7 +103,15 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<InvalidClicks> m_invalidClicks; //!< Display for invalid click behavior.
 
-        const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
+        const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
         const FocusModeInterface* m_focusModeInterface = nullptr; //!< API to interact with focus mode functionality.
     };
+
+    //! Calculate the icon scale based on how far away it is from a given point.
+    //! @note This is mostly likely distance from the camera.
+    float GetIconScale(float distance);
+
+    //! Calculate the icon size based on how far away it is from a given point.
+    //! @note This is the base icon size multiplied by the icon scale to give a final viewport size.
+    float GetIconSize(float distance);
 } // namespace AzToolsFramework

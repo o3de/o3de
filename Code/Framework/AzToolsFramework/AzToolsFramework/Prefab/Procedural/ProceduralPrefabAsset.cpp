@@ -9,12 +9,11 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AZ::Prefab
 {
-    static constexpr const char s_useProceduralPrefabsKey[] = "/O3DE/Preferences/Prefabs/UseProceduralPrefabs";
-
     // ProceduralPrefabAsset
 
     ProceduralPrefabAsset::ProceduralPrefabAsset(const AZ::Data::AssetId& assetId)
@@ -58,9 +57,14 @@ namespace AZ::Prefab
 
     bool ProceduralPrefabAsset::UseProceduralPrefabs()
     {
-        bool useProceduralPrefabs = false;
-        bool result = AZ::SettingsRegistry::Get()->GetObject(useProceduralPrefabs, s_useProceduralPrefabsKey);
-        return result && useProceduralPrefabs;
+        bool prefabsEnabled = false;
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            [&prefabsEnabled](AzFramework::ApplicationRequests::Bus::Events* ebus)
+        {
+            prefabsEnabled = ebus->IsPrefabSystemEnabled();
+        });
+
+        return prefabsEnabled;
     }
 
     // PrefabDomData

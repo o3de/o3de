@@ -71,7 +71,7 @@ namespace ScriptCanvas
 
     const RuntimeData& RuntimeComponent::GetRuntimeAssetData() const
     {
-        return m_runtimeOverrides.m_runtimeAsset->GetData();
+        return m_runtimeOverrides.m_runtimeAsset->m_runtimeData;
     }
 
     ExecutionMode RuntimeComponent::GetExecutionMode() const

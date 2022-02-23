@@ -66,7 +66,6 @@ public:
         Jobs,
         Assets,
         Logs,
-        Shaders,
         Connections,
         Builders,
         Tools

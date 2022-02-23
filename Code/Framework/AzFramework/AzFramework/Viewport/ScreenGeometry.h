@@ -10,6 +10,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/base.h>
 
@@ -67,9 +68,22 @@ namespace AzFramework
         {
         }
 
+        float Widthf() const;
+        float Heightf() const;
+
         int m_width; //!< Screen size width.
         int m_height; //!< Screen size height.
     };
+
+    inline float ScreenSize::Widthf() const
+    {
+        return aznumeric_cast<float>(m_width);
+    }
+
+    inline float ScreenSize::Heightf() const
+    {
+        return aznumeric_cast<float>(m_height);
+    }
 
     void ScreenGeometryReflect(AZ::ReflectContext* context);
 
@@ -201,6 +215,12 @@ namespace AzFramework
     inline AZ::Vector2 Vector2FromScreenPoint(const ScreenPoint& screenPoint)
     {
         return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), aznumeric_cast<float>(screenPoint.m_y));
+    }
+
+    //! Return an AZ::Vector3 from a ScreenPoint (including z/depth value, defaulting to 0.0f).
+    inline AZ::Vector3 Vector3FromScreenPoint(const ScreenPoint& screenPoint, const float z = 0.0f)
+    {
+        return AZ::Vector3(aznumeric_cast<float>(screenPoint.m_x), aznumeric_cast<float>(screenPoint.m_y), z);
     }
 
     //! Return an AZ::Vector2 from a ScreenVector.

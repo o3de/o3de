@@ -123,7 +123,7 @@ namespace AZ
             // create the BLAS buffers for each sub-mesh, or re-use existing BLAS objects if they were already created.
             // Note: all sub-meshes must either create new BLAS objects or re-use existing ones, otherwise it's an error (it's the same model in both cases)
             // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
-            bool blasInstanceFound = false;
+            [[maybe_unused]] bool blasInstanceFound = false;
             for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshes.size(); ++subMeshIndex)
             {
                 SubMesh& subMesh = mesh.m_subMeshes[subMeshIndex];
@@ -149,21 +149,16 @@ namespace AZ
                 {
                     AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
 
-                    // create the BLAS object
-                    subMesh.m_blas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    // create the BLAS object and store it in the BLAS list
+                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
-                    // create the buffers from the descriptor
-                    subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+                    // create the buffers from the BLAS descriptor
+                    rayTracingBlas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
 
-                    // store the BLAS in the side list
-                    itMeshBlasInstance->second.m_subMeshes.push_back({ subMesh.m_blas });
+                    // store the BLAS in the mesh
+                    subMesh.m_blas = rayTracingBlas;
                 }
-            }
-
-            if (blasInstanceFound)
-            {
-                // set the mesh BLAS flag so we don't try to rebuild it in the RayTracingAccelerationStructurePass
-                mesh.m_blasBuilt = true;
             }
 
             // set initial transform

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_NODESELECTIONWINDOW_H
-#define __EMSTUDIO_NODESELECTIONWINDOW_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -57,5 +56,3 @@ namespace EMStudio
         bool                                m_accepted;
     };
 } // namespace EMStudio
-
-#endif

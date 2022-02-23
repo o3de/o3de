@@ -21,11 +21,11 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -244,7 +244,7 @@ namespace LUAEditor
         }
 
         AZStd::vector<AZStd::string> files;
-        AzFramework::StringFunc::Tokenize(parameters.c_str(), files, ";");
+        AZ::StringFunc::Tokenize(parameters.c_str(), files, ";");
         if (!files.empty())
         {
             for (const auto& file : files)
@@ -669,9 +669,12 @@ namespace LUAEditor
             return;
         }
 
-        const AzFramework::CommandLine* commandLine = nullptr;
+        const AZ::CommandLine* commandLine = nullptr;
 
-        EBUS_EVENT_RESULT(commandLine, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
+        AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* requests)
+            {
+                commandLine = requests->GetAzCommandLine();
+            });
 
         bool forceShow = false;
         bool forceHide = false;
@@ -850,7 +853,7 @@ namespace LUAEditor
         DocumentInfo& info = infoEntry.first->second;
         info.m_assetId = normalizedAssetId;
         info.m_assetName = assetId;
-        AzFramework::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
+        AZ::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
         info.m_bSourceControl_Ready = true;
         info.m_bSourceControl_CanWrite = true;
         info.m_bUntitledDocument = false;
@@ -945,7 +948,7 @@ namespace LUAEditor
             // do not allow SaveAs onto an existing asset, even if it could be checked out and modified "safely."
             // end user must check out and modify contents directly if they want this
 
-            if (AzFramework::StringFunc::Find(newAssetName.c_str(), ".lua") == AZStd::string::npos)
+            if (AZ::StringFunc::Find(newAssetName.c_str(), ".lua") == AZStd::string::npos)
             {
                 newAssetName += ".lua";
             }
@@ -961,7 +964,7 @@ namespace LUAEditor
 
             trySaveAs = false;
             docInfoIter->second.m_bUntitledDocument = false;
-            AzFramework::StringFunc::Path::GetFullFileName(newAssetName.c_str(), docInfoIter->second.m_displayName);
+            AZ::StringFunc::Path::GetFullFileName(newAssetName.c_str(), docInfoIter->second.m_displayName);
 
             // when you 'save as' you can write to it, even if it started out not that way.
             docInfoIter->second.m_bSourceControl_Ready = true;
@@ -1433,7 +1436,8 @@ namespace LUAEditor
             return;
         }
 
-        AZStd::to_lower(const_cast<AZStd::string&>(assetId).begin(), const_cast<AZStd::string&>(assetId).end());
+        AZStd::string assetIdLower(assetId);
+        AZStd::to_lower(assetIdLower.begin(), assetIdLower.end());
 
         ShowLUAEditorView();
 
@@ -1446,11 +1450,11 @@ namespace LUAEditor
         // * we need to load that lua panel with the document's data, initializing it.
 
         // are we already tracking it?
-        auto it = m_documentInfoMap.find(assetId);
+        auto it = m_documentInfoMap.find(assetIdLower);
         if (it != m_documentInfoMap.end())
         {
             // tell the view that it needs to focus that document!
-            mostRecentlyOpenedDocumentView = assetId;
+            mostRecentlyOpenedDocumentView = assetIdLower;
             if (m_queuedOpenRecent)
             {
                 return;
@@ -1482,14 +1486,14 @@ namespace LUAEditor
         // Register the script into the asset catalog
         AZ::Data::AssetType assetType = AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid();
         AZ::Data::AssetId catalogAssetId;
-        EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, assetId.c_str(), assetType, true);
+        EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, assetIdLower.c_str(), assetType, true);
 
         uint64_t modTime = m_fileIO->ModificationTime(assetId.c_str());
 
         DocumentInfo info;
-        info.m_assetName = assetId;
-        AzFramework::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
-        info.m_assetId = assetId;
+        info.m_assetName = assetIdLower;
+        AZ::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
+        info.m_assetId = assetIdLower;
         info.m_bSourceControl_BusyGettingStats = true;
         info.m_bSourceControl_BusyGettingStats = false;
         info.m_bSourceControl_CanWrite = true;
@@ -1532,7 +1536,7 @@ namespace LUAEditor
             luaFile.Close();
         }
 
-        DataLoadDoneCallback(isLoaded, assetId);
+        DataLoadDoneCallback(isLoaded, assetIdLower);
         //////////////////////////////////////////////////////////////////////////
 
         if (m_queuedOpenRecent)
@@ -1545,7 +1549,7 @@ namespace LUAEditor
             m_pLUAEditorMainWindow->IgnoreFocusEvents(false);
         }
 
-        mostRecentlyOpenedDocumentView = assetId;
+        mostRecentlyOpenedDocumentView = assetIdLower;
         EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::OpenMostRecentDocumentView, this);
     }
 
@@ -1554,7 +1558,10 @@ namespace LUAEditor
         const AZStd::string k_luaScriptFileString = "files";
 
         const AzFramework::CommandLine* commandLine = nullptr;
-        EBUS_EVENT_RESULT(commandLine, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
+        AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* requests)
+            {
+                commandLine = requests->GetAzCommandLine();
+            });
 
         AZStd::string parameters = "";
         size_t numSwitchValues = commandLine->GetNumSwitchValues(k_luaScriptFileString);
@@ -2447,7 +2454,7 @@ namespace LUAEditor
                                     if (matchFound)
                                     {
                                         int lineNumber = 0;
-                                        if (AzFramework::StringFunc::LooksLikeInt(match[1].str().c_str(), &lineNumber))
+                                        if (AZ::StringFunc::LooksLikeInt(match[1].str().c_str(), &lineNumber))
                                         {
                                             errorData->m_lineNumber = lineNumber;
                                             finalMessage = match[2].str().c_str();
@@ -2466,6 +2473,6 @@ namespace LUAEditor
 
     bool Context::IsLuaAsset(const AZStd::string& assetPath)
     {
-        return AzFramework::StringFunc::Path::IsExtension(assetPath.c_str(), ".lua");
+        return AZ::StringFunc::Path::IsExtension(assetPath.c_str(), ".lua");
     }
 }

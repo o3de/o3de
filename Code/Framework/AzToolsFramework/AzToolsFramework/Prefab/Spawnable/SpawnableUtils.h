@@ -12,7 +12,7 @@
 #include <AzCore/std/limits.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
-#include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
+#include <AzToolsFramework/Prefab/Spawnable/EntityAliasTypes.h>
 
 namespace AZ
 {
@@ -22,6 +22,11 @@ namespace AZ
 namespace AzToolsFramework::Prefab
 {
     class Instance;
+}
+
+namespace AzToolsFramework::Prefab::PrefabConversionUtils
+{
+    class PrefabProcessorContext;
 }
 
 namespace AzToolsFramework::Prefab::SpawnableUtils
@@ -41,24 +46,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
         uint32_t tag,
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
-    AZ::Entity* CreateEntityAlias(
-        AZStd::string sourcePrefabName,
-        AzToolsFramework::Prefab::Instance& source,
-        AzFramework::Spawnable& target,
-        AZ::EntityId entityId,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
-        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
-    AZ::Entity* CreateEntityAlias(
-        AzFramework::Spawnable& source,
-        AzFramework::Spawnable& target,
-        AZ::EntityId entityId,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
-        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
-
+    
     uint32_t FindEntityIndex(AZ::EntityId entity, const AzFramework::Spawnable& spawnable);
 
     void SortEntitiesByTransformHierarchy(AzFramework::Spawnable& spawnable);

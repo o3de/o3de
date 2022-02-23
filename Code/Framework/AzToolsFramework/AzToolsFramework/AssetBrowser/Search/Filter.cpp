@@ -229,6 +229,11 @@ namespace AzToolsFramework
             Q_EMIT updatedSignal();
         }
 
+        QString StringFilter::GetFilterString() const
+        {
+            return m_filterString;
+        }
+
         QString StringFilter::GetNameInternal() const
         {
             return m_filterString;

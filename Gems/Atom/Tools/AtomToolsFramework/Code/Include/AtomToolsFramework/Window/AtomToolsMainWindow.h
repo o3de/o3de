@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
@@ -15,6 +16,7 @@
 #include <AzQtComponents/Components/StyledDockWidget.h>
 
 #include <QLabel>
+#include <QTimer>
 
 namespace AtomToolsFramework
 {
@@ -23,10 +25,11 @@ namespace AtomToolsFramework
         , protected AtomToolsMainWindowRequestBus::Handler
     {
     public:
-        AtomToolsMainWindow(QWidget* parent = 0);
+        AtomToolsMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~AtomToolsMainWindow();
 
     protected:
+        // AtomToolsMainWindowRequestBus::Handler overrides...
         void ActivateWindow() override;
         bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation) override;
         void RemoveDockWidget(const AZStd::string& name) override;
@@ -44,14 +47,26 @@ namespace AtomToolsFramework
         virtual void OpenHelp();
         virtual void OpenAbout();
 
+        virtual void SetupMetrics();
+        virtual void UpdateMetrics();
+        virtual void UpdateWindowTitle();
+
+        const AZ::Crc32 m_toolId = {};
+
         AzQtComponents::FancyDocking* m_advancedDockManager = {};
 
         QLabel* m_statusMessage = {};
+        QLabel* m_statusBarFps = {};
+        QLabel* m_statusBarCpuTime = {};
+        QLabel* m_statusBarGpuTime = {};
+        QTimer m_metricsTimer;
 
         QMenu* m_menuFile = {};
         QMenu* m_menuEdit = {};
         QMenu* m_menuView = {};
         QMenu* m_menuHelp = {};
+
+        AtomToolsFramework::AtomToolsAssetBrowser* m_assetBrowser = {};
 
         AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
         AZStd::unordered_map<AZStd::string, QAction*> m_dockActions;

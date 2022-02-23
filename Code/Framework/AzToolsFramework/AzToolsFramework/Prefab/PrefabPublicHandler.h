@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string_view.h>
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -22,8 +23,6 @@ class QString;
 
 namespace AzToolsFramework
 {
-    using EntityList = AZStd::vector<AZ::Entity*>;
-
     namespace Prefab
     {
         class Instance;
@@ -75,7 +74,10 @@ namespace AzToolsFramework
                 Instance& commonRootEntityOwningInstance,
                 EntityList& outEntities,
                 AZStd::vector<Instance*>& outInstances) const;
-            EntityIdList GenerateEntityIdListWithoutFocusedInstanceContainer(const EntityIdList& entityIds) const;
+
+            //! Sanitizes an EntityIdList to remove entities that should not be affected by prefab operations.
+            //! It will identify and exclude the container entity of the root prefab instance, and all read-only entities.
+            EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;

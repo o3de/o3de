@@ -285,6 +285,22 @@ namespace AZ
             return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
         }
 
+        void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)
+        {
+            // return directly if the pipeline doesn't allow modification or it was already modifed by scene
+            if (!pipeline->m_descriptor.m_allowModification || pipeline->m_wasModifiedByScene)
+            {
+                return;
+            }
+
+            pipeline->m_wasModifiedByScene = true;
+            for (auto& fp : m_featureProcessors)
+            {
+                fp->ApplyRenderPipelineChange(pipeline);
+            }
+            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
+        }
+
         void Scene::AddRenderPipeline(RenderPipelinePtr pipeline)
         {
             if (pipeline->m_scene != nullptr)
@@ -311,6 +327,9 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+
+            TryApplyRenderPipelineChanges(pipeline.get());
+
             PassSystemInterface::Get()->ProcessQueuedChanges();
             pipeline->BuildPipelineViews();
 
@@ -322,7 +341,7 @@ namespace AZ
         
         void Scene::RemoveRenderPipeline(const RenderPipelineId& pipelineId)
         {
-            bool removed = false;
+            [[maybe_unused]] bool removed = false;
             for (auto it = m_pipelines.begin(); it != m_pipelines.end(); ++it)
             {
                 if (pipelineId == (*it)->GetId())

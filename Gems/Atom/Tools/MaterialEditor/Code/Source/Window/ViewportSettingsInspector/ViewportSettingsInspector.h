@@ -12,17 +12,15 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
-#include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
+#include <Viewport/MaterialViewportSettings.h>
 #endif
 
 namespace MaterialEditor
 {
-    //! Provides controls for viewing and editing a material document settings.
-    //! The settings can be divided into cards, with each one showing a subset of properties.
+    //! Provides controls for viewing and editing lighting and model preset settings.
     class ViewportSettingsInspector
         : public AtomToolsFramework::InspectorWidget
         , private AzToolsFramework::IPropertyEditorNotify
@@ -76,13 +74,9 @@ namespace MaterialEditor
         AZStd::string GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const;
 
         AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
-        bool ShouldGroupAutoExpanded(const AZStd::string& groupName) const override;
-        void OnGroupExpanded(const AZStd::string& groupName) override;
-        void OnGroupCollapsed(const AZStd::string& groupName) override;
 
         AZ::Render::ModelPresetPtr m_modelPreset;
         AZ::Render::LightingPresetPtr m_lightingPreset;
         AZStd::intrusive_ptr<MaterialViewportSettings> m_viewportSettings;
-        AZStd::intrusive_ptr<MaterialEditorWindowSettings> m_windowSettings;
     };
 } // namespace MaterialEditor

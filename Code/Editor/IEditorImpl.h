@@ -53,11 +53,6 @@ namespace Editor
     class EditorQtApplication;
 }
 
-namespace WinWidget
-{
-    class WinWidgetManager;
-}
-
 namespace AssetDatabase
 {
     class AssetDatabaseLocationListener;
@@ -157,12 +152,9 @@ public:
     void LockSelection(bool bLock) override;
     bool IsSelectionLocked() override;
 
-    IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) override;
     CMusicManager* GetMusicManager() override { return m_pMusicManager; };
 
     IEditorFileMonitor* GetFileMonitor() override;
-    void RegisterEventLoopHook(IEventLoopHook* pHook) override;
-    void UnregisterEventLoopHook(IEventLoopHook* pHook) override;
     IIconManager* GetIconManager() override;
     float GetTerrainElevation(float x, float y) override;
     Editor::EditorQtApplication* GetEditorQtApplication() override { return m_QtApplication; }
@@ -222,9 +214,6 @@ public:
     bool CloseView(const char* sViewClassName) override;
     bool SetViewFocus(const char* sViewClassName) override;
 
-    QWidget* OpenWinWidget(WinWidgetId openId) override;
-    WinWidget::WinWidgetManager* GetWinWidgetManager() const override;
-
     // close ALL panels related to classId, used when unloading plugins.
     void CloseView(const GUID& classId) override;
     bool SelectColor(QColor &color, QWidget *parent = 0) override;
@@ -277,14 +266,9 @@ public:
     bool IsSourceControlConnected() override;
     //! Setup Material Editor mode
     void SetMatEditMode(bool bIsMatEditMode);
-    CUIEnumsDatabase* GetUIEnumsDatabase() override { return m_pUIEnumsDatabase; };
-    void AddUIEnums() override;
     void ReduceMemory() override;
     // Get Export manager
     IExportManager* GetExportManager() override;
-    // Set current configuration spec of the editor.
-    void SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform) override;
-    ESystemConfigSpec GetEditorConfigSpec() const override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
     void ReloadTemplates() override;
     void AddErrorMessage(const QString& text, const QString& caption);
@@ -294,11 +278,8 @@ public:
     void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
 
     SSystemGlobalEnvironment* GetEnv() override;
-    IBaseLibraryManager* GetMaterialManagerLibrary() override; // Vladimir@Conffx
-    IEditorMaterialManager* GetIEditorMaterialManager() override; // Vladimir@Conffx
     IImageUtil* GetImageUtil() override;  // Vladimir@conffx
     SEditorSettings* GetEditorSettings() override;
-    IEditorPanelUtils* GetEditorPanelUtils() override;
     ILogFile* GetLogFile() override { return m_pLogFile; }
 
     void UnloadPlugins() override;
@@ -356,11 +337,9 @@ protected:
     CErrorsDlg* m_pErrorsDlg;
     //! Source control interface.
     ISourceControl* m_pSourceControl;
-    IEditorPanelUtils* m_panelEditorUtils;
 
     CSelectionTreeManager* m_pSelectionTreeManager;
 
-    CUIEnumsDatabase* m_pUIEnumsDatabase;
     //! CConsole Synchronization
     CConsoleSynchronization* m_pConsoleSync;
     //! Editor Settings Manager
@@ -374,8 +353,6 @@ protected:
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
 
-    IAWSResourceManager* m_awsResourceManager;
-    std::unique_ptr<WinWidget::WinWidgetManager> m_winWidgetManager;
 
     //! True if the editor is in material edit mode. Fast preview of materials.
     //! In this mode only very limited functionality is available.
