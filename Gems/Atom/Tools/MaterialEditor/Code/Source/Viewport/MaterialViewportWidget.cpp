@@ -55,7 +55,6 @@
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <Document/MaterialDocumentRequestBus.h>
 #include <Viewport/MaterialViewportRequestBus.h>
-#include <Viewport/MaterialViewportSettings.h>
 #include <Viewport/MaterialViewportWidget.h>
 
 namespace MaterialEditor
@@ -214,25 +213,8 @@ namespace MaterialEditor
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
 
-        // Attempt to apply the default lighting preset
-        AZ::Render::LightingPresetPtr lightingPreset;
-        MaterialViewportRequestBus::BroadcastResult(lightingPreset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
-        OnLightingPresetSelected(lightingPreset);
-
-        // Attempt to apply the default model preset
-        AZ::Render::ModelPresetPtr modelPreset;
-        MaterialViewportRequestBus::BroadcastResult(modelPreset, &MaterialViewportRequestBus::Events::GetModelPresetSelection);
-        OnModelPresetSelected(modelPreset);
-
         // Apply user settinngs restored since last run
-        AZStd::intrusive_ptr<MaterialViewportSettings> viewportSettings =
-            AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
-
-        OnGridEnabledChanged(viewportSettings->m_enableGrid);
-        OnShadowCatcherEnabledChanged(viewportSettings->m_enableShadowCatcher);
-        OnAlternateSkyboxEnabledChanged(viewportSettings->m_enableAlternateSkybox);
-        OnFieldOfViewChanged(viewportSettings->m_fieldOfView);
-        OnDisplayMapperOperationTypeChanged(viewportSettings->m_displayMapperOperationType);
+        OnViewportSettingsChanged();
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
         MaterialViewportNotificationBus::Handler::BusConnect();
@@ -351,130 +333,86 @@ namespace MaterialEditor
             m_modelEntity->GetId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, materials);
     }
 
-    void MaterialViewportWidget::OnLightingPresetSelected(AZ::Render::LightingPresetPtr preset)
+    void MaterialViewportWidget::OnViewportSettingsChanged()
     {
-        if (!preset)
-        {
-            return;
-        }
+        MaterialViewportRequestBus::Broadcast(
+            [this](MaterialViewportRequestBus::Events* viewportRequests)
+            {
+                UpdateLighting(viewportRequests);
+                UpdateModel(viewportRequests);
+                UpdateGrid(viewportRequests);
 
-        AZ::Render::ImageBasedLightFeatureProcessorInterface* iblFeatureProcessor =
-            m_scene->GetFeatureProcessor<AZ::Render::ImageBasedLightFeatureProcessorInterface>();
-        AZ::Render::PostProcessFeatureProcessorInterface* postProcessFeatureProcessor =
-            m_scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>();
+                AZ::Render::MeshComponentRequestBus::Event(
+                    m_shadowCatcherEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetVisibility,
+                    viewportRequests->GetShadowCatcherEnabled());
 
-        AZ::Render::ExposureControlSettingsInterface* exposureControlSettingInterface =
-            postProcessFeatureProcessor->GetOrCreateSettingsInterface(m_postProcessEntity->GetId())
-                ->GetOrCreateExposureControlSettingsInterface();
+                m_viewportController->SetFieldOfView(viewportRequests->GetFieldOfView());
+
+                AZ::Render::DisplayMapperConfigurationDescriptor desc;
+                desc.m_operationType = viewportRequests->GetDisplayMapperOperationType();
+                m_displayMapperFeatureProcessor->RegisterDisplayMapperConfiguration(desc);
+            });
+    }
+
+    void MaterialViewportWidget::UpdateLighting(MaterialViewportRequests* viewportRequests)
+    {
+        auto iblFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::ImageBasedLightFeatureProcessorInterface>();
+        auto postProcessFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>();
+        auto postProcessSettingInterface = postProcessFeatureProcessor->GetOrCreateSettingsInterface(m_postProcessEntity->GetId());
+        auto exposureControlSettingInterface = postProcessSettingInterface->GetOrCreateExposureControlSettingsInterface();
 
         Camera::Configuration cameraConfig;
         Camera::CameraRequestBus::EventResult(
             cameraConfig, m_cameraEntity->GetId(), &Camera::CameraRequestBus::Events::GetCameraConfiguration);
 
-        bool enableAlternateSkybox = false;
-        MaterialViewportRequestBus::BroadcastResult(enableAlternateSkybox, &MaterialViewportRequestBus::Events::GetAlternateSkyboxEnabled);
-
-        preset->ApplyLightingPreset(
+        const bool enableAlternateSkybox = viewportRequests->GetAlternateSkyboxEnabled();
+        viewportRequests->GetLightingPreset().ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
             cameraConfig, m_lightHandles, m_shadowCatcherMaterial, m_shadowCatcherOpacityPropertyIndex, enableAlternateSkybox);
     }
 
-    void MaterialViewportWidget::OnLightingPresetChanged(AZ::Render::LightingPresetPtr preset)
+    void MaterialViewportWidget::UpdateModel(MaterialViewportRequests* viewportRequests)
     {
-        AZ::Render::LightingPresetPtr selectedPreset;
-        MaterialViewportRequestBus::BroadcastResult(selectedPreset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
-        if (selectedPreset == preset)
+        const auto& modelPreset = viewportRequests->GetModelPreset();
+        if (modelPreset.m_modelAsset.GetId().IsValid() && modelPreset.m_modelAsset != m_modelAsset)
         {
-            OnLightingPresetSelected(preset);
+            AZ::Data::AssetBus::Handler::BusDisconnect();
+
+            m_modelAsset = modelPreset.m_modelAsset;
+            AZ::Data::AssetBus::Handler::BusConnect(m_modelAsset.GetId());
+
+            AZ::Render::MeshComponentRequestBus::Event(
+                m_modelEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
         }
     }
 
-    void MaterialViewportWidget::OnModelPresetSelected(AZ::Render::ModelPresetPtr preset)
-    {
-        if (!preset)
-        {
-            return;
-        }
-
-        if (!preset->m_modelAsset.GetId().IsValid())
-        {
-            AZ_Warning("MaterialViewportWidget", false, "Attempting to set invalid model for preset'\n.");
-            return;
-        }
-
-        if (preset->m_modelAsset.GetId() == m_modelAssetId)
-        {
-            return;
-        }
-
-        AZ::Render::MeshComponentRequestBus::Event(
-            m_modelEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, preset->m_modelAsset);
-
-        m_modelAssetId = preset->m_modelAsset.GetId();
-
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-        AZ::Data::AssetBus::Handler::BusConnect(m_modelAssetId);
-    }
-
-    void MaterialViewportWidget::OnModelPresetChanged(AZ::Render::ModelPresetPtr preset)
-    {
-        AZ::Render::ModelPresetPtr selectedPreset;
-        MaterialViewportRequestBus::BroadcastResult(selectedPreset, &MaterialViewportRequestBus::Events::GetModelPresetSelection);
-        if (selectedPreset == preset)
-        {
-            OnModelPresetSelected(preset);
-        }
-    }
-
-    void MaterialViewportWidget::OnShadowCatcherEnabledChanged(bool enable)
-    {
-        AZ::Render::MeshComponentRequestBus::Event(
-            m_shadowCatcherEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetVisibility, enable);
-    }
-
-    void MaterialViewportWidget::OnGridEnabledChanged(bool enable)
+    void MaterialViewportWidget::UpdateGrid(MaterialViewportRequests* viewportRequests)
     {
         if (m_gridEntity)
         {
-            if (enable && m_gridEntity->GetState() == AZ::Entity::State::Init)
+            const bool enableGrid = viewportRequests->GetGridEnabled();
+            if (enableGrid && m_gridEntity->GetState() == AZ::Entity::State::Init)
             {
                 m_gridEntity->Activate();
+                return;
             }
-            else if (!enable && m_gridEntity->GetState() == AZ::Entity::State::Active)
+
+            if (!enableGrid && m_gridEntity->GetState() == AZ::Entity::State::Active)
             {
                 m_gridEntity->Deactivate();
+                return;
             }
         }
-    }
-
-    void MaterialViewportWidget::OnAlternateSkyboxEnabledChanged(bool enable)
-    {
-        AZ_UNUSED(enable);
-        AZ::Render::LightingPresetPtr selectedPreset;
-        MaterialViewportRequestBus::BroadcastResult(selectedPreset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
-        OnLightingPresetSelected(selectedPreset);
-    }
-
-    void MaterialViewportWidget::OnFieldOfViewChanged(float fieldOfView)
-    {
-        m_viewportController->SetFieldOfView(fieldOfView);
-    }
-
-    void MaterialViewportWidget::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
-    {
-        AZ::Render::DisplayMapperConfigurationDescriptor desc;
-        desc.m_operationType = operationType;
-        m_displayMapperFeatureProcessor->RegisterDisplayMapperConfiguration(desc);
     }
 
     void MaterialViewportWidget::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        if (m_modelAssetId == asset.GetId())
+        if (m_modelAsset == asset)
         {
-            AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset = asset;
-            m_viewportController->SetTargetBounds(modelAsset->GetAabb());
+            m_modelAsset = asset;
+            m_viewportController->SetTargetBounds(m_modelAsset->GetAabb());
             m_viewportController->Reset();
-            AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
+            AZ::Data::AssetBus::Handler::BusDisconnect(m_modelAsset.GetId());
         }
     }
 

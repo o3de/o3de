@@ -21,7 +21,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AssetSelectionComboBox(QWidget* parent = 0);
+        AssetSelectionComboBox(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback, QWidget* parent = 0);
         ~AssetSelectionComboBox();
 
         void Reset();

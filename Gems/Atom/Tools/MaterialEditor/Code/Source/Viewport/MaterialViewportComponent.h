@@ -14,9 +14,9 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <Viewport/MaterialViewportRequestBus.h>
-#include <Viewport/MaterialViewportSettings.h>
 
 namespace MaterialEditor
 {
@@ -24,16 +24,15 @@ namespace MaterialEditor
     class MaterialViewportComponent
         : public AZ::Component
         , private MaterialViewportRequestBus::Handler
-        , private AZ::Data::AssetBus::MultiHandler
+        , private AZ::TickBus::Handler
         , private AzFramework::AssetCatalogEventBus::Handler
     {
     public:
         AZ_COMPONENT(MaterialViewportComponent, "{A92305C3-32AB-4D50-BE4D-430FCF436C4E}");
+        AZ_DISABLE_COPY_MOVE(MaterialViewportComponent);
 
         MaterialViewportComponent();
         ~MaterialViewportComponent() = default;
-        MaterialViewportComponent(const MaterialViewportComponent&) = delete;
-        MaterialViewportComponent& operator =(const MaterialViewportComponent&) = delete;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -42,34 +41,30 @@ namespace MaterialEditor
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
-        ////////////////////////////////////////////////////////////////////////
-         // AZ::Component interface implementation
+        void ClearContent();
+
+        // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
 
-        void ClearContent();
+        // AZ::TickBus::Handler overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        ////////////////////////////////////////////////////////////////////////
         // MaterialViewportRequestBus::Handler overrides ...
-        void ReloadContent() override;
+        void SetLightingPreset(const AZ::Render::LightingPreset& preset) override;
+        const AZ::Render::LightingPreset& GetLightingPreset() const override;
+        bool SaveLightingPreset(const AZStd::string& path) const override;
+        bool LoadLightingPreset(const AZStd::string& path) override;
+        AZStd::string GetLastLightingPresetPath() const override;
+        AZ::Data::AssetId GetLastLightingPresetAssetId() const override;        
 
-        AZ::Render::LightingPresetPtr AddLightingPreset(const AZ::Render::LightingPreset& preset) override;
-        AZ::Render::LightingPresetPtrVector GetLightingPresets() const override;
-        bool SaveLightingPreset(AZ::Render::LightingPresetPtr preset, const AZStd::string& path) const override;
-        AZ::Render::LightingPresetPtr GetLightingPresetSelection() const override;
-        void SelectLightingPreset(AZ::Render::LightingPresetPtr preset) override;
-        void SelectLightingPresetByAssetId(const AZ::Data::AssetId& assetId) override;
-        AZStd::string GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const override;
-
-        AZ::Render::ModelPresetPtr AddModelPreset(const AZ::Render::ModelPreset& preset) override;
-        AZ::Render::ModelPresetPtrVector GetModelPresets() const override;
-        bool SaveModelPreset(AZ::Render::ModelPresetPtr preset, const AZStd::string& path) const override;
-        AZ::Render::ModelPresetPtr GetModelPresetSelection() const override;
-        void SelectModelPreset(AZ::Render::ModelPresetPtr preset) override;
-        void SelectModelPresetByAssetId(const AZ::Data::AssetId& assetId) override;
-        AZStd::string GetModelPresetLastSavePath(AZ::Render::ModelPresetPtr preset) const override;
+        void SetModelPreset(const AZ::Render::ModelPreset& preset) override;
+        const AZ::Render::ModelPreset& GetModelPreset() const override;
+        bool SaveModelPreset(const AZStd::string& path) const override;
+        bool LoadModelPreset(const AZStd::string& path) override;
+        AZStd::string GetLastModelPresetPath() const override;
+        AZ::Data::AssetId GetLastModelPresetAssetId() const override;        
 
         void SetShadowCatcherEnabled(bool enable) override;
         bool GetShadowCatcherEnabled() const override;
@@ -81,32 +76,20 @@ namespace MaterialEditor
         float GetFieldOfView() const override;
         void SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType) override;
         AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const override;
-        ////////////////////////////////////////////////////////////////////////
 
-        ////////////////////////////////////////////////////////////////////////
-        // AZ::Data::AssetBus::MultiHandler overrides ...
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus::Handler overrides ...
         void OnCatalogLoaded(const char* catalogFile) override;
         void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
-        void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
-        ////////////////////////////////////////////////////////////////////////
 
-        AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::AnyAsset>> m_lightingPresetAssets;
-        AZ::Render::LightingPresetPtrVector m_lightingPresetVector;
-        AZ::Render::LightingPresetPtr m_lightingPresetSelection;
+        void QueueLoadPresetCache(const AZ::Data::AssetInfo& assetInfo);
 
-        AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::AnyAsset>> m_modelPresetAssets;
-        AZ::Render::ModelPresetPtrVector m_modelPresetVector;
-        AZ::Render::ModelPresetPtr m_modelPresetSelection;
+        AZ::Render::LightingPreset m_lightingPreset;
+        AZ::Render::ModelPreset m_modelPreset;
 
-        mutable AZStd::map<AZ::Render::LightingPresetPtr, AZStd::string> m_lightingPresetLastSavePathMap;
-        mutable AZStd::map<AZ::Render::ModelPresetPtr, AZStd::string> m_modelPresetLastSavePathMap;
+        mutable AZStd::unordered_map<AZStd::string, AZ::Render::LightingPreset> m_lightingPresetCache;
+        mutable AZStd::unordered_map<AZStd::string, AZ::Render::ModelPreset> m_modelPresetCache;
 
-        AZStd::intrusive_ptr<MaterialViewportSettings> m_viewportSettings;
+        bool m_settingsNotificationPending = {};
     };
 }

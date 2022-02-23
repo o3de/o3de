@@ -15,20 +15,23 @@
 
 namespace AtomToolsFramework
 {
-    AssetSelectionComboBox::AssetSelectionComboBox(QWidget* parent)
+    AssetSelectionComboBox::AssetSelectionComboBox(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback, QWidget* parent)
         : QComboBox(parent)
     {
+        QSignalBlocker signalBlocker(this);
+
         setDuplicatesEnabled(true);
         setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
         view()->setMinimumWidth(200);
 
         connect(
             this, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this,
-            [this]()
+            [this](const int index)
             {
-                AZ::Data::AssetId assetId = AZ::Data::AssetId::CreateString(currentData().toString().toUtf8().constData());
-                emit AssetSelected(assetId);
+                emit AssetSelected(AZ::Data::AssetId::CreateString(itemData(index).toString().toUtf8().constData()));
             });
+
+        SetFilterCallback(filterCallback);
 
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
@@ -60,6 +63,8 @@ namespace AtomToolsFramework
 
             model()->sort(0, Qt::AscendingOrder);
         }
+
+        setCurrentIndex(0);
     }
 
     void AssetSelectionComboBox::SetFilterCallback(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback)
@@ -70,11 +75,7 @@ namespace AtomToolsFramework
 
     void AssetSelectionComboBox::SelectAsset(const AZ::Data::AssetId& assetId)
     {
-        int index = findData(QVariant(QString(assetId.ToString<AZStd::string>().c_str())));
-        if (index >= 0 && index < count())
-        {
-            setCurrentIndex(index);
-        }
+        setCurrentIndex(findData(QVariant(QString(assetId.ToString<AZStd::string>().c_str()))));
     }
 
     void AssetSelectionComboBox::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)

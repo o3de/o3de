@@ -73,9 +73,10 @@ namespace AtomToolsFramework
 
             AZ::Data::AssetCatalogRequestBus::Broadcast(
                 &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
-
-            m_ui->m_assetList->sortItems();
         }
+
+        m_ui->m_assetList->sortItems();
+        m_ui->m_assetList->setCurrentItem(0);
     }
 
     void AssetSelectionGrid::SetFilterCallback(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback)
@@ -224,8 +225,7 @@ namespace AtomToolsFramework
         auto item = m_ui->m_assetList->currentItem();
         if (item)
         {
-            AZ::Data::AssetId assetId = AZ::Data::AssetId::CreateString(item->data(Qt::UserRole).toString().toUtf8().constData());
-            emit AssetSelected(assetId);
+            emit AssetSelected(AZ::Data::AssetId::CreateString(item->data(Qt::UserRole).toString().toUtf8().constData()));
         }
     }
 } // namespace AtomToolsFramework
