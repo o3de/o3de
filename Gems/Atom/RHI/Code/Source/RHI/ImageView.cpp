@@ -20,6 +20,8 @@ namespace AZ
                 return ResultCode::InvalidOperation;
             }
             m_descriptor = viewDescriptor;
+           
+            m_hash = TypeHash64(image.GetHash(), m_hash);
             m_hash = m_descriptor.GetHash();
             return ResourceView::Init(image);
         }
