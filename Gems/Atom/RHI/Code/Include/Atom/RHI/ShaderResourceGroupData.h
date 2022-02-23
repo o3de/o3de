@@ -205,20 +205,15 @@ namespace AZ
                 SamplerMask = AZ_BIT(static_cast<uint32_t>(ResourceType::Sampler))
             };
 
-            //! Returns true if a resource type specified by resourceTypeMask is enabled for compilation
-            bool IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const;
+            //! Reset the update mask
+            void ResetUpdateMask();
 
-            //! Disables all resource types for compilation after m_updateMaskResetLatency number of compiles
-            //! This allows higher level code to ensure that if SRG is multi-buffered it can compile multiple
-            //! times in order to ensure all SRG buffers are updated.
-            void DisableCompilationForAllResourceTypes();
+            //! Enable compilation for a resourceType specified by resourceTypeMask
+            void EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask);
 
-            //! Returns true if any of the resource type has been enabled for compilation.
-            bool IsAnyResourceTypeUpdated() const;
-
-            //! Enable compilation for a resourceType specified by resourceType/resourceTypeMask
-            void EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask, ResourceType resourceType);
-
+            //! Returns the mask that is suppose to indicate which resource type was updated
+            uint32_t GetUpdateMask() const;
+            
         private:
             static const ConstPtr<ImageView> s_nullImageView;
             static const ConstPtr<BufferView> s_nullBufferView;
@@ -244,32 +239,28 @@ namespace AZ
             //! The backing data store of constants for the shader resource group.
             ConstantsData m_constantsData;
 
-            //! Mask used to check whether to compile a specific resource type
+            //! Mask used to check whether to compile a specific resource type. This mask is managed by RPI and copied over to the RHI every frame. 
             uint32_t m_updateMask = 0;
-
-            //! Track iteration for each resource type in order to keep compiling it for m_updateMaskResetLatency number of times
-            uint32_t m_resourceTypeIteration[static_cast<uint32_t>(ResourceType::Count)] = { 0 };
-            uint32_t m_updateMaskResetLatency = RHI::Limits::Device::FrameCountMax;
         };
 
         template <typename T>
         bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstant(inputIndex, value);
         }
 
         template <typename T>
         bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value, uint32_t arrayIndex)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstant(inputIndex, value, arrayIndex);
         }
 
         template<typename T>
         bool ShaderResourceGroupData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstantMatrixRows(inputIndex, value, rowCount);
         }
 
@@ -278,7 +269,7 @@ namespace AZ
         {
             if (!values.empty())
             {
-                EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+                EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             }
             return m_constantsData.SetConstantArray(inputIndex, values);
         }

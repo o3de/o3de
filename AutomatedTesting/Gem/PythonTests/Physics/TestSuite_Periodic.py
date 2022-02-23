@@ -93,14 +93,14 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_RestitutionCombine(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_RestitutionCombine as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_FrictionCombine.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_FrictionCombine(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_FrictionCombine as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_ColliderPositionOffset(self, request, workspace, editor, launcher_platform):
@@ -198,7 +198,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_RestitutionCombinePriorityOrder(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_RestitutionCombinePriorityOrder as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_SplineRegionWithModifiedTransform(self, request, workspace, editor, launcher_platform):
@@ -230,7 +230,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_FrictionCombinePriorityOrder(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_FrictionCombinePriorityOrder as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.xfail(
         reason="Something with the CryRenderer disabling is causing this test to fail now.")
@@ -253,7 +253,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_PerFaceMaterialGetsCorrectMaterial(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_PerFaceMaterialGetsCorrectMaterial as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.xfail(
         reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
@@ -287,7 +287,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_CharacterController(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_CharacterController as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Material_EmptyLibraryUsesDefault(self, request, workspace, editor, launcher_platform):
@@ -315,14 +315,14 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Collider_NoneCollisionGroupSameLayerNotCollide(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_NoneCollisionGroupSameLayerNotCollide as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_SameCollisionGroupSameCustomLayerCollide.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Collider_SameCollisionGroupSameCustomLayerCollide(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_SameCollisionGroupSameCustomLayerCollide as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxdefaultsceneconfiguration.setreg','ScriptCanvas_PostUpdateEvent.setreg_override',
@@ -336,7 +336,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_Restitution(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_Restitution as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxdefaultsceneconfiguration.setreg', 'ScriptCanvas_PreUpdateEvent.setreg_override',
@@ -378,7 +378,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Collider_AddingNewGroupWorks(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_AddingNewGroupWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ShapeCollider_InactiveWhenNoShapeComponent(self, request, workspace, editor, launcher_platform):
@@ -466,7 +466,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Collider_CollisionGroupsWorkflow(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_CollisionGroupsWorkflow as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_ColliderRotationOffset(self, request, workspace, editor, launcher_platform):
@@ -490,23 +490,23 @@ class TestAutomation(TestAutomationBase):
     
     def test_Joints_Fixed2BodiesConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_Fixed2BodiesConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_Hinge2BodiesConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_Hinge2BodiesConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_Ball2BodiesConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_Ball2BodiesConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_FixedBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_FixedBreakable as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_HingeBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeBreakable as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_BallBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallBreakable as test_module
@@ -514,15 +514,15 @@ class TestAutomation(TestAutomationBase):
 
     def test_Joints_HingeNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeNoLimitsConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_BallNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallNoLimitsConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_GlobalFrameConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_GlobalFrameConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
     
     @revert_physics_config
     def test_Material_DefaultLibraryUpdatedAcrossLevels(self, request, workspace, editor, launcher_platform):
