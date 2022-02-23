@@ -162,7 +162,7 @@ namespace MaterialEditor
 
     bool MaterialViewportComponent::SaveLightingPreset(const AZStd::string& path) const
     {
-        if (!path.empty() && AZ::RPI::JsonUtils::SaveObjectToFile(path, m_lightingPreset))
+        if (!path.empty() && AZ::JsonSerializationUtils::SaveObjectToFile(&m_lightingPreset, path).IsSuccess())
         {
             AtomToolsFramework::SetSettingsObject(
                 "/O3DE/Atom/MaterialEditor/ViewportSettings/LightingPresetAssetId", AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
@@ -184,14 +184,18 @@ namespace MaterialEditor
             return true;
         }
 
-        AZ::Render::LightingPreset preset;
-        if (!path.empty() && AZ::RPI::JsonUtils::LoadObjectFromFile(path, preset))
+        if (!path.empty())
         {
-            AtomToolsFramework::SetSettingsObject(
-                "/O3DE/Atom/MaterialEditor/ViewportSettings/LightingPresetAssetId", AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
-            m_lightingPresetCache[path] = m_lightingPreset = preset;
-            m_settingsNotificationPending = true;
-            return true;
+            auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
+            if (loadResult && loadResult.GetValue().is<AZ::Render::LightingPreset>())
+            {
+                AtomToolsFramework::SetSettingsObject(
+                    "/O3DE/Atom/MaterialEditor/ViewportSettings/LightingPresetAssetId",
+                    AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
+                m_lightingPresetCache[path] = m_lightingPreset = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
+                m_settingsNotificationPending = true;
+                return true;
+            }
         }
         return false;
     }
@@ -226,7 +230,7 @@ namespace MaterialEditor
 
     bool MaterialViewportComponent::SaveModelPreset(const AZStd::string& path) const
     {
-        if (!path.empty() && AZ::RPI::JsonUtils::SaveObjectToFile(path, m_modelPreset))
+        if (!path.empty() && AZ::JsonSerializationUtils::SaveObjectToFile(&m_modelPreset, path).IsSuccess())
         {
             AtomToolsFramework::SetSettingsObject(
                 "/O3DE/Atom/MaterialEditor/ViewportSettings/ModelPresetAssetId", AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
@@ -248,14 +252,18 @@ namespace MaterialEditor
             return true;
         }
 
-        AZ::Render::ModelPreset preset;
-        if (!path.empty() && AZ::RPI::JsonUtils::LoadObjectFromFile(path, preset))
+        if (!path.empty())
         {
-            AtomToolsFramework::SetSettingsObject(
-                "/O3DE/Atom/MaterialEditor/ViewportSettings/ModelPresetAssetId", AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
-            m_modelPresetCache[path] = m_modelPreset = preset;
-            m_settingsNotificationPending = true;
-            return true;
+            auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
+            if (loadResult && loadResult.GetValue().is<AZ::Render::ModelPreset>())
+            {
+                AtomToolsFramework::SetSettingsObject(
+                    "/O3DE/Atom/MaterialEditor/ViewportSettings/ModelPresetAssetId",
+                    AZ::RPI::AssetUtils::MakeAssetId(path, 0).TakeValue());
+                m_modelPresetCache[path] = m_modelPreset = AZStd::any_cast<AZ::Render::ModelPreset>(loadResult.GetValue());
+                m_settingsNotificationPending = true;
+                return true;
+            }
         }
         return false;
     }
@@ -363,11 +371,15 @@ namespace MaterialEditor
         if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
         {
             AZ::TickBus::QueueFunction([=]() {
-                AZ::Render::LightingPreset preset;
                 const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-                if (!path.empty() && AZ::RPI::JsonUtils::LoadObjectFromFile(path, preset))
+                if (!path.empty())
                 {
-                    m_lightingPresetCache[path] = preset;
+                    auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
+                    if (loadResult && loadResult.GetValue().is<AZ::Render::LightingPreset>())
+                    {
+                        m_lightingPresetCache[path] = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
+                        m_settingsNotificationPending = true;
+                    }
                 }
             });
             return;
@@ -376,11 +388,15 @@ namespace MaterialEditor
         if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
         {
             AZ::TickBus::QueueFunction([=]() {
-                AZ::Render::ModelPreset preset;
                 const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-                if (!path.empty() && AZ::RPI::JsonUtils::LoadObjectFromFile(path, preset))
+                if (!path.empty())
                 {
-                    m_modelPresetCache[path] = preset;
+                    auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
+                    if (loadResult && loadResult.GetValue().is<AZ::Render::ModelPreset>())
+                    {
+                        m_modelPresetCache[path] = AZStd::any_cast<AZ::Render::ModelPreset>(loadResult.GetValue());
+                        m_settingsNotificationPending = true;
+                    }
                 }
             });
             return;

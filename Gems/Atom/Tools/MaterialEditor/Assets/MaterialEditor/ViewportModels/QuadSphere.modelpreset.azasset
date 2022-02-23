@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Sphere (Quad)",
         "modelAsset": {
             "assetId": {
                 "guid": "{2C665021-133A-538F-AEE3-97DE948C4D6D}",
