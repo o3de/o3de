@@ -7,7 +7,7 @@
             "details": {
                 "name": "Spawn",
                 "category": "Spawning",
-                "tooltip": "Spawns a selected prefab, positioned using the provided transform inputs"
+                "tooltip": "Spawns a selected prefab"
             },
             "slots": [
                 {
@@ -17,21 +17,9 @@
                     }
                 },
                 {
-                    "base": "DataInput_Translation_0",
+                    "base": "DataInput_SpawnTicketInstance_0",
                     "details": {
-                        "name": "Translation"
-                    }
-                },
-                {
-                    "base": "DataInput_Rotation_1",
-                    "details": {
-                        "name": "Rotation"
-                    }
-                },
-                {
-                    "base": "DataInput_Scale_2",
-                    "details": {
-                        "name": "Scale"
+                        "name": "SpawnTicketInstance"
                     }
                 },
                 {
@@ -41,13 +29,39 @@
                     }
                 },
                 {
-                    "base": "Output_On Spawn_1",
+                    "base": "Output_On Insertion_1",
                     "details": {
-                        "name": "On Spawn"
+                        "name": "On Insertion",
+                        "tooltip": "Called after instances of entities have been created, but before they're spawned into the world. gives the opportunity to modify the entities if needed such as injecting additional components or modifying components."
                     }
                 },
                 {
-                    "base": "DataOutput_SpawnedEntitiesList_0",
+                    "base": "DataOutput_InsertedTicketId_0",
+                    "details": {
+                        "name": "InsertedTicketId"
+                    }
+                },
+                {
+                    "base": "DataOutput_InsertedEntitiesList_1",
+                    "details": {
+                        "name": "InsertedEntitiesList"
+                    }
+                },
+                {
+                    "base": "Output_On Completion_2",
+                    "details": {
+                        "name": "On Completion",
+                        "tooltip": "Called when spawning entities is completed."
+                    }
+                },
+                {
+                    "base": "DataOutput_SpawnedTicketId_2",
+                    "details": {
+                        "name": "SpawnedTicketId"
+                    }
+                },
+                {
+                    "base": "DataOutput_SpawnedEntitiesList_3",
                     "details": {
                         "name": "SpawnedEntitiesList"
                     }
