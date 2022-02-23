@@ -190,7 +190,7 @@ namespace JsonSerializationTests
 
     AZ::JsonSerializationResult::ResultCode JsonImporterCustom::ResolveImport(rapidjson::Value* importPtr,
         rapidjson::Value& patch, const rapidjson::Value& importDirective, const AZ::IO::FixedMaxPath& importedFilePath,
-        rapidjson::Document::AllocatorType& allocator, AZ::JsonImportSettings& settings)
+        rapidjson::Document::AllocatorType& allocator, [[maybe_unused]] AZ::JsonImportSettings& settings)
     {
         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
         
