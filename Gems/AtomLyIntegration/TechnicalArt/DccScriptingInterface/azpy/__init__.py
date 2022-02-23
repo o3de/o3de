@@ -123,22 +123,18 @@ if _DCCSI_GDEBUG:
 
 
 # -------------------------------------------------------------------------
-# get/set the project name
-_O3DE_DEV = Path(os.getenv(constants.ENVAR_O3DE_DEV,
-                    config_utils.get_stub_check_path(in_path=os.getcwd(),
-                                                     check_stub='engine.json')))
+# default o3de engin location
+_O3DE_DEV = os.path.normpath(os.path.join(_PATH_DCCSIG, '../../../..'))
+_O3DE_DEV = os.getenv(constants.ENVAR_O3DE_DEV, _O3DE_DEV)
+_O3DE_DEV = Path(_O3DE_DEV)
 _LOGGER.debug('_O3DE_DEV" {}'.format(_O3DE_DEV.resolve()))
 
-_PATH_O3DE_PROJECT = Path(os.getenv(constants.ENVAR_PATH_O3DE_PROJECT,
-                               config_utils.get_o3de_project_path()))
-_LOGGER.debug('_PATH_O3DE_PROJECT" {}'.format(_PATH_O3DE_PROJECT.resolve()))
+# use dccsi as the default project location
+_PATH_O3DE_PROJECT = Path(os.getenv(constants.ENVAR_PATH_O3DE_PROJECT, _PATH_DCCSIG))
+_LOGGER.debug('Default PATH_O3DE_PROJECT" {}'.format(_PATH_O3DE_PROJECT.resolve()))
 
-# get/set the project name
-if _PATH_O3DE_PROJECT:
-    _O3DE_PROJECT = str(os.getenv(constants.ENVAR_O3DE_PROJECT,
-                                   _PATH_O3DE_PROJECT.name))
-else:
-    _O3DE_PROJECT='o3de'
+# use dccsi as the default project name
+_O3DE_PROJECT = str(os.getenv(constants.ENVAR_O3DE_PROJECT, _PATH_O3DE_PROJECT.name))
 
 # project cache log dir path
 from azpy.constants import TAG_DCCSI_NICKNAME

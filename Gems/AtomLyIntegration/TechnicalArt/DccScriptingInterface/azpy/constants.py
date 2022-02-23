@@ -24,7 +24,6 @@ import os
 import sys
 import site
 import timeit
-
 from os.path import expanduser
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -34,7 +33,7 @@ import logging as _logging
 # global scope
 _MODULENAME = 'azpy.constants'
 
-start = timeit.default_timer() # start tracking
+_START = timeit.default_timer() # start
 
 os.environ['PYTHONINSPECT'] = 'True'
 # for this module to perform standalone
@@ -438,5 +437,5 @@ if __name__ == '__main__':
     # custom prompt
     sys.ps1 = "[azpy]>>"
 
-_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - start)) 
+_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START)) 
 # --- END -----------------------------------------------------------------
