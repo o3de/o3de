@@ -49,7 +49,6 @@ namespace UnitTest
             AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
 
             auto transform = entity->CreateComponent<AzFramework::TransformComponent>();
-            transform->SetLocalTM(AZ::Transform::CreateTranslation(worldPos));
             transform->SetWorldTM(AZ::Transform::CreateTranslation(worldPos));
 
             SurfaceData::SurfaceDataShapeConfig surfaceConfig;
@@ -289,7 +288,7 @@ namespace UnitTest
             tag = randomGenerator.GetRandom();
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // We'll benchmark this two ways:
             // 1. We clear each time, which means each AddSurfaceWeightIfGreater call will search the whole list then add.
@@ -340,7 +339,7 @@ namespace UnitTest
             comparisonTags.emplace_back(tag ^ 0x01);
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Test to see if any of our tags match.
             // All of comparison tags should get compared against all of the added tags.
