@@ -73,6 +73,11 @@ namespace AZ
             m_forceRebuildDrawPackets = false;
         }
 
+        TransformServiceFeatureProcessorInterface::ObjectId MeshFeatureProcessor::GetObjectId(const MeshHandle& meshHandle) const
+        {
+            return meshHandle->m_objectId;
+        }
+
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Simulate");
