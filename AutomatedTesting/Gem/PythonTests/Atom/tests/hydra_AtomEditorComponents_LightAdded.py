@@ -170,10 +170,6 @@ def AtomEditorComponents_Light_AddedToEntity():
         TestHelper.init_idle()
         TestHelper.open_level("Graphics", "base_empty")
 
-        # Copy LIGHT_TYPES to pop the 'unknown' value and prevent it from being run in this test.
-        light_types_copy = LIGHT_TYPES.copy()
-        light_types_copy.pop('unknown')
-
         # Test steps begin.
         # 1. Create a Light entity with no components.
         light_entity = EditorEntity.create_editor_entity(AtomComponentProperties.light())
@@ -195,6 +191,10 @@ def AtomEditorComponents_Light_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.removal_undo,
                       light_entity.has_component(AtomComponentProperties.light()))
+
+        # Copy LIGHT_TYPES to pop the 'unknown' key to prevent it from being run in this test.
+        light_types_copy = LIGHT_TYPES.copy()
+        light_types_copy.pop('unknown')
 
         # Cycle through light types to test component properties.
         for light_type in light_types_copy.keys():
