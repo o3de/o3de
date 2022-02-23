@@ -10,6 +10,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Prefab/ViewBookmarkComponent.h>
 
  /*!
  * ViewBookmarkIntereface
@@ -19,7 +20,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        struct ViewBookmark;
         class ViewBookmarkLoaderInterface
         {
         public:
@@ -29,6 +29,7 @@ namespace AzToolsFramework
             virtual bool SaveBookmark(ViewBookmark bookamark) = 0;
             virtual bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) = 0;
             virtual bool LoadViewBookmarks() = 0;
+            virtual ViewBookmark GetBookmarkAtIndex(int index) const = 0;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

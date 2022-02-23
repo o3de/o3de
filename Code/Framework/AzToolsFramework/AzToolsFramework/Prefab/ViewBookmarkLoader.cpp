@@ -6,7 +6,6 @@
  *
  */
 
-#include <Prefab/ViewBookmarkComponent.h>
 #include <Prefab/ViewBookmarkLoader.h>
 #include "API/ToolsApplicationAPI.h"
 
@@ -59,6 +58,18 @@ namespace AzToolsFramework
         bool ViewBookmarkLoader::LoadViewBookmarks()
         {
             return false;
+        }
+
+        ViewBookmark ViewBookmarkLoader::GetBookmarkAtIndex(int index) const
+        {
+            ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
+            if (bookmarkComponent)
+            {
+                return bookmarkComponent->GetBookmarkAtIndex(index);
+            }
+
+            //TODO: return invalid bookmark;
+            return ViewBookmark();
         }
 
         ViewBookmarkComponent* ViewBookmarkLoader::FindBookmarkComponent() const

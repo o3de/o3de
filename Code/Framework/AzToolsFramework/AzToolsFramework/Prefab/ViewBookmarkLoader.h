@@ -9,7 +9,6 @@
 #pragma once
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <Prefab/ViewBookmarkLoaderInterface.h>
-#include <Prefab/ViewBookmarkComponent.h>
 
 namespace AzToolsFramework
 {
@@ -28,6 +27,7 @@ namespace AzToolsFramework
             bool SaveBookmark(ViewBookmark bookamark) override;
             bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
             bool LoadViewBookmarks() override;
+            ViewBookmark GetBookmarkAtIndex(int index) const override;
 
         private:
             ViewBookmarkComponent* FindBookmarkComponent() const;
