@@ -105,6 +105,7 @@ namespace AtomToolsFramework
         bool IsMouseOver() const override;
         void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
         void ClearOverrideCursor() override;
+        AZStd::optional<AzFramework::ScreenPoint> MousePosition() const override;
 
         // AzFramework::WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
@@ -130,6 +131,7 @@ namespace AtomToolsFramework
         bool event(QEvent* event) override;
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 
     private:
         void SendWindowResizeEvent();
@@ -144,7 +146,7 @@ namespace AtomToolsFramework
         // Our viewport-local aux geom pipeline for supplemental rendering.
         AZ::RPI::AuxGeomDrawPtr m_auxGeom;
         // Tracks whether the cursor is currently over our viewport, used for mouse input event book-keeping.
-        bool m_mouseOver = false;
+        AZStd::optional<AzFramework::ScreenPoint> m_mousePosition;
         // Captures the time between our render events to give controllers a time delta.
         QElapsedTimer m_renderTimer;
         // The time of the last recorded tick event from the system tick bus.
