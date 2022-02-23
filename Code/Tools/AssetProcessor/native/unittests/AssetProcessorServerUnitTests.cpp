@@ -45,7 +45,10 @@ AssetProcessorServerUnitTest::AssetProcessorServerUnitTest()
     connect(m_applicationServer.get(), SIGNAL(newIncomingConnection(qintptr)), m_connectionManager, SLOT(NewConnection(qintptr)));
 }
 
-AssetProcessorServerUnitTest::~AssetProcessorServerUnitTest() = default;
+AssetProcessorServerUnitTest::~AssetProcessorServerUnitTest()
+{
+    disconnect();
+}
 
 void AssetProcessorServerUnitTest::AssetProcessorServerTest()
 {

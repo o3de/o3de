@@ -213,7 +213,7 @@ namespace AZ
             }
 
             const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
-            if (m_materialTypeVersion < materialTypeVersion)
+            if (m_materialTypeVersion < materialTypeVersion || m_materialTypeVersion == UnspecifiedMaterialTypeVersion)
             {
                 // It is possible that the material type has had some properties renamed or otherwise updated. If that's the case,
                 // and this material is still referencing the old property layout, we need to apply any auto updates to rename those
@@ -401,12 +401,11 @@ namespace AZ
             }
 
             [[maybe_unused]] const uint32_t originalVersion = m_materialTypeVersion;
-
-            bool changesWereApplied = false;
+            [[maybe_unused]] bool changesWereApplied = false;
 
             for (const MaterialVersionUpdate& versionUpdate : m_materialTypeAsset->GetMaterialVersionUpdateList())
             {
-                if (m_materialTypeVersion < versionUpdate.GetVersion())
+                if (m_materialTypeVersion < versionUpdate.GetVersion() || m_materialTypeVersion == UnspecifiedMaterialTypeVersion)
                 {
                     if (versionUpdate.ApplyVersionUpdates(*this))
                     {
@@ -416,15 +415,28 @@ namespace AZ
                 }
             }
             
+#if AZ_ENABLE_TRACING
             if (changesWereApplied)
             {
+                const AZStd::string versionString = (originalVersion == UnspecifiedMaterialTypeVersion) ? "<Unspecified>" : AZStd::string::format("'%u'", originalVersion);
+                
+                AZStd::string assetString = GetId().ToString<AZStd::string>().c_str();
+                
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, GetId());
+                if (assetInfo.m_assetId.IsValid())
+                {
+                    assetString += " (" + assetInfo.m_relativePath + ")";
+                }
+
                 AZ_Warning(
                     "MaterialAsset", false,
-                    "This material is based on version '%u' of %s, but the material type is now at version '%u'. "
-                    "Automatic updates are available. Consider updating the .material source file for '%s'.",
-                    originalVersion, m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion(),
-                    GetId().ToString<AZStd::string>().c_str());
+                    "This material is based on version %s of %s, and the material type is now at version '%u'. "
+                    "Automatic updates have been applied. Consider updating the .material source file for %s.",
+                    versionString.c_str(), m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion(), assetString.c_str());
             }
+#endif
 
             m_materialTypeVersion = m_materialTypeAsset->GetVersion();
         }

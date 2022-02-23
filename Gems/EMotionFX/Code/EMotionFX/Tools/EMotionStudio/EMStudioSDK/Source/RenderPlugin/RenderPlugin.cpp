@@ -639,11 +639,6 @@ namespace EMStudio
         m_viewWidgets.clear();
     }
 
-    void RenderPlugin::Reflect(AZ::ReflectContext* context)
-    {
-        RenderOptions::Reflect(context);
-    }
-
     bool RenderPlugin::Init()
     {
         // load the cursors

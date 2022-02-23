@@ -10,7 +10,7 @@
 #include <AWSNativeSDKTestManager.h>
 
 #include <AzCore/Module/Environment.h>
-#include <AzTest/Utils.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AWSNativeSDKInit/AWSLogSystemInterface.h>
 #include <aws/core/Aws.h>
@@ -22,7 +22,7 @@ namespace AWSNativeSDKTestLibs
 
     AWSNativeSDKTestManager::AWSNativeSDKTestManager()
     {
-        AZ::Test::SetEnv("AWS_DEFAULT_REGION", "us-east-1", 1);
+        AZ::Utils::SetEnv("AWS_DEFAULT_REGION", "us-east-1", 1);
         m_awsSDKOptions.memoryManagementOptions.memoryManager = &m_memoryManager;
         Aws::InitAPI(m_awsSDKOptions);
     }
@@ -30,7 +30,7 @@ namespace AWSNativeSDKTestLibs
     AWSNativeSDKTestManager::~AWSNativeSDKTestManager()
     {
         Aws::ShutdownAPI(m_awsSDKOptions);
-        AZ::Test::UnsetEnv("AWS_DEFAULT_REGION");
+        AZ::Utils::UnsetEnv("AWS_DEFAULT_REGION");
     }
 
     void AWSNativeSDKTestManager::Init()

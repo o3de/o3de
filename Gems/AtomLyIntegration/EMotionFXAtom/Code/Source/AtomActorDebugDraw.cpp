@@ -75,13 +75,13 @@ namespace AZ::Render
         // Render simple line skeleton
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::LineSkeleton))
         {
-            RenderLineSkeleton(instance, renderActorSettings.m_lineSkeletonColor);
+            RenderLineSkeleton(debugDisplay, instance, renderActorSettings.m_lineSkeletonColor);
         }
 
         // Render advanced skeleton
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Skeleton))
         {
-            RenderSkeleton(instance, renderActorSettings.m_skeletonColor);
+            RenderSkeleton(debugDisplay, instance, renderActorSettings.m_skeletonColor);
         }
 
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeNames))
@@ -135,7 +135,7 @@ namespace AZ::Render
                 }
                 if (renderWireframe)
                 {
-                    RenderWireframe(mesh, globalTM, renderActorSettings.m_wireframeScale, scaleMultiplier, renderActorSettings.m_wireframeColor);
+                    RenderWireframe(mesh, globalTM, renderActorSettings.m_wireframeScale * scaleMultiplier, renderActorSettings.m_wireframeColor);
                 }
             }
         }
@@ -278,27 +278,22 @@ namespace AZ::Render
         }
     }
 
-    void AtomActorDebugDraw::RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    void AtomActorDebugDraw::RenderLineSkeleton(AzFramework::DebugDisplayRequests* debugDisplay, EMotionFX::ActorInstance* instance, const AZ::Color& color) const
     {
-        RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
-
         const EMotionFX::TransformData* transformData = instance->GetTransformData();
         const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
-
         const size_t lodLevel = instance->GetLODLevel();
         const size_t numJoints = skeleton->GetNumNodes();
-
-        m_auxVertices.clear();
-        m_auxVertices.reserve(numJoints * 2);
-        m_auxColors.clear();
-        m_auxColors.reserve(numJoints * 2);
-        AZ::Color renderColor;
 
         const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
+        const AZ::u32 oldState = debugDisplay->GetState();
+        debugDisplay->DepthTestOff();
+
+        AZ::Color renderColor;
         for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
         {
             const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
@@ -319,41 +314,34 @@ namespace AZ::Render
             }
             else
             {
-                renderColor = skeletonColor;
+                renderColor = color;
             }
 
             const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
-            m_auxVertices.emplace_back(parentPos);
-            m_auxColors.emplace_back(renderColor);
-
             const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
-            m_auxVertices.emplace_back(bonePos);
-            m_auxColors.emplace_back(renderColor);
+
+            debugDisplay->SetColor(renderColor);
+            debugDisplay->DrawLine(parentPos, bonePos);
         }
 
-        RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-        lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
-        lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = lineArgs.m_vertCount;
-        lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-        auxGeom->DrawLines(lineArgs);
+        debugDisplay->SetState(oldState);
     }
 
-    void AtomActorDebugDraw::RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    void AtomActorDebugDraw::RenderSkeleton(AzFramework::DebugDisplayRequests* debugDisplay, EMotionFX::ActorInstance* instance, const AZ::Color& color)
     {
-        RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
-
         const EMotionFX::TransformData* transformData = instance->GetTransformData();
         const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
         const size_t numEnabled = instance->GetNumEnabledNodes();
 
-        AZ::Color renderColor = skeletonColor;
         const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
+        const AZ::u32 oldState = debugDisplay->GetState();
+        debugDisplay->DepthTestOff();
+
+        AZ::Color renderColor;
         for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(instance->GetEnabledNode(i));
@@ -382,12 +370,17 @@ namespace AZ::Render
             }
             else
             {
-                renderColor = skeletonColor;
+                renderColor = color;
             }
+            renderColor.SetA(0.75f);
+            debugDisplay->SetColor(renderColor);
+
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
-            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, renderColor);
-            auxGeom->DrawSphere(nodeWorldPos, boneScale, renderColor);
+            debugDisplay->DrawSolidCylinder(centerWorldPos, boneDirection, boneScale * 0.75f, cylinderSize);
+            debugDisplay->DrawBall(nodeWorldPos, boneScale);
         }
+
+        debugDisplay->SetState(oldState);
     }
 
     void AtomActorDebugDraw::RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance)
@@ -502,7 +495,7 @@ namespace AZ::Render
                 lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
                 lineArgs.m_colors = &faceNormalsColor;
                 lineArgs.m_colorCount = 1;
-                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
                 auxGeom->DrawLines(lineArgs);
             }
         }
@@ -536,7 +529,7 @@ namespace AZ::Render
                 lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
                 lineArgs.m_colors = &vertexNormalsColor;
                 lineArgs.m_colorCount = 1;
-                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
                 auxGeom->DrawLines(lineArgs);
             }
         }
@@ -624,12 +617,12 @@ namespace AZ::Render
         lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
         lineArgs.m_colorCount = aznumeric_cast<uint32_t>(m_auxColors.size());
-        lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+        lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
         auxGeom->DrawLines(lineArgs);
     }
 
-    void AtomActorDebugDraw::RenderWireframe(
-        EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier, const AZ::Color& wireframeColor)
+    void AtomActorDebugDraw::RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM,
+        float scale, const AZ::Color& color)
     {
         // Check if the mesh is valid and skip the node in case it's not
         if (!mesh)
@@ -644,7 +637,6 @@ namespace AZ::Render
         }
 
         PrepareForMesh(mesh, worldTM);
-
         const AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
 
         const size_t numSubMeshes = mesh->GetNumSubMeshes();
@@ -665,9 +657,9 @@ namespace AZ::Render
                 const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
                 const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
 
-                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * wireframeScale * scaleMultiplier;
-                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * wireframeScale * scaleMultiplier;
-                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * wireframeScale * scaleMultiplier;
+                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * scale;
+                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * scale;
+                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * scale;
 
                 m_auxVertices.emplace_back(posA);
                 m_auxVertices.emplace_back(posB);
@@ -682,9 +674,9 @@ namespace AZ::Render
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
             lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &wireframeColor;
+            lineArgs.m_colors = &color;
             lineArgs.m_colorCount = 1;
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
             auxGeom->DrawLines(lineArgs);
         }
     }
@@ -766,6 +758,9 @@ namespace AZ::Render
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
 
+        const int oldState = debugDisplay->GetState();
+        debugDisplay->DepthTestOff();
+
         const size_t numEnabled = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numEnabled; ++i)
         {
@@ -782,6 +777,8 @@ namespace AZ::Render
             }
             RenderLineAxis(debugDisplay, worldTM, size, selected);
         }
+
+        debugDisplay->SetState(oldState);
     }
 
     void AtomActorDebugDraw::RenderLineAxis(
