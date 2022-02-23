@@ -35,6 +35,12 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
+    float3 m_currentViewPosition;
+    float3 m_previousViewPosition;
+
+    float3 m_worldBoundsMin;
+    float3 m_worldBoundsMax;
+
     RWTexture2D<float4> m_macroColorClipmaps[4];
     RWTexture2D<float4> m_macroColorClipmapPyramid;
 

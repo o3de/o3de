@@ -48,9 +48,19 @@ namespace Terrain
 
         static AZ::RPI::Ptr<TerrainMacroTextureClipmapGenerationPass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
+        void InitializeInternal() override;
+        void FrameBeginInternal(FramePrepareParams params) override;
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
 
     private:
         TerrainMacroTextureClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
+
+        AZ::Vector3 m_previousViewPosition;
+        AZ::Vector3 m_currentViewPosition;
+
+        AZ::RHI::ShaderInputNameIndex m_currentViewPositionIndex = "m_currentViewPosition";
+        AZ::RHI::ShaderInputNameIndex m_previousViewPositionIndex = "m_previousViewPosition";
+        AZ::RHI::ShaderInputNameIndex m_worldBoundsMinIndex = "m_worldBoundsMin";
+        AZ::RHI::ShaderInputNameIndex m_worldBoundsMaxIndex = "m_worldBoundsMax";
     };
 } // namespace AZ::Render

@@ -5,9 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
-#define WORLD_ORIGIN float2(0.0, 0.0)
-#define WORLD_SIZE 2048.0
+
 #define CLIPMAP_SIZE 1024
 #define CLIPMAP_STACK_SIZE 4
 
@@ -25,8 +23,10 @@ float2 CalculateWorldPosition(uint2 pixelPosition, float2 viewPosition, uint cli
 {
     float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y);
     normalizedPixelPosition = normalizedPixelPosition / ((float)CLIPMAP_SIZE) - 0.5;
-    
-    float2 viewRelativePosition = normalizedPixelPosition * (WORLD_SIZE / pow(2.0, CLIPMAP_STACK_SIZE - clipmapLevel));
+
+    float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
+    float2 worldSize = PassSrg::m_worldBoundsMax.xy - PassSrg::m_worldBoundsMin.xy;
+    float2 viewRelativePosition = normalizedPixelPosition * (worldSize * clipmapScale);
 
     return viewPosition + viewRelativePosition;
 }

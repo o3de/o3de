@@ -8,9 +8,7 @@
 #include "TerrainMacroTextureClipmapPassSrg.azsli"
 #include "ClipmapComputeHelpers.azsli"
 
-#define VIEW_POSITION float3(1024.0, 1024.0, 0.0)
-
-void SampleTexture(uint2 pixelPosition, float2 viewPosition, float2 worldPosition, out float3 macroColor, out float3 macroNormal)
+void SampleTexture(uint2 pixelPosition, float2 viewPosition, float2 worldPosition, uint clipmapLevel, out float3 macroColor, out float3 macroNormal)
 {
     uint2 macroGridResolution = uint2(TerrainSrg::m_macroMaterialGrid.m_resolution >> 16, TerrainSrg::m_macroMaterialGrid.m_resolution & 0xFFFF);
     float macroTileSize = TerrainSrg::m_macroMaterialGrid.m_tileSize;
@@ -30,7 +28,7 @@ void SampleTexture(uint2 pixelPosition, float2 viewPosition, float2 worldPositio
             break; // No more macro materials for this tile
         }
 
-        if (any(worldPosition.xy < macroMaterialData.m_boundsMin) || any (worldPosition.xy > macroMaterialData.m_boundsMax))
+        if (any(worldPosition.xy < macroMaterialData.m_boundsMin) || any(worldPosition.xy > macroMaterialData.m_boundsMax))
         {
             continue; // Macro material exists for this tile but is out of the bounds of this particular position
         }
@@ -41,8 +39,8 @@ void SampleTexture(uint2 pixelPosition, float2 viewPosition, float2 worldPositio
 
         // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
         // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
-        float2 ddx_macroUv = ddxPosition(pixelPosition, viewPosition.xy, 0) / macroUvSize;
-        float2 ddy_macroUv = ddyPosition(pixelPosition, viewPosition.xy, 0) / macroUvSize;
+        float2 ddx_macroUv = ddxPosition(pixelPosition, viewPosition.xy, clipmapLevel) / macroUvSize;
+        float2 ddy_macroUv = ddyPosition(pixelPosition, viewPosition.xy, clipmapLevel) / macroUvSize;
 
         if (macroMaterialData.m_colorMapId != 0xFFFF)
         {
@@ -58,7 +56,7 @@ void MainCS(
     uint3 groupID : SV_GroupID, 
     uint groupIndex : SV_GroupIndex)
 {
-    float3 viewPosition = VIEW_POSITION;
+    float3 viewPosition = PassSrg::m_currentViewPosition;
     uint2 pixelPosition = dispatchThreadID.xy;
 
     [unroll] for (uint clipmapLevel = 0; clipmapLevel < CLIPMAP_STACK_SIZE; ++clipmapLevel)
@@ -66,9 +64,13 @@ void MainCS(
         float2 worldPosition = CalculateWorldPosition(pixelPosition, viewPosition.xy, clipmapLevel);
 
         float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-        float3 macroNormal = float3(0.0, 0.0, 0.0);
+        float3 macroNormal = float3(0.0, 0.0, 1.0);
 
-        SampleTexture(pixelPosition, viewPosition.xy, worldPosition, macroColor, macroNormal);
+    // Early return for clipmap position that goes out of the world boundaries.
+        if (!(any(worldPosition < PassSrg::m_worldBoundsMin.xy) || any(worldPosition > PassSrg::m_worldBoundsMax.xy)))
+        {
+            SampleTexture(pixelPosition, viewPosition.xy, worldPosition, clipmapLevel, macroColor, macroNormal);
+        }
 
         PassSrg::m_macroColorClipmaps[clipmapLevel][dispatchThreadID.xy].rgba = float4(macroColor, 1.0);
     }
@@ -76,10 +78,10 @@ void MainCS(
     float2 worldPosition = CalculateWorldPosition(pixelPosition, viewPosition.xy, CLIPMAP_STACK_SIZE);
 
     float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-    float3 macroNormal = float3(0.0, 0.0, 0.0);
+    float3 macroNormal = float3(0.0, 0.0, 1.0);
 
-    SampleTexture(pixelPosition, viewPosition.xy, worldPosition, macroColor, macroNormal);
+    SampleTexture(pixelPosition, viewPosition.xy, worldPosition, CLIPMAP_STACK_SIZE, macroColor, macroNormal);
 
-    PassSrg::m_macroColorClipmapPyramid[dispatchThreadID.xy].rgba = float4(macroColor, 1.0);
+    PassSrg::m_macroColorClipmapPyramid[dispatchThreadID.xy].rgba = float4(worldPosition, 0.0, 1.0);
 }
 
