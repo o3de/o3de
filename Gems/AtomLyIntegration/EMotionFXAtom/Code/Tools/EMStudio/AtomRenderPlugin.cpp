@@ -29,6 +29,20 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator, 0);
 
+    void FPSCounter::Step()
+    {
+        const float perfTimeDelta = m_perfTimer.StampAndGetDeltaTimeInSeconds();
+
+        m_fpsTimeElapsed += perfTimeDelta;
+        m_fpsNumFrames++;
+        if (m_fpsTimeElapsed > 1.0f)
+        {
+            m_lastFPS = m_fpsNumFrames;
+            m_fpsTimeElapsed = 0.0f;
+            m_fpsNumFrames = 0;
+        }
+    }
+
     AtomRenderPlugin::AtomRenderPlugin()
         : DockWidgetPlugin()
         , m_translationManipulators(
@@ -329,6 +343,13 @@ namespace EMStudio
                 AztfVi::BuildMousePick(m_animViewportWidget->GetCameraState(), screenPoint),
                 AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())),
                 AztfVi::InteractionId(AZ::EntityId(), m_animViewportWidget->GetViewportContext()->GetId()), keyboardModifiers ));
+
+        if (GetRenderOptions()->GetShowFPS())
+        {
+            m_fpsCounter.Step();
+            const AZStd::string fpsTempStr = AZStd::string::format("%d FPS", m_fpsCounter.GetFPS());
+            debugDisplay->Draw2dTextLabel(40.0f, 20.0f, 1.0f, fpsTempStr.c_str(), false);
+        }
         debugDisplay->DepthTestOn();
     }
 

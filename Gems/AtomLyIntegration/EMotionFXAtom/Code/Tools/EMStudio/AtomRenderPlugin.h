@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzCore/Debug/Timer.h>
 
 #include <MCore/Source/Command.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
@@ -28,6 +29,20 @@ namespace AZ
 
 namespace EMStudio
 {
+    class FPSCounter
+    {
+    public:
+        void Step();
+        AZ::u32 GetFPS() { return m_lastFPS; }
+
+    private:
+        float m_fpsTimeElapsed = 0.0f;
+        AZ::u32 m_fpsNumFrames = 0;
+        AZ::u32 m_lastFPS = 0;
+
+        AZ::Debug::Timer m_perfTimer;
+    };
+
     class AtomRenderPlugin
         : public DockWidgetPlugin
         , private AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler
@@ -83,6 +98,9 @@ namespace EMStudio
         AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
         AZ::Transform m_mouseDownStartTransform;
 
+        // FPS counter
+        FPSCounter m_fpsCounter;
+        
         MCORE_DEFINECOMMANDCALLBACK(ImportActorCallback);
         MCORE_DEFINECOMMANDCALLBACK(RemoveActorCallback);
         ImportActorCallback* m_importActorCallback = nullptr;
