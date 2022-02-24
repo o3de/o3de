@@ -101,7 +101,11 @@ namespace AzToolsFramework
         ViewBookmark ViewBookmarkComponent::GetBookmarkAtIndex(int index) const
         {
             auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
-            return bookmarkVector[index];
+            if (index >= 0 && index < bookmarkVector.size())
+            {
+                return bookmarkVector[index];
+            }
+            return ViewBookmark();
         }
 
         void ViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)
