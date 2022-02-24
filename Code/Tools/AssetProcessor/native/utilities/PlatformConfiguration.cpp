@@ -812,6 +812,9 @@ namespace AssetProcessor
             }
             return IsValid();
         }
+
+        AddIntermediateScanFolder();
+
         if (!noGemScanFolders && addGemsConfigs)
         {
             if (settingsRegistry == nullptr || !AzFramework::GetGemsInfo(m_gemInfoList, *settingsRegistry))
@@ -1650,6 +1653,33 @@ namespace AssetProcessor
     int PlatformConfiguration::GetMaxJobs() const
     {
         return m_maxJobs;
+    }
+
+    void PlatformConfiguration::AddIntermediateScanFolder()
+    {
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ::SettingsRegistryInterface::FixedValueString cacheRootFolder;
+        settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+
+        AZ::IO::Path scanfolderPath = cacheRootFolder.c_str();
+        scanfolderPath /= IntermediateAssetsFolderName;
+
+        AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
+        PopulatePlatformsForScanFolder(platforms);
+
+        // By default the project scanfolder is recursive with an order of 0
+        // The intermediate assets folder needs to be higher priority since its a subfolder (otherwise GetScanFolderForFile won't pick the right scanfolder)
+        constexpr int order = -1;
+
+        AddScanFolder(ScanFolderInfo{
+            scanfolderPath.c_str(),
+            "Intermediate Assets",
+            "Intermediate Assets",
+            false,
+            true,
+            platforms,
+            order
+        });
     }
 
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)
