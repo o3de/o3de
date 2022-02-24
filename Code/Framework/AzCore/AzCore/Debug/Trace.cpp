@@ -70,9 +70,14 @@ namespace AZ::Debug
     static AZ::EnvironmentVariable<int> g_assertVerbosityLevel;
     static AZ::EnvironmentVariable<int> g_logVerbosityLevel;
 
-    static const char* assertsAutoBreakUID = "assertsAutoBreak";
-    static const char* AssertsAutoBreakRegistryPath = "/O3DE/Core/asserts_auto_break";
     static AZ::EnvironmentVariable<bool> s_AssertsAutoBreak;
+    AZ_CVAR(
+        bool,
+        bg_assertsAutoBreak,
+        false,
+        nullptr,
+        ConsoleFunctorFlags::Null,
+        "Automatically break on assert when the debugger is attached. 0=disabled, 1=enabled.");
 
     static constexpr auto PrintfEventId = EventNameHash("Printf");
     static constexpr auto WarningEventId = EventNameHash("Warning");
@@ -332,34 +337,16 @@ namespace AZ::Debug
                 }
             }
             
-            if (IsDebuggerPresent())
+            bool assertsAutoBreak = false;
+            if (auto* console = Interface<IConsole>::Get())
             {
-                if (!s_AssertsAutoBreak.IsConstructed())
-                {
-                    SettingsRegistryInterface* settingsRegistry = SettingsRegistry::Get();
-                    if (settingsRegistry)
-                    {
-                        bool assertsAutoBreak;
-                        if (!settingsRegistry->Get(assertsAutoBreak, AssertsAutoBreakRegistryPath))
-                        {
-                            // Currently, asserts will not break in the debugger by default, however THIS IS EXPECTED TO CHANGE
-                            // shortly after this settings registry parameter is introduced to discourage asserts firing unchecked
-                            // or going undetected.
-                            // To enable this setting, add {"O3DE": { "asserts_auto_break": true }} to a settings registry file
-                            assertsAutoBreak = false;
-                        }
-
-                        s_AssertsAutoBreak = AZ::Environment::CreateVariable<bool>(assertsAutoBreakUID);
-                        s_AssertsAutoBreak.Set(assertsAutoBreak);
-                    }
-                }
-
-                if (s_AssertsAutoBreak.Get())
-                {
-                    // You've encountered an assert! By default, the presence of a debugger will cause asserts
-                    // to DebugBreak (walk up a few stack frames to understand what happened).
-                    g_tracer.Break();
-                }
+                console->GetCvarValue("bg_assertsAutoBreak", assertsAutoBreak);
+            }
+            if (assertsAutoBreak && IsDebuggerPresent())
+            {
+                // You've encountered an assert! By default, the presence of a debugger will cause asserts
+                // to DebugBreak (walk up a few stack frames to understand what happened).
+                g_tracer.Break();
             }
 #if AZ_ENABLE_TRACE_ASSERTS
             //display native UI dialogs at verbosity level 2
