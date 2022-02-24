@@ -74,7 +74,7 @@ _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                     datefmt='%m-%d %H:%M')
 
 _LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+_LOGGER.debug(f'Initializing: {_MODULENAME}')
 # -------------------------------------------------------------------------
 
 
@@ -190,7 +190,7 @@ elif _O3DE_Editor.stem.lower() == "python":
     _settings= bootstrap_Editor(_DCCSI_GDEBUG)
     
 else:
-    _LOGGER.warning('No bootstrapping code for: {_O3DE_Editor}')
+    _LOGGER.warning(f'No bootstrapping code for: {_O3DE_Editor}')
 # -------------------------------------------------------------------------
 
 
@@ -303,5 +303,6 @@ if __name__ == '__main__':
     # custom prompt
     sys.ps1 = "[azpy]>>"
     
-_LOGGER.debug('~ DCCsi: bootstrap.py took: {} sec'.format(time.process_time() - _START)) 
+_END_TIME = time.process_time() - _START
+_LOGGER.debug('~ DCCsi: bootstrap.py took: {_END_TIME} sec') 
 # --- END -----------------------------------------------------------------

@@ -29,9 +29,10 @@ if _PACKAGENAME is '__main__':
 # set up module logging
 for handler in _logging.root.handlers[:]:
     _logging.root.removeHandler(handler)
+    
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _logging.basicConfig(format=FRMT_LOG_LONG)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_LOGGER.debug('Initializing: {0}'.format({_PACKAGENAME}))
 
 # -------------------------------------------------------------------------
 
