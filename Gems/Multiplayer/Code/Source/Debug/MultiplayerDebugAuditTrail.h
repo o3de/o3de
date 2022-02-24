@@ -48,7 +48,7 @@ namespace Multiplayer
         static constexpr char EVENT_TITLE[] = "DevEvent on %s";
 
         MultiplayerDebugAuditTrail();
-        ~MultiplayerDebugAuditTrail();
+        ~MultiplayerDebugAuditTrail() = default;
 
         //! Main update loop.
         void OnImGuiUpdate(const AZStd::deque<AuditTrailInput>& auditTrailElems);
@@ -56,8 +56,8 @@ namespace Multiplayer
         //! Draws hierarchy information over hierarchy root entities.
         void UpdateDebugOverlay();
 
-        //! Checks if the audit trail can be pumped and resets the pump flag
-        bool CanPumpAuditTrail();
+        //! Returns if the audit trail should be pumped and resets the pump flag
+        bool TryPumpAuditTrail();
 
         //! Gets string filter for the audit trail
         AZStd::string_view GetAuditTrialFilter();

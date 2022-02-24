@@ -89,9 +89,9 @@ namespace Multiplayer
     AZStd::vector<MultiplayerAuditingElement> NetworkInput::GetComponentInputDeltaLogs() const
     {
         AZStd::vector<MultiplayerAuditingElement> logs;
-        for (uint16_t i = 0; i < m_componentInputs.size(); ++i)
+        for (uint16_t idx = 0; idx < m_componentInputs.size(); ++idx)
         {
-            MultiplayerAuditingElement log = m_componentInputs[i].get()->GetInputDeltaLog();
+            MultiplayerAuditingElement log = m_componentInputs[idx].get()->GetInputDeltaLog();
             if (!log.m_elements.empty())
             {
                 logs.push_back(AZStd::move(log));
@@ -108,7 +108,7 @@ namespace Multiplayer
         {
             return owner->GetName();
         }
-        return "null owner";
+        return "";
     }
 
     void NetworkInput::AttachNetBindComponent(NetBindComponent* netBindComponent)

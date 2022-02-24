@@ -27,11 +27,6 @@ namespace Multiplayer
         m_updateDebugOverlay.Enqueue(AZ::TimeMs{ 0 }, true);
     }
 
-    MultiplayerDebugAuditTrail::~MultiplayerDebugAuditTrail()
-    {
-        ;
-    }
-
     AZStd::string_view MultiplayerDebugAuditTrail::GetAuditTrialFilter()
     {
         return m_filter;
@@ -42,7 +37,6 @@ namespace Multiplayer
         m_filter = AZStd::move(filter);
     }
 
-    // --------------------------------------------------------------------------------------------
     void MultiplayerDebugAuditTrail::OnImGuiUpdate(const AZStd::deque<AuditTrailInput>& auditTrailElems)
     {
 #if defined(IMGUI_ENABLED)
@@ -242,7 +236,7 @@ namespace Multiplayer
         m_debugDisplay->SetState(stateBefore);
     }
 
-    bool MultiplayerDebugAuditTrail::CanPumpAuditTrail()
+    bool MultiplayerDebugAuditTrail::TryPumpAuditTrail()
     {
         bool canPump = m_canPumpTrail;
         m_canPumpTrail = false;

@@ -88,7 +88,7 @@ namespace Multiplayer
     if (AZ::Interface<Multiplayer::IMultiplayerDebug>::Get())                                                                              \
     {                                                                                                                                      \
         Multiplayer::MultiplayerAuditingElement detail;                                                                                    \
-        detail.m_name = INPUT.GetOwnerName();                                                                                              \
+        detail.m_name = INPUT.GetOwnerName().empty() ? "null owner" : INPUT.GetOwnerName();                                                \
         detail.m_elements.push_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<VALUE_TYPE>>(                                 \
             #REWINDABLE, REWINDABLE.Get(), REWINDABLE.GetLastSerializedValue()));                                                          \
         AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->AddAuditEntry(                                                               \
@@ -104,7 +104,7 @@ namespace Multiplayer
     if (AZ::Interface<Multiplayer::IMultiplayerDebug>::Get())                                                                              \
     {                                                                                                                                      \
         Multiplayer::MultiplayerAuditingElement detail;                                                                                    \
-        detail.m_name = INPUT.GetOwnerName();                                                                                              \
+        detail.m_name = INPUT.GetOwnerName().empty() ? "null owner" : INPUT.GetOwnerName();                                                \
         detail.m_elements.push_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<VALUE_TYPE>>(#VALUE, VALUE, VALUE));          \
         AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->AddAuditEntry(                                                               \
             Multiplayer::AuditCategory::Event, INPUT.GetClientInputId(), INPUT.GetHostFrameId(),                                           \

@@ -20,7 +20,7 @@ namespace Multiplayer
     };
 
     //! @class IMultiplayerAuditingDatum
-    //! @brief IMultiplayerAuditingDatum provides an interface for auditing datums of a given auditing event
+    //! @brief IMultiplayerAuditingDatum provides an interface for datums of a given auditing event
     class IMultiplayerAuditingDatum
     {
     public:

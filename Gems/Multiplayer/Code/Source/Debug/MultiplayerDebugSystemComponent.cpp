@@ -570,7 +570,7 @@ namespace Multiplayer
                         m_committedAuditTrail = m_pendingAuditTrail;
                     }
 
-                    if (m_auditTrail->CanPumpAuditTrail())
+                    if (m_auditTrail->TryPumpAuditTrail())
                     {
                         m_committedAuditTrail = m_pendingAuditTrail;
                     }
@@ -626,9 +626,19 @@ namespace Multiplayer
 
         for (auto elem = m_committedAuditTrail.begin(); elem != m_committedAuditTrail.end(); ++elem)
         {
-            const char* nodeTitle = elem->m_category == AuditCategory::Desync
-                ? MultiplayerDebugAuditTrail::DESYNC_TITLE : (elem->m_category == AuditCategory::Input
-                    ? MultiplayerDebugAuditTrail::INPUT_TITLE : MultiplayerDebugAuditTrail::EVENT_TITLE);
+            const char* nodeTitle = "";
+            switch (elem->m_category)
+            {
+            case AuditCategory::Desync:
+                nodeTitle = MultiplayerDebugAuditTrail::DESYNC_TITLE;
+                break;
+            case AuditCategory::Input:
+                nodeTitle = MultiplayerDebugAuditTrail::INPUT_TITLE;
+                break;
+            case AuditCategory::Event:
+                nodeTitle = MultiplayerDebugAuditTrail::EVENT_TITLE;
+                break;
+            }
 
             // Events only have one item
             if (elem->m_category == AuditCategory::Event)
