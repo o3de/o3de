@@ -490,15 +490,13 @@ namespace UnitTest
         // When the process scheduler launches the processes
         m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
 
-        const auto result = m_processScheduler->Execute(
+        m_processScheduler->Execute(
             m_processInfos,
             AZStd::nullopt,
             AZStd::nullopt,
             abortingLaunchCallback,
             m_processExitCallback,
             AZStd::nullopt);
-      
-        //EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {
@@ -556,15 +554,13 @@ namespace UnitTest
         // When the process scheduler launches the processes
         m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
 
-        const auto result = m_processScheduler->Execute(
+        m_processScheduler->Execute(
             m_processInfos,
             AZStd::nullopt,
             AZStd::nullopt,
             m_processLaunchCallback,
             abortingExitCallback,
             AZStd::nullopt);
-
-        //EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {

@@ -85,7 +85,7 @@ namespace UnitTest
         return JSONSafeString(output);
     }
 
-    AZStd::string GenerateNativeTargetDescriptorString(
+    AZStd::string GenerateTargetDescriptorString(
         const AZStd::string& name,
         const AZStd::string& outputName,
         const TestImpact::RepoPath& path,
@@ -123,16 +123,6 @@ namespace UnitTest
             JSONSafeString(path.String()).c_str());
 
         return output;
-    }
-
-    TestImpact::NativeTargetDescriptor GenerateNativeTargetDescriptor(
-        const AZStd::string& name,
-        const AZStd::string& outputName,
-        const TestImpact::RepoPath& path,
-        const AZStd::vector<TestImpact::RepoPath>& staticSources,
-        const TestImpact::AutogenSources& autogenSources)
-    {
-        return TestImpact::NativeTargetDescriptor(TestImpact::TargetDescriptor{ name, path, TestImpact::TargetSources{ staticSources, autogenSources } }, outputName);
     }
 
     TestImpact::TestEnumerationSuite GenerateParamterizedSuite(
@@ -1702,12 +1692,6 @@ namespace UnitTest
         return true;
     }
 
-    bool operator==(const TestImpact::NativeTargetDescriptor& lhs, const TestImpact::NativeTargetDescriptor& rhs)
-    {
-        return lhs.m_outputName == rhs.m_outputName &&
-            static_cast<const TestImpact::TargetDescriptor&>(lhs) == static_cast<const TestImpact::TargetDescriptor&>(rhs);
-    }
-
     bool operator==(const TestImpact::TestSuiteMeta& lhs, const TestImpact::TestSuiteMeta& rhs)
     {
         if (lhs.m_name != rhs.m_name)
@@ -1720,31 +1704,6 @@ namespace UnitTest
         }
 
         return true;
-    }
-
-    bool operator==(const TestImpact::NativeTestTargetMeta& lhs, const TestImpact::NativeTestTargetMeta& rhs)
-    {
-        if (!(lhs.m_suiteMeta == rhs.m_suiteMeta))
-        {
-            return false;
-        }
-        else if (lhs.m_launchMethod != rhs.m_launchMethod)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    bool operator==(const TestImpact::NativeProductionTargetDescriptor& lhs, const TestImpact::NativeProductionTargetDescriptor& rhs)
-    {
-        return static_cast<const TestImpact::NativeTargetDescriptor&>(lhs) == static_cast<const TestImpact::NativeTargetDescriptor&>(rhs);
-    }
-
-    bool operator==(const TestImpact::NativeTestTargetDescriptor& lhs, const TestImpact::NativeTestTargetDescriptor& rhs)
-    {
-        return static_cast<const TestImpact::NativeTargetDescriptor&>(lhs) == static_cast<const TestImpact::NativeTargetDescriptor&>(rhs) &&
-            lhs.m_testMetaData == rhs.m_testMetaData;
     }
 
     bool operator==(const TestImpact::LineCoverage& lhs, const TestImpact::LineCoverage& rhs)

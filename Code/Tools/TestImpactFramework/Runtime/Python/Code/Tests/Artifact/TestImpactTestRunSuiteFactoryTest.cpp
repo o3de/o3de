@@ -625,7 +625,7 @@ namespace UnitTest
             "  </testsuite>\n"
             "</testsuites>";
 
-        AZ_Printf("Here\n", rawRun.c_str());
+        //AZ_Printf("Here\n", rawRun.c_str());
 
         const AZStd::vector<TestImpact::TestRunSuite> suites = TestImpact::JUnit::TestRunSuitesFactory(rawRun);
     }

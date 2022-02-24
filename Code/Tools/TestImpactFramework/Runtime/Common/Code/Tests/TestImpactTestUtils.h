@@ -14,10 +14,8 @@
 #include <Artifact/Dynamic/TestImpactCoverage.h>
 #include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>
 #include <Artifact/Dynamic/TestImpactTestRunSuite.h>
-#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
-#include <Artifact/Static/TestImpactNativeProductionTargetDescriptor.h>
-#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
-#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
+#include <Artifact/Static/TestImpactTestSuiteMeta.h>
+#include <Artifact/Static/TestImpactTargetDescriptor.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Process/TestImpactProcess.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
@@ -64,24 +62,6 @@ namespace UnitTest
     // Generate a JSON string of array elements from the specified vector
     AZStd::string StringVectorToJSONElements(const AZStd::vector<AZStd::string> strings);
 
-    // Generate a build target descriptor string in JSON format from the specified build target description
-    AZStd::string GenerateNativeTargetDescriptorString(
-        const AZStd::string& name,
-        const AZStd::string& outputName,
-        const TestImpact::RepoPath& path,
-        const AZStd::vector<TestImpact::RepoPath>& staticSources,
-        const AZStd::vector<TestImpact::RepoPath>& autogenInputs,
-        const AZStd::vector<TestImpact::RepoPath>& autogenOutputs);
-
-    // Generate a build target descriptor from the specified build target description
-    // Note: no check for correctness of arguments is peformed
-    TestImpact::NativeTargetDescriptor GenerateNativeTargetDescriptor(
-        const AZStd::string& name,
-        const AZStd::string& outputName,
-        const TestImpact::RepoPath& path,
-        const AZStd::vector<TestImpact::RepoPath>& staticSources,
-        const TestImpact::AutogenSources& autogenSources);
-
     // Procedurally generate a parameterized test suite based on the supplied parameters
     TestImpact::TestEnumerationSuite GenerateParamterizedSuite(
         const AZStd::pair<AZStd::string, bool>& fixture,
@@ -95,6 +75,15 @@ namespace UnitTest
         const AZStd::vector<AZStd::pair<AZStd::string, bool>> tests,
         size_t permutationCount,
         AZStd::vector<TestImpact::TestEnumerationSuite>& parentSuiteList);
+
+    // Generate a target descripter string based on the specified target properties.
+    AZStd::string GenerateTargetDescriptorString(
+        const AZStd::string& name,
+        const AZStd::string& outputName,
+        const TestImpact::RepoPath& path,
+        const AZStd::vector<TestImpact::RepoPath>& staticSources,
+        const AZStd::vector<TestImpact::RepoPath>& autogenInputs,
+        const AZStd::vector<TestImpact::RepoPath>& autogenOutputs);
 
     // Helper functions for calculating test suite meta-data
     size_t CalculateNumPassedTests(const AZStd::vector<TestImpact::TestRunSuite>& suites);
@@ -205,11 +194,7 @@ namespace UnitTest
 
     bool operator==(const TestImpact::TargetDescriptor& lhs, const TestImpact::TargetDescriptor& rhs);
     bool operator==(const TestImpact::TargetSources& lhs, const TestImpact::TargetSources& rhs);
-    bool operator==(const TestImpact::NativeTargetDescriptor& lhs, const TestImpact::NativeTargetDescriptor& rhs);
     bool operator==(const TestImpact::TestSuiteMeta& lhs, const TestImpact::TestSuiteMeta& rhs);
-    bool operator==(const TestImpact::NativeTestTargetMeta& lhs, const TestImpact::NativeTestTargetMeta& rhs);
-    bool operator==(const TestImpact::NativeProductionTargetDescriptor& lhs, const TestImpact::NativeProductionTargetDescriptor& rhs);
-    bool operator==(const TestImpact::NativeTestTargetDescriptor& lhs, const TestImpact::NativeTestTargetDescriptor& rhs);
 
     bool operator==(const TestImpact::LineCoverage& lhs, const TestImpact::LineCoverage& rhs);
     bool operator==(const TestImpact::SourceCoverage& lhs, const TestImpact::SourceCoverage& rhs);
