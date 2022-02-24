@@ -68,7 +68,7 @@
          <item>
           <widget class="QToolButton" name="m_toggleDisplayViewBtn">
            <property name="toolTip">
-            <string extracomment="Search View Display Mode">Search View Display Mode</string>
+            <string extracomment="Change Search View">Change Search View</string>
            </property>
            <property name="text">
             <string>...</string>
