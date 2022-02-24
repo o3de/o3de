@@ -51,6 +51,7 @@ namespace AZ
                 "Pass::Pass - request is valid but template is nullptr. This is not allowed. Passing a valid passRequest also requires a valid passTemplate.");
 
             m_passData = PassUtils::GetPassDataPtr(descriptor);
+            PassUtils::GetPipelineConnections(descriptor, m_pipelineConnections);
 
             m_flags.m_enabled = true;
             m_flags.m_timestampQueryEnabled = false;
@@ -466,7 +467,7 @@ namespace AZ
 
         void Pass::ProcessConnection(const PassConnection& connection, uint32_t slotTypeMask)
         {
-            // --- Find Local Binding ---
+            // -- Find Local Binding --
 
             // Get the input from this pass that forms one end of the connection
             PassAttachmentBinding* localBinding = FindAttachmentBinding(connection.m_localSlot);
@@ -485,7 +486,7 @@ namespace AZ
                 return;
             }
 
-            // --- Local Variables ---
+            // -- Local Variables --
 
             Name connectedPassName = connection.m_attachmentRef.m_pass;
             Name connectedSlotName = connection.m_attachmentRef.m_attachment;
@@ -494,7 +495,7 @@ namespace AZ
             bool foundPass = false;
             bool slotTypeMismatch = false;
 
-            // --- Search This Pass ---
+            // -- Search This Pass --
 
             if (connectedPassName == PassNameThis)
             {
@@ -506,7 +507,7 @@ namespace AZ
                     connectedSlotName.GetCStr());
             }
 
-            // --- Search Pipeline ---
+            // -- Search Pipeline --
 
             if (connectedPassName == PipelineKeyword)
             {
@@ -534,7 +535,7 @@ namespace AZ
                 }
             }
 
-            // --- Search Parent & Siblings ---
+            // -- Search Parent & Siblings --
 
             // The (connectedPassName != m_name) avoids edge case where parent pass has child pass of same name.
             // In this case, parent pass would ask it's parent pass for a sibling with the given name and get a pointer to itself.
@@ -572,7 +573,7 @@ namespace AZ
                 }
             }
 
-            // --- Search Children ---
+            // -- Search Children --
 
             ParentPass* asParent = AsParent();
             if (!foundPass && asParent)
@@ -591,7 +592,7 @@ namespace AZ
                 }
             }
 
-            // --- Finalize & Report Errors ---
+            // -- Finalize & Report Errors --
 
             if (slotTypeMismatch)
             {
@@ -763,16 +764,6 @@ namespace AZ
 
             attachment->m_ownerPass = this;
             return attachment;
-        }
-
-        Ptr<PassAttachment> Pass::CreateImageAttachment(const PassImageAttachmentDesc& desc)
-        {
-            return CreateAttachmentFromDesc(desc);
-        }
-
-        Ptr<PassAttachment> Pass::CreateBufferAttachment(const PassBufferAttachmentDesc& desc)
-        {
-            return CreateAttachmentFromDesc(desc);
         }
 
         template<typename AttachmentDescType>
@@ -1093,6 +1084,21 @@ namespace AZ
             }
         }
 
+        void Pass::RegisterPipelineConnections()
+        {
+            for (const PipelineConnection& connection : m_pipelineConnections)
+            {
+                PassAttachmentBinding* binding = FindAttachmentBinding(connection.m_localBinding);
+                AZ_RPI_PASS_ERROR(binding != nullptr, "Pass::RegisterPipelineConnections() - Could not find local binding [%s]",
+                                  connection.m_localBinding.GetCStr());
+
+                if (binding)
+                {
+                    m_pipeline->AddPipelineConnection(connection.m_globalName, binding, this);
+                }
+            }
+        }
+
         // --- Queuing functions with PassSystem ---
 
         void Pass::QueueForBuildAndInitialization()
@@ -1171,6 +1177,11 @@ namespace AZ
 
             m_state = PassState::Resetting;
 
+            if (m_flags.m_isPipelineRoot)
+            {
+                m_pipeline->ClearGlobalAttachmentsAndBindings();
+            }
+
             // Store references to imported attachments to underlying images and buffers aren't deleted during attachment building
             StoreImportedAttachmentReferences();
 
@@ -1221,6 +1232,8 @@ namespace AZ
             UpdateConnectedBindings();
             UpdateOwnedAttachments();
             UpdateAttachmentUsageIndices();
+
+            RegisterPipelineConnections();
 
             m_state = PassState::Built;
             m_queueState = PassQueueState::NoQueue;

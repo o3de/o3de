@@ -5,24 +5,19 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "MainPipeline",
-            "PassClass": "PipelinePass",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
             "PassData": {
-                "$type": "PipelinePassData",
+                "$type": "PassData",
                 "PipelineConnections": [
                     {
-                        "GlobalName": "Depth",
-                        "ChildPass": "DepthPrePass",
-                        "ChildPassSlot": "Depth"
-                    },
-                    {
-                        "GlobalName": "DepthMSAA",
-                        "ChildPass": "DepthPrePass",
-                        "ChildPassSlot": "DepthMSAA"
-                    },
-                    {
-                        "GlobalName": "DepthLinear",
-                        "ChildPass": "DepthPrePass",
-                        "ChildPassSlot": "DepthLinear"
+                        "GlobalName": "SwapChainOutput",
+                        "Slot": "SwapChainOutput"
                     }
                 ]
             },
@@ -69,11 +64,28 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
-                    ]
+                    ],
+                    "PassData": {
+                        "$type": "PassData",
+                        "PipelineConnections": [
+                            {
+                                "GlobalName": "Depth",
+                                "Slot": "Depth"
+                            },
+                            {
+                                "GlobalName": "DepthMSAA",
+                                "Slot": "DepthMSAA"
+                            },
+                            {
+                                "GlobalName": "DepthLinear",
+                                "Slot": "DepthLinear"
+                            }
+                        ]
+                    }
                 },
                 {
                     "Name": "MotionVectorPass",
@@ -96,7 +108,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -123,7 +135,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -143,7 +155,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -212,7 +224,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -364,7 +376,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -491,7 +503,7 @@
                         {
                             "LocalSlot": "Output",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }

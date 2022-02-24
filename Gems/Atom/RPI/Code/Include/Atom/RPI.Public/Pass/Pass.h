@@ -18,6 +18,7 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
+#include <Atom/RPI.Reflect/Pass/PassData.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
 
 #include <Atom/RHI/DrawList.h>
@@ -36,7 +37,6 @@
     friend class PassLibrary;                                                       \
     friend class PassSystem;                                                        \
     friend class ParentPass;                                                        \
-    friend class PipelinePass;                                                      \
     friend class RenderPipeline;                                                    \
     friend class UnitTest::PassTests;                                               \
 
@@ -299,9 +299,6 @@ namespace AZ
             // Called in pass's frame prepare function
             void ImportAttachments(RHI::FrameGraphAttachmentInterface attachmentDatabase);
 
-            Ptr<PassAttachment> CreateImageAttachment(const PassImageAttachmentDesc& desc);
-            Ptr<PassAttachment> CreateBufferAttachment(const PassBufferAttachmentDesc& desc);
-
             // --- Find functions ---
 
             // Searches for an adjacent pass with the given Name. An adjacent pass is either:
@@ -503,6 +500,9 @@ namespace AZ
             // the next Pass System update. The function internally build and initializes the pass.
             void ManualPipelineBuildAndInitialize();
 
+            // Registers any bindings specified as pipeline bindings with the pipeline for global reference
+            void RegisterPipelineConnections();
+
             // --- Hierarchy related functions ---
 
             // Called when the pass gets a new spot in the pass hierarchy
@@ -578,6 +578,9 @@ namespace AZ
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase
             AZStd::vector<Ptr<PassAttachment>> m_importedAttachmentStore;
+
+            // List of connections on this pass that will be registered with the pipeline for reference in a global manner
+            PipelineConnectionList m_pipelineConnections;
 
             // Name of the pass. Will be concatenated with parent names to form a unique path
             Name m_name;

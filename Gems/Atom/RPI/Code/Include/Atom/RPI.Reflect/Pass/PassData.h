@@ -13,6 +13,31 @@ namespace AZ
 {
     namespace RPI
     {
+        //! Specifies a connection that will be pointed to by the pipeline for global reference
+        struct PipelineConnection final
+        {
+            AZ_TYPE_INFO(PipelineConnection, "{8D708E59-E94C-4B25-8B0A-5D890BC8E6FE}");
+
+            static void Reflect(ReflectContext* context)
+            {
+                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+                {
+                    serializeContext->Class<PipelineConnection>()
+                        ->Version(1)
+                        ->Field("GlobalName", &PipelineConnection::m_globalName)
+                        ->Field("Slot", &PipelineConnection::m_localBinding);
+                }
+            }
+
+            //! The pipeline global name that other passes can use to reference the connection in a global way
+            Name m_globalName;
+
+            //! Name of the local binding on the pass to expose at a pipeline level for reference in a global way 
+            Name m_localBinding;
+        };
+
+        using PipelineConnectionList = AZStd::vector<PipelineConnection>;
+
         //! Base class for custom data for Passes to be specified in a PassRequest or PassTemplate.
         //! If custom data is specified in both the PassTemplate and the PassRequest, the data
         //! specified in the PassRequest will take precedent and the data in PassTemplate ignored.
@@ -27,12 +52,18 @@ namespace AZ
 
             static void Reflect(ReflectContext* context)
             {
+                PipelineConnection::Reflect(context);
+
                 if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
                 {
                     serializeContext->Class<PassData>()
-                        ->Version(0);
+                        ->Version(1)
+                        ->Field("PipelineConnections", &PassData::m_pipelineConnections);
                 }
             }
+
+            // Specifies global pipeline connections to the pipeline's immediate child passes
+            PipelineConnectionList m_pipelineConnections;
         };
     } // namespace RPI
 } // namespace AZ

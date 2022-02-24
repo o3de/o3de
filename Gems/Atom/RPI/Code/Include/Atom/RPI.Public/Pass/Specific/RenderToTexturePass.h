@@ -12,7 +12,7 @@
 #include <Atom/RPI.Reflect/Pass/RenderToTexturePassData.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
-#include <Atom/RPI.Public/Pass/PipelinePass.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
 
 namespace AZ
 {
@@ -23,10 +23,10 @@ namespace AZ
         //! RenderToTexturePass can also read back the render target.
         //! This is useful to render a render pipeline to a render target and (optional) read back its data to cpu memory for later use. 
         class RenderToTexturePass final
-            : public PipelinePass
+            : public ParentPass
         {
         public:
-            AZ_RTTI(RenderToTexturePass, "{4FBA3461-A072-4538-84D1-311D2756B27E}", PipelinePass);
+            AZ_RTTI(RenderToTexturePass, "{4FBA3461-A072-4538-84D1-311D2756B27E}", ParentPass);
             AZ_CLASS_ALLOCATOR(RenderToTexturePass, SystemAllocator, 0);
 
             RenderToTexturePass(const PassDescriptor& descriptor);
@@ -50,7 +50,7 @@ namespace AZ
             void OnUpdateOutputSize();
 
         private:
-            using Base = PipelinePass;
+            using Base = ParentPass;
 
             RHI::Scissor m_scissor;
             RHI::Viewport m_viewport;

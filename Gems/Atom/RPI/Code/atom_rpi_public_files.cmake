@@ -70,7 +70,6 @@ set(FILES
     Include/Atom/RPI.Public/Pass/PassSystem.h
     Include/Atom/RPI.Public/Pass/PassSystemInterface.h
     Include/Atom/RPI.Public/Pass/PassUtils.h
-    Include/Atom/RPI.Public/Pass/PipelinePass.h
     Include/Atom/RPI.Public/Pass/RasterPass.h
     Include/Atom/RPI.Public/Pass/RenderPass.h
     Include/Atom/RPI.Public/Pass/MSAAResolvePass.h
@@ -148,7 +147,6 @@ set(FILES
     Source/RPI.Public/Pass/PassLibrary.cpp
     Source/RPI.Public/Pass/PassSystem.cpp
     Source/RPI.Public/Pass/PassUtils.cpp
-    Source/RPI.Public/Pass/PipelinePass.cpp
     Source/RPI.Public/Pass/RasterPass.cpp
     Source/RPI.Public/Pass/RenderPass.cpp
     Source/RPI.Public/Pass/MSAAResolvePass.cpp

@@ -41,12 +41,12 @@ namespace AZ
                 rootRequest.m_templateName = desc.m_rootPassTemplate;
 
                 Ptr<Pass> rootPass = passSystem->CreatePassFromRequest(&rootRequest);
-                pipeline->m_rootPass = azrtti_cast<PipelinePass*>(rootPass.get());
+                pipeline->m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
             }
             else
             {
                 // Otherwise create an empty root pass with pipeline name
-                pipeline->m_rootPass = passSystem->CreatePass<PipelinePass>(passName);
+                pipeline->m_rootPass = passSystem->CreatePass<ParentPass>(passName);
             }
             AZ_Assert(pipeline->m_rootPass != nullptr, "Error creating root pass for pipeline!");
 
@@ -323,7 +323,7 @@ namespace AZ
                 passSystem->SetHotReloading(true);
 
                 // Attempt to re-create hierarchy under root pass
-                Ptr<PipelinePass> newRoot = azrtti_cast<PipelinePass*>(m_rootPass->Recreate().get());
+                Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_rootPass->Recreate().get());
                 newRoot->SetRenderPipeline(this);
                 newRoot->m_flags.m_isPipelineRoot = true;
                 newRoot->ManualPipelineBuildAndInitialize();
@@ -477,9 +477,9 @@ namespace AZ
             return nullptr;
         }
 
-        void RenderPipeline::AddPipelineConnection(GlobalBinding connection)
+        void RenderPipeline::AddPipelineConnection(const Name& name, PassAttachmentBinding* binding, Pass* pass)
         {
-            m_pipelineConnections.push_back(connection);
+            m_pipelineConnections.push_back(GlobalBinding{ name, binding, pass });
         }
 
         void RenderPipeline::RemovePipelineConnectionsFromPass(Pass* passOnwer)
@@ -509,7 +509,7 @@ namespace AZ
             return m_nameId;
         }
 
-        const Ptr<PipelinePass>& RenderPipeline::GetRootPass() const
+        const Ptr<ParentPass>& RenderPipeline::GetRootPass() const
         {
             return m_rootPass;
         }

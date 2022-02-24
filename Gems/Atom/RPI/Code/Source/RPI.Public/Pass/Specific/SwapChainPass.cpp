@@ -20,7 +20,7 @@ namespace AZ
     namespace RPI
     {
         SwapChainPass::SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext)
-            : PipelinePass(descriptor)
+            : ParentPass(descriptor)
             , m_windowContext(windowContext)
         {
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
@@ -72,18 +72,12 @@ namespace AZ
             swapChainImageDesc.m_format = m_swapChainDimensions.m_imageFormat;
             m_swapChainAttachment->m_descriptor = swapChainImageDesc;
 
-            PassAttachmentBinding swapChainOutput;
-            swapChainOutput.m_name = "SwapChainOutput";
-            swapChainOutput.m_slotType = PassSlotType::InputOutput;
-            swapChainOutput.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
-            swapChainOutput.SetAttachment(m_swapChainAttachment);
+            PassAttachmentBinding* swapChainOutput = FindAttachmentBinding(Name("SwapChainOutput"));
+            AZ_Assert(swapChainOutput != nullptr &&
+                      swapChainOutput->m_slotType == PassSlotType::InputOutput,
+                      "PassTemplate used to create SwapChainPass must have an InputOutput called SwapChainOutput");
 
-            m_attachmentBindings.push_back(swapChainOutput);
-        }
-
-        void SwapChainPass::AddPipelineAttachmentsAndConnectionsInternal()
-        {
-            m_pipeline->AddPipelineAttachment(m_swapChainAttachment);
+            swapChainOutput->SetAttachment(m_swapChainAttachment);
         }
 
         // --- Pass behavior overrides ---
@@ -100,7 +94,7 @@ namespace AZ
 
             SetupSwapChainAttachment();
 
-            PipelinePass::BuildInternal();
+            ParentPass::BuildInternal();
         }
 
         void SwapChainPass::FrameBeginInternal(FramePrepareParams params)
@@ -118,7 +112,7 @@ namespace AZ
             // Import the SwapChain
             attachmentDatabase.ImportSwapChain(m_windowContext->GetSwapChainAttachmentId(), m_windowContext->GetSwapChain());
 
-            PipelinePass::FrameBeginInternal(params);
+            ParentPass::FrameBeginInternal(params);
         }
         
         void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)

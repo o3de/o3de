@@ -16,7 +16,7 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
-#include <Atom/RPI.Public/Pass/PipelinePass.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
 
@@ -29,11 +29,11 @@ namespace AZ
         //! Pass that outputs to a SwapChain
         //! Holds all the passes needed to render a frame like depth, forward, post effects etc.
         class SwapChainPass final
-            : public PipelinePass
+            : public ParentPass
             , public AzFramework::WindowNotificationBus::Handler
         {
         public:
-            AZ_RTTI(SwapChainPass, "{551AD61F-8603-4998-A7D1-226F03022295}", PipelinePass);
+            AZ_RTTI(SwapChainPass, "{551AD61F-8603-4998-A7D1-226F03022295}", ParentPass);
             AZ_CLASS_ALLOCATOR(SwapChainPass, SystemAllocator, 0);
 
             SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext);
@@ -59,10 +59,6 @@ namespace AZ
             void OnWindowResized(uint32_t width, uint32_t height) override;
 
         private:
-
-            // Adds the swap chain attachment to the pipeline for global reference
-            void AddPipelineAttachmentsAndConnectionsInternal() override;
-
             // Sets up a swap chain PassAttachment using the swap chain id from the window context 
             void SetupSwapChainAttachment();
 

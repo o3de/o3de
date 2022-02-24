@@ -11,7 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RPI.Public/Base.h>
-#include <Atom/RPI.Public/Pass/PipelinePass.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -134,7 +134,7 @@ namespace AZ
 
             RenderPipelineId GetId() const;
 
-            const Ptr<PipelinePass>& GetRootPass() const;
+            const Ptr<ParentPass>& GetRootPass() const;
 
             //! This function need to be called by Pass class when any passes are added/removed in this pipeline's pass tree.
             void SetPassModified();
@@ -221,7 +221,7 @@ namespace AZ
 
             //! Finding, adding and removing pipeline connections/bindings (can be referenced directly by any pass in the pipeline)
             const GlobalBinding* GetPipelineConnection(const Name& name) const;
-            void AddPipelineConnection(GlobalBinding connection);
+            void AddPipelineConnection(const Name& name, PassAttachmentBinding* binding, Pass* pass);
             void RemovePipelineConnectionsFromPass(Pass* passOnwer);
 
             // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
@@ -266,7 +266,7 @@ namespace AZ
             Scene* m_scene = nullptr;
 
             // Pass tree which contains all the passes in this render pipeline.
-            Ptr<PipelinePass> m_rootPass;
+            Ptr<ParentPass> m_rootPass;
 
             // Attachments that can be referenced from any pass in the pipeline in a global manner
             AZStd::vector<Ptr<PassAttachment>> m_pipelineAttachments;
