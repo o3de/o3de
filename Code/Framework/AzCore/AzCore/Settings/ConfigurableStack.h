@@ -111,7 +111,9 @@ namespace AZ
         ConstIterator begin() const;
         ConstIterator end() const;
         
+        bool empty() const;
         size_t size() const;
+        void clear();
 
     protected:
         void* AddNode(AZStd::string name) override;

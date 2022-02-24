@@ -522,6 +522,7 @@ namespace MaterialEditor
         propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
         propertyConfig.m_parentValue = propertyConfig.m_defaultValue;
         propertyConfig.m_readOnly = true;
+        propertyConfig.m_showThumbnail = true;
 
         m_groups.back()->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
 
