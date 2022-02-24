@@ -61,7 +61,6 @@ namespace AzToolsFramework
         };
 
         using ThumbnailerRendererRequestBus = AZ::EBus<ThumbnailerRendererRequests>;
-        using ThumbnailerRendererRequestsBus = AZ::EBus<ThumbnailerRendererRequests>; //deprecated
 
         //! Notify that product thumbnail was rendered
         class ThumbnailerRendererNotifications

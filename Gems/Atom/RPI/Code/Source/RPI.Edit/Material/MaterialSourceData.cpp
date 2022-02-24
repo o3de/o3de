@@ -170,6 +170,8 @@ namespace AZ
 
             materialAssetCreator.Begin(assetId, materialTypeAsset, processingMode == MaterialAssetProcessingMode::PreBake);
 
+            materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
+
             if (!m_parentMaterial.empty())
             {
                 auto parentMaterialAsset = AssetUtils::LoadAsset<MaterialAsset>(materialSourceFilePath, m_parentMaterial);
@@ -339,6 +341,8 @@ namespace AZ
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
             materialAssetCreator.Begin(assetId, materialTypeAsset.GetValue(), finalize);
+            
+            materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
 
             while (!parentSourceDataStack.empty())
             {
@@ -369,7 +373,7 @@ namespace AZ
             {
                 if (!propertyValue.IsValid())
                 {
-                    materialAssetCreator.ReportWarning("Source data for material property value is invalid.");
+                    materialAssetCreator.ReportWarning("Value for material property '%s' is invalid.", propertyId.GetCStr());
                 }
                 else
                 {
@@ -399,6 +403,50 @@ namespace AZ
                     }
                 }
             }
+        }
+        
+        MaterialSourceData MaterialSourceData::CreateAllPropertyDefaultsMaterial(const Data::Asset<MaterialTypeAsset>& materialType, const AZStd::string& materialTypeSourcePath)
+        {
+            MaterialSourceData material;
+            material.m_materialType = materialTypeSourcePath;
+            material.m_materialTypeVersion = materialType->GetVersion();
+            material.m_description = "For reference, lists the default values for every available property in '" + materialTypeSourcePath + "'";
+            auto propertyLayout = materialType->GetMaterialPropertiesLayout();
+            for (size_t i = 0; i < propertyLayout->GetPropertyCount(); ++i)
+            {
+                const MaterialPropertyDescriptor* descriptor = propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{i});
+                Name propertyId = descriptor->GetName();
+                MaterialPropertyValue defaultValue = materialType->GetDefaultPropertyValues()[i];
+
+                if (defaultValue.Is<Data::Asset<ImageAsset>>())
+                {
+                    Data::AssetId assetId = defaultValue.GetValue<Data::Asset<ImageAsset>>().GetId();
+
+                    Data::AssetInfo assetInfo;
+                    AZStd::string watchFolder;
+                    bool result = false;
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, assetId.m_guid, assetInfo, watchFolder);
+
+                    if (result)
+                    {
+                        material.SetPropertyValue(propertyId, assetInfo.m_relativePath);
+                    }
+                    else
+                    {
+                        material.SetPropertyValue(propertyId, AZStd::string{});
+                    }
+                }
+                else if (descriptor->GetDataType() == MaterialPropertyDataType::Enum)
+                {
+                    AZ_Assert(defaultValue.Is<uint32_t>(), "Enum property definitions should always have a default value of type unsigned int");
+                    material.SetPropertyValue(propertyId, descriptor->GetEnumName(defaultValue.GetValue<uint32_t>()));
+                }
+                else
+                {
+                    material.SetPropertyValue(propertyId, defaultValue);
+                }
+            }
+            return material;
         }
 
     } // namespace RPI

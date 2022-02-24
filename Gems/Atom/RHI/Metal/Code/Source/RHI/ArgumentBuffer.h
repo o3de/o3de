@@ -77,15 +77,12 @@ namespace AZ
                       ShaderResourceGroupPool* srgPool);
 
             void UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
-                                  const RHI::ShaderInputImageIndex shaderInputIndex,
                                   const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews);
 
             void UpdateSamplers(const RHI::ShaderInputSamplerDescriptor& shaderInputSampler,
-                                const RHI::ShaderInputSamplerIndex shaderInputIndex,
                                 const AZStd::span<const RHI::SamplerState>& samplerStates);
 
             void UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
-                                   const RHI::ShaderInputBufferIndex shaderInputIndex,
                                    const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews);
 
             void UpdateConstantBufferViews(AZStd::span<const uint8_t> rawData);
@@ -98,12 +95,10 @@ namespace AZ
             //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
             using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, AZStd::unordered_set<id <MTLResource>>>;
 
-            void CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
-                                           const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+            void CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
                                            ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
                                            GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
 
-            void ClearResourceTracking();
             bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
             bool IsNullDescHeapNeeded() const;
 
@@ -127,17 +122,12 @@ namespace AZ
 
             static const int MaxEntriesInArgTable = 31;
 
-            void CollectResourcesForCompute(id<MTLCommandEncoder> encoder,
-                                            const ResourceBindingsSet& resourceBindingData,
+            void CollectResourcesForCompute(const ResourceBindingsSet& resourceBindingData,
                                             ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
-            void CollectResourcesForGraphics(id<MTLCommandEncoder> encoder,
-                                             RHI::ShaderStageMask visShaderMask,
+            void CollectResourcesForGraphics(RHI::ShaderStageMask visShaderMask,
                                              const ResourceBindingsSet& resourceBindingDataSet,
                                              GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
-            //! Use visibility information to call UseResource on all resources for this Argument Buffer
-            void ApplyUseResource(id<MTLCommandEncoder> encoder,
-                                  const ResourceBindingsMap& resourceMap,
-                                  const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
+    
             void BindNullSamplers(uint32_t registerId, uint32_t samplerCount);
 
             Device* m_device = nullptr;
