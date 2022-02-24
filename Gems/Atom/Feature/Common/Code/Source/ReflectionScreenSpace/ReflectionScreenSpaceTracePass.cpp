@@ -52,9 +52,6 @@ namespace AZ
 
             previousFrameImageAttachment->m_path = m_previousFrameImageAttachment->GetAttachmentId();
             previousFrameImageAttachment->m_importedResource = m_previousFrameImageAttachment;
-
-            // Set PreviousFrameImage attachment on the appropriate binding
-            m_attachmentBindings[4].SetAttachment(previousFrameImageAttachment);
         }
 
     }   // namespace RPI

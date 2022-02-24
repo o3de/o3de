@@ -305,7 +305,7 @@ namespace AZ
                 targetAttachment = m_originalAttachment;
             }
 
-            if (targetAttachment == nullptr || targetAttachment == m_attachment)
+            if (targetAttachment == nullptr || (targetAttachment == m_attachment && m_attachment->GetAttachmentId() == m_unifiedScopeDesc.m_attachmentId))
             {
                 return;
             }
