@@ -19,7 +19,37 @@
 
 namespace UnitTest
 {
+    constexpr int SmallIterationCount = 10;
+    constexpr int LargeIterationCount = 1000000;
+
     constexpr AZ::u32 ProfilerProxyGroup = AZ_CRC_CE("StatisticalProfilerProxyTests");
+
+    template<typename ProfilerType, typename StatIdType>
+    void RecordStatistics(ProfilerType& profiler, const int loopCount, const StatIdType& rootId, const StatIdType& loopId)
+    {
+        typename ProfilerType::TimedScope rootScope(profiler, rootId);
+
+        int counter = 0;
+        for (int i = 0; i < loopCount; ++i)
+        {
+            typename ProfilerType::TimedScope loopScope(profiler, loopId);
+            ++counter;
+        }
+    }
+
+    void RecordStatistics(const int loopCount,
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType& rootId,
+        const AZ::Statistics::StatisticalProfilerProxy::StatIdType& loopId)
+    {
+        AZ::Statistics::StatisticalProfilerProxy::TimedScope rootScope(ProfilerProxyGroup, rootId);
+
+        int counter = 0;
+        for (int i = 0; i < loopCount; ++i)
+        {
+            AZ::Statistics::StatisticalProfilerProxy::TimedScope loopScope(ProfilerProxyGroup, loopId);
+            ++counter;
+        }
+    }
 
     class StatisticalProfilerTest
         : public AllocatorsFixture
@@ -38,22 +68,13 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNamePerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNameBlock, statNameBlock, "us") != nullptr);
 
-        const int iter_count = 10;
-        {
-            ProfilerType::TimedScope rootScope(profiler, statNamePerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                ProfilerType::TimedScope loopScope(profiler, statNameBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(profiler, SmallIterationCount, statNamePerformance, statNameBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statNamePerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), SmallIterationCount);
     }
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerCrc32NoMutex_ProfileCode_ValidateStatistics)
@@ -71,22 +92,13 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
 
-        const int iter_count = 10;
-        {
-            ProfilerType::TimedScope rootScope(profiler, statIdPerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                ProfilerType::TimedScope loopScope(profiler, statIdBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(profiler, SmallIterationCount, statIdPerformance, statIdBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), SmallIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
     }
@@ -103,22 +115,13 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNamePerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNameBlock, statNameBlock, "us") != nullptr);
 
-        const int iter_count = 10;
-        {
-            ProfilerType::TimedScope rootScope(profiler, statNamePerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                ProfilerType::TimedScope loopScope(profiler, statNameBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(profiler, SmallIterationCount, statNamePerformance, statNameBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statNamePerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), SmallIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
     }
@@ -138,75 +141,15 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
 
-        const int iter_count = 10;
-        {
-            ProfilerType::TimedScope rootScope(profiler, statIdPerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                ProfilerType::TimedScope loopScope(profiler, statIdBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(profiler, SmallIterationCount, statIdPerformance, statIdBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), SmallIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-    }
-
-    static void simple_thread01(AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>* profiler, int loop_cnt)
-    {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
-
-        const AZStd::string simple_thread("simple_thread1");
-        const AZStd::string simple_thread_loop("simple_thread1_loop");
-
-        ProfilerType::TimedScope rootScope(*profiler, simple_thread);
-
-        static int counter = 0;
-        for (int i = 0; i < loop_cnt; i++)
-        {
-            ProfilerType::TimedScope loopScope(*profiler, simple_thread_loop);
-            counter++;
-        }
-    }
-
-    static void simple_thread02(AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>* profiler, int loop_cnt)
-    {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
-
-        const AZStd::string simple_thread("simple_thread2");
-        const AZStd::string simple_thread_loop("simple_thread2_loop");
-
-        ProfilerType::TimedScope rootScope(*profiler, simple_thread);
-
-        static int counter = 0;
-        for (int i = 0; i < loop_cnt; i++)
-        {
-            ProfilerType::TimedScope loopScope(*profiler, simple_thread_loop);
-            counter++;
-        }
-    }
-
-    static void simple_thread03(AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>* profiler, int loop_cnt)
-    {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
-
-        const AZStd::string simple_thread("simple_thread3");
-        const AZStd::string simple_thread_loop("simple_thread3_loop");
-
-        ProfilerType::TimedScope rootScope(*profiler, simple_thread);
-
-        static int counter = 0;
-        for (int i = 0; i < loop_cnt; i++)
-        {
-            ProfilerType::TimedScope loopScope(*profiler, simple_thread_loop);
-            counter++;
-        }
     }
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerStringWithSharedSpinMutex_RunProfiledThreads_ValidateStatistics)
@@ -236,10 +179,15 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3Loop, statNameThread3Loop, "us"));
 
         //Let's kickoff the threads to see how much contention affects the profiler's performance.
-        const int iter_count = 10;
-        AZStd::thread t1(AZStd::bind(&simple_thread01, &profiler, iter_count));
-        AZStd::thread t2(AZStd::bind(&simple_thread02, &profiler, iter_count));
-        AZStd::thread t3(AZStd::bind(&simple_thread03, &profiler, iter_count));
+        AZStd::thread t1([&](){
+            RecordStatistics(profiler, SmallIterationCount, statIdThread1, statIdThread1Loop);
+        });
+        AZStd::thread t2([&](){
+            RecordStatistics(profiler, SmallIterationCount, statIdThread2, statIdThread2Loop);
+        });
+        AZStd::thread t3([&](){
+            RecordStatistics(profiler, SmallIterationCount, statIdThread3, statIdThread3Loop);
+        });
         t1.join();
         t2.join();
         t3.join();
@@ -247,17 +195,17 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread1)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), SmallIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread2)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), SmallIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread3)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), SmallIterationCount);
 
     }
 
@@ -281,76 +229,16 @@ namespace UnitTest
 
         proxy->ActivateProfiler(ProfilerProxyGroup, true);
 
-        const int iter_count = 10;
-        {
-            TimedScopeType rootScope(ProfilerProxyGroup, statIdPerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                TimedScopeType loopScope(ProfilerProxyGroup, statIdBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(SmallIterationCount, statIdPerformance, statIdBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), SmallIterationCount);
 
         //Clean Up
         proxy->ActivateProfiler(ProfilerProxyGroup, false);
-    }
-
-    static void simple_thread1(int loop_cnt)
-    {
-        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
-
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread1("simple_thread1");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread1_loop("simple_thread1_loop");
-
-        TimedScopeType rootScope(ProfilerProxyGroup, simple_thread1);
-
-        static int counter = 0;
-        for (int i = 0; i < loop_cnt; i++)
-        {
-            TimedScopeType loopScope(ProfilerProxyGroup, simple_thread1_loop);
-            counter++;
-        }
-    }
-
-    static void simple_thread2(int loop_cnt)
-    {
-        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
-
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread2("simple_thread2");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread2_loop("simple_thread2_loop");
-
-        TimedScopeType rootScope(ProfilerProxyGroup, simple_thread2);
-
-        static int counter = 0;
-        for (int i = 0; i < loop_cnt; i++)
-        {
-            TimedScopeType loopScope(ProfilerProxyGroup, simple_thread2_loop);
-            counter++;
-        }
-    }
-
-    static void simple_thread3(int loop_cnt)
-    {
-        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
-
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread3("simple_thread3");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread3_loop("simple_thread3_loop");
-
-        TimedScopeType rootScope(ProfilerProxyGroup, simple_thread3);
-
-        static int counter = 0;
-        for (int i = 0; i < loop_cnt; i++)
-        {
-            TimedScopeType loopScope(ProfilerProxyGroup, simple_thread3_loop);
-            counter++;
-        }
     }
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerProxy3_RunProfiledThreads_ValidateStatistics)
@@ -385,10 +273,15 @@ namespace UnitTest
         proxy->ActivateProfiler(ProfilerProxyGroup, true);
 
         //Let's kickoff the threads to see how much contention affects the profiler's performance.
-        const int iter_count = 10;
-        AZStd::thread t1(AZStd::bind(&simple_thread1, iter_count));
-        AZStd::thread t2(AZStd::bind(&simple_thread2, iter_count));
-        AZStd::thread t3(AZStd::bind(&simple_thread3, iter_count));
+        AZStd::thread t1([&](){
+            RecordStatistics(SmallIterationCount, statIdThread1, statIdThread1Loop);
+        });
+        AZStd::thread t2([&](){
+            RecordStatistics(SmallIterationCount, statIdThread2, statIdThread2Loop);
+        });
+        AZStd::thread t3([&](){
+            RecordStatistics(SmallIterationCount, statIdThread3, statIdThread3Loop);
+        });
         t1.join();
         t2.join();
         t3.join();
@@ -396,17 +289,17 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread1)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), SmallIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread2)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), SmallIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread3)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), SmallIterationCount);
 
         //Clean Up
         proxy->ActivateProfiler(ProfilerProxyGroup, false);
@@ -482,22 +375,13 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNamePerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNameBlock, statNameBlock, "us") != nullptr);
 
-        const int iter_count = 1000000;
-        {
-            ProfilerType::TimedScope rootScope(profiler, statNamePerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                ProfilerType::TimedScope loopScope(profiler, statNameBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(profiler, LargeIterationCount, statNamePerformance, statNameBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statNamePerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), LargeIterationCount);
 
         profiler.LogAndResetStats("StatisticalProfilerStringNoMutex");
 
@@ -519,22 +403,13 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
 
-        const int iter_count = 1000000;
-        {
-            ProfilerType::TimedScope rootScope(profiler, statIdPerformance);
-                int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                ProfilerType::TimedScope loopScope(profiler, statIdBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(profiler, LargeIterationCount, statIdPerformance, statIdBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), LargeIterationCount);
 
         profiler.LogAndResetStats("StatisticalProfilerCrc32NoMutex");
 
@@ -553,22 +428,13 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNamePerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNameBlock, statNameBlock, "us") != nullptr);
 
-        const int iter_count = 1000000;
-        {
-            ProfilerType::TimedScope rootScope(profiler, statNamePerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                ProfilerType::TimedScope loopScope(profiler, statNameBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(profiler, LargeIterationCount, statNamePerformance, statNameBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statNamePerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), LargeIterationCount);
 
         profiler.LogAndResetStats("StatisticalProfilerStringWithSharedSpinMutex");
 
@@ -590,22 +456,13 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
 
-        const int iter_count = 1000000;
-        {
-            ProfilerType::TimedScope rootScope(profiler, statIdPerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                ProfilerType::TimedScope loopScope(profiler, statIdBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(profiler, LargeIterationCount, statIdPerformance, statIdBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), LargeIterationCount);
 
         profiler.LogAndResetStats("StatisticalProfilerCrc32WithSharedSpinMutex");
 
@@ -639,10 +496,15 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3Loop, statNameThread3Loop, "us"));
 
         //Let's kickoff the threads to see how much contention affects the profiler's performance.
-        const int iter_count = 1000000;
-        AZStd::thread t1(AZStd::bind(&simple_thread01, &profiler, iter_count));
-        AZStd::thread t2(AZStd::bind(&simple_thread02, &profiler, iter_count));
-        AZStd::thread t3(AZStd::bind(&simple_thread03, &profiler, iter_count));
+        AZStd::thread t1([&](){
+            RecordStatistics(profiler, LargeIterationCount, statIdThread1, statIdThread1Loop);
+        });
+        AZStd::thread t2([&](){
+            RecordStatistics(profiler, LargeIterationCount, statIdThread2, statIdThread2Loop);
+        });
+        AZStd::thread t3([&](){
+            RecordStatistics(profiler, LargeIterationCount, statIdThread3, statIdThread3Loop);
+        });
         t1.join();
         t2.join();
         t3.join();
@@ -650,17 +512,17 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread1)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), LargeIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread2)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), LargeIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread3)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), LargeIterationCount);
 
         profiler.LogAndResetStats("3_Threads_StatisticalProfiler");
 
@@ -688,22 +550,13 @@ namespace UnitTest
 
         proxy->ActivateProfiler(ProfilerProxyGroup, true);
 
-        const int iter_count = 1000000;
-        {
-            TimedScopeType rootScope(ProfilerProxyGroup, statIdPerformance);
-            int counter = 0;
-            for (int i = 0; i < iter_count; i++)
-            {
-                TimedScopeType loopScope(ProfilerProxyGroup, statIdBlock);
-                counter++;
-            }
-        }
+        RecordStatistics(LargeIterationCount, statIdPerformance, statIdBlock);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), LargeIterationCount);
 
         profiler.LogAndResetStats("StatisticalProfilerProxy");
 
@@ -743,10 +596,15 @@ namespace UnitTest
         proxy->ActivateProfiler(ProfilerProxyGroup, true);
 
         //Let's kickoff the threads to see how much contention affects the profiler's performance.
-        const int iter_count = 1000000;
-        AZStd::thread t1(AZStd::bind(&simple_thread1, iter_count));
-        AZStd::thread t2(AZStd::bind(&simple_thread2, iter_count));
-        AZStd::thread t3(AZStd::bind(&simple_thread3, iter_count));
+        AZStd::thread t1([&](){
+            RecordStatistics(LargeIterationCount, statIdThread1, statIdThread1Loop);
+        });
+        AZStd::thread t2([&](){
+            RecordStatistics(LargeIterationCount, statIdThread2, statIdThread2Loop);
+        });
+        AZStd::thread t3([&](){
+            RecordStatistics(LargeIterationCount, statIdThread3, statIdThread3Loop);
+        });
         t1.join();
         t2.join();
         t3.join();
@@ -754,17 +612,17 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread1)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), LargeIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread2)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), LargeIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread3)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), iter_count);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), LargeIterationCount);
 
         profiler.LogAndResetStats("3_Threads_StatisticalProfilerProxy");
 
