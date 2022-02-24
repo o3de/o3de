@@ -783,6 +783,9 @@ namespace AssetProcessor
 
         FinalizeEnabledPlatforms();
 
+        // Add the common platform.  This platform is always enabled
+        EnablePlatform(AssetBuilderSDK::PlatformInfo{ AssetBuilderSDK::CommonPlatformName, AZStd::unordered_set<AZStd::string>{ "common" }});
+
         if (scanFolderOverride)
         {
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
@@ -803,6 +806,7 @@ namespace AssetProcessor
                     true));
             }
         }
+
         // Then read recognizers (which depend on platforms)
         if (!ReadRecognizersFromSettingsRegistry(absoluteAssetRoot, noConfigScanFolders, scanFolderPatterns))
         {
@@ -972,6 +976,12 @@ namespace AssetProcessor
             // Add all enabled platforms
             for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
             {
+                if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+                {
+                    // The common platform is not included in any scanfolder to avoid builders by-default producing jobs for it
+                    continue;
+                }
+
                 if (AZStd::find(platformsList.begin(), platformsList.end(), platform) == platformsList.end())
                 {
                     platformsList.push_back(platform);
@@ -984,6 +994,12 @@ namespace AssetProcessor
             {
                 for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
                 {
+                    if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+                    {
+                        // The common platform is not included in any scanfolder to avoid builders by-default producing jobs for it
+                        continue;
+                    }
+
                     bool addPlatform = (QString::compare(identifier, platform.m_identifier.c_str(), Qt::CaseInsensitive) == 0) ||
                         platform.m_tags.find(identifier.toLower().toUtf8().data()) != platform.m_tags.end();
 

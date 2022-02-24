@@ -109,6 +109,8 @@ namespace AssetBuilderSDK
     extern const char* const s_processJobRequestFileName; //!< File name for having job requests send from the Asset Processor.
     extern const char* const s_processJobResponseFileName; //!< File name for having job responses returned to the Asset Processor.
 
+    constexpr const char* CommonPlatformName = "common"; // Use for platform-agnostic jobs
+
     // SubIDs uniquely identify a particular output product of a specific source asset
     // currently we use a scheme where various bits of the subId (which is a 32 bit unsigned) are used to designate different things.
     // we may expand this into a 64-bit "namespace" by adding additional 32 bits at the front at some point, if it becomes necessary.
