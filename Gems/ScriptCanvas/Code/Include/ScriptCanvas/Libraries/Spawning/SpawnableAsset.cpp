@@ -86,7 +86,7 @@ namespace ScriptCanvas::Nodeables::Spawning
                     })
                 // required to support Map<Number, SpawnableAsset> variable type in Script Canvas
                 ->Method(
-                    "Map_Number_to_SpawnTicketInstance_Func",
+                    "Map_Number_to_SpawnableAsset_Func",
                     [](const AZStd::unordered_map<double, SpawnableAsset>&)
                     {
                     });
