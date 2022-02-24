@@ -348,6 +348,7 @@ namespace EMStudio
         {
             m_fpsCounter.Step();
             const AZStd::string fpsTempStr = AZStd::string::format("%d FPS", m_fpsCounter.GetFPS());
+            debugDisplay->SetColor(AZ::Colors::Chocolate);
             debugDisplay->Draw2dTextLabel(40.0f, 20.0f, 1.0f, fpsTempStr.c_str(), false);
         }
         debugDisplay->DepthTestOn();
