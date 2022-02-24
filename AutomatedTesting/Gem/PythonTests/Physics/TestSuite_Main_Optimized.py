@@ -155,6 +155,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
         from .tests.character_controller import CharacterController_SwitchLevels as test_module
 
+    class C3510642_Terrain_NotCollideWithTerrain(EditorSharedTest):
+        from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
+
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -171,9 +174,6 @@ class TestAutomation(EditorTestSuite):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
 
-
-    class C3510642_Terrain_NotCollideWithTerrain(EditorSharedTest):
-        from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
 
     class C4976195_RigidBodies_InitialLinearVelocity(EditorSharedTest):
         from .tests.rigid_body import RigidBody_InitialLinearVelocity as test_module
