@@ -97,7 +97,7 @@ class TestAutomation(TestAutomationBase):
     @pytest.mark.xfail(reason="Test still under development.")
     def test_Tick_InterpolatedRigidBodyMotionIsSmooth(self, request, workspace, editor, launcher_platform):
         from .tests.tick import Tick_InterpolatedRigidBodyMotionIsSmooth as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.GROUP_tick
     @pytest.mark.xfail(reason="Test still under development.")
