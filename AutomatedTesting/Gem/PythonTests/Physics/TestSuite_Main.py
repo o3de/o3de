@@ -86,7 +86,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config    
     def test_ShapeCollider_CylinderShapeCollides(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
