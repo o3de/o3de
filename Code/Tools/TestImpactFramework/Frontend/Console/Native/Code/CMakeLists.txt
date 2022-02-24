@@ -11,10 +11,10 @@ if(LY_MONOLITHIC_GAME)
 endif()
 
 ly_add_target(
-    NAME TestImpact.Frontend.Console.Static STATIC
+    NAME TestImpact.Frontend.Console.Native.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
-        testimpactframework_frontend_console_static_files.cmake
+        testimpactframework_frontend_console_native_static_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -25,21 +25,21 @@ ly_add_target(
             ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::TestImpact.Runtime.Static
+            AZ::TestImpact.Runtime.Common.Static
 )
 
 ly_add_target(
-    NAME TestImpact.Frontend.Console EXECUTABLE
+    NAME TestImpact.Frontend.Console.Native EXECUTABLE
     OUTPUT_NAME tiaf
     NAMESPACE AZ
     FILES_CMAKE
-        testimpactframework_frontend_console_files.cmake
+        testimpactframework_frontend_console_native_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            AZ::TestImpact.Frontend.Console.Static
+            AZ::TestImpact.Frontend.Console.Native.Static
 )
 
 ################################################################################
@@ -48,10 +48,10 @@ ly_add_target(
 
 # Disbled:SPEC-7246
 #ly_add_target(
-#    NAME TestImpact.Frontend.Console.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+#    NAME TestImpact.Frontend.Console.Native.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
 #    NAMESPACE AZ
 #    FILES_CMAKE
-#        testimpactframework_frontend_console_static_tests_files.cmake
+#        testimpactframework_frontend_console_native_static_tests_files.cmake
 #    INCLUDE_DIRECTORIES
 #        PRIVATE
 #            Include
@@ -61,9 +61,9 @@ ly_add_target(
 #        PRIVATE
 #            AZ::AzTestShared
 #            AZ::AzTest
-#            AZ::TestImpact.Frontend.Console.Static
+#            AZ::TestImpact.Frontend.Console.Native.Static
 #)
 #
 #ly_add_googletest(
-#    NAME AZ::TestImpact.Frontend.Console.Static.Tests
+#    NAME AZ::TestImpact.Frontend.Console.Native.Tests
 #)

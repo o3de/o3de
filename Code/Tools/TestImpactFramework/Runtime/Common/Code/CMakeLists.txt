@@ -10,12 +10,12 @@ ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platf
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
-    NAME TestImpact.Runtime.Static STATIC
+    NAME TestImpact.Runtime.Common.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
-        testimpactframework_runtime_files.cmake
+        testimpactframework_runtime_common_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-     PLATFORM_INCLUDE_FILES
+    PLATFORM_INCLUDE_FILES
         ${common_dir}/${PAL_TRAIT_COMPILER_ID}/testimpactframework_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
@@ -39,10 +39,10 @@ add_subdirectory(Tests/TestTargetC)
 add_subdirectory(Tests/TestTargetD)
 
 ly_add_target(
-    NAME TestImpact.Runtime.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+    NAME TestImpact.Runtime.Common.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
     NAMESPACE AZ
     FILES_CMAKE
-        testimpactframework_runtime_tests_files.cmake
+        testimpactframework_runtime_common_tests_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Include
@@ -52,7 +52,7 @@ ly_add_target(
         PRIVATE
             AZ::AzTestShared
             AZ::AzTest
-            AZ::TestImpact.Runtime.Static
+            AZ::TestImpact.Runtime.Common.Static
     RUNTIME_DEPENDENCIES
         AZ::AzTestRunner
         AZ::TestImpact.TestProcess.Console
@@ -82,5 +82,5 @@ ly_add_target(
 )
 
 ly_add_googletest(
-    NAME AZ::TestImpact.Runtime.Tests
+    NAME AZ::TestImpact.Runtime.Common.Tests
 )
