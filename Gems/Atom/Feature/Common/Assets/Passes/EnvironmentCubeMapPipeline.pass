@@ -6,6 +6,12 @@
         "PassTemplate": {
             "Name": "EnvironmentCubeMapPipeline",
             "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "Output",
+                    "SlotType": "InputOutput"
+                }
+            ],
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",
@@ -112,24 +118,7 @@
                                 "Attachment": "Output"
                             }
                         }
-                    ],
-                    "PassData": {
-                        "$type": "PassData",
-                        "PipelineConnections": [
-                            {
-                                "GlobalName": "Depth",
-                                "Slot": "Depth"
-                            },
-                            {
-                                "GlobalName": "DepthMSAA",
-                                "Slot": "DepthMSAA"
-                            },
-                            {
-                                "GlobalName": "DepthLinear",
-                                "Slot": "DepthLinear"
-                            }
-                        ]
-                    }
+                    ]
                 },
                 {
                     "Name": "LightCullingPass",

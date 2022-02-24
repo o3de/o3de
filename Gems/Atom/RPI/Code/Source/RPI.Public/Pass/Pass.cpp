@@ -51,7 +51,7 @@ namespace AZ
                 "Pass::Pass - request is valid but template is nullptr. This is not allowed. Passing a valid passRequest also requires a valid passTemplate.");
 
             m_passData = PassUtils::GetPassDataPtr(descriptor);
-            PassUtils::GetPipelineConnections(descriptor, m_pipelineConnections);
+            PassUtils::ExtractPipelineConnections(descriptor, m_pipelineConnections);
 
             m_flags.m_enabled = true;
             m_flags.m_timestampQueryEnabled = false;
@@ -1097,6 +1097,8 @@ namespace AZ
                     m_pipeline->AddPipelineConnection(connection.m_globalName, binding, this);
                 }
             }
+
+            m_flags.m_containsGlobalReference = (m_pipelineConnections.size() > 0);
         }
 
         // --- Queuing functions with PassSystem ---
@@ -1215,6 +1217,7 @@ namespace AZ
 
             // Bindings, inputs and attachments
             CreateBindingsFromTemplate();
+            RegisterPipelineConnections();
             SetupInputsFromRequest();
             SetupPassDependencies();
             CreateAttachmentsFromTemplate();
@@ -1233,7 +1236,6 @@ namespace AZ
             UpdateOwnedAttachments();
             UpdateAttachmentUsageIndices();
 
-            RegisterPipelineConnections();
 
             m_state = PassState::Built;
             m_queueState = PassQueueState::NoQueue;

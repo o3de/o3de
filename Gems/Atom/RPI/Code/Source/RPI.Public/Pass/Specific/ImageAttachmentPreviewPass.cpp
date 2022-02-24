@@ -176,14 +176,25 @@ namespace AZ
                 RenderPipeline* pipeline = pass->GetRenderPipeline();
                 if (pipeline)
                 {
-                    for (const auto& binding : pipeline->GetRootPass()->GetAttachmentBindings())
+                    Pass* pipelinePass = pipeline->GetRootPass().get();
+                    PassAttachmentBinding* binding = nullptr;
+
+                    // Get either first output or first input/output
+                    if (pipelinePass->GetOutputCount() > 0)
                     {
-                        if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget
-                            && binding.m_slotType == PassSlotType::Output)
-                        {
-                            SetOutputColorAttachment(binding.GetAttachment());
-                        }
+                        binding = &pipelinePass->GetOutputBinding(0);
                     }
+                    else if (pipelinePass->GetInputOutputCount() > 0)
+                    {
+                        binding = &pipelinePass->GetInputOutputBinding(0);
+                    }
+
+                    if (binding)
+                    {
+                        SetOutputColorAttachment(binding->GetAttachment());
+                    }
+
+                    AZ_Warning("PassSystem", binding != nullptr, "ImageAttachmentPreviewPass couldn't find a color attachment on pipeline");
                 }
             }
         }

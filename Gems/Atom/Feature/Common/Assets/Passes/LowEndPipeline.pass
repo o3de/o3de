@@ -12,6 +12,15 @@
                     "SlotType": "InputOutput"
                 }
             ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineConnections": [
+                    {
+                        "GlobalName": "SwapChainOutput",
+                        "Slot": "SwapChainOutput"
+                    }
+                ]
+            },
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",

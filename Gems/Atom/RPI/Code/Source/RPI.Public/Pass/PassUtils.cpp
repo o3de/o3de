@@ -56,7 +56,7 @@ namespace AZ
                 return passData;
             }
 
-            void GetPipelineConnections(const AZStd::shared_ptr<PassData>& passData, PipelineConnectionList& outList)
+            void ExtractPipelineConnections(const AZStd::shared_ptr<PassData>& passData, PipelineConnectionList& outList)
             {
                 for (const PipelineConnection& connection : passData->m_pipelineConnections)
                 {
@@ -64,19 +64,19 @@ namespace AZ
                 }
             }
 
-            void GetPipelineConnections(const PassDescriptor& descriptor, PipelineConnectionList& outList)
+            void ExtractPipelineConnections(const PassDescriptor& descriptor, PipelineConnectionList& outList)
             {
                 if (descriptor.m_passRequest != nullptr && descriptor.m_passRequest->m_passData != nullptr)
                 {
-                    GetPipelineConnections(descriptor.m_passRequest->m_passData, outList);
+                    ExtractPipelineConnections(descriptor.m_passRequest->m_passData, outList);
                 }
                 if (descriptor.m_passTemplate != nullptr && descriptor.m_passTemplate->m_passData != nullptr)
                 {
-                    GetPipelineConnections(descriptor.m_passTemplate->m_passData, outList);
+                    ExtractPipelineConnections(descriptor.m_passTemplate->m_passData, outList);
                 }
                 if (descriptor.m_passData != nullptr)
                 {
-                    GetPipelineConnections(descriptor.m_passData, outList);
+                    ExtractPipelineConnections(descriptor.m_passData, outList);
                 }
             }
 
