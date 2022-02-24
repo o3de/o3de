@@ -16,7 +16,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <Viewport/MaterialViewportNotificationBus.h>
 #include <Viewport/MaterialViewportSettings.h>
-#include <Window/MaterialEditorWindowSettings.h>
 #endif
 
 namespace MaterialEditor
@@ -39,35 +38,29 @@ namespace MaterialEditor
         void AddGeneralGroup();
 
         void AddModelGroup();
-        void AddModelPreset();
+        void CreateModelPreset();
         void SelectModelPreset();
         void SaveModelPreset();
 
         void AddLightingGroup();
-        void AddLightingPreset();
+        void CreateLightingPreset();
         void SelectLightingPreset();
         void SaveLightingPreset();
 
-        void RefreshPresets();
+        void SaveSettings();
+        void LoadSettings();
 
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
 
         // MaterialViewportNotificationBus::Handler overrides...
-        void OnLightingPresetSelected([[maybe_unused]] AZ::Render::LightingPresetPtr preset) override;
-        void OnModelPresetSelected([[maybe_unused]] AZ::Render::ModelPresetPtr preset) override;
-        void OnShadowCatcherEnabledChanged(bool enable) override;
-        void OnGridEnabledChanged(bool enable) override;
-        void OnAlternateSkyboxEnabledChanged(bool enable) override;
-        void OnFieldOfViewChanged(float fieldOfView) override;
-        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
+        void OnViewportSettingsChanged() override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
-        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
+        void BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
         void AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
         void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
         void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
-        void ApplyChanges();
         void SealUndoStack() override {}
         void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
         void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
@@ -75,13 +68,9 @@ namespace MaterialEditor
         AZStd::string GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const;
 
         AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
-        bool ShouldGroupAutoExpanded(const AZStd::string& groupName) const override;
-        void OnGroupExpanded(const AZStd::string& groupName) override;
-        void OnGroupCollapsed(const AZStd::string& groupName) override;
 
-        AZ::Render::ModelPresetPtr m_modelPreset;
-        AZ::Render::LightingPresetPtr m_lightingPreset;
-        AZStd::intrusive_ptr<MaterialViewportSettings> m_viewportSettings;
-        AZStd::intrusive_ptr<MaterialEditorWindowSettings> m_windowSettings;
+        AZ::Render::ModelPreset m_modelPreset;
+        AZ::Render::LightingPreset m_lightingPreset;
+        MaterialViewportSettings m_viewportSettings;
     };
 } // namespace MaterialEditor

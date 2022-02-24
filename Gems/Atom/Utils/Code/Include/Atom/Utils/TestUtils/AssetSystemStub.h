@@ -52,8 +52,9 @@ namespace UnitTest
             AZ::Data::AssetInfo m_assetInfo;
             AZStd::string m_watchFolder;
         };
-
-        AZStd::unordered_map<AZStd::string, SourceInfo> m_sourceInfoMap;
+        
+        AZStd::unordered_map<AZStd::string, SourceInfo> m_sourcePath_sourceInfo_map;
+        AZStd::unordered_map<AZ::Uuid, SourceInfo> m_sourceGuid_sourceInfo_map;
 
         bool GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder) override;
         bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) override;

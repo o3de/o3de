@@ -356,10 +356,12 @@ R"({
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(false));
         EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(0);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(1);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onStartGameSessionFunc(Aws::GameLift::Server::Model::GameSession());
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnStartGameSession_ActivateGameSessionSucceeds_RegisterAsHandler)
@@ -369,7 +371,6 @@ R"({
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(1);
-        EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ActivateGameSession())
             .Times(1)
             .WillOnce(testing::Return(Aws::GameLift::GenericOutcome(nullptr)));
@@ -380,7 +381,13 @@ R"({
         testSession.AddGameProperties(testProperty);
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onStartGameSessionFunc(testSession);
         EXPECT_TRUE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
+
+        // clean up
+        EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(1);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
         m_serverManager->HandleDestroySession();
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnStartGameSession_ActivateGameSessionFails_TerminationNotificationSent)
@@ -391,6 +398,7 @@ R"({
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(0);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(1);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ActivateGameSession())
             .Times(1)
             .WillOnce(testing::Return(Aws::GameLift::GenericOutcome()));
@@ -398,6 +406,7 @@ R"({
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onStartGameSessionFunc(Aws::GameLift::Server::Model::GameSession());
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithUnknownReason_OnUpdateSessionGetCalledOnce)
@@ -733,6 +742,72 @@ R"({
         EXPECT_TRUE(actualResult[0].m_team == "testteam");
         EXPECT_TRUE(actualResult[0].m_playerId == "testplayer");
         EXPECT_TRUE(actualResult[0].m_playerAttributes.size() == 4);
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSEnabled_GetExpectedResult)
+    {
+        AZStd::string expectedResult = "gameliftunittestcertificate.pem";
+        Aws::GameLift::Server::Model::GetInstanceCertificateResult certificateResult;
+        certificateResult.SetCertificatePath(expectedResult.c_str());
+        Aws::GameLift::GetInstanceCertificateOutcome certificateOutcome(certificateResult);
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+            .Times(1)
+            .WillOnce(Return(certificateOutcome));
+
+        auto actualResult = m_serverManager->GetExternalSessionCertificate();
+        EXPECT_STREQ(actualResult.c_str(), expectedResult.c_str());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSDisabled_GetEmptyResult)
+    {
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+            .Times(1)
+            .WillOnce(Return(Aws::GameLift::GetInstanceCertificateOutcome()));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->GetExternalSessionCertificate();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_STREQ(actualResult.c_str(), "");
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionPrivateKey_CallWithTLSEnabled_GetExpectedResult)
+    {
+        AZStd::string expectedResult = "gameliftunittestprivatekey.pem";
+        Aws::GameLift::Server::Model::GetInstanceCertificateResult certificateResult;
+        certificateResult.SetPrivateKeyPath(expectedResult.c_str());
+        Aws::GameLift::GetInstanceCertificateOutcome certificateOutcome(certificateResult);
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+            .Times(1)
+            .WillOnce(Return(certificateOutcome));
+
+        auto actualResult = m_serverManager->GetExternalSessionPrivateKey();
+        EXPECT_STREQ(actualResult.c_str(), expectedResult.c_str());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionPrivateKey_CallWithTLSDisabled_GetEmptyResult)
+    {
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+            .Times(1)
+            .WillOnce(Return(Aws::GameLift::GetInstanceCertificateOutcome()));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->GetExternalSessionPrivateKey();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_STREQ(actualResult.c_str(), "");
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetInternalSessionCertificate_Call_GetEmptyResult)
+    {
+        auto actualResult = m_serverManager->GetInternalSessionCertificate();
+        EXPECT_STREQ(actualResult.c_str(), "");
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetInternalSessionPrivateKey_Call_GetEmptyResult)
+    {
+        auto actualResult = m_serverManager->GetInternalSessionPrivateKey();
+        EXPECT_STREQ(actualResult.c_str(), "");
     }
 
     TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallWithMultiDescribePlayerButError_GetEmptyResult)

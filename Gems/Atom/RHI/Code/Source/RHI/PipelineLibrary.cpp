@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI/PipelineLibrary.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
 {
@@ -39,6 +40,9 @@ namespace AZ
             ResultCode resultCode = InitInternal(device, descriptor);
             if (resultCode == ResultCode::Success)
             {
+                AZStd::string libName;
+                AzFramework::StringFunc::Path::GetFileName(descriptor.m_filePath.c_str(), libName);
+                SetName(Name(libName));
                 DeviceObject::Init(device);
             }
             return resultCode;

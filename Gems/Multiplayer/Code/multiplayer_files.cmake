@@ -12,6 +12,8 @@ set(FILES
     Include/Multiplayer/IMultiplayerSpawner.h
     Include/Multiplayer/IMultiplayerTools.h
     Include/Multiplayer/MultiplayerConstants.h
+    Include/Multiplayer/MultiplayerDebug.h
+    Include/Multiplayer/MultiplayerDebug.inl
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h

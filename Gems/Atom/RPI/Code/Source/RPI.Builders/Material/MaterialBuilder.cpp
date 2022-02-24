@@ -22,6 +22,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
@@ -42,16 +43,18 @@ namespace AZ
 
         const char* MaterialBuilder::JobKey = "Atom Material Builder";
 
-        AZStd::string GetBuilderSettingsFingerprint()
+        AZStd::string MaterialBuilder::GetBuilderSettingsFingerprint() const
         {
-            return AZStd::string::format("[BuildersShouldFinalizeMaterialAssets=%d]", MaterialUtils::BuildersShouldFinalizeMaterialAssets());
+            return
+                AZStd::string::format("[BuildersShouldFinalizeMaterialAssets=%d]", MaterialUtils::BuildersShouldFinalizeMaterialAssets()) +
+                AZStd::string::format("[ShouldOutputAllPropertiesMaterial=%d]", ShouldOutputAllPropertiesMaterial());
         }
 
         void MaterialBuilder::RegisterBuilder()
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 123; // nested property layers
+            materialBuilderDescriptor.m_version = 128; // fixed material type version numbers
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -70,7 +73,7 @@ namespace AZ
             BusDisconnect();
         }
 
-        bool MaterialBuilder::ReportMaterialAssetWarningsAsErrors() const
+        bool MaterialBuilder::ShouldReportMaterialAssetWarningsAsErrors() const
         {
             bool warningsAsErrors = false;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
@@ -78,6 +81,16 @@ namespace AZ
                 settingsRegistry->Get(warningsAsErrors, "/O3DE/Atom/RPI/MaterialBuilder/WarningsAsErrors");
             }
             return warningsAsErrors;
+        }
+
+        bool MaterialBuilder::ShouldOutputAllPropertiesMaterial() const
+        {
+            bool value = true;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(value, "/O3DE/Atom/RPI/MaterialTypeBuilder/CreateAllPropertiesMaterial");
+            }
+            return value;
         }
 
         //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
@@ -183,18 +196,29 @@ namespace AZ
                             outputJobDescriptor.m_jobDependencyList);
                     }
 
-                    for (auto& functor : materialTypeSourceData.GetValue().m_materialFunctorSourceData)
+                    auto addFunctorDependencies = [&outputJobDescriptor, &request](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
                     {
-                        auto dependencies = functor->GetActualSourceData()->GetAssetDependencies();
-
-                        for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
+                        for (auto& functor : functors)
                         {
-                            AddPossibleDependencies(request.m_sourceFile,
-                                dependency.m_sourceFilePath,
-                                dependency.m_jobKey.c_str(),
-                                outputJobDescriptor.m_jobDependencyList);
+                            const auto& dependencies = functor->GetActualSourceData()->GetAssetDependencies();
+
+                            for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
+                            {
+                                AddPossibleDependencies(request.m_sourceFile,
+                                    dependency.m_sourceFilePath,
+                                    dependency.m_jobKey.c_str(),
+                                    outputJobDescriptor.m_jobDependencyList);
+                            }
                         }
-                    }
+                    };
+
+                    addFunctorDependencies(materialTypeSourceData.GetValue().m_materialFunctorSourceData);
+
+                    materialTypeSourceData.GetValue().EnumeratePropertyGroups([addFunctorDependencies](const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
+                        {
+                            addFunctorDependencies(propertyGroupStack.back()->GetFunctors());
+                            return true;
+                        });
                 }
                 else // it's a .material file
                 {
@@ -279,7 +303,7 @@ namespace AZ
 
             MaterialAssetProcessingMode processingMode = MaterialUtils::BuildersShouldFinalizeMaterialAssets() ? MaterialAssetProcessingMode::PreBake : MaterialAssetProcessingMode::DeferredBake;
 
-            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, processingMode, ReportMaterialAssetWarningsAsErrors());
+            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, processingMode, ShouldReportMaterialAssetWarningsAsErrors());
             if (!materialAssetOutcome.IsSuccess())
             {
                 return {};
@@ -318,39 +342,78 @@ namespace AZ
             rapidjson::Document& document = loadOutcome.GetValue();
 
             AZStd::string materialProductPath;
-            AZStd::string fileNameNoExt;
-            AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), fileNameNoExt);
+            AZStd::string fileName;
+            AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), fileName);
+            AzFramework::StringFunc::Path::ReplaceExtension(fileName, isMaterialTypeFile ? MaterialTypeAsset::Extension : MaterialAsset::Extension);
 
-            AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), fileNameNoExt.c_str(), materialProductPath, true);
-            AzFramework::StringFunc::Path::ReplaceExtension(materialProductPath, isMaterialTypeFile ? MaterialTypeAsset::Extension : MaterialAsset::Extension);
+            AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), fileName.c_str(), materialProductPath, true);
 
             if (isMaterialTypeFile)
             {
-                // Load the material type file and create the MaterialTypeAsset object
                 AZ::Data::Asset<MaterialTypeAsset> materialTypeAsset;
-                materialTypeAsset = CreateMaterialTypeAsset(request.m_sourceFile, document);
 
-                if (!materialTypeAsset)
                 {
-                    // Errors will have been reported above
-                    return;
+                    AZ_TraceContext("Product", fileName);
+                    AZ_TracePrintf("MaterialBuilder", AZStd::string::format("Producing %s...", fileName.c_str()).c_str());
+
+                    // Load the material type file and create the MaterialTypeAsset object
+                    materialTypeAsset = CreateMaterialTypeAsset(request.m_sourceFile, document);
+
+                    if (!materialTypeAsset)
+                    {
+                        // Errors will have been reported above
+                        return;
+                    }
+
+                    // [ATOM-13190] Change this back to ST_BINARY. It's ST_XML temporarily for debugging.
+                    if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_XML, materialTypeAsset.Get()))
+                    {
+                        AZ_Error(MaterialBuilderName, false, "Failed to save material type to file '%s'!", materialProductPath.c_str());
+                        return;
+                    }
+
+                    AssetBuilderSDK::JobProduct jobProduct;
+                    if (!AssetBuilderSDK::OutputObject(
+                        materialTypeAsset.Get(),
+                        materialProductPath,
+                        azrtti_typeid<RPI::MaterialTypeAsset>(),
+                        (u32)MaterialTypeProductSubId::MaterialTypeAsset,
+                        jobProduct))
+                    {
+                        AZ_Error(MaterialBuilderName, false, "Failed to output product dependencies.");
+                        return;
+                    }
+
+                    response.m_outputProducts.push_back(AZStd::move(jobProduct));
                 }
 
-                // [ATOM-13190] Change this back to ST_BINARY. It's ST_XML temporarily for debugging.
-                if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_XML, materialTypeAsset.Get()))
+                if(ShouldOutputAllPropertiesMaterial())
                 {
-                    AZ_Error(MaterialBuilderName, false, "Failed to save material type to file '%s'!", materialProductPath.c_str());
-                    return;
-                }
+                    AZStd::string defaultMaterialFileName;
+                    AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), defaultMaterialFileName);
+                    defaultMaterialFileName += "_AllProperties.material";
 
-                AssetBuilderSDK::JobProduct jobProduct;
-                if (!AssetBuilderSDK::OutputObject(materialTypeAsset.Get(), materialProductPath, azrtti_typeid<RPI::MaterialTypeAsset>(), 0, jobProduct))
-                {
-                    AZ_Error(MaterialBuilderName, false, "Failed to output product dependencies.");
-                    return;
-                }
+                    AZStd::string defaultMaterialFilePath;
+                    AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), defaultMaterialFileName.c_str(), defaultMaterialFilePath, true);
 
-                response.m_outputProducts.push_back(AZStd::move(jobProduct));
+                    AZ_TraceContext("Product", defaultMaterialFileName);
+                    AZ_TracePrintf("MaterialBuilder", AZStd::string::format("Producing %s...", defaultMaterialFileName.c_str()).c_str());
+
+                    MaterialSourceData allPropertyDefaultsMaterial = MaterialSourceData::CreateAllPropertyDefaultsMaterial(materialTypeAsset, request.m_sourceFile);
+
+                    if (!JsonUtils::SaveObjectToFile(defaultMaterialFilePath, allPropertyDefaultsMaterial))
+                    {
+                        AZ_Warning(MaterialBuilderName, false, "Failed to save material reference file '%s'!", defaultMaterialFilePath.c_str());
+                    }
+                    else
+                    {
+                        AssetBuilderSDK::JobProduct defaultMaterialFileProduct;
+                        defaultMaterialFileProduct.m_dependenciesHandled = true; // This product is only for reference, not used at runtime
+                        defaultMaterialFileProduct.m_productFileName = defaultMaterialFilePath;
+                        defaultMaterialFileProduct.m_productSubID = (u32)MaterialTypeProductSubId::AllPropertiesMaterialSourceFile;
+                        response.m_outputProducts.push_back(AZStd::move(defaultMaterialFileProduct));
+                    }
+                }
 
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
             }
