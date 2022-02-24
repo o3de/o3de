@@ -17,17 +17,6 @@
 
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
-//REMARK: The macros CODE_PROFILER_PROXY_PUSH_TIME and CODE_PROFILER_PUSH_TIME will be redefined
-//several times in this file to accommodate for the different specializations of the StatisticalProfiler<>
-//template.
-#ifdef CODE_PROFILER_PROXY_PUSH_TIME
-#undef CODE_PROFILER_PROXY_PUSH_TIME
-#endif
-
-#ifdef CODE_PROFILER_PUSH_TIME
-#undef CODE_PROFILER_PUSH_TIME
-#endif
-
 namespace UnitTest
 {
     constexpr AZ::u32 ProfilerProxyGroup = AZ_CRC_CE("StatisticalProfilerProxyTests");
@@ -35,35 +24,13 @@ namespace UnitTest
     class StatisticalProfilerTest
         : public AllocatorsFixture
     {
-    public:
-
-        StatisticalProfilerTest()
-        {
-        }
-
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        ~StatisticalProfilerTest()
-        {
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
-
     }; //class StatisticalProfilerTest
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerStringNoMutex_ProfileCode_ValidateStatistics)
     {
-//Helper macro.
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<>;
 
-        AZ::Statistics::StatisticalProfiler<> profiler;
+        ProfilerType profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const AZStd::string statNameBlock("Block");
@@ -73,12 +40,12 @@ namespace UnitTest
 
         const int iter_count = 10;
         {
-            CODE_PROFILER_PUSH_TIME(profiler, statNamePerformance)
-                int counter = 0;
+            ProfilerType::TimedScope rootScope(profiler, statNamePerformance);
+            int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PUSH_TIME(profiler, statNameBlock)
-                    counter++;
+                ProfilerType::TimedScope loopScope(profiler, statNameBlock);
+                counter++;
             }
         }
 
@@ -87,18 +54,13 @@ namespace UnitTest
 
         ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), iter_count);
-
-#undef CODE_PROFILER_PUSH_TIME
-
     }
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerCrc32NoMutex_ProfileCode_ValidateStatistics)
     {
-        //Helper macro.
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<AZ::Crc32>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZ::Crc32>;
 
-        AZ::Statistics::StatisticalProfiler<AZ::Crc32> profiler;
+        ProfilerType profiler;
 
         constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -111,12 +73,12 @@ namespace UnitTest
 
         const int iter_count = 10;
         {
-            CODE_PROFILER_PUSH_TIME(profiler, statIdPerformance)
-                int counter = 0;
+            ProfilerType::TimedScope rootScope(profiler, statIdPerformance);
+            int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PUSH_TIME(profiler, statIdBlock)
-                    counter++;
+                ProfilerType::TimedScope loopScope(profiler, statIdBlock);
+                counter++;
             }
         }
 
@@ -127,18 +89,13 @@ namespace UnitTest
         EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-
-#undef CODE_PROFILER_PUSH_TIME
-
     }
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerStringWithSharedSpinMutex__ProfileCode_ValidateStatistics)
     {
-        //Helper macro.
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
 
-        AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex> profiler;
+        ProfilerType profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const AZStd::string statNameBlock("Block");
@@ -148,12 +105,12 @@ namespace UnitTest
 
         const int iter_count = 10;
         {
-            CODE_PROFILER_PUSH_TIME(profiler, statNamePerformance)
-                int counter = 0;
+            ProfilerType::TimedScope rootScope(profiler, statNamePerformance);
+            int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PUSH_TIME(profiler, statNameBlock)
-                    counter++;
+                ProfilerType::TimedScope loopScope(profiler, statNameBlock);
+                counter++;
             }
         }
 
@@ -164,18 +121,13 @@ namespace UnitTest
         EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), iter_count);
 
         ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
-
-#undef CODE_PROFILER_PUSH_TIME
-
     }
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerCrc32WithSharedSpinMutex__ProfileCode_ValidateStatistics)
     {
-        //Helper macro.
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex>;
 
-        AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex> profiler;
+        ProfilerType profiler;
 
         constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -188,12 +140,12 @@ namespace UnitTest
 
         const int iter_count = 10;
         {
-            CODE_PROFILER_PUSH_TIME(profiler, statIdPerformance)
-                int counter = 0;
+            ProfilerType::TimedScope rootScope(profiler, statIdPerformance);
+            int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PUSH_TIME(profiler, statIdBlock)
-                    counter++;
+                ProfilerType::TimedScope loopScope(profiler, statIdBlock);
+                counter++;
             }
         }
 
@@ -204,60 +156,58 @@ namespace UnitTest
         EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-
-#undef CODE_PROFILER_PUSH_TIME
-
     }
-
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
 
     static void simple_thread01(AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>* profiler, int loop_cnt)
     {
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
+
         const AZStd::string simple_thread("simple_thread1");
         const AZStd::string simple_thread_loop("simple_thread1_loop");
 
-        CODE_PROFILER_PUSH_TIME(*profiler, simple_thread);
+        ProfilerType::TimedScope rootScope(*profiler, simple_thread);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PUSH_TIME(*profiler, simple_thread_loop);
+            ProfilerType::TimedScope loopScope(*profiler, simple_thread_loop);
             counter++;
         }
     }
 
     static void simple_thread02(AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>* profiler, int loop_cnt)
     {
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
+
         const AZStd::string simple_thread("simple_thread2");
         const AZStd::string simple_thread_loop("simple_thread2_loop");
 
-        CODE_PROFILER_PUSH_TIME(*profiler, simple_thread);
+        ProfilerType::TimedScope rootScope(*profiler, simple_thread);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PUSH_TIME(*profiler, simple_thread_loop);
+            ProfilerType::TimedScope loopScope(*profiler, simple_thread_loop);
             counter++;
         }
     }
 
     static void simple_thread03(AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>* profiler, int loop_cnt)
     {
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
+
         const AZStd::string simple_thread("simple_thread3");
         const AZStd::string simple_thread_loop("simple_thread3_loop");
 
-        CODE_PROFILER_PUSH_TIME(*profiler, simple_thread);
+        ProfilerType::TimedScope rootScope(*profiler, simple_thread);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PUSH_TIME(*profiler, simple_thread_loop);
+            ProfilerType::TimedScope loopScope(*profiler, simple_thread_loop);
             counter++;
         }
     }
-
-#undef CODE_PROFILER_PUSH_TIME
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerStringWithSharedSpinMutex_RunProfiledThreads_ValidateStatistics)
     {
@@ -313,8 +263,7 @@ namespace UnitTest
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerProxy_ProfileCode_ValidateStatistics)
     {
-#define CODE_PROFILER_PROXY_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
 
         AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
         AZ::Statistics::StatisticalProfilerProxy profilerProxy;
@@ -334,12 +283,12 @@ namespace UnitTest
 
         const int iter_count = 10;
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, statIdPerformance)
+            TimedScopeType rootScope(ProfilerProxyGroup, statIdPerformance);
             int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, statIdBlock)
-                    counter++;
+                TimedScopeType loopScope(ProfilerProxyGroup, statIdBlock);
+                counter++;
             }
         }
 
@@ -351,60 +300,58 @@ namespace UnitTest
 
         //Clean Up
         proxy->ActivateProfiler(ProfilerProxyGroup, false);
-
-#undef CODE_PROFILER_PROXY_PUSH_TIME
-
     }
-
-#define CODE_PROFILER_PROXY_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
 
     static void simple_thread1(int loop_cnt)
     {
+        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
+
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread1("simple_thread1");
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread1_loop("simple_thread1_loop");
 
-        CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, simple_thread1);
+        TimedScopeType rootScope(ProfilerProxyGroup, simple_thread1);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, simple_thread1_loop);
+            TimedScopeType loopScope(ProfilerProxyGroup, simple_thread1_loop);
             counter++;
         }
     }
 
     static void simple_thread2(int loop_cnt)
     {
+        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
+
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread2("simple_thread2");
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread2_loop("simple_thread2_loop");
 
-        CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, simple_thread2);
+        TimedScopeType rootScope(ProfilerProxyGroup, simple_thread2);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, simple_thread2_loop);
+            TimedScopeType loopScope(ProfilerProxyGroup, simple_thread2_loop);
             counter++;
         }
     }
 
     static void simple_thread3(int loop_cnt)
     {
+        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
+
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread3("simple_thread3");
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread3_loop("simple_thread3_loop");
 
-        CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, simple_thread3);
+        TimedScopeType rootScope(ProfilerProxyGroup, simple_thread3);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, simple_thread3_loop);
+            TimedScopeType loopScope(ProfilerProxyGroup, simple_thread3_loop);
             counter++;
         }
     }
-
-#undef CODE_PROFILER_PROXY_PUSH_TIME
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerProxy3_RunProfiledThreads_ValidateStatistics)
     {
@@ -525,11 +472,9 @@ namespace UnitTest
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringNoMutex_1ThreadPerformance)
     {
-        //Helper macro.
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<>;
 
-        AZ::Statistics::StatisticalProfiler<> profiler;
+        ProfilerType profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const AZStd::string statNameBlock("Block");
@@ -539,12 +484,12 @@ namespace UnitTest
 
         const int iter_count = 1000000;
         {
-            CODE_PROFILER_PUSH_TIME(profiler, statNamePerformance)
-                int counter = 0;
+            ProfilerType::TimedScope rootScope(profiler, statNamePerformance);
+            int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PUSH_TIME(profiler, statNameBlock)
-                    counter++;
+                ProfilerType::TimedScope loopScope(profiler, statNameBlock);
+                counter++;
             }
         }
 
@@ -557,18 +502,13 @@ namespace UnitTest
         profiler.LogAndResetStats("StatisticalProfilerStringNoMutex");
 
         ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
-
-#undef CODE_PROFILER_PUSH_TIME
-
     }
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerCrc32NoMutex_1ThreadPerformance)
     {
-        //Helper macro.
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<AZ::Crc32>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZ::Crc32>;
 
-        AZ::Statistics::StatisticalProfiler<AZ::Crc32> profiler;
+        ProfilerType profiler;
 
         constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -581,12 +521,12 @@ namespace UnitTest
 
         const int iter_count = 1000000;
         {
-            CODE_PROFILER_PUSH_TIME(profiler, statIdPerformance)
+            ProfilerType::TimedScope rootScope(profiler, statIdPerformance);
                 int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PUSH_TIME(profiler, statIdBlock)
-                    counter++;
+                ProfilerType::TimedScope loopScope(profiler, statIdBlock);
+                counter++;
             }
         }
 
@@ -599,18 +539,13 @@ namespace UnitTest
         profiler.LogAndResetStats("StatisticalProfilerCrc32NoMutex");
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-
-#undef CODE_PROFILER_PUSH_TIME
-
     }
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringWithSharedSpinMutex_1ThreadPerformance)
     {
-        //Helper macro.
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
 
-        AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex> profiler;
+        ProfilerType profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const AZStd::string statNameBlock("Block");
@@ -620,12 +555,12 @@ namespace UnitTest
 
         const int iter_count = 1000000;
         {
-            CODE_PROFILER_PUSH_TIME(profiler, statNamePerformance)
-                int counter = 0;
+            ProfilerType::TimedScope rootScope(profiler, statNamePerformance);
+            int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PUSH_TIME(profiler, statNameBlock)
-                    counter++;
+                ProfilerType::TimedScope loopScope(profiler, statNameBlock);
+                counter++;
             }
         }
 
@@ -638,18 +573,13 @@ namespace UnitTest
         profiler.LogAndResetStats("StatisticalProfilerStringWithSharedSpinMutex");
 
         ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
-
-#undef CODE_PROFILER_PUSH_TIME
-
     }
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerCrc32WithSharedSpinMutex_1ThreadPerformance)
     {
-        //Helper macro.
-#define CODE_PROFILER_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex>::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex>;
 
-        AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex> profiler;
+        ProfilerType profiler;
 
         constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -662,12 +592,12 @@ namespace UnitTest
 
         const int iter_count = 1000000;
         {
-            CODE_PROFILER_PUSH_TIME(profiler, statIdPerformance)
-                int counter = 0;
+            ProfilerType::TimedScope rootScope(profiler, statIdPerformance);
+            int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PUSH_TIME(profiler, statIdBlock)
-                    counter++;
+                ProfilerType::TimedScope loopScope(profiler, statIdBlock);
+                counter++;
             }
         }
 
@@ -680,9 +610,6 @@ namespace UnitTest
         profiler.LogAndResetStats("StatisticalProfilerCrc32WithSharedSpinMutex");
 
         ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-
-#undef CODE_PROFILER_PUSH_TIME
-
     }
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringWithSharedSpinMutex3Threads_3ThreadsPerformance)
@@ -741,11 +668,10 @@ namespace UnitTest
 
     }
 
-#define CODE_PROFILER_PROXY_PUSH_TIME(profiler, scopeNameId) \
-    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(profiler, scopeNameId);
-
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerProxy_1ThreadPerformance)
     {
+        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
+
         AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
         AZ::Statistics::StatisticalProfilerProxy profilerProxy;
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
@@ -764,12 +690,12 @@ namespace UnitTest
 
         const int iter_count = 1000000;
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, statIdPerformance)
-                int counter = 0;
+            TimedScopeType rootScope(ProfilerProxyGroup, statIdPerformance);
+            int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PROXY_PUSH_TIME(ProfilerProxyGroup, statIdBlock)
-                    counter++;
+                TimedScopeType loopScope(ProfilerProxyGroup, statIdBlock);
+                counter++;
             }
         }
 
@@ -784,8 +710,6 @@ namespace UnitTest
         //Clean Up
         proxy->ActivateProfiler(ProfilerProxyGroup, false);
     }
-
-#undef CODE_PROFILER_PROXY_PUSH_TIME
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerProxy_3ThreadsPerformance)
     {
