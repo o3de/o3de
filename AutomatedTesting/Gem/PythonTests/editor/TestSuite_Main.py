@@ -76,7 +76,6 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_Menus_EditMenuOptions_Work(EditorSharedTest):
         from .EditorScripts import Menus_EditMenuOptions as test_module
 
-    @pytest.mark.skip("Passes locally/fails on Jenkins. https://github.com/o3de/o3de/issues/6746")
     class test_Menus_FileMenuOptions_Work(EditorSharedTest):
         from .EditorScripts import Menus_FileMenuOptions as test_module
 

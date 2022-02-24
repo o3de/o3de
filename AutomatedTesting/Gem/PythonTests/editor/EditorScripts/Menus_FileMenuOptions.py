@@ -42,7 +42,7 @@ def Menus_FileMenuOptions_Work():
         #("New Project",),
         #("Open Project",),
         #("Show Log File",),
-        #("Exit",),
+        ("Exit",),
     ]
 
     # 1) Open an existing simple level

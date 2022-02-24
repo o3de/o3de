@@ -49,7 +49,8 @@ void ModalWindowDismisser::DismissWindows()
     for (QDialog* dialog : m_windows)
     {
         Log("************ AssetImporterManager:: Rejecting dialog");
-        dialog->done(QDialog::Rejected);
+//        dialog->done(QDialog::Rejected);
+        dialog->close();
     }
     m_windows.clear();
     m_dismiss = false;
