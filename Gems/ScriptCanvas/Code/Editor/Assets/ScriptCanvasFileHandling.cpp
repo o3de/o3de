@@ -62,16 +62,15 @@ namespace ScriptCanvasFileHandlingCpp
 
         AZ::EntityId GetNewId(const AZ::EntityId& old)
         {
-            auto iter = m_newIdsByOld.find(old);
-            if (iter == m_newIdsByOld.end())
+            if (auto iter = m_newIdsByOld.find(old); iter != m_newIdsByOld.end())
             {
-                const AZ::EntityId newId = AZ::Entity::MakeId();
-                m_newIdsByOld.insert(AZStd::make_pair( old, newId ));
-                return newId;
+                return iter->second;
             }
             else
             {
-                return iter->second;
+                const AZ::EntityId newId = AZ::Entity::MakeId();
+                m_newIdsByOld.insert(AZStd::make_pair(old, newId));
+                return newId;
             }
         }
 
@@ -180,7 +179,7 @@ namespace ScriptCanvasEditor
         AZStd::vector<SourceHandle> dependentAssets;
         const auto subgraphInterfaceAssetTypeID = azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>();
         
-        auto beginElementCB = [&subgraphInterfaceAssetTypeID, &dependentAssets]
+        auto onBeginElement = [&subgraphInterfaceAssetTypeID, &dependentAssets]
             ( void* instance
             , const AZ::SerializeContext::ClassData* classData
             , const AZ::SerializeContext::ClassElement* classElement) -> bool
@@ -191,7 +190,7 @@ namespace ScriptCanvasEditor
                 if (classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_POINTER)
                 {
                     // if ptr is a pointer-to-pointer, cast its value to a void* (or const void*) and dereference to get to the actual object pointer.
-                    instance = *(void**)(instance);
+                    instance = *static_cast<void**>(instance);
                 }
             }
 
@@ -209,7 +208,7 @@ namespace ScriptCanvasEditor
         AZ_Assert(serializeContext, "LoadEditorAssetTree() ailed to retrieve serialize context!");
 
         const ScriptCanvasEditor::EditorGraph* graph = handle.Get();
-        serializeContext->EnumerateObject(graph, beginElementCB, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
+        serializeContext->EnumerateObject(graph, onBeginElement, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
         EditorAssetTree result;
 
@@ -288,7 +287,7 @@ namespace ScriptCanvasEditor
             // possible multiple instantiations of graphs.
             //
             // EntityIds contained in variable (those set to self or the graph unique id, will be ignored)
-            auto beginElementCB = [&entityMapper, &entityIdTypeId]
+            auto onBeginElement = [&entityMapper, &entityIdTypeId]
                 ( void* instance
                 , const AZ::SerializeContext::ClassData* classData
                 , const AZ::SerializeContext::ClassElement* classElement) -> bool
@@ -296,7 +295,7 @@ namespace ScriptCanvasEditor
                 if (classElement && classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_POINTER)
                 {
                     // if ptr is a pointer-to-pointer, cast its value to a void* (or const void*) and dereference to get to the actual object pointer.
-                    instance = *(void**)(instance);
+                    instance = *static_cast<void**>(instance);
                 }
 
                 if (classData->m_typeId == entityIdTypeId)
@@ -308,7 +307,7 @@ namespace ScriptCanvasEditor
                 return true;
             };
 
-            serializeContext->EnumerateObject(entity, beginElementCB, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
+            serializeContext->EnumerateObject(entity, onBeginElement, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
             auto graph = entity->FindComponent<ScriptCanvasEditor::EditorGraph>();
             graph->MarkOwnership(*scriptCanvasData);
