@@ -124,7 +124,7 @@ namespace Multiplayer
                                 AZStd::string::format(nodeTitle, elem->m_name.c_str()).c_str(),
                                 (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
                             ImGui::TableNextColumn();
-                            ImGui::Text("%d", elem->m_inputId);
+                            ImGui::Text("%hu", elem->m_inputId);
                             ImGui::TableNextColumn();
                             ImGui::Text("%d", elem->m_hostFrameId);
                             ImGui::TableNextColumn();
@@ -141,7 +141,7 @@ namespace Multiplayer
                     {
                         atRootLevel = false;
                         ImGui::TableNextColumn();
-                        ImGui::Text("%d", elem->m_inputId);
+                        ImGui::Text("%hu", elem->m_inputId);
                         ImGui::TableNextColumn();
                         ImGui::Text("%d", elem->m_hostFrameId);
                         ImGui::TableNextColumn();
@@ -183,7 +183,7 @@ namespace Multiplayer
                             }
                             else
                             {
-                                ImGui::Text(child.m_name.c_str());
+                                ImGui::Text("%s", child.m_name.c_str());
                                 ImGui::TableNextColumn();
                                 ImGui::TableNextColumn();
                                 ImGui::TableNextColumn();
@@ -198,7 +198,7 @@ namespace Multiplayer
                     else
                     {
                         ImGui::TableNextColumn();
-                        ImGui::Text("%d", elem->m_inputId);
+                        ImGui::Text("%hu", elem->m_inputId);
                         ImGui::TableNextColumn();
                         ImGui::Text("%d", elem->m_hostFrameId);
                         ImGui::TableNextColumn();
