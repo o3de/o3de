@@ -37,7 +37,7 @@ namespace Multiplayer
         m_filter = AZStd::move(filter);
     }
 
-    void MultiplayerDebugAuditTrail::OnImGuiUpdate(const AZStd::deque<AuditTrailInput>& auditTrailElems)
+    void MultiplayerDebugAuditTrail::OnImGuiUpdate([[maybe_unused]] const AZStd::deque<AuditTrailInput>& auditTrailElems)
     {
 #if defined(IMGUI_ENABLED)
         if (ImGui::Button("Refresh"))
@@ -230,10 +230,13 @@ namespace Multiplayer
             m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
         }
 
-        const AZ::u32 stateBefore = m_debugDisplay->GetState();
-        m_debugDisplay->SetColor(AZ::Colors::White);
+        if (m_debugDisplay)
+        {
+            const AZ::u32 stateBefore = m_debugDisplay->GetState();
+            m_debugDisplay->SetColor(AZ::Colors::White);
 
-        m_debugDisplay->SetState(stateBefore);
+            m_debugDisplay->SetState(stateBefore);
+        }
     }
 
     bool MultiplayerDebugAuditTrail::TryPumpAuditTrail()

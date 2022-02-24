@@ -611,6 +611,11 @@ namespace Multiplayer
 
     void MultiplayerDebugSystemComponent::FilterAuditTrail()
     {
+        if (!m_auditTrail)
+        {
+            return;
+        }
+
         AZStd::string filter = m_auditTrail->GetAuditTrialFilter();
         if (m_filteredAuditTrail.size() > 0 && filter == m_lastFilter)
         {
@@ -670,7 +675,7 @@ namespace Multiplayer
                 {
                     m_filteredAuditTrail.push_back(*elem);
                 }
-                else if (AZStd::string::format("%d %d", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId))
+                else if (AZStd::string::format("%hu %d", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId))
                         .contains(filter))
                 {
                     m_filteredAuditTrail.push_back(*elem);

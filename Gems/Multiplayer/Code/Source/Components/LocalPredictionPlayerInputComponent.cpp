@@ -405,7 +405,7 @@ namespace Multiplayer
                 AZLOG_INFO("Received correction that is too old to diff, increase cl_PredictiveStateHistorySize");
             }
 #endif
-		}
+        }
 
         const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
         for (uint32_t replayIndex = startReplayIndex; replayIndex < inputHistorySize; ++replayIndex)
