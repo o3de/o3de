@@ -15,8 +15,10 @@
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 
 #include <AzCore/std/containers/span.h>
+#include <AzCore/std/optional.h>
 
 namespace AZ
 {
@@ -84,6 +86,13 @@ namespace AZ
         //! Retrieve a region of image pixel values (int) for specified mip and slice
         //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
         bool GetSubImagePixelValues(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::s32> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
+
+        //! Loads a render pipeline asset and returns its descriptor.
+        //! @param pipelineAssetPath Path to the render pipeline asset.
+        //! @param nameSuffix Optional parameter to specify a suffix for the name of the pipeline returned.
+        //! @returns An optional with a render pipeline descriptor if there was not errors.
+        AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix = "");
+
     }   // namespace RPI
 }   // namespace AZ
 
