@@ -626,6 +626,13 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
     };
 
+    // A set of bit flags for a JobProduct
+    enum class ProductOutputFlags : AZ::u32
+    {
+        ProductAsset = 1, // Indicates this JobProduct is a product asset which should be output to the cache
+        IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermedate asset folder
+    };
+
     using ProductPathDependencySet = AZStd::unordered_set<AssetBuilderSDK::ProductPathDependency>;
 
     //! JobProduct is used by the builder to store job product information
@@ -674,6 +681,18 @@ namespace AssetBuilderSDK
         /// This should only be set if the builder really does take care of outputting its dependencies OR the output product never has dependencies.
         /// When false, AP will emit a warning that dependencies have not been handled.
         bool m_dependenciesHandled{ false };
+
+        /// Bit flags for the output product
+        ProductOutputFlags m_outputFlags = ProductOutputFlags::ProductAsset;
+
+        /// Scan-folder relative path to use for the output product instead of the default.  An empty string will use the default pathing rules.
+        /// Only allowed for products with the IntermediateAsset flag.
+        /// Example:
+        /// Input: game/examples/example.shader
+        /// Output: IntermediateAsset - example.pdb
+        /// By default the product would output to <IntermediateAssetsFolder>/game/examples/example.pdb
+        /// With a PathOverride of shaders/debug the product is instead written to <IntermediateAssetsFolder>/shaders/debug
+        AZStd::string m_outputPathOverride;
 
         JobProduct() = default;
         JobProduct(const AZStd::string& productName, AZ::Data::AssetType productAssetType = AZ::Data::AssetType::CreateNull(), AZ::u32 productSubID = 0);
@@ -826,6 +845,7 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProcessJobResultCode, "{15797D63-4980-436A-9DE1-E0CCA9B5DB19}");
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProductPathDependencyType, "{EF77742B-9627-4072-B431-396AA7183C80}");
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType, "{BE9C8805-DB17-4500-944A-EB33FD0BE347}");
+    AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProductOutputFlags, "{247B6AEB-D92E-40BE-B741-70E18DE5F888}");
 }
 
 namespace AZStd

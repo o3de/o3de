@@ -1059,15 +1059,18 @@ namespace AssetBuilderSDK
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<JobProduct>()->
-                Version(6)->
-                Field("Product File Name", &JobProduct::m_productFileName)->
-                Field("Product Asset Type", &JobProduct::m_productAssetType)->
-                Field("Product Sub Id", &JobProduct::m_productSubID)->
-                Field("Legacy Sub Ids", &JobProduct::m_legacySubIDs)->
-                Field("Dependencies", &JobProduct::m_dependencies)->
-                Field("Relative Path Dependencies", &JobProduct::m_pathDependencies)->
-                Field("Dependencies Handled", &JobProduct::m_dependenciesHandled);
+            serializeContext->Class<JobProduct>()
+                ->Version(7)
+                ->Field("Product File Name", &JobProduct::m_productFileName)
+                ->Field("Product Asset Type", &JobProduct::m_productAssetType)
+                ->Field("Product Sub Id", &JobProduct::m_productSubID)
+                ->Field("Legacy Sub Ids", &JobProduct::m_legacySubIDs)
+                ->Field("Dependencies", &JobProduct::m_dependencies)
+                ->Field("Relative Path Dependencies", &JobProduct::m_pathDependencies)
+                ->Field("Dependencies Handled", &JobProduct::m_dependenciesHandled)
+                ->Field("Output Flags", &JobProduct::m_outputFlags)
+                ->Field("Output Path Override", &JobProduct::m_outputPathOverride)
+            ;
 
             serializeContext->RegisterGenericType<AZStd::vector<JobProduct>>();
         }
@@ -1084,7 +1087,11 @@ namespace AssetBuilderSDK
                 ->Property("productSubID", BehaviorValueProperty(&JobProduct::m_productSubID))
                 ->Property("productDependencies", BehaviorValueProperty(&JobProduct::m_dependencies))
                 ->Property("pathDependencies", BehaviorValueProperty(&JobProduct::m_pathDependencies))
-                ->Property("dependenciesHandled", BehaviorValueProperty(&JobProduct::m_dependenciesHandled));
+                ->Property("dependenciesHandled", BehaviorValueProperty(&JobProduct::m_dependenciesHandled))
+                ->Property("outputFlags", BehaviorValueProperty(&JobProduct::m_outputFlags))
+                ->Property("outputPathOverride", BehaviorValueProperty(&JobProduct::m_outputPathOverride))
+                ->Enum<aznumeric_cast<int>(ProductOutputFlags::ProductAsset)>("ProductAsset")
+                ->Enum<aznumeric_cast<int>(ProductOutputFlags::IntermediateAsset)>("IntermediateAsset")
             ;
         }
     }
