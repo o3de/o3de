@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -39,6 +40,7 @@ namespace AZ
         void DiffuseProbeGridFeatureProcessor::Activate()
         {
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
+            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
 
             m_diffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
             m_realTimeDiffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
@@ -49,7 +51,7 @@ namespace AZ
 
             m_bufferPool = RHI::Factory::Get().CreateBufferPool();
             m_bufferPool->SetName(Name("DiffuseProbeGridBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*device, desc);
             AZ_Error("DiffuseProbeGridFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -61,8 +63,18 @@ namespace AZ
                 imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead;
 
                 m_probeGridRenderData.m_imagePool = RHI::Factory::Get().CreateImagePool();
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*rhiSystem->GetDevice(), imagePoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*device, imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
+            }
+
+            // buffer pool
+            {
+                RHI::BufferPoolDescriptor bufferPoolDesc;
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+
+                m_probeGridRenderData.m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(*device, bufferPoolDesc);
+                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
             }
 
             // create image view descriptors
@@ -70,6 +82,9 @@ namespace AZ
             m_probeGridRenderData.m_probeIrradianceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::IrradianceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDistanceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::DistanceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDataImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::ProbeDataImageFormat, 0, 0);
+
+            // create grid data buffer descriptor
+            m_probeGridRenderData.m_gridDataBufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, 1, DiffuseProbeGridRenderData::GridDataBufferSize);
 
             // load shader
             // Note: the shader may not be available on all platforms
@@ -90,6 +105,25 @@ namespace AZ
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
             }
 
+            if (device->GetFeatures().m_rayTracing)
+            {
+                // initialize the buffer pools for the DiffuseProbeGrid visualization
+                m_visualizationBufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
+                m_visualizationBufferPools->Init(device);
+
+                // load probe visualization model, the BLAS will be created in OnAssetReady()
+                m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
+                    "Models/DiffuseProbeSphere.azmodel",
+                    AZ::RPI::AssetUtils::TraceLevel::Assert);
+
+                if (!m_visualizationModelAsset.IsReady())
+                {
+                    m_visualizationModelAsset.QueueLoad();
+                }
+
+                Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+            }
+
             EnableSceneNotification();
         }
 
@@ -106,6 +140,8 @@ namespace AZ
             {
                 m_bufferPool.reset();
             }
+
+            Data::AssetBus::MultiHandler::BusDisconnect();
         }
 
         void DiffuseProbeGridFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
@@ -186,13 +222,19 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::OnEndPrepareRender()
         {
-            // re-build the list of visible real-time diffuse probe grids
+            // re-build the list of visible diffuse probe grids
+            m_visibleDiffuseProbeGrids.clear();
             m_visibleRealTimeDiffuseProbeGrids.clear();
-            for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
+            for (auto& diffuseProbeGrid : m_diffuseProbeGrids)
             {
                 if (diffuseProbeGrid->GetIsVisible())
                 {
-                    m_visibleRealTimeDiffuseProbeGrids.push_back(diffuseProbeGrid);
+                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime)
+                    {
+                        m_visibleRealTimeDiffuseProbeGrids.push_back(diffuseProbeGrid);
+                    }
+
+                    m_visibleDiffuseProbeGrids.push_back(diffuseProbeGrid);
                 }
             }
         }
@@ -235,6 +277,17 @@ namespace AZ
             if (itEntry != m_realTimeDiffuseProbeGrids.end())
             {
                 m_realTimeDiffuseProbeGrids.erase(itEntry);
+            }
+
+            // remove from side list of visible grids
+            itEntry = AZStd::find_if(m_visibleDiffuseProbeGrids.begin(), m_visibleDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
+            {
+                return (entry == probeGrid);
+            });
+
+            if (itEntry != m_visibleDiffuseProbeGrids.end())
+            {
+                m_visibleDiffuseProbeGrids.erase(itEntry);
             }
 
             // remove from side list of visible real-time grids
@@ -443,10 +496,34 @@ namespace AZ
             m_probeGridSortRequired = true;
         }
 
+        void DiffuseProbeGridFeatureProcessor::SetScrolling(const DiffuseProbeGridHandle& probeGrid, bool scrolling)
+        {
+            AZ_Assert(probeGrid.get(), "SetScrolling called with an invalid handle");
+            probeGrid->SetScrolling(scrolling);
+        }
+
         void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)
         {
             AZ_Assert(probeGrid.get(), "SetBakedTextures called with an invalid handle");
             probeGrid->SetBakedTextures(bakedTextures);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetVisualizationEnabled(const DiffuseProbeGridHandle& probeGrid, bool visualizationEnabled)
+        {
+            AZ_Assert(probeGrid.get(), "SetVisualizationEnabled called with an invalid handle");
+            probeGrid->SetVisualizationEnabled(visualizationEnabled);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes)
+        {
+            AZ_Assert(probeGrid.get(), "SetVisualizationShowInactiveProbes called with an invalid handle");
+            probeGrid->SetVisualizationShowInactiveProbes(visualizationShowInactiveProbes);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius)
+        {
+            AZ_Assert(probeGrid.get(), "SetVisualizationSphereRadius called with an invalid handle");
+            probeGrid->SetVisualizationSphereRadius(visualizationSphereRadius);
         }
 
         void DiffuseProbeGridFeatureProcessor::CreateBoxMesh()
@@ -613,6 +690,71 @@ namespace AZ
             }
         }
 
+        void DiffuseProbeGridFeatureProcessor::OnVisualizationModelAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            Data::Asset<RPI::ModelAsset> modelAsset = asset;
+
+            m_visualizationModel = RPI::Model::FindOrCreate(modelAsset);
+            AZ_Assert(m_visualizationModel.get(), "Failed to load DiffuseProbeGrid visualization model");
+
+            const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = m_visualizationModel->GetLods();
+            AZ_Assert(!modelLods.empty(), "Invalid DiffuseProbeGrid visualization model");
+            if (modelLods.empty())
+            {
+                return;
+            }
+
+            const Data::Instance<RPI::ModelLod>& modelLod = modelLods[0];
+            AZ_Assert(!modelLod->GetMeshes().empty(), "Invalid DiffuseProbeGrid visualization model asset");
+            if (modelLod->GetMeshes().empty())
+            {
+                return;
+            }
+
+            const RPI::ModelLod::Mesh& mesh = modelLod->GetMeshes()[0];
+
+            // setup a stream layout and shader input contract for the position vertex stream
+            static const char* PositionSemantic = "POSITION";
+            static const RHI::Format PositionStreamFormat = RHI::Format::R32G32B32_FLOAT;
+
+            RHI::InputStreamLayoutBuilder layoutBuilder;
+            layoutBuilder.AddBuffer()->Channel(PositionSemantic, PositionStreamFormat);
+            RHI::InputStreamLayout inputStreamLayout = layoutBuilder.End();
+
+            RPI::ShaderInputContract::StreamChannelInfo positionStreamChannelInfo;
+            positionStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(PositionSemantic));
+            positionStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(PositionStreamFormat);
+
+            RPI::ShaderInputContract shaderInputContract;
+            shaderInputContract.m_streamChannels.emplace_back(positionStreamChannelInfo);
+
+            // retrieve vertex/index buffers
+            RPI::ModelLod::StreamBufferViewList streamBufferViews;
+            [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
+                inputStreamLayout,
+                streamBufferViews,
+                nullptr,
+                shaderInputContract,
+                0);
+            AZ_Assert(result, "Failed to retrieve DiffuseProbeGrid visualization mesh stream buffer views");
+
+            m_visualizationVB = streamBufferViews[0];
+            m_visualizationIB = mesh.m_indexBufferView;
+
+            // create the BLAS object
+            RHI::RayTracingBlasDescriptor blasDescriptor;
+            blasDescriptor.Build()
+                ->Geometry()
+                ->VertexFormat(PositionStreamFormat)
+                ->VertexBuffer(m_visualizationVB)
+                ->IndexBuffer(m_visualizationIB)
+            ;
+
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+            m_visualizationBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+            m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);
+        }
+
         void DiffuseProbeGridFeatureProcessor::HandleAssetNotification(Data::Asset<Data::AssetData> asset, DiffuseProbeGridTextureNotificationType notificationType)
         {
             for (NotifyTextureAssetVector::iterator itNotification = m_notifyTextureAssets.begin(); itNotification != m_notifyTextureAssets.end(); ++itNotification)
@@ -633,14 +775,28 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
-            HandleAssetNotification(asset, DiffuseProbeGridTextureNotificationType::Ready);
+            if (asset.GetId() == m_visualizationModelAsset.GetId())
+            {
+                OnVisualizationModelAssetReady(asset);
+            }
+            else
+            {
+                HandleAssetNotification(asset, DiffuseProbeGridTextureNotificationType::Ready);
+            }
         }
 
         void DiffuseProbeGridFeatureProcessor::OnAssetError(Data::Asset<Data::AssetData> asset)
         {
-            AZ_Error("ReflectionProbeFeatureProcessor", false, "Failed to load cubemap [%s]", asset.GetHint().c_str());
+            if (asset.GetId() == m_visualizationModelAsset.GetId())
+            {
+                AZ_Error("DiffuseProbeGridFeatureProcessor", false, "Failed to load probe visualization model asset [%s]", asset.GetHint().c_str());
+            }
+            else
+            {
+                AZ_Error("DiffuseProbeGridFeatureProcessor", false, "Failed to load cubemap [%s]", asset.GetHint().c_str());
 
-            HandleAssetNotification(asset, DiffuseProbeGridTextureNotificationType::Error);
+                HandleAssetNotification(asset, DiffuseProbeGridTextureNotificationType::Error);
+            }
         }
     } // namespace Render
 } // namespace AZ

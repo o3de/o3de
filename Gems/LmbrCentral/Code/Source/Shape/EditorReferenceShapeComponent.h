@@ -26,6 +26,6 @@ namespace LmbrCentral
         static constexpr const char* const s_componentDescription = "Enables the entity to reference and reuse shape entities";
         static constexpr const char* const s_icon = "Editor/Icons/Components/ShapeReference.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/ShapeReference.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/shape/shape-reference/";
     };
 }

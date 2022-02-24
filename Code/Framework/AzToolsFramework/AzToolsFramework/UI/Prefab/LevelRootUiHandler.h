@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 
 namespace AzToolsFramework
@@ -35,7 +36,7 @@ namespace AzToolsFramework
         bool CanRename(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         bool OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-        bool OnEntityDoubleClick(AZ::EntityId entityId) const override;
+        bool OnOutlinerItemDoubleClick(const QModelIndex& index) const override;
 
     private:
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;

@@ -9,14 +9,17 @@
 set(FILES
     Include/AtomToolsFramework/Application/AtomToolsApplication.h
     Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h
-    Include/AtomToolsFramework/AssetGridDialog/AssetGridDialog.h
+    Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h
+    Include/AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h
+    Include/AtomToolsFramework/AssetSelection/AssetSelectionGrid.h
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
     Include/AtomToolsFramework/Document/AtomToolsDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentInspector.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentSystem.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentApplication.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
-    Include/AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h
@@ -38,23 +41,23 @@ set(FILES
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h
-    Include/AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
     Source/Application/AtomToolsApplication.cpp
     Source/AssetBrowser/AtomToolsAssetBrowser.cpp
     Source/AssetBrowser/AtomToolsAssetBrowser.qrc
     Source/AssetBrowser/AtomToolsAssetBrowser.ui
-    Source/AssetGridDialog/AssetGridDialog.cpp
-    Source/AssetGridDialog/AssetGridDialog.ui
+    Source/AssetBrowser/AtomToolsAssetBrowserInteractions.cpp
+    Source/AssetSelection/AssetSelectionComboBox.cpp
+    Source/AssetSelection/AssetSelectionGrid.cpp
+    Source/AssetSelection/AssetSelectionGrid.ui
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
     Source/Document/AtomToolsDocument.cpp
+    Source/Document/AtomToolsDocumentInspector.cpp
     Source/Document/AtomToolsDocumentApplication.cpp
     Source/Document/AtomToolsDocumentMainWindow.cpp
-    Source/Document/AtomToolsDocumentSystemSettings.cpp
-    Source/Document/AtomToolsDocumentSystemComponent.cpp
-    Source/Document/AtomToolsDocumentSystemComponent.h
+    Source/Document/AtomToolsDocumentSystem.cpp
     Source/DynamicProperty/DynamicProperty.cpp
     Source/DynamicProperty/DynamicPropertyGroup.cpp
     Source/Inspector/InspectorWidget.cpp
@@ -89,4 +92,23 @@ set(FILES
     Source/PreviewRenderer/PreviewRendererCaptureState.h
     Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
     Source/PreviewRenderer/PreviewRendererSystemComponent.h
+    Source/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h
+    Source/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/DollyCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/IdleBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/IdleBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/MoveCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/PanCameraBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/PanCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/OrbitCameraBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateEnvironmentBehavior.h
+    Source/Viewport/ViewportInputBehaviorController/RotateModelBehavior.cpp
+    Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/RotateModelBehavior.h
 )

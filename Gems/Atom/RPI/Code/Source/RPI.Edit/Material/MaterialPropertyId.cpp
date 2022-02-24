@@ -25,11 +25,29 @@ namespace AZ
             return IsValidName(name.GetStringView());
         }
 
+        bool MaterialPropertyId::CheckIsValidName(AZStd::string_view name)
+        {
+            if (IsValidName(name))
+            {
+                return true;
+            }
+            else
+            {
+                AZ_Error("MaterialPropertyId", false, "'%.*s' is not a valid identifier", AZ_STRING_ARG(name));
+                return false;
+            }
+        }
+
+        bool MaterialPropertyId::CheckIsValidName(const AZ::Name& name)
+        {
+            return CheckIsValidName(name.GetStringView());
+        }
+        
         bool MaterialPropertyId::IsValid() const
         {
             return !m_fullName.IsEmpty();
         }
-
+        
         MaterialPropertyId MaterialPropertyId::Parse(AZStd::string_view fullPropertyId)
         {
             AZStd::vector<AZStd::string> tokens;
@@ -88,7 +106,37 @@ namespace AZ
         {
         }
         
-        MaterialPropertyId::MaterialPropertyId(const AZStd::span<const AZStd::string> names)
+        MaterialPropertyId::MaterialPropertyId(const AZStd::span<AZStd::string> groupNames, AZStd::string_view propertyName)
+        {
+            for (const auto& name : groupNames)
+            {
+                if (!IsValidName(name))
+                {
+                    AZ_Error("MaterialPropertyId", false, "Group name '%s' is not a valid identifier.", name.c_str());
+                    return;
+                }
+            }
+            
+            if (!IsValidName(propertyName))
+            {
+                AZ_Error("MaterialPropertyId", false, "Property name '%.*s' is not a valid identifier.", AZ_STRING_ARG(propertyName));
+                return;
+            }
+
+            if (groupNames.empty())
+            {
+                m_fullName = propertyName;
+            }
+            else
+            {
+                AZStd::string fullName;
+                AzFramework::StringFunc::Join(fullName, groupNames.begin(), groupNames.end(), ".");
+                fullName = AZStd::string::format("%s.%.*s", fullName.c_str(), AZ_STRING_ARG(propertyName));
+                m_fullName = fullName;
+            }
+        }
+
+        MaterialPropertyId::MaterialPropertyId(const AZStd::span<AZStd::string> names)
         {
             for (const auto& name : names)
             {

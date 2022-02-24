@@ -15,9 +15,11 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -92,7 +94,7 @@ namespace AZ
                     AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to load material type source data: %s", editData.m_materialTypeSourcePath.c_str());
                     return false;
                 }
-                editData.m_materialTypeSourceData = materialTypeOutcome.GetValue();
+                editData.m_materialTypeSourceData = materialTypeOutcome.TakeValue();
                 return true;
             }
 
@@ -113,43 +115,46 @@ namespace AZ
 
                 // Copy all of the properties from the material asset to the source data that will be exported
                 bool result = true;
-                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition){
-                    const AZ::RPI::MaterialPropertyId propertyId(groupName, propertyName);
-                    const AZ::RPI::MaterialPropertyIndex propertyIndex =
-                        editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
-
-                    AZ::RPI::MaterialPropertyValue propertyValue =
-                        editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()];
-
-                    AZ::RPI::MaterialPropertyValue propertyValueDefault = propertyDefinition.m_value;
-                    if (editData.m_materialParentAsset.IsReady())
+                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZ::RPI::MaterialTypeSourceData::PropertyDefinition* propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext)
                     {
-                        propertyValueDefault = editData.m_materialParentAsset->GetPropertyValues()[propertyIndex.GetIndex()];
-                    }
+                        AZ::Name propertyId{propertyDefinition->GetName()};
+                        nameContext.ContextualizeProperty(propertyId);
 
-                    // Check for and apply any property overrides before saving property values
-                    auto propertyOverrideItr = editData.m_materialPropertyOverrideMap.find(propertyId);
-                    if (propertyOverrideItr != editData.m_materialPropertyOverrideMap.end())
-                    {
-                        propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
-                    }
+                        const AZ::RPI::MaterialPropertyIndex propertyIndex =
+                            editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
 
-                    if (!AtomToolsFramework::ConvertToExportFormat(path, propertyId, propertyDefinition, propertyValue))
-                    {
-                        AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
-                        result = false;
-                        return false;
-                    }
+                        AZ::RPI::MaterialPropertyValue propertyValue =
+                            editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()];
 
-                    // Don't export values if they are the same as the material type or parent
-                    if (propertyValueDefault == propertyValue)
-                    {
+                        AZ::RPI::MaterialPropertyValue propertyValueDefault = propertyDefinition->m_value;
+                        if (editData.m_materialParentAsset.IsReady())
+                        {
+                            propertyValueDefault = editData.m_materialParentAsset->GetPropertyValues()[propertyIndex.GetIndex()];
+                        }
+
+                        // Check for and apply any property overrides before saving property values
+                        auto propertyOverrideItr = editData.m_materialPropertyOverrideMap.find(propertyId);
+                        if (propertyOverrideItr != editData.m_materialPropertyOverrideMap.end())
+                        {
+                            propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
+                        }
+
+                        if (!AtomToolsFramework::ConvertToExportFormat(path, propertyId, *propertyDefinition, propertyValue))
+                        {
+                            AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
+                            result = false;
+                            return false;
+                        }
+
+                        // Don't export values if they are the same as the material type or parent
+                        if (propertyValueDefault == propertyValue)
+                        {
+                            return true;
+                        }
+
+                        exportData.SetPropertyValue(propertyId, propertyValue);
                         return true;
-                    }
-
-                    exportData.m_properties[groupName][propertyDefinition.m_name].m_value = propertyValue;
-                    return true;
-                });
+                    });
 
                 return result && AZ::RPI::JsonUtils::SaveObjectToFile(path, exportData);
             }

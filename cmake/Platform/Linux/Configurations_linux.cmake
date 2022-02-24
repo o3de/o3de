@@ -16,9 +16,18 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             __linux__
             LINUX64
         COMPILATION
-            -fPIC
             -msse4.1
+        LINK_NON_STATIC
+            -Wl,--no-undefined
+            -fpie
+            -Wl,-z,relro,-z,now
+            -Wl,-z,noexecstack
+        LINK_EXE
+            -fpie
+            -Wl,-z,relro,-z,now
+            -Wl,-z,noexecstack
     )
+
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
@@ -37,7 +46,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             __linux__
             LINUX64
         COMPILATION
-            -fPIC
             -msse4.1
         LINK_NON_STATIC
             ${LY_GCC_GCOV_LFLAGS}

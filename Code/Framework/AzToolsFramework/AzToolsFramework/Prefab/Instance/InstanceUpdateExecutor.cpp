@@ -119,7 +119,7 @@ namespace AzToolsFramework
         }
 
         const Instance* InstanceUpdateExecutor::ClimbUpToTargetInstance(
-            const Instance* startInstance, const Instance* targetInstance, AZStd::string& aliasPath)
+            const Instance* startInstance, const Instance* targetInstance, AZStd::string& aliasPath) const
         {
             if (!startInstance)
             {
@@ -146,6 +146,36 @@ namespace AzToolsFramework
             return &instance->get();
         }
 
+        const void InstanceUpdateExecutor::ReplaceFocusedContainerTransformAccordingToRoot(
+            const Instance* focusedInstance, PrefabDom& focusedInstanceDom) const
+        {
+            // Climb from the focused instance to the root and store the path.
+            AZStd::string rootToFocusedInstance;
+            auto rootInstance = ClimbUpToTargetInstance(focusedInstance, nullptr, rootToFocusedInstance);
+
+            if (rootInstance != focusedInstance)
+            {
+                // Create the path from the root instance to the container entity of the focused instance.
+                AZStd::string rootToFocusedInstanceContainer =
+                    AZStd::string::format("%s/%s", rootToFocusedInstance.c_str(), PrefabDomUtils::ContainerEntityName);
+                PrefabDomPath rootToFocusedInstanceContainerPath(rootToFocusedInstanceContainer.c_str());
+
+                // Retrieve the dom of the root instance.
+                PrefabDom rootDom;
+                rootDom.CopyFrom(
+                    m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->GetTemplateId()), focusedInstanceDom.GetAllocator());
+
+                PrefabDom containerDom;
+                containerDom.CopyFrom(*rootToFocusedInstanceContainerPath.Get(rootDom), focusedInstanceDom.GetAllocator());
+
+                // Paste the focused instance container dom as seen from the root into instanceDom.
+                AZStd::string containerName =
+                    AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
+                PrefabDomPath containerPath(containerName.c_str());
+                containerPath.Set(focusedInstanceDom, containerDom, focusedInstanceDom.GetAllocator());
+            }
+        }
+
         bool InstanceUpdateExecutor::GenerateInstanceDomAccordingToCurrentFocus(const Instance* instance, PrefabDom& instanceDom)
         {
             // Retrieve focused instance
@@ -155,15 +185,19 @@ namespace AzToolsFramework
             auto domSourceInstance = ClimbUpToTargetInstance(instance, &focusedInstance->get(), aliasPath);
             
             PrefabDomPath domSourcePath(aliasPath.c_str());
-            instanceDom.CopyFrom(
+            PrefabDom partialInstanceDom;
+            partialInstanceDom.CopyFrom(
                 m_prefabSystemComponentInterface->FindTemplateDom(domSourceInstance->GetTemplateId()), instanceDom.GetAllocator());
 
-            auto instanceDomValueFromSource = domSourcePath.Get(instanceDom);
+            auto instanceDomValueFromSource = domSourcePath.Get(partialInstanceDom);
             if (!instanceDomValueFromSource)
             {
                 return false;
             }
+
             instanceDom.CopyFrom(*instanceDomValueFromSource, instanceDom.GetAllocator());
+
+            PrefabDomUtils::PrintPrefabDomValue("", instanceDom);
 
             // If the focused instance is not an ancestor of our instance, verify if it's a descendant.
             if (domSourceInstance != &focusedInstance->get())
@@ -174,41 +208,36 @@ namespace AzToolsFramework
                 // If the focused instance is a descendant (or the instance itself), we need to replace its portion of the dom with the template one.
                 if (focusedInstanceAncestor == instance)
                 {
-                    // Get the dom for the focused instance from its template
-                    PrefabDom& focusedInstanceDom = m_prefabSystemComponentInterface->FindTemplateDom(focusedInstance->get().GetTemplateId());
-                    PrefabDomPath domSourceToFocusPath(aliasPathToFocus.c_str());
+                    // Get the dom for the focused instance from its template.
+                    PrefabDom focusedInstanceDom;
+                    focusedInstanceDom.CopyFrom(
+                        m_prefabSystemComponentInterface->FindTemplateDom(focusedInstance->get().GetTemplateId()),
+                        instanceDom.GetAllocator());
+
+                    // Replace the container entity with the one as seen by the root
+                    // TODO - this function should only replace the transform!
+                    ReplaceFocusedContainerTransformAccordingToRoot(&focusedInstance->get(), focusedInstanceDom);
                     
                     // Copy the focused instance dom inside the dom that will be used to refresh the instance.
-                    domSourceToFocusPath.Set(instanceDom, focusedInstanceDom);
+                    PrefabDomPath domSourceToFocusPath(aliasPathToFocus.c_str());
+                    domSourceToFocusPath.Set(instanceDom, focusedInstanceDom, instanceDom.GetAllocator());
 
-                    // TODO - Do the same as the step below (copy container).
+                    // Force a deep copy
+                    PrefabDom instanceDomCopy;
+                    instanceDomCopy.CopyFrom(instanceDom, instanceDom.GetAllocator());
+
+                    instanceDom.CopyFrom(instanceDomCopy, instanceDom.GetAllocator());
                 }
             }
             // If our instance is the focused instance, fix the container
             else if (&focusedInstance->get() == instance)
             {
-                // Get the container from the root
-                AZStd::string rootToInstancePath;
-                auto rootInstance = ClimbUpToTargetInstance(instance, nullptr, rootToInstancePath);
-
-                if (rootInstance != instance)
-                {
-                    AZStd::string rootToInstanceContainer =
-                        AZStd::string::format("%s/%s", rootToInstancePath.c_str(), PrefabDomUtils::ContainerEntityName);
-                    PrefabDomPath rootToInstanceContainerPath(rootToInstanceContainer.c_str());
-
-                    PrefabDom rootDom;
-                    rootDom.CopyFrom(
-                        m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->GetTemplateId()), rootDom.GetAllocator());
-                    auto containerDomValue = rootToInstanceContainerPath.Get(rootDom);
-
-                    AZStd::string containerAlias = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
-                    PrefabDomPath containerPath(containerAlias.c_str());
-                    containerPath.Set(instanceDom, *containerDomValue);
-                }
+                // Replace the container entity with the one as seen by the root
+                // TODO - this function should only replace the transform!
+                ReplaceFocusedContainerTransformAccordingToRoot(instance, instanceDom);
             }
 
-            PrefabDomValueReference instanceDomFromRoot = *instanceDomValueFromSource;
+            PrefabDomValueReference instanceDomFromRoot = instanceDom;
             if (!instanceDomFromRoot.has_value())
             {
                 return false;
@@ -281,7 +310,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        Instance::EntityList newEntities;
+                        EntityList newEntities;
 
                         // TODO - Add relevant comment.
                         bool instanceDomGenerated = GenerateInstanceDomAccordingToCurrentFocus(instanceToUpdate, instanceDomAccordingToFocus);
@@ -295,6 +324,8 @@ namespace AzToolsFramework
                             isUpdateSuccessful = false;
                             continue;
                         }
+
+                        PrefabDomUtils::PrintPrefabDomValue("", instanceDomAccordingToFocus);
 
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomAccordingToFocus))
                         {

@@ -69,6 +69,7 @@ namespace AzToolsFramework
             ColumnName,                 //!< Entity name
             ColumnVisibilityToggle,     //!< Visibility Icons
             ColumnLockToggle,           //!< Lock Icons
+            ColumnSpacing,              //!< Spacing to allow for drag select
             ColumnSortIndex,            //!< Index of sort order
             ColumnCount                 //!< Total number of columns
         };
@@ -156,7 +157,6 @@ namespace AzToolsFramework
         void ProcessEntityUpdates();
 
     Q_SIGNALS:
-        void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
         void EnableSelectionUpdates(bool enable);
         void ResetFilter();
@@ -190,7 +190,6 @@ namespace AzToolsFramework
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
-        AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityChangeQueue;
         bool m_entityChangeQueued;
         bool m_entityLayoutQueued;

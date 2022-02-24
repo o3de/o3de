@@ -93,7 +93,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     
     // Elements of m_transmissionParams:
     // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
+    // Thin  object mode:  (shrinkFactor, transmissionNdLBias, distanceAttenuation, scale)
     float4 m_transmissionParams;
     
     // (float3 TintColor, thickness)

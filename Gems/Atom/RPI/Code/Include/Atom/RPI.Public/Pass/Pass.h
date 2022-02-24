@@ -405,7 +405,7 @@ namespace AZ
 
             // The PassTemplate used to create this pass
             // Null if this pass was not created by a PassTemplate
-            AZStd::shared_ptr<PassTemplate> m_template = nullptr;
+            AZStd::shared_ptr<const PassTemplate> m_template = nullptr;
 
             // The PassRequest used to create this pass
             // Only valid if m_createdByPassRequest flag is set
@@ -450,6 +450,9 @@ namespace AZ
 
                         // Whether the pass should gather pipeline statics
                         uint64_t m_pipelineStatisticsQueryEnabled : 1;
+
+                        // Whether the pass is the root pass for a pipeline. Used to control pipeline render tick rate
+                        uint64_t m_isPipelineRoot : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };

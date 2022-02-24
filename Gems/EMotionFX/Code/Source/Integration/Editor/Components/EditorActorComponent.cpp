@@ -124,12 +124,12 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorActorComponent::m_renderCharacter,
                             "Draw character", "Toggles rendering of character mesh.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnDebugDrawFlagChanged)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(0, &EditorActorComponent::m_renderSkeleton,
                             "Draw skeleton", "Toggles rendering of skeleton.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnDebugDrawFlagChanged)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(0, &EditorActorComponent::m_renderBounds, "Draw bounds", "Toggles rendering of world space bounding boxes.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnDebugDrawFlagChanged)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorActorComponent::m_skinningMethod,
                             "Skinning method", "Choose the skinning method this actor is using")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnSkinningMethodChanged)
@@ -180,7 +180,6 @@ namespace EMotionFX
             , m_lodLevel(0)
             , m_actorAsset(AZ::Data::AssetLoadBehavior::NoLoad)
         {
-            m_debugRenderFlags[RENDER_SOLID] = true;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -198,6 +197,7 @@ namespace EMotionFX
         {
             AzToolsFramework::Components::EditorComponentBase::Activate();
 
+            UpdateRenderFlags();
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -363,8 +363,9 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void EditorActorComponent::OnDebugDrawFlagChanged()
+        void EditorActorComponent::OnRenderFlagChanged()
         {
+            UpdateRenderFlags();
             if (m_renderSkeleton || m_renderBounds || m_renderCharacter)
             {
                 AZ::TickBus::Handler::BusConnect();
@@ -573,6 +574,23 @@ namespace EMotionFX
             ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::InvalidatePropertyDisplay, Refresh_EntireTree);
         }
 
+        void EditorActorComponent::UpdateRenderFlags()
+        {
+            m_renderFlags = ActorRenderFlags::None;
+            if (m_renderCharacter)
+            {
+                m_renderFlags |= ActorRenderFlags::Solid;
+            }
+            if (m_renderBounds)
+            {
+                m_renderFlags |= ActorRenderFlags::AABB;
+            }
+            if (m_renderSkeleton)
+            {
+                m_renderFlags |= ActorRenderFlags::LineSkeleton;
+            }
+        }
+
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world)
         {
@@ -616,22 +634,16 @@ namespace EMotionFX
             {
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
-
-                m_debugRenderFlags[RENDER_AABB] = m_renderBounds;
-                m_debugRenderFlags[RENDER_LINESKELETON] = m_renderSkeleton;
-                m_debugRenderFlags[RENDER_EMFX_DEBUG] = true;
-                m_renderActorInstance->DebugDraw(m_debugRenderFlags);
+                m_renderActorInstance->DebugDraw(m_renderFlags);
             }
         }
 
         void EditorActorComponent::BuildGameEntity(AZ::Entity* gameEntity)
         {
+            UpdateRenderFlags();
             ActorComponent::Configuration cfg;
             cfg.m_actorAsset = m_actorAsset;
             cfg.m_materialPerLOD = m_materialPerLOD;
-            cfg.m_renderSkeleton = m_renderSkeleton;
-            cfg.m_renderCharacter = m_renderCharacter;
-            cfg.m_renderBounds = m_renderBounds;
             cfg.m_attachmentType = m_attachmentType;
             cfg.m_attachmentTarget = m_attachmentTarget;
             cfg.m_attachmentJointIndex = m_attachmentJointIndex;
@@ -639,6 +651,7 @@ namespace EMotionFX
             cfg.m_skinningMethod = m_skinningMethod;
             cfg.m_bboxConfig = m_bboxConfig;
             cfg.m_forceUpdateJointsOOV = m_forceUpdateJointsOOV;
+            cfg.m_renderFlags = m_renderFlags;
 
             gameEntity->AddComponent(aznew ActorComponent(&cfg));
         }
@@ -861,7 +874,7 @@ namespace EMotionFX
         void EditorActorComponent::CheckActorCreation()
         {
             // Enable/disable debug drawing.
-            OnDebugDrawFlagChanged();
+            OnRenderFlagChanged();
 
             // Create actor instance.
             auto* actorAsset = m_actorAsset.GetAs<ActorAsset>();
@@ -964,9 +977,9 @@ namespace EMotionFX
             }
         }
 
-        void EditorActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
+        void EditorActorComponent::SetRenderFlag(ActorRenderFlags renderFlags)
         {
-            m_debugRenderFlags = renderFlags;
+            m_renderFlags = renderFlags;
         }
     } //namespace Integration
 } // namespace EMotionFX

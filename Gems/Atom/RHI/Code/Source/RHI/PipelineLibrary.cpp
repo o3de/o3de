@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI/PipelineLibrary.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
             return true;
         }
 
-        ResultCode PipelineLibrary::Init(Device& device, const PipelineLibraryData* serializedData)
+        ResultCode PipelineLibrary::Init(Device& device, const PipelineLibraryDescriptor& descriptor)
         {
             if (Validation::IsEnabled())
             {
@@ -36,9 +37,12 @@ namespace AZ
                 }
             }
 
-            ResultCode resultCode = InitInternal(device, serializedData);
+            ResultCode resultCode = InitInternal(device, descriptor);
             if (resultCode == ResultCode::Success)
             {
+                AZStd::string libName;
+                AzFramework::StringFunc::Path::GetFileName(descriptor.m_filePath.c_str(), libName);
+                SetName(Name(libName));
                 DeviceObject::Init(device);
             }
             return resultCode;
@@ -71,6 +75,16 @@ namespace AZ
             }
 
             return GetSerializedDataInternal();
+        }
+    
+        bool PipelineLibrary::SaveSerializedData(const AZStd::string& filePath) const
+        {
+            if (!ValidateIsInitialized())
+            {
+                return false;
+            }
+
+            return SaveSerializedDataInternal(filePath);
         }
 
         bool PipelineLibrary::IsMergeRequired() const

@@ -12,6 +12,7 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -29,6 +30,7 @@ namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
     class InstanceUpdateExecutorInterface;
+    class PrefabSystemComponentInterface;
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
     class PrefabFocusHandler final
@@ -76,25 +78,21 @@ namespace AzToolsFramework::Prefab
         
     private:
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
-        void RefreshInstanceFocusList();
         void RefreshInstanceFocusPath();
 
-        void SetInstanceContainersOpenState(const AZStd::vector<AZ::EntityId>& instances, bool openState) const;
+        void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
         void SetInstanceContainersOpenStateOfAllDescendantContainers(InstanceOptionalReference instance, bool openState) const;
 
         void SwitchToEditScope(PrefabEditScope editScope) const;
 
-        InstanceOptionalReference GetReferenceFromContainerEntityId(AZ::EntityId containerEntityId) const;
+        InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
 
-        //! The EntityId of the prefab container entity for the instance the editor is currently focusing on.
-        AZ::EntityId m_focusedInstanceContainerEntityId = AZ::EntityId();
-        //! The templateId of the focused instance.
-        TemplateId m_focusedTemplateId;
-        //! The list of instances going from the root (index 0) to the focused instance,
-        //! referenced by their prefab container's EntityId.
-        AZStd::vector<AZ::EntityId> m_instanceFocusHierarchy;
+        //! The alias path for the instance the editor is currently focusing on, starting from the root instance.
+        RootAliasPath m_rootAliasFocusPath = RootAliasPath();
         //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
-        AZ::IO::Path m_instanceFocusPath;
+        AZ::IO::Path m_filenameFocusPath;
+        //! The length of the current focus path. Stored to simplify internal checks.
+        int m_rootAliasFocusPathLength = 0;
         //! The current focus mode.
         PrefabEditScope m_prefabEditScope = PrefabEditScope::NESTED_TEMPLATES;
 

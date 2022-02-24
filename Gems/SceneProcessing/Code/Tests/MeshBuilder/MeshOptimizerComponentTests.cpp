@@ -176,7 +176,7 @@ namespace SceneProcessing
             component.OptimizeMeshes(context);
 
             AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedNodeIndex =
-                graph.Find(AZStd::string("testMesh").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix));
+                graph.Find(AZStd::string("testMesh_").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix));
             ASSERT_TRUE(optimizedNodeIndex.IsValid()) << "Mesh optimizer did not add an optimized version of the mesh";
 
             const auto& optimizedMesh =
@@ -184,7 +184,7 @@ namespace SceneProcessing
             ASSERT_TRUE(optimizedMesh);
 
             AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedSkinDataNodeIndex =
-                graph.Find(AZStd::string("testMesh").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix).append(".skinWeights"));
+                graph.Find(AZStd::string("testMesh_").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix).append(".skinWeights"));
             ASSERT_TRUE(optimizedSkinDataNodeIndex.IsValid()) << "Mesh optimizer did not add an optimized version of the skin data";
 
             const auto& optimizedSkinWeights =
@@ -227,7 +227,7 @@ namespace SceneProcessing
         AZ::SceneAPI::Events::GenerateSimplificationEventContext context(scene, "pc");
         component.OptimizeMeshes(context);
 
-        AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedNodeIndex = graph.Find(AZStd::string("testMesh").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix));
+        AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedNodeIndex = graph.Find(AZStd::string("testMesh_").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix));
         ASSERT_TRUE(optimizedNodeIndex.IsValid()) << "Mesh optimizer did not add an optimized version of the mesh";
 
         const auto& optimizedMesh = AZStd::rtti_pointer_cast<AZ::SceneAPI::DataTypes::IMeshData>(graph.GetNodeContent(optimizedNodeIndex));

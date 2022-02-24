@@ -11,8 +11,8 @@ set(FILES
     Source/Document/ShaderManagementConsoleDocument.cpp
     Source/Document/ShaderManagementConsoleDocument.h
 
-    Source/Window/ShaderManagementConsoleBrowserInteractions.h
-    Source/Window/ShaderManagementConsoleBrowserInteractions.cpp
+    Source/Window/ShaderManagementConsoleTableView.h
+    Source/Window/ShaderManagementConsoleTableView.cpp
     Source/Window/ShaderManagementConsoleWindow.h
     Source/Window/ShaderManagementConsoleWindow.cpp
     Source/Window/ShaderManagementConsole.qrc
@@ -20,6 +20,5 @@ set(FILES
     Source/main.cpp
     Source/ShaderManagementConsoleApplication.cpp
     Source/ShaderManagementConsoleApplication.h
-    Source/ShaderManagementConsoleRequestBus.h
     ../Scripts/GenerateShaderVariantListForMaterials.py
 )
