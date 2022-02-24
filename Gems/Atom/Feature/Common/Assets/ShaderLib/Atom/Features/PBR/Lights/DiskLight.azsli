@@ -76,9 +76,12 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
 
         // shadow
         float litRatio = 1.0;
-        
-        // How much is back face shadowed, it's set to the reverse of litRatio to share the same default value with thickness, which should be 0 if no shadow map available
-        float backShadowRatio = 0.0;
+
+        // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
+        // - If transmission mode is thick object -> use transmission thickness parameter instead
+        // - If transmission mode is thin object -> ignore back lighting
+        float transmissionDistance = -1.0f;
+
         if (o_enableShadows)
         {
             litRatio = ProjectedShadow::GetVisibility(
@@ -88,14 +91,16 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
                 -dirToConeTip,
                 surface.vertexNormal);
              
-            // Use backShadowRatio to carry thickness from shadow map for thick mode
-            backShadowRatio = 1.0 - litRatio;
+
+            // o_transmission_mode == NONE is not taken into account because GetBackLighting already ignores this case
 #if ENABLE_TRANSMISSION            
             if (o_transmission_mode == TransmissionMode::ThickObject)
             {
-                backShadowRatio = ProjectedShadow::GetThickness(
-                    light.m_shadowIndex,
-                    surface.position);
+                transmissionDistance = ProjectedShadow::GetThickness(light.m_shadowIndex, surface.position);
+            }
+            else if (o_transmission_mode == TransmissionMode::ThinObject)
+            {
+                transmissionDistance = ProjectedShadow::GetThickness(light.m_shadowIndex, surface.position - lightingData.shrinkFactor * surface.vertexNormal);
             }
 #endif
         }
@@ -115,8 +120,8 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir) * litRatio;
 
         // Transmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, backShadowRatio);
-        
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, transmissionDistance, distanceToLight2);
+
         // Adjust the light direction for specular based on disk size
 
         // Calculate the reflection off the normal from the view direction

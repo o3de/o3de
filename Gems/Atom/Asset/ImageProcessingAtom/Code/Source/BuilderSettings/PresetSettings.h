@@ -11,9 +11,9 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Asset/AssetCommon.h>
 
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/CubemapSettings.h>
 #include <BuilderSettings/MipmapSettings.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
 
 namespace ImageProcessingAtom

@@ -310,7 +310,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        Instance::EntityList newEntities;
+                        EntityList newEntities;
 
                         // TODO - Add relevant comment.
                         bool instanceDomGenerated = GenerateInstanceDomAccordingToCurrentFocus(instanceToUpdate, instanceDomAccordingToFocus);

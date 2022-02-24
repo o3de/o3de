@@ -58,6 +58,10 @@
             <Custom Action="ConfigurePython" After="MoveCMake">
                 NOT Installed Or REINSTALL
             </Custom>
+            <!-- limit the unregister action to full uninstall -->
+            <Custom Action="UnRegisterEngine" After="InstallInitialize">
+                (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
+            </Custom>
         </InstallExecuteSequence>
 
         <UIRef Id="$(var.CPACK_WIX_UI_REF)" />

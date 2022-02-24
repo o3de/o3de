@@ -69,9 +69,11 @@ namespace UnitTest
         // Note that ConvertToAbsolutePath will perform a realpath on the result. The result of AZ::Utils::GetExecutableDirectory
         // uses AZ::Android::AndroidEnv::Get()->GetAppPrivateStoragePath() which will retrieve the storage path, but that path could
         // be symlinked, so we need to perform a real path on it before comparison
-        char realExecutableDirectory[AZ::IO::MaxPathLength];
-        ASSERT_TRUE(realpath(executableDirectory, realExecutableDirectory));
-
+        char* realExecutableDirectory = realpath(executableDirectory, nullptr);
+        ASSERT_NE(realExecutableDirectory, nullptr);
+        
         EXPECT_STRCASEEQ(realExecutableDirectory, absolutePath->c_str());
+
+        free(realExecutableDirectory);
     }
 }

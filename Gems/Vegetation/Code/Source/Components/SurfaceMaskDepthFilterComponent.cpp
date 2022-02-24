@@ -220,7 +220,7 @@ namespace Vegetation
             float instanceZ = instanceData.m_position.GetZ();
             m_points.EnumeratePoints(
                 [instanceZ, lowerZDistanceRange, upperZDistanceRange, &passesFilter](
-                    const AZ::Vector3& position,
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
                     [[maybe_unused]] const AZ::Vector3& normal, [[maybe_unused]] const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     float pointZ = position.GetZ();

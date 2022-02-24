@@ -8,13 +8,18 @@
 
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -55,6 +60,19 @@ namespace AtomToolsFramework
             },
             true);
         job->Start();
+    }
+
+    QString GetDisplayNameFromPath(const QString& path)
+    {
+        QFileInfo fileInfo(path);
+        QString fileName = fileInfo.baseName();
+        fileName.replace(QRegExp("[^a-zA-Z\\d\\s]"), " ");
+        QStringList fileNameParts = fileName.split(' ', Qt::SkipEmptyParts);
+        for (QString& part : fileNameParts)
+        {
+            part.replace(0, 1, part[0].toUpper());
+        }
+        return fileNameParts.join(" ");
     }
 
     QFileInfo GetSaveFileInfo(const QString& initialPath)
@@ -178,4 +196,74 @@ namespace AtomToolsFramework
 
         return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }
-}
+
+    AZStd::string GetExteralReferencePath(
+        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
+    {
+        if (referencePath.empty())
+        {
+            return {};
+        }
+
+        if (!relativeToExportPath)
+        {
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            bool sourceInfoFound = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, referencePath.c_str(),
+                assetInfo, watchFolder);
+            if (sourceInfoFound)
+            {
+                return assetInfo.m_relativePath;
+            }
+        }
+
+        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
+        exportFolder.RemoveFilename();
+        return AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
+    }
+
+    bool SaveSettingsToFile(const AZ::IO::FixedMaxPath& savePath, const AZStd::vector<AZStd::string>& filters)
+    {
+        auto registry = AZ::SettingsRegistry::Get();
+        if (registry == nullptr)
+        {
+            AZ_Warning("AtomToolsFramework", false, "Unable to access global settings registry.");
+            return false;
+        }
+
+        AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+        dumperSettings.m_prettifyOutput = true;
+        dumperSettings.m_includeFilter = [filters](AZStd::string_view path)
+        {
+            for (const auto& filter : filters)
+            {
+                if (filter.starts_with(path.substr(0, filter.size())))
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        AZStd::string stringBuffer;
+        AZ::IO::ByteContainerStream stringStream(&stringBuffer);
+        if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
+        {
+            AZ_Warning("AtomToolsFramework", false, R"(Unable to save changes to the registry file at "%s"\n)", savePath.c_str());
+            return false;
+        }
+
+        bool saved = false;
+        constexpr auto configurationMode =
+            AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
+        if (AZ::IO::SystemFile outputFile; outputFile.Open(savePath.c_str(), configurationMode))
+        {
+            saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
+        }
+
+        AZ_Warning("AtomToolsFramework", saved, R"(Unable to save registry file to path "%s"\n)", savePath.c_str());
+        return saved;
+    }
+} // namespace AtomToolsFramework

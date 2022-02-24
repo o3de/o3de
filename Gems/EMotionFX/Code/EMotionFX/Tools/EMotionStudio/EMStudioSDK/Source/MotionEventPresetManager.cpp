@@ -302,25 +302,28 @@ namespace EMStudio
         }
     }
 
-
     // Check if motion event with this configuration exists and return color.
     AZ::u32 MotionEventPresetManager::GetEventColor(const EMotionFX::EventDataSet& eventDatas) const
     {
         for (const MotionEventPreset* preset : m_eventPresets)
         {
-            EMotionFX::EventDataSet commonDatas;
             const EMotionFX::EventDataSet& presetDatas = preset->GetEventDatas();
-            const bool allMatch = AZStd::all_of(presetDatas.cbegin(), presetDatas.cend(), [eventDatas](const EMotionFX::EventDataPtr& presetData)
+
+            const size_t numEventDatas = eventDatas.size();
+            if (numEventDatas == presetDatas.size())
             {
-                const auto thisPresetDataHasMatch = AZStd::find_if(eventDatas.cbegin(), eventDatas.cend(), [presetData](const EMotionFX::EventDataPtr& eventData)
+                for (size_t i = 0; i < numEventDatas; ++i)
                 {
-                    return ((presetData && eventData && *presetData == *eventData) || (!presetData && !eventData));
-                });
-                return thisPresetDataHasMatch != eventDatas.cend();
-            });
-            if (allMatch)
-            {
-                return preset->GetEventColor();
+                    const EMotionFX::EventDataPtr& eventData = eventDatas[i];
+                    const EMotionFX::EventDataPtr& presetData = presetDatas[i];
+
+                    if (eventData && presetData &&
+                        eventData->RTTI_GetType() == presetData->RTTI_GetType() &&
+                        *eventData == *presetData)
+                    {
+                        return preset->GetEventColor();
+                    }
+                }
             }
         }
 

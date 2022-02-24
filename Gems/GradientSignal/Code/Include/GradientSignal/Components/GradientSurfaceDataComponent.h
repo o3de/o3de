@@ -57,6 +57,7 @@ namespace GradientSignal
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void Reflect(AZ::ReflectContext* context);
 
         GradientSurfaceDataComponent(const GradientSurfaceDataConfig& configuration);
@@ -72,7 +73,10 @@ namespace GradientSignal
 
         ////////////////////////////////////////////////////////////////////////
         // SurfaceData::SurfaceDataModifierRequestBus
-        void ModifySurfacePoints(SurfaceData::SurfacePointList& surfacePointList) const override;
+        void ModifySurfacePoints(
+            AZStd::span<const AZ::Vector3> positions,
+            AZStd::span<const AZ::EntityId> creatorEntityIds,
+            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const override;
 
         //////////////////////////////////////////////////////////////////////////
         // LmbrCentral::DependencyNotificationBus

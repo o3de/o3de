@@ -60,7 +60,7 @@ namespace AZ
                 // Assert m_template is the same as the one in the pass request
                 if (PassValidation::IsEnabled())
                 {
-                    const AZStd::shared_ptr<PassTemplate> passTemplate = PassSystemInterface::Get()->GetPassTemplate(descriptor.m_passRequest->m_templateName);
+                    const AZStd::shared_ptr<const PassTemplate> passTemplate = PassSystemInterface::Get()->GetPassTemplate(descriptor.m_passRequest->m_templateName);
                     AZ_RPI_PASS_ASSERT(m_template == passTemplate, "Error: template in PassDescriptor doesn't match template from PassRequest!");
                 }
 
