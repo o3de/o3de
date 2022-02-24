@@ -29,6 +29,7 @@ namespace AtomToolsFramework
     using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;
     void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback);
 
+    QString GetDisplayNameFromPath(const QString& path);
     QFileInfo GetSaveFileInfo(const QString& initialPath);
     QFileInfo GetOpenFileInfo(const AZStd::vector<AZ::Data::AssetType>& assetTypes);
     QFileInfo GetUniqueFileInfo(const QString& initialPath);
