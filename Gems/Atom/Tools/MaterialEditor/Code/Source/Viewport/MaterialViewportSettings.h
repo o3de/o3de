@@ -17,7 +17,7 @@
 
 namespace MaterialEditor
 {
-    struct MaterialViewportSettings
+    struct MaterialViewportSettings final
     {
         AZ_RTTI(MaterialViewportSettings, "{16150503-A314-4765-82A3-172670C9EA90}");
         AZ_CLASS_ALLOCATOR(MaterialViewportSettings, AZ::SystemAllocator, 0);
