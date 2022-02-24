@@ -32,6 +32,13 @@ GLOBAL_ILLUMINATION_QUALITY = {
     'High': 2,
 }
 
+# Mesh LOD type
+MESH_LOD_TYPE = {
+    'default': 0,
+    'screen coverage': 1,
+    'specific lod': 2,
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -362,6 +369,15 @@ class AtomComponentProperties:
         """
         Mesh component properties.
           - 'Mesh Asset' Asset.id of the mesh model.
+          - 'Sort Key' dis-ambiguates which mesh renders in front of others (signed int 64)
+          - 'Use ray tracing' Toggles interaction with ray tracing (bool)
+          - 'Lod Type' options: default, screen coverage, specific lod
+          - 'Exclude from reflection cubemaps' Toggles inclusion in generated cubemaps (bool)
+          - 'Use Forward Pass IBL Specular' Toggles Forward Pass IBL Specular (bool)
+          - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
+          - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
+          - 'Lod Override' which specific LOD to always use; default or other named LOD
+          - 'Add Material Component' the button to add a material; set True to add a material component
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -369,6 +385,15 @@ class AtomComponentProperties:
         properties = {
             'name': 'Mesh',
             'Mesh Asset': 'Controller|Configuration|Mesh Asset',
+            'Sort Key': 'Controller|Configuration|Sort Key',
+            'Use ray tracing': 'Controller|Configuration|Use ray tracing',
+            'Lod Type': 'Controller|Configuration|Lod Type',
+            'Exclude from reflection cubemaps': 'Controller|Configuration|Exclude from reflection cubemaps',
+            'Use Forward Pass IBL Specular': 'Controller|Configuration|Use Forward Pass IBL Specular',
+            'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
+            'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
+            'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
+            'Add Material Component': 'Add Material Component',
         }
         return properties[property]
 
