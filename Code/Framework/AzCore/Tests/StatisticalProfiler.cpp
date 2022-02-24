@@ -51,10 +51,39 @@ namespace UnitTest
         }
     }
 
-    class StatisticalProfilerTest
+    class AllocatorsWithTraceFixture
         : public AllocatorsFixture
+        , public AZ::Debug::TraceMessageBus::Handler
     {
-    }; //class StatisticalProfilerTest
+    public:
+        void SetUp() override
+        {
+            AllocatorsFixture::SetUp();
+            AZ::Debug::TraceMessageBus::Handler::BusConnect();
+        }
+
+        void TearDown() override
+        {
+            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+            AllocatorsFixture::TearDown();
+        }
+
+        bool OnPrintf(const char* window, const char* message) override
+        {
+            return OnOutput(window, message);
+        }
+
+        bool OnOutput(const char* window, const char* message) override
+        {
+            printf("%s: %s", window, message);
+            return false;
+        }
+    };
+
+    class StatisticalProfilerTest
+        : public AllocatorsWithTraceFixture
+    {
+    };
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerStringNoMutex_ProfileCode_ValidateStatistics)
     {
@@ -305,63 +334,10 @@ namespace UnitTest
         proxy->ActivateProfiler(ProfilerProxyGroup, false);
     }
 
-    /** Trace message handler to track messages during tests
-*/
-    struct MyTraceMessageSink final
-        : public AZ::Debug::TraceMessageBus::Handler
-    {
-        MyTraceMessageSink()
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        }
-
-        ~MyTraceMessageSink()
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // TraceMessageBus
-        bool OnPrintf(const char* window, const char* message) override
-        {
-            return OnOutput(window, message);
-        }
-
-        bool OnOutput(const char* window, const char* message) override
-        {
-            printf("%s: %s\n", window, message);
-            return false;
-        }
-    }; //struct MyTraceMessageSink
-
     class Suite_StatisticalProfilerPerformance
-        : public AllocatorsFixture
+        : public AllocatorsWithTraceFixture
     {
-    public:
-        MyTraceMessageSink* m_testSink;
-
-        Suite_StatisticalProfilerPerformance() :m_testSink(nullptr)
-        {
-        }
-
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-            m_testSink = new MyTraceMessageSink();
-        }
-
-        ~Suite_StatisticalProfilerPerformance()
-        {
-        }
-
-        void TearDown() override
-        {
-            // clearing up memory
-            delete m_testSink;
-            AllocatorsFixture::TearDown();
-        }
-
-    }; //class Suite_StatisticalProfilerPerformance
+    };
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringNoMutex_1ThreadPerformance)
     {
@@ -629,5 +605,4 @@ namespace UnitTest
         //Clean Up
         proxy->ActivateProfiler(ProfilerProxyGroup, false);
     }
-
 }//namespace UnitTest
