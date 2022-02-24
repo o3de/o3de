@@ -116,24 +116,11 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
 
     class C4976236_AddPhysxColliderComponent(EditorSharedTest):
         from .tests.collider import Collider_AddColliderComponent as test_module
-    
-
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(EditorTestSuite):
-
-    enable_prefab_system = False
-
-    @staticmethod
-    def get_number_parallel_editors():
-        return 16
 
     #########################################
     # Non-atomic tests: These need to be run in a single editor because they have custom setup and teardown
     class C4044459_Material_DynamicFriction(EditorSingleTest_WithFileOverrides):
-        from .tests.material import Material_DynamicFriction as test_module        
+        from .tests.material import Material_DynamicFriction as test_module
         files_to_override = [
             ('physxsystemconfiguration.setreg', 'Material_DynamicFriction.setreg_override')
         ]
@@ -153,23 +140,35 @@ class TestAutomation(EditorTestSuite):
     class C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_LocalSpaceForceOnRigidBodies as test_module
 
-    class C15425929_Undo_Redo(EditorSharedTest):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-        
-    class C4976243_Collision_SameCollisionGroupDiffCollisionLayers(EditorSharedTest):
-        from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
-
-    class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
-        from .tests.character_controller import CharacterController_SwitchLevels as test_module
-
-    class C12712453_ScriptCanvas_MultipleRaycastNode(EditorSharedTest):
-        from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
-
     class C18243586_Joints_HingeLeadFollowerCollide(EditorSharedTest):
         from .tests.joints import Joints_HingeLeadFollowerCollide as test_module
 
     class C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain(EditorSharedTest):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
+
+    class C12712453_ScriptCanvas_MultipleRaycastNode(EditorSharedTest):
+        from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
+
+    class C4976243_Collision_SameCollisionGroupDiffCollisionLayers(EditorSharedTest):
+        from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
+
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomation(EditorTestSuite):
+
+    enable_prefab_system = False
+
+    @staticmethod
+    def get_number_parallel_editors():
+        return 16
+
+    class C15425929_Undo_Redo(EditorSharedTest):
+        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
+
+    class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
+        from .tests.character_controller import CharacterController_SwitchLevels as test_module
 
     class C3510642_Terrain_NotCollideWithTerrain(EditorSharedTest):
         from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
