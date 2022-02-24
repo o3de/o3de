@@ -56,5 +56,21 @@ _PATH_DCCSI_TOOLS_DCC = Path(os.getenv('ATH_DCCSI_TOOLS_DCC',
                                        _PATH_DCCSI_TOOLS_DCC.as_posix()))
 
 _LOGGER.debug('PATH_DCCSI_TOOLS_DCC: {}'.format(_PATH_DCCSI_TOOLS_DCC))
-_LOGGER.debug(STR_CROSSBAR)
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+from Tools import _DCCSI_TESTS
+    
+if _DCCSI_TESTS:
+    from azpy import test_imports
+    
+    _LOGGER.info(STR_CROSSBAR)
+    
+    _LOGGER.info('Testing Imports from {0}'.format(_PACKAGENAME))
+    test_imports(__all__,
+                 _pkg=_PACKAGENAME,
+                 _logger=_LOGGER)
+    
+    _LOGGER.info(STR_CROSSBAR)    
 # -------------------------------------------------------------------------

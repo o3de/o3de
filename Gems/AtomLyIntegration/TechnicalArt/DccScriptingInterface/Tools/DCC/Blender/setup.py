@@ -57,7 +57,7 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Blender.setup'
+_MODULENAME = 'Tools.DCC.Blender.setup'
 
 # Local access
 _MODULE_PATH = Path(__file__)                   # this script

@@ -758,6 +758,9 @@ namespace AZ::Render
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
 
+        const int oldState = debugDisplay->GetState();
+        debugDisplay->DepthTestOff();
+
         const size_t numEnabled = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numEnabled; ++i)
         {
@@ -774,6 +777,8 @@ namespace AZ::Render
             }
             RenderLineAxis(debugDisplay, worldTM, size, selected);
         }
+
+        debugDisplay->SetState(oldState);
     }
 
     void AtomActorDebugDraw::RenderLineAxis(

@@ -39,11 +39,11 @@ _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _PATH_DCCSI_TOOLS = Path(_MODULE_PATH.parent)
 _PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS',
                                        _PATH_DCCSI_TOOLS.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS)
+site.addsitedir(_PATH_DCCSI_TOOLS.as_posix())
 
 _PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
 _PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
-site.addsitedir(_PATH_DCCSIG)
+site.addsitedir(_PATH_DCCSIG.as_posix())
 # -------------------------------------------------------------------------
 
 
@@ -80,7 +80,7 @@ _logging.basicConfig(level=_DCCSI_LOGLEVEL,
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug(STR_CROSSBAR)
-_LOGGER.debug('Initializing: {}.'.format(_PACKAGENAME))
+_LOGGER.debug('Initializing: {}'.format(_PACKAGENAME))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH.as_posix()))
 _LOGGER.debug('PATH_DCCSI_TOOLS: {}'.format(_PATH_DCCSI_TOOLS.as_posix()))
 _LOGGER.debug('PATH_DCCSIG: {}'.format(_PATH_DCCSIG.as_posix()))
@@ -142,19 +142,19 @@ if __name__ == '__main__':
         
     import argparse
     parser = argparse.ArgumentParser(
-        description='O3DE DCCsi Dynamic Config (dynaconf)',
-        epilog="Attempts to determine O3DE project if -pp not set")  
+        description='O3DE DCCsi Tools CLI',
+        epilog="Allows for some light testing of the DCCsi/Tools structure from CLI") 
     
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
-                        default=True,
+                        default=False,
                         help='Enables global debug flag.')
     
     parser.add_argument('-rt', '--run-tests',
                         type=bool,
                         required=False,
-                        default=True,
+                        default=False,
                         help='Runs local import and other tests.')
     
     parser.add_argument('-sd', '--set-debugger',
@@ -166,13 +166,13 @@ if __name__ == '__main__':
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
-                        default=True,
+                        default=False,
                         help='Enables dev mode for early auto attaching debugger.')  
     
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        default=True,
+                        default=False,
                         help='Exits python. Do not exit if you want to be in interactive interpretter after config')
     
     args = parser.parse_args()
@@ -204,6 +204,9 @@ if __name__ == '__main__':
         _DCCSI_TESTS = True
         os.environ["DCCSI_TESTS"] = str(_DCCSI_TESTS)
         
+        _LOGGER.info('TESTS ENABLED, _DCCSI_TESTS: True')
+        _LOGGER.info('Tests are recursive package/module imports and will be verbose!')
+        
         # If in dev mode this will test imports of __all__
         from azpy import test_imports
         
@@ -211,8 +214,7 @@ if __name__ == '__main__':
         
         _LOGGER.info('Testing Imports from {0}'.format(_PACKAGENAME))
         test_imports(__all__,
-                     _pkg=_PACKAGENAME,
-                     _logger=_LOGGER)
+                     _pkg=_PACKAGENAME)
         
     # -- DONE ----
     _LOGGER.info(STR_CROSSBAR)

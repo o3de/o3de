@@ -23,7 +23,7 @@ So we can make an update here once that is used elsewhere.
 import os
 import sys
 import site
-import time
+import timeit
 from os.path import expanduser
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -33,7 +33,7 @@ import logging as _logging
 # global scope
 _MODULENAME = 'azpy.constants'
 
-start = time.process_time() # start tracking
+_START = timeit.default_timer() # start
 
 os.environ['PYTHONINSPECT'] = 'True'
 # for this module to perform standalone
@@ -255,7 +255,9 @@ ENVAR_DCCSI_WING_VERSION_MINOR = str('DCCSI_WING_VERSION_MINOR')
 
 
 # -------------------------------------------------------------------------
-# dcc:Maya API constants
+# To do: deprecate this block and redcode it, it has moved to:
+# DccScriptingInterface\Tools\DCC\Maya\constants.py
+# dcc: Maya ENVAR constants
 TAG_O3DE_DCC_MAYA_MEL = 'dccsi_setup.mel'
 TAG_MAYA_WORKSPACE = 'workspace.mel'
 
@@ -264,7 +266,7 @@ ENVAR_DCCSI_PY_MAYA = str('DCCSI_PY_MAYA')
 ENVAR_MAYA_VERSION = str('MAYA_VERSION')
 ENVAR_MAYA_LOCATION = str('MAYA_LOCATION')
 
-ENVAR_DCCSI_TOOLS_MAYA_PATH = str('DCCSI_TOOLS_MAYA_PATH')
+ENVAR_PATH_DCCSI_TOOLS_MAYA = str('PATH_DCCSI_TOOLS_MAYA')
 ENVAR_MAYA_MODULE_PATH = str('MAYA_MODULE_PATH')
 ENVAR_MAYA_BIN_PATH = str('MAYA_BIN_PATH')
 
@@ -435,5 +437,5 @@ if __name__ == '__main__':
     # custom prompt
     sys.ps1 = "[azpy]>>"
 
-_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, time.process_time() - start)) 
+_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START)) 
 # --- END -----------------------------------------------------------------

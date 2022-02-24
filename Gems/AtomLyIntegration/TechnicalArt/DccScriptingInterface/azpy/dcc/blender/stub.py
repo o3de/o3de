@@ -21,7 +21,9 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Blender.start'
+from azpy.dcc.blender import _PKG_DCC_NAME
+
+_MODULENAME = 'tools.dcc.{}.stub'.format(_PKG_DCC_NAME)
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 

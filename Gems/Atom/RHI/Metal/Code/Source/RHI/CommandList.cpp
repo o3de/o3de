@@ -344,11 +344,11 @@ namespace AZ
                         //format compatible with the appropriate metal function.
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
-                            shaderResourceGroup->CollectUntrackedResources(m_encoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
                         {
-                            shaderResourceGroup->CollectUntrackedResources(m_encoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
                         }
                     }
                 }

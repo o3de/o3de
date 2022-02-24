@@ -93,12 +93,14 @@ def connect_wing():
         pass
 
     _TRY_PY27 = None
+    
+    _WINGHOME = Path(_WINGHOME)
+    _WING_STUB = Path.joinpath(_WINGHOME, 'wingdbstub.py')
+    
     try:
         # this is py3
         import importlib
-        spec = importlib.util.spec_from_file_location("wDBstub",
-                                                      Path(_WINGHOME,
-                                                           'wingdbstub.py'))
+        spec = importlib.util.spec_from_file_location("wDBstub", _WING_STUB.as_posix())
         wDBstub = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(wDBstub)
         _LOGGER.info('~   Success: imported wDBstub (py3)')
@@ -111,8 +113,8 @@ def connect_wing():
     if _TRY_PY27:
         # this is a little bit hacky but can cleanup later
         try:
-            os.path.exists(_WINGHOME)
-            site.addsitedir(_WINGHOME)
+            _WINGHOME.exists()
+            site.addsitedir(_WINGHOME.as_posix())
             import wingdbstub as wDBstub
             _LOGGER.info('~   Success: imported wDBstub (py2)')
         except Exception as e:

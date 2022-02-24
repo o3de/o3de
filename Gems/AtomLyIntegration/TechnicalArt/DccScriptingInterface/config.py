@@ -186,12 +186,19 @@ _PATH_DCCSI_PYTHON_LIB = Path(_PATH_DCCSI_PYTHON_LIB)
 # these global variables are passed as defaults into methods within the module
 
 # special, a global home for stashing PATHs for managed settings
+global _DCCSI_SYS_PATH
 _DCCSI_SYS_PATH = list()
 
 # special, a global home for stashing PYTHONPATHs for managed settings
+global _DCCSI_PYTHONPATH
 _DCCSI_PYTHONPATH = list()
 
+# special, stash local PYTHONPATHs in a non-managed way (won't end up in settings.local.json)
+global _DCCSI_PYTHONPATH_EXCLUDE
+_DCCSI_PYTHONPATH_EXCLUDE = list()
+
 # this is a dict bucket to store none-managed settings (fully local to module)
+global _DCCSI_LOCAL_SETTINGS
 _DCCSI_LOCAL_SETTINGS = {}
 
 # this will retreive the O3DE engine root
@@ -316,6 +323,9 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
     """
     time_start = time.process_time() # start tracking
     
+    # we don't do this often but we want to stash to global dict
+    global _DCCSI_LOCAL_SETTINGS # non-dynaconf managed settings
+    
     _PATH_DCCSIG = Path(dccsi_path)
     _PATH_O3DE_BIN = Path(engine_bin_path)
 
@@ -331,14 +341,15 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
     # site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
 
     QT_PLUGIN_PATH = Path.joinpath(_PATH_O3DE_BIN,'EditorPlugins')
-    os.environ["DYNACONF_QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH.as_posix())
+    os.environ["QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH.as_posix())
+    _DCCSI_LOCAL_SETTINGS['QT_PLUGIN_PATH'] = str(QT_PLUGIN_PATH.as_posix())
     dccsi_sys_path.append(QT_PLUGIN_PATH)
 
     QT_QPA_PLATFORM_PLUGIN_PATH = Path.joinpath(QT_PLUGIN_PATH, 'platforms')
-    os.environ["DYNACONF_QT_QPA_PLATFORM_PLUGIN_PATH"] = str(QT_QPA_PLATFORM_PLUGIN_PATH.as_posix())
     # if the line below is removed external standalone apps can't load PySide2
     os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(QT_QPA_PLATFORM_PLUGIN_PATH.as_posix())
     # ^^ bypass trying to set only with DYNACONF environment
+    _DCCSI_LOCAL_SETTINGS['QT_QPA_PLATFORM_PLUGIN_PATH'] = str(QT_QPA_PLATFORM_PLUGIN_PATH.as_posix())
     dccsi_sys_path.append(QT_QPA_PLATFORM_PLUGIN_PATH)
     
     # Access to QtForPython:
@@ -359,6 +370,7 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
 
 # -------------------------------------------------------------------------
 def init_o3de_pyside2_tools():
+    global _DCCSI_PYTHONPATH
     # set up the pyside2-tools (pyside2uic)
     _DCCSI_PYSIDE2_TOOLS = Path(_PATH_DCCSI_PYTHON,'pyside2-tools')
     if _DCCSI_PYSIDE2_TOOLS.exists():
@@ -574,6 +586,9 @@ def init_o3de_python(engine_path=_O3DE_DEV,
     """Initialize the O3DE dynamic Python env and settings.
     Note: """
     
+    global _DCCSI_LOCAL_SETTINGS
+    global _DCCSI_PYTHONPATH_EXCLUDE
+    
     time_start = time.process_time() 
     
     # pathify
@@ -586,8 +601,11 @@ def init_o3de_python(engine_path=_O3DE_DEV,
     os.environ["DYNACONF_PATH_DCCSI_PYTHON"] = str(_PATH_DCCSI_PYTHON.as_posix())
     
     _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs(_PATH_DCCSIG)
-    os.environ["DYNACONF_PATH_DCCSI_PYTHON_LIB"] = str(_PATH_DCCSI_PYTHON_LIB.as_posix())
-    dccsi_pythonpath.append(_PATH_DCCSI_PYTHON_LIB)
+    os.environ["PATH_DCCSI_PYTHON_LIB"] = str(_PATH_DCCSI_PYTHON_LIB.as_posix())
+    _DCCSI_LOCAL_SETTINGS['PATH_DCCSI_PYTHON_LIB']= str(_PATH_DCCSI_PYTHON_LIB.as_posix())
+    #dccsi_pythonpath.append(_PATH_DCCSI_PYTHON_LIB)
+    # ^ adding here will cause this to end up in settings.local.json
+    # and we don't want that, since this LIB location is transient/procedural
         
     # this is transient and will always track the exe this script is executing on
     _O3DE_PY_EXE = Path(sys.executable)
@@ -765,6 +783,7 @@ def export_settings(settings,
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
+    
     import time
     main_start = time.process_time() # start tracking
     
@@ -937,7 +956,7 @@ if __name__ == '__main__':
     if args.enable_python:
         _LOGGER.info(STR_CROSSBAR)
         _LOGGER.info('PATH_DCCSI_PYTHON'.format(settings.PATH_DCCSI_PYTHON))
-        _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(settings.PATH_DCCSI_PYTHON_LIB))
+        _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(_DCCSI_LOCAL_SETTINGS['PATH_DCCSI_PYTHON_LIB']))
         _LOGGER.info('O3DE_PYTHONHOME'.format(settings.O3DE_PYTHONHOME))
         _LOGGER.info('PATH_O3DE_PYTHON_INSTALL'.format(settings.PATH_O3DE_PYTHON_INSTALL))
         _LOGGER.info('DCCSI_PY_BASE: {}'.format(settings.DCCSI_PY_BASE))
@@ -952,8 +971,8 @@ if __name__ == '__main__':
     if args.enable_qt:
         _LOGGER.info(STR_CROSSBAR)
         # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
-        _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
-        _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))
+        _LOGGER.info('QT_PLUGIN_PATH: {}'.format(_DCCSI_LOCAL_SETTINGS['QT_PLUGIN_PATH']))
+        _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(_DCCSI_LOCAL_SETTINGS['QT_QPA_PLATFORM_PLUGIN_PATH']))
         try:
             settings.DCCSI_PYSIDE2_TOOLS
             _LOGGER.info('DCCSI_PYSIDE2_TOOLS: {}'.format(settings.DCCSI_PYSIDE2_TOOLS))  

@@ -108,10 +108,10 @@ if _DCCSI_DEV_MODE:
 # message collection
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'DCCSI_TOOLS_BLENDER_PATH: {_DCCSI_TOOLS_BLENDER_PATH}')
 _LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
+_LOGGER.debug(f'DCCSI_TOOLS_BLENDER_PATH: {_DCCSI_TOOLS_BLENDER_PATH}')
 # -------------------------------------------------------------------------
 
 

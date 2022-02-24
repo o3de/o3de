@@ -60,6 +60,7 @@ namespace EMStudio
         void LoadRenderOptions();
         void SaveRenderOptions();
         RenderOptions* GetRenderOptions();
+        PluginOptions* GetOptions() override;
 
         void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
