@@ -197,8 +197,7 @@ namespace ScriptCanvasEditor
 
             if (classData->m_typeId == subgraphInterfaceAssetTypeID)
             {
-                auto asset = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance);
-                auto id = asset->GetId();
+                auto id = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance)->GetId();
                 dependentAssets.push_back(SourceHandle(nullptr, id.m_guid, {}));
             }
 
@@ -279,16 +278,16 @@ namespace ScriptCanvasEditor
         {
             AZ_Assert(entity->GetState() == AZ::Entity::State::Constructed, "Entity loaded in bad state");
 
-            ScriptCanvasFileHandlingCpp::EntityIdMapper entityMapper;
-
-            const AZ::EntityId entityId = AZ::Entity::MakeId();
-            entity->SetId(entityMapper.GetNewId(entity->GetId()));
-
-            AZStd::unordered_map<AZ::EntityId, AZ::EntityId> newIdsByOld;
-
             auto entityIdTypeId = azrtti_typeid<AZ::EntityId>();
-
-            // map all references to the previous EntityId to the one just created
+            ScriptCanvasFileHandlingCpp::EntityIdMapper entityMapper;
+            entity->SetId(entityMapper.GetNewId(entity->GetId()));
+            
+            // Create new EntityIds for all EntityIds found in the SC Entity/Component objects
+            // and map all old Ids to the new ones. This way, no Entity activation/deactivation, or
+            // bus communication via EntityId will be handled by multiple or incorrect objects on
+            // possible multiple instantiations of graphs.
+            //
+            // EntityIds contained in variable (those set to self or the graph unique id, will be ignored)
             auto beginElementCB = [&entityMapper, &entityIdTypeId]
                 ( void* instance
                 , const AZ::SerializeContext::ClassData* classData
