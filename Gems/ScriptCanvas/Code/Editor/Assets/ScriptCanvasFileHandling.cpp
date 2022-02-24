@@ -49,6 +49,35 @@ namespace ScriptCanvasFileHandlingCpp
             }
         }
     }
+
+    class EntityIdMapper
+    {
+    public:
+        EntityIdMapper()
+        {
+            m_newIdsByOld[AZ::EntityId()] = AZ::EntityId();
+            m_newIdsByOld[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
+            m_newIdsByOld[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
+        }
+
+        AZ::EntityId GetNewId(const AZ::EntityId& old)
+        {
+            auto iter = m_newIdsByOld.find(old);
+            if (iter == m_newIdsByOld.end())
+            {
+                const AZ::EntityId newId = AZ::Entity::MakeId();
+                m_newIdsByOld.insert(AZStd::make_pair( old, newId ));
+                return newId;
+            }
+            else
+            {
+                return iter->second;
+            }
+        }
+
+    private:
+        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_newIdsByOld;
+    };
 }
 
 namespace ScriptCanvasEditor
@@ -249,13 +278,41 @@ namespace ScriptCanvasEditor
         if (auto entity = scriptCanvasData->GetScriptCanvasEntity())
         {
             AZ_Assert(entity->GetState() == AZ::Entity::State::Constructed, "Entity loaded in bad state");
-            AZ::u64 entityId =
-                aznumeric_caster(ScriptCanvas::MathNodeUtilities::GetRandomIntegral<AZ::s64>(1, std::numeric_limits<AZ::s64>::max()));
-            entity->SetId(AZ::EntityId(entityId));
+
+            ScriptCanvasFileHandlingCpp::EntityIdMapper entityMapper;
+
+            const AZ::EntityId entityId = AZ::Entity::MakeId();
+            entity->SetId(entityMapper.GetNewId(entity->GetId()));
+
+            AZStd::unordered_map<AZ::EntityId, AZ::EntityId> newIdsByOld;
+
+            auto entityIdTypeId = azrtti_typeid<AZ::EntityId>();
+
+            // map all references to the previous EntityId to the one just created
+            auto beginElementCB = [&entityMapper, &entityIdTypeId]
+                ( void* instance
+                , const AZ::SerializeContext::ClassData* classData
+                , const AZ::SerializeContext::ClassElement* classElement) -> bool
+            {
+                if (classElement && classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_POINTER)
+                {
+                    // if ptr is a pointer-to-pointer, cast its value to a void* (or const void*) and dereference to get to the actual object pointer.
+                    instance = *(void**)(instance);
+                }
+
+                if (classData->m_typeId == entityIdTypeId)
+                {
+                    AZ::EntityId* entityIdPtr = reinterpret_cast<AZ::EntityId*>(instance);
+                    *entityIdPtr = entityMapper.GetNewId(*entityIdPtr);
+                }
+
+                return true;
+            };
+
+            serializeContext->EnumerateObject(entity, beginElementCB, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
             auto graph = entity->FindComponent<ScriptCanvasEditor::EditorGraph>();
             graph->MarkOwnership(*scriptCanvasData);
-
             entity->Init();
             entity->Activate();
         }
