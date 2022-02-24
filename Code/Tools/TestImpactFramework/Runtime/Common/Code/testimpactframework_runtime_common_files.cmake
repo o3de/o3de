@@ -7,152 +7,84 @@
 #
 
 set(FILES
-    Include/TestImpactFramework/TestImpactException.h
-    Include/TestImpactFramework/TestImpactRepoPath.h
-    Include/TestImpactFramework/TestImpactRuntime.h
-    Include/TestImpactFramework/TestImpactRuntimeException.h
-    Include/TestImpactFramework/TestImpactConfiguration.h
-    Include/TestImpactFramework/TestImpactConfigurationException.h
-    Include/TestImpactFramework/TestImpactChangelist.h
-    Include/TestImpactFramework/TestImpactChangelistSerializer.h
-    Include/TestImpactFramework/TestImpactChangelistException.h
-    Include/TestImpactFramework/TestImpactPolicy.h
-    Include/TestImpactFramework/TestImpactTestSequence.h
-    Include/TestImpactFramework/TestImpactClientTestSelection.h
-    Include/TestImpactFramework/TestImpactClientTestRun.h
-    Include/TestImpactFramework/TestImpactClientSequenceReport.h
-    Include/TestImpactFramework/TestImpactUtils.h
-    Include/TestImpactFramework/TestImpactClientSequenceReportSerializer.h
-    Include/TestImpactFramework/TestImpactSequenceReportException.h
-    Source/Artifact/TestImpactArtifactException.h
-    Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.cpp
-    Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h
-    Source/Artifact/Factory/TestImpactPythonTestTargetDescriptorFactory.cpp
-    Source/Artifact/Factory/TestImpactPythonTestTargetDescriptorFactory.h
+    Include/Static/Artifact/TestImpactArtifactException.h
+    Include/Static/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h
+    Include/Static/Artifact/Factory/TestImpactTestRunSuiteFactory.h
+    Include/Static/Artifact/Factory/TestImpactModuleCoverageFactory.h
+    Include/Static/Artifact/Factory/TestImpactDependencyGraphDataFactory.h
+    Include/Static/Artifact/Static/TestImpactTestSuiteMeta.h
+    Include/Static/Artifact/Static/TestImpactTargetDescriptor.h
+    Include/Static/Artifact/Static/TestImpactDependencyGraphData.h
+    Include/Static/Artifact/Dynamic/TestImpactTestEnumerationSuite.h
+    Include/Static/Artifact/Dynamic/TestImpactTestRunSuite.h
+    Include/Static/Artifact/Dynamic/TestImpactTestSuite.h
+    Include/Static/Artifact/Dynamic/TestImpactCoverage.h
+    Include/Static/BuildTarget/Common/TestImpactBuildTargetException.h
+    Include/Static/BuildTarget/Common/TestImpactBuildTargetList.h
+    Include/Static/BuildTarget/Common/TestImpactBuildTarget.h
+    Include/Static/Process/TestImpactProcess.h
+    Include/Static/Process/TestImpactProcessException.h
+    Include/Static/Process/TestImpactProcessInfo.h
+    Include/Static/Process/TestImpactProcessLauncher.h
+    Include/Static/Process/JobRunner/TestImpactProcessJob.h
+    Include/Static/Process/JobRunner/TestImpactProcessJobInfo.h
+    Include/Static/Process/JobRunner/TestImpactProcessJobMeta.h
+    Include/Static/Process/JobRunner/TestImpactProcessJobRunner.h
+    Include/Static/Process/Scheduler/TestImpactProcessScheduler.h
+    Include/Static/Dependency/TestImpactDynamicDependencyMap.h
+    Include/Static/Dependency/TestImpactChangeDependencyList.h
+    Include/Static/Dependency/TestImpactDependencyException.h
+    Include/Static/Dependency/TestImpactSourceDependency.h
+    Include/Static/Dependency/TestImpactTestSelectorAndPrioritizer.h
+    Include/Static/Dependency/TestImpactSourceCoveringTestsList.h
+    Include/Static/Dependency/TestImpactSourceCoveringTestsSerializer.h
+    Include/Static/Target/Common/TestImpactTarget.h
+    Include/Static/Target/Common/TestImpactTargetList.h
+    Include/Static/Target/Common/TestImpactTargetException.h
+    Include/Static/TestRunner/Common/TestImpactTestRunnerException.h
+    Include/Static/TestRunner/Common/TestImpactTestRunnerBase.h
+    Include/Static/TestRunner/Common/TestImpactTestRunner.h
+    Include/Static/TestRunner/Common/TestImpactTestRunnerWithCoverage.h
+    Include/Static/TestRunner/Common/TestImpactTestEnumerator.h
+    Include/Static/TestRunner/Common/TestImpactTestSuiteContainer.h
+    Include/Static/TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h
+    Include/Static/TestRunner/Common/Job/TestImpactTestEnumerationJobData.h
+    Include/Static/TestRunner/Common/Job/TestImpactTestRunJobData.h
+    Include/Static/TestRunner/Common/Job/TestImpactTestJobRunner.h
+    Include/Static/TestRunner/Common/Enumeration/TestImpactTestEnumeration.h
+    Include/Static/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.h
+    Include/Static/TestRunner/Common/Run/TestImpactTestCoverage.h
+    Include/Static/TestRunner/Common/Run/TestImpactTestRun.h
+    Include/Static/TestRunner/Common/Run/TestImpactTestRunSerializer.h
+    Include/Static/TestEngine/Common/TestImpactTestEngineException.h
+    Include/Static/TestEngine/Common/TestImpactTestEngine.h
+    Include/Static/TestEngine/Common/Job/TestImpactTestEngineJob.h
+    Include/Static/TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h
+    Include/Static/TestEngine/Common/Job/TestImpactTestJobInfoUtils.h
+    Include/Static/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
+    Include/Static/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
+    Include/Static/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
+    Include/Static/TestImpactRuntimeUtils.h
+    Include/Static/TestImpactTestTargetExclusionList.h
     Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.cpp
-    Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h
     Source/Artifact/Factory/TestImpactTestRunSuiteFactory.cpp
-    Source/Artifact/Factory/TestImpactTestRunSuiteFactory.h
-    Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.cpp
-    Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.cpp
-    Source/Artifact/Factory/TestImpactModuleCoverageFactory.h
     Source/Artifact/Factory/TestImpactDependencyGraphDataFactory.cpp
-    Source/Artifact/Factory/TestImpactDependencyGraphDataFactory.h
-    Source/Artifact/Static/TestImpactNativeTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactNativeTargetDescriptor.h
-    Source/Artifact/Static/TestImpactNativeTargetDescriptorCompiler.cpp
-    Source/Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h
-    Source/Artifact/Static/TestImpactNativeProductionTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactNativeProductionTargetDescriptor.h
-    Source/Artifact/Static/TestImpactTestSuiteMeta.h
-    Source/Artifact/Static/TestImpactNativeTestTargetMeta.h
-    Source/Artifact/Static/TestImpactNativeTestTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactNativeTestTargetDescriptor.h
-    Source/Artifact/Static/TestImpactTargetDescriptor.h
-    Source/Artifact/Static/TestImpactPythonTestTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactPythonTestTargetDescriptor.h
-    Source/Artifact/Static/TestImpactDependencyGraphData.h
-    Source/Artifact/Dynamic/TestImpactTestEnumerationSuite.h
-    Source/Artifact/Dynamic/TestImpactTestRunSuite.h
-    Source/Artifact/Dynamic/TestImpactTestSuite.h
-    Source/Artifact/Dynamic/TestImpactCoverage.h
-    Source/BuildTarget/Common/TestImpactBuildTargetException.h
-    Source/BuildTarget/Common/TestImpactBuildTargetList.h
-    Source/BuildTarget/Common/TestImpactBuildTarget.h
     Source/Process/TestImpactProcess.cpp
-    Source/Process/TestImpactProcess.h
-    Source/Process/TestImpactProcessException.h
     Source/Process/TestImpactProcessInfo.cpp
-    Source/Process/TestImpactProcessInfo.h
-    Source/Process/TestImpactProcessLauncher.h
-    Source/Process/JobRunner/TestImpactProcessJob.h
-    Source/Process/JobRunner/TestImpactProcessJobInfo.h
     Source/Process/JobRunner/TestImpactProcessJobMeta.cpp
-    Source/Process/JobRunner/TestImpactProcessJobMeta.h
-    Source/Process/JobRunner/TestImpactProcessJobRunner.h
     Source/Process/Scheduler/TestImpactProcessScheduler.cpp
-    Source/Process/Scheduler/TestImpactProcessScheduler.h
-    Source/Dependency/TestImpactDynamicDependencyMap.h
-    Source/Dependency/TestImpactChangeDependencyList.h
-    Source/Dependency/TestImpactDependencyException.h
-    Source/Dependency/TestImpactSourceDependency.h
-    Source/Dependency/TestImpactTestSelectorAndPrioritizer.h
-    Source/Dependency/TestImpactSourceCoveringTestsList.h
     Source/Dependency/TestImpactSourceCoveringTestsList.cpp
     Source/Dependency/TestImpactSourceCoveringTestsSerializer.cpp
-    Source/Dependency/TestImpactSourceCoveringTestsSerializer.h
     Source/Target/Common/TestImpactTarget.cpp
-    Source/Target/Common/TestImpactTarget.h
-    Source/Target/Common/TestImpactTargetList.h
-    Source/Target/Common/TestImpactTargetException.h
-    Source/Target/Native/TestImpactNativeTarget.cpp
-    Source/Target/Native/TestImpactNativeTarget.h
-    Source/Target/Native/TestImpactNativeProductionTarget.cpp
-    Source/Target/Native/TestImpactNativeProductionTarget.h
-    Source/Target/Native/TestImpactNativeTestTarget.cpp
-    Source/Target/Native/TestImpactNativeTestTarget.h
-    Source/Target/Python/TestImpactPythonTestTarget.cpp
-    Source/Target/Python/TestImpactPythonTestTarget.h
-    Source/TestRunner/Common/TestImpactTestRunnerException.h
-    Source/TestRunner/Common/TestImpactTestRunnerBase.h
-    Source/TestRunner/Common/TestImpactTestRunner.h
-    Source/TestRunner/Common/TestImpactTestRunnerWithCoverage.h
-    Source/TestRunner/Common/TestImpactTestEnumerator.h
-    Source/TestRunner/Common/TestImpactTestSuiteContainer.h
     Source/TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.cpp
-    Source/TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h
     Source/TestRunner/Common/Job/TestImpactTestEnumerationJobData.cpp
-    Source/TestRunner/Common/Job/TestImpactTestEnumerationJobData.h
     Source/TestRunner/Common/Job/TestImpactTestRunJobData.cpp
-    Source/TestRunner/Common/Job/TestImpactTestRunJobData.h
-    Source/TestRunner/Common/Job/TestImpactTestJobRunner.h
-    Source/TestRunner/Common/Enumeration/TestImpactTestEnumeration.h
     Source/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.cpp
-    Source/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.h
     Source/TestRunner/Common/Run/TestImpactTestCoverage.cpp
-    Source/TestRunner/Common/Run/TestImpactTestCoverage.h
     Source/TestRunner/Common/Run/TestImpactTestRun.cpp
-    Source/TestRunner/Common/Run/TestImpactTestRun.h
     Source/TestRunner/Common/Run/TestImpactTestRunSerializer.cpp
-    Source/TestRunner/Common/Run/TestImpactTestRunSerializer.h
-    Source/TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h
-    Source/TestRunner/Native/TestImpactNativeRegularTestRunner.h
-    Source/TestRunner/Native/TestImpactNativeTestEnumerator.h
-    Source/TestRunner/Native/Job/TestImpactNativeTestRunJobData.h
-    Source/TestRunner/Python/TestImpactPythonTestRunner.cpp
-    Source/TestRunner/Python/TestImpactPythonTestRunner.h
-    Source/TestEngine/Common/TestImpactTestEngineException.h
-    Source/TestEngine/Common/TestImpactTestEngine.h
-    Source/TestEngine/Common/Job/TestImpactTestEngineJob.h
-    Source/TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h
-    Source/TestEngine/Common/Job/TestImpactTestJobInfoUtils.h
-    Source/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
-    Source/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
-    Source/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
-    Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
-    Source/TestEngine/Native/TestImpactNativeTestEngine.h
-    Source/TestEngine/Native/TestImpactNativeErrorCodeChecker.cpp
-    Source/TestEngine/Native/TestImpactNativeErrorCodeChecker.h
-    Source/TestEngine/Native/TestImpactNativeTestTargetExtension.h
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.cpp
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.cpp
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.h
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h
-    Source/TestEngine/Python/TestImpactPythonTestEngine.cpp
-    Source/TestEngine/Python/TestImpactPythonTestEngine.h
-    Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.cpp
-    Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.h
     Source/TestImpactException.cpp
-    Source/TestImpactRuntime.cpp
-    Source/TestImpactRuntimeUtils.cpp
-    Source/TestImpactRuntimeUtils.h
-    Source/TestImpactTestTargetExclusionList.h
-    Source/TestImpactTestTargetExclusionList.cpp
     Source/TestImpactClientTestSelection.cpp
     Source/TestImpactClientTestRun.cpp
     Source/TestImpactClientSequenceReport.cpp

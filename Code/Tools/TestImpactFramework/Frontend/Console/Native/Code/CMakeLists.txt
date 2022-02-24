@@ -25,7 +25,7 @@ ly_add_target(
             ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::TestImpact.Runtime.Common.Static
+            AZ::TestImpact.Runtime.Native.Static
 )
 
 ly_add_target(
