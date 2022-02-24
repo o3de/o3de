@@ -238,16 +238,6 @@ namespace AZ::RPI
                     currentDelta.m_bitangentY = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
                     currentDelta.m_bitangentZ = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
                 }
-
-                // Color
-                {
-                    metaData.m_hasColorDeltas = true;
-                    productMesh.m_hasMorphedColors = true;
-                    currentDelta.m_colorR = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
-                    currentDelta.m_colorG = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
-                    currentDelta.m_colorB = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
-                    currentDelta.m_colorA = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
-                }
             }
         }
 

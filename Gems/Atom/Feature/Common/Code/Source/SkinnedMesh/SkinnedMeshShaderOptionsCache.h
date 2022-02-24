@@ -55,10 +55,6 @@ namespace AZ
             RPI::ShaderOptionIndex m_applyMorphTargetOptionIndex;
             RPI::ShaderOptionValue m_applyMorphTargetFalseValue;
             RPI::ShaderOptionValue m_applyMorphTargetTrueValue;
-
-            RPI::ShaderOptionIndex m_applyColorMorphTargetOptionIndex;
-            RPI::ShaderOptionValue m_applyColorMorphTargetFalseValue;
-            RPI::ShaderOptionValue m_applyColorMorphTargetTrueValue;
         };
     } // namespace Render
 } // namespace AZ

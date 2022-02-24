@@ -121,7 +121,6 @@ namespace AZ
 
                 MaterialUid m_materialUid;
                 bool CanBeMerged() const { return m_clothData.empty(); }
-                bool m_hasMorphedColors = false;
             };
             using ProductMeshContentList = AZStd::vector<ProductMeshContent>;
 

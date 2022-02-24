@@ -55,7 +55,6 @@ namespace AZ
             AZ::RPI::ShaderOptionGroup shaderOptionGroup = m_morphTargetShader->CreateShaderOptionGroup();
             // In case there are several options you don't care about, it's good practice to initialize them with default values.
             shaderOptionGroup.SetUnspecifiedToDefaultValues();
-            shaderOptionGroup.SetValue(AZ::Name("o_hasColorDeltas"), RPI::ShaderOptionValue{ m_morphTargetMetaData.m_hasColorDeltas });
 
             // Get the shader variant and instance SRG
             RPI::ShaderReloadNotificationBus::Handler::BusConnect(m_morphTargetShader->GetAssetId());
@@ -130,8 +129,6 @@ namespace AZ
             AZ_Error("MorphTargetDispatchItem", tangentOffsetIndex.IsValid(), "Could not find root constant 's_targetTangentOffset' in the shader");
             auto bitangentOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetBitangentOffset" });
             AZ_Error("MorphTargetDispatchItem", bitangentOffsetIndex.IsValid(), "Could not find root constant 's_targetBitangentOffset' in the shader");
-            auto colorOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetColorOffset" });
-            AZ_Error("MorphTargetDispatchItem", colorOffsetIndex.IsValid(), "Could not find root constant 's_targetColorOffset' in the shader");
 
             auto minIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_min" });
             AZ_Error("MorphTargetDispatchItem", minIndex.IsValid(), "Could not find root constant 's_min' in the shader");
@@ -153,11 +150,6 @@ namespace AZ
             m_rootConstantData.SetConstant(normalOffsetIndex, m_morphInstanceMetaData.m_accumulatedNormalDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(tangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedTangentDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(bitangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
-
-            if (m_morphTargetMetaData.m_hasColorDeltas)
-            {
-                m_rootConstantData.SetConstant(colorOffsetIndex, m_morphInstanceMetaData.m_accumulatedColorDeltaOffsetInBytes / 4);
-            }
 
             m_dispatchItem.m_rootConstantSize = static_cast<uint8_t>(m_rootConstantData.GetConstantData().size());
             m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();

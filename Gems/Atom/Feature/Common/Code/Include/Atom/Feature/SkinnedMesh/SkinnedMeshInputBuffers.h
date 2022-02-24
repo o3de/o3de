@@ -132,9 +132,6 @@ namespace AZ
             //! Calls RPI::Buffer::WaitForUpload for each buffer in the lod.
             void WaitForUpload();
 
-            //! Returns true if this lod has a morphed color stream
-            bool HasDynamicColors() const;
-
         private:
             RHI::BufferViewDescriptor CreateInputViewDescriptor(
                 SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::StreamBufferView& streamBufferView);
@@ -190,11 +187,6 @@ namespace AZ
             //! Total number of vertices for the entire lod
             uint32_t m_vertexCount = 0;
 
-            //! Bool for keeping track of whether or not this lod has morphed colors
-            bool m_hasDynamicColors = false;
-            //! Bool for keeping track of whether or not this lod has a static color stream
-            bool m_hasStaticColors = false;
-
             SkinnedMeshOutputVertexCounts m_outputVertexCountsByStream;
         };
 
@@ -234,9 +226,6 @@ namespace AZ
 
             //! Get the buffer view for a specific input stream
             AZ::RHI::Ptr<const RHI::BufferView> GetInputBufferView(uint32_t lodIndex, uint8_t inputStream) const;
-
-            //! Check if the mesh has dynamically modified colors
-            bool HasDynamicColors(uint32_t lodIndex, uint32_t meshIndex) const;
 
             //! Get the number of vertices for the specified lod.
             uint32_t GetVertexCount(uint32_t lodIndex, uint32_t meshIndex) const;

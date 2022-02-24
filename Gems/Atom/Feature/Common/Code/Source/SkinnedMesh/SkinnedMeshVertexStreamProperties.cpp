@@ -82,16 +82,6 @@ namespace AZ
                 SkinnedMeshInputVertexStreams::BlendWeights
             };
 
-            m_inputStreamInfo[static_cast<uint8_t>(SkinnedMeshInputVertexStreams::Color)] = SkinnedMeshVertexStreamInfo{
-                RHI::Format::R32G32B32A32_FLOAT,
-                sizeof(AZ::Vector4),
-                Name{"SkinnedMeshInputColors"},
-                Name{"m_sourceColors"},
-                RHI::ShaderSemantic{Name{"COLOR"}},
-                true, // isOptional
-                SkinnedMeshInputVertexStreams::Color
-            };
-
             // Attributes of the vertex buffers that are not used or modified during skinning, but are shared between all target models that share the same source
             m_staticStreamInfo[static_cast<uint8_t>(SkinnedMeshStaticVertexStreams::UV_0)] = SkinnedMeshVertexStreamInfo{
                 RHI::Format::R32G32_FLOAT,
@@ -99,14 +89,6 @@ namespace AZ
                 Name{"SkinnedMeshStaticUVs"},
                 Name{"unused"},
                 RHI::ShaderSemantic{Name{"UV"}}
-            };
-
-            m_staticStreamInfo[static_cast<uint8_t>(SkinnedMeshStaticVertexStreams::Color)] = SkinnedMeshVertexStreamInfo{
-                RHI::Format::R32G32B32A32_FLOAT,
-                sizeof(AZ::Vector4),
-                Name{"SkinnedMeshStaticColors"},
-                Name{"unused"},
-                RHI::ShaderSemantic{Name{"COLOR"}}
             };
 
             // Attributes of the vertex streams of the target model that is written to during skinning
@@ -144,15 +126,6 @@ namespace AZ
                 Name{"m_targetBiTangents"},
                 RHI::ShaderSemantic{Name{"BITANGENT"}},
                 SkinnedMeshInputVertexStreams::BiTangent
-            };
-
-            m_outputStreamInfo[static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Color)] = SkinnedMeshOutputVertexStreamInfo{
-                RHI::Format::R32G32B32A32_FLOAT,
-                sizeof(AZ::Vector4),
-                Name{"SkinnedMeshOutputColors"},
-                Name{"m_targetColors"},
-                RHI::ShaderSemantic{Name{"COLOR"}},
-                SkinnedMeshInputVertexStreams::Color
             };
             
             {
