@@ -107,15 +107,8 @@ namespace Terrain
         }
 
         InitializePassthroughDetailMaterial();
+        InitializeTextureParams();
 
-        ClipmapBoundsDescriptor desc;
-        desc.m_clipmapUpdateMultiple = 1;
-        desc.m_clipToWorldScale = DetailTextureScale;
-        desc.m_size = DetailTextureSize;
-        // Initialize world space to a value that won't match the initial camera position.
-        desc.m_worldSpaceCenter = AZ::Vector2(AZStd::numeric_limits<float>::max(), 0.0f);
-        m_detailMaterialIdBounds = ClipmapBounds(desc);
-        
         if (UpdateSrgIndices(terrainSrg))
         {
             m_bindlessImageHandler = bindlessImageHandler;
@@ -249,7 +242,7 @@ namespace Terrain
         
         if (m_detailImageNeedsUpdate)
         {
-            terrainSrg->SetConstant(m_detailScalePropertyIndex, 1.0f / DetailTextureScale);
+            terrainSrg->SetConstant(m_detailScalePropertyIndex, 1.0f / m_detailTextureScale);
             terrainSrg->SetImage(m_detailMaterialIdPropertyIndex, m_detailTextureImage);
 
             m_detailMaterialDataBuffer.UpdateSrg(terrainSrg.get());
@@ -258,12 +251,48 @@ namespace Terrain
         }
 
     }
+    
+    void TerrainDetailMaterialManager::InitializeTextureParams()
+    {   
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            m_detailTextureScale, &AzFramework::Terrain::TerrainDataRequests::GetTerrainSurfaceDataQueryResolution);
+
+        m_detailTextureSize = lroundf(m_config.m_renderDistance / m_detailTextureScale);
+
+        ClipmapBoundsDescriptor desc;
+        desc.m_clipmapUpdateMultiple = 1;
+        desc.m_clipToWorldScale = m_detailTextureScale;
+        desc.m_size = m_detailTextureSize;
+
+        // Initialize world space to a value that won't match the initial camera position.
+        desc.m_worldSpaceCenter = AZ::Vector2(AZStd::numeric_limits<float>::max(), 0.0f);
+        m_detailMaterialIdBounds = ClipmapBounds(desc);
+
+        m_detailTextureImage = {}; // Force the image to rebuild
+        m_detailImageNeedsUpdate = true;
+    }
+
+    void TerrainDetailMaterialManager::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)
+    {
+        m_config = config;
+        
+        AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(
+            AZ::Name{ "o_terrainUseHeightBasedBlending" },
+            AZ::RPI::ShaderOptionValue{ m_config.m_useHeightBasedBlending }
+        );
+
+        InitializeTextureParams();
+    }
 
     void TerrainDetailMaterialManager::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         if ((dataChangedMask & TerrainDataChangedMask::SurfaceData) != 0)
         {
             m_dirtyDetailRegion.AddAabb(dirtyRegion);
+        }
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
+        {
+            InitializeTextureParams();
         }
     }
 
@@ -741,7 +770,7 @@ namespace Terrain
 
             const AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
             AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
-                AZ::RHI::ImageBindFlags::ShaderRead, DetailTextureSize, DetailTextureSize, AZ::RHI::Format::R8G8B8A8_UINT
+                AZ::RHI::ImageBindFlags::ShaderRead, m_detailTextureSize, m_detailTextureSize, AZ::RHI::Format::R8G8B8A8_UINT
             );
             const AZ::Name TerrainDetailName = AZ::Name(TerrainDetailChars);
             m_detailTextureImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainDetailName, nullptr, nullptr);
@@ -872,8 +901,8 @@ namespace Terrain
             }
         };
             
-        AZ::Vector2 stepSize(DetailTextureScale);
-        AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(DetailTextureScale * 0.5f)); // offset by half a pixel
+        AZ::Vector2 stepSize(m_detailTextureScale);
+        AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(m_detailTextureScale * 0.5f)); // offset by half a pixel
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion,
             offsetWorldAabb, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);

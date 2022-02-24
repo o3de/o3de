@@ -70,10 +70,11 @@ namespace Terrain
         if (serialize)
         {
             serialize->Class<TerrainWorldConfig, AZ::ComponentConfig>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("WorldMin", &TerrainWorldConfig::m_worldMin)
                 ->Field("WorldMax", &TerrainWorldConfig::m_worldMax)
                 ->Field("HeightQueryResolution", &TerrainWorldConfig::m_heightQueryResolution)
+                ->Field("SurfaceDataQueryResolution", &TerrainWorldConfig::m_surfaceDataQueryResolution)
             ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -81,23 +82,26 @@ namespace Terrain
             {
                 edit->Class<TerrainWorldConfig>("Terrain World Component", "Data required for the terrain system to run")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMin, "World Bounds (Min)", "")
-                    // Temporary constraint until the rest of the Terrain system is updated to support larger worlds.
-                    ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateWorldMin)
-                    ->Attribute(AZ::Edit::Attributes::Min, -2048.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                        // Temporary constraint until the rest of the Terrain system is updated to support larger worlds.
+                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateWorldMin)
+                        ->Attribute(AZ::Edit::Attributes::Min, -2048.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMax, "World Bounds (Max)", "")
-                    // Temporary constraint until the rest of the Terrain system is updated to support larger worlds.
-                    ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateWorldMax)
-                    ->Attribute(AZ::Edit::Attributes::Min, -2048.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                        // Temporary constraint until the rest of the Terrain system is updated to support larger worlds.
+                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateWorldMax)
+                        ->Attribute(AZ::Edit::Attributes::Min, -2048.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
-                    ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateWorldHeight);
+                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateHeightQueryResolution)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_surfaceDataQueryResolution, "Surface Data Query Resolution (m)", "")
+                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateSurfaceQueryResolution);
             }
         }
     }
@@ -151,6 +155,8 @@ namespace Terrain
             AZ::Aabb::CreateFromMinMax(m_configuration.m_worldMin, m_configuration.m_worldMax));
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequestBus::Events::SetTerrainHeightQueryResolution, m_configuration.m_heightQueryResolution);
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequestBus::Events::SetTerrainSurfaceDataQueryResolution, m_configuration.m_surfaceDataQueryResolution);
     }
 
     void TerrainWorldComponent::Deactivate()
@@ -208,11 +214,18 @@ namespace Terrain
         return DetermineMessage(NumberOfSamples(m_worldMin, maxValue, m_heightQueryResolution));
     }
 
-    AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateWorldHeight(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+    AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateHeightQueryResolution(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
     {
-        float heightValue = *static_cast<float*>(newValue);
+        float heightQueryResolution = *static_cast<float*>(newValue);
 
-        return DetermineMessage(NumberOfSamples(m_worldMin, m_worldMax, heightValue));
+        return DetermineMessage(NumberOfSamples(m_worldMin, m_worldMax, heightQueryResolution));
+    }
+
+    AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateSurfaceQueryResolution(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+    {
+        float surfaceQueryResolution = *static_cast<float*>(newValue);
+
+        return DetermineMessage(NumberOfSamples(m_worldMin, m_worldMax, surfaceQueryResolution));
     }
 
 } // namespace Terrain

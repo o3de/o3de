@@ -154,6 +154,12 @@ void TerrainSystem::SetTerrainHeightQueryResolution(float queryResolution)
     m_terrainSettingsDirty = true;
 }
 
+void TerrainSystem::SetTerrainSurfaceDataQueryResolution(float queryResolution)
+{
+    m_requestedSettings.m_surfaceDataQueryResolution = queryResolution;
+    m_terrainSettingsDirty = true;
+}
+
 AZ::Aabb TerrainSystem::GetTerrainAabb() const
 {
     return m_currentSettings.m_worldBounds;
@@ -162,6 +168,11 @@ AZ::Aabb TerrainSystem::GetTerrainAabb() const
 float TerrainSystem::GetTerrainHeightQueryResolution() const
 {
     return m_currentSettings.m_heightQueryResolution;
+}
+
+float TerrainSystem::GetTerrainSurfaceDataQueryResolution() const
+{
+    return m_currentSettings.m_surfaceDataQueryResolution;
 }
 
 void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const
@@ -1349,8 +1360,13 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
         if (m_requestedSettings.m_heightQueryResolution != m_currentSettings.m_heightQueryResolution)
         {
-            m_dirtyRegion = AZ::Aabb::CreateNull();
+            m_dirtyRegion.AddAabb(m_requestedSettings.m_worldBounds);
             m_terrainHeightDirty = true;
+        }
+
+        if (m_requestedSettings.m_surfaceDataQueryResolution != m_currentSettings.m_surfaceDataQueryResolution)
+        {
+            m_dirtyRegion.AddAabb(m_requestedSettings.m_worldBounds);
             m_terrainSurfacesDirty = true;
         }
 

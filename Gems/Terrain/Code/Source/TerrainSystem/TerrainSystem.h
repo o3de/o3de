@@ -57,6 +57,8 @@ namespace Terrain
         // TerrainDataRequestBus::Handler Impl
         float GetTerrainHeightQueryResolution() const override;
         void SetTerrainHeightQueryResolution(float queryResolution) override;
+        float GetTerrainSurfaceDataQueryResolution() const override;
+        void SetTerrainSurfaceDataQueryResolution(float queryResolution) override;
 
         AZ::Aabb GetTerrainAabb() const override;
         void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
@@ -331,6 +333,7 @@ namespace Terrain
         {
             AZ::Aabb m_worldBounds;
             float m_heightQueryResolution{ 1.0f };
+            float m_surfaceDataQueryResolution{ 1.0f };
             bool m_systemActive{ false };
         };
 

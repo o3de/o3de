@@ -75,7 +75,6 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Initialize()
     {
-        m_meshManager.Initialize();
         m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
@@ -268,7 +267,8 @@ namespace Terrain
             imageUpdateRequest.m_sourceData = pixels.data();
             imageUpdateRequest.m_image = m_heightmapImage->GetRHIImage();
 
-            m_heightmapImage->UpdateImageContents(imageUpdateRequest);
+            [[maybe_unused]] AZ::RHI::ResultCode result = m_heightmapImage->UpdateImageContents(imageUpdateRequest);
+            AZ_Assert(result == AZ::RHI::ResultCode::Success, "TerrainFeatureProcessor failed to update heightmap image");
         }
         
         m_dirtyRegion = AZ::Aabb::CreateNull();
@@ -423,6 +423,11 @@ namespace Terrain
         m_imageBindingsNeedUpdate = true;
     }
 
+    void TerrainFeatureProcessor::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)
+    {
+        m_detailMaterialManager.SetDetailMaterialConfiguration(config);
+    }
+    
     void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)
     {
         // This will control the max rendering size. Actual terrain size can be much

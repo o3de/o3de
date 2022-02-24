@@ -30,6 +30,15 @@
 
 namespace Terrain
 {
+    struct DetailMaterialConfiguration
+    {
+        AZ_RTTI(DetailMaterialConfiguration, "{D2A2EFBB-B0C2-4363-9B32-15B9ACD52902}");
+
+        bool m_useHeightBasedBlending = false;
+        float m_renderDistance = 512.0f;
+        float m_fadeDistance = 64.0f;
+    };
+
     class TerrainDetailMaterialManager
         : private AzFramework::Terrain::TerrainDataNotificationBus::Handler
         , private TerrainAreaMaterialNotificationBus::Handler
@@ -50,6 +59,8 @@ namespace Terrain
         bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
         void Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+
+        void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& params);
 
     private:
         
@@ -165,9 +176,8 @@ namespace Terrain
         static constexpr auto InvalidDetailMaterialId = DetailMaterialContainer::NoFreeSlot;
         
         // System-level parameters
-        static constexpr int32_t DetailTextureSize{ 1024 };
-        static constexpr int32_t DetailTextureSizeHalf{ DetailTextureSize / 2 };
-        static constexpr float DetailTextureScale{ 0.5f };
+        int32_t m_detailTextureSize{ 1024 };
+        float m_detailTextureScale{ 0.5f };
         
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
@@ -213,12 +223,17 @@ namespace Terrain
         //! Initializes shader data for the default passthrough material which is used when no other detail material is found.
         void InitializePassthroughDetailMaterial();
 
+        //! Updates data regarding the material ID texture and resets it so it will get rebuilt.
+        void InitializeTextureParams();
+
         using DefaultMaterialSurfaceCallback = AZStd::function<void(DetailMaterialSurface&)>;
         bool ForSurfaceTag(DetailMaterialListRegion& materialRegion,
             SurfaceData::SurfaceTag surfaceTag, DefaultMaterialSurfaceCallback callback);
         DetailMaterialListRegion* FindByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         DetailMaterialListRegion& FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         void RemoveByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
+
+        DetailMaterialConfiguration m_config;
 
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         
