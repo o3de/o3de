@@ -17,7 +17,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 
-#include "../../External/Include/meshoptimizer.h""
+#include "../../External/Include/meshoptimizer.h"
 //#include <meshoptimizer.h>
 //#include <Mesh/EditorMeshComponent.h>
 
@@ -85,6 +85,8 @@ namespace AZ
         class MeshletModel
         {
         public:
+            static uint32_t s_modelNumber;
+
             Name IndicesSemanticName;
 
             Name PositionSemanticName;
@@ -107,30 +109,35 @@ namespace AZ
 
         protected:
 
-            void CreateMeshlest(GeneratorMesh& mesh);
+            bool ProcessBuffersData(float* position, uint32_t vtxNum);
+
+            uint32_t CreateMeshlest(GeneratorMesh& mesh);
 
             uint8_t* RetrieveBufferData(
-                const RPI::ModelLodAsset::Mesh& meshAsset,
-                const Name& semanticName,
+                const RPI::BufferAssetView* bufferView,
                 RHI::Format& format,
-                uint32_t expectedAmount, uint32_t& existingAmount);
+                uint32_t expectedAmount, uint32_t& existingAmount,
+                RHI::BufferViewDescriptor& bufferDesc
+            );
 
             Data::Asset<RPI::BufferAsset> CreateBufferAsset(
                 const AZStd::string& bufferName,
                 const RHI::BufferViewDescriptor& bufferViewDescriptor,
                 const void* data);
 
-            bool CreateMeshlets(
+            uint32_t CreateMeshlets(
                 float* positions, float* normals, float* texCoords, uint32_t vtxNum,
                 uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat);
-            bool CreateMeshletsFromModel();
-            bool CreateMeshletsFromModelAsset();
+            uint32_t CreateMeshletsFromModel();
+            uint32_t CreateMeshletsFromModelAsset();
 
+            uint32_t CreateMeshletModel(const RPI::ModelLodAsset::Mesh& meshAsset);
 //            bool ProcessBuffersData();
 //            bool CreateAtomModel();
 
         private:
             AZStd::string m_name;
+            Aabb m_aabb;
 
             Data::Instance<RPI::Model> m_atomModel;
             Data::Asset<RPI::ModelAsset> m_atomModelAsset;
