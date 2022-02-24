@@ -8,9 +8,6 @@
 
 #include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
 
-#include <AzFramework/Spawnable/SpawnableAssetHandler.h>
-
-
 namespace ScriptCanvas::Nodeables::Spawning
 {
     SpawnTicketInstance CreateSpawnTicketNodeable::CreateTicket(const SpawnableAsset& Prefab)

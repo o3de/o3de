@@ -37,6 +37,12 @@ namespace ScriptCanvas::Nodeables::Spawning
                     genericClassInfo->Reflect(serializeContext);
                 }
             }
+            {
+                if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZStd::unordered_map<double, SpawnableAsset>>::GetGenericInfo())
+                {
+                    genericClassInfo->Reflect(serializeContext);
+                }
+            }
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -66,14 +72,22 @@ namespace ScriptCanvas::Nodeables::Spawning
                     AZStd::string::format("ReflectOnDemandTargets_%s", Data::Traits<SpawnableAsset>::GetName().data()).data())
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Ignore, true)
+                // required to support Array<SpawnableAsset> variable type in Script Canvas
                 ->Method(
                     "ReflectVector",
                     [](const AZStd::vector<SpawnableAsset>&)
                     {
                     })
+                // required to support Map<String, SpawnableAsset> variable type in Script Canvas
                 ->Method(
                     "Map_String_to_SpawnableAsset_Func",
                     [](const AZStd::unordered_map<AZStd::string, SpawnableAsset>&)
+                    {
+                    })
+                // required to support Map<Number, SpawnableAsset> variable type in Script Canvas
+                ->Method(
+                    "Map_Number_to_SpawnTicketInstance_Func",
+                    [](const AZStd::unordered_map<double, SpawnableAsset>&)
                     {
                     });
         }

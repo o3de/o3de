@@ -72,18 +72,21 @@ namespace ScriptCanvas::Nodeables::Spawning
                     AZStd::string::format("ReflectOnDemandTargets_%s", Data::Traits<SpawnTicketInstance>::GetName().data()).data())
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Ignore, true)
+                // required to support Array<SpawnTicketInstance> variable type in Script Canvas
                 ->Method(
                     "ReflectVector",
                     [](const AZStd::vector<SpawnTicketInstance>&)
                     {
                     })
+                // required to support Map<String, SpawnTicketInstance> variable type in Script Canvas
                 ->Method(
-                    "Map_Str_to_SpawnTicketInstance_Func",
+                    "Map_String_to_SpawnTicketInstance_Func",
                     [](const AZStd::unordered_map<AZStd::string, SpawnTicketInstance>&)
                     {
                     })
+                // required to support Map<Number, SpawnTicketInstance> variable type in Script Canvas
                 ->Method(
-                    "Map_Dbl_to_SpawnTicketInstance_Func",
+                    "Map_Number_to_SpawnTicketInstance_Func",
                     [](const AZStd::unordered_map<double, SpawnTicketInstance>&)
                     {
                     });
