@@ -241,7 +241,7 @@ namespace EMStudio
         CalculateCameraProjection();
         RenderCustomPluginData();
         FollowCharacter();
-        m_renderer->CheckBounds();
+        m_renderer->UpdateGroundplane();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
