@@ -37,7 +37,6 @@ namespace ScriptCanvas
         void Spawning::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
             AddNodeToRegistry<Spawning, ScriptCanvas::Nodes::CreateSpawnTicketNodeableNode>(nodeRegistry);
-            AddNodeToRegistry<Spawning, ScriptCanvas::Nodes::GetSpawnTicketIdNodeableNode>(nodeRegistry);
             AddNodeToRegistry<Spawning, ScriptCanvas::Nodes::SpawnNodeableNode>(nodeRegistry);
             AddNodeToRegistry<Spawning, ScriptCanvas::Nodes::DespawnNodeableNode>(nodeRegistry);
         }
@@ -46,7 +45,6 @@ namespace ScriptCanvas
         {
             return AZStd::vector<AZ::ComponentDescriptor*>({
                 ScriptCanvas::Nodes::CreateSpawnTicketNodeableNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::GetSpawnTicketIdNodeableNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::SpawnNodeableNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::DespawnNodeableNode::CreateDescriptor(),
                 });

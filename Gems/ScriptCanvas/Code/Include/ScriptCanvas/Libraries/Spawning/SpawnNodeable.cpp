@@ -7,15 +7,13 @@
  */
 
 #include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
-
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 
-#pragma optimize("", off)
 namespace ScriptCanvas::Nodeables::Spawning
 {
     SpawnNodeable::SpawnNodeable([[maybe_unused]] const SpawnNodeable& rhs)
-    {}
+    {
+    }
 
     SpawnNodeable& SpawnNodeable::operator=([[maybe_unused]] SpawnNodeable& rhs)
     {
@@ -32,15 +30,15 @@ namespace ScriptCanvas::Nodeables::Spawning
 
     void SpawnNodeable::OnDeactivate()
     {
-        m_completionResults = {};
         AZ::TickBus::Handler::BusDisconnect();
+        m_completionResults = {}; // clears any cached SpawnTickets that may remain so everything despawns
     }
-    
+
     void SpawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
         AZStd::vector<SpawnableResult> swappedCompletionResults;
         {
-            AZStd::lock_guard lock(m_idBatchMutex);
+            AZStd::lock_guard lock(m_mutex);
             swappedCompletionResults.swap(m_completionResults);
         }
 
@@ -50,12 +48,12 @@ namespace ScriptCanvas::Nodeables::Spawning
             {
                 continue;
             }
-            CallOnSpawnCompleted(spawnResult.m_spawnTicket, AZStd::move(spawnResult.m_entityList));
+            CallOnSpawnCompleted(spawnResult.m_spawnTicket, move(spawnResult.m_entityList));
         }
     }
 
     void SpawnNodeable::RequestSpawn(
-        SpawnTicketInstance spawnTicketInstance,
+        SpawnTicketInstance spawnTicket,
         AZ::EntityId parentId,
         Data::Vector3Type translation,
         Data::Vector3Type rotation,
@@ -65,7 +63,7 @@ namespace ScriptCanvas::Nodeables::Spawning
             [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
             AzFramework::SpawnableEntityContainerView view)
         {
-            AZStd::lock_guard lock(m_idBatchMutex);
+            AZStd::lock_guard lock(m_mutex);
 
             AZ::Entity* rootEntity = *view.begin();
             AzFramework::TransformComponent* entityTransform = rootEntity->FindComponent<AzFramework::TransformComponent>();
@@ -74,7 +72,7 @@ namespace ScriptCanvas::Nodeables::Spawning
             {
                 AZ::Vector3 rotationCopy = rotation;
                 AZ::Quaternion rotationQuat = AZ::Quaternion::CreateFromEulerAnglesDegrees(rotationCopy);
-                
+
                 AzFramework::TransformComponentConfiguration transformConfig;
                 transformConfig.m_parentId = parentId;
                 transformConfig.m_localTransform = AZ::Transform(translation, rotationQuat, static_cast<float>(scale));
@@ -82,14 +80,16 @@ namespace ScriptCanvas::Nodeables::Spawning
             }
         };
 
-        auto spawnCompleteCB = [this, spawnTicketInstance](
+        auto spawnCompleteCB = [this, spawnTicket](
             [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
             AzFramework::SpawnableConstEntityContainerView view)
         {
-            AZStd::lock_guard lock(m_idBatchMutex);
+            AZStd::lock_guard lock(m_mutex);
 
             SpawnableResult spawnableResult;
-            spawnableResult.m_spawnTicket = spawnTicketInstance;
+            // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
+            // and to provide easier access to it in OnSpawnCompleted callback
+            spawnableResult.m_spawnTicket = spawnTicket;
             spawnableResult.m_entityList.reserve(view.size());
             for (const AZ::Entity* entity : view)
             {
@@ -101,7 +101,6 @@ namespace ScriptCanvas::Nodeables::Spawning
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_preInsertionCallback = AZStd::move(preSpawnCB);
         optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
-        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*spawnTicketInstance.m_ticket, AZStd::move(optionalArgs));
+        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*spawnTicket.m_ticket, AZStd::move(optionalArgs));
     }
 } // namespace ScriptCanvas::Nodeables::Spawning
-#pragma optimize("", on)

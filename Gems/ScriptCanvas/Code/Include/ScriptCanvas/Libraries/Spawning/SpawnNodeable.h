@@ -8,19 +8,17 @@
 
 #pragma once
 
-#include <Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.generated.h>
-
 #include <AzCore/Component/TickBus.h>
-
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
-
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
-#include <ScriptCanvas/Libraries/Spawning/SpawnableData.h>
+#include <ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h>
+#include <Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
+    //! Node for spawning entities
     class SpawnNodeable
         : public ScriptCanvas::Nodeable
         , public AZ::TickBus::Handler
@@ -31,10 +29,11 @@ namespace ScriptCanvas::Nodeables::Spawning
         SpawnNodeable(const SpawnNodeable& rhs);
         SpawnNodeable& operator=(SpawnNodeable& rhs);
 
+        // ScriptCanvas::Nodeable  overrides ...
         void OnInitializeExecutionState() override;
         void OnDeactivate() override;
 
-        //TickBus
+        // AZ::TickBus::Handler overrides ...
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
         
     private:
@@ -45,6 +44,6 @@ namespace ScriptCanvas::Nodeables::Spawning
         };
         
         AZStd::vector<SpawnableResult> m_completionResults;
-        AZStd::recursive_mutex m_idBatchMutex;
+        AZStd::recursive_mutex m_mutex;
     };
 }

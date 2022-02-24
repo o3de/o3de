@@ -11,7 +11,8 @@
 namespace ScriptCanvas::Nodeables::Spawning
 {
     DespawnNodeable::DespawnNodeable([[maybe_unused]] const DespawnNodeable& rhs)
-    {}
+    {
+    }
 
     DespawnNodeable& DespawnNodeable::operator=([[maybe_unused]] DespawnNodeable& rhs)
     {
@@ -29,10 +30,9 @@ namespace ScriptCanvas::Nodeables::Spawning
     void DespawnNodeable::OnDeactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-
-        m_despawnedTicketList = {};
+        m_despawnedTicketList = {}; // clears any cached SpawnTickets that may remain so everything despawns
     }
-    
+
     void DespawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
         if (m_despawnedTicketList.empty())
@@ -42,29 +42,30 @@ namespace ScriptCanvas::Nodeables::Spawning
 
         AZStd::vector<SpawnTicketInstance> swappedDespawnedTicketList;
         {
-            AZStd::lock_guard lock(m_idBatchMutex);
+            AZStd::lock_guard lock(m_mutex);
             swappedDespawnedTicketList.swap(m_despawnedTicketList);
         }
 
-        for (auto spawnTicket : swappedDespawnedTicketList)
+        for (const auto& spawnTicket : swappedDespawnedTicketList)
         {
             CallOnDespawn(spawnTicket);
         }
     }
-    
+
     void DespawnNodeable::RequestDespawn(SpawnTicketInstance spawnTicket)
     {
-        auto despawnCompleteCB = [this, spawnTicket]
-        ([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId)
-        {
-            AZStd::lock_guard lock(m_idBatchMutex);
-            m_despawnedTicketList.push_back(spawnTicket);
-        };
-
         if (!spawnTicket.m_ticket)
         {
             return;
         }
+
+        auto despawnCompleteCB = [this, spawnTicket]([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId)
+        {
+            AZStd::lock_guard lock(m_mutex);
+            // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
+            // and to provide easier access to it in OnDespawn callback
+            m_despawnedTicketList.push_back(spawnTicket);
+        };
 
         AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(despawnCompleteCB);

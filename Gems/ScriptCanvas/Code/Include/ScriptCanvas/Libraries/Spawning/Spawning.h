@@ -13,6 +13,5 @@
 #include <ScriptCanvas/Libraries/Spawning/SpawnableAsset.h>
 #include <ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h>
 #include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
-#include <ScriptCanvas/Libraries/Spawning/GetSpawnTicketIdNodeable.h>
 #include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
 #include <ScriptCanvas/Libraries/Spawning/DespawnNodeable.h>

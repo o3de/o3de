@@ -10,11 +10,11 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
-
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
+    //! Wrapper around EntitySpawnTicket that can be used by ScriptCanvas
     struct SpawnTicketInstance final
     {
         AZ_RTTI(SpawnTicketInstance, "{2B5EB938-8962-4A43-A97B-112F398C604B}");

@@ -10,14 +10,13 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
-
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Asset/AssetCommon.h>
-
 #include <AzFramework/Spawnable/Spawnable.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
+    //! A wrapper around Spawnable that can be used by Script Canvas
     struct SpawnableAsset final
     {
         AZ_RTTI(SpawnableAsset, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");

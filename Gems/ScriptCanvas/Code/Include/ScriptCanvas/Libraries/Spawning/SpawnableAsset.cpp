@@ -9,10 +9,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
-
 #include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
 #include <ScriptCanvas/Libraries/Spawning/SpawnableAsset.h>
 
