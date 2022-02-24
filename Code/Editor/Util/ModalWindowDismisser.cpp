@@ -34,9 +34,22 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
     {
         if (dialog->isModal())
         {
-            if (event->type() == QEvent::Paint)
+            if (event->type() == QEvent::Paint || event->type() == QEvent::PolishRequest)
             {
-                 dialog->close();
+                auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
+                if (it == m_windows.end())
+                {
+                    m_windows.push_back(dialog);
+                }
+                dialog->close();
+            }
+            else if (event->type() == QEvent::Close)
+            {
+                auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
+                if (it != m_windows.end())
+                {
+                    m_windows.erase(it);
+                }
             }
         }
     }

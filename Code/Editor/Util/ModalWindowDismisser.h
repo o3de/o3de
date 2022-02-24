@@ -23,4 +23,5 @@ public:
 private:
     bool eventFilter(QObject* object, QEvent* event) override;
 
+    std::vector<QDialog*> m_windows;
 };
