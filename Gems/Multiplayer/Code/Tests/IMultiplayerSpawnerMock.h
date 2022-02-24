@@ -23,12 +23,12 @@ class IMultiplayerSpawnerMock : public Multiplayer::IMultiplayerSpawner
 
         ~IMultiplayerSpawnerMock() override{};
 
-        AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> OnPlayerJoin(
+        Multiplayer::NetworkEntityHandle OnPlayerJoin(
             [[maybe_unused]] uint64_t userId,
             [[maybe_unused]] const Multiplayer::MultiplayerAgentDatum& agentDatum) override
         {
             ++m_playerCount;
-            return AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform>();
+            return Multiplayer::NetworkEntityHandle();
         }
 
         void OnPlayerLeave(

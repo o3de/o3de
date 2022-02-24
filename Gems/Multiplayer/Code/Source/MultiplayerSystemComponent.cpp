@@ -544,9 +544,7 @@ namespace Multiplayer
                 // Route to spawner implementation
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::Client;
-                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams =
-                    spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum);
-                controlledEntity = TrySpawnPlayerPrefab(spawnParams.first, spawnParams.second);
+                controlledEntity = spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum);
             }
             else
             {
@@ -916,9 +914,7 @@ namespace Multiplayer
                 // Route to spawner implementation
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::ClientServer;
-                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams =
-                    spawner->OnPlayerJoin(0, datum);
-                controlledEntity = TrySpawnPlayerPrefab(spawnParams.first, spawnParams.second);
+                controlledEntity = spawner->OnPlayerJoin(0, datum);
             }
             else
             {
@@ -1188,28 +1184,6 @@ namespace Multiplayer
         {
             console->PerformCommand(command.c_str(), AZ::ConsoleSilentMode::NotSilent, AZ::ConsoleInvokedFrom::AzNetworking, requiredSet);
         }
-    }
-
-    NetworkEntityHandle MultiplayerSystemComponent::TrySpawnPlayerPrefab(Multiplayer::PrefabEntityId playerPrefabEntityId, AZ::Transform transform)
-    {        
-        INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, transform, Multiplayer::AutoActivate::DoNotActivate);
-
-        for (NetworkEntityHandle subEntity : entityList)
-        {
-            subEntity.Activate();
-        }
-
-        NetworkEntityHandle controlledEntity;
-        if (!entityList.empty())
-        {
-            controlledEntity = entityList[0];
-        }
-        else
-        {
-            AZLOG_WARN("Attemp to spawn prefab %s failed. Check that prefab is network enabled.", playerPrefabEntityId.m_prefabName.GetCStr());
-        }
-
-        return controlledEntity;
     }
 
     void MultiplayerSystemComponent::EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId)
