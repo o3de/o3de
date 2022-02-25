@@ -87,9 +87,7 @@ namespace UnitTest
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerStringNoMutex_ProfileCode_ValidateStatistics)
     {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<>;
-
-        ProfilerType profiler;
+        AZ::Statistics::StatisticalProfiler<> profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const AZStd::string statNameBlock("Block");
@@ -108,9 +106,7 @@ namespace UnitTest
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerCrc32NoMutex_ProfileCode_ValidateStatistics)
     {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZ::Crc32>;
-
-        ProfilerType profiler;
+        AZ::Statistics::StatisticalProfiler<AZ::Crc32> profiler;
 
         constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -134,9 +130,7 @@ namespace UnitTest
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerStringWithSharedSpinMutex__ProfileCode_ValidateStatistics)
     {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
-
-        ProfilerType profiler;
+        AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex> profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const AZStd::string statNameBlock("Block");
@@ -157,9 +151,7 @@ namespace UnitTest
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerCrc32WithSharedSpinMutex__ProfileCode_ValidateStatistics)
     {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex>;
-
-        ProfilerType profiler;
+        AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex> profiler;
 
         constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -240,8 +232,6 @@ namespace UnitTest
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerProxy_ProfileCode_ValidateStatistics)
     {
-        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
-
         AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
         AZ::Statistics::StatisticalProfilerProxy profilerProxy;
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
@@ -341,9 +331,7 @@ namespace UnitTest
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringNoMutex_1ThreadPerformance)
     {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<>;
-
-        ProfilerType profiler;
+        AZ::Statistics::StatisticalProfiler<> profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const AZStd::string statNameBlock("Block");
@@ -366,9 +354,7 @@ namespace UnitTest
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerCrc32NoMutex_1ThreadPerformance)
     {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZ::Crc32>;
-
-        ProfilerType profiler;
+        AZ::Statistics::StatisticalProfiler<AZ::Crc32> profiler;
 
         constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -394,9 +380,7 @@ namespace UnitTest
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringWithSharedSpinMutex_1ThreadPerformance)
     {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex>;
-
-        ProfilerType profiler;
+        AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex> profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const AZStd::string statNameBlock("Block");
@@ -419,9 +403,7 @@ namespace UnitTest
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerCrc32WithSharedSpinMutex_1ThreadPerformance)
     {
-        using ProfilerType = AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex>;
-
-        ProfilerType profiler;
+        AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex> profiler;
 
         constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -503,13 +485,10 @@ namespace UnitTest
         profiler.LogAndResetStats("3_Threads_StatisticalProfiler");
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
-
     }
 
     TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerProxy_1ThreadPerformance)
     {
-        using TimedScopeType = AZ::Statistics::StatisticalProfilerProxy::TimedScope;
-
         AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
         AZ::Statistics::StatisticalProfilerProxy profilerProxy;
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
