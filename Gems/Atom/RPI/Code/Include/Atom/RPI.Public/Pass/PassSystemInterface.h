@@ -177,7 +177,7 @@ namespace AZ
             virtual Ptr<Pass> CreatePassFromClass(Name passClassName, Name passName) = 0;
 
             //! Creates a Pass using a PassTemplate
-            virtual Ptr<Pass> CreatePassFromTemplate(const AZStd::shared_ptr<PassTemplate>& passTemplate, Name passName) = 0;
+            virtual Ptr<Pass> CreatePassFromTemplate(const AZStd::shared_ptr<const PassTemplate>& passTemplate, Name passName) = 0;
 
             //! Creates a Pass using the name of a PassTemplate
             virtual Ptr<Pass> CreatePassFromTemplate(Name templateName, Name passName) = 0;
@@ -190,6 +190,9 @@ namespace AZ
 
             // --- Pass Library related functionality ---
 
+            //! Returns true if the pass library contains a pass template with the given template name
+            virtual bool HasTemplate(const Name& templateName) const = 0;
+
             //! Returns true if the pass factory contains passes created with the given template name
             virtual bool HasPassesForTemplateName(const Name& templateName) const = 0;
 
@@ -197,7 +200,7 @@ namespace AZ
             virtual bool AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate) = 0;
 
             //! Retrieves a PassTemplate from the library
-            virtual const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const = 0;
+            virtual const AZStd::shared_ptr<const PassTemplate> GetPassTemplate(const Name& name) const = 0;
 
             //! See remarks in PassLibrary.h for the function with this name.
             virtual void RemovePassTemplate(const Name& name) = 0;

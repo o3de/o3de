@@ -41,10 +41,6 @@ set(FILES
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui
     Source/Window/ToolBar/MaterialEditorToolBar.h
     Source/Window/ToolBar/MaterialEditorToolBar.cpp
-    Source/Window/ToolBar/ModelPresetComboBox.h
-    Source/Window/ToolBar/ModelPresetComboBox.cpp
-    Source/Window/ToolBar/LightingPresetComboBox.h
-    Source/Window/ToolBar/LightingPresetComboBox.cpp
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.cpp
 )

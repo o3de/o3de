@@ -238,7 +238,7 @@ namespace EMStudio
         CalculateCameraProjection();
         RenderCustomPluginData();
         FollowCharacter();
-        m_renderer->CheckBounds();
+        m_renderer->UpdateGroundplane();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
@@ -288,9 +288,23 @@ namespace EMStudio
         return GetViewportContext()->GetId();
     }
 
+    void AnimViewportWidget::mousePressEvent(QMouseEvent* event)
+    {
+        m_pixelsSinceClick = 0;
+        m_prevMousePoint = event->globalPos();
+    }
+
+    void AnimViewportWidget::mouseMoveEvent(QMouseEvent* event)
+    {
+        int deltaX = event->globalX() - m_prevMousePoint.x();
+        int deltaY = event->globalY() - m_prevMousePoint.y();
+
+        m_pixelsSinceClick += AZStd::abs(deltaX) + AZStd::abs(deltaY);
+    }
+
     void AnimViewportWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        if (event->button() == Qt::RightButton)
+        if (event->button() == Qt::RightButton && m_pixelsSinceClick < MinMouseMovePixes)
         {
             OnContextMenuEvent(event);
         }
