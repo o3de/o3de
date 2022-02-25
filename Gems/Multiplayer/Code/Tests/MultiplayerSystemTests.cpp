@@ -6,6 +6,8 @@
  *
  */
 
+#include <CommonHierarchySetup.h>
+#include <MockInterfaces.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Name/NameDictionary.h>
@@ -13,7 +15,6 @@
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzTest/AzTest.h>
-#include <MockInterfaces.h>
 #include <MultiplayerSystemComponent.h>
 #include <IMultiplayerConnectionMock.h>
 #include <IMultiplayerSpawnerMock.h>
