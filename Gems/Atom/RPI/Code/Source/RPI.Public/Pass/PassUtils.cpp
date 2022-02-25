@@ -64,22 +64,6 @@ namespace AZ
                 }
             }
 
-            void ExtractPipelineGlobalConnections(const PassDescriptor& descriptor, PipelineGlobalConnectionList& outList)
-            {
-                if (descriptor.m_passRequest != nullptr && descriptor.m_passRequest->m_passData != nullptr)
-                {
-                    ExtractPipelineGlobalConnections(descriptor.m_passRequest->m_passData, outList);
-                }
-                if (descriptor.m_passTemplate != nullptr && descriptor.m_passTemplate->m_passData != nullptr)
-                {
-                    ExtractPipelineGlobalConnections(descriptor.m_passTemplate->m_passData, outList);
-                }
-                if (descriptor.m_passData != nullptr)
-                {
-                    ExtractPipelineGlobalConnections(descriptor.m_passData, outList);
-                }
-            }
-
             bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup)
             {
                 bool success = true;

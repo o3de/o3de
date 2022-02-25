@@ -31,7 +31,6 @@ namespace AZ
 
             //! Finds all PipelineGlobalConnections in the descriptor and adds them to the provided list
             void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList);
-            void ExtractPipelineGlobalConnections(const PassDescriptor& descriptor, PipelineGlobalConnectionList& outList);
 
             //! Retrieves PassData from a PassDescriptor
             AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor);

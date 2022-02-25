@@ -51,7 +51,10 @@ namespace AZ
                 "Pass::Pass - request is valid but template is nullptr. This is not allowed. Passing a valid passRequest also requires a valid passTemplate.");
 
             m_passData = PassUtils::GetPassDataPtr(descriptor);
-            PassUtils::ExtractPipelineGlobalConnections(descriptor, m_pipelineGlobalConnections);
+            if (m_passData)
+            {
+                PassUtils::ExtractPipelineGlobalConnections(m_passData, m_pipelineGlobalConnections);
+            }
 
             m_flags.m_enabled = true;
             m_flags.m_timestampQueryEnabled = false;
@@ -509,7 +512,7 @@ namespace AZ
 
             // -- Search Pipeline --
 
-            if (connectedPassName == PipelineGlobalKeyword)
+            else if (connectedPassName == PipelineGlobalKeyword)
             {
                 AZ_RPI_PASS_ERROR(m_pipeline != nullptr, "Pass::ProcessConnection - Pass [%s] references pipeline attachment [%s] doesn't have a valid pipeline pointer",
                     m_path.GetCStr(),
@@ -522,7 +525,7 @@ namespace AZ
                     const PipelineGlobalBinding* globalBinding = m_pipeline->GetPipelineGlobalConnection(connectedSlotName);
                     if (globalBinding)
                     {
-                        connectedBinding = m_pipeline->GetPipelineGlobalConnection(connectedSlotName)->m_binding;
+                        connectedBinding = globalBinding->m_binding;
                     }
 
                     AZ_RPI_PASS_ERROR(connectedBinding , "Pass::ProcessConnection - Pass [%s] cannot find a pipeline global connection named [%s].",
@@ -1082,6 +1085,13 @@ namespace AZ
 
         void Pass::RegisterPipelineGlobalConnections()
         {
+            if (!m_pipeline)
+            {
+                AZ_RPI_PASS_ERROR(m_pipelineGlobalConnections.size() == 0,
+                    "Pass::RegisterPipelineGlobalConnections() - PipelineGlobal connections specified but no pipeline set on pass [%s]",
+                    m_path.GetCStr());
+            }
+
             for (const PipelineGlobalConnection& connection : m_pipelineGlobalConnections)
             {
                 PassAttachmentBinding* binding = FindAttachmentBinding(connection.m_localBinding);
