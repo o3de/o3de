@@ -336,24 +336,27 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolder)
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
-    ASSERT_EQ(config.GetScanFolderCount(), 3); // the two, and then the one that has the same data as prior but different identifier.
+    ASSERT_EQ(config.GetScanFolderCount(), 4); // the two, and then the one that has the same data as prior but different identifier, plus hardcoded intermediates scanfolder
     QString scanName = AssetUtilities::ComputeProjectPath(true) + " Scan Folder";
-    ASSERT_EQ(config.GetScanFolderAt(0).GetDisplayName(), scanName);
-    ASSERT_EQ(config.GetScanFolderAt(0).RecurseSubFolders(), true);
-    ASSERT_EQ(config.GetScanFolderAt(0).GetOrder(), 0);
-    ASSERT_EQ(config.GetScanFolderAt(0).GetPortableKey(), QString("Game"));
 
-    ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), QString("FeatureTests"));
-    ASSERT_EQ(config.GetScanFolderAt(1).RecurseSubFolders(), false);
-    ASSERT_EQ(config.GetScanFolderAt(1).GetOrder(), 5000);
-    // this proves that the featuretests name is used instead of the output prefix
-    ASSERT_EQ(config.GetScanFolderAt(1).GetPortableKey(), QString("FeatureTests"));
+    // Scanfolder 0 is the intermediate assets scanfolder, we don't need to check that folder, so start checking at 1
 
-    ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("FeatureTests2"));
+    ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), scanName);
+    ASSERT_EQ(config.GetScanFolderAt(1).RecurseSubFolders(), true);
+    ASSERT_EQ(config.GetScanFolderAt(1).GetOrder(), 0);
+    ASSERT_EQ(config.GetScanFolderAt(1).GetPortableKey(), QString("Game"));
+
+    ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("FeatureTests"));
     ASSERT_EQ(config.GetScanFolderAt(2).RecurseSubFolders(), false);
-    ASSERT_EQ(config.GetScanFolderAt(2).GetOrder(), 6000);
+    ASSERT_EQ(config.GetScanFolderAt(2).GetOrder(), 5000);
     // this proves that the featuretests name is used instead of the output prefix
-    ASSERT_EQ(config.GetScanFolderAt(2).GetPortableKey(), QString("FeatureTests2"));
+    ASSERT_EQ(config.GetScanFolderAt(2).GetPortableKey(), QString("FeatureTests"));
+
+    ASSERT_EQ(config.GetScanFolderAt(3).GetDisplayName(), QString("FeatureTests2"));
+    ASSERT_EQ(config.GetScanFolderAt(3).RecurseSubFolders(), false);
+    ASSERT_EQ(config.GetScanFolderAt(3).GetOrder(), 6000);
+    // this proves that the featuretests name is used instead of the output prefix
+    ASSERT_EQ(config.GetScanFolderAt(3).GetPortableKey(), QString("FeatureTests2"));
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderPlatformSpecific)
@@ -370,35 +373,36 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderP
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
-    ASSERT_EQ(config.GetScanFolderCount(), 5);
-    ASSERT_EQ(config.GetScanFolderAt(0).GetDisplayName(), QString("gameoutput"));
-    AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms = config.GetScanFolderAt(0).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderCount(), 6); // +1 for hardcoded intermediates scanfolder
+    // Scanfolder 0 is the intermediate assets folder, so start at 1
+    ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), QString("gameoutput"));
+    AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms = config.GetScanFolderAt(1).GetPlatforms();
     ASSERT_EQ(platforms.size(), 4);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo(AzToolsFramework::AssetSystem::GetHostAssetPlatform(), AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("ios", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("server", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
-    ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), QString("editoroutput"));
-    platforms = config.GetScanFolderAt(1).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("editoroutput"));
+    platforms = config.GetScanFolderAt(2).GetPlatforms();
     ASSERT_EQ(platforms.size(), 2);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo(AzToolsFramework::AssetSystem::GetHostAssetPlatform(), AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
-    ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("folder1output"));
-    platforms = config.GetScanFolderAt(2).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderAt(3).GetDisplayName(), QString("folder1output"));
+    platforms = config.GetScanFolderAt(3).GetPlatforms();
     ASSERT_EQ(platforms.size(), 1);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
-    ASSERT_EQ(config.GetScanFolderAt(3).GetDisplayName(), QString("folder2output"));
-    platforms = config.GetScanFolderAt(3).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderAt(4).GetDisplayName(), QString("folder2output"));
+    platforms = config.GetScanFolderAt(4).GetPlatforms();
     ASSERT_EQ(platforms.size(), 3);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo(AzToolsFramework::AssetSystem::GetHostAssetPlatform(), AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("ios", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("server", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
-    ASSERT_EQ(config.GetScanFolderAt(4).GetDisplayName(), QString("folder3output"));
-    platforms = config.GetScanFolderAt(4).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderAt(5).GetDisplayName(), QString("folder3output"));
+    platforms = config.GetScanFolderAt(5).GetPlatforms();
     ASSERT_EQ(platforms.size(), 0);
 }
 
