@@ -631,6 +631,11 @@ namespace AssetProcessor
         */
         for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
         {
+            if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+            {
+                continue;
+            }
+
             AZStd::string_view currentRCParams = assetRecognizer.m_defaultParams;
             // The "/Amazon/AssetProcessor/Settings/RC */<platform>" entry will be queried
             AZ::IO::Path overrideParamsKey = AZ::IO::Path(AZ::IO::PosixPathSeparator);
@@ -783,8 +788,12 @@ namespace AssetProcessor
 
         FinalizeEnabledPlatforms();
 
-        // Add the common platform.  This platform is always enabled
-        EnablePlatform(AssetBuilderSDK::PlatformInfo{ AssetBuilderSDK::CommonPlatformName, AZStd::unordered_set<AZStd::string>{ "common" }});
+        if(!m_enabledPlatforms.empty())
+        {
+            // Add the common platform if we have some other platforms enabled.  For now, this is only intended for intermediate assets
+            // So we don't want to enable it unless at least one actual platform is available, to avoid hiding an error state of no real platforms being active
+            EnablePlatform(AssetBuilderSDK::PlatformInfo{ AssetBuilderSDK::CommonPlatformName, AZStd::unordered_set<AZStd::string>{ "common" }});
+        }
 
         if (scanFolderOverride)
         {
@@ -817,7 +826,12 @@ namespace AssetProcessor
             return IsValid();
         }
 
-        AddIntermediateScanFolder();
+        if(!m_scanFolders.empty())
+        {
+            // Enable the intermediate scanfolder if we have some other scanfolders.  Since this is hardcoded we don't want to hide an error state
+            // where no other scanfolders are enabled besides this one.  It wouldn't make sense for the intermediate scanfolder to be the only enabled scanfolder
+            AddIntermediateScanFolder();
+        }
 
         if (!noGemScanFolders && addGemsConfigs)
         {
