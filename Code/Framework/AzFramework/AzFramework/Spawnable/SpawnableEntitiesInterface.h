@@ -6,6 +6,9 @@
  *
  */
 
+// Note that the tests for the Spawnables are in the AzToolsFramework.Tests in order to get access to easy ways to construct
+// spawnables in memory.
+
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
