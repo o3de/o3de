@@ -167,6 +167,12 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4976207_PhysXRigidBodies_KinematicBehavior(EditorSharedTest):
         from .tests.rigid_body import RigidBody_KinematicModeWorks as test_module
 
+    class C5932042_PhysXForceRegion_LinearDamping(EditorSharedTest):
+        from .tests.force_region import ForceRegion_LinearDampingForceOnRigidBodies as test_module
+
+    class C5932043_ForceRegion_SimpleDragOnRigidBodies(EditorSharedTest):
+        from .tests.force_region import ForceRegion_SimpleDragForceOnRigidBodies as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -184,13 +190,6 @@ class TestAutomation(EditorTestSuite):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
 
-
-
-    class C5932042_PhysXForceRegion_LinearDamping(EditorSharedTest):
-        from .tests.force_region import ForceRegion_LinearDampingForceOnRigidBodies as test_module
-
-    class C5932043_ForceRegion_SimpleDragOnRigidBodies(EditorSharedTest):
-        from .tests.force_region import ForceRegion_SimpleDragForceOnRigidBodies as test_module
 
     class C5959760_PhysXForceRegion_PointForceExertion(EditorSharedTest):
         from .tests.force_region import ForceRegion_CapsuleShapedForce as test_module
