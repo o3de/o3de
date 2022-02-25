@@ -21,12 +21,6 @@ namespace MaterialEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        //! Signal that all configs are about to be reloaded
-        virtual void OnBeginReloadContent() {}
-
-        //! Signal that all configs were reloaded
-        virtual void OnEndReloadContent() {}
-
         //! Signal that a preset was added
         //! @param preset being added
         virtual void OnLightingPresetAdded([[maybe_unused]] AZ::Render::LightingPresetPtr preset) {}
@@ -51,20 +45,8 @@ namespace MaterialEditor
         //! @param preset being changed
         virtual void OnModelPresetChanged([[maybe_unused]] AZ::Render::ModelPresetPtr preset) {}
 
-        //! Notify when enabled state for shadow catcher changes
-        virtual void OnShadowCatcherEnabledChanged([[maybe_unused]] bool enable) {}
-
-        //! Notify when enabled state for grid changes
-        virtual void OnGridEnabledChanged([[maybe_unused]] bool enable) {}
-
-        //! Notify when enabled state for alternate skybox changes
-        virtual void OnAlternateSkyboxEnabledChanged([[maybe_unused]] bool enable) {}
-
-        //! Notify when field of view changes
-        virtual void OnFieldOfViewChanged([[maybe_unused]] float fieldOfView) {}
-
-        //! Notify when tone mapping changes
-        virtual void OnDisplayMapperOperationTypeChanged([[maybe_unused]] AZ::Render::DisplayMapperOperationType operationType) {}
+        //! Notify when any setting changes
+        virtual void OnViewportSettingsChanged() {}
     };
 
     using MaterialViewportNotificationBus = AZ::EBus<MaterialViewportNotifications>;

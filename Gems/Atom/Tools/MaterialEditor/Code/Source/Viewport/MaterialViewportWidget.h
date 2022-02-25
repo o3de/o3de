@@ -41,6 +41,8 @@ namespace AZ
 
 namespace MaterialEditor
 {
+    class MaterialViewportRequests;
+
     class MaterialViewportWidget
         : public AtomToolsFramework::RenderViewportWidget
         , public AZ::Data::AssetBus::Handler
@@ -57,28 +59,24 @@ namespace MaterialEditor
         void DestroyEntity(AZ::Entity*& entity);
         void SetupInputController();
 
-        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler interface overrides...
+        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
-        // MaterialViewportNotificationBus::Handler interface overrides...
-        void OnLightingPresetSelected(AZ::Render::LightingPresetPtr preset) override;
-        void OnLightingPresetChanged(AZ::Render::LightingPresetPtr preset) override;
-        void OnModelPresetSelected(AZ::Render::ModelPresetPtr preset) override;
-        void OnModelPresetChanged(AZ::Render::ModelPresetPtr preset) override;
-        void OnShadowCatcherEnabledChanged(bool enable) override;
-        void OnGridEnabledChanged(bool enable) override;
-        void OnAlternateSkyboxEnabledChanged(bool enable) override;
-        void OnFieldOfViewChanged(float fieldOfView) override;
-        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
+        // MaterialViewportNotificationBus::Handler overrides...
+        void OnViewportSettingsChanged() override;
 
-        // AZ::Data::AssetBus::Handler interface overrides...
+        // AZ::Data::AssetBus::Handler overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
-        // AZ::TickBus::Handler interface overrides...
+        // AZ::TickBus::Handler overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // AZ::TransformNotificationBus::MultiHandler overrides...
         void OnTransformChanged(const AZ::Transform&, const AZ::Transform&) override;
+
+        void UpdateLighting(MaterialViewportRequests* viewportRequests);
+        void UpdateModel(MaterialViewportRequests* viewportRequests);
+        void UpdateGrid(MaterialViewportRequests* viewportRequests);
 
         const AZ::Crc32 m_toolId = {};
 
@@ -99,7 +97,7 @@ namespace MaterialEditor
         AZ::Entity* m_postProcessEntity = {};
 
         AZ::Entity* m_modelEntity = {};
-        AZ::Data::AssetId m_modelAssetId;
+        AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
 
         AZ::Entity* m_gridEntity = {};
 

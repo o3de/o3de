@@ -13,6 +13,11 @@
 
 namespace AZ::SceneAPI::SceneBuilder
 {
+    //! Stores the string-value from a source scent asset's node; scene builders will be able to access
+    //! the key-value pairs to tweak the scene manifest, create special rules, and produce custom assets
+    //!
+    //! The keys are all AZStd::string
+    //! The supported value types are AZStd::string, bool, int32_t, int64_t, float, and double
     class AssImpCustomPropertyImporter
         : public SceneCore::LoadingComponent
     {

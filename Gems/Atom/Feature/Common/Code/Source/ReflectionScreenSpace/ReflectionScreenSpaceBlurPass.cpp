@@ -69,8 +69,8 @@ namespace AZ
             }
 
             // load pass templates
-            const AZStd::shared_ptr<RPI::PassTemplate> blurVerticalPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("ReflectionScreenSpaceBlurVerticalPassTemplate"));
-            const AZStd::shared_ptr<RPI::PassTemplate> blurHorizontalPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("ReflectionScreenSpaceBlurHorizontalPassTemplate"));
+            const AZStd::shared_ptr<const RPI::PassTemplate> blurVerticalPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("ReflectionScreenSpaceBlurVerticalPassTemplate"));
+            const AZStd::shared_ptr<const RPI::PassTemplate> blurHorizontalPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("ReflectionScreenSpaceBlurHorizontalPassTemplate"));
 
             // create pass descriptors
             RPI::PassDescriptor verticalBlurChildDesc;

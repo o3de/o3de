@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Shader Ball",
         "modelAsset": {
             "assetId": {
                 "guid": "{682C0F6C-7C6D-5C08-B641-6D0C49AF0B7B}",

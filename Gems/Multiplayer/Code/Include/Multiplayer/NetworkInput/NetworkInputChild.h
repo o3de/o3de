@@ -23,6 +23,8 @@ namespace Multiplayer
         NetworkInputChild(const ConstNetworkEntityHandle& entityHandle);
 
         NetworkInputChild& operator= (const NetworkInputChild& rhs);
+        bool operator==(const NetworkInputChild& rhs) const;
+        bool operator!=(const NetworkInputChild& rhs) const;
 
         void Attach(const ConstNetworkEntityHandle& entityHandle);
         const ConstNetworkEntityHandle& GetOwner() const;
