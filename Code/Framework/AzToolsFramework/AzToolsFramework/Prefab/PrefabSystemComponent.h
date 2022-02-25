@@ -239,6 +239,10 @@ namespace AzToolsFramework
 
             void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) override;
 
+            AZ::IO::PathView GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId) override;
+
+            void SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId, AZ::IO::PathView) override;
+
             /**
              * Updates all Instances owned by a Template.
              *
@@ -388,6 +392,8 @@ namespace AzToolsFramework
 
             // A container for mapping Templates' file paths to their Template ids.
             AZStd::unordered_map<AZ::IO::Path, TemplateId> m_templateFilePathToIdMap;
+
+            AZStd::unordered_map<AZ::EntityId, AZ::IO::Path> m_entityIdToHashedPathMap;
 
             // A container of Prefab Links mapped by their Link ids.
             AZStd::unordered_map<LinkId, Link> m_linkIdMap;

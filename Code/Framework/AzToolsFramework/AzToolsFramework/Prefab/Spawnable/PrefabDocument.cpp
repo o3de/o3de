@@ -19,6 +19,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
     }
 
+    PrefabDocument::PrefabDocument(AZStd::string name, InstanceAlias alias)
+        : m_name(AZStd::move(name))
+        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>(alias))
+    {
+        m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
+    }
+
     bool PrefabDocument::SetPrefabDom(const PrefabDom& prefab)
     {
         if (ConstructInstanceFromPrefabDom(prefab))
@@ -97,7 +104,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         if (sourceInstance != nullptr && entityId.IsValid())
         {
             return SpawnableUtils::CreateEntityAlias(
-                source.m_name, *sourceInstance, m_name, *m_instance, entityId, aliasType, loadBehavior, tag, context);
+                source.m_name, *sourceInstance, m_name, *m_instance, *m_instance, entityId, aliasType, loadBehavior, tag, context);
         }
         else
         {
@@ -134,7 +141,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         using namespace AzToolsFramework::Prefab;
 
         m_instance->Reset();
-        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*m_instance, prefab, m_referencedAssets, PrefabDomUtils::LoadFlags::AssignRandomEntityId))
+        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*m_instance, prefab, m_referencedAssets))
         {
             return true;
         }

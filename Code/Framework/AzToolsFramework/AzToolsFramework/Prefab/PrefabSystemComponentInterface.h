@@ -84,6 +84,10 @@ namespace AzToolsFramework
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, InstanceOptionalReference parent = AZStd::nullopt,
                 bool shouldCreateLinks = true) = 0;
+
+            virtual AZ::IO::PathView GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId) = 0;
+
+            virtual void SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId, AZ::IO::PathView) = 0;
         };
         
     } // namespace Prefab

@@ -24,7 +24,7 @@
                             },
                             { 
                                 "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor",
-                                "SerializationFormat": "Binary" // Options are "Binary" (default) or "Text". Prefer "Binary" for performance. 
+                                "SerializationFormat": "Text" // Options are "Binary" (default) or "Text". Prefer "Binary" for performance. 
                             }
                         ]
                     }

@@ -38,6 +38,11 @@ namespace AzToolsFramework
         {
         }
 
+        Instance::Instance(InstanceOptionalReference parent, InstanceAlias alias)
+            : Instance(nullptr, parent, alias)
+        {
+        }
+
         Instance::Instance(InstanceAlias alias)
             : Instance(nullptr, AZStd::nullopt, AZStd::move(alias))
         {
@@ -183,12 +188,13 @@ namespace AzToolsFramework
             if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
             {
                 entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
+                /*
                 [[maybe_unused]] bool isEntityRemoved = m_instanceEntityMapper->UnregisterEntity(entityId) &&
                     m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
                 AZ_Assert(isEntityRemoved,
                     "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
                     "This happens when the entity is not correctly removed from all the prefab system entity maps.",
-                    entityId.ToString().c_str(), m_templateSourcePath.c_str());
+                    entityId.ToString().c_str(), m_templateSourcePath.c_str());*/
             }
 
             return DetachEntity(entityAliasToRemove);
@@ -221,7 +227,7 @@ namespace AzToolsFramework
         {
             for (auto&& [entityAlias, entity] : m_entities)
             {
-                m_instanceEntityMapper->UnregisterEntity(entity->GetId());
+                //m_instanceEntityMapper->UnregisterEntity(entity->GetId());
                 m_templateToInstanceEntityIdMap.erase(entityAlias);
                 m_instanceToTemplateEntityIdMap.erase(entity->GetId());
 
@@ -285,7 +291,7 @@ namespace AzToolsFramework
                     const bool shouldRemove = filter(entity);
                     if (shouldRemove)
                     {
-                        m_instanceEntityMapper->UnregisterEntity(entity->GetId());
+                        //m_instanceEntityMapper->UnregisterEntity(entity->GetId());
                         m_templateToInstanceEntityIdMap.erase(entityAlias);
                         m_instanceToTemplateEntityIdMap.erase(entity->GetId());
                     }
@@ -296,6 +302,7 @@ namespace AzToolsFramework
 
         void Instance::ClearEntities()
         {
+            /*
             if (m_containerEntity)
             {
                 m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
@@ -315,7 +322,7 @@ namespace AzToolsFramework
                             m_templateSourcePath.c_str());
                     }
                 }
-            }
+            }*/
 
             // Destroy the entities *before* clearing the lookup maps so that any lookups triggered during an entity's destructor
             // are still valid.
@@ -326,6 +333,7 @@ namespace AzToolsFramework
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)
         {
+            /*
             if (!m_instanceEntityMapper->RegisterEntityToInstance(entityId, *this))
             {
                 AZ_Assert(false,
@@ -335,7 +343,7 @@ namespace AzToolsFramework
                     m_templateSourcePath.c_str());
 
                 return false;
-            }
+            }*/
 
             m_instanceToTemplateEntityIdMap.emplace(AZStd::make_pair(entityId, entityAlias));
             m_templateToInstanceEntityIdMap.emplace(AZStd::make_pair(entityAlias, entityId));
@@ -826,7 +834,7 @@ namespace AzToolsFramework
         {
             if (m_containerEntity)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+                //m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
             }
             return AZStd::move(m_containerEntity);
         }
