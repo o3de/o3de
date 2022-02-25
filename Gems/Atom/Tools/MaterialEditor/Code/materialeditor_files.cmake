@@ -25,7 +25,6 @@ set(FILES
     Source/Viewport/MaterialViewportComponent.h
     Source/Viewport/MaterialViewportWidget.cpp
     Source/Viewport/MaterialViewportWidget.h
-    Source/Viewport/MaterialViewportWidget.ui
 
     Source/Window/MaterialEditorWindowSettings.h
     Source/Window/MaterialEditorWindow.h
@@ -42,12 +41,6 @@ set(FILES
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui
     Source/Window/ToolBar/MaterialEditorToolBar.h
     Source/Window/ToolBar/MaterialEditorToolBar.cpp
-    Source/Window/ToolBar/ModelPresetComboBox.h
-    Source/Window/ToolBar/ModelPresetComboBox.cpp
-    Source/Window/ToolBar/LightingPresetComboBox.h
-    Source/Window/ToolBar/LightingPresetComboBox.cpp
-    Source/Window/MaterialInspector/MaterialInspector.h
-    Source/Window/MaterialInspector/MaterialInspector.cpp
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.cpp
 )

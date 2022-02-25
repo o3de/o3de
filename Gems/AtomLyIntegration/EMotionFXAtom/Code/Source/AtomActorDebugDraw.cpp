@@ -135,7 +135,7 @@ namespace AZ::Render
                 }
                 if (renderWireframe)
                 {
-                    RenderWireframe(mesh, globalTM, renderActorSettings.m_wireframeScale, scaleMultiplier, renderActorSettings.m_wireframeColor);
+                    RenderWireframe(mesh, globalTM, renderActorSettings.m_wireframeScale * scaleMultiplier, renderActorSettings.m_wireframeColor);
                 }
             }
         }
@@ -621,8 +621,8 @@ namespace AZ::Render
         auxGeom->DrawLines(lineArgs);
     }
 
-    void AtomActorDebugDraw::RenderWireframe(
-        EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier, const AZ::Color& wireframeColor)
+    void AtomActorDebugDraw::RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM,
+        float scale, const AZ::Color& color)
     {
         // Check if the mesh is valid and skip the node in case it's not
         if (!mesh)
@@ -657,9 +657,9 @@ namespace AZ::Render
                 const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
                 const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
 
-                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * wireframeScale * scaleMultiplier;
-                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * wireframeScale * scaleMultiplier;
-                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * wireframeScale * scaleMultiplier;
+                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * scale;
+                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * scale;
+                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * scale;
 
                 m_auxVertices.emplace_back(posA);
                 m_auxVertices.emplace_back(posB);
@@ -674,7 +674,7 @@ namespace AZ::Render
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
             lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &wireframeColor;
+            lineArgs.m_colors = &color;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
             auxGeom->DrawLines(lineArgs);
@@ -758,6 +758,9 @@ namespace AZ::Render
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
 
+        const int oldState = debugDisplay->GetState();
+        debugDisplay->DepthTestOff();
+
         const size_t numEnabled = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numEnabled; ++i)
         {
@@ -774,6 +777,8 @@ namespace AZ::Render
             }
             RenderLineAxis(debugDisplay, worldTM, size, selected);
         }
+
+        debugDisplay->SetState(oldState);
     }
 
     void AtomActorDebugDraw::RenderLineAxis(

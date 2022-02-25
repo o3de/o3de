@@ -6,13 +6,12 @@
  *
  */
 
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/std/containers/vector.h>
 #include <Viewport/MaterialViewportNotificationBus.h>
 #include <Viewport/MaterialViewportRequestBus.h>
-#include <Viewport/MaterialViewportSettings.h>
-#include <Window/ToolBar/LightingPresetComboBox.h>
 #include <Window/ToolBar/MaterialEditorToolBar.h>
-#include <Window/ToolBar/ModelPresetComboBox.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
@@ -30,16 +29,13 @@ namespace MaterialEditor
     {
         AzQtComponents::ToolBar::addMainToolBarStyle(this);
 
-        AZStd::intrusive_ptr<MaterialViewportSettings> viewportSettings =
-            AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
-
         // Add toggle grid button
         m_toggleGrid = addAction(QIcon(":/Icons/grid.svg"), "Toggle Grid");
         m_toggleGrid->setCheckable(true);
         connect(m_toggleGrid, &QAction::triggered, [this]() {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetGridEnabled, m_toggleGrid->isChecked());
+            MaterialViewportRequestBus::Broadcast(
+                &MaterialViewportRequestBus::Events::SetGridEnabled, m_toggleGrid->isChecked());
         });
-        m_toggleGrid->setChecked(viewportSettings->m_enableGrid);
 
         // Add toggle shadow catcher button
         m_toggleShadowCatcher = addAction(QIcon(":/Icons/shadow.svg"), "Toggle Shadow Catcher");
@@ -48,7 +44,6 @@ namespace MaterialEditor
             MaterialViewportRequestBus::Broadcast(
                 &MaterialViewportRequestBus::Events::SetShadowCatcherEnabled, m_toggleShadowCatcher->isChecked());
         });
-        m_toggleShadowCatcher->setChecked(viewportSettings->m_enableShadowCatcher);
 
         // Add toggle alternate skybox button
         m_toggleAlternateSkybox = addAction(QIcon(":/Icons/skybox.svg"), "Toggle Alternate Skybox");
@@ -57,18 +52,17 @@ namespace MaterialEditor
             MaterialViewportRequestBus::Broadcast(
                 &MaterialViewportRequestBus::Events::SetAlternateSkyboxEnabled, m_toggleAlternateSkybox->isChecked());
         });
-        m_toggleAlternateSkybox->setChecked(viewportSettings->m_enableAlternateSkybox);
 
         // Add mapping selection button
         QToolButton* toneMappingButton = new QToolButton(this);
         QMenu* toneMappingMenu = new QMenu(toneMappingButton);
 
         m_operationNames = {
-            {AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard"},
-            {AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB"},
-            {AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough"},
-            {AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut"},
-            {AZ::Render::DisplayMapperOperationType::Aces, "Aces"}};
+            { AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard" },
+            { AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB" },
+            { AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough" },
+            { AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut" },
+            { AZ::Render::DisplayMapperOperationType::Aces, "Aces" } };
 
         for (auto operationNamePair : m_operationNames)
         {
@@ -77,8 +71,6 @@ namespace MaterialEditor
                     &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType, operationNamePair.first);
             });
             m_operationActions[operationNamePair.first]->setCheckable(true);
-            m_operationActions[operationNamePair.first]->setChecked(
-                operationNamePair.first == viewportSettings->m_displayMapperOperationType);
         }
 
         toneMappingButton->setMenu(toneMappingMenu);
@@ -89,16 +81,24 @@ namespace MaterialEditor
         addWidget(toneMappingButton);
 
         // Add lighting preset combo box
-        auto lightingPresetComboBox = new LightingPresetComboBox(this);
-        lightingPresetComboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
-        lightingPresetComboBox->view()->setMinimumWidth(200);
-        addWidget(lightingPresetComboBox);
+        m_lightingPresetComboBox = new AtomToolsFramework::AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
+            return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset");
+        }, this);
+        connect(m_lightingPresetComboBox, &AtomToolsFramework::AssetSelectionComboBox::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+        });
+        addWidget(m_lightingPresetComboBox);
 
-        // Add model combo box
-        auto modelPresetComboBox = new ModelPresetComboBox(this);
-        modelPresetComboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
-        modelPresetComboBox->view()->setMinimumWidth(200);
-        addWidget(modelPresetComboBox);
+        // Add model preset combo box
+        m_modelPresetComboBox = new AtomToolsFramework::AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
+            return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset");
+        }, this);
+        connect(m_modelPresetComboBox, &AtomToolsFramework::AssetSelectionComboBox::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadModelPresetByAssetId, assetId);
+        });
+        addWidget(m_modelPresetComboBox);
+
+        OnViewportSettingsChanged();
 
         MaterialViewportNotificationBus::Handler::BusConnect();
     }
@@ -108,29 +108,23 @@ namespace MaterialEditor
         MaterialViewportNotificationBus::Handler::BusDisconnect();
     }
 
-    void MaterialEditorToolBar::OnGridEnabledChanged(bool enable)
+    void MaterialEditorToolBar::OnViewportSettingsChanged()
     {
-        m_toggleGrid->setChecked(enable);
+        MaterialViewportRequestBus::Broadcast(
+            [this](MaterialViewportRequests* viewportRequests)
+            {
+                m_toggleGrid->setChecked(viewportRequests->GetGridEnabled());
+                m_toggleShadowCatcher->setChecked(viewportRequests->GetShadowCatcherEnabled());
+                m_toggleAlternateSkybox->setChecked(viewportRequests->GetAlternateSkyboxEnabled());
+                m_lightingPresetComboBox->SelectAsset(viewportRequests->GetLastLightingPresetAssetId());
+                m_modelPresetComboBox->SelectAsset(viewportRequests->GetLastModelPresetAssetId());
+                for (auto operationNamePair : m_operationNames)
+                {
+                    m_operationActions[operationNamePair.first]->setChecked(
+                        operationNamePair.first == viewportRequests->GetDisplayMapperOperationType());
+                }
+            });
     }
-
-    void MaterialEditorToolBar::OnAlternateSkyboxEnabledChanged(bool enable)
-    {
-        m_toggleAlternateSkybox->setChecked(enable);
-    }
-
-    void MaterialEditorToolBar::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
-    {
-        for (auto operationActionPair : m_operationActions)
-        {
-            operationActionPair.second->setChecked(operationActionPair.first == operationType);
-        }
-    }
-
-    void MaterialEditorToolBar::OnShadowCatcherEnabledChanged(bool enable)
-    {
-        m_toggleShadowCatcher->setChecked(enable);
-    }
-
 } // namespace MaterialEditor
 
 #include <Window/ToolBar/moc_MaterialEditorToolBar.cpp>
