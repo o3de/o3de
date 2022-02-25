@@ -193,7 +193,7 @@ namespace AZ
                         properyMap["a_string"] = AZStd::make_any<AZStd::string>("the string");
                         properyMap["a_bool"] = AZStd::make_any<bool>(true);
                         properyMap["a_int32"] = AZStd::make_any<int32_t>(aznumeric_cast<int32_t>(-32));
-                        properyMap["a_uint64"] = AZStd::make_any<uint64_t>(aznumeric_cast<uint64_t>(64));
+                        properyMap["a_uint64"] = AZStd::make_any<AZ::u64>(aznumeric_cast<AZ::u64>(64));
                         properyMap["a_float"] = AZStd::make_any<float>(aznumeric_cast<float>(12.34));
                         properyMap["a_double"] = AZStd::make_any<double>(aznumeric_cast<double>(0.1234));
                         AZStd::any_cast<AZ::SceneData::GraphData::CustomPropertyData>(&data)->SetPropertyMap(properyMap);

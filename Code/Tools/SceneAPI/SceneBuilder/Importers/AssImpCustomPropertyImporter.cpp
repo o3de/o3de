@@ -68,27 +68,27 @@ namespace AZ::SceneAPI::SceneBuilder
             else if (data->mType == AI_BOOL)
             {
                 const bool* value = reinterpret_cast<const bool*>(data->mData);
-                propertyMap[keyName] = AZStd::make_any<bool>(*value);
+                propertyMap[keyName] = AZStd::make_any<bool>(aznumeric_cast<bool>(*value));
             }
             else if (data->mType == AI_INT32)
             {
                 const int32_t* value = reinterpret_cast<const int32_t*>(data->mData);
-                propertyMap[keyName] = AZStd::make_any<int32_t>(*value);
+                propertyMap[keyName] = AZStd::make_any<AZ::s32>(aznumeric_cast<AZ::s32>(*value));
             }
             else if (data->mType == AI_UINT64)
             {
                 const uint64_t* value = reinterpret_cast<const uint64_t*>(data->mData);
-                propertyMap[keyName] = AZStd::make_any<uint64_t>(*value);
+                propertyMap[keyName] = AZStd::make_any<AZ::u64>(aznumeric_cast<AZ::u64>(*value));
             }
             else if (data->mType == AI_FLOAT)
             {
                 const float* value = reinterpret_cast<const float*>(data->mData);
-                propertyMap[keyName] = AZStd::make_any<float>(*value);
+                propertyMap[keyName] = AZStd::make_any<float>(aznumeric_cast<float>(*value));
             }
             else if (data->mType == AI_DOUBLE)
             {
                 const double* value = reinterpret_cast<const double*>(data->mData);
-                propertyMap[keyName] = AZStd::make_any<double>(*value);
+                propertyMap[keyName] = AZStd::make_any<double>(aznumeric_cast<double>(*value));
             }
         }
 
