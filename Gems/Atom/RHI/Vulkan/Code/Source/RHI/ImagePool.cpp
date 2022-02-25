@@ -49,7 +49,8 @@ namespace AZ
             uint32_t memoryTypeBits = 0;
             {
                 // Use an image descriptor of size 1x1 to get the memory requirements.
-                RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(descriptorBase.m_bindFlags, 1, 1, RHI::Format::R8G8B8A8_UNORM);
+                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyWrite;
+                RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(bindFlags, 1, 1, RHI::Format::R8G8B8A8_UNORM);
                 VkMemoryRequirements memRequirements = device.GetImageMemoryRequirements(imageDescriptor);
                 memoryTypeBits = memRequirements.memoryTypeBits;
             }

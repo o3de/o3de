@@ -371,7 +371,14 @@ namespace AZ
         {
             // add attachments to the scope
             // input attachment
-            frameGraph.UseAttachment(RHI::ImageScopeAttachmentDescriptor{ m_imageAttachmentId }, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
+            RHI::FrameGraphAttachmentInterface attachmentDatabase = frameGraph.GetAttachmentDatabase();
+            RHI::ImageDescriptor imageDesc = attachmentDatabase.GetImageDescriptor(m_imageAttachmentId);
+            auto scopeAttachmentDesc = RHI::ImageScopeAttachmentDescriptor{ m_imageAttachmentId };
+            // aspect flag needs to be set for SRV (espectially for image contains both depth and stencil)
+            // Note: only support preview depth here if the image contains both depth and stencil
+            scopeAttachmentDesc.m_imageViewDescriptor.m_aspectFlags = RHI::CheckBitsAll(RHI::GetImageAspectFlags(imageDesc.m_format), RHI::ImageAspectFlags::Depth)?
+                RHI::ImageAspectFlags::Depth:RHI::ImageAspectFlags::Color;
+            frameGraph.UseAttachment(scopeAttachmentDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
 
             // output attachment
             frameGraph.UseColorAttachment(RHI::ImageScopeAttachmentDescriptor{ m_outputColorAttachment->GetAttachmentId() });
