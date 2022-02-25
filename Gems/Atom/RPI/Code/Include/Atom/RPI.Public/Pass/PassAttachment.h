@@ -190,7 +190,8 @@ namespace AZ
             uint8_t m_attachmentUsageIndex = 0;
 
         private:
-            //! Pointer to the attachment used by the scope
+            //! Pointer to the attachment used by the scope.
+            //! Used to be public, now use SetAttachment and GetAttachment for access
             Ptr<PassAttachment> m_attachment = nullptr;
 
             //! Save the original attachment when using fallback

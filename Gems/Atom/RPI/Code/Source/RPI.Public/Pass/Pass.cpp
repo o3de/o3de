@@ -524,12 +524,8 @@ namespace AZ
                     {
                         connectedBinding = m_pipeline->GetPipelineGlobalConnection(connectedSlotName)->m_binding;
                     }
-                    if (!connectedBinding)
-                    {
-                        attachment = m_pipeline->GetPipelineGlobalAttachment(connectedSlotName);
-                    }
 
-                    AZ_RPI_PASS_ERROR(connectedBinding || attachment, "Pass::ProcessConnection - Pass [%s] cannot find attachment or binding named [%s] on pipeline.",
+                    AZ_RPI_PASS_ERROR(connectedBinding , "Pass::ProcessConnection - Pass [%s] cannot find a pipeline global connection named [%s].",
                         m_path.GetCStr(),
                         connectedSlotName.GetCStr());
                 }
@@ -1181,7 +1177,7 @@ namespace AZ
 
             if (m_flags.m_isPipelineRoot)
             {
-                m_pipeline->ClearGlobalAttachmentsAndBindings();
+                m_pipeline->ClearGlobalBindings();
             }
 
             // Store references to imported attachments to underlying images and buffers aren't deleted during attachment building

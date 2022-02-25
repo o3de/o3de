@@ -443,28 +443,6 @@ namespace AZ
             }
         }
 
-        const Ptr<PassAttachment> RenderPipeline::GetPipelineGlobalAttachment(const Name& name) const
-        {
-            for (const Ptr<PassAttachment>& attachment : m_pipelineGlobalAttachments)
-            {
-                if (attachment->m_name == name)
-                {
-                    return attachment;
-                }
-            }
-            return nullptr;
-        }
-
-        void RenderPipeline::AddPipelineGlobalAttachment(const Ptr<PassAttachment>& attachment)
-        {
-            m_pipelineGlobalAttachments.push_back(attachment);
-        }
-
-        void RenderPipeline::RemovePipelineGlobalAttachment(const Ptr<PassAttachment>& attachment)
-        {
-            erase(m_pipelineGlobalAttachments, attachment);
-        }
-
         const PipelineGlobalBinding* RenderPipeline::GetPipelineGlobalConnection(const Name& globalName) const
         {
             for (const PipelineGlobalBinding& connection : m_pipelineGlobalConnections)
@@ -498,9 +476,8 @@ namespace AZ
             }
         }
 
-        void RenderPipeline::ClearGlobalAttachmentsAndBindings()
+        void RenderPipeline::ClearGlobalBindings()
         {
-            m_pipelineGlobalAttachments.clear();
             m_pipelineGlobalConnections.clear();
         }
 

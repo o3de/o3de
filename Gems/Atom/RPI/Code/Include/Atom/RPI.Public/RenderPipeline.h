@@ -79,6 +79,7 @@ namespace AZ
         //! Pipeline can be disabled and it won't be rendered if it's disabled.
         class RenderPipeline
         {
+            friend class Pass;
             friend class Scene;
 
         public:
@@ -214,21 +215,22 @@ namespace AZ
             //! use RPI::PassSystemInterface::Get()->ForEachPass() function instead.
             Ptr<Pass> FindFirstPass(const AZ::Name& passName);
 
-            //! Finding, adding and removing pipeline attachments (attachments that can be referenced directly by any pass in the pipeline)
-            const Ptr<PassAttachment> GetPipelineGlobalAttachment(const Name& name) const;
-            void AddPipelineGlobalAttachment(const Ptr<PassAttachment>& attachment);
-            void RemovePipelineGlobalAttachment(const Ptr<PassAttachment>& attachment);
-
-            //! Finding, adding and removing pipeline connections/bindings (can be referenced directly by any pass in the pipeline)
-            const PipelineGlobalBinding* GetPipelineGlobalConnection(const Name& globalName) const;
-            void AddPipelineGlobalConnection(const Name& globalName, PassAttachmentBinding* binding, Pass* pass);
-            void RemovePipelineGlobalConnectionsFromPass(Pass* passOnwer);
-
-            // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
-            void ClearGlobalAttachmentsAndBindings();
-
         private:
             RenderPipeline() = default;
+
+            // Adds a pass connection to the list of pipeline connections so it can be reference in a global way
+            // Should be called during the pass build phase
+            void AddPipelineGlobalConnection(const Name& globalName, PassAttachmentBinding* binding, Pass* pass);
+
+            // Removes all pipeline global connections associated with a specific pass
+            void RemovePipelineGlobalConnectionsFromPass(Pass* passOnwer);
+
+            // Retrieves a previously added pipeline global connection via name
+            const PipelineGlobalBinding* GetPipelineGlobalConnection(const Name& globalName) const;
+
+            // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
+            // This is called from the pipeline root pass during the pass reset phase
+            void ClearGlobalBindings();
 
             static void InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc);
 
@@ -267,9 +269,6 @@ namespace AZ
 
             // Pass tree which contains all the passes in this render pipeline.
             Ptr<ParentPass> m_rootPass;
-
-            // Attachments that can be referenced from any pass in the pipeline in a global manner
-            AZStd::vector<Ptr<PassAttachment>> m_pipelineGlobalAttachments;
 
             // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner
             AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;
