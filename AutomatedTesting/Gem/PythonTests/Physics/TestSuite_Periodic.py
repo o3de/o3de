@@ -482,12 +482,7 @@ class TestAutomation(TestAutomationBase):
     def test_ShapeCollider_CanBeAddedWitNoWarnings(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
         self._run_test(request, workspace, editor, test_module)
-        
-    @revert_physics_config
-    def test_Physics_UndoRedoWorksOnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-    
+
     def test_Joints_Fixed2BodiesConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_Fixed2BodiesConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
