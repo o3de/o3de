@@ -112,6 +112,11 @@ namespace UnitTest
         TestRoundUpToMultipleIsCorrect<uint64_t>();
     }
 
+    TEST(RoundUpToMultipleTest, RoundUpToMultipleSizeT_ValidInput_IsCorrect)
+    {
+        TestRoundUpToMultipleIsCorrect<size_t>();
+    }
+
     template<typename T>
     void TestDivideAndRoundUpIsCorrect()
     {
@@ -146,24 +151,16 @@ namespace UnitTest
         TestDivideAndRoundUpIsCorrect<uint64_t>();
     }
 
-    
+    TEST(DivideAndRoundUpTest, DivideAndRoundUpSizeT_ValidInput_IsCorrect)
+    {
+        TestDivideAndRoundUpIsCorrect<size_t>();
+    }
+
+    // Test fixture for invalid inputs. We do not test for alignment=0
+    // because that leads to undefined behavior with no consistent expected outcome 
     class RoundUpInvalidInputTestsFixture : public ScopedAllocatorSetupFixture
     {
     };
-
-    TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_AlignmentZeroUint32_Assert)
-    {
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        DivideAndRoundUp(static_cast<uint32_t>(0), static_cast<uint32_t>(0));
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-    }
-
-    TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_AlignmentZeroUint64_Assert)
-    {
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        DivideAndRoundUp(static_cast<uint64_t>(0), static_cast<uint64_t>(0));
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-    }
 
     TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_OverflowUint32_Assert)
     {
@@ -171,7 +168,12 @@ namespace UnitTest
         DivideAndRoundUp(
             static_cast<uint32_t>((AZStd::numeric_limits<uint32_t>::max() / 2) + 1),
             static_cast<uint32_t>((AZStd::numeric_limits<uint32_t>::max() / 2) + 1));
+#ifdef AZ_DEBUG_BUILD
+        // AZ_MATH_ASSERT only asserts during debug builds, so expect an assert here
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#else
+        AZ_TEST_STOP_TRACE_SUPPRESSION(0);
+#endif
     }
 
     TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_OverflowUint64_Assert)
@@ -180,6 +182,25 @@ namespace UnitTest
         DivideAndRoundUp(
             static_cast<uint64_t>((AZStd::numeric_limits<uint64_t>::max() / 2) + 1),
             static_cast<uint64_t>((AZStd::numeric_limits<uint64_t>::max() / 2) + 1));
+#ifdef AZ_DEBUG_BUILD
+        // AZ_MATH_ASSERT only asserts during debug builds, so expect an assert here
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#else
+        AZ_TEST_STOP_TRACE_SUPPRESSION(0);
+#endif
+    }
+
+    TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_OverflowSizeT_Assert)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        DivideAndRoundUp(
+            static_cast<size_t>((AZStd::numeric_limits<size_t>::max() / 2) + 1),
+            static_cast<size_t>((AZStd::numeric_limits<size_t>::max() / 2) + 1));
+#ifdef AZ_DEBUG_BUILD
+        // AZ_MATH_ASSERT only asserts during debug builds, so expect an assert here
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#else
+        AZ_TEST_STOP_TRACE_SUPPRESSION(0);
+#endif
     }
 }

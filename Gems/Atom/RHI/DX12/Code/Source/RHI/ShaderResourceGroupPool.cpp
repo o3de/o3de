@@ -200,16 +200,13 @@ namespace AZ
             RHI::ShaderResourceGroup& groupBase,
             const RHI::ShaderResourceGroupData& groupData)
         {
+            typedef AZ::RHI::ShaderResourceGroupData::ResourceTypeMask ResourceMask;
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
             auto& device = static_cast<Device&>(GetDevice());
 
-            if (!groupData.IsAnyResourceTypeUpdated())
-            {
-                return RHI::ResultCode::Success;
-            }
-
             group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
-            if (m_constantBufferSize)
+            
+            if (m_constantBufferSize && groupBase.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::ConstantDataMask)))
             {
                 memcpy(group.GetCompiledData().m_cpuConstantAddress, groupData.GetConstantData().data(), groupData.GetConstantData().size());
             }
@@ -236,7 +233,7 @@ namespace AZ
                     group.m_viewsDescriptorTable.GetOffset() + group.m_compiledDataIndex * m_viewsDescriptorTableSize,
                     static_cast<uint16_t>(m_viewsDescriptorTableSize));
 
-                UpdateViewsDescriptorTable(descriptorTable, groupData);
+                UpdateViewsDescriptorTable(descriptorTable, group, groupData);
             }
 
             if (m_unboundedArrayCount)
@@ -250,7 +247,7 @@ namespace AZ
                     group.m_samplersDescriptorTable.GetOffset() + group.m_compiledDataIndex * m_samplersDescriptorTableSize,
                     static_cast<uint16_t>(m_samplersDescriptorTableSize));
 
-                UpdateSamplersDescriptorTable(descriptorTable, groupData);
+                UpdateSamplersDescriptorTable(descriptorTable, groupBase, groupData);
             }
 
             return RHI::ResultCode::Success;
@@ -268,89 +265,103 @@ namespace AZ
             }
         }
 
-        void ShaderResourceGroupPool::UpdateViewsDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData)
+        void ShaderResourceGroupPool::UpdateViewsDescriptorTable(DescriptorTable descriptorTable,
+                                                                 RHI::ShaderResourceGroup& group,
+                                                                 const RHI::ShaderResourceGroupData& groupData,
+                                                                 bool forceUpdateViews /*= false*/ )
         {
+            typedef AZ::RHI::ShaderResourceGroupData::ResourceTypeMask ResourceMask;
             const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
-
             uint32_t shaderInputIndex = 0;
-
-            for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : groupLayout.GetShaderInputListForBuffers())
+            
+            if (forceUpdateViews || group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::BufferViewMask)))
             {
-                const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
-
-                AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
-                D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputBufferAccess(shaderInputBuffer.m_access);
-                AZStd::vector<DescriptorHandle> descriptorHandles;
-                switch (descriptorRangeType)
+                for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : groupLayout.GetShaderInputListForBuffers())
                 {
-                    case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
-                    {
-                        descriptorHandles = GetSRVsFromImageViews< RHI::BufferView, BufferView> (bufferViews, D3D12_SRV_DIMENSION_BUFFER);
-                        break;
-                    }
-                    case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
-                    {
-                        descriptorHandles = GetUAVsFromImageViews<RHI::BufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER);
-                        break;
-                    }
-                    case D3D12_DESCRIPTOR_RANGE_TYPE_CBV:
-                    {
-                        descriptorHandles = GetCBVsFromBufferViews(bufferViews);
-                        break;
-                    }
-                    default:
-                        AZ_Assert(false, "Unhandled D3D12_DESCRIPTOR_RANGE_TYPE enumeration");
-                        break;
-                }
+                    const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
 
-                UpdateDescriptorTableRange(descriptorTable, descriptorHandles, bufferInputIndex);
-                ++shaderInputIndex;
+                    AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
+                    D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputBufferAccess(shaderInputBuffer.m_access);
+                    AZStd::vector<DescriptorHandle> descriptorHandles;
+                    switch (descriptorRangeType)
+                    {
+                        case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
+                        {
+                            descriptorHandles = GetSRVsFromImageViews< RHI::BufferView, BufferView> (bufferViews, D3D12_SRV_DIMENSION_BUFFER);
+                            break;
+                        }
+                        case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
+                        {
+                            descriptorHandles = GetUAVsFromImageViews<RHI::BufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER);
+                            break;
+                        }
+                        case D3D12_DESCRIPTOR_RANGE_TYPE_CBV:
+                        {
+                            descriptorHandles = GetCBVsFromBufferViews(bufferViews);
+                            break;
+                        }
+                        default:
+                            AZ_Assert(false, "Unhandled D3D12_DESCRIPTOR_RANGE_TYPE enumeration");
+                            break;
+                    }
+
+                    UpdateDescriptorTableRange(descriptorTable, descriptorHandles, bufferInputIndex);
+                    ++shaderInputIndex;
+                }
             }
 
-            shaderInputIndex = 0;
-
-            for (const RHI::ShaderInputImageDescriptor& shaderInputImage : groupLayout.GetShaderInputListForImages())
+            if (forceUpdateViews || group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::ImageViewMask)))
             {
-                const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
-
-                AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
-                D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputImageAccess(shaderInputImage.m_access);
-
-                AZStd::vector<DescriptorHandle> descriptorHandles;
-                switch (descriptorRangeType)
+                shaderInputIndex = 0;
+                for (const RHI::ShaderInputImageDescriptor& shaderInputImage : groupLayout.GetShaderInputListForImages())
                 {
-                    case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
-                    {
-                        descriptorHandles =
-                            GetSRVsFromImageViews<RHI::ImageView, ImageView>(imageViews, ConvertSRVDimension(shaderInputImage.m_type));
-                        break;
-                    }
-                    case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
-                    {
-                        descriptorHandles =
-                            GetUAVsFromImageViews<RHI::ImageView, ImageView>(imageViews, ConvertUAVDimension(shaderInputImage.m_type));
-                        break;
-                    }
-                    default:
-                    AZ_Assert(false, "Unhandled D3D12_DESCRIPTOR_RANGE_TYPE enumeration");
-                    break;
-                }
+                    const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
 
-                UpdateDescriptorTableRange(descriptorTable, descriptorHandles, imageInputIndex);
-                ++shaderInputIndex;
+                    AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
+                    D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputImageAccess(shaderInputImage.m_access);
+
+                    AZStd::vector<DescriptorHandle> descriptorHandles;
+                    switch (descriptorRangeType)
+                    {
+                        case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
+                        {
+                            descriptorHandles =
+                                GetSRVsFromImageViews<RHI::ImageView, ImageView>(imageViews, ConvertSRVDimension(shaderInputImage.m_type));
+                            break;
+                        }
+                        case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
+                        {
+                            descriptorHandles =
+                                GetUAVsFromImageViews<RHI::ImageView, ImageView>(imageViews, ConvertUAVDimension(shaderInputImage.m_type));
+                            break;
+                        }
+                        default:
+                        AZ_Assert(false, "Unhandled D3D12_DESCRIPTOR_RANGE_TYPE enumeration");
+                        break;
+                    }
+
+                    UpdateDescriptorTableRange(descriptorTable, descriptorHandles, imageInputIndex);
+                    ++shaderInputIndex;
+                }
             }
         }
 
-        void ShaderResourceGroupPool::UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData)
+        void ShaderResourceGroupPool::UpdateSamplersDescriptorTable(
+            DescriptorTable descriptorTable,
+            RHI::ShaderResourceGroup& group,
+            const RHI::ShaderResourceGroupData& groupData)
         {
-            const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
-            const size_t shaderInputSize = groupLayout.GetShaderInputListForSamplers().size();
-            for (size_t shaderInputIndex = 0; shaderInputIndex < shaderInputSize; ++shaderInputIndex)
+            if(group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
             {
-                const RHI::ShaderInputSamplerIndex samplerInputIndex(shaderInputIndex);
+                const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
+                const size_t shaderInputSize = groupLayout.GetShaderInputListForSamplers().size();
+                for (size_t shaderInputIndex = 0; shaderInputIndex < shaderInputSize; ++shaderInputIndex)
+                {
+                    const RHI::ShaderInputSamplerIndex samplerInputIndex(shaderInputIndex);
 
-                AZStd::span<const RHI::SamplerState> samplers = groupData.GetSamplerArray(samplerInputIndex);
-                UpdateDescriptorTableRange(descriptorTable, samplerInputIndex, samplers);
+                    AZStd::span<const RHI::SamplerState> samplers = groupData.GetSamplerArray(samplerInputIndex);
+                    UpdateDescriptorTableRange(descriptorTable, samplerInputIndex, samplers);
+                }
             }
         }
 
@@ -359,84 +370,89 @@ namespace AZ
             const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
             auto& device = static_cast<Device&>(GetDevice());
             uint32_t shaderInputIndex = 0;
-
-            // process buffer unbounded arrays
-            for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
+            if(group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask)))
             {
-                const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
-                AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
-
-                uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
-
-                // resize the descriptor table allocation if necessary
-                if (group.m_unboundedDescriptorTables[tableIndex].GetSize() != bufferViews.size())
+                // process buffer unbounded arrays
+                for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
                 {
-                    if (group.m_unboundedDescriptorTables[tableIndex].IsValid())
-                    {
-                        m_descriptorContext->ReleaseDescriptorTable(group.m_unboundedDescriptorTables[tableIndex], &group);
-                        group.m_unboundedDescriptorTables[tableIndex] = DescriptorTable{};
-                    }
+                    const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
 
-                    if (!bufferViews.empty())
+                    uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
+
+                    // resize the descriptor table allocation if necessary
+                    if (group.m_unboundedDescriptorTables[tableIndex].GetSize() != bufferViews.size())
                     {
-                        group.m_unboundedDescriptorTables[tableIndex] = m_descriptorContext->CreateDescriptorTable(
-                            D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, static_cast<uint32_t>(bufferViews.size()), &group);
-                        
-                        if (!group.m_unboundedDescriptorTables[tableIndex].IsValid())
+                        if (group.m_unboundedDescriptorTables[tableIndex].IsValid())
                         {
-                            // We have support for compacting D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV (if applicable) so try that.
-                            device.DescriptorHeapCompactionNeeded();
-                            return;
+                            m_descriptorContext->ReleaseDescriptorTable(group.m_unboundedDescriptorTables[tableIndex], &group);
+                            group.m_unboundedDescriptorTables[tableIndex] = DescriptorTable{};
                         }
 
-                        ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
-                        compiledData.m_gpuUnboundedArraysDescriptorHandles[shaderInputIndex] = m_descriptorContext->GetGpuPlatformHandleForTable(group.m_unboundedDescriptorTables[tableIndex]);
+                        if (!bufferViews.empty())
+                        {
+                            group.m_unboundedDescriptorTables[tableIndex] = m_descriptorContext->CreateDescriptorTable(
+                                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, static_cast<uint32_t>(bufferViews.size()), &group);
+                            
+                            if (!group.m_unboundedDescriptorTables[tableIndex].IsValid())
+                            {
+                                // We have support for compacting D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV (if applicable) so try that.
+                                device.DescriptorHeapCompactionNeeded();
+                                return;
+                            }
+
+                            ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
+                            compiledData.m_gpuUnboundedArraysDescriptorHandles[shaderInputIndex] = m_descriptorContext->GetGpuPlatformHandleForTable(group.m_unboundedDescriptorTables[tableIndex]);
+                        }
                     }
+                    
+                    const DescriptorTable descriptorTable(group.m_unboundedDescriptorTables[tableIndex].GetOffset(), static_cast<uint16_t>(bufferViews.size()));
+                    UpdateUnboundedBuffersDescTable(descriptorTable, groupData, shaderInputIndex, shaderInputBufferUnboundedArray.m_access);
+                    ++shaderInputIndex;
                 }
-                
-                const DescriptorTable descriptorTable(group.m_unboundedDescriptorTables[tableIndex].GetOffset(), static_cast<uint16_t>(bufferViews.size()));
-                UpdateUnboundedBuffersDescTable(descriptorTable, groupData, shaderInputIndex, shaderInputBufferUnboundedArray.m_access);
-                ++shaderInputIndex;
             }
 
-            // process image unbounded arrays
-            for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : groupLayout.GetShaderInputListForImageUnboundedArrays())
+            if(group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask)))
             {
-                const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
-                AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
-
-                uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
-
-                // resize the descriptor table allocation if necessary
-                if (group.m_unboundedDescriptorTables[tableIndex].GetSize() != imageViews.size())
+                // process image unbounded arrays
+                for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : groupLayout.GetShaderInputListForImageUnboundedArrays())
                 {
-                   
-                    if (group.m_unboundedDescriptorTables[tableIndex].IsValid())
-                    {
-                        m_descriptorContext->ReleaseDescriptorTable(group.m_unboundedDescriptorTables[tableIndex], &group);
-                        group.m_unboundedDescriptorTables[tableIndex] = DescriptorTable{};
-                    }
+                    const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
 
-                    if (!imageViews.empty())
-                    {
-                        group.m_unboundedDescriptorTables[tableIndex] = m_descriptorContext->CreateDescriptorTable(
-                            D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, static_cast<uint32_t>(imageViews.size()), &group);
+                    uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
 
-                        if (!group.m_unboundedDescriptorTables[tableIndex].IsValid())
+                    // resize the descriptor table allocation if necessary
+                    if (group.m_unboundedDescriptorTables[tableIndex].GetSize() != imageViews.size())
+                    {
+                       
+                        if (group.m_unboundedDescriptorTables[tableIndex].IsValid())
                         {
-                            // We have support for compacting D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV (if applicable) so try that
-                            device.DescriptorHeapCompactionNeeded();
-                            return;
+                            m_descriptorContext->ReleaseDescriptorTable(group.m_unboundedDescriptorTables[tableIndex], &group);
+                            group.m_unboundedDescriptorTables[tableIndex] = DescriptorTable{};
                         }
 
-                        ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
-                        compiledData.m_gpuUnboundedArraysDescriptorHandles[shaderInputIndex] = m_descriptorContext->GetGpuPlatformHandleForTable(group.m_unboundedDescriptorTables[tableIndex]);
-                    }
-                }
+                        if (!imageViews.empty())
+                        {
+                            group.m_unboundedDescriptorTables[tableIndex] = m_descriptorContext->CreateDescriptorTable(
+                                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, static_cast<uint32_t>(imageViews.size()), &group);
 
-                const DescriptorTable descriptorTable(group.m_unboundedDescriptorTables[tableIndex].GetOffset(), static_cast<uint16_t>(imageViews.size()));
-                UpdateUnboundedImagesDescTable(descriptorTable, groupData, shaderInputIndex, shaderInputImageUnboundedArray.m_access, shaderInputImageUnboundedArray.m_type);
-                ++shaderInputIndex;
+                            if (!group.m_unboundedDescriptorTables[tableIndex].IsValid())
+                            {
+                                // We have support for compacting D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV (if applicable) so try that
+                                device.DescriptorHeapCompactionNeeded();
+                                return;
+                            }
+
+                            ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
+                            compiledData.m_gpuUnboundedArraysDescriptorHandles[shaderInputIndex] = m_descriptorContext->GetGpuPlatformHandleForTable(group.m_unboundedDescriptorTables[tableIndex]);
+                        }
+                    }
+
+                    const DescriptorTable descriptorTable(group.m_unboundedDescriptorTables[tableIndex].GetOffset(), static_cast<uint16_t>(imageViews.size()));
+                    UpdateUnboundedImagesDescTable(descriptorTable, groupData, shaderInputIndex, shaderInputImageUnboundedArray.m_access, shaderInputImageUnboundedArray.m_type);
+                    ++shaderInputIndex;
+                }
             }
         }
 
@@ -547,7 +563,8 @@ namespace AZ
                     group.m_viewsDescriptorTable.GetOffset() + group.m_compiledDataIndex * m_viewsDescriptorTableSize,
                         static_cast<uint16_t>(m_viewsDescriptorTableSize));
 
-                UpdateViewsDescriptorTable(descriptorTable, groupData);
+                bool forceUpdate = true;
+                UpdateViewsDescriptorTable(descriptorTable, groupBase, groupData, forceUpdate);
             }
 
             if (m_unboundedArrayCount)

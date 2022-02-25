@@ -28,7 +28,7 @@ namespace AZ
             PassDescriptor() = default;
             ~PassDescriptor() = default;
 
-            explicit PassDescriptor(Name name, const AZStd::shared_ptr<PassTemplate> passTemplate = nullptr, const PassRequest* passRequest = nullptr)
+            explicit PassDescriptor(Name name, const AZStd::shared_ptr<const PassTemplate> passTemplate = nullptr, const PassRequest* passRequest = nullptr)
                 : m_passName(name)
                 , m_passTemplate(passTemplate)
                 , m_passRequest(passRequest)
@@ -38,7 +38,7 @@ namespace AZ
             Name m_passName;
 
             //! Optional: The PassTemplate used to construct a Pass.
-            AZStd::shared_ptr<PassTemplate> m_passTemplate = nullptr;
+            AZStd::shared_ptr<const PassTemplate> m_passTemplate = nullptr;
 
             //! Optional: The PassRequest used to construct a Pass. If this is valid then m_passTemplate 
             //! cannot be null and m_passTemplate must point to the same template used by the PassRequest.

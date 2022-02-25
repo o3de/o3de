@@ -15,10 +15,6 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-using namespace AZStd;
-using namespace AZStd::placeholders;
-using namespace UnitTestInternal;
-
 int global_int;
 
 struct write_five_obj
@@ -247,6 +243,11 @@ public:
 
 namespace UnitTest
 {
+
+    using namespace AZStd;
+    using namespace AZStd::placeholders;
+    using namespace UnitTestInternal;
+
     /**
      * Function
      * We use tuned version of the boost::function (which is in TR1), so we use the boost::function tests too

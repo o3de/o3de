@@ -241,7 +241,7 @@ namespace EMStudio
         CalculateCameraProjection();
         RenderCustomPluginData();
         FollowCharacter();
-        m_renderer->CheckBounds();
+        m_renderer->UpdateGroundplane();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
@@ -289,5 +289,93 @@ namespace EMStudio
     AZ::s32 AnimViewportWidget::GetViewportId() const
     {
         return GetViewportContext()->GetId();
+    }
+
+    void AnimViewportWidget::mousePressEvent(QMouseEvent* event)
+    {
+        m_pixelsSinceClick = 0;
+        m_prevMousePoint = event->globalPos();
+    }
+
+    void AnimViewportWidget::mouseMoveEvent(QMouseEvent* event)
+    {
+        int deltaX = event->globalX() - m_prevMousePoint.x();
+        int deltaY = event->globalY() - m_prevMousePoint.y();
+
+        m_pixelsSinceClick += AZStd::abs(deltaX) + AZStd::abs(deltaY);
+    }
+
+    void AnimViewportWidget::mouseReleaseEvent(QMouseEvent* event)
+    {
+        if (event->button() == Qt::RightButton && m_pixelsSinceClick < MinMouseMovePixes)
+        {
+            OnContextMenuEvent(event);
+        }
+    }
+
+    void AnimViewportWidget::OnContextMenuEvent(QMouseEvent* event)
+    {
+        QMenu* menu = new QMenu(this);
+
+        {
+            QMenu* cameraMenu = menu->addMenu("Camera Options");
+            QAction* frontAction = cameraMenu->addAction("Front");
+            QAction* backAction = cameraMenu->addAction("Back");
+            QAction* topAction = cameraMenu->addAction("Top");
+            QAction* bottomAction = cameraMenu->addAction("Bottom");
+            QAction* leftAction = cameraMenu->addAction("Left");
+            QAction* rightAction = cameraMenu->addAction("Right");
+            cameraMenu->addSeparator();
+            QAction* resetCamAction = cameraMenu->addAction("Reset Camera");
+            cameraMenu->addSeparator();
+            QAction* followAction = cameraMenu->addAction("Follow Character");
+            followAction->setCheckable(true);
+            followAction->setChecked(m_plugin->GetRenderOptions()->GetCameraFollowUp());
+            connect(frontAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::FRONT);
+                });
+            connect(backAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::BACK);
+                });
+            connect(topAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::TOP);
+                });
+            connect(bottomAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::BOTTOM);
+                });
+            connect(leftAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::LEFT);
+                });
+            connect(rightAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::RIGHT);
+                });
+            connect(resetCamAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
+                });
+            connect(followAction, &QAction::triggered, this, [this, followAction]()
+                {
+                    m_plugin->GetRenderOptions()->SetCameraFollowUp(followAction->isChecked());
+                    AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::UpdateCameraFollowUp, followAction->isChecked());
+                });
+        }
+
+        QAction* resetAction = menu->addAction("Reset Character");
+        connect(resetAction, &QAction::triggered, this, [this]()
+            {
+                m_renderer->Reinit();
+                UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
+            });
+
+        if (!menu->isEmpty())
+        {
+            menu->popup(event->globalPos());
+        }
     }
 } // namespace EMStudio
