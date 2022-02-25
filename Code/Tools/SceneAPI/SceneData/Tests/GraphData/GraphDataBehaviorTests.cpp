@@ -190,14 +190,14 @@ namespace AZ
                     }
                     else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::CustomPropertyData>())
                     {
-                        AZ::SceneData::GraphData::CustomPropertyData::PropertyMap properyMap;
-                        properyMap["a_string"] = AZStd::make_any<AZStd::string>("the string");
-                        properyMap["a_bool"] = AZStd::make_any<bool>(true);
-                        properyMap["a_int32"] = AZStd::make_any<int32_t>(aznumeric_cast<int32_t>(-32));
-                        properyMap["a_uint64"] = AZStd::make_any<AZ::u64>(aznumeric_cast<AZ::u64>(64));
-                        properyMap["a_float"] = AZStd::make_any<float>(aznumeric_cast<float>(12.34));
-                        properyMap["a_double"] = AZStd::make_any<double>(aznumeric_cast<double>(0.1234));
-                        AZStd::any_cast<AZ::SceneData::GraphData::CustomPropertyData>(&data)->SetPropertyMap(properyMap);
+                        AZ::SceneData::GraphData::CustomPropertyData::PropertyMap propertyMap;
+                        propertyMap["a_string"] = AZStd::make_any<AZStd::string>("the string");
+                        propertyMap["a_bool"] = AZStd::make_any<bool>(true);
+                        propertyMap["a_int32"] = AZStd::make_any<int32_t>(aznumeric_cast<int32_t>(-32));
+                        propertyMap["a_uint64"] = AZStd::make_any<AZ::u64>(aznumeric_cast<AZ::u64>(64));
+                        propertyMap["a_float"] = AZStd::make_any<float>(aznumeric_cast<float>(12.34));
+                        propertyMap["a_double"] = AZStd::make_any<double>(aznumeric_cast<double>(0.1234));
+                        AZStd::any_cast<AZ::SceneData::GraphData::CustomPropertyData>(&data)->SetPropertyMap(propertyMap);
                         return true;
                     }
                     else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::RootBoneData>())
