@@ -141,7 +141,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         assert value.lower() == "true", f"The fast scan setting found is {value}"
 
         # Launch GameLauncher.exe with Null Renderer enabled so that Non-GPU Automation Nodes don't fail on the renderer
-        launcher = launcher_helper.create_launcher(workspace, ["-NullRenderer"])
+        launcher = launcher_helper.create_game_launcher(workspace, ["-NullRenderer"])
         launcher.start()
 
         # Validate that no fatal errors (crashes) are reported within a certain time frame (10 seconds timeout)

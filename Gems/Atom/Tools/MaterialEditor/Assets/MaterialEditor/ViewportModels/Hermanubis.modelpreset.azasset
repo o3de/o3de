@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Hermanubis",
         "modelAsset": {
             "assetId": {
                 "guid": "{1F650917-AA74-5107-9C49-648C957B33DA}",
