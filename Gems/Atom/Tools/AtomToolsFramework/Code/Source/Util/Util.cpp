@@ -62,6 +62,19 @@ namespace AtomToolsFramework
         job->Start();
     }
 
+    QString GetDisplayNameFromPath(const QString& path)
+    {
+        QFileInfo fileInfo(path);
+        QString fileName = fileInfo.baseName();
+        fileName.replace(QRegExp("[^a-zA-Z\\d\\s]"), " ");
+        QStringList fileNameParts = fileName.split(' ', Qt::SkipEmptyParts);
+        for (QString& part : fileNameParts)
+        {
+            part.replace(0, 1, part[0].toUpper());
+        }
+        return fileNameParts.join(" ");
+    }
+
     QFileInfo GetSaveFileInfo(const QString& initialPath)
     {
         const QFileInfo initialFileInfo(initialPath);

@@ -32,6 +32,7 @@
 #include <SceneAPI/SceneData/GraphData/MaterialData.h>
 #include <SceneAPI/SceneData/GraphData/BoneData.h>
 #include <SceneAPI/SceneData/GraphData/RootBoneData.h>
+#include <SceneAPI/SceneData/GraphData/TransformData.h>
 
 namespace AZ
 {
@@ -203,6 +204,12 @@ namespace AZ
                     {
                         auto* boneData = AZStd::any_cast<AZ::SceneData::GraphData::RootBoneData>(&data);
                         boneData->SetWorldTransform(SceneAPI::DataTypes::MatrixType::CreateDiagonal({2.0, 3.0, 4.0}));
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::TransformData>())
+                    {
+                        auto* transformData = AZStd::any_cast<AZ::SceneData::GraphData::TransformData>(&data);
+                        transformData->SetMatrix(AZ::Matrix3x4::CreateDiagonal({1.0, 2.0, 3.0}));
                         return true;
                     }
                     return false;
@@ -611,6 +618,25 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).y, 0.0)");
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).z, 4.0)");
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).w, 0.0)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_TransformData_AccessWorks)
+            {
+                ExpectExecute("transformData = TransformData()");
+                ExpectExecute("TestExpectTrue(transformData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(transformData)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).x, 1.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).w, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).y, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).w, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).z, 3.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).w, 0.0)");
             }
         }
     }

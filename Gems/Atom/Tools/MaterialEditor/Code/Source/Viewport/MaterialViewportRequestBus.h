@@ -9,16 +9,12 @@
 
 #include <ACES/Aces.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <QImage>
 
 namespace MaterialEditor
 {
-    using MaterialViewportPresetNameSet = AZStd::set<AZStd::string>;
-
     class MaterialViewportRequests
         : public AZ::EBusTraits
     {
@@ -26,82 +22,57 @@ namespace MaterialEditor
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        //! Reload all presets
-        virtual void ReloadContent() = 0;
+        //! Set current lighting preset
+        //! @param preset lighting preset to assign
+        virtual void SetLightingPreset(const AZ::Render::LightingPreset& preset) = 0;
 
-        //! Add lighting preset
-        //! @param preset lighting preset to add for selection
-        //! @returns pointer to new, managed preset
-        virtual AZ::Render::LightingPresetPtr AddLightingPreset(const AZ::Render::LightingPreset& preset) = 0;
-
-        //! Get lighting presets
-        //! @returns all presets
-        virtual AZ::Render::LightingPresetPtrVector GetLightingPresets() const = 0;
+        //! Get current lighting preset
+        //! @returns current preset
+        virtual const AZ::Render::LightingPreset& GetLightingPreset() const = 0;
 
         //! Save lighting preset
         //! @returns true if preset was saved, otherwise false
-        virtual bool SaveLightingPreset(AZ::Render::LightingPresetPtr preset, const AZStd::string& path) const = 0;
+        virtual bool SaveLightingPreset(const AZStd::string& path) const = 0;
 
-        //! Get lighting preset by name
-        //! @param name preset name to search for
-        //! @returns the requested preset if found, otherwise nullptr
-        virtual AZ::Render::LightingPresetPtr GetLightingPresetByName(const AZStd::string& name) const = 0;
+        //! Load lighting preset
+        //! @returns true if preset was loaded, otherwise false
+        virtual bool LoadLightingPreset(const AZStd::string& path) = 0;
 
-        //! Get selected lighting preset
-        //! @returns selected preset if found, otherwise nullptr
-        virtual AZ::Render::LightingPresetPtr GetLightingPresetSelection() const = 0;
+        //! Load lighting preset
+        //! @returns true if preset was loaded, otherwise false
+        virtual bool LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId) = 0;
 
-        //! Select lighting preset
-        //! @param preset to select
-        virtual void SelectLightingPreset(AZ::Render::LightingPresetPtr preset) = 0;
+        //! Get last lighting preset path
+        virtual AZStd::string GetLastLightingPresetPath() const = 0;
 
-        //! Select lighting preset by name
-        //! @param name preset name to select
-        virtual void SelectLightingPresetByName(const AZStd::string& name) = 0;
+        //! Get last lighting preset asset id
+        virtual AZ::Data::AssetId GetLastLightingPresetAssetId() const = 0;
 
-        //! Get set of lighting preset names
-        virtual MaterialViewportPresetNameSet GetLightingPresetNames() const = 0;
+        //! Set current model preset
+        //! @param preset Model preset to assign
+        virtual void SetModelPreset(const AZ::Render::ModelPreset& preset) = 0;
 
-        //! Get model preset last save path
-        //! @param preset to lookup last save path
-        virtual AZStd::string GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const = 0;
+        //! Get current model preset
+        //! @returns current preset
+        virtual const AZ::Render::ModelPreset& GetModelPreset() const = 0;
 
-        //! Add model preset
-        //! @param preset model preset to add for selection
-        //! @returns pointer to new, managed preset
-        virtual AZ::Render::ModelPresetPtr AddModelPreset(const AZ::Render::ModelPreset& preset) = 0;
-
-        //! Get model presets
-        //! @returns all presets
-        virtual AZ::Render::ModelPresetPtrVector GetModelPresets() const = 0;
-
-        //! Save Model preset
+        //! Save model preset
         //! @returns true if preset was saved, otherwise false
-        virtual bool SaveModelPreset(AZ::Render::ModelPresetPtr preset, const AZStd::string& path) const = 0;
+        virtual bool SaveModelPreset(const AZStd::string& path) const = 0;
 
-        //! Get model preset by name
-        //! @param name preset name to search for
-        //! @returns the requested preset if found, otherwise nullptr
-        virtual AZ::Render::ModelPresetPtr GetModelPresetByName(const AZStd::string& name) const = 0;
+        //! Load model preset
+        //! @returns true if preset was loaded, otherwise false
+        virtual bool LoadModelPreset(const AZStd::string& path) = 0;
 
-        //! Get selected model preset
-        //! @returns selected preset if found, otherwise nullptr
-        virtual AZ::Render::ModelPresetPtr GetModelPresetSelection() const = 0;
+        //! Load model preset
+        //! @returns true if preset was loaded, otherwise false
+        virtual bool LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId) = 0;
 
-        //! Select lighting preset
-        //! @param name preset to select
-        virtual void SelectModelPreset(AZ::Render::ModelPresetPtr preset) = 0;
+        //! Get last model preset path
+        virtual AZStd::string GetLastModelPresetPath() const = 0;
 
-        //! Select model preset by name
-        //! @param name preset name to select
-        virtual void SelectModelPresetByName(const AZStd::string& name) = 0;
-
-        //! Get set of model preset names
-        virtual MaterialViewportPresetNameSet GetModelPresetNames() const = 0;
-
-        //! Get model preset last save path
-        //! @param preset to lookup last save path
-        virtual AZStd::string GetModelPresetLastSavePath(AZ::Render::ModelPresetPtr preset) const = 0;
+        //! Get last model preset asset id
+        virtual AZ::Data::AssetId GetLastModelPresetAssetId() const = 0;
 
         //! Set enabled state for shadow catcher
         virtual void SetShadowCatcherEnabled(bool enable) = 0;
