@@ -105,7 +105,6 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
 
     protected:
-        void CompileBuilderData(SourceHandle sourceHandle);
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
         

@@ -37,19 +37,8 @@
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
-namespace ScriptCanvasEditorCpp
-{
-    bool IsScriptCanvasFile(AZStd::string_view candidate)
-    {
-        AZ::IO::Path path(candidate);
-        return path.HasExtension() && path.Extension() == ".scriptcanvas";
-    }
-}
-
 namespace ScriptCanvasEditor
 {
-    using namespace ScriptCanvasEditorCpp;
-
     static const size_t cs_jobThreads = 1;
 
     SystemComponent::SystemComponent()
@@ -115,8 +104,6 @@ namespace ScriptCanvasEditor
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
-        AzToolsFramework::AssetSystemBus::Handler::BusConnect();
-
     }
 
     void SystemComponent::Activate()
@@ -182,38 +169,6 @@ namespace ScriptCanvasEditor
     {
         auto* asyncFunction = AZ::CreateJobFunction(AZStd::move(jobFunc), true, m_jobContext.get());
         asyncFunction->Start();
-    }
-
-    void SystemComponent::CompileBuilderData(SourceHandle sourceHandle)
-    {
-        using namespace ScriptCanvasBuilder;
-
-        BuildResult result;
-
-        CompleteDescriptionInPlace(sourceHandle);
-
-        auto assetTreeOutcome = LoadEditorAssetTree(sourceHandle);
-        if (!assetTreeOutcome.IsSuccess())
-        {
-            AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", assetTreeOutcome.GetError().c_str());
-            result.status = BuildStatus::Unloadable;
-            m_buildResultsByHandle[sourceHandle] = AZStd::move(result);
-            return;
-        }
-
-        auto parseOutcome = ParseEditorAssetTree(assetTreeOutcome.GetValue());
-        if (!parseOutcome.IsSuccess())
-        {
-            AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", parseOutcome.GetError().c_str());
-            result.status = BuildStatus::Failed;
-            m_buildResultsByHandle[sourceHandle] = AZStd::move(result);
-            return;
-        }
-
-        parseOutcome.GetValue().SetHandlesToDescription();
-        result.data = parseOutcome.TakeValue();
-        result.status = BuildStatus::Good;
-        m_buildResultsByHandle[sourceHandle] = AZStd::move(result);
     }
 
     void SystemComponent::CreateEditorComponentsOnEntity(AZ::Entity* entity, [[maybe_unused]] const AZ::Data::AssetType& assetType)
@@ -443,46 +398,6 @@ namespace ScriptCanvasEditor
         runGraphSpec.graphPath = path;
         runGraphSpec.runSpec.execution = mode;
         return ScriptCanvasEditor::RunGraph(runGraphSpec).front();
-    }
-
-    void SystemComponent::SourceFileChanged([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
-    {
-        if (!IsScriptCanvasFile(relativePath))
-        {
-            return;
-        }
-
-        if (auto handle = CompleteDescription(SourceHandle(nullptr, fileAssetId, {})))
-        {
-            CompileBuilderData(*handle);
-            // broadcast change and result of change
-        }
-    }
-
-    void SystemComponent::SourceFileRemoved([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
-    {
-        // check that the file asset id still works, and use that
-        if (!IsScriptCanvasFile(relativePath))
-        {
-            return;
-        }
-
-        // try and set status to removed
-        // broadcast removal
-    }
-
-    void SystemComponent::SourceFileFailed([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
-    {
-        if (!IsScriptCanvasFile(relativePath))
-        {
-            return;
-        }
-
-        // try and set status to error
-        // broadcast error
     }
 
     AzToolsFramework::AssetSeedManagerRequests::AssetTypePairs SystemComponent::GetAssetTypeMapping()
