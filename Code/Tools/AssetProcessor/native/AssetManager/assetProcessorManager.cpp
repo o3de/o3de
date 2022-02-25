@@ -793,22 +793,9 @@ namespace AssetProcessor
                 {
                     // insert pair<iter,bool> will return false if the item was already there, indicating a collision.
 
-                    JobDetails jobdetail;
-                    jobdetail.m_jobEntry = JobEntry(
-                        itProcessedAsset->m_entry.m_watchFolderPath,
-                        itProcessedAsset->m_entry.m_pathRelativeToWatchFolder,
-                        itProcessedAsset->m_entry.m_databaseSourceName,
-                        itProcessedAsset->m_entry.m_builderGuid,
-                        itProcessedAsset->m_entry.m_platformInfo,
-                        itProcessedAsset->m_entry.m_jobKey, 0, GenerateNewJobRunKey(),
-                        itProcessedAsset->m_entry.m_sourceFileUUID);
-                    jobdetail.m_autoFail = true;
-                    jobdetail.m_critical = true;
-                    jobdetail.m_priority = INT_MAX; // front of the queue.
-                                                    // the new lines make it easier to copy and paste the file names.
                     QString sourceName = itProcessedAsset->m_entry.GetAbsoluteSourcePath();
 
-                    jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format(
+                    auto autofailReason = AZStd::string::format(
                         "More than one product was emitted for this source file with the same SubID.\n"
                         "Source file:\n"
                         "%s\n"
@@ -819,9 +806,8 @@ namespace AssetProcessor
                         product.m_productSubID,
                         product.m_productFileName.c_str());
 
-                    UpdateAnalysisTrackerForFile(itProcessedAsset->m_entry, AnalysisTrackerUpdateType::JobFailed);
+                    AutoFailJob("", autofailReason, itProcessedAsset);
 
-                    Q_EMIT AssetToProcess(jobdetail);// forwarding this job to rccontroller to fail it
                     remove = true;
                     break;
                 }
@@ -2506,22 +2492,24 @@ namespace AssetProcessor
                     {
                         const AssetBuilderSDK::PlatformInfo* const platformFromInfo = m_platformConfig->GetPlatformByIdentifier(jobInfo.m_platform.c_str());
                         AZ_Assert(platformFromInfo, "Error - somehow a job was created which was for a platform not in config.");
+
                         if (platformFromInfo)
                         {
-                            job.m_jobEntry = JobEntry(
-                                QString::fromUtf8(jobInfo.m_watchFolder.c_str()),
-                                relativePathToFile,
-                                databasePathToFile,
-                                jobInfo.m_builderGuid,
-                                *platformFromInfo,
-                                jobInfo.m_jobKey.c_str(), 0, GenerateNewJobRunKey(),
-                                AZ::Uuid::CreateNull());
-
-                            job.m_autoFail = true;
-                            job.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format("Product file name would be too long: %s\n", normalizedPath.toUtf8().data());
-
-                            UpdateAnalysisTrackerForFile(normalizedPath.toUtf8().constData(), AnalysisTrackerUpdateType::JobFailed);
-                            Q_EMIT AssetToProcess(job);// forwarding this job to rccontroller to fail it
+                            AutoFailJob(
+                                "",
+                                AZStd::string::format("Product file name would be too long: %s\n", normalizedPath.toUtf8().data()),
+                                normalizedPath.toUtf8().constData(),
+                                JobEntry(
+                                    QString::fromUtf8(jobInfo.m_watchFolder.c_str()),
+                                    relativePathToFile,
+                                    databasePathToFile,
+                                    jobInfo.m_builderGuid,
+                                    *platformFromInfo,
+                                    jobInfo.m_jobKey.c_str(),
+                                    0,
+                                    GenerateNewJobRunKey(),
+                                    AZ::Uuid::CreateNull())
+                                );
                         }
                     }
 
@@ -2555,33 +2543,28 @@ namespace AssetProcessor
                         if (normalizedPath.toUtf8().length() > normalizedPath.length())
                         {
                             // if we are here it implies that the source file path contains non ascii characters
+                            AutoFailJob(
+                                AZStd::string::format(
+                                    "ProcessFilesToExamineQueue: source file path ( %s ) contains non ascii characters.\n",
+                                    normalizedPath.toUtf8().constData(), normalizedPath.length(), AP_MAX_PATH_LEN),
+                                AZStd::string::format(
+                                    "Source file ( %s ) contains non ASCII characters.\n"
+                                    "O3DE currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
+                                    "Please rename the source file to fix this error.\n",
+                                    normalizedPath.toUtf8().data()),
+                                normalizedPath.toUtf8().constData(),
+                                JobEntry(
+                                    scanFolderInfo->ScanPath().toUtf8().data(),
+                                    relativePathToFile,
+                                    databasePathToFile,
+                                    AZ::Uuid::CreateNull(),
+                                    { "all", {} },
+                                    QString("PreCreateJobs"),
+                                    0,
+                                    GenerateNewJobRunKey(),
+                                    AZ::Uuid::CreateNull())
+                                );
 
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "ProcessFilesToExamineQueue: source file path ( %s ) contains non ascii characters.\n", normalizedPath.toUtf8().constData(), normalizedPath.length(), AP_MAX_PATH_LEN);
-
-                            JobDetails jobdetail;
-                            jobdetail.m_jobEntry = JobEntry(
-                                scanFolderInfo->ScanPath().toUtf8().data(),
-                                relativePathToFile,
-                                databasePathToFile,
-                                AZ::Uuid::CreateNull(),
-                                {
-                                    "all", {}
-                                },
-                                QString("PreCreateJobs"), 0, GenerateNewJobRunKey(), AZ::Uuid::CreateNull());
-                            jobdetail.m_jobEntry.m_addToDatabase = false;
-                            jobdetail.m_scanFolder = scanFolderInfo;
-                            jobdetail.m_autoFail = true;
-                            jobdetail.m_critical = true;
-                            jobdetail.m_priority = INT_MAX; // front of the queue.
-
-                            jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format(
-                                "Source file ( %s ) contains non ASCII characters.\n"
-                                "O3DE currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
-                                "Please rename the source file to fix this error.\n",
-                                normalizedPath.toUtf8().data());
-
-                            UpdateAnalysisTrackerForFile(normalizedPath.toUtf8().constData(), AnalysisTrackerUpdateType::JobFailed);
-                            Q_EMIT AssetToProcess(jobdetail);// forwarding this job to rccontroller to fail it
                             continue;
                         }
                     }
@@ -3423,8 +3406,6 @@ namespace AssetProcessor
 
             if (createJobsResponse.m_result == AssetBuilderSDK::CreateJobsResultCode::Failed || isBuilderMissingFingerprint)
             {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Createjobs Failed: %s.\n", normalizedPath.toUtf8().constData());
-
                 AZStd::string fullPathToLogFile = AssetUtilities::ComputeJobLogFolder();
                 fullPathToLogFile += "/";
                 fullPathToLogFile += logFileName.c_str();
@@ -3432,27 +3413,13 @@ namespace AssetProcessor
 
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath(fullPathToLogFile.c_str(), resolvedBuffer, AZ_MAX_PATH_LEN);
 
-                JobDetails jobdetail;
-                jobdetail.m_jobEntry = JobEntry(
-                    scanFolder->ScanPath(),
-                    actualRelativePath,
-                    databasePathToFile,
-                    builderInfo.m_busId,
-                        {
-                            "all", {}
-                        },
-                        QString("CreateJobs_%1").arg(builderInfo.m_busId.ToString<AZStd::string>().c_str()), 0, runKey, sourceUUID);
-                jobdetail.m_scanFolder = scanFolder;
-                jobdetail.m_autoFail = true;
-                jobdetail.m_critical = true;
-                jobdetail.m_priority = INT_MAX; // front of the queue.
-
                 // try reading the log yourself.
                 AssetJobLogResponse response;
+                AZStd::string failureMessage;
 
                 if (isBuilderMissingFingerprint)
                 {
-                    jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format(
+                    failureMessage = AZStd::string::format(
                         "CreateJobs of %s has failed.\n"
                         "The builder (%s, %s) job response contained non-empty m_additionalFingerprintInfo but the builder itself does not contain a fingerprint.\n"
                         "Builders must provide a fingerprint so the Asset Processor can detect changes that may require assets to be reprocessed.\n"
@@ -3463,21 +3430,30 @@ namespace AssetProcessor
                 }
                 else
                 {
-                    jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format(
+                    failureMessage = AZStd::string::format(
                         "CreateJobs of %s has failed.\n"
                         "This is often because the asset is corrupt.\n"
                         "Please load it in the editor to see what might be wrong.\n",
                         actualRelativePath.toUtf8().data());
 
                     AssetUtilities::ReadJobLog(resolvedBuffer, response);
-                    jobdetail.m_jobParam[AZ_CRC(AutoFailLogFile)].swap(response.m_jobLog);
                 }
 
-                jobdetail.m_jobParam[AZ_CRC(AutoFailOmitFromDatabaseKey)] = "true"; // omit this job from the database.
-
-                UpdateAnalysisTrackerForFile(normalizedPath.toUtf8().constData(), AnalysisTrackerUpdateType::JobFailed);
-
-                Q_EMIT AssetToProcess(jobdetail);// forwarding this job to rccontroller to fail it
+                AutoFailJob(AZStd::string::format("Createjobs Failed: %s.\n", normalizedPath.toUtf8().constData()),
+                            failureMessage,
+                            normalizedPath.toUtf8().constData(),
+                            JobEntry(
+                                scanFolder->ScanPath(),
+                                actualRelativePath,
+                                databasePathToFile,
+                                builderInfo.m_busId,
+                                { "all", {} },
+                                QString("CreateJobs_%1").arg(builderInfo.m_busId.ToString<AZStd::string>().c_str()),
+                                0,
+                                runKey,
+                                sourceUUID,
+                                false), response.m_jobLog
+                    );
 
                 continue;
             }
@@ -4982,12 +4958,37 @@ namespace AssetProcessor
         QString absolutePath = QDir(entry.m_watchFolderPath).absoluteFilePath(entry.m_pathRelativeToWatchFolder);
         UpdateAnalysisTrackerForFile(absolutePath.toUtf8().constData(), updateType);
     }
-    void AssetProcessorManager::AutoFailJob([[maybe_unused]] const AZStd::string& consoleMsg, const AZStd::string& autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter)
+
+    void AssetProcessorManager::AutoFailJob([[maybe_unused]] AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZ::IO::Path& filePath, JobEntry jobEntry, AZStd::string_view jobLog)
     {
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "%s", consoleMsg.c_str());
+        if (!consoleMsg.empty())
+        {
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, AZ_STRING_FORMAT, AZ_STRING_ARG(consoleMsg));
+        }
 
         JobDetails jobdetail;
-        jobdetail.m_jobEntry = JobEntry(
+        jobdetail.m_jobEntry = AZStd::move(jobEntry);
+        jobdetail.m_autoFail = true;
+        jobdetail.m_critical = true;
+        jobdetail.m_priority = INT_MAX; // front of the queue.
+        // the new lines make it easier to copy and paste the file names.
+        jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = autoFailReason;
+
+        if(!jobLog.empty())
+        {
+            jobdetail.m_jobParam[AZ_CRC(AutoFailLogFile)] = jobLog;
+        }
+
+        // this is a failure, so make sure that the system that is tracking files
+        // knows that this file must not be skipped next time:
+        UpdateAnalysisTrackerForFile(filePath.c_str(), AnalysisTrackerUpdateType::JobFailed);
+
+        Q_EMIT AssetToProcess(jobdetail); // forwarding this job to rccontroller to fail it
+    }
+
+    void AssetProcessorManager::AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter)
+    {
+        JobEntry jobEntry(
             assetIter->m_entry.m_watchFolderPath,
             assetIter->m_entry.m_pathRelativeToWatchFolder,
             assetIter->m_entry.m_databaseSourceName,
@@ -4995,18 +4996,8 @@ namespace AssetProcessor
             assetIter->m_entry.m_platformInfo,
             assetIter->m_entry.m_jobKey, 0, GenerateNewJobRunKey(),
             assetIter->m_entry.m_sourceFileUUID);
-        jobdetail.m_autoFail = true;
-        jobdetail.m_critical = true;
-        jobdetail.m_priority = INT_MAX; // front of the queue.
-        jobdetail.m_scanFolder = m_platformConfig->GetScanFolderForFile(assetIter->m_entry.GetAbsoluteSourcePath());
-        // the new lines make it easier to copy and paste the file names.
-        jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = autoFailReason;
 
-        // this is a failure, so make sure that the system that is tracking files
-        // knows that this file must not be skipped next time:
-        UpdateAnalysisTrackerForFile(assetIter->m_entry, AnalysisTrackerUpdateType::JobFailed);
-
-        Q_EMIT AssetToProcess(jobdetail);// forwarding this job to rccontroller to fail it
+        AutoFailJob(consoleMsg, autoFailReason, assetIter->m_entry.GetAbsoluteSourcePath().toUtf8().constData(), jobEntry);
     }
 
     AZ::u64 AssetProcessorManager::RequestReprocess(const QString& sourcePathRequest)
