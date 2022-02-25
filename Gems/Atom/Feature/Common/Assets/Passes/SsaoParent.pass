@@ -36,7 +36,7 @@
                         {
                             "LocalSlot": "FullResDepth",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "DepthLinear"
                             }
                         }
@@ -84,7 +84,7 @@
                         {
                             "LocalSlot": "FullResDepth",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "DepthLinear"
                             }
                         },

@@ -509,7 +509,7 @@ namespace AZ
 
             // -- Search Pipeline --
 
-            if (connectedPassName == PipelineKeyword)
+            if (connectedPassName == PipelineGlobalKeyword)
             {
                 AZ_RPI_PASS_ERROR(m_pipeline != nullptr, "Pass::ProcessConnection - Pass [%s] references pipeline attachment [%s] doesn't have a valid pipeline pointer",
                     m_path.GetCStr(),

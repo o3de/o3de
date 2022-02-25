@@ -381,6 +381,7 @@ namespace AZ
             const Name PassNameThis{"This"};
             const Name PassNameParent{"Parent"};
             const Name PipelineKeyword{"Pipeline"};
+            const Name PipelineGlobalKeyword{"PipelineGlobal"};
 
             // List of input, output and input/output attachment bindings
             // Fixed size for performance and so we can hold pointers to the bindings for connections

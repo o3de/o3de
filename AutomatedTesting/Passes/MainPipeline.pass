@@ -74,7 +74,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -101,7 +101,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -128,7 +128,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -148,7 +148,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -217,7 +217,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -369,7 +369,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -516,7 +516,7 @@
                         {
                             "LocalSlot": "Output",
                             "AttachmentRef": {
-                                "Pass": "Pipeline",
+                                "Pass": "PipelineGlobal",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
