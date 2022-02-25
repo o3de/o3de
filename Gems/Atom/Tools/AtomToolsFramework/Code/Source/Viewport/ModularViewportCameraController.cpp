@@ -284,13 +284,31 @@ namespace AtomToolsFramework
         m_targetCamera.m_pivot = pivot;
     }
 
+    void ModularViewportCameraControllerInstance::SetCameraPivotAttachedImmediate(const AZ::Vector3& pivot)
+    {
+        m_camera.m_pivot = pivot;
+        m_targetCamera.m_pivot = pivot;
+    }
+
     void ModularViewportCameraControllerInstance::SetCameraPivotDetached(const AZ::Vector3& pivot)
     {
         AzFramework::MovePivotDetached(m_targetCamera, pivot);
     }
 
+    void ModularViewportCameraControllerInstance::SetCameraPivotDetachedImmediate(const AZ::Vector3& pivot)
+    {
+        AzFramework::MovePivotDetached(m_camera, pivot);
+        AzFramework::MovePivotDetached(m_targetCamera, pivot);
+    }
+
     void ModularViewportCameraControllerInstance::SetCameraOffset(const AZ::Vector3& offset)
     {
+        m_targetCamera.m_offset = offset;
+    }
+
+    void ModularViewportCameraControllerInstance::SetCameraOffsetImmediate(const AZ::Vector3& offset)
+    {
+        m_camera.m_offset = offset;
         m_targetCamera.m_offset = offset;
     }
 

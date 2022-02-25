@@ -467,21 +467,15 @@ namespace AZ
     //! Example: alignment: 4
     //! Value:  0 1 2 3 4 5 6 7 8
     //! Result: 0 1 1 1 1 2 2 2 2
-    constexpr uint32_t DivideAndRoundUp(uint32_t value, uint32_t alignment)
+    //! @param value The numerator.
+    //! @param alignment The denominator. The result will be rounded up to the nearest multiple of alignment. Must be non-zero or it will lead to undefined behavior
+    template<typename T>
+    constexpr T DivideAndRoundUp(T value, T alignment)
     {
-        AZ_Assert(alignment != 0, "0 is an invalid multiple to round to.");
-        AZ_Assert(
-            AZStd::numeric_limits<uint32_t>::max() - value >= alignment,
-            "value '%" PRIu32 "' and alignment '%" PRIu32 "' will overflow when added together during DivideAndRoundUp.", value, alignment);
-        return (value + alignment - 1) / alignment;
-    }
-
-    constexpr uint64_t DivideAndRoundUp(uint64_t value, uint64_t alignment)
-    {
-        AZ_Assert(alignment != 0, "0 is an invalid multiple to round to.");
-        AZ_Assert(
-            AZStd::numeric_limits<uint64_t>::max() - value >= alignment,
-            "value '%" PRIu64 "' and alignment '%" PRIu64 "' will overflow when added together during DivideAndRoundUp.", value, alignment);
+        AZ_MATH_ASSERT(alignment != 0, "0 is an invalid multiple to round to.");
+        AZ_MATH_ASSERT(
+            AZStd::numeric_limits<T>::max() - value >= alignment,
+            "value and alignment will overflow when added together during DivideAndRoundUp.");
         return (value + alignment - 1) / alignment;
     }
     
@@ -491,12 +485,10 @@ namespace AZ
     //! Example: roundTo: 4
     //! Value:  0 1 2 3 4 5 6 7 8
     //! Result: 0 4 4 4 4 8 8 8 8
-    constexpr uint32_t RoundUpToMultiple(uint32_t value, uint32_t alignment)
-    {
-        return DivideAndRoundUp(value, alignment) * alignment;
-    }
-
-    constexpr uint64_t RoundUpToMultiple(uint64_t value, uint64_t alignment)
+    //! @param value The number to round up.
+    //! @param alignment Round up to the nearest multiple of alignment. Must be non-zero or it will lead to undefined behavior
+    template<typename T>
+    constexpr T RoundUpToMultiple(T value, T alignment)
     {
         return DivideAndRoundUp(value, alignment) * alignment;
     }

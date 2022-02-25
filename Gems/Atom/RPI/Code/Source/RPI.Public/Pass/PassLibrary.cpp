@@ -62,7 +62,7 @@ namespace AZ
             return nullptr;
         }
 
-        const AZStd::shared_ptr<PassTemplate> PassLibrary::GetPassTemplate(const Name& templateName) const
+        const AZStd::shared_ptr<const PassTemplate> PassLibrary::GetPassTemplate(const Name& templateName) const
         {
             const TemplateEntry* entry = GetEntry(templateName);
             return entry ? entry->m_template : nullptr;
