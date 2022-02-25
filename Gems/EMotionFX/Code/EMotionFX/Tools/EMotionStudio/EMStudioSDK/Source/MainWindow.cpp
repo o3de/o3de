@@ -19,7 +19,6 @@
 #include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
-#include <EMotionStudio/EMStudioSDK/Source/UnitScaleWindow.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
 
 #include <Editor/ActorEditorBus.h>
