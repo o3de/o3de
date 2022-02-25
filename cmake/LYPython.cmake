@@ -32,8 +32,8 @@ elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
 elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
     ly_set(LY_PYTHON_VERSION 3.7.12)
     ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.7)
-    ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.12-rev1-windows)
-    ly_set(LY_PYTHON_PACKAGE_HASH bda55564b2b2232d3d72dec8b0cfd6ede551515475dbbdf371e054e4ed5a0e60)
+    ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.12-rev2-windows)
+    ly_set(LY_PYTHON_PACKAGE_HASH 1173d886f6192f57b9cafb225fe679e2781f4a40a89f4bb31ee81d2b7fcad632)
 endif()
 
 # settings and globals
