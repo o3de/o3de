@@ -501,7 +501,7 @@ namespace AZ
             void ManualPipelineBuildAndInitialize();
 
             // Registers any bindings specified as pipeline bindings with the pipeline for global reference
-            void RegisterPipelineConnections();
+            void RegisterPipelineGlobalConnections();
 
             // --- Hierarchy related functions ---
 
@@ -580,7 +580,7 @@ namespace AZ
             AZStd::vector<Ptr<PassAttachment>> m_importedAttachmentStore;
 
             // List of connections on this pass that will be registered with the pipeline for reference in a global manner
-            PipelineConnectionList m_pipelineConnections;
+            PipelineGlobalConnectionList m_pipelineGlobalConnections;
 
             // Name of the pass. Will be concatenated with parent names to form a unique path
             Name m_name;

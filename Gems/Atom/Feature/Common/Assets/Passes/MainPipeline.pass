@@ -14,7 +14,7 @@
             ],
             "PassData": {
                 "$type": "PassData",
-                "PipelineConnections": [
+                "PipelineGlobalConnections": [
                     {
                         "GlobalName": "SwapChainOutput",
                         "Slot": "SwapChainOutput"
@@ -64,7 +64,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -91,7 +91,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -118,7 +118,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -138,7 +138,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -207,7 +207,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -359,7 +359,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -486,7 +486,7 @@
                         {
                             "LocalSlot": "Output",
                             "AttachmentRef": {
-                                "Pass": "Parent",
+                                "Pass": "Pipeline",
                                 "Attachment": "SwapChainOutput"
                             }
                         }

@@ -62,10 +62,10 @@ namespace AZ
         };
 
         //! Points to a pass binding for global access through the pipeline using a name for reference
-        struct GlobalBinding
+        struct PipelineGlobalBinding
         {
             // The name used to reference this binding in a global manner.
-            Name m_name;
+            Name m_globalName;
 
             // The referenced binding
             PassAttachmentBinding* m_binding;
@@ -215,14 +215,14 @@ namespace AZ
             Ptr<Pass> FindFirstPass(const AZ::Name& passName);
 
             //! Finding, adding and removing pipeline attachments (attachments that can be referenced directly by any pass in the pipeline)
-            const Ptr<PassAttachment> GetPipelineAttachment(const Name& name) const;
-            void AddPipelineAttachment(const Ptr<PassAttachment>& attachment);
-            void RemovePipelineAttachment(const Ptr<PassAttachment>& attachment);
+            const Ptr<PassAttachment> GetPipelineGlobalAttachment(const Name& name) const;
+            void AddPipelineGlobalAttachment(const Ptr<PassAttachment>& attachment);
+            void RemovePipelineGlobalAttachment(const Ptr<PassAttachment>& attachment);
 
             //! Finding, adding and removing pipeline connections/bindings (can be referenced directly by any pass in the pipeline)
-            const GlobalBinding* GetPipelineConnection(const Name& name) const;
-            void AddPipelineConnection(const Name& name, PassAttachmentBinding* binding, Pass* pass);
-            void RemovePipelineConnectionsFromPass(Pass* passOnwer);
+            const PipelineGlobalBinding* GetPipelineGlobalConnection(const Name& globalName) const;
+            void AddPipelineGlobalConnection(const Name& globalName, PassAttachmentBinding* binding, Pass* pass);
+            void RemovePipelineGlobalConnectionsFromPass(Pass* passOnwer);
 
             // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
             void ClearGlobalAttachmentsAndBindings();
@@ -269,10 +269,10 @@ namespace AZ
             Ptr<ParentPass> m_rootPass;
 
             // Attachments that can be referenced from any pass in the pipeline in a global manner
-            AZStd::vector<Ptr<PassAttachment>> m_pipelineAttachments;
+            AZStd::vector<Ptr<PassAttachment>> m_pipelineGlobalAttachments;
 
             // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner
-            AZStd::vector<GlobalBinding> m_pipelineConnections;
+            AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;
 
             PipelineViewMap m_pipelineViewsByTag;
             

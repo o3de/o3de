@@ -14,7 +14,7 @@
             ],
             "PassData": {
                 "$type": "PassData",
-                "PipelineConnections": [
+                "PipelineGlobalConnections": [
                     {
                         "GlobalName": "SwapChainOutput",
                         "Slot": "SwapChainOutput"

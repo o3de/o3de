@@ -51,7 +51,7 @@ namespace AZ
                 "Pass::Pass - request is valid but template is nullptr. This is not allowed. Passing a valid passRequest also requires a valid passTemplate.");
 
             m_passData = PassUtils::GetPassDataPtr(descriptor);
-            PassUtils::ExtractPipelineConnections(descriptor, m_pipelineConnections);
+            PassUtils::ExtractPipelineGlobalConnections(descriptor, m_pipelineGlobalConnections);
 
             m_flags.m_enabled = true;
             m_flags.m_timestampQueryEnabled = false;
@@ -171,7 +171,7 @@ namespace AZ
         {
             if (m_flags.m_containsGlobalReference && m_pipeline != nullptr)
             {
-                m_pipeline->RemovePipelineConnectionsFromPass(this);
+                m_pipeline->RemovePipelineGlobalConnectionsFromPass(this);
             }
 
             m_parent = nullptr;
@@ -519,14 +519,14 @@ namespace AZ
 
                 if (m_pipeline)
                 {
-                    const GlobalBinding* globalBinding = m_pipeline->GetPipelineConnection(connectedSlotName);
+                    const PipelineGlobalBinding* globalBinding = m_pipeline->GetPipelineGlobalConnection(connectedSlotName);
                     if (globalBinding)
                     {
-                        connectedBinding = m_pipeline->GetPipelineConnection(connectedSlotName)->m_binding;
+                        connectedBinding = m_pipeline->GetPipelineGlobalConnection(connectedSlotName)->m_binding;
                     }
                     if (!connectedBinding)
                     {
-                        attachment = m_pipeline->GetPipelineAttachment(connectedSlotName);
+                        attachment = m_pipeline->GetPipelineGlobalAttachment(connectedSlotName);
                     }
 
                     AZ_RPI_PASS_ERROR(connectedBinding || attachment, "Pass::ProcessConnection - Pass [%s] cannot find attachment or binding named [%s] on pipeline.",
@@ -1084,21 +1084,21 @@ namespace AZ
             }
         }
 
-        void Pass::RegisterPipelineConnections()
+        void Pass::RegisterPipelineGlobalConnections()
         {
-            for (const PipelineConnection& connection : m_pipelineConnections)
+            for (const PipelineGlobalConnection& connection : m_pipelineGlobalConnections)
             {
                 PassAttachmentBinding* binding = FindAttachmentBinding(connection.m_localBinding);
-                AZ_RPI_PASS_ERROR(binding != nullptr, "Pass::RegisterPipelineConnections() - Could not find local binding [%s]",
+                AZ_RPI_PASS_ERROR(binding != nullptr, "Pass::RegisterPipelineGlobalConnections() - Could not find local binding [%s]",
                                   connection.m_localBinding.GetCStr());
 
                 if (binding)
                 {
-                    m_pipeline->AddPipelineConnection(connection.m_globalName, binding, this);
+                    m_pipeline->AddPipelineGlobalConnection(connection.m_globalName, binding, this);
                 }
             }
 
-            m_flags.m_containsGlobalReference = (m_pipelineConnections.size() > 0);
+            m_flags.m_containsGlobalReference = (m_pipelineGlobalConnections.size() > 0);
         }
 
         // --- Queuing functions with PassSystem ---
@@ -1217,7 +1217,7 @@ namespace AZ
 
             // Bindings, inputs and attachments
             CreateBindingsFromTemplate();
-            RegisterPipelineConnections();
+            RegisterPipelineGlobalConnections();
             SetupInputsFromRequest();
             SetupPassDependencies();
             CreateAttachmentsFromTemplate();

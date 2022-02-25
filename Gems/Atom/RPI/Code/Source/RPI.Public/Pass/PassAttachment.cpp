@@ -292,6 +292,10 @@ namespace AZ
         {
             Ptr<PassAttachment> targetAttachment = nullptr;
 
+            // Use the fallback binding if:
+            // - the calling pass specifies to use it
+            // - fallback binding is setup 
+            // - the slot is an output  (input/output slots act as their own fallback and having fallback for an input makes no sense)
             if (useFallback && m_fallbackBinding && m_slotType == PassSlotType::Output)
             {
                 targetAttachment = m_fallbackBinding->m_attachment;

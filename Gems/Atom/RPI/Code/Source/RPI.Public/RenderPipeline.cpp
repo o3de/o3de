@@ -443,9 +443,9 @@ namespace AZ
             }
         }
 
-        const Ptr<PassAttachment> RenderPipeline::GetPipelineAttachment(const Name& name) const
+        const Ptr<PassAttachment> RenderPipeline::GetPipelineGlobalAttachment(const Name& name) const
         {
-            for (const Ptr<PassAttachment>& attachment : m_pipelineAttachments)
+            for (const Ptr<PassAttachment>& attachment : m_pipelineGlobalAttachments)
             {
                 if (attachment->m_name == name)
                 {
@@ -455,21 +455,21 @@ namespace AZ
             return nullptr;
         }
 
-        void RenderPipeline::AddPipelineAttachment(const Ptr<PassAttachment>& attachment)
+        void RenderPipeline::AddPipelineGlobalAttachment(const Ptr<PassAttachment>& attachment)
         {
-            m_pipelineAttachments.push_back(attachment);
+            m_pipelineGlobalAttachments.push_back(attachment);
         }
 
-        void RenderPipeline::RemovePipelineAttachment(const Ptr<PassAttachment>& attachment)
+        void RenderPipeline::RemovePipelineGlobalAttachment(const Ptr<PassAttachment>& attachment)
         {
-            erase(m_pipelineAttachments, attachment);
+            erase(m_pipelineGlobalAttachments, attachment);
         }
 
-        const GlobalBinding* RenderPipeline::GetPipelineConnection(const Name& name) const
+        const PipelineGlobalBinding* RenderPipeline::GetPipelineGlobalConnection(const Name& globalName) const
         {
-            for (const GlobalBinding& connection : m_pipelineConnections)
+            for (const PipelineGlobalBinding& connection : m_pipelineGlobalConnections)
             {
-                if (connection.m_name == name)
+                if (connection.m_globalName == globalName)
                 {
                     return &connection;
                 }
@@ -477,19 +477,19 @@ namespace AZ
             return nullptr;
         }
 
-        void RenderPipeline::AddPipelineConnection(const Name& name, PassAttachmentBinding* binding, Pass* pass)
+        void RenderPipeline::AddPipelineGlobalConnection(const Name& globalName, PassAttachmentBinding* binding, Pass* pass)
         {
-            m_pipelineConnections.push_back(GlobalBinding{ name, binding, pass });
+            m_pipelineGlobalConnections.push_back(PipelineGlobalBinding{ globalName, binding, pass });
         }
 
-        void RenderPipeline::RemovePipelineConnectionsFromPass(Pass* passOnwer)
+        void RenderPipeline::RemovePipelineGlobalConnectionsFromPass(Pass* passOnwer)
         {
-            auto iter = m_pipelineConnections.begin();
-            while (iter != m_pipelineConnections.end())
+            auto iter = m_pipelineGlobalConnections.begin();
+            while (iter != m_pipelineGlobalConnections.end())
             {
                 if (iter->m_pass == passOnwer)
                 {
-                    m_pipelineConnections.erase(iter);
+                    m_pipelineGlobalConnections.erase(iter);
                 }
                 else
                 {
@@ -500,8 +500,8 @@ namespace AZ
 
         void RenderPipeline::ClearGlobalAttachmentsAndBindings()
         {
-            m_pipelineAttachments.clear();
-            m_pipelineConnections.clear();
+            m_pipelineGlobalAttachments.clear();
+            m_pipelineGlobalConnections.clear();
         }
 
         RenderPipelineId RenderPipeline::GetId() const
