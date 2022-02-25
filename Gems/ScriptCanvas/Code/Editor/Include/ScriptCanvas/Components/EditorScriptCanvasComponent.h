@@ -83,6 +83,7 @@ namespace ScriptCanvasEditor
         //=====================================================================
         
     protected:
+        // move this to the new ebus, or az event
         enum class SourceChangeDescription : AZ::u8
         {
             Error,

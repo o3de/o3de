@@ -318,6 +318,9 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::BuildGameEntityData()
     {
+        // this will make a request of the system component
+        // which...might have to be blocking
+
         using namespace ScriptCanvasBuilder;
         CompleteDescriptionInPlace(m_sourceHandle);
 
