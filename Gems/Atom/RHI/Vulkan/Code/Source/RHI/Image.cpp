@@ -317,7 +317,7 @@ namespace AZ
             // Output a warning about desired usages are not support
             if (finalFlags != usageFlags)
             {
-                AZ_Warning("Vulkan", false, "missing usage (unsupported): %d", usageFlags & ~finalFlags);
+                AZ_Warning("Vulkan", false, "Missing usage big flags (unsupported): %x", usageFlags & ~finalFlags);
             }
 
             return finalFlags;
