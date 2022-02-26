@@ -17,7 +17,8 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 
-#include "../../External/Include/meshoptimizer.h"
+#include "meshoptimizer.h"
+//#include "../../External/Include/meshoptimizer.h"
 //#include <meshoptimizer.h>
 //#include <Mesh/EditorMeshComponent.h>
 
@@ -76,7 +77,9 @@ namespace AZ
         };
 
         //! Currently assuming single model without Lods so that the handling of the
-        //! meshlet creation and handling of the array is easier.
+        //! meshlet creation and handling of the array is easier. If several meshes or Lods
+        //! exist, they will be created as separate models and the last model's instance
+        //! will be kept in this class.
         //! To enhance this, add inheritance to lower levels of the model / mesh.
         //! MeshletModel represents a combined model that can contain an array
         //! of ModelLods.
@@ -99,11 +102,11 @@ namespace AZ
             Name MeshletsVertexIndicesName;
             Name MeshletsIndicesName;
 
-            MeshletModel();
+            MeshletModel(Data::Asset<RPI::ModelAsset> sourceModelAsset);
             ~MeshletModel();
 
-            Data::Instance<RPI::Model> GetAtomModel() { return m_atomModel; }
-            Data::Asset<RPI::ModelAsset> GetAtomModelAsset() { return m_atomModelAsset; }
+            Data::Instance<RPI::Model> GetMeshletModel() { return m_meshletModel; }
+//            Data::Asset<RPI::ModelAsset> GetAtomModelAsset() { return m_atomModelAsset; }
 
             AZStd::string& GetName() { return m_name;  }
 
@@ -128,8 +131,8 @@ namespace AZ
             uint32_t CreateMeshlets(
                 float* positions, float* normals, float* texCoords, uint32_t vtxNum,
                 uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat);
-            uint32_t CreateMeshletsFromModel();
-            uint32_t CreateMeshletsFromModelAsset();
+            uint32_t CreateMeshletsFromModel(Data::Instance<RPI::Model>);
+            uint32_t CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset);
 
             uint32_t CreateMeshletModel(const RPI::ModelLodAsset::Mesh& meshAsset);
 //            bool ProcessBuffersData();
@@ -139,8 +142,9 @@ namespace AZ
             AZStd::string m_name;
             Aabb m_aabb;
 
-            Data::Instance<RPI::Model> m_atomModel;
-            Data::Asset<RPI::ModelAsset> m_atomModelAsset;
+            Data::Asset<RPI::ModelAsset> m_sourceModelAsset;
+//            Data::Instance<RPI::Model> m_sourceModel;
+            Data::Instance<RPI::Model> m_meshletModel;
 
 //            RPI::MeshDrawPacket m_drawPacket;
 //            AZStd::vector<RPI::MeshDrawPacket> m_drawPackets;

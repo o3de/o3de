@@ -16,7 +16,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 
-#include <MeshletsAssets.h>
+#include "MeshletsAssets.h"
 #include <vector>
 
 #pragma optimize("", off)
@@ -216,7 +216,7 @@ namespace AZ
             const auto bitangentsAsset = CreateBufferAsset(BiTangentSemanticName.GetStringView(), bufferDescriptors[5], bitangents);
 
             // At this point we create the meshlets and mark the UVs based on meshlet index
-            meshletsAmount += CreateMeshlets(positions, normals, texCoords, vertexCount,
+            meshletsAmount = CreateMeshlets(positions, normals, texCoords, vertexCount,
                 (uint16_t*)indices, indexCount, IndexStreamFormat);
 
             // This is done here since we update the data to indicate meshlets
@@ -227,7 +227,7 @@ namespace AZ
                 if (!positionsAsset || !normalsAsset || !tangentsAsset || !texCoordsAsset || !indicesAsset)
                 {
                     AZ_Error("Meshlets", false, "Failed creating model [%s] - buffer assets were not created successfully", m_name.c_str());
-                    return false;
+                    return 0;
                 }
 
                 //--------------------------------------------
@@ -265,7 +265,7 @@ namespace AZ
                 {
                     AZ_Error("Meshlets", false, "Error -- creating model [%s] - ModelLoadAssetCreator.End() failed",
                         m_name.c_str());
-                    return false;
+                    return 0;
                 }
 
                 // Add the LOD model asset created to the model asset.
@@ -279,19 +279,21 @@ namespace AZ
             if (!modelAssetCreator.End(modelAsset))
             {
                 AZ_Error("Meshlets", false, "Error -- creating model [%s] - model asset was not created", m_name.c_str());
-                return false;
+                return 0;
             }
 
-            m_atomModel = RPI::Model::FindOrCreate(modelAsset);
+            m_meshletModel = RPI::Model::FindOrCreate(modelAsset);
             //-------------------------------------------
 
-            if (!m_atomModel)
+            if (!m_meshletModel)
             {
                 AZ_Error("Meshlets", false, "Error -- creating model [%s] - model could not be found or created", m_name.c_str());
-                return false;
+                return 0;
             }
 
-            return true;
+            AZ_Warning("Meshlets", false, "Meshlet model [%s] was created", m_name.c_str());
+
+            return meshletsAmount;
         }
 
 
@@ -371,11 +373,11 @@ namespace AZ
             return meshletsAmount;
         }
 
-        uint32_t MeshletModel::CreateMeshletsFromModelAsset()
+        uint32_t MeshletModel::CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset)
         {
             uint32_t meshletsAmount = 0;
-
-            for (const Data::Asset<RPI::ModelLodAsset>& lodAsset : m_atomModelAsset->GetLodAssets())
+            m_sourceModelAsset = sourceModelAsset;
+            for (const Data::Asset<RPI::ModelLodAsset>& lodAsset : sourceModelAsset->GetLodAssets())
             {
                 for (const RPI::ModelLodAsset::Mesh& meshAsset : lodAsset->GetMeshes())
                 {
@@ -385,11 +387,12 @@ namespace AZ
             return meshletsAmount;
         }
 
-        uint32_t MeshletModel::CreateMeshletsFromModel()
-        {                     
-            for (uint32_t lodIdx = 0; lodIdx < m_atomModel->GetLodCount(); ++lodIdx)
+        uint32_t MeshletModel::CreateMeshletsFromModel(Data::Instance<RPI::Model> sourceModel)
+        {
+            m_sourceModelAsset = sourceModel->GetModelAsset();
+            for (uint32_t lodIdx = 0; lodIdx < sourceModel->GetLodCount(); ++lodIdx)
             {
-                const Data::Instance<RPI::ModelLod>& currentLod = m_atomModel->GetLods()[lodIdx];
+                const Data::Instance<RPI::ModelLod>& currentLod = sourceModel->GetLods()[lodIdx];
 
                 for (uint32_t meshIdx = 0; meshIdx < currentLod->GetMeshes().size(); ++meshIdx)
                 {
@@ -400,7 +403,7 @@ namespace AZ
             return 0;
         }
 
-        MeshletModel::MeshletModel()
+        MeshletModel::MeshletModel(Data::Asset<RPI::ModelAsset> sourceModelAsset)
         {
             IndicesSemanticName = Name{ "INDICES" };
             PositionSemanticName = Name{ "POSITION" };
@@ -411,6 +414,8 @@ namespace AZ
 
             m_name = "Model_" + AZStd::to_string(s_modelNumber++);
             m_aabb.CreateNull();
+
+            CreateMeshletsFromModelAsset(sourceModelAsset);
         }
 
         MeshletModel::~MeshletModel()
