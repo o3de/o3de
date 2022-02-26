@@ -20,6 +20,7 @@
 namespace UnitTest
 {
     constexpr int SmallIterationCount = 10;
+    constexpr int MediumIterationCount = 100;
     constexpr int LargeIterationCount = 1000000;
 
     constexpr AZ::u32 ProfilerProxyGroup = AZ_CRC_CE("StatisticalProfilerProxyTests");
@@ -125,33 +126,45 @@ namespace UnitTest
 
         ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), SmallIterationCount);
-
-        profiler.LogAndResetStats("StatisticalProfilerFixture");
     }
 
-    class StatisticalProfilerTest
+    template<class Traits>
+    class ThreadedStatisticalProfilerFixture
         : public AllocatorsWithTraceFixture
     {
     };
 
-    TEST_F(StatisticalProfilerTest, StatisticalProfilerStringWithSharedSpinMutex_RunProfiledThreads_ValidateStatistics)
+    using ThreadedStatisticalProfilerTestTypes = ::testing::Types<
+        StatisticalProfilerTestTraits<AZStd::string, AZStd::shared_spin_mutex>,
+        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::shared_spin_mutex>
+    >;
+    TYPED_TEST_CASE(ThreadedStatisticalProfilerFixture, ThreadedStatisticalProfilerTestTypes);
+
+    TYPED_TEST(ThreadedStatisticalProfilerFixture, ProfileCode_4Threads_ValidateStatistics)
     {
-        AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex> profiler;
+        using StatIdType = typename TypeParam::StatIdType;
 
-        const AZStd::string statIdThread1 = "simple_thread1";
-        const AZStd::string statNameThread1("simple_thread1");
-        const AZStd::string statIdThread1Loop = "simple_thread1_loop";
-        const AZStd::string statNameThread1Loop("simple_thread1_loop");
+        typename TypeParam::ProfilerType profiler;
 
-        const AZStd::string statIdThread2 = "simple_thread2";
-        const AZStd::string statNameThread2("simple_thread2");
-        const AZStd::string statIdThread2Loop = "simple_thread2_loop";
-        const AZStd::string statNameThread2Loop("simple_thread2_loop");
+        const AZStd::string statNameThread1("thread1");
+        const StatIdType statIdThread1(statNameThread1);
+        const AZStd::string statNameThread1Loop("thread1_loop");
+        const StatIdType statIdThread1Loop(statNameThread1Loop);
 
-        const AZStd::string statIdThread3 = "simple_thread3";
-        const AZStd::string statNameThread3("simple_thread3");
-        const AZStd::string statIdThread3Loop = "simple_thread3_loop";
-        const AZStd::string statNameThread3Loop("simple_thread3_loop");
+        const AZStd::string statNameThread2("thread2");
+        const StatIdType statIdThread2(statNameThread2);
+        const AZStd::string statNameThread2Loop("thread2_loop");
+        const StatIdType statIdThread2Loop(statNameThread2Loop);
+
+        const AZStd::string statNameThread3("thread3");
+        const StatIdType statIdThread3(statNameThread3);
+        const AZStd::string statNameThread3Loop("thread3_loop");
+        const StatIdType statIdThread3Loop(statNameThread3Loop);
+
+        const AZStd::string statNameThread4("thread4");
+        const StatIdType statIdThread4(statNameThread4);
+        const AZStd::string statNameThread4Loop("thread4_loop");
+        const StatIdType statIdThread4Loop(statNameThread4Loop);
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1, statNameThread1, "us"));
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1Loop, statNameThread1Loop, "us"));
@@ -159,37 +172,52 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread2Loop, statNameThread2Loop, "us"));
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3, statNameThread3, "us"));
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3Loop, statNameThread3Loop, "us"));
+        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread4, statNameThread4, "us"));
+        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread4Loop, statNameThread4Loop, "us"));
 
         //Let's kickoff the threads to see how much contention affects the profiler's performance.
         AZStd::thread t1([&](){
-            RecordStatistics(profiler, SmallIterationCount, statIdThread1, statIdThread1Loop);
+            RecordStatistics(profiler, MediumIterationCount, statIdThread1, statIdThread1Loop);
         });
         AZStd::thread t2([&](){
-            RecordStatistics(profiler, SmallIterationCount, statIdThread2, statIdThread2Loop);
+            RecordStatistics(profiler, MediumIterationCount, statIdThread2, statIdThread2Loop);
         });
         AZStd::thread t3([&](){
-            RecordStatistics(profiler, SmallIterationCount, statIdThread3, statIdThread3Loop);
+            RecordStatistics(profiler, MediumIterationCount, statIdThread3, statIdThread3Loop);
+        });
+        AZStd::thread t4([&](){
+            RecordStatistics(profiler, MediumIterationCount, statIdThread4, statIdThread4Loop);
         });
         t1.join();
         t2.join();
         t3.join();
+        t4.join();
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread1)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread1Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), SmallIterationCount);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), MediumIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread2)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread2Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), SmallIterationCount);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), MediumIterationCount);
 
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdThread3)->GetNumSamples(), 1);
         ASSERT_TRUE(profiler.GetStatistic(statIdThread3Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), SmallIterationCount);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), MediumIterationCount);
 
+        ASSERT_TRUE(profiler.GetStatistic(statIdThread4) != nullptr);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread4)->GetNumSamples(), 1);
+        ASSERT_TRUE(profiler.GetStatistic(statIdThread4Loop) != nullptr);
+        EXPECT_EQ(profiler.GetStatistic(statIdThread4Loop)->GetNumSamples(), MediumIterationCount);
     }
+
+    class StatisticalProfilerTest
+        : public AllocatorsWithTraceFixture
+    {
+    };
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerProxy_ProfileCode_ValidateStatistics)
     {
