@@ -297,7 +297,10 @@ namespace AzFramework
                         spawnableEntitiesInterface->RetrieveTicket(currentEntity->GetSpawnTicketId(),
                             [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket&& entitySpawnTicket)
                             {
-                                spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), entitySpawnTicket);
+                                if (entitySpawnTicket.IsValid())
+                                {
+                                    spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), entitySpawnTicket);
+                                }
                             });
                         return;
                     }
