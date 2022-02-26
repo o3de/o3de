@@ -80,39 +80,40 @@ namespace UnitTest
         }
     };
 
-    class StatisticalProfilerTest
+    template<class S = AZStd::string, class M = AZ::NullMutex>
+    struct StatisticalProfilerTestTraits
+    {
+        using StatIdType = S;
+        using MutexType = M;
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<StatIdType, MutexType>;
+    };
+
+    template<class Traits>
+    class StatisticalProfilerFixture
         : public AllocatorsWithTraceFixture
     {
     };
 
-    TEST_F(StatisticalProfilerTest, StatisticalProfilerStringNoMutex_ProfileCode_ValidateStatistics)
+    using StatisticalProfilerTestTypes = ::testing::Types<
+        StatisticalProfilerTestTraits<>,
+        StatisticalProfilerTestTraits<AZ::Crc32>,
+
+        StatisticalProfilerTestTraits<AZStd::string, AZStd::shared_spin_mutex>,
+        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::shared_spin_mutex>
+    >;
+    TYPED_TEST_CASE(StatisticalProfilerFixture, StatisticalProfilerTestTypes);
+
+    TYPED_TEST(StatisticalProfilerFixture, ProfileCode_SingleThread_ValidateStatistics)
     {
-        AZ::Statistics::StatisticalProfiler<> profiler;
+        using StatIdType = typename TypeParam::StatIdType;
+
+        typename TypeParam::ProfilerType profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
+        const StatIdType statIdPerformance(statNamePerformance);
+
         const AZStd::string statNameBlock("Block");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNamePerformance, statNamePerformance, "us") != nullptr);
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNameBlock, statNameBlock, "us") != nullptr);
-
-        RecordStatistics(profiler, SmallIterationCount, statNamePerformance, statNameBlock);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNamePerformance)->GetNumSamples(), 1);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), SmallIterationCount);
-    }
-
-    TEST_F(StatisticalProfilerTest, StatisticalProfilerCrc32NoMutex_ProfileCode_ValidateStatistics)
-    {
-        AZ::Statistics::StatisticalProfiler<AZ::Crc32> profiler;
-
-        constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
-        const AZStd::string statNamePerformance("PerformanceResult");
-
-        constexpr AZ::Crc32 statIdBlock = AZ_CRC_CE("Block");
-        const AZStd::string statNameBlock("Block");
+        const StatIdType statIdBlock(statNameBlock);
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
@@ -125,53 +126,13 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
         EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), SmallIterationCount);
 
-        ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
+        profiler.LogAndResetStats("StatisticalProfilerFixture");
     }
 
-    TEST_F(StatisticalProfilerTest, StatisticalProfilerStringWithSharedSpinMutex__ProfileCode_ValidateStatistics)
+    class StatisticalProfilerTest
+        : public AllocatorsWithTraceFixture
     {
-        AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex> profiler;
-
-        const AZStd::string statNamePerformance("PerformanceResult");
-        const AZStd::string statNameBlock("Block");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNamePerformance, statNamePerformance, "us") != nullptr);
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNameBlock, statNameBlock, "us") != nullptr);
-
-        RecordStatistics(profiler, SmallIterationCount, statNamePerformance, statNameBlock);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNamePerformance)->GetNumSamples(), 1);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), SmallIterationCount);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
-    }
-
-    TEST_F(StatisticalProfilerTest, StatisticalProfilerCrc32WithSharedSpinMutex__ProfileCode_ValidateStatistics)
-    {
-        AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex> profiler;
-
-        constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
-        const AZStd::string statNamePerformance("PerformanceResult");
-
-        constexpr AZ::Crc32 statIdBlock = AZ_CRC_CE("Block");
-        const AZStd::string statNameBlock("Block");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
-
-        RecordStatistics(profiler, SmallIterationCount, statIdPerformance, statIdBlock);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), SmallIterationCount);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-    }
+    };
 
     TEST_F(StatisticalProfilerTest, StatisticalProfilerStringWithSharedSpinMutex_RunProfiledThreads_ValidateStatistics)
     {
