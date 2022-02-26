@@ -15,14 +15,12 @@ set(FILES
     Source/Document/MaterialDocument.cpp
     Source/Document/MaterialDocument.h
 
-    Source/Viewport/MaterialViewportModule.h
-    Source/Viewport/MaterialViewportModule.cpp
     Source/Viewport/MaterialViewportSettings.h
-    Source/Viewport/MaterialViewportRequestBus.h
-    Source/Viewport/MaterialViewportNotificationBus.h
+    Source/Viewport/MaterialViewportSettingsRequestBus.h
+    Source/Viewport/MaterialViewportSettingsNotificationBus.h
     Source/Viewport/MaterialViewportSettings.cpp
-    Source/Viewport/MaterialViewportComponent.cpp
-    Source/Viewport/MaterialViewportComponent.h
+    Source/Viewport/MaterialViewportSettingsSystem.cpp
+    Source/Viewport/MaterialViewportSettingsSystem.h
     Source/Viewport/MaterialViewportWidget.cpp
     Source/Viewport/MaterialViewportWidget.h
 

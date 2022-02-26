@@ -40,7 +40,7 @@ namespace MaterialEditor
     {
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
-        m_toolBar = new MaterialEditorToolBar(this);
+        m_toolBar = new MaterialEditorToolBar(m_toolId, this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
@@ -81,7 +81,7 @@ namespace MaterialEditor
             });
 
         AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId), Qt::LeftDockWidgetArea, Qt::Vertical);
         SetDockWidgetVisible("Viewport Settings", false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());

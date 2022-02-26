@@ -19,8 +19,9 @@ namespace MaterialEditor
         : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::Crc32 BusIdType;
 
         //! Set current lighting preset
         //! @param preset lighting preset to assign
@@ -105,5 +106,5 @@ namespace MaterialEditor
         virtual AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const = 0;
     };
 
-    using MaterialViewportRequestBus = AZ::EBus<MaterialViewportRequests>;
+    using MaterialViewportSettingsRequestBus = AZ::EBus<MaterialViewportRequests>;
 } // namespace MaterialEditor
