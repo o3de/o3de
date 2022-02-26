@@ -24,29 +24,27 @@ namespace ScriptCanvasBuilder
 {
     class DataSystem
         : public DataSystemRequestsBus::Handler
-        , private AzToolsFramework::AssetSystemBus::Handler
+        , public AzToolsFramework::AssetSystemBus::Handler
     {
-        struct BuildResult;
-
     public:
         AZ_TYPE_INFO(DataSystem, "{27B74209-319D-4A8C-B37D-F85EFA6D2FFA}");
         AZ_CLASS_ALLOCATOR(DataSystem, AZ::SystemAllocator, 0);
 
         DataSystem();
 
+        BuildResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) override;
+
     protected:
-        void CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle);
+        void AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuildResult&& result);
+        void AddResult(AZ::Uuid&& id, BuildResult&& result);
+        void CompileBuilderDataInternal(ScriptCanvasEditor::SourceHandle sourceHandle);
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
 
     private:
-        struct BuildResult
-        {
-            BuilderDataStatus status;
-            ScriptCanvasBuilder::BuildVariableOverrides data;
-        };
-
-        AZStd::unordered_map<ScriptCanvasEditor::SourceHandle, BuildResult> m_buildResultsByHandle;
+        using MutexLock = AZStd::lock_guard<AZStd::recursive_mutex>;
+        AZStd::recursive_mutex m_mutex;
+        AZStd::unordered_map<AZ::Uuid, BuildResult> m_buildResultsByHandle;
     };
 }

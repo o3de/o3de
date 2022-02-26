@@ -25,6 +25,7 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
+#include <Builder/ScriptCanvasBuilderDataSystem.h>
 
 namespace ScriptCanvasEditor
 {
@@ -124,5 +125,6 @@ namespace ScriptCanvasEditor
 
         bool m_isUpgrading = false;
         bool m_upgradeDisabled = false;
+        ScriptCanvasBuilder::DataSystem m_dataSystem;
     };
 }

@@ -43,6 +43,6 @@ namespace ScriptCanvasBuilder
         PluginComponent(const PluginComponent&) = delete;
         SharedHandlers m_sharedHandlers;
         Worker m_scriptCanvasBuilder;
-        DataSystem m_dataSystem;
+        // DataSystem m_dataSystem;
     };
 }
