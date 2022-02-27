@@ -8,14 +8,15 @@
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AtomToolsFramework/CreateDocumentDialog/CreateDocumentDialog.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AzQtComponents/Components/StyleManager.h>
+#include <AzCore/Utils/Utils.h>
 #include <Document/MaterialDocumentRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
@@ -37,7 +38,7 @@ namespace MaterialEditor
     MaterialEditorWindow::MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, parent)
     {
-        QApplication::setWindowIcon(QIcon(":/Icons/materialeditor.svg"));
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         m_toolBar = new MaterialEditorToolBar(this);
         m_toolBar->setObjectName("ToolBar");
@@ -125,15 +126,26 @@ namespace MaterialEditor
 
     bool MaterialEditorWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
     {
-        CreateMaterialDialog createDialog(openPath.c_str(), this);
+        AtomToolsFramework::CreateDocumentDialog createDialog(
+            tr("Create Material"),
+            tr("Select Material Type"),
+            tr("Select Material Path"),
+            QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets",
+            { AZ::RPI::MaterialSourceData::Extension },
+            AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
+                "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
+                AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype")),
+            [](const AZ::Data::AssetInfo& assetInfo) {
+                return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".azmaterialtype"); },
+            this);
         createDialog.adjustSize();
 
         if (createDialog.exec() == QDialog::Accepted &&
-            !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
-            !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
+            !createDialog.m_targetPath.isEmpty() &&
+            !createDialog.m_sourcePath.isEmpty())
         {
-            savePath = createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData();
-            openPath = createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData();
+            savePath = createDialog.m_targetPath.toUtf8().constData();
+            openPath = createDialog.m_sourcePath.toUtf8().constData();
             return true;
         }
         return false;

@@ -28,6 +28,9 @@ namespace AtomToolsFramework
         void Reset();
         void SetFilterCallback(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback);
         void SelectAsset(const AZ::Data::AssetId& assetId);
+        AZ::Data::AssetId GetSelectedAsset() const;
+        AZStd::string GetSelectedAssetSourcePath() const;
+        AZStd::string GetSelectedAssetProductPath() const;
 
         void SetThumbnailsEnabled(bool enabled);
         void SetThumbnailDelayMs(AZ::u32 delay);
