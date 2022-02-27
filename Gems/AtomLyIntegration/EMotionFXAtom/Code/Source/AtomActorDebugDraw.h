@@ -38,8 +38,38 @@ namespace AZ::Render
     class AtomActorDebugDraw
     {
     public:
+        struct JointLimitRenderData
+        {
+            AZStd::vector<AZ::Vector3> m_vertexBuffer;
+            AZStd::vector<AZ::u32> m_indexBuffer;
+            AZStd::vector<AZ::Vector3> m_lineBuffer;
+            AZStd::vector<bool> m_lineValidityBuffer;
+
+            void Clear();
+        };
+
+        struct TrajectoryPathParticle
+        {
+            EMotionFX::Transform m_worldTm;
+        };
+
+        struct TrajectoryTracePath
+        {
+            AZStd::vector<TrajectoryPathParticle> m_traceParticles;
+            const EMotionFX::ActorInstance* m_actorInstance;
+            float m_timePassed;
+
+            TrajectoryTracePath()
+            {
+                m_traceParticles.reserve(250);
+                m_timePassed = 0.0f;
+                m_actorInstance = NULL;
+            }
+        };
+
         AtomActorDebugDraw(AZ::EntityId entityId);
 
+        void UpdateActorInstance(EMotionFX::ActorInstance* actorInstance, float deltaTime);
         void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags, EMotionFX::ActorInstance* instance);
 
     private:
@@ -104,7 +134,6 @@ namespace AZ::Render
             const EMotionFX::Node* node,
             const AZ::Color& color) const;
 
-        // Ragdoll
         void RenderJointLimit(AzFramework::DebugDisplayRequests* debugDisplay,
             const AzPhysics::JointConfiguration& configuration,
             const EMotionFX::ActorInstance* actorInstance,
@@ -112,10 +141,18 @@ namespace AZ::Render
             const EMotionFX::Node* parentNode,
             const AZ::Color& regularColor,
             const AZ::Color& violatedColor);
+
         void RenderRagdoll(AzFramework::DebugDisplayRequests* debugDisplay,
             EMotionFX::ActorInstance* actorInstance,
             bool renderColliders,
             bool renderJointLimits);
+
+        void RenderTrajectoryPath(
+            AzFramework::DebugDisplayRequests* debugDisplay,
+            const EMotionFX::ActorInstance* actorInstance,
+            const AZ::Color& headColor,
+            const AZ::Color& pathColor);
+        TrajectoryTracePath* FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance);
 
         EMotionFX::Mesh* m_currentMesh = nullptr; //!< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                                   //!< NULL in case we haven't pre-calculated any positions yet.
@@ -135,17 +172,10 @@ namespace AZ::Render
         static constexpr float s_scale = 0.1f;
         static constexpr AZ::u32 s_angularSubdivisions = 32;
         static constexpr AZ::u32 s_radialSubdivisions = 2;
-
-        struct JointLimitRenderData
-        {
-            AZStd::vector<AZ::Vector3>  m_vertexBuffer;
-            AZStd::vector<AZ::u32>      m_indexBuffer;
-            AZStd::vector<AZ::Vector3>  m_lineBuffer;
-            AZStd::vector<bool>         m_lineValidityBuffer;
-
-            void Clear();
-        };
         JointLimitRenderData m_jointLimitRenderData;
+
+        // Motion extraction paths
+        AZStd::vector<TrajectoryTracePath*> m_trajectoryTracePaths;
 
         AzFramework::TextDrawParameters m_drawParams;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;

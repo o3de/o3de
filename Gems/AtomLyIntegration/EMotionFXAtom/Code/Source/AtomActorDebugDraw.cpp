@@ -95,10 +95,14 @@ namespace AZ::Render
             RenderEMFXDebugDraw(instance);
         }
 
-        // Render
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeOrientation))
         {
             RenderNodeOrientations(instance, debugDisplay, renderActorSettings.m_nodeOrientationScale * scaleMultiplier);
+        }
+
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::MotionExtraction))
+        {
+            RenderTrajectoryPath(debugDisplay, instance, renderActorSettings.m_trajectoryHeadColor, renderActorSettings.m_trajectoryPathColor);
         }
 
         // Render vertex normal, face normal, tagent and wireframe.
@@ -781,6 +785,66 @@ namespace AZ::Render
         debugDisplay->SetState(oldState);
     }
 
+    void AtomActorDebugDraw::UpdateActorInstance(EMotionFX::ActorInstance* actorInstance, float deltaTime)
+    {
+        // Find the corresponding trajectory trace path for the given actor instance
+        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        if (!trajectoryPath)
+        {
+            return;
+        }
+
+        const EMotionFX::Actor* actor = actorInstance->GetActor();
+        const EMotionFX::Node* motionExtractionNode = actor->GetMotionExtractionNode();
+        if (motionExtractionNode)
+        {
+            const EMotionFX::Transform& worldTM = actorInstance->GetWorldSpaceTransform();
+
+            bool distanceTraveledEnough = false;
+            if (trajectoryPath->m_traceParticles.empty())
+            {
+                distanceTraveledEnough = true;
+            }
+            else
+            {
+                const size_t numParticles = trajectoryPath->m_traceParticles.size();
+                const EMotionFX::Transform& oldWorldTM = trajectoryPath->m_traceParticles[numParticles - 1].m_worldTm;
+
+                const AZ::Vector3& oldPos = oldWorldTM.m_position;
+                const AZ::Quaternion oldRot = oldWorldTM.m_rotation.GetNormalized();
+                const AZ::Quaternion rotation = worldTM.m_rotation.GetNormalized();
+
+                const AZ::Vector3 deltaPos = worldTM.m_position - oldPos;
+                const float deltaRot = AZStd::abs(rotation.Dot(oldRot));
+                if (deltaPos.GetLengthEstimate() > 0.0001f || deltaRot < 0.99f)
+                {
+                    distanceTraveledEnough = true;
+                }
+            }
+
+            // Add the time delta to the time passed since the last add
+            trajectoryPath->m_timePassed += deltaTime;
+
+            const uint32 particleSampleRate = 30;
+            if (trajectoryPath->m_timePassed >= (1.0f / particleSampleRate) && distanceTraveledEnough)
+            {
+                // Create the particle, fill its data and add it to the trajectory trace path
+                TrajectoryPathParticle trajectoryParticle;
+                trajectoryParticle.m_worldTm = worldTM;
+                trajectoryPath->m_traceParticles.emplace_back(trajectoryParticle);
+
+                // Reset the time passed as we just added a new particle
+                trajectoryPath->m_timePassed = 0.0f;
+            }
+        }
+
+        // Make sure we don't have too many items in our array
+        if (trajectoryPath->m_traceParticles.size() > 50)
+        {
+            trajectoryPath->m_traceParticles.erase(begin(trajectoryPath->m_traceParticles));
+        }
+    }
+
     void AtomActorDebugDraw::RenderLineAxis(
         AzFramework::DebugDisplayRequests* debugDisplay,
         AZ::Transform worldTM,
@@ -1104,6 +1168,181 @@ namespace AZ::Render
                     }
                 }
             }
+        }
+    }
+
+    // Find the trajectory path for a given actor instance
+    AtomActorDebugDraw::TrajectoryTracePath* AtomActorDebugDraw::FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance)
+    {
+        for (TrajectoryTracePath* trajectoryPath : m_trajectoryTracePaths)
+        {
+            if (trajectoryPath->m_actorInstance == actorInstance)
+            {
+                return trajectoryPath;
+            }
+        }
+
+        // we haven't created a path for the given actor instance yet, do so
+        TrajectoryTracePath* tracePath = new TrajectoryTracePath();
+
+        tracePath->m_actorInstance = actorInstance;
+        tracePath->m_traceParticles.reserve(512);
+
+        m_trajectoryTracePaths.emplace_back(tracePath);
+        return tracePath;
+    }
+
+    void AtomActorDebugDraw::RenderTrajectoryPath(AzFramework::DebugDisplayRequests* debugDisplay,
+        const EMotionFX::ActorInstance* actorInstance,
+        const AZ::Color& headColor,
+        const AZ::Color& pathColor)
+    {
+        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        if (!trajectoryPath)
+        {
+            return;
+        }
+
+        EMotionFX::Actor* actor = actorInstance->GetActor();
+        EMotionFX::Node* extractionNode = actor->GetMotionExtractionNode();
+        if (!extractionNode)
+        {
+            return;
+        }
+
+        // Fast access to the trajectory trace particles
+        const AZStd::vector<TrajectoryPathParticle>& traceParticles = trajectoryPath->m_traceParticles;
+        const size_t numTraceParticles = traceParticles.size();
+        if (traceParticles.empty())
+        {
+            return;
+        }
+
+        const float trailWidthHalf = 0.25f;
+        const float trailLength = 2.0f;
+        const float arrowWidthHalf = 0.75f;
+        const float arrowLength = 1.5f;
+        const AZ::Vector3 liftFromGround(0.0f, 0.0f, 0.0001f);
+
+        const AZ::Transform trajectoryWorldTM = actorInstance->GetWorldSpaceTransform().ToAZTransform();
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Render arrow head
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Get the position and some direction vectors of the trajectory node matrix
+        EMotionFX::Transform worldTM = traceParticles[numTraceParticles - 1].m_worldTm;
+        AZ::Vector3 right = trajectoryWorldTM.GetBasisX().GetNormalized();
+        AZ::Vector3 center = trajectoryWorldTM.GetTranslation();
+        AZ::Vector3 forward = trajectoryWorldTM.GetBasisY().GetNormalized();
+        AZ::Vector3 up(0.0f, 0.0f, 1.0f);
+
+        AZ::Vector3 vertices[7];
+        AZ::Vector3 oldLeft, oldRight;
+
+        /*
+                            4
+                           / \
+                          /   \
+                        /       \
+                      /           \
+                    /               \
+                  5-----6       2-----3
+                        |       |
+                        |       |
+                        |       |
+                        |       |
+                        |       |
+                        0-------1
+        */
+        // Construct the arrow vertices
+        float scale = 0.2f;
+        vertices[0] = center + (-right * trailWidthHalf - forward * trailLength) * scale;
+        vertices[1] = center + (right * trailWidthHalf - forward * trailLength) * scale;
+        vertices[2] = center + (right * trailWidthHalf) * scale;
+        vertices[3] = center + (right * arrowWidthHalf) * scale;
+        vertices[4] = center + (forward * arrowLength) * scale;
+        vertices[5] = center + (-right * arrowWidthHalf) * scale;
+        vertices[6] = center + (-right * trailWidthHalf) * scale;
+
+        oldLeft = vertices[6];
+        oldRight = vertices[2];
+
+        AZ::Vector3 arrowOldLeft = oldLeft;
+        AZ::Vector3 arrowOldRight = oldRight;
+
+        // Render the solid arrow
+        debugDisplay->SetColor(headColor);
+        debugDisplay->DrawTri(vertices[3] + liftFromGround, vertices[4] + liftFromGround, vertices[2] + liftFromGround);
+        debugDisplay->DrawTri(vertices[2] + liftFromGround, vertices[4] + liftFromGround, vertices[6] + liftFromGround);
+        debugDisplay->DrawTri(vertices[6] + liftFromGround, vertices[4] + liftFromGround, vertices[5] + liftFromGround);
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Render arrow tail (actual path)
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        AZ::Vector3 a, b;
+        AZ::Color color = pathColor;
+
+        // Render the path from the arrow head towards the tail
+        for (size_t i = numTraceParticles - 1; i > 0; i--)
+        {
+            // Calculate the normalized distance to the head, this value also represents the alpha value as it fades away while getting
+            // closer to the end
+            float normalizedDistance = (float)i / numTraceParticles;
+
+            // Get the start and end point of the line segment and calculate the delta between them
+            worldTM = traceParticles[i].m_worldTm;
+            a = worldTM.m_position;
+            b = traceParticles[i - 1].m_worldTm.m_position;
+            right = worldTM.ToAZTransform().GetBasisX().GetNormalized();
+
+            if (i > 1 && i < numTraceParticles - 3)
+            {
+                const AZ::Vector3 deltaA = traceParticles[i - 2].m_worldTm.m_position - traceParticles[i - 1].m_worldTm.m_position;
+                const AZ::Vector3 deltaB = traceParticles[i - 1].m_worldTm.m_position - traceParticles[i].m_worldTm.m_position;
+                const AZ::Vector3 deltaC = traceParticles[i].m_worldTm.m_position - traceParticles[i + 1].m_worldTm.m_position;
+                const AZ::Vector3 deltaD = traceParticles[i + 1].m_worldTm.m_position - traceParticles[i + 2].m_worldTm.m_position;
+                AZ::Vector3 delta = deltaA + deltaB + deltaC + deltaD;
+                delta = delta.GetNormalizedSafe();
+
+                right = up.Cross(delta);
+            }
+
+            /*
+                    //              .
+                    //              .
+                    //              .
+                    //(oldLeft) 0   a   1 (oldRight)
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          2---b---3
+            */
+
+            // Construct the arrow vertices
+            vertices[0] = oldLeft;
+            vertices[1] = oldRight;
+            vertices[2] = b + AZ::Vector3(-right * trailWidthHalf) * scale;
+            vertices[3] = b + AZ::Vector3(right * trailWidthHalf) * scale;
+
+            // Make sure we perfectly align with the arrow head
+            if (i == numTraceParticles - 1)
+            {
+                normalizedDistance = 1.0f;
+                vertices[0] = arrowOldLeft;
+                vertices[1] = arrowOldRight;
+            }
+
+            // Render the solid arrow
+            color.SetA(normalizedDistance);
+            debugDisplay->SetColor(color);
+            debugDisplay->DrawTri(vertices[0] + liftFromGround, vertices[2] + liftFromGround, vertices[1] + liftFromGround);
+            debugDisplay->DrawTri(vertices[1] + liftFromGround, vertices[2] + liftFromGround, vertices[3] + liftFromGround);
+
+            // Overwrite the old left and right values so that they can be used for the next trace particle
+            oldLeft = vertices[2];
+            oldRight = vertices[3];
         }
     }
 } // namespace AZ::Render
