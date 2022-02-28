@@ -307,7 +307,7 @@ namespace ScriptCanvasEditor
     }
 
     void SystemComponent::AddSourceFileOpeners
-    ([[maybe_unused]] const char* fullSourceFileName
+        ( [[maybe_unused]] const char* fullSourceFileName
         , [[maybe_unused]] const AZ::Uuid& sourceUUID
         , [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
     {

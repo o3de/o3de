@@ -11,8 +11,6 @@
 #include <AzCore/Component/Component.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include <Builder/ScriptCanvasBuilderDataSystem.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include "ScriptCanvasBuilderWorker.h"
 
@@ -43,6 +41,5 @@ namespace ScriptCanvasBuilder
         PluginComponent(const PluginComponent&) = delete;
         SharedHandlers m_sharedHandlers;
         Worker m_scriptCanvasBuilder;
-        // DataSystem m_dataSystem;
     };
 }

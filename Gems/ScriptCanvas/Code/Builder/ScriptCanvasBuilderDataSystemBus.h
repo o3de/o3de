@@ -44,7 +44,7 @@ namespace ScriptCanvasBuilder
     {
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Uuid; // most likely
+        using BusIdType = AZ::Uuid;
 
         // the file has been modified
         virtual void SourceFileChanged(const BuildResult& result, AZStd::string_view relativePath, AZStd::string_view scanFolder) = 0;
