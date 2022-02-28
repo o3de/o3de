@@ -28,9 +28,9 @@ namespace AZ::RPI
 // LYSHINE_API functions as being imported from a DLL, whereas this DLL sees symbols
 // defined with this macro as being exported.
 #ifdef LYSHINE_EXPORTS
-    #define LYSHINE_API DLL_EXPORT
+    #define LYSHINE_API AZ_DLL_EXPORT
 #else
-    #define LYSHINE_API DLL_IMPORT
+    #define LYSHINE_API AZ_DLL_IMPORT
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

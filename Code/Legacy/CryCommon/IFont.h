@@ -32,9 +32,9 @@ struct SVF_P2F_C4B_T2F_F4B;
 
 extern "C"
 #ifdef CRYFONT_EXPORTS
-DLL_EXPORT
+AZ_DLL_EXPORT
 #else
-DLL_IMPORT
+AZ_DLL_IMPORT
 #endif
 ICryFont * CreateCryFontInterface(ISystem * pSystem);
 
