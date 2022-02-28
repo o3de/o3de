@@ -200,6 +200,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5689529_Verify_Terrain_RigidBody_Collider_Mesh(EditorSharedTest):
         from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
 
+    class C5959810_ForceRegion_ForceRegionCombinesForces(EditorSharedTest):
+        from .tests.force_region import ForceRegion_MultipleForcesInSameComponentCombineForces as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -218,9 +221,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-
-    class C5959810_ForceRegion_ForceRegionCombinesForces(EditorSharedTest):
-        from .tests.force_region import ForceRegion_MultipleForcesInSameComponentCombineForces as test_module
 
     class C5959765_ForceRegion_AssetGetsImpulsed(EditorSharedTest):
         from .tests.force_region import ForceRegion_ImpulsesPxMeshShapedRigidBody as test_module
