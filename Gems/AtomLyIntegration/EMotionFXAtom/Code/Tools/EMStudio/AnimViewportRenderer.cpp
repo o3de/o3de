@@ -186,6 +186,14 @@ namespace EMStudio
         ResetEnvironment();
     }
 
+    void AnimViewportRenderer::MoveActorEntitiesToOrigin()
+    {
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateIdentity());
+        }
+    }
+
     AZ::Vector3 AnimViewportRenderer::GetCharacterCenter() const
     {
         AZ::Vector3 result = AZ::Vector3::CreateZero();
