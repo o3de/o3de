@@ -26,7 +26,6 @@ namespace AZ
             friend class PassFactory;
             friend class PassLibrary;
             friend class PassSystem;
-            friend class PassFactory;
             friend class RenderPipeline;
             friend class UnitTest::PassTests;
             friend class Pass;

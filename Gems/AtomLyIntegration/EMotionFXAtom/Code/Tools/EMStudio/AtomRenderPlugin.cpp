@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
 
 #include <EMStudio/AtomRenderPlugin.h>
 #include <EMStudio/AnimViewportRenderer.h>
@@ -47,11 +48,6 @@ namespace EMStudio
         delete m_removeActorCallback;
 
         AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
-    }
-
-    void AtomRenderPlugin::Reflect(AZ::ReflectContext* context)
-    {
-        RenderOptions::Reflect(context);
     }
 
     const char* AtomRenderPlugin::GetName() const
@@ -134,6 +130,8 @@ namespace EMStudio
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(g_animManipulatorManagerId);
         SetupManipulators();
 
+        SetupMetrics();
+
         // Register command callbacks.
         m_importActorCallback = new ImportActorCallback(false);
         m_removeActorCallback = new RemoveActorCallback(false);
@@ -144,6 +142,27 @@ namespace EMStudio
             m_animViewportWidget->GetViewportContext()->GetId());
 
         return true;
+    }
+
+    void AtomRenderPlugin::SetupMetrics()
+    {
+        static constexpr int UpdateIntervalMs = 1000;
+        m_metricsTimer.setInterval(UpdateIntervalMs);
+        m_metricsTimer.start();
+        connect(&m_metricsTimer, &QTimer::timeout, this, &AtomRenderPlugin::UpdateMetrics);
+
+        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
+            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, true);
+    }
+
+    void AtomRenderPlugin::UpdateMetrics()
+    {
+        AtomToolsFramework::PerformanceMetrics metrics = {};
+        AtomToolsFramework::PerformanceMonitorRequestBus::BroadcastResult(
+            metrics, &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::GetMetrics);
+
+        int frameRate = metrics.m_cpuFrameTimeMs > 0 ? aznumeric_cast<int>(1000 / metrics.m_cpuFrameTimeMs) : 0;
+        m_fpsStr = AZStd::string::format("%d FPS", frameRate);
     }
 
     void AtomRenderPlugin::SetupManipulators()
@@ -334,6 +353,12 @@ namespace EMStudio
                 AztfVi::BuildMousePick(m_animViewportWidget->GetCameraState(), screenPoint),
                 AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())),
                 AztfVi::InteractionId(AZ::EntityId(), m_animViewportWidget->GetViewportContext()->GetId()), keyboardModifiers ));
+
+        if (GetRenderOptions()->GetShowFPS())
+        {
+            debugDisplay->SetColor(AZ::Colors::Chocolate);
+            debugDisplay->Draw2dTextLabel(40.0f, 20.0f, 1.0f, m_fpsStr.c_str(), false);
+        }
         debugDisplay->DepthTestOn();
     }
 

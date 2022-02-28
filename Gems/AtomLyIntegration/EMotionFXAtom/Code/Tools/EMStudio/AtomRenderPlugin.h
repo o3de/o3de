@@ -13,12 +13,14 @@
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzCore/Debug/Timer.h>
 
 #include <MCore/Source/Command.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <EMStudio/AnimViewportWidget.h>
 #include <QWidget>
+#include <QTimer>
 #endif
 
 namespace AZ
@@ -41,8 +43,6 @@ namespace EMStudio
         };
         AtomRenderPlugin();
         ~AtomRenderPlugin();
-
-        void Reflect(AZ::ReflectContext* context) override;
 
         // Plugin information
         const char* GetName() const override;
@@ -71,6 +71,9 @@ namespace EMStudio
         // AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus overrides...
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent) override;
 
+        void SetupMetrics();
+        void UpdateMetrics();
+
         void SetupManipulators();
         void OnManipulatorMoved(const AZ::Vector3& position);
 
@@ -85,6 +88,10 @@ namespace EMStudio
         AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
         AZ::Transform m_mouseDownStartTransform;
 
+        // Atom performance metrics
+        QTimer m_metricsTimer;
+        AZStd::string m_fpsStr;
+        
         MCORE_DEFINECOMMANDCALLBACK(ImportActorCallback);
         MCORE_DEFINECOMMANDCALLBACK(RemoveActorCallback);
         ImportActorCallback* m_importActorCallback = nullptr;

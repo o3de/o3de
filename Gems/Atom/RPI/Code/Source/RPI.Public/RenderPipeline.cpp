@@ -41,14 +41,14 @@ namespace AZ
                 rootRequest.m_templateName = desc.m_rootPassTemplate;
 
                 Ptr<Pass> rootPass = passSystem->CreatePassFromRequest(&rootRequest);
-                AZ_Assert(rootPass != nullptr && rootPass->AsParent() != nullptr, "Error creating root pass for pipeline!");
-                pipeline->m_rootPass = rootPass->AsParent();
+                pipeline->m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
             }
             else
             {
                 // Otherwise create an empty root pass with pipeline name
                 pipeline->m_rootPass = passSystem->CreatePass<ParentPass>(passName);
             }
+            AZ_Assert(pipeline->m_rootPass != nullptr, "Error creating root pass for pipeline!");
 
             InitializeRenderPipeline(pipeline, desc);
 
@@ -86,9 +86,13 @@ namespace AZ
         RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext)
         {
             RenderPipeline* pipeline = aznew RenderPipeline();
+            PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             PassDescriptor swapChainDescriptor(Name(desc.m_name));
-            pipeline->m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, Name(desc.m_rootPassTemplate.c_str()));
+            Name tempalteName = Name(desc.m_rootPassTemplate.c_str());
+            swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(tempalteName);
+
+            pipeline->m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
 
             InitializeRenderPipeline(pipeline, desc);
@@ -319,7 +323,7 @@ namespace AZ
                 passSystem->SetHotReloading(true);
 
                 // Attempt to re-create hierarchy under root pass
-                Ptr<ParentPass> newRoot = m_rootPass->Recreate();
+                Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_rootPass->Recreate().get());
                 newRoot->SetRenderPipeline(this);
                 newRoot->m_flags.m_isPipelineRoot = true;
                 newRoot->ManualPipelineBuildAndInitialize();
@@ -437,6 +441,44 @@ namespace AZ
                     }
                 }
             }
+        }
+
+        const PipelineGlobalBinding* RenderPipeline::GetPipelineGlobalConnection(const Name& globalName) const
+        {
+            for (const PipelineGlobalBinding& connection : m_pipelineGlobalConnections)
+            {
+                if (connection.m_globalName == globalName)
+                {
+                    return &connection;
+                }
+            }
+            return nullptr;
+        }
+
+        void RenderPipeline::AddPipelineGlobalConnection(const Name& globalName, PassAttachmentBinding* binding, Pass* pass)
+        {
+            m_pipelineGlobalConnections.push_back(PipelineGlobalBinding{ globalName, binding, pass });
+        }
+
+        void RenderPipeline::RemovePipelineGlobalConnectionsFromPass(Pass* passOnwer)
+        {
+            auto iter = m_pipelineGlobalConnections.begin();
+            while (iter != m_pipelineGlobalConnections.end())
+            {
+                if (iter->m_pass == passOnwer)
+                {
+                    m_pipelineGlobalConnections.erase(iter);
+                }
+                else
+                {
+                    ++iter;
+                }
+            }
+        }
+
+        void RenderPipeline::ClearGlobalBindings()
+        {
+            m_pipelineGlobalConnections.clear();
         }
 
         RenderPipelineId RenderPipeline::GetId() const

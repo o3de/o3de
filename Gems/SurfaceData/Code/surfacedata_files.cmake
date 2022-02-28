@@ -10,6 +10,7 @@ set(FILES
     Include/SurfaceData/Components/SurfaceDataColliderComponent.h
     Include/SurfaceData/Components/SurfaceDataShapeComponent.h
     Include/SurfaceData/Components/SurfaceDataSystemComponent.h
+    Include/SurfaceData/MixedStackHeapAllocator.h
     Include/SurfaceData/SurfaceDataConstants.h
     Include/SurfaceData/SurfaceDataTypes.h
     Include/SurfaceData/SurfaceDataSystemRequestBus.h

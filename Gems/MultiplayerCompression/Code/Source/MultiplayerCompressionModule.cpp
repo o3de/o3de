@@ -41,7 +41,4 @@ namespace MultiplayerCompression
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(MultiplayerCompression_1d353c8ca3c74ed193fd6c6783ae41cc, MultiplayerCompression::MultiplayerCompressionModule)
+AZ_DECLARE_MODULE_CLASS(Gem_MultiplayerCompression, MultiplayerCompression::MultiplayerCompressionModule)

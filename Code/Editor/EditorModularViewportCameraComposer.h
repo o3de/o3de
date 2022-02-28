@@ -33,6 +33,14 @@ namespace SandboxEditor
         SANDBOX_API AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController();
 
     private:
+        //! Display style/state for the pivot
+        enum class PivotDisplayState
+        {
+            Hidden, //!< Orbit camera inactive.
+            Faded, //!< Orbit camera active but not rotating.
+            Full //!< Orbit camera active and rotating.
+        };
+
         // AzFramework::ViewportDebugDisplayEventBus overrides ...
         void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
@@ -63,8 +71,8 @@ namespace SandboxEditor
 
         AzFramework::ViewportId m_viewportId;
 
-        float m_defaultOrbitOpacity = 0.0f; //!< The default orbit axes opacity (to fade in and out).
-        AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero(); //!< The orbit point to use when no entity is selected.
-        bool m_defaultOrbiting = false; //!< Is the camera default orbiting (orbiting when there's no selected entity).
+        AZStd::optional<AZ::Vector3> m_pivot; //!< The picked pivot to orbit about in the viewport.
+        float m_orbitOpacity = 0.0f; //!< The picked pivot opacity (to fade in and out).
+        PivotDisplayState m_pivotDisplayState; //!< The state of the pivot for the orbit camera.
     };
 } // namespace SandboxEditor
