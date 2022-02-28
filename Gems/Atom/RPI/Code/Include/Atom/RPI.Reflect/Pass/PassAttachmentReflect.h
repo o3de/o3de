@@ -248,6 +248,9 @@ namespace AZ
 
             //! Reference to an external attachment asset, which used for imported attachment
             AssetReference m_assetRef;
+
+            //! This load store action can be used to force a clear of the attachment on it's first usage by a RenderPass in a frame 
+            RHI::AttachmentLoadStoreAction m_loadStoreAction;
         };
 
         //! A PassAttachmentDesc used for images

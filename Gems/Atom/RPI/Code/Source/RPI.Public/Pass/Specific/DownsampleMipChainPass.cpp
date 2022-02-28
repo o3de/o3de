@@ -124,7 +124,7 @@ namespace AZ
                     RHI::ImageViewDescriptor inViewDesc;
                     inViewDesc.m_mipSliceMin = mip;
                     inViewDesc.m_mipSliceMax = mip;
-                    inBinding.m_unifiedScopeDesc.SetAsImage(inViewDesc);
+                    inBinding.SetImageViewDescriptor(inViewDesc);
 
                     childPass->AddAttachmentBinding(inBinding);
                 }
@@ -141,7 +141,7 @@ namespace AZ
                     RHI::ImageViewDescriptor outViewDesc;
                     outViewDesc.m_mipSliceMin = mip + 1;
                     outViewDesc.m_mipSliceMax = mip + 1;
-                    outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
+                    outBinding.SetImageViewDescriptor(outViewDesc);
 
                     childPass->AddAttachmentBinding(outBinding);
                 }

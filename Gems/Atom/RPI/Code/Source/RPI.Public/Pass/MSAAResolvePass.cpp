@@ -54,7 +54,7 @@ namespace AZ
             const AZ::RPI::PassAttachmentBinding& copySource = GetInputBinding(0);
             const AZ::RPI::PassAttachmentBinding& copyDest = GetOutputBinding(0);
 
-            frameGraph.UseColorAttachment(copySource.m_unifiedScopeDesc.GetAsImage());
+            frameGraph.UseColorAttachment(copySource.GetImageScopeDescriptor());
 
             RHI::ResolveScopeAttachmentDescriptor descriptor;
             descriptor.m_attachmentId = copyDest.m_attachment->GetAttachmentId();

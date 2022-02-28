@@ -151,12 +151,12 @@ namespace AZ
             {
                 // mip0 source input
                 RPI::PassAttachmentBinding& inputAttachmentBinding = verticalBlurChildPass->GetInputOutputBinding(0);
-                inputAttachmentBinding.SetAttachment(reflectionImageAttachment);
+                inputAttachmentBinding.SetAttachment(reflectionImageAttachment, *this);
                 inputAttachmentBinding.m_connectedBinding = &GetInputOutputBinding(0);
 
                 // mipN transient output
                 RPI::PassAttachmentBinding& outputAttachmentBinding = verticalBlurChildPass->GetInputOutputBinding(1);
-                outputAttachmentBinding.SetAttachment(transientPassAttachments[attachmentIndex]);
+                outputAttachmentBinding.SetAttachment(transientPassAttachments[attachmentIndex], *this);
 
                 // setup downsampled depth output
                 // Note: this is a vertical pass output only, and each vertical child pass writes a specific mip level
@@ -167,8 +167,8 @@ namespace AZ
                 RHI::ImageViewDescriptor downsampledDepthOutputViewDesc;
                 downsampledDepthOutputViewDesc.m_mipSliceMin = static_cast<int16_t>(mipLevel);
                 downsampledDepthOutputViewDesc.m_mipSliceMax = static_cast<int16_t>(mipLevel);
-                downsampledDepthAttachmentBinding.m_unifiedScopeDesc.SetAsImage(downsampledDepthOutputViewDesc);
-                downsampledDepthAttachmentBinding.SetAttachment(downsampledDepthImageAttachment);
+                downsampledDepthAttachmentBinding.SetImageViewDescriptor(downsampledDepthOutputViewDesc);
+                downsampledDepthAttachmentBinding.SetAttachment(downsampledDepthImageAttachment, *this);
 
                 attachmentIndex++;
             }
@@ -178,15 +178,15 @@ namespace AZ
             for (auto& horizontalBlurChildPass : m_horizontalBlurChildPasses)
             {
                 RPI::PassAttachmentBinding& inputAttachmentBinding = horizontalBlurChildPass->GetInputOutputBinding(0);
-                inputAttachmentBinding.SetAttachment(transientPassAttachments[attachmentIndex]);
+                inputAttachmentBinding.SetAttachment(transientPassAttachments[attachmentIndex], *this);
 
                 RPI::PassAttachmentBinding& outputAttachmentBinding = horizontalBlurChildPass->GetInputOutputBinding(1);
                 uint32_t mipLevel = attachmentIndex + 1;
                 RHI::ImageViewDescriptor outputViewDesc;
                 outputViewDesc.m_mipSliceMin = static_cast<int16_t>(mipLevel);
                 outputViewDesc.m_mipSliceMax = static_cast<int16_t>(mipLevel);
-                outputAttachmentBinding.m_unifiedScopeDesc.SetAsImage(outputViewDesc);
-                outputAttachmentBinding.SetAttachment(reflectionImageAttachment);
+                outputAttachmentBinding.SetImageViewDescriptor(outputViewDesc);
+                outputAttachmentBinding.SetAttachment(reflectionImageAttachment, *this);
 
                 attachmentIndex++;
             }

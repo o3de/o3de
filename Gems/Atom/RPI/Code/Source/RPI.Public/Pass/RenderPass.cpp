@@ -223,16 +223,16 @@ namespace AZ
                 if (attachmentBinding.m_attachment != nullptr &&
                     frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.m_attachment->GetAttachmentId()))
                 {
-                    switch (attachmentBinding.m_unifiedScopeDesc.GetType())
+                    switch (attachmentBinding.GetAttachmentType())
                     {
                     case RHI::AttachmentType::Image:
                     {
-                        frameGraph.UseAttachment(attachmentBinding.m_unifiedScopeDesc.GetAsImage(), attachmentBinding.GetAttachmentAccess(), attachmentBinding.m_scopeAttachmentUsage);
+                        frameGraph.UseAttachment(attachmentBinding.GetImageScopeDescriptor(), attachmentBinding.GetAttachmentAccess(), attachmentBinding.m_scopeAttachmentUsage);
                         break;
                     }
                     case RHI::AttachmentType::Buffer:
                     {
-                        frameGraph.UseAttachment(attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(), attachmentBinding.GetAttachmentAccess(), attachmentBinding.m_scopeAttachmentUsage);
+                        frameGraph.UseAttachment(attachmentBinding.GetBufferScopeDescriptor(), attachmentBinding.GetAttachmentAccess(), attachmentBinding.m_scopeAttachmentUsage);
                         break;
                     }
                     default:
@@ -277,7 +277,7 @@ namespace AZ
                         inputIndex = imageIndex;
                     }
                     const RHI::ImageView* imageView =
-                        context.GetImageView(attachment->GetAttachmentId(), binding.m_unifiedScopeDesc.GetImageViewDescriptor(), binding.m_scopeAttachmentUsage);
+                        context.GetImageView(attachment->GetAttachmentId(), binding.GetImageViewDescriptor(), binding.m_scopeAttachmentUsage);
 
                     if (binding.m_shaderImageDimensionsNameIndex.HasName())
                     {
