@@ -243,13 +243,13 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
         from .tests.force_region import ForceRegion_ZeroSimpleDragForceDoesNothing as test_module
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+#@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
-    enable_prefab_system = False
+    #enable_prefab_system = False
 
     @staticmethod
     def get_number_parallel_editors():
