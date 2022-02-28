@@ -26,13 +26,13 @@ namespace Physics
         NodeDebugDrawDataFunction nodeDebugDrawDataFunction,
         const ColorSettings& colorSettings)
     {
-        NodeDebugDrawData nodeInfo = nodeDebugDrawDataFunction(nodeConfig);
-        if (!nodeInfo.m_valid)
+        NodeDebugDrawData nodeDebugDrawData = nodeDebugDrawDataFunction(nodeConfig);
+        if (!nodeDebugDrawData.m_valid)
         {
             return;
         }
 
-        const AZ::Color colliderColor = nodeInfo.m_selected ? colorSettings.m_selectedColor : colorSettings.m_defaultColor;
+        const AZ::Color colliderColor = nodeDebugDrawData.m_selected ? colorSettings.m_selectedColor : colorSettings.m_defaultColor;
         debugDisplay->DepthTestOff();
         debugDisplay->SetColor(colliderColor);
 
@@ -41,7 +41,7 @@ namespace Physics
         {
             const AZ::Transform colliderOffsetTransform =
                 AZ::Transform::CreateFromQuaternionAndTranslation(collider.first->m_rotation, collider.first->m_position);
-            const AZ::Transform colliderGlobalTransform = nodeInfo.m_worldTransform * colliderOffsetTransform;
+            const AZ::Transform colliderGlobalTransform = nodeDebugDrawData.m_worldTransform * colliderOffsetTransform;
 
             const AZ::TypeId colliderType = collider.second->RTTI_GetType();
             if (colliderType == azrtti_typeid<Physics::SphereShapeConfiguration>())
