@@ -214,6 +214,10 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C6090554_ForceRegion_PointForceNegative(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroPointForceDoesNothing as test_module
 
+    class C6090550_ForceRegion_WorldSpaceForceNegative(EditorSharedTest):
+        from .tests.force_region import ForceRegion_ZeroWorldSpaceForceDoesNothing as test_module
+
+
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -231,10 +235,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-
-
-    class C6090550_ForceRegion_WorldSpaceForceNegative(EditorSharedTest):
-        from .tests.force_region import ForceRegion_ZeroWorldSpaceForceDoesNothing as test_module
 
     class C6090552_ForceRegion_LinearDampingNegative(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroLinearDampingDoesNothing as test_module
