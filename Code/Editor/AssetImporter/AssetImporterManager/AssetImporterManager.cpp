@@ -53,6 +53,7 @@ void AssetImporterManager::Exec()
     m_fileDialog->setViewMode(QFileDialog::Detail);
     m_fileDialog->setWindowTitle(tr("Select files to import"));
     m_fileDialog->setLabelText(QFileDialog::Accept, "Select");
+    m_fileDialog->setAttribute(Qt::WA_DeleteOnClose);
     QSettings settings;
     m_currentAbsolutePath = settings.value(AssetImporterManagerPrivate::g_selectFilesPath).toString();
 
