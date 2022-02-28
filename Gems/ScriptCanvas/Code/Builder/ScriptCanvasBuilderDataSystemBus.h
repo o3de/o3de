@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <AzCore/EBus/Ebus.h>
+#include <AzCore/EBus/EBus.h>
 #include <Builder/ScriptCanvasBuilder.h>
-
 
 namespace ScriptCanvasBuilder
 {
