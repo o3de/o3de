@@ -179,6 +179,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5959764_ForceRegion_ForceRegionImpulsesCapsule(EditorSharedTest):
         from .tests.force_region import ForceRegion_ImpulsesCapsuleShapedRigidBody as test_module
 
+    class C5340400_RigidBody_ManualMomentOfInertia(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_MomentOfInertiaManualSetting as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -196,9 +199,6 @@ class TestAutomation(EditorTestSuite):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
 
-
-    class C5340400_RigidBody_ManualMomentOfInertia(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_MomentOfInertiaManualSetting as test_module
 
     class C4976210_COM_ManualSetting(EditorSharedTest):
         from .tests.rigid_body import RigidBody_COM_ManualSettingWorks as test_module
