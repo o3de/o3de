@@ -223,14 +223,18 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5968760_ForceRegion_CheckNetForceChange(EditorSharedTest):
         from .tests.force_region import ForceRegion_MovingForceRegionChangesNetForce as test_module
 
+    @pytest.mark.xfail(reason="Ongoing issue in Script Canvas, AZ::Event fail to compile on Script Canvas")
+    class C12712452_ScriptCanvas_CollisionEvents(EditorSharedTest):
+        from .tests.script_canvas import ScriptCanvas_CollisionEvents as test_module
 
-#@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
-    #enable_prefab_system = False
+    enable_prefab_system = False
 
     @staticmethod
     def get_number_parallel_editors():
@@ -241,9 +245,7 @@ class TestAutomation(EditorTestSuite):
 
 
 
-    @pytest.mark.xfail(reason="Ongoing issue in Script Canvas, AZ::Event fail to compile on Script Canvas")
-    class C12712452_ScriptCanvas_CollisionEvents(EditorSharedTest):
-        from .tests.script_canvas import ScriptCanvas_CollisionEvents as test_module
+
 
     class C12868578_ForceRegion_DirectionHasNoAffectOnMagnitude(EditorSharedTest):
         from .tests.force_region import ForceRegion_DirectionHasNoAffectOnTotalForce as test_module
