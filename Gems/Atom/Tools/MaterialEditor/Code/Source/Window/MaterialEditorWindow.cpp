@@ -13,12 +13,10 @@
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <Document/MaterialDocumentRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
-#include <Window/MaterialEditorWindowSettings.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
@@ -39,18 +37,7 @@ namespace MaterialEditor
     MaterialEditorWindow::MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, parent)
     {
-        // Among other things, we need the window wrapper to save the main window size, position, and state
-        auto mainWindowWrapper =
-            new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
-        mainWindowWrapper->setGuest(this);
-        mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "MaterialEditor", "mainWindowGeometry");
-
-        // set the style sheet for RPE highlighting and other styling
-        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/MaterialEditor.qss"));
-
         QApplication::setWindowIcon(QIcon(":/Icons/materialeditor.svg"));
-
-        setObjectName("MaterialEditorWindow");
 
         m_toolBar = new MaterialEditorToolBar(this);
         m_toolBar->setObjectName("ToolBar");
@@ -95,19 +82,6 @@ namespace MaterialEditor
         AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
         AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
         SetDockWidgetVisible("Viewport Settings", false);
-
-        // Restore geometry and show the window
-        mainWindowWrapper->showFromSettings();
-
-        // Restore additional state for docked windows
-        auto windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
-            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
-
-        if (!windowSettings->m_mainWindowState.empty())
-        {
-            QByteArray windowState(windowSettings->m_mainWindowState.data(), static_cast<int>(windowSettings->m_mainWindowState.size()));
-            m_advancedDockManager->restoreState(windowState);
-        }
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
@@ -191,23 +165,6 @@ namespace MaterialEditor
             <p><b>Ctrl+LMB</b> - rotate model</p>
             <p><b>Shift+LMB</b> - rotate environment</p>
             </body></html>)");
-    }
-
-    void MaterialEditorWindow::OpenAbout()
-    {
-        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
-    }
-
-    void MaterialEditorWindow::closeEvent(QCloseEvent* closeEvent)
-    {
-        // Capture docking state before shutdown
-        auto windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
-            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
-
-        QByteArray windowState = m_advancedDockManager->saveState();
-        windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());
-
-        Base::closeEvent(closeEvent);
     }
 } // namespace MaterialEditor
 
