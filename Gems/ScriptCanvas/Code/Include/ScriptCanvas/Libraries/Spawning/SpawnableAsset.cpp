@@ -64,13 +64,13 @@ namespace ScriptCanvas::Nodeables::Spawning
                     })
                 // required to support Map<String, SpawnableAsset> variable type in Script Canvas
                 ->Method(
-                    "Map_String_to_SpawnableAsset_Func",
+                    "MapStringToSpawnableAsset",
                     [](const AZStd::unordered_map<Data::StringType, SpawnableAsset>&)
                     {
                     })
                 // required to support Map<Number, SpawnableAsset> variable type in Script Canvas
                 ->Method(
-                    "Map_Number_to_SpawnableAsset_Func",
+                    "MapNumberToSpawnableAsset",
                     [](const AZStd::unordered_map<Data::NumberType, SpawnableAsset>&)
                     {
                     });

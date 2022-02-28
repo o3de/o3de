@@ -63,13 +63,13 @@ namespace ScriptCanvas::Nodeables::Spawning
                     })
                 // required to support Map<String, SpawnTicketInstance> variable type in Script Canvas
                 ->Method(
-                    "Map_String_to_SpawnTicketInstance_Func",
+                    "MapStringToSpawnTicketInstance",
                     [](const AZStd::unordered_map<Data::StringType, SpawnTicketInstance>&)
                     {
                     })
                 // required to support Map<Number, SpawnTicketInstance> variable type in Script Canvas
                 ->Method(
-                    "Map_Number_to_SpawnTicketInstance_Func",
+                    "MapNumberToSpawnTicketInstance",
                     [](const AZStd::unordered_map<Data::NumberType, SpawnTicketInstance>&)
                     {
                     });
