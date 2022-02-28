@@ -270,7 +270,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Material_NoEffectIfNoColliderShape(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_TriggerPassThrough(self, request, workspace, editor, launcher_platform):
