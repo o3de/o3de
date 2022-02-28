@@ -50,6 +50,7 @@ namespace ShaderManagementConsole
     {
         InitShaderManagementConsoleResources();
 
+        QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Shader Management Console");
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -87,6 +88,7 @@ namespace ShaderManagementConsole
             [](const AZ::Crc32& toolId) { return aznew ShaderManagementConsoleDocument(toolId); });
 
         m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
+        m_window->show();
 
         m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
 
