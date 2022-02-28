@@ -54,7 +54,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <Document/MaterialDocumentRequestBus.h>
-#include <Viewport/MaterialViewportRequestBus.h>
+#include <Viewport/MaterialViewportSettingsRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
 
 namespace MaterialEditor
@@ -223,18 +223,18 @@ namespace MaterialEditor
         OnViewportSettingsChanged();
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        MaterialViewportNotificationBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+        MaterialViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
+        AZ::TickBus::Handler::BusConnect();
     }
 
     MaterialViewportWidget::~MaterialViewportWidget()
     {
-        AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
-        MaterialViewportNotificationBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
+        MaterialViewportSettingsNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
 
         DestroyEntity(m_iblEntity);
         DestroyEntity(m_modelEntity);
@@ -341,8 +341,9 @@ namespace MaterialEditor
 
     void MaterialViewportWidget::OnViewportSettingsChanged()
     {
-        MaterialViewportRequestBus::Broadcast(
-            [this](MaterialViewportRequestBus::Events* viewportRequests)
+        MaterialViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](MaterialViewportSettingsRequestBus::Events* viewportRequests)
             {
                 UpdateLighting(viewportRequests);
                 UpdateModel(viewportRequests);

@@ -24,7 +24,6 @@
 #include <Document/MaterialDocumentRequestBus.h>
 #include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
-#include <Viewport/MaterialViewportModule.h>
 #include <Window/MaterialEditorWindow.h>
 
 #include <QDesktopServices>
@@ -71,12 +70,7 @@ namespace MaterialEditor
     {
         Base::Reflect(context);
         MaterialDocument::Reflect(context);
-    }
-
-    void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
-    {
-        Base::CreateStaticModules(outModules);
-        outModules.push_back(aznew MaterialViewportModule);
+        MaterialViewportSettingsSystem::Reflect(context);
     }
 
     const char* MaterialEditorApplication::GetCurrentConfigurationName() const
@@ -97,6 +91,8 @@ namespace MaterialEditor
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
             [](const AZ::Crc32& toolId) { return aznew MaterialDocument(toolId); });
+
+        m_viewportSettingsSystem.reset(aznew MaterialViewportSettingsSystem(m_toolId));
 
         m_window.reset(aznew MaterialEditorWindow(m_toolId));
         m_window->show();
@@ -189,6 +185,8 @@ namespace MaterialEditor
     void MaterialEditorApplication::Destroy()
     {
         m_window.reset();
+        m_viewportSettingsSystem.reset();
+        m_assetBrowserInteractions.reset();
         Base::Destroy();
     }
 
