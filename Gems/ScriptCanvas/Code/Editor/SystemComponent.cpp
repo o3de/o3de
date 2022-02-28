@@ -17,6 +17,7 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
+#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Framework/ScriptCanvasGraphUtilities.h>
 #include <Editor/Settings.h>
 #include <Editor/SystemComponent.h>
@@ -35,7 +36,6 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
 namespace ScriptCanvasEditor
 {
