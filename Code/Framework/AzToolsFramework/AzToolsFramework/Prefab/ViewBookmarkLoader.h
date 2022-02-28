@@ -32,6 +32,7 @@ namespace AzToolsFramework
 
         private:
             ViewBookmarkComponent* FindBookmarkComponent() const;
+            AZStd::string GenerateBookmarkFileName() const;
         };
 
     } // namespace Prefab

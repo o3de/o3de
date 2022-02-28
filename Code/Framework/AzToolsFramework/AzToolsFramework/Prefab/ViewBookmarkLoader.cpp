@@ -44,13 +44,18 @@ namespace AzToolsFramework
 
             // Resolve path to editorpreferences.setreg
             AZ::IO::FixedMaxPath editorBookmarkFilePath = AZ::Utils::GetO3deManifestDirectory();
-            editorBookmarkFilePath /= "Registry/ViewBookmarks/editorbookmarks.setreg";
+
+            const AZStd::string bookmarkKeyName = GenerateBookmarkFileName();
+            const AZStd::string bookmarkfileName = bookmarkKeyName + ".setreg";
+
+            editorBookmarkFilePath /= "Registry/ViewBookmarks/";
+            editorBookmarkFilePath /= bookmarkfileName;
 
             AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
             dumperSettings.m_prettifyOutput = true;
-            dumperSettings.m_includeFilter = [](AZStd::string_view path)
+            dumperSettings.m_includeFilter = [&bookmarkKeyName](AZStd::string_view path)
             {
-                AZStd::string_view o3dePrefixPath(s_viewBookmarksRegistryPath);
+                AZStd::string_view o3dePrefixPath(s_viewBookmarksRegistryPath /*+ bookmarkKeyName*/);
                 return o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
             };
 
@@ -141,15 +146,38 @@ namespace AzToolsFramework
                 AZ::ComponentApplicationBus::BroadcastResult(levelEntity, &AZ::ComponentApplicationBus::Events::FindEntity, levelEntityId);
                 if (levelEntity)
                 {
-                    AZStd::vector<ViewBookmarkComponent*> bookmarkComponents = levelEntity->FindComponents<ViewBookmarkComponent>();
-                    if (!bookmarkComponents.empty())
+                    ViewBookmarkComponent* bookmarkComponent = levelEntity->FindComponent<ViewBookmarkComponent>();
+                    if (bookmarkComponent)
                     {
-                        return bookmarkComponents.front();
+                        return bookmarkComponent;
                     }
                 }
             }
             return nullptr;
         }
 
+        
+        AZStd::string ViewBookmarkLoader::GenerateBookmarkFileName() const
+        {
+            AZ::EntityId levelEntityId;
+            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                levelEntityId, &AzToolsFramework::ToolsApplicationRequests::GetCurrentLevelEntityId);
+
+            if (levelEntityId.IsValid())
+            {
+                AZ::Entity* levelEntity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(levelEntity, &AZ::ComponentApplicationBus::Events::FindEntity, levelEntityId);
+                if (levelEntity)
+                {
+                    AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+                    AZStd::string sTime = AZStd::string::format("%llu", now.time_since_epoch().count());
+                    //AZStd::string sDate = AZStd::string::format("{:%H:%M:%S}", now.time_since_epoch());
+
+                    return levelEntity->GetName() + sTime;
+                }
+            }
+
+            return AZStd::string();
+        }
     } // namespace Prefab
 } // namespace AzToolsFramework
