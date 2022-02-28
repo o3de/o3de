@@ -161,12 +161,12 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_DirectionHasNoAffectOnTotalForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_DirectionHasNoAffectOnTotalForce as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_StartAsleepWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_SliceFileInstantiates(self, request, workspace, editor, launcher_platform):

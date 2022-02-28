@@ -227,6 +227,12 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C12712452_ScriptCanvas_CollisionEvents(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_CollisionEvents as test_module
 
+    class C12868578_ForceRegion_DirectionHasNoAffectOnMagnitude(EditorSharedTest):
+        from .tests.force_region import ForceRegion_DirectionHasNoAffectOnTotalForce as test_module
+
+    class C4976204_Verify_Start_Asleep_Condition(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -245,13 +251,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-
-
-    class C12868578_ForceRegion_DirectionHasNoAffectOnMagnitude(EditorSharedTest):
-        from .tests.force_region import ForceRegion_DirectionHasNoAffectOnTotalForce as test_module
-
-    class C4976204_Verify_Start_Asleep_Condition(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
 
     class C6090546_ForceRegion_SliceFileInstantiates(EditorSharedTest):
         from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
