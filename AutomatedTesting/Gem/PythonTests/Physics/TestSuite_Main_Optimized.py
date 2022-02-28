@@ -267,6 +267,11 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody(EditorSharedTest):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
 
+    @pytest.mark.xfail(
+        reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
+    class C4976202_RigidBody_StopsWhenBelowKineticThreshold(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -289,9 +294,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-    @pytest.mark.xfail(reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
-    class C4976202_RigidBody_StopsWhenBelowKineticThreshold(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
 
     class C13351703_COM_NotIncludeTriggerShapes(EditorSharedTest):
         from .tests.rigid_body import RigidBody_COM_NotIncludesTriggerShapes as test_module
