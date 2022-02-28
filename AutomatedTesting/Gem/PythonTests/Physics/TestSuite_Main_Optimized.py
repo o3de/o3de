@@ -220,6 +220,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C6090552_ForceRegion_LinearDampingNegative(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroLinearDampingDoesNothing as test_module
 
+    class C5968760_ForceRegion_CheckNetForceChange(EditorSharedTest):
+        from .tests.force_region import ForceRegion_MovingForceRegionChangesNetForce as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -237,10 +240,6 @@ class TestAutomation(EditorTestSuite):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
 
-
-
-    class C5968760_ForceRegion_CheckNetForceChange(EditorSharedTest):
-        from .tests.force_region import ForceRegion_MovingForceRegionChangesNetForce as test_module
 
     @pytest.mark.xfail(reason="Ongoing issue in Script Canvas, AZ::Event fail to compile on Script Canvas")
     class C12712452_ScriptCanvas_CollisionEvents(EditorSharedTest):

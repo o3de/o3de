@@ -151,7 +151,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_MovingForceRegionChangesNetForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_MovingForceRegionChangesNetForce as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ScriptCanvas_CollisionEvents(self, request, workspace, editor, launcher_platform):
