@@ -8,7 +8,9 @@
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomToolsFramework/CreateDocumentDialog/CreateDocumentDialog.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -23,7 +25,6 @@
 #include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
 #include <Viewport/MaterialViewportModule.h>
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
 
 #include <QDesktopServices>
@@ -157,17 +158,29 @@ namespace MaterialEditor
             {
                 menu->addAction(QObject::tr("Create Material..."), [caller, entries, this]()
                     {
-                        CreateMaterialDialog createDialog(entries.front()->GetFullPath().c_str(), caller);
+                        AtomToolsFramework::CreateDocumentDialog createDialog(
+                            tr("Create Material"),
+                            tr("Select Material Type"),
+                            tr("Select Material Path"),
+                            entries.front()->GetFullPath().c_str(),
+                            { AZ::RPI::MaterialSourceData::Extension },
+                            AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
+                                "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
+                                AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype")),
+                            [](const AZ::Data::AssetInfo& assetInfo)
+                            {
+                                return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".azmaterialtype"); },
+                            caller);
                         createDialog.adjustSize();
 
                         if (createDialog.exec() == QDialog::Accepted &&
-                            !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
-                            !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
+                            !createDialog.m_sourcePath.isEmpty() &&
+                            !createDialog.m_targetPath.isEmpty())
                         {
                             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
                                 m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
-                                createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
-                                createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
+                                createDialog.m_sourcePath.toUtf8().constData(),
+                                createDialog.m_targetPath.toUtf8().constData());
                         }
                     });
             });
