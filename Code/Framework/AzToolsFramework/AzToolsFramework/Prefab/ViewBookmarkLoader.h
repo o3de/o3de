@@ -12,26 +12,22 @@
 
 namespace AzToolsFramework
 {
-    namespace Prefab
+    class ViewBookmarkLoader final : public ViewBookmarkLoaderInterface
     {
-        class ViewBookmarkLoader final : public ViewBookmarkLoaderInterface
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(ViewBookmarkLoader, AZ::SystemAllocator, 0);
-            AZ_RTTI(ViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkLoaderInterface);
+    public:
+        AZ_CLASS_ALLOCATOR(ViewBookmarkLoader, AZ::SystemAllocator, 0);
+        AZ_RTTI(ViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkLoaderInterface);
 
-            void RegisterViewBookmarkLoaderInterface();
-            void UnregisterViewBookmarkLoaderInterface();
+        void RegisterViewBookmarkLoaderInterface();
+        void UnregisterViewBookmarkLoaderInterface();
 
-            void SaveBookmarkSettingsFile() override;
-            bool SaveBookmark(ViewBookmark bookamark) override;
-            bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
-            bool LoadViewBookmarks() override;
-            ViewBookmark GetBookmarkAtIndex(int index) const override;
+        void SaveBookmarkSettingsFile() override;
+        bool SaveBookmark(ViewBookmark bookamark) override;
+        bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
+        bool LoadViewBookmarks() override;
+        ViewBookmark GetBookmarkAtIndex(int index) const override;
 
-        private:
-            ViewBookmarkComponent* FindBookmarkComponent() const;
-        };
-
-    } // namespace Prefab
+    private:
+        ViewBookmarkComponent* FindBookmarkComponent() const;
+    };
 } // namespace AzToolsFramework

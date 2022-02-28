@@ -15,84 +15,81 @@
  */
 namespace AzToolsFramework
 {
-    namespace Prefab
+    static constexpr const char* s_viewBookmarksRegistryPath = "/O3DE/ViewBookmarks/";
+
+    void ViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
     {
-        static constexpr const char* s_viewBookmarksRegistryPath = "/O3DE/ViewBookmarks/";
+        AZ::Interface<ViewBookmarkLoaderInterface>::Register(this);
+    }
 
-        void ViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
+    void ViewBookmarkLoader::UnregisterViewBookmarkLoaderInterface()
+    {
+        AZ::Interface<ViewBookmarkLoaderInterface>::Unregister(this);
+    }
+
+    void ViewBookmarkLoader::SaveBookmarkSettingsFile()
+    {
+    }
+
+    bool ViewBookmarkLoader::SaveBookmark(ViewBookmark bookamark)
+    {
+        ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
+        if (bookmarkComponent)
         {
-            AZ::Interface<ViewBookmarkLoaderInterface>::Register(this);
+            bookmarkComponent->AddBookmark(bookamark);
+            return true;
+        }
+        return false;
+    }
+
+    bool ViewBookmarkLoader::SaveLastKnownLocationInLevel(ViewBookmark bookamark)
+    {
+        ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
+        if (bookmarkComponent)
+        {
+            bookmarkComponent->SaveLastKnownLocation(bookamark);
+            return true;
+        }
+        return false;
+    }
+
+    bool ViewBookmarkLoader::LoadViewBookmarks()
+    {
+        return false;
+    }
+
+    ViewBookmark ViewBookmarkLoader::GetBookmarkAtIndex(int index) const
+    {
+        ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
+        if (bookmarkComponent)
+        {
+            return bookmarkComponent->GetBookmarkAtIndex(index);
         }
 
-        void ViewBookmarkLoader::UnregisterViewBookmarkLoaderInterface()
-        {
-            AZ::Interface<ViewBookmarkLoaderInterface>::Unregister(this);
-        }
+        // TODO: return invalid bookmark;
+        return ViewBookmark();
+    }
 
-        void ViewBookmarkLoader::SaveBookmarkSettingsFile()
-        {
-        }
+    ViewBookmarkComponent* ViewBookmarkLoader::FindBookmarkComponent() const
+    {
+        AZ::EntityId levelEntityId;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            levelEntityId, &AzToolsFramework::ToolsApplicationRequests::GetCurrentLevelEntityId);
 
-        bool ViewBookmarkLoader::SaveBookmark(ViewBookmark bookamark)
+        if (levelEntityId.IsValid())
         {
-            ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
-            if (bookmarkComponent)
+            AZ::Entity* levelEntity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(levelEntity, &AZ::ComponentApplicationBus::Events::FindEntity, levelEntityId);
+            if (levelEntity)
             {
-                bookmarkComponent->AddBookmark(bookamark);
-                return true;
-            }
-            return false;
-        }
-
-        bool ViewBookmarkLoader::SaveLastKnownLocationInLevel(ViewBookmark bookamark)
-        {
-            ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
-            if (bookmarkComponent)
-            {
-                bookmarkComponent->SaveLastKnownLocation(bookamark);
-                return true;
-            }
-            return false;
-        }
-
-        bool ViewBookmarkLoader::LoadViewBookmarks()
-        {
-            return false;
-        }
-
-        ViewBookmark ViewBookmarkLoader::GetBookmarkAtIndex(int index) const
-        {
-            ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
-            if (bookmarkComponent)
-            {
-                return bookmarkComponent->GetBookmarkAtIndex(index);
-            }
-
-            // TODO: return invalid bookmark;
-            return ViewBookmark();
-        }
-
-        ViewBookmarkComponent* ViewBookmarkLoader::FindBookmarkComponent() const
-        {
-            AZ::EntityId levelEntityId;
-            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                levelEntityId, &AzToolsFramework::ToolsApplicationRequests::GetCurrentLevelEntityId);
-
-            if (levelEntityId.IsValid())
-            {
-                AZ::Entity* levelEntity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(levelEntity, &AZ::ComponentApplicationBus::Events::FindEntity, levelEntityId);
-                if (levelEntity)
+                AZStd::vector<ViewBookmarkComponent*> bookmarkComponents = levelEntity->FindComponents<ViewBookmarkComponent>();
+                if (!bookmarkComponents.empty())
                 {
-                    AZStd::vector<ViewBookmarkComponent*> bookmarkComponents = levelEntity->FindComponents<ViewBookmarkComponent>();
-                    if (!bookmarkComponents.empty())
-                    {
-                        return bookmarkComponents.front();
-                    }
+                    return bookmarkComponents.front();
                 }
             }
-            return nullptr;
         }
+        return nullptr;
+    }
 
-    } // namespace Prefab
 } // namespace AzToolsFramework
