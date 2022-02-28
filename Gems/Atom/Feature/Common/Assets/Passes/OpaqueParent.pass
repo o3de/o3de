@@ -478,13 +478,6 @@
                     "TemplateName": "SsaoParentTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "LinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
-                        {
                             "LocalSlot": "Modulate",
                             "AttachmentRef": {
                                 "Pass": "SubsurfaceScatteringPass",

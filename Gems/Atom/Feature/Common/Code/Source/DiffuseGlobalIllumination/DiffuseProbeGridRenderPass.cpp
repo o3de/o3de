@@ -82,7 +82,7 @@ namespace AZ
 
             // get output attachment size
             AZ_Assert(GetInputOutputCount() > 0, "DiffuseProbeGridRenderPass: Could not find output bindings");
-            RPI::PassAttachment* m_outputAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* m_outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             AZ_Assert(m_outputAttachment, "DiffuseProbeGridRenderPass: Output binding has no attachment!");
             
             RHI::Size size = m_outputAttachment->m_descriptor.m_image.m_size;
