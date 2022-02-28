@@ -278,6 +278,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5296614_PhysXMaterial_ColliderShape(EditorSharedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
 
+    class C4982595_Collider_TriggerDisablesCollision(EditorSharedTest):
+        from .tests.collider import Collider_TriggerPassThrough as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -298,10 +301,6 @@ class TestAutomation(EditorTestSuite):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
 
-
-
-    class C4982595_Collider_TriggerDisablesCollision(EditorSharedTest):
-        from .tests.collider import Collider_TriggerPassThrough as test_module
 
     class C14976307_Gravity_SetGravityWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_SetGravityWorks as test_module
