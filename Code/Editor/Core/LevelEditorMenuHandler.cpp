@@ -165,7 +165,6 @@ LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPan
     : QObject(mainWindow)
     , m_mainWindow(mainWindow)
     , m_viewPaneManager(viewPaneManager)
-    , m_actionManager(mainWindow->GetActionManager())
 {
 #if defined(AZ_PLATFORM_MAC)
     // Hide the non-native toolbar, then setNativeMenuBar to ensure it is always visible on macOS.
@@ -195,8 +194,6 @@ void LevelEditorMenuHandler::Initialize()
     m_topLevelMenus << CreateFileMenu();
 
     auto editMenu = CreateEditMenu();
-    auto editMenuWrapper = ActionManager::MenuWrapper(editMenu, m_actionManager);
-    PopulateEditMenu(editMenuWrapper);
 
     m_editmenu = editMenu;
 
@@ -209,13 +206,6 @@ void LevelEditorMenuHandler::Initialize()
     // have to do this after creating the AWS Menu for the first time
     ResetToolsMenus();
 
-    // Add our menus to the main window menu bar
-    QMenuBar* menuBar = m_mainWindow->menuBar();
-    menuBar->clear();
-    for (QMenu* menu : m_topLevelMenus)
-    {
-        menuBar->addMenu(menu);
-    }
 }
 
 bool LevelEditorMenuHandler::MRUEntryIsValid(const QString& entry, const QString& gameFolderPath)
@@ -306,154 +296,11 @@ void LevelEditorMenuHandler::UpdateViewLayoutsMenu(ActionManager::MenuWrapper& l
 
 void LevelEditorMenuHandler::ResetToolsMenus()
 {
-    if (!m_toolsMenu->isEmpty())
-    {
-        // Clear everything from the Tools menu
-        m_toolsMenu->clear();
-        AzToolsFramework::EditorMenuNotificationBus::Broadcast(&AzToolsFramework::EditorMenuNotificationBus::Handler::OnResetToolMenuItems);
-    }
-
-    QtViewPanes allRegisteredViewPanes = QtViewPaneManager::instance()->GetRegisteredPanes();
-
-    QMap<QString, QList<QtViewPane*> > menuMap;
-
-    CreateMenuMap(menuMap, allRegisteredViewPanes);
-
-    CreateMenuOptions(&menuMap, m_toolsMenu, LyViewPane::CategoryTools);
-
-    AzToolsFramework::EditorMenuNotificationBus::Broadcast(&AzToolsFramework::EditorMenuNotificationBus::Handler::OnPopulateToolMenuItems);
-
-    m_toolsMenu.AddSeparator();
-
-    // Other
-    auto otherSubMenu = m_toolsMenu.AddMenu(QObject::tr("Other"));
-
-    CreateMenuOptions(&menuMap, otherSubMenu, LyViewPane::CategoryOther);
-
-    m_toolsMenu.AddSeparator();
-
-    // Optional Sub Menus
-    if (!menuMap.isEmpty())
-    {
-        QMap<QString, QList<QtViewPane*> >::iterator it = menuMap.begin();
-
-        while (it != menuMap.end())
-        {
-            auto currentSubMenu = m_toolsMenu.AddMenu(it.key());
-            CreateMenuOptions(&menuMap, currentSubMenu, it.key().toStdString().c_str());
-
-            it = menuMap.begin();
-        }
-    }
 }
 
 QMenu* LevelEditorMenuHandler::CreateFileMenu()
 {
-    auto fileMenu = m_actionManager->AddMenu(tr("&File"), s_fileMenuId);
-    connect(fileMenu, &QMenu::aboutToShow, this, &LevelEditorMenuHandler::OnUpdateOpenRecent);
-
-    // New level
-    auto fileNew = fileMenu.AddAction(ID_FILE_NEW);
-    GetIEditor()->RegisterNotifyListener(new EditorListener(fileNew, [fileNew](EEditorNotifyEvent e)
-    {
-        DisableActionWhileLevelChanges(fileNew, e);
-    }));
-
-    // Open level...
-    auto fileOpenLevel = fileMenu.AddAction(ID_FILE_OPEN_LEVEL);
-    GetIEditor()->RegisterNotifyListener(new EditorListener(fileOpenLevel, [fileOpenLevel](EEditorNotifyEvent e)
-    {
-        DisableActionWhileLevelChanges(fileOpenLevel, e);
-    }));
-
-#ifdef ENABLE_SLICE_EDITOR
-    // New slice
-    auto fileNewSlice = fileMenu.AddAction(ID_FILE_NEW_SLICE);
-    GetIEditor()->RegisterNotifyListener(new EditorListener(fileNewSlice, [fileNewSlice](EEditorNotifyEvent e)
-    {
-        DisableActionWhileLevelChanges(fileNewSlice, e);
-    }));
-
-    // Open slice...
-    auto fileOpenSlice = fileMenu.AddAction(ID_FILE_OPEN_SLICE);
-    GetIEditor()->RegisterNotifyListener(new EditorListener(fileOpenSlice, [fileOpenSlice](EEditorNotifyEvent e)
-    {
-        DisableActionWhileLevelChanges(fileOpenSlice, e);
-    }));
-
-    // Save Selected Slice
-    auto saveSelectedSlice = fileMenu.AddAction(ID_FILE_SAVE_SELECTED_SLICE);
-    saveSelectedSlice->setVisible(false);
-    GetIEditor()->RegisterNotifyListener(new EditorListener(saveSelectedSlice, [saveSelectedSlice](EEditorNotifyEvent e)
-    {
-        HideActionWhileEntitiesDeselected(saveSelectedSlice, e);
-    }));
-
-    // Save Slice to Root
-    auto saveSliceToRoot = fileMenu.AddAction(ID_FILE_SAVE_SLICE_TO_ROOT);
-    saveSliceToRoot->setVisible(false);
-    GetIEditor()->RegisterNotifyListener(new EditorListener(saveSliceToRoot, [saveSliceToRoot](EEditorNotifyEvent e)
-    {
-        HideActionWhileEntitiesDeselected(saveSliceToRoot, e);
-    }));
-#endif
-    // Open Recent
-    m_mostRecentLevelsMenu = fileMenu.AddMenu(tr("Open Recent"));
-    connect(m_mostRecentLevelsMenu, &QMenu::aboutToShow, this, &LevelEditorMenuHandler::UpdateMRUFiles);
-
-    OnUpdateOpenRecent();
-
-    // Import...
-    auto assetImporterMenu = fileMenu.Get()->addAction(tr("Import..."));
-    connect(assetImporterMenu, &QAction::triggered, this, &LevelEditorMenuHandler::ActivateAssetImporter);
-
-    fileMenu.AddSeparator();
-
-    // Save
-    fileMenu.AddAction(ID_FILE_SAVE_LEVEL);
-
-    // Save As...
-    fileMenu.AddAction(ID_FILE_SAVE_AS);
-
-    // Save Level Statistics
-    fileMenu.AddAction(ID_TOOLS_LOGMEMORYUSAGE);
-    fileMenu.AddSeparator();
-
-    // Project Settings
-    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS);
-
-    // Platform Settings - Project Settings Tool
-    // Shortcut must be set while adding the action otherwise it doesn't work
-    fileMenu.Get()->addAction(
-        tr(LyViewPane::ProjectSettingsTool),
-        []() { QtViewPaneManager::instance()->OpenPane(LyViewPane::ProjectSettingsTool); },
-        tr("Ctrl+Shift+P"));
-
-    fileMenu.AddSeparator();
-    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_NEW);
-    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_OPEN);
-    fileMenu.AddSeparator();
-
-    // NEWMENUS: NEEDS IMPLEMENTATION
-    // should have the equivalent of a Close here; it should be close the current slice, but the editor isn't slice based right now
-    // so that won't work.
-    // instead, it should be Close of the level, but we don't have that either. I'm leaving it here so that it's obvious where UX intended it
-    // to go
-    //fileMenu.AddAction(ID_FILE_CLOSE);
-
-    // Show Log File
-    fileMenu.AddAction(ID_FILE_EDITLOGFILE);
-
-#ifdef ENABLE_SLICE_EDITOR
-    fileMenu.AddSeparator();
-    fileMenu.AddAction(ID_FILE_RESAVESLICES);
-#endif
-
-    fileMenu.AddSeparator();
-
-    fileMenu.AddAction(ID_APP_EXIT);
-
-    return fileMenu;
+    return nullptr;
 }
 
 void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMenu)
@@ -571,290 +418,32 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
 
 QMenu* LevelEditorMenuHandler::CreateEditMenu()
 {
-    return m_actionManager->AddMenu(tr("&Edit"), s_editMenuId);
+    return nullptr;
 }
 
 QMenu* LevelEditorMenuHandler::CreateGameMenu()
 {
-    auto gameMenu = m_actionManager->AddMenu(tr("&Game"), s_gameMenuId);
-
-    // Play Game
-    gameMenu.AddAction(ID_VIEW_SWITCHTOGAME);
-
-    // Enable Physics/AI
-    gameMenu.AddAction(ID_SWITCH_PHYSICS);
-    gameMenu.AddSeparator();
-
-
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (!usePrefabSystemForLevels)
-    {
-        // Export to Engine
-        gameMenu.AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE);
-    }
-
-    // Export Selected Objects
-    gameMenu.AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS);
-
-    // Export Occlusion Mesh
-    gameMenu.AddAction(ID_FILE_EXPORTOCCLUSIONMESH);
-
-    gameMenu.AddSeparator();
-
-    // Synchronize Player with Camera
-    gameMenu.AddAction(ID_GAME_SYNCPLAYER);
-
-    gameMenu.AddSeparator();
-
-    // Audio
-    auto audioMenu = gameMenu.AddMenu(tr("Audio"));
-
-    // Stop All Sounds
-    audioMenu.AddAction(ID_SOUND_STOPALLSOUNDS);
-
-    // Refresh Audio
-    audioMenu.AddAction(ID_AUDIO_REFRESH_AUDIO_SYSTEM);
-
-    gameMenu.AddSeparator();
-
-    CreateDebuggingSubMenu(gameMenu);
-
-    return gameMenu;
+    return nullptr;
 }
 
 QMenu* LevelEditorMenuHandler::CreateToolsMenu()
 {
-    // Tools
-    m_toolsMenu = m_actionManager->AddMenu(tr("&Tools"), s_toolMenuId);
-    return m_toolsMenu;
+    return nullptr;
 }
 
 QMenu* LevelEditorMenuHandler::CreateViewMenu()
 {
-    auto viewMenu = m_actionManager->AddMenu(tr("&View"), s_viewMenuId);
-
-    // NEWMENUS: NEEDS IMPLEMENTATION
-    // minimize window - Ctrl+M
-    // Zoom - Ctrl+Plus(+) -> Need the inverse too?
-
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    // Cycle Viewports
-    viewMenu.AddAction(ID_VIEW_CYCLE2DVIEWPORT);
-#endif
-
-    // Center on Selection
-    viewMenu.AddAction(ID_MODIFY_GOTO_SELECTION);
-
-    // Show Quick Access Bar
-    viewMenu.AddAction(ID_OPEN_QUICK_ACCESS_BAR);
-
-    // Layouts
-    if (CViewManager::IsMultiViewportEnabled()) // Only supports 1 viewport for now.
-    {
-        // Disable Layouts menu
-        m_layoutsMenu = viewMenu.AddMenu(tr("Layouts"));
-        connect(m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, this, [this]()
-            {
-                UpdateViewLayoutsMenu(m_layoutsMenu);
-            });
-
-        UpdateViewLayoutsMenu(m_layoutsMenu);
-    }
-
-    // Viewport
-    auto viewportViewsMenuWrapper = viewMenu.AddMenu(tr("Viewport"));
-
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    auto viewportTypesMenuWrapper = viewportViewsMenuWrapper.AddMenu(tr("Viewport Type"));
-
-    m_viewportViewsMenu = viewportViewsMenuWrapper;
-    connect(viewportTypesMenuWrapper, &QMenu::aboutToShow, this, &LevelEditorMenuHandler::UpdateOpenViewPaneMenu);
-
-    InitializeViewPaneMenu(m_actionManager, viewportTypesMenuWrapper, [](const QtViewPane& view)
-        {
-            return view.IsViewportPane();
-        });
-
-    viewportViewsMenuWrapper.AddSeparator();
-
-#endif
-
-    if (CViewManager::IsMultiViewportEnabled())
-    {
-        viewportViewsMenuWrapper.AddAction(ID_VIEW_CONFIGURELAYOUT);
-    }
-    viewportViewsMenuWrapper.AddSeparator();
-
-    viewportViewsMenuWrapper.AddAction(ID_DISPLAY_GOTOPOSITION);
-    viewportViewsMenuWrapper.AddAction(ID_MODIFY_GOTO_SELECTION);
-
-    auto gotoLocationMenu = viewportViewsMenuWrapper.AddMenu(tr("Go to Location"));
-    gotoLocationMenu.AddAction(ID_GOTO_LOC1);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC2);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC3);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC4);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC5);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC6);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC7);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC8);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC9);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC10);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC11);
-    gotoLocationMenu.AddAction(ID_GOTO_LOC12);
-
-    auto rememberLocationMenu = viewportViewsMenuWrapper.AddMenu(tr("Remember Location"));
-    rememberLocationMenu.AddAction(ID_TAG_LOC1);
-    rememberLocationMenu.AddAction(ID_TAG_LOC2);
-    rememberLocationMenu.AddAction(ID_TAG_LOC3);
-    rememberLocationMenu.AddAction(ID_TAG_LOC4);
-    rememberLocationMenu.AddAction(ID_TAG_LOC5);
-    rememberLocationMenu.AddAction(ID_TAG_LOC6);
-    rememberLocationMenu.AddAction(ID_TAG_LOC7);
-    rememberLocationMenu.AddAction(ID_TAG_LOC8);
-    rememberLocationMenu.AddAction(ID_TAG_LOC9);
-    rememberLocationMenu.AddAction(ID_TAG_LOC10);
-    rememberLocationMenu.AddAction(ID_TAG_LOC11);
-    rememberLocationMenu.AddAction(ID_TAG_LOC12);
-
-    viewportViewsMenuWrapper.AddSeparator();
-
-    auto switchCameraMenu = viewportViewsMenuWrapper.AddMenu(tr("Switch Camera"));
-    switchCameraMenu.AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA);
-    switchCameraMenu.AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA);
-    switchCameraMenu.AddAction(ID_SWITCHCAMERA_SELECTEDCAMERA);
-    switchCameraMenu.AddAction(ID_SWITCHCAMERA_NEXT);
-
-    // NEWMENUS:
-    // MISSING AVIRECORDER
-
-    viewportViewsMenuWrapper.AddSeparator();
-    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
-    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Icons);
-
-    // Refresh Style
-    viewMenu.AddAction(ID_SKINS_REFRESH);
-
-    return viewMenu;
+    return nullptr;
 }
 
 QMenu* LevelEditorMenuHandler::CreateHelpMenu()
 {
-    // Help
-    auto helpMenu = m_actionManager->AddMenu(tr("&Help"), s_helpMenuId);
-
-    auto lineEditSearchAction = new QWidgetAction(m_mainWindow);
-    auto containerWidget = new QWidget(m_mainWindow);
-    auto lineEdit = new AzQtComponents::SearchLineEdit(m_mainWindow);
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(lineEdit);
-    containerWidget->setLayout(layout);
-    containerWidget->setContentsMargins(2, 0, 2, 0);
-    lineEdit->setPlaceholderText(tr("Search documentation"));
-    lineEditSearchAction->setDefaultWidget(containerWidget);
-
-    auto searchAction = [lineEdit]()
-        {
-            auto text = lineEdit->text();
-            if (text.isEmpty())
-            {
-                QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
-            }
-            else
-            {
-                static const int versionStringSize = 128;
-                char productVersionString[versionStringSize];
-                const SFileVersion& productVersion = gEnv->pSystem->GetProductVersion();
-                productVersion.ToString(productVersionString, versionStringSize);
-
-                QUrl docSearchUrl("https://o3de.org/docs/");
-                QUrlQuery docSearchQuery;
-                docSearchQuery.addQueryItem("query", text);
-                docSearchUrl.setQuery(docSearchQuery);
-                QDesktopServices::openUrl(docSearchUrl);
-            }
-            lineEdit->clear();
-        };
-    connect(lineEdit, &QLineEdit::returnPressed, this, searchAction);
-    connect(helpMenu.Get(), &QMenu::aboutToHide, lineEdit, &QLineEdit::clear);
-    connect(helpMenu.Get(), &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
-    helpMenu->addAction(lineEditSearchAction);
-
-    // Tutorials
-    helpMenu.AddAction(ID_DOCUMENTATION_TUTORIALS);
-
-    // Documentation
-    auto documentationMenu = helpMenu.AddMenu(tr("Documentation"));
-
-    // Open 3D Engine Documentation
-    documentationMenu.AddAction(ID_DOCUMENTATION_O3DE);
-
-    // GameLift Documentation
-    documentationMenu.AddAction(ID_DOCUMENTATION_GAMELIFT);
-
-    // Release Notes
-    documentationMenu.AddAction(ID_DOCUMENTATION_RELEASENOTES);
-
-    // GameDev Resources
-    auto gameDevResourceMenu = helpMenu.AddMenu(tr("GameDev Resources"));
-
-    // Game Dev Blog
-    gameDevResourceMenu.AddAction(ID_DOCUMENTATION_GAMEDEVBLOG);
-
-    // Forums
-    gameDevResourceMenu.AddAction(ID_DOCUMENTATION_FORUMS);
-
-    // AWS Support
-    gameDevResourceMenu.AddAction(ID_DOCUMENTATION_AWSSUPPORT);
-
-    helpMenu.AddSeparator();
-
-    // About Open 3D Engine
-    helpMenu.AddAction(ID_APP_ABOUT);
-
-    // Welcome dialog
-    auto helpWelcome = helpMenu.AddAction(ID_APP_SHOW_WELCOME);
-    GetIEditor()->RegisterNotifyListener(new EditorListener(helpWelcome, [helpWelcome](EEditorNotifyEvent e)
-        {
-            DisableActionWhileLevelChanges(helpWelcome, e);
-        }));
-
-    return helpMenu;
+    return nullptr;
 }
 
-QAction* LevelEditorMenuHandler::CreateViewPaneAction(const QtViewPane* view)
+QAction* LevelEditorMenuHandler::CreateViewPaneAction([[maybe_unused]] const QtViewPane* view)
 {
-    QAction* action = m_actionManager->HasAction(view->m_id) ? m_actionManager->GetAction(view->m_id) : nullptr;
-
-    if (!action)
-    {
-        const QString menuText = view->m_options.optionalMenuText.length() > 0
-            ? view->m_options.optionalMenuText
-            : view->m_name;
-
-        action = new QAction(menuText, this);
-        action->setObjectName(view->m_name);
-        action->setCheckable(true);
-
-        if (view->m_options.showOnToolsToolbar)
-        {
-            action->setIcon(QIcon(view->m_options.toolbarIcon.c_str()));
-        }
-
-        m_actionManager->AddAction(view->m_id, action);
-
-        if (!view->m_options.shortcut.isEmpty())
-        {
-            action->setShortcut(view->m_options.shortcut);
-        }
-
-        QObject::connect(
-            action, &QAction::triggered, this, &LevelEditorMenuHandler::checkOrOpenView, Qt::UniqueConnection);
-    }
-
-    return action;
+    return nullptr;
 }
 
 // Function used to show menu options without its icon and be able to toggle shortcut visibility in the new menu layout
@@ -966,17 +555,6 @@ void LevelEditorMenuHandler::CreateMenuOptions(
                 }
             };
         }
-        else
-        {
-            const QString menuText = viewpane->m_options.optionalMenuText.length() > 0
-                ? viewpane->m_options.optionalMenuText
-                : viewpane->m_name;
-
-            sortMenuMap[menuText] = [this, viewpane, &menu]()
-            {
-                CreateViewPaneMenuItem(m_actionManager, menu, viewpane);
-            };
-        }
     }
 
     if (category == LyViewPane::CategoryTools)
@@ -1046,29 +624,6 @@ void LevelEditorMenuHandler::UpdateMRUFiles()
 
         QString displayName;
         mruList->GetDisplayName(displayName, i, sCurDir);
-
-        QString entry = QString("%1 %2").arg(i + 1).arg(displayName);
-        QAction* action = m_actionManager->GetAction(ID_FILE_MRU_FILE1 + i);
-        action->setText(entry);
-
-        m_actionManager->RegisterActionHandler(ID_FILE_MRU_FILE1 + i, [i]()
-            {
-                auto cryEdit = CCryEditApp::instance();
-                RecentFileList* mruList = cryEdit->GetRecentFileList();
-                // Check file is still available
-                if (mruList->GetSize() > i)
-                {
-                    cryEdit->OpenDocumentFile((*mruList)[i].toUtf8().data());
-                }
-            });
-        m_actionManager->RegisterUpdateCallback(ID_FILE_MRU_FILE1 + i, cryEdit, &CCryEditApp::OnUpdateFileOpen);
-
-        GetIEditor()->RegisterNotifyListener(new EditorListener(action, [action](EEditorNotifyEvent e)
-            {
-                DisableActionWhileLevelChanges(action, e);
-            }));
-
-        m_mostRecentLevelsMenu->addAction(action);
     }
 
     // Used when disabling the "Open Recent" menu options
@@ -1193,28 +748,9 @@ void LevelEditorMenuHandler::AddDisableActionInSimModeListener(QAction* action)
 }
 
 void LevelEditorMenuHandler::OnEditorModeActivated(
-    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
+    [[maybe_unused]] AzToolsFramework::ViewportEditorMode mode)
 {
-    if (mode == ViewportEditorMode::Component)
-    {
-        if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-            !menuWrapper.isNull())
-        {
-            // copy of menu actions
-            auto actions = menuWrapper.Get()->actions();
-            // remove all non-reserved edit menu options
-            actions.erase(
-                std::remove_if(actions.begin(), actions.end(), [](QAction* action)
-                {
-                    return !action->property("Reserved").toBool();
-                }),
-                actions.end());
-
-            // clear and update the menu with new actions
-            menuWrapper.Get()->clear();
-            menuWrapper.Get()->addActions(actions);
-        }
-    }
 }
 
 void LevelEditorMenuHandler::OnEditorModeDeactivated(
@@ -1226,39 +762,17 @@ void LevelEditorMenuHandler::OnEditorModeDeactivated(
     }
 }
 
-void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
+void LevelEditorMenuHandler::AddEditMenuAction([[maybe_unused]] QAction* action)
 {
-    if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-        !menuWrapper.isNull())
-    {
-        menuWrapper.Get()->addAction(action);
-    }
 }
 
-void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar)
+void LevelEditorMenuHandler::AddMenuAction(
+    [[maybe_unused]] AZStd::string_view categoryId, [[maybe_unused]] QAction* action, [[maybe_unused]]  bool addToToolsToolbar)
 {
-    auto menuWrapper = m_actionManager->FindMenu(categoryId.data());
-    if (menuWrapper.isNull())
-    {
-        AZ_Assert(false, "No %s category exists in Editor menu.");
-        return;
-    }
-    menuWrapper.Get()->addAction(action);
-
-    if (addToToolsToolbar)
-    {
-        m_mainWindow->GetToolbarManager()->AddButtonToEditToolbar(action);
-    }
 }
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()
 {
-    if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-        !menuWrapper.isNull())
-    {
-        menuWrapper.Get()->clear();
-        PopulateEditMenu(menuWrapper);
-    }
 }
 
 #include <Core/moc_LevelEditorMenuHandler.cpp>

@@ -623,10 +623,6 @@ void CGameEngine::HandleQuitRequest(IConsoleCmdArgs* /*args*/)
         GetIEditor()->GetGameEngine()->RequestSetGameMode(false);
         gEnv->pConsole->ShowConsole(false);
     }
-    else
-    {
-        MainWindow::instance()->GetActionManager()->GetAction(ID_APP_EXIT)->trigger();
-    }
 }
 
 void CGameEngine::RequestSetGameMode(bool inGame)

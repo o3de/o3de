@@ -28,45 +28,14 @@ QString RemoveAcceleratorAmpersands(const QString& original)
     return updated;
 }
 
-QVector<QAction*> GetAllActionsForMenu(const QMenu* menu)
+QVector<QAction*> GetAllActionsForMenu([[maybe_unused]] const QMenu* menu)
 {
-    QList<QAction*> menuActions = menu->actions();
     QVector<QAction*> actions;
-    actions.reserve(menuActions.size());
-    foreach(QAction * action, menuActions)
-    {
-        if (action->menu() != nullptr)
-        {
-            QVector<QAction*> subMenuActions = GetAllActionsForMenu(action->menu());
-            actions.reserve(actions.size() + subMenuActions.size());
-            actions += subMenuActions;
-        }
-        else if (!action->isSeparator())
-        {
-            actions.push_back(action);
-        }
-    }
-
     return actions;
 }
 
-void ProcessAllActions(const QWidget* parent, const std::function<bool(QAction*)>& processor)
+void ProcessAllActions([[maybe_unused]] const QWidget* parent, [[maybe_unused]] const std::function<bool(QAction*)>& processor)
 {
-    QMenuBar* menuBar = parent->findChild<QMenuBar*>();
-    QList<QAction*> menuBarActions = menuBar->actions();
-
-    for(QAction* menuAction : menuBarActions)
-    {
-        processor(menuAction);
-        auto actions = GetAllActionsForMenu(menuAction->menu());
-        for(QAction* action : actions)
-        {
-            if (Q_UNLIKELY(processor(action)))
-            {
-                return;
-            }
-        }
-    }
 }
 
 QString GetName(const QAction* action)

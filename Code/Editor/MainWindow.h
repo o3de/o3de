@@ -106,8 +106,6 @@ public:
     HWND GetNativeHandle();
 #endif // #ifdef Q_OS_WIN
 
-    ActionManager* GetActionManager() const;
-
     void Initialize();
 
     // Returns the old and original main frame which we're porting away from.
@@ -236,14 +234,11 @@ private:
     void RegisterStdViewClasses();
     CMainFrame* m_oldMainFrame;
     QtViewPaneManager* m_viewPaneManager;
-    ShortcutDispatcher* m_shortcutDispatcher = nullptr;
-    ActionManager* m_actionManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
     KeyboardCustomizationSettings* m_keyboardCustomization;
     CLayoutViewPane* m_activeView;
     QSettings m_settings;
-    ToolbarManager* const m_toolbarManager;
 
     AssetImporterManager* m_assetImporterManager;
     LevelEditorMenuHandler* m_levelEditorMenuHandler;

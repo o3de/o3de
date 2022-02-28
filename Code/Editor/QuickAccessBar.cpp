@@ -146,7 +146,6 @@ void CQuickAccessBar::AddMRUFileItems()
             continue;
         }
         m_model->setStringList(m_model->stringList() += mruText);
-        m_menuActionTable[mruText] = MainWindow::instance()->GetActionManager()->GetAction(ID_FILE_MRU_FILE1 + i);
     }
 
     m_model->sort(0);

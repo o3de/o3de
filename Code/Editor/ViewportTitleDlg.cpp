@@ -119,8 +119,6 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
         LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalUnmuteAudio);
     }
 
-    connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
-
     OnInitDialog();
 }
 
@@ -205,55 +203,6 @@ void CViewportTitleDlg::SetupHelpersButton()
     if (m_helpersMenu == nullptr)
     {
         m_helpersMenu = new QMenu("Helpers State", this);
-
-        auto helperAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Helpers);
-        connect(
-            helperAction, &QAction::triggered, this,
-            [this]
-            {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
-            });
-
-        auto iconAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
-        connect(
-            iconAction, &QAction::triggered, this,
-            [this]
-            {
-                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
-            });
-
-        m_helpersAction = new QAction(tr("Helpers"), m_helpersMenu);
-        m_helpersAction->setCheckable(true);
-        connect(
-            m_helpersAction, &QAction::triggered, this,
-            [helperAction]
-            {
-                helperAction->trigger();
-            });
-
-        m_iconsAction = new QAction(tr("Icons"), m_helpersMenu);
-        m_iconsAction->setCheckable(true);
-        connect(
-            m_iconsAction, &QAction::triggered, this,
-            [iconAction]
-            {
-                iconAction->trigger();
-            });
-
-        m_helpersMenu->addAction(m_helpersAction);
-        m_helpersMenu->addAction(m_iconsAction);
-
-        connect(
-            m_helpersMenu, &QMenu::aboutToShow, this,
-            [this]
-            {
-                m_helpersAction->setChecked(AzToolsFramework::HelpersVisible());
-                m_iconsAction->setChecked(AzToolsFramework::IconsVisible());
-            });
-
-        m_ui->m_helpers->setCheckable(true);
-        m_ui->m_helpers->setMenu(m_helpersMenu);
-        m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
     }
 
     m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
@@ -1039,13 +988,11 @@ void CViewportTitleDlg::OnGridSnappingToggled(const int state)
 {
     m_gridSizeActionWidget->setEnabled(state == Qt::Checked);
     m_enableGridVisualizationCheckBox->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
 }
 
 void CViewportTitleDlg::OnAngleSnappingToggled(const int state)
 {
     m_angleSizeActionWidget->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
 }
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(const double value)
@@ -1060,20 +1007,6 @@ void CViewportTitleDlg::OnAngleSpinBoxChanged(const double value)
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    const bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
-    {
-        QSignalBlocker signalBlocker(m_enableGridSnappingCheckBox);
-        m_enableGridSnappingCheckBox->setChecked(gridSnappingActive);
-    }
-    m_gridSizeActionWidget->setEnabled(gridSnappingActive);
-
-    const bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
-    {
-        QSignalBlocker signalBlocker(m_enableAngleSnappingCheckBox);
-        m_enableAngleSnappingCheckBox->setChecked(angleSnappingActive);
-    }
-    m_angleSizeActionWidget->setEnabled(angleSnappingActive);
-
     {
         QSignalBlocker signalBlocker(m_enableGridVisualizationCheckBox);
         m_enableGridVisualizationCheckBox->setChecked(SandboxEditor::ShowingGrid());

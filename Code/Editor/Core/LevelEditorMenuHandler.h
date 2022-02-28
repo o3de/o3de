@@ -100,7 +100,6 @@ private:
     void RestoreEditMenuToDefault() override;
 
     MainWindow* m_mainWindow;
-    ActionManager* m_actionManager;
     QtViewPaneManager* m_viewPaneManager;
 
     QPointer<QMenu> m_viewportViewsMenu;

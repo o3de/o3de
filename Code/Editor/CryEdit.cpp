@@ -344,105 +344,6 @@ AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 void CCryEditApp::RegisterActionHandlers()
 {
-    ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-    ON_COMMAND(ID_APP_SHOW_WELCOME, OnAppShowWelcomeScreen)
-    ON_COMMAND(ID_DOCUMENTATION_TUTORIALS, OnDocumentationTutorials)
-    ON_COMMAND(ID_DOCUMENTATION_O3DE, OnDocumentationO3DE)
-    ON_COMMAND(ID_DOCUMENTATION_GAMELIFT, OnDocumentationGamelift)
-    ON_COMMAND(ID_DOCUMENTATION_RELEASENOTES, OnDocumentationReleaseNotes)
-    ON_COMMAND(ID_DOCUMENTATION_GAMEDEVBLOG, OnDocumentationGameDevBlog)
-    ON_COMMAND(ID_DOCUMENTATION_FORUMS, OnDocumentationForums)
-    ON_COMMAND(ID_DOCUMENTATION_AWSSUPPORT, OnDocumentationAWSSupport)
-    ON_COMMAND(ID_FILE_EXPORT_SELECTEDOBJECTS, OnExportSelectedObjects)
-    ON_COMMAND(ID_EDIT_HOLD, OnEditHold)
-    ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
-    ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
-    ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
-    ON_COMMAND(ID_VIEW_SWITCHTOGAME_VIEWPORT, OnViewSwitchToGame)
-    ON_COMMAND(ID_VIEW_SWITCHTOGAME_FULLSCREEN, OnViewSwitchToGameFullScreen)
-    ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
-    ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
-    ON_COMMAND(ID_UNDO, OnUndo)
-    ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
-    ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
-    ON_COMMAND(ID_EDIT_LEVELDATA, OnEditLevelData)
-    ON_COMMAND(ID_FILE_EDITLOGFILE, OnFileEditLogFile)
-    ON_COMMAND(ID_FILE_EDITEDITORINI, OnFileEditEditorini)
-    ON_COMMAND(ID_PREFERENCES, OnPreferences)
-    ON_COMMAND(ID_REDO, OnRedo)
-    ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnRedo)
-    ON_COMMAND(ID_FILE_OPEN_LEVEL, OnOpenLevel)
-#ifdef ENABLE_SLICE_EDITOR
-    ON_COMMAND(ID_FILE_RESAVESLICES, OnFileResaveSlices)
-    ON_COMMAND(ID_FILE_NEW_SLICE, OnCreateSlice)
-    ON_COMMAND(ID_FILE_OPEN_SLICE, OnOpenSlice)
-#endif
-    ON_COMMAND(ID_SWITCH_PHYSICS, OnSwitchPhysics)
-    ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
-    ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
-
-    ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
-
-    ON_COMMAND(IDC_SELECTION, OnDummyCommand)
-    //////////////////////////////////////////////////////////////////////////
-    ON_COMMAND(ID_TAG_LOC1, OnTagLocation1)
-    ON_COMMAND(ID_TAG_LOC2, OnTagLocation2)
-    ON_COMMAND(ID_TAG_LOC3, OnTagLocation3)
-    ON_COMMAND(ID_TAG_LOC4, OnTagLocation4)
-    ON_COMMAND(ID_TAG_LOC5, OnTagLocation5)
-    ON_COMMAND(ID_TAG_LOC6, OnTagLocation6)
-    ON_COMMAND(ID_TAG_LOC7, OnTagLocation7)
-    ON_COMMAND(ID_TAG_LOC8, OnTagLocation8)
-    ON_COMMAND(ID_TAG_LOC9, OnTagLocation9)
-    ON_COMMAND(ID_TAG_LOC10, OnTagLocation10)
-    ON_COMMAND(ID_TAG_LOC11, OnTagLocation11)
-    ON_COMMAND(ID_TAG_LOC12, OnTagLocation12)
-    //////////////////////////////////////////////////////////////////////////
-    ON_COMMAND(ID_GOTO_LOC1, OnGotoLocation1)
-    ON_COMMAND(ID_GOTO_LOC2, OnGotoLocation2)
-    ON_COMMAND(ID_GOTO_LOC3, OnGotoLocation3)
-    ON_COMMAND(ID_GOTO_LOC4, OnGotoLocation4)
-    ON_COMMAND(ID_GOTO_LOC5, OnGotoLocation5)
-    ON_COMMAND(ID_GOTO_LOC6, OnGotoLocation6)
-    ON_COMMAND(ID_GOTO_LOC7, OnGotoLocation7)
-    ON_COMMAND(ID_GOTO_LOC8, OnGotoLocation8)
-    ON_COMMAND(ID_GOTO_LOC9, OnGotoLocation9)
-    ON_COMMAND(ID_GOTO_LOC10, OnGotoLocation10)
-    ON_COMMAND(ID_GOTO_LOC11, OnGotoLocation11)
-    ON_COMMAND(ID_GOTO_LOC12, OnGotoLocation12)
-    //////////////////////////////////////////////////////////////////////////
-
-    ON_COMMAND(ID_TOOLS_LOGMEMORYUSAGE, OnToolsLogMemoryUsage)
-    ON_COMMAND(ID_TOOLS_CUSTOMIZEKEYBOARD, OnCustomizeKeyboard)
-    ON_COMMAND(ID_TOOLS_CONFIGURETOOLS, OnToolsConfiguretools)
-    ON_COMMAND(ID_TOOLS_SCRIPTHELP, OnToolsScriptHelp)
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
-#endif
-    ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
-    ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
-    ON_COMMAND(ID_TOOLS_PREFERENCES, OnToolsPreferences)
-    ON_COMMAND(ID_SWITCHCAMERA_DEFAULTCAMERA, OnSwitchToDefaultCamera)
-    ON_COMMAND(ID_SWITCHCAMERA_SEQUENCECAMERA, OnSwitchToSequenceCamera)
-    ON_COMMAND(ID_SWITCHCAMERA_SELECTEDCAMERA, OnSwitchToSelectedcamera)
-    ON_COMMAND(ID_SWITCHCAMERA_NEXT, OnSwitchcameraNext)
-    ON_COMMAND(ID_OPEN_SUBSTANCE_EDITOR, OnOpenProceduralMaterialEditor)
-    ON_COMMAND(ID_OPEN_ASSET_BROWSER, OnOpenAssetBrowserView)
-    ON_COMMAND(ID_OPEN_AUDIO_CONTROLS_BROWSER, OnOpenAudioControlsEditor)
-
-    ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
-    ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
-
-    ON_COMMAND(ID_OPEN_QUICK_ACCESS_BAR, OnOpenQuickAccessBar)
-
-    ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
-    ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
-
-    // Project Manager
-    ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
-    ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
-    ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
 }
 
 CCryEditApp* CCryEditApp::s_currentInstance = nullptr;
@@ -2810,13 +2711,6 @@ public:
 private:
     void UndoRedo()
     {
-        if (ActionManager* actionManager = MainWindow::instance()->GetActionManager())
-        {
-            if (auto* action = actionManager->GetAction(ID_SWITCH_PHYSICS))
-            {
-                action->trigger();
-            }
-        }
     }
 };
 
@@ -3358,18 +3252,6 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
     LoadTagLocations();
 
     MainWindow::instance()->menuBar()->setEnabled(true);
-
-    if (doc->GetEditMode() == CCryEditDoc::DocumentEditingMode::SliceEdit)
-    {
-        // center camera on entities in slice
-        if (ActionManager* actionManager = MainWindow::instance()->GetActionManager())
-        {
-            GetIEditor()->GetUndoManager()->Suspend();
-            actionManager->GetAction(AzToolsFramework::SelectAll)->trigger();
-            actionManager->GetAction(ID_GOTO_SELECTED)->trigger();
-            GetIEditor()->GetUndoManager()->Resume();
-        }
-    }
 
     m_levelErrorsHaveBeenDisplayed = false;
 

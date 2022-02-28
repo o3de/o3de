@@ -118,7 +118,6 @@ CCryEditDoc::CCryEditDoc()
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
 
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_AS, this, &CCryEditDoc::OnFileSaveAs);
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (isPrefabSystemEnabled)
