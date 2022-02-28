@@ -13,132 +13,127 @@
 
 namespace AzToolsFramework
 {
-    namespace Prefab
+    void ViewBookmark::Reflect(AZ::ReflectContext* context)
     {
-        void ViewBookmark::Reflect(AZ::ReflectContext* context)
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<ViewBookmark>()
-                    ->Version(0)
-                    ->Field("Position", &ViewBookmark::m_position)
-                    ->Field("Rotation", &ViewBookmark::m_rotation);
+            serializeContext->Class<ViewBookmark>()
+                ->Version(0)
+                ->Field("Position", &ViewBookmark::m_position)
+                ->Field("Rotation", &ViewBookmark::m_rotation);
 
-                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<ViewBookmark>("ViewBookmark Data", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "ViewBookmark")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_position, "Position", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_rotation, "Rotation", "");
-                }
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<ViewBookmark>("ViewBookmark Data", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "ViewBookmark")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_position, "Position", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_rotation, "Rotation", "");
             }
         }
+    }
 
-        void EditorViewBookmarks::Reflect(AZ::ReflectContext* context)
+    void EditorViewBookmarks::Reflect(AZ::ReflectContext* context)
+    {
+        ViewBookmark::Reflect(context);
+
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            ViewBookmark::Reflect(context);
+            serializeContext->Class<EditorViewBookmarks>()
+                ->Field("LastKnownLocation", &EditorViewBookmarks::m_lastKnownLocation)
+                ->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);
 
-            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                serializeContext->Class<EditorViewBookmarks>()
-                    ->Field("LastKnownLocation", &EditorViewBookmarks::m_lastKnownLocation)
-                    ->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);
-
-                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<EditorViewBookmarks>("EditorViewBookmarks", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "Editor View Bookmarks")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_lastKnownLocation, "Last Known Location", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_viewBookmarks, "View Bookmarks", "")
-                        ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &EditorViewBookmarks::GetBookmarkLabel);
-                }
+                editContext->Class<EditorViewBookmarks>("EditorViewBookmarks", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Editor View Bookmarks")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_lastKnownLocation, "Last Known Location", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_viewBookmarks, "View Bookmarks", "")
+                    ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &EditorViewBookmarks::GetBookmarkLabel);
             }
         }
+    }
 
-        AZStd::string EditorViewBookmarks::GetBookmarkLabel(int index) const
+    AZStd::string EditorViewBookmarks::GetBookmarkLabel(int index) const
+    {
+        return AZStd::string::format("View Bookmark %d", index);
+    }
+
+    void ViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
+    {
+        EditorViewBookmarks::Reflect(context);
+
+        auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
         {
-            return AZStd::string::format("View Bookmark %d", index);
-        }
+            serializeContext->RegisterGenericType<EditorViewBookmarks>();
 
-        void ViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
-        {
-            EditorViewBookmarks::Reflect(context);
+            serializeContext->Class<ViewBookmarkComponent, EditorComponentBase>()->Version(0)->Field(
+                "ViewBookmarks", &ViewBookmarkComponent::m_viewBookmark);
 
-            auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
+            serializeContext->RegisterGenericType<AZStd::vector<AZ::Uuid>>();
+
+            AZ::EditContext* editContext = serializeContext->GetEditContext();
+            if (editContext)
             {
-                serializeContext->RegisterGenericType<EditorViewBookmarks>();
-
-                serializeContext->Class<ViewBookmarkComponent, EditorComponentBase>()->Version(0)->Field(
-                    "ViewBookmarks", &ViewBookmarkComponent::m_viewBookmark);
-
-                serializeContext->RegisterGenericType<AZStd::vector<AZ::Uuid>>();
-
-                AZ::EditContext* editContext = serializeContext->GetEditContext();
-                if (editContext)
-                {
-                    editContext
-                        ->Class<ViewBookmarkComponent>(
-                            "View Bookmark Component", "The ViewBookmark Component allows to store bookmarks for a prefab")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
-                        ->Attribute(AZ::Edit::Attributes::Category, "View Bookmarks")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components")
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::Default, &ViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
-                }
+                editContext
+                    ->Class<ViewBookmarkComponent>(
+                        "View Bookmark Component", "The ViewBookmark Component allows to store bookmarks for a prefab")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
+                    ->Attribute(AZ::Edit::Attributes::Category, "View Bookmarks")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
             }
         }
+    }
 
-        ViewBookmark ViewBookmarkComponent::GetBookmarkAtIndex(int index) const
+    ViewBookmark ViewBookmarkComponent::GetBookmarkAtIndex(int index) const
+    {
+        auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
+        if (index >= 0 && index < bookmarkVector.size())
         {
-            auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
-            if (index >= 0 && index < bookmarkVector.size())
-            {
-                return bookmarkVector[index];
-            }
-            return ViewBookmark();
+            return bookmarkVector[index];
         }
+        return ViewBookmark();
+    }
 
-        void ViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)
-        {
-            auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
-            bookmarkVector.push_back(viewBookmark);
-        }
+    void ViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)
+    {
+        auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
+        bookmarkVector.push_back(viewBookmark);
+    }
 
-        void ViewBookmarkComponent::SaveLastKnownLocation(ViewBookmark newLastKnownLocation)
-        {
-            m_viewBookmark.m_lastKnownLocation = newLastKnownLocation;
-        }
+    void ViewBookmarkComponent::SaveLastKnownLocation(ViewBookmark newLastKnownLocation)
+    {
+        m_viewBookmark.m_lastKnownLocation = newLastKnownLocation;
+    }
 
-        ViewBookmark ViewBookmarkComponent::GetLastKnownLocation() const
-        {
-            return m_viewBookmark.m_lastKnownLocation;
-        }
+    ViewBookmark ViewBookmarkComponent::GetLastKnownLocation() const
+    {
+        return m_viewBookmark.m_lastKnownLocation;
+    }
 
-        void ViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
-        {
-            auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
-            bookmarkVector[index] = newBookmark;
-        }
+    void ViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
+    {
+        auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
+        bookmarkVector[index] = newBookmark;
+    }
 
-        void ViewBookmarkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
-        {
-            services.push_back(AZ_CRC("EditoViewbookmarkingService"));
-        }
+    void ViewBookmarkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC("EditoViewbookmarkingService"));
+    }
 
-        void ViewBookmarkComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
-        {
-            services.push_back(AZ_CRC("EditoViewbookmarkingService"));
-        }
-
-    } // namespace Prefab
+    void ViewBookmarkComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC("EditoViewbookmarkingService"));
+    }
 } // namespace AzToolsFramework
