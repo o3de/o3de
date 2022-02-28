@@ -532,6 +532,19 @@ def ReplaceContent() {
             fileEncoding: 'UTF-8',
             filePath:'$$JENKINS_HOME/jobs/$JOB_NAME/builds/${BUILD_NUMBER}/log'
             ),
+            // Replace .h references to github links
+            fileContentReplaceConfig(
+            configs: [
+                fileContentReplaceItemConfig(
+                search: '( .*o3de)(.*\\.h)\\((\\d+)\\)',
+                replace: ' ' + GITHUB_URL + '$2#L$3',
+                matchCount: 0,
+                verbose: false,
+                )
+            ],
+            fileEncoding: 'UTF-8',
+            filePath:'$$JENKINS_HOME/jobs/$JOB_NAME/builds/${BUILD_NUMBER}/log'
+            ),
             // Replace .py references github links
             fileContentReplaceConfig(
             configs: [
