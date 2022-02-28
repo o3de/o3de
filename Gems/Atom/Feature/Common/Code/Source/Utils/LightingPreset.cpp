@@ -102,8 +102,7 @@ namespace AZ
                 serializeContext->RegisterGenericType<AZStd::vector<LightConfig>>();
 
                 serializeContext->Class<LightingPreset>()
-                    ->Version(5)
-                    ->Field("displayName", &LightingPreset::m_displayName)
+                    ->Version(6)
                     ->Field("iblDiffuseImageAsset", &LightingPreset::m_iblDiffuseImageAsset)
                     ->Field("iblSpecularImageAsset", &LightingPreset::m_iblSpecularImageAsset)
                     ->Field("skyboxImageAsset", &LightingPreset::m_skyboxImageAsset)
@@ -124,7 +123,6 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Constructor()
                     ->Constructor<const LightingPreset&>()
-                    ->Property("displayName", BehaviorValueProperty(&LightingPreset::m_displayName))
                     ->Property("alternateSkyboxImageAsset", BehaviorValueProperty(&LightingPreset::m_alternateSkyboxImageAsset))
                     ->Property("skyboxImageAsset", BehaviorValueProperty(&LightingPreset::m_skyboxImageAsset))
                     ->Property("iblSpecularImageAsset", BehaviorValueProperty(&LightingPreset::m_iblSpecularImageAsset))

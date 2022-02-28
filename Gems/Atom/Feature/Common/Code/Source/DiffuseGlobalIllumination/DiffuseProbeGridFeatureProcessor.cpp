@@ -67,11 +67,24 @@ namespace AZ
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 
+            // buffer pool
+            {
+                RHI::BufferPoolDescriptor bufferPoolDesc;
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+
+                m_probeGridRenderData.m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(*device, bufferPoolDesc);
+                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
+            }
+
             // create image view descriptors
             m_probeGridRenderData.m_probeRayTraceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::RayTraceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeIrradianceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::IrradianceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDistanceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::DistanceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDataImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::ProbeDataImageFormat, 0, 0);
+
+            // create grid data buffer descriptor
+            m_probeGridRenderData.m_gridDataBufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, 1, DiffuseProbeGridRenderData::GridDataBufferSize);
 
             // load shader
             // Note: the shader may not be available on all platforms
@@ -481,6 +494,12 @@ namespace AZ
             UpdateRealTimeList(probeGrid);
 
             m_probeGridSortRequired = true;
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetScrolling(const DiffuseProbeGridHandle& probeGrid, bool scrolling)
+        {
+            AZ_Assert(probeGrid.get(), "SetScrolling called with an invalid handle");
+            probeGrid->SetScrolling(scrolling);
         }
 
         void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)

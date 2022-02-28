@@ -180,18 +180,4 @@ namespace EMotionFX
             renderPlugin,
             renderInfo);
     }
-
-    void HitDetectionJointInspectorPlugin::Render(EMotionFX::ActorRenderFlags renderFlags)
-    {
-        if (!AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::HitDetectionColliders))
-        {
-            return;
-        }
-
-        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
-
-        ColliderContainerWidget::RenderColliders(
-            PhysicsSetup::HitDetection, settings.m_hitDetectionColliderColor,
-            settings.m_selectedHitDetectionColliderColor);
-    }
 } // namespace EMotionFX

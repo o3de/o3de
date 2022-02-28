@@ -11,6 +11,7 @@
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/ImageFlags.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
+#include <AzCore/Math/Color.h>
 
 #include <Converters/FIR-Weights.h>
 #include <Converters/PixelOperation.h>
@@ -118,19 +119,8 @@ namespace ImageProcessingAtom
         float m_fMaxDiff = 0.0f;
     };
 
-
-    static float GammaToLinear(float x)
-    {
-        return (x <= 0.04045f) ? x / 12.92f : powf((x + 0.055f) / 1.055f, 2.4f);
-    }
-
-    static float LinearToGamma(float x)
-    {
-        return (x <= 0.0031308f) ? x * 12.92f : 1.055f * powf(x, 1.0f / 2.4f) - 0.055f;
-    }
-
-    static FunctionLookupTable<1024> s_lutGammaToLinear(GammaToLinear, 0.04045f, 0.00001f);
-    static FunctionLookupTable<1024> s_lutLinearToGamma(LinearToGamma, 0.05f, 0.00001f);
+    static FunctionLookupTable<1024> s_lutGammaToLinear(AZ::Color::ConvertSrgbGammaToLinear, 0.04045f, 0.00001f);
+    static FunctionLookupTable<1024> s_lutLinearToGamma(AZ::Color::ConvertSrgbLinearToGamma, 0.05f, 0.00001f);
 
     ///////////////////////////////////////////////////////////////////////////////////
 

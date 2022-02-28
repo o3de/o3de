@@ -144,25 +144,56 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
-        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
-
-        if (m_shapeBoundsIsValid && SurfaceData::AabbContains2D(m_shapeBounds, inPosition))
-        {
-            const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_shapeBounds.GetMax().GetZ());
-            const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
-            float intersectionDistance = 0.0f;
-            bool hitShape = false;
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(hitShape, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, rayOrigin, rayDirection, intersectionDistance);
-            if (hitShape)
-            {
-                AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
-                surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, position, AZ::Vector3::CreateAxisZ(), m_newPointWeights);
-            }
-        }
+        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
     }
 
-    void SurfaceDataShapeComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
+    void SurfaceDataShapeComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
     {
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+        if (!m_shapeBoundsIsValid)
+        {
+            return;
+        }
+
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            GetEntityId(),
+            [this, inPositions, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
+            {
+                const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
+
+                // Shapes don't currently have a way to query normals at a point intersection, so we'll just return a Z-up normal
+                // until they get support for it.
+                const AZ::Vector3 surfacePointNormal = AZ::Vector3::CreateAxisZ();
+
+                for (auto& inPosition : inPositions)
+                {
+                    if (SurfaceData::AabbContains2D(m_shapeBounds, inPosition))
+                    {
+                        const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_shapeBounds.GetMax().GetZ());
+                        float intersectionDistance = 0.0f;
+                        bool hitShape = shape->IntersectRay(rayOrigin, rayDirection, intersectionDistance);
+                        if (hitShape)
+                        {
+                            AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
+                            surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, position, surfacePointNormal, m_newPointWeights);
+                        }
+                    }
+                }
+            });
+    }
+
+
+    void SurfaceDataShapeComponent::ModifySurfacePoints(
+        AZStd::span<const AZ::Vector3> positions,
+        AZStd::span<const AZ::EntityId> creatorEntityIds,
+        AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
+    {
+        AZ_Assert(
+            (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
+            "Sizes of the passed-in spans don't match");
+
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_shapeBoundsIsValid && !m_configuration.m_modifierTags.empty())
@@ -170,18 +201,22 @@ namespace SurfaceData
             const AZ::EntityId entityId = GetEntityId();
             LmbrCentral::ShapeComponentRequestsBus::Event(
                 entityId,
-                [entityId, this, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
+                [entityId, this, positions, creatorEntityIds, &weights](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    surfacePointList.ModifySurfaceWeights(
-                        entityId,
-                        [this, shape](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
+                    for (size_t index = 0; index < positions.size(); index++)
                     {
-                        if (m_shapeBounds.Contains(position) && shape->IsPointInside(position))
+                        // Don't bother modifying points that this component created.
+                        if (creatorEntityIds[index] == entityId)
+                        {
+                            continue;
+                        }
+
+                        if (m_shapeBounds.Contains(positions[index]) && shape->IsPointInside(positions[index]))
                         {
                             // If the point is inside our shape, add all our modifier tags with a weight of 1.0f.
-                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
+                            weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
                         }
-                    });
+                    }
                 });
         }
     }

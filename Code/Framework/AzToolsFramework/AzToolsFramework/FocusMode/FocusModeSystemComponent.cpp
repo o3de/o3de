@@ -42,6 +42,8 @@ namespace AzToolsFramework
         AZ::Interface<FocusModeInterface>::Register(this);
         EditorEntityInfoNotificationBus::Handler::BusConnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
+
+        RefreshFocusedEntityIdList();
     }
 
     void FocusModeSystemComponent::Deactivate()
@@ -74,28 +76,27 @@ namespace AzToolsFramework
 
     void FocusModeSystemComponent::SetFocusRoot(AZ::EntityId entityId)
     {
-        if (m_focusRoot == entityId)
-        {
-            return;
-        }
-
         AZ::EntityId previousFocusEntityId = m_focusRoot;
         m_focusRoot = entityId;
 
         RefreshFocusedEntityIdList();
 
-        FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, previousFocusEntityId, m_focusRoot);
-
-        if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
+        // Only trigger notifications if the focus root has changed.
+        if (m_focusRoot != previousFocusEntityId)
         {
-            if (!previousFocusEntityId.IsValid() && entityId.IsValid())
+            if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
             {
-                tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+                if (!previousFocusEntityId.IsValid() && m_focusRoot.IsValid())
+                {
+                    tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+                }
+                else if (previousFocusEntityId.IsValid() && !m_focusRoot.IsValid())
+                {
+                    tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+                }
             }
-            else if (previousFocusEntityId.IsValid() && !entityId.IsValid())
-            {
-                tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
-            }
+
+            FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, previousFocusEntityId, m_focusRoot);
         }
     }
 
@@ -109,13 +110,14 @@ namespace AzToolsFramework
         return m_focusRoot;
     }
 
-    EntityIdList FocusModeSystemComponent::GetFocusedEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    const EntityIdList& FocusModeSystemComponent::GetFocusedEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId)
     {
         return m_focusedEntityIdList;
     }
 
     bool FocusModeSystemComponent::IsInFocusSubTree(AZ::EntityId entityId) const
     {
+        // If the focus is on the root, all entities are in the focus subtree.
         if (m_focusRoot == AZ::EntityId())
         {
             return true;
@@ -126,9 +128,30 @@ namespace AzToolsFramework
 
     void FocusModeSystemComponent::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
     {
-        // If the parent's entityId is in the list, add the child.
-        if (auto iter = AZStd::find(m_focusedEntityIdList.begin(), m_focusedEntityIdList.end(), parentId);
-            iter != m_focusedEntityIdList.end())
+        // If the parent's entityId is in the list and the child isn't, add the child to the list.
+        bool isParentInList = false;
+        bool isChildInList = false;
+
+        for (auto iter = m_focusedEntityIdList.begin(); iter != m_focusedEntityIdList.end(); ++iter)
+        {
+            if (*iter == parentId)
+            {
+                isParentInList = true;
+            }
+
+            if (*iter == childId)
+            {
+                isChildInList = true;
+            }
+
+            // Early out
+            if (isChildInList)
+            {
+                break;
+            }
+        }
+
+        if (isParentInList && !isChildInList)
         {
             m_focusedEntityIdList.push_back(childId);
         }
@@ -140,7 +163,9 @@ namespace AzToolsFramework
         if (auto iter = AZStd::find(m_focusedEntityIdList.begin(), m_focusedEntityIdList.end(), childId);
             iter != m_focusedEntityIdList.end())
         {
-            m_focusedEntityIdList.erase(iter);
+            // Swap and pop since we don't care about the ordering.
+            *iter = m_focusedEntityIdList.back();
+            m_focusedEntityIdList.pop_back();
         }
     }
 
@@ -162,7 +187,10 @@ namespace AzToolsFramework
             AZ::EntityId entityId = entityIdQueue.front();
             entityIdQueue.pop();
 
-            m_focusedEntityIdList.push_back(entityId);
+            if (entityId.IsValid())
+            {
+                m_focusedEntityIdList.push_back(entityId);
+            }
 
             EntityIdList children;
             EditorEntityInfoRequestBus::EventResult(children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
