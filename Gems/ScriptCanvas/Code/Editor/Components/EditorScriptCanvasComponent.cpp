@@ -278,9 +278,19 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::InitializeSource(const SourceHandle& sourceHandle)
     {
-        m_sourceHandle = sourceHandle.Describe();
         ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusDisconnect();
-        ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
+        m_sourceHandle = sourceHandle.Describe();
+        CompleteDescriptionInPlace(m_sourceHandle);
+
+        if (!m_sourceHandle.Id().IsNull())
+        {
+            ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
+        }
+        else
+        {
+            AZ_Warning("ScriptCanvas", m_sourceHandle.Path().empty()
+                , "EditorScriptCanvasComponent had no valid ID for %s and won't properly expose variables.", m_sourceHandle.Path().c_str())
+        }
     }
 
     //=========================================================================
@@ -295,8 +305,7 @@ namespace ScriptCanvasEditor
 
         EditorScriptCanvasComponentLoggingBus::Handler::BusConnect(entityId);
         EditorLoggingComponentNotificationBus::Broadcast(&EditorLoggingComponentNotifications::OnEditorScriptCanvasComponentActivated, GetNamedEntityId(), GetGraphIdentifier());
-
-        CompleteDescriptionInPlace(m_sourceHandle);
+        InitializeSource(m_sourceHandle);
 
         if (!(m_sourceHandle.Id().IsNull() && m_sourceHandle.Path().empty()))
         {
