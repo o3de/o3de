@@ -242,7 +242,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_MultipleComponentsCombineForces(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     # Marking the test as an expected failure due to sporadic failure on Automated Review: LYN-2580
     # The test still runs, but a failure of the test doesn't result in the test run failing
