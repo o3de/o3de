@@ -24,25 +24,9 @@ namespace ScriptCanvas::Nodeables::Spawning
                 ->Class<SpawnableAsset>()
                 ->Field("Asset", &SpawnableAsset::m_asset);
 
-            {
-                if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZStd::vector<SpawnableAsset>>::GetGenericInfo())
-                {
-                    genericClassInfo->Reflect(serializeContext);
-                }
-            }
-            {
-                if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZStd::unordered_map<
-                    AZStd::string, SpawnableAsset>>::GetGenericInfo())
-                {
-                    genericClassInfo->Reflect(serializeContext);
-                }
-            }
-            {
-                if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZStd::unordered_map<double, SpawnableAsset>>::GetGenericInfo())
-                {
-                    genericClassInfo->Reflect(serializeContext);
-                }
-            }
+            serializeContext->RegisterGenericType<AZStd::vector<SpawnableAsset>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<Data::StringType, SpawnableAsset>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<Data::NumberType, SpawnableAsset>>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -81,13 +65,13 @@ namespace ScriptCanvas::Nodeables::Spawning
                 // required to support Map<String, SpawnableAsset> variable type in Script Canvas
                 ->Method(
                     "Map_String_to_SpawnableAsset_Func",
-                    [](const AZStd::unordered_map<AZStd::string, SpawnableAsset>&)
+                    [](const AZStd::unordered_map<Data::StringType, SpawnableAsset>&)
                     {
                     })
                 // required to support Map<Number, SpawnableAsset> variable type in Script Canvas
                 ->Method(
                     "Map_Number_to_SpawnableAsset_Func",
-                    [](const AZStd::unordered_map<double, SpawnableAsset>&)
+                    [](const AZStd::unordered_map<Data::NumberType, SpawnableAsset>&)
                     {
                     });
         }

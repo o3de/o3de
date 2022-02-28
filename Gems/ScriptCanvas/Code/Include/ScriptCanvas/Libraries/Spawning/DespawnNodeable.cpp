@@ -10,15 +10,6 @@
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
-    DespawnNodeable::DespawnNodeable([[maybe_unused]] const DespawnNodeable& rhs)
-    {
-    }
-
-    DespawnNodeable& DespawnNodeable::operator=([[maybe_unused]] DespawnNodeable& rhs)
-    {
-        return *this;
-    }
-
     void DespawnNodeable::OnInitializeExecutionState()
     {
         if (!AZ::TickBus::Handler::BusIsConnected())
@@ -30,16 +21,12 @@ namespace ScriptCanvas::Nodeables::Spawning
     void DespawnNodeable::OnDeactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        m_despawnedTicketList = {}; // clears any cached SpawnTickets that may remain so everything despawns
+        m_despawnedTicketList.clear(); // clears any cached SpawnTickets that may remain so everything despawns
+        m_despawnedTicketList.shrink_to_fit();
     }
 
     void DespawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
-        if (m_despawnedTicketList.empty())
-        {
-            return;
-        }
-
         AZStd::vector<SpawnTicketInstance> swappedDespawnedTicketList;
         {
             AZStd::lock_guard lock(m_mutex);

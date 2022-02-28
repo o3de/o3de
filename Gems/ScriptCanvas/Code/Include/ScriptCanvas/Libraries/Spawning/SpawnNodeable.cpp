@@ -11,15 +11,6 @@
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
-    SpawnNodeable::SpawnNodeable([[maybe_unused]] const SpawnNodeable& rhs)
-    {
-    }
-
-    SpawnNodeable& SpawnNodeable::operator=([[maybe_unused]] SpawnNodeable& rhs)
-    {
-        return *this;
-    }
-
     void SpawnNodeable::OnInitializeExecutionState()
     {
         if (!AZ::TickBus::Handler::BusIsConnected())
@@ -31,7 +22,8 @@ namespace ScriptCanvas::Nodeables::Spawning
     void SpawnNodeable::OnDeactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        m_completionResults = {}; // clears any cached SpawnTickets that may remain so everything despawns
+        m_completionResults.clear(); // clears any cached SpawnTickets that may remain so everything despawns
+        m_completionResults.shrink_to_fit();
     }
 
     void SpawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
@@ -75,7 +67,7 @@ namespace ScriptCanvas::Nodeables::Spawning
 
                 AzFramework::TransformComponentConfiguration transformConfig;
                 transformConfig.m_parentId = parentId;
-                transformConfig.m_localTransform = AZ::Transform(translation, rotationQuat, static_cast<float>(scale));
+                transformConfig.m_localTransform = AZ::Transform(translation, rotationQuat, aznumeric_cast<float>(scale));
                 entityTransform->SetConfiguration(transformConfig);
             }
         };

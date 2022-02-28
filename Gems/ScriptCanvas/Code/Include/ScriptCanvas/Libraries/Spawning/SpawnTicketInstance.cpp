@@ -25,26 +25,9 @@ namespace ScriptCanvas::Nodeables::Spawning
             CreateTypeAsMapValueHelper<AZStd::string, SpawnTicketInstance>::ReflectClassInfo(serializeContext);
             CreateTypeAsMapValueHelper<float, SpawnTicketInstance>::ReflectClassInfo(serializeContext);
 
-            {
-                if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZStd::vector<SpawnTicketInstance>>::GetGenericInfo())
-                {
-                    genericClassInfo->Reflect(serializeContext);
-                }
-            }
-            {
-                if (auto genericClassInfo = AZ::SerializeGenericTypeInfo<AZStd::unordered_map<
-                    AZStd::string, SpawnTicketInstance>>::GetGenericInfo())
-                {
-                    genericClassInfo->Reflect(serializeContext);
-                }
-            }
-            {
-                if (auto genericClassInfo =
-                        AZ::SerializeGenericTypeInfo<AZStd::unordered_map<double, SpawnTicketInstance>>::GetGenericInfo())
-                {
-                    genericClassInfo->Reflect(serializeContext);
-                }
-            }
+            serializeContext->RegisterGenericType<AZStd::vector<SpawnTicketInstance>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<Data::StringType, SpawnTicketInstance>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<Data::NumberType, SpawnTicketInstance>>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -81,13 +64,13 @@ namespace ScriptCanvas::Nodeables::Spawning
                 // required to support Map<String, SpawnTicketInstance> variable type in Script Canvas
                 ->Method(
                     "Map_String_to_SpawnTicketInstance_Func",
-                    [](const AZStd::unordered_map<AZStd::string, SpawnTicketInstance>&)
+                    [](const AZStd::unordered_map<Data::StringType, SpawnTicketInstance>&)
                     {
                     })
                 // required to support Map<Number, SpawnTicketInstance> variable type in Script Canvas
                 ->Method(
                     "Map_Number_to_SpawnTicketInstance_Func",
-                    [](const AZStd::unordered_map<double, SpawnTicketInstance>&)
+                    [](const AZStd::unordered_map<Data::NumberType, SpawnTicketInstance>&)
                     {
                     });
         }
