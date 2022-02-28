@@ -1,0 +1,10 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "TerrainParentPass",
+        "TemplateName": "TerrainParentPassTemplate",
+        "Enabled": true
+    }
+}
