@@ -245,6 +245,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4976209_RigidBody_ComputesCOM(EditorSharedTest):
         from .tests.rigid_body import RigidBody_COM_ComputingWorks as test_module
 
+    class C4976201_RigidBody_MassIsAssigned(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_MassDifferentValuesWorks as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -262,10 +265,6 @@ class TestAutomation(EditorTestSuite):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
 
-
-
-    class C4976201_RigidBody_MassIsAssigned(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_MassDifferentValuesWorks as test_module
 
     class C12868580_ForceRegion_SplineModifiedTransform(EditorSharedTest):
         from .tests.force_region import ForceRegion_SplineRegionWithModifiedTransform as test_module
