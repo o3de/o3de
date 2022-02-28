@@ -7,6 +7,10 @@
  */
 
 #include "API/ToolsApplicationAPI.h"
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <Prefab/ViewBookmarkLoader.h>
 
 /*!
@@ -31,6 +35,48 @@ namespace AzToolsFramework
 
         void ViewBookmarkLoader::SaveBookmarkSettingsFile()
         {
+            auto registry = AZ::SettingsRegistry::Get();
+            if (registry == nullptr)
+            {
+                AZ_Warning("SEditorSettings", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
+                return;
+            }
+
+            // Resolve path to editorpreferences.setreg
+            AZ::IO::FixedMaxPath editorBookmarkFilePath = AZ::Utils::GetO3deManifestDirectory();
+            editorBookmarkFilePath /= "Registry/ViewBookmarks/editorbookmarks.setreg";
+
+            AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+            dumperSettings.m_prettifyOutput = true;
+            dumperSettings.m_includeFilter = [](AZStd::string_view path)
+            {
+                AZStd::string_view o3dePrefixPath(s_viewBookmarksRegistryPath);
+                return o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
+            };
+
+            AZStd::string stringBuffer;
+            AZ::IO::ByteContainerStream stringStream(&stringBuffer);
+            if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
+            {
+                AZ_Warning(
+                    "SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
+                    editorBookmarkFilePath.c_str());
+                return;
+            }
+
+            bool saved{};
+            constexpr auto configurationMode =
+                AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
+            if (AZ::IO::SystemFile outputFile; outputFile.Open(editorBookmarkFilePath.c_str(), configurationMode))
+            {
+                saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
+            }
+
+            AZ_Warning(
+                "SEditorSettings", saved, R"(Unable to save Editor Preferences registry file to path "%s"\n)",
+                editorBookmarkFilePath.c_str());
+
+            registry->Remove("/O3DE/ViewBookmarks");
         }
 
         bool ViewBookmarkLoader::SaveBookmark(ViewBookmark bookamark)
@@ -69,6 +115,17 @@ namespace AzToolsFramework
             }
 
             // TODO: return invalid bookmark;
+            return ViewBookmark();
+        }
+
+        ViewBookmark ViewBookmarkLoader::GetLastKnownLocationInLevel() const
+        {
+            ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
+            if (bookmarkComponent)
+            {
+                return bookmarkComponent->GetLastKnownLocation();
+            }
+
             return ViewBookmark();
         }
 

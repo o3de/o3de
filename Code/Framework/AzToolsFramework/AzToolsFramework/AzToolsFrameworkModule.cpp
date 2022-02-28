@@ -86,7 +86,7 @@ namespace AzToolsFramework
             Prefab::PrefabSystemComponent::CreateDescriptor(),
             Prefab::EditorPrefabComponent::CreateDescriptor(),
             Prefab::ProceduralPrefabSystemComponent::CreateDescriptor(),
-            Prefab::ViewBookmarkComponent::CreateDescriptor(),
+            ViewBookmarkComponent::CreateDescriptor(),
             Components::EditorEntityActionComponent::CreateDescriptor(),
             Components::EditorEntityIconComponent::CreateDescriptor(),
             Components::EditorInspectorComponent::CreateDescriptor(),

@@ -28,6 +28,7 @@ namespace AzToolsFramework
             bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
             bool LoadViewBookmarks() override;
             ViewBookmark GetBookmarkAtIndex(int index) const override;
+            ViewBookmark GetLastKnownLocationInLevel() const override;
 
         private:
             ViewBookmarkComponent* FindBookmarkComponent() const;
