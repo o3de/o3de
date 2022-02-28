@@ -25,7 +25,6 @@
 #include <Viewport/MaterialViewportModule.h>
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
-#include <Window/MaterialEditorWindowSettings.h>
 
 #include <QDesktopServices>
 #include <QDialog>
@@ -55,6 +54,7 @@ namespace MaterialEditor
     {
         InitMaterialEditorResources();
 
+        QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Material Editor");
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -70,7 +70,6 @@ namespace MaterialEditor
     {
         Base::Reflect(context);
         MaterialDocument::Reflect(context);
-        MaterialEditorWindowSettings::Reflect(context);
     }
 
     void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
@@ -99,6 +98,7 @@ namespace MaterialEditor
             [](const AZ::Crc32& toolId) { return aznew MaterialDocument(toolId); });
 
         m_window.reset(aznew MaterialEditorWindow(m_toolId));
+        m_window->show();
 
         m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
 

@@ -76,7 +76,7 @@ namespace AZ
         void BloomBlurPass::GetInputInfo()
         {
             AZ_Assert(GetInputOutputCount() > 0, "[BloomBlurPass '%s']: must have an input/output", GetPathName().GetCStr());
-            RPI::PassAttachment* attachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* attachment = GetInputOutputBinding(0).GetAttachment().get();
 
             if (attachment != nullptr)
             {
@@ -138,10 +138,10 @@ namespace AZ
         void BloomBlurPass::CreateBinding(BloomBlurChildPass* pass, uint32_t mipLevel, bool isHorizontalPass)
         {
             RPI::PassAttachmentBinding& parentInOutBinding = GetInputOutputBinding(0);
-            RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.m_attachment;
+            const RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.GetAttachment();
 
             RPI::PassAttachmentBinding& parentInBinding = GetInputBinding(0);
-            RPI::Ptr<RPI::PassAttachment>& parentWorkSpaceAttachment = parentInBinding.m_attachment;
+            const RPI::Ptr<RPI::PassAttachment>& parentWorkSpaceAttachment = parentInBinding.GetAttachment();
 
             // Create input binding, from downsampling pass
             RPI::PassAttachmentBinding inBinding;
@@ -149,13 +149,13 @@ namespace AZ
             inBinding.m_shaderInputName = "m_inputTexture";
             inBinding.m_slotType = RPI::PassSlotType::Input;
             inBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            inBinding.m_attachment = parentInOutAttachment;
             inBinding.m_connectedBinding = isHorizontalPass ? &parentInOutBinding : &parentInBinding;
 
             RHI::ImageViewDescriptor viewDesc;
             viewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
             viewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
             inBinding.m_unifiedScopeDesc.SetAsImage(viewDesc);
+            inBinding.SetAttachment(parentInOutAttachment);
 
             pass->AddAttachmentBinding(inBinding);
 
@@ -165,11 +165,11 @@ namespace AZ
             outBinding.m_shaderInputName = "m_outputTexture";
             outBinding.m_slotType = RPI::PassSlotType::Output;
             outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            outBinding.m_attachment = parentWorkSpaceAttachment;
             outBinding.m_connectedBinding = isHorizontalPass ? &parentInBinding : &parentInOutBinding;
 
             // Output to the same mip level as input downsampled texture
             outBinding.m_unifiedScopeDesc.SetAsImage(viewDesc);
+            outBinding.SetAttachment(parentWorkSpaceAttachment);
 
             pass->AddAttachmentBinding(outBinding);
         }
@@ -275,7 +275,7 @@ namespace AZ
             m_offsetData.clear();
             m_kernelRadiusData.clear();
 
-            RPI::PassAttachment* inOutAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inOutAttachment = GetInputOutputBinding(0).GetAttachment().get();
             uint32_t imageWidth = inOutAttachment->m_descriptor.m_image.m_size.m_width;
 
             // Horizontal & vertical pass shared the same kernel
