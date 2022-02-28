@@ -197,6 +197,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4976200_RigidBody_AngularDampingObjectRotation(EditorSharedTest):
         from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
 
+    class C5689529_Verify_Terrain_RigidBody_Collider_Mesh(EditorSharedTest):
+        from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -215,8 +218,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-    class C5689529_Verify_Terrain_RigidBody_Collider_Mesh(EditorSharedTest):
-        from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
 
     class C5959810_ForceRegion_ForceRegionCombinesForces(EditorSharedTest):
         from .tests.force_region import ForceRegion_MultipleForcesInSameComponentCombineForces as test_module

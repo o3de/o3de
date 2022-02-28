@@ -115,7 +115,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_MultipleForcesInSameComponentCombineForces(self, request, workspace, editor, launcher_platform):
