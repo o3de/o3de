@@ -29,14 +29,10 @@ set(FILES
     Source/Window/MaterialEditorWindow.h
     Source/Window/MaterialEditorWindow.cpp
     Source/Window/MaterialEditor.qrc
-    Source/Window/MaterialEditor.qss
     Source/Window/SettingsDialog/SettingsDialog.cpp
     Source/Window/SettingsDialog/SettingsDialog.h
     Source/Window/SettingsDialog/SettingsWidget.cpp
     Source/Window/SettingsDialog/SettingsWidget.h
-    Source/Window/CreateMaterialDialog/CreateMaterialDialog.cpp
-    Source/Window/CreateMaterialDialog/CreateMaterialDialog.h
-    Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui
     Source/Window/ToolBar/MaterialEditorToolBar.h
     Source/Window/ToolBar/MaterialEditorToolBar.cpp
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h

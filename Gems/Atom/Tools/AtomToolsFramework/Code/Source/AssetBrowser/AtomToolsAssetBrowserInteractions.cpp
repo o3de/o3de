@@ -100,7 +100,7 @@ namespace AtomToolsFramework
             });
 
         menu->addAction("Run Python on File...", [caller, entry]()
-        {
+            {
                 const QString script = QFileDialog::getOpenFileName(
                     caller, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
                 if (!script.isEmpty())
