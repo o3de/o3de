@@ -98,28 +98,6 @@
                     ]
                 },
                 {
-                    "base": "GetRayTracingEnabled",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Ray Tracing Enabled"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get Ray Tracing Enabled is invoked"
-                    },
-                    "details": {
-                        "name": "Get Ray Tracing Enabled"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
                     "base": "GetModelAssetPath",
                     "entry": {
                         "name": "In",
@@ -269,28 +247,6 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "SetRayTracingEnabled",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Ray Tracing Enabled"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Set Ray Tracing Enabled is invoked"
-                    },
-                    "details": {
-                        "name": "Set Ray Tracing Enabled"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
                             }
                         }
                     ]
