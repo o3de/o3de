@@ -131,7 +131,7 @@ class TestAutomation(TestAutomationBase):
     def test_ScriptCanvas_TriggerEvents(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_TriggerEvents as test_module
         # FIXME: expected_lines = test_module.LogLines.expected_lines
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ZeroPointForceDoesNothing(self, request, workspace, editor, launcher_platform):
