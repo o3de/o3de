@@ -7,6 +7,6 @@
 # {END_LICENSE}
 
 set(FILES
-    ../Resources/Platform/iOS/Info.plist
+    ../../../Resources/Platform/iOS/Info.plist
     PAL_ios.cmake
 )
