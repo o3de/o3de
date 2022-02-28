@@ -273,7 +273,6 @@ def refresh_all_gem_repos() -> int:
         :return int exit code.
     """
     return -1
-    download_gem
 
 
 def download_gem(gem_name: str, force_overwrite: bool = False, progress_callback = None) -> int:
