@@ -21,7 +21,7 @@ namespace UnitTest
 {
     constexpr int SmallIterationCount  = 10;
     constexpr int MediumIterationCount = 1000;
-    constexpr int LargeIterationCount  = 1000000;
+    constexpr int LargeIterationCount  = 100000;
 
     constexpr AZ::u32 ProfilerProxyGroup = AZ_CRC_CE("StatisticalProfilerProxyTests");
 
@@ -339,265 +339,145 @@ namespace UnitTest
 
         proxy->ActivateProfiler(ProfilerProxyGroup, false);
     }
+}//namespace UnitTest
 
-    class Suite_StatisticalProfilerPerformance
-        : public AllocatorsWithTraceFixture
+#if defined(HAVE_BENCHMARK)
+
+#include <benchmark/benchmark.h>
+
+namespace Benchmark
+{
+#define REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(_fixture, _function) \
+    BENCHMARK_REGISTER_F(_fixture, _function) \
+        ->Iterations(UnitTest::LargeIterationCount);
+
+#define REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(_fixture, _function) \
+    BENCHMARK_REGISTER_F(_fixture, _function) \
+        ->ThreadRange(1, AZStd::thread::hardware_concurrency()) \
+        ->Iterations(UnitTest::LargeIterationCount);
+
+    // -- AZ::Statistics::StatisticalProfiler benchmarks --
+
+    template<class StatIdType = AZStd::string, class MutexType = AZ::NullMutex>
+    class StatisticalProfilerBenchmark
+        : public UnitTest::AllocatorsBenchmarkFixture
     {
+        using ProfilerType = AZ::Statistics::StatisticalProfiler<StatIdType, MutexType>;
+
+    public:
+        void RunBenchmark(benchmark::State& state)
+        {
+            if (state.thread_index == 0)
+            {
+                m_profiler = new ProfilerType;
+
+                for (int i = 0; i < state.threads; ++i)
+                {
+                    const AZStd::string threadStatName = AZStd::string::format("thread%03d", i);
+                    const StatIdType threadStatId(threadStatName);
+
+                    m_profiler->GetStatsManager().AddStatistic(threadStatId, threadStatName, "us");
+                }
+            }
+
+            const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
+            const StatIdType statId(statName);
+
+            for (auto _ : state)
+            {
+                typename ProfilerType::TimedScope timedScope(*m_profiler, statId);
+                benchmark::DoNotOptimize(m_profiler);
+            }
+
+            if (state.thread_index == 0)
+            {
+                delete m_profiler;
+            }
+        }
+
+    protected:
+        ProfilerType* m_profiler;
     };
 
-    TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringNoMutex_1ThreadPerformance)
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_SingleThreadedPerf)(benchmark::State& state)
     {
-        AZ::Statistics::StatisticalProfiler<> profiler;
-
-        const AZStd::string statNamePerformance("PerformanceResult");
-        const AZStd::string statNameBlock("Block");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNamePerformance, statNamePerformance, "us") != nullptr);
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNameBlock, statNameBlock, "us") != nullptr);
-
-        RecordStatistics(profiler, LargeIterationCount, statNamePerformance, statNameBlock);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNamePerformance)->GetNumSamples(), 1);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), LargeIterationCount);
-
-        profiler.LogAndResetStats("StatisticalProfilerStringNoMutex");
-
-        ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
+        RunBenchmark(state);
     }
+    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SingleThreadedPerf)
 
-    TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerCrc32NoMutex_1ThreadPerformance)
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SingleThreadedPerf, AZ::Crc32)(benchmark::State& state)
     {
-        AZ::Statistics::StatisticalProfiler<AZ::Crc32> profiler;
-
-        constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
-        const AZStd::string statNamePerformance("PerformanceResult");
-
-        constexpr AZ::Crc32 statIdBlock = AZ_CRC_CE("Block");
-        const AZStd::string statNameBlock("Block");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
-
-        RecordStatistics(profiler, LargeIterationCount, statIdPerformance, statIdBlock);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), LargeIterationCount);
-
-        profiler.LogAndResetStats("StatisticalProfilerCrc32NoMutex");
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
+        RunBenchmark(state);
     }
+    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SingleThreadedPerf)
 
-    TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringWithSharedSpinMutex_1ThreadPerformance)
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_SharedSpinMutex_ThreadedPerf, AZStd::string, AZStd::shared_spin_mutex)(benchmark::State& state)
     {
-        AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex> profiler;
-
-        const AZStd::string statNamePerformance("PerformanceResult");
-        const AZStd::string statNameBlock("Block");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNamePerformance, statNamePerformance, "us") != nullptr);
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statNameBlock, statNameBlock, "us") != nullptr);
-
-        RecordStatistics(profiler, LargeIterationCount, statNamePerformance, statNameBlock);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNamePerformance)->GetNumSamples(), 1);
-
-        ASSERT_TRUE(profiler.GetStatistic(statNameBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statNameBlock)->GetNumSamples(), LargeIterationCount);
-
-        profiler.LogAndResetStats("StatisticalProfilerStringWithSharedSpinMutex");
-
-        ASSERT_TRUE(profiler.GetStatistic(statNamePerformance) != nullptr);
+        RunBenchmark(state);
     }
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SharedSpinMutex_ThreadedPerf)
 
-    TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerCrc32WithSharedSpinMutex_1ThreadPerformance)
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SharedSpinMutex_ThreadedPerf, AZ::Crc32, AZStd::shared_spin_mutex)(benchmark::State& state)
     {
-        AZ::Statistics::StatisticalProfiler<AZ::Crc32, AZStd::shared_spin_mutex> profiler;
-
-        constexpr AZ::Crc32 statIdPerformance = AZ_CRC_CE("PerformanceResult");
-        const AZStd::string statNamePerformance("PerformanceResult");
-
-        constexpr AZ::Crc32 statIdBlock = AZ_CRC_CE("Block");
-        const AZStd::string statNameBlock("Block");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
-
-        RecordStatistics(profiler, LargeIterationCount, statIdPerformance, statIdBlock);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), LargeIterationCount);
-
-        profiler.LogAndResetStats("StatisticalProfilerCrc32WithSharedSpinMutex");
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
+        RunBenchmark(state);
     }
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SharedSpinMutex_ThreadedPerf)
 
-    TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerStringWithSharedSpinMutex3Threads_3ThreadsPerformance)
+    // -- AZ::Statistics::StatisticalProfilerProxy benchmarks --
+
+    class StatisticalProfilerProxyBenchmark
+        : public UnitTest::AllocatorsBenchmarkFixture
     {
-        AZ::Statistics::StatisticalProfiler<AZStd::string, AZStd::shared_spin_mutex> profiler;
+        using ProxyType = AZ::Statistics::StatisticalProfilerProxy;
+        using ProfilerType = ProxyType::StatisticalProfilerType;
+        using StatIdType = ProxyType::StatIdType;
+        using TimedScopeType = ProxyType::TimedScope;
 
-        const AZStd::string statIdThread1 = "simple_thread1";
-        const AZStd::string statNameThread1("simple_thread1");
-        const AZStd::string statIdThread1Loop = "simple_thread1_loop";
-        const AZStd::string statNameThread1Loop("simple_thread1_loop");
+    public:
+        void RunBenchmark(benchmark::State& state)
+        {
+            if (state.thread_index == 0)
+            {
+                ProxyType::TimedScope::ClearCachedProxy();
 
-        const AZStd::string statIdThread2 = "simple_thread2";
-        const AZStd::string statNameThread2("simple_thread2");
-        const AZStd::string statIdThread2Loop = "simple_thread2_loop";
-        const AZStd::string statNameThread2Loop("simple_thread2_loop");
+                m_proxy = new ProxyType;
+                ProfilerType& profiler = m_proxy->GetProfiler(UnitTest::ProfilerProxyGroup);
 
-        const AZStd::string statIdThread3 = "simple_thread3";
-        const AZStd::string statNameThread3("simple_thread3");
-        const AZStd::string statIdThread3Loop = "simple_thread3_loop";
-        const AZStd::string statNameThread3Loop("simple_thread3_loop");
+                for (int i = 0; i < state.threads; ++i)
+                {
+                    const AZStd::string threadStatName = AZStd::string::format("thread%03d", i);
+                    const StatIdType threadStatId(threadStatName);
 
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1, statNameThread1, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1Loop, statNameThread1Loop, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread2, statNameThread2, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread2Loop, statNameThread2Loop, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3, statNameThread3, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3Loop, statNameThread3Loop, "us"));
+                    profiler.GetStatsManager().AddStatistic(threadStatId, threadStatName, "us");
+                }
 
-        //Let's kickoff the threads to see how much contention affects the profiler's performance.
-        AZStd::thread t1([&](){
-            RecordStatistics(profiler, LargeIterationCount, statIdThread1, statIdThread1Loop);
-        });
-        AZStd::thread t2([&](){
-            RecordStatistics(profiler, LargeIterationCount, statIdThread2, statIdThread2Loop);
-        });
-        AZStd::thread t3([&](){
-            RecordStatistics(profiler, LargeIterationCount, statIdThread3, statIdThread3Loop);
-        });
-        t1.join();
-        t2.join();
-        t3.join();
+                m_proxy->ActivateProfiler(UnitTest::ProfilerProxyGroup, true);
+            }
 
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1)->GetNumSamples(), 1);
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread1Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), LargeIterationCount);
+            const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
+            const StatIdType statId(statName);
 
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread2) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2)->GetNumSamples(), 1);
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread2Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), LargeIterationCount);
+            for (auto _ : state)
+            {
+                typename TimedScopeType timedScope(UnitTest::ProfilerProxyGroup, statId);
+                benchmark::DoNotOptimize(m_proxy);
+            }
 
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread3) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3)->GetNumSamples(), 1);
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread3Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), LargeIterationCount);
+            if (state.thread_index == 0)
+            {
+                delete m_proxy;
+            }
+        }
 
-        profiler.LogAndResetStats("3_Threads_StatisticalProfiler");
+    protected:
+        ProxyType* m_proxy;
+    };
 
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
-    }
-
-    TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerProxy_1ThreadPerformance)
+    BENCHMARK_DEFINE_F(StatisticalProfilerProxyBenchmark, GeneralPerf)(benchmark::State& state)
     {
-        AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
-        AZ::Statistics::StatisticalProfilerProxy profilerProxy;
-        AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
-        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(ProfilerProxyGroup);
-
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdPerformance("PerformanceResult");
-        const AZStd::string statNamePerformance("PerformanceResult");
-
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdBlock("Block");
-        const AZStd::string statNameBlock("Block");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
-
-        proxy->ActivateProfiler(ProfilerProxyGroup, true);
-
-        RecordStatistics(LargeIterationCount, statIdPerformance, statIdBlock);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdPerformance) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdPerformance)->GetNumSamples(), 1);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdBlock) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), LargeIterationCount);
-
-        profiler.LogAndResetStats("StatisticalProfilerProxy");
-
-        //Clean Up
-        proxy->ActivateProfiler(ProfilerProxyGroup, false);
+        RunBenchmark(state);
     }
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerProxyBenchmark, GeneralPerf)
+} // namespace Benchmark
 
-    TEST_F(Suite_StatisticalProfilerPerformance, StatisticalProfilerProxy_3ThreadsPerformance)
-    {
-        AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
-        AZ::Statistics::StatisticalProfilerProxy profilerProxy;
-        AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
-        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(ProfilerProxyGroup);
-
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1("simple_thread1");
-        const AZStd::string statNameThread1("simple_thread1");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1Loop("simple_thread1_loop");
-        const AZStd::string statNameThread1Loop("simple_thread1_loop");
-
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2("simple_thread2");
-        const AZStd::string statNameThread2("simple_thread2");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread2Loop("simple_thread2_loop");
-        const AZStd::string statNameThread2Loop("simple_thread2_loop");
-
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3("simple_thread3");
-        const AZStd::string statNameThread3("simple_thread3");
-        const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread3Loop("simple_thread3_loop");
-        const AZStd::string statNameThread3Loop("simple_thread3_loop");
-
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1, statNameThread1, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1Loop, statNameThread1Loop, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread2, statNameThread2, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread2Loop, statNameThread2Loop, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3, statNameThread3, "us"));
-        ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3Loop, statNameThread3Loop, "us"));
-
-        proxy->ActivateProfiler(ProfilerProxyGroup, true);
-
-        //Let's kickoff the threads to see how much contention affects the profiler's performance.
-        AZStd::thread t1([&](){
-            RecordStatistics(LargeIterationCount, statIdThread1, statIdThread1Loop);
-        });
-        AZStd::thread t2([&](){
-            RecordStatistics(LargeIterationCount, statIdThread2, statIdThread2Loop);
-        });
-        AZStd::thread t3([&](){
-            RecordStatistics(LargeIterationCount, statIdThread3, statIdThread3Loop);
-        });
-        t1.join();
-        t2.join();
-        t3.join();
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread1) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1)->GetNumSamples(), 1);
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread1Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread1Loop)->GetNumSamples(), LargeIterationCount);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread2) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2)->GetNumSamples(), 1);
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread2Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread2Loop)->GetNumSamples(), LargeIterationCount);
-
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread3) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3)->GetNumSamples(), 1);
-        ASSERT_TRUE(profiler.GetStatistic(statIdThread3Loop) != nullptr);
-        EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), LargeIterationCount);
-
-        profiler.LogAndResetStats("3_Threads_StatisticalProfilerProxy");
-
-        //Clean Up
-        proxy->ActivateProfiler(ProfilerProxyGroup, false);
-    }
-}//namespace UnitTest
+#endif // defined(HAVE_BENCHMARK)
