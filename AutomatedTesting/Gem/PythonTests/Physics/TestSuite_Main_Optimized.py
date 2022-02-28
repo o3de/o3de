@@ -254,6 +254,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4976197_RigidBodies_InitialAngularVelocity(EditorSharedTest):
         from .tests.rigid_body import RigidBody_InitialAngularVelocity as test_module
 
+    class C6090555_ForceRegion_SplineFollowOnRigidBodies(EditorSharedTest):
+        from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -274,9 +277,6 @@ class TestAutomation(EditorTestSuite):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
 
-
-    class C6090555_ForceRegion_SplineFollowOnRigidBodies(EditorSharedTest):
-        from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
 
     class C5959808_ForceRegion_PositionOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_PositionOffset as test_module
