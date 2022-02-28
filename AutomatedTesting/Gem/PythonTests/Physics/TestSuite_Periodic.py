@@ -237,7 +237,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Ragdoll_LevelSwitchDoesNotCrash(self, request, workspace, editor, launcher_platform):
         from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
     
     @revert_physics_config
     def test_ForceRegion_MultipleComponentsCombineForces(self, request, workspace, editor, launcher_platform):

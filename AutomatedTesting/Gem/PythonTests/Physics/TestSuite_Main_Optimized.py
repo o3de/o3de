@@ -260,6 +260,10 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5959808_ForceRegion_PositionOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_PositionOffset as test_module
 
+    @pytest.mark.xfail(reason="Something with the CryRenderer disabling is causing this test to fail now.")
+    class C13895144_Ragdoll_ChangeLevel(EditorSharedTest):
+        from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -281,9 +285,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-    @pytest.mark.xfail(reason="Something with the CryRenderer disabling is causing this test to fail now.")
-    class C13895144_Ragdoll_ChangeLevel(EditorSharedTest):
-        from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
     
     class C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody(EditorSharedTest):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
