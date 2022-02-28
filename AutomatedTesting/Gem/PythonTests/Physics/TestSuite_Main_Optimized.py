@@ -194,6 +194,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4982797_Collider_ColliderOffset(EditorSharedTest):
         from .tests.collider import Collider_ColliderPositionOffset as test_module
 
+    class C4976200_RigidBody_AngularDampingObjectRotation(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -211,9 +214,6 @@ class TestAutomation(EditorTestSuite):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
 
-
-    class C4976200_RigidBody_AngularDampingObjectRotation(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
 
     class C5689529_Verify_Terrain_RigidBody_Collider_Mesh(EditorSharedTest):
         from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
