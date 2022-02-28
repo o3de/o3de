@@ -272,6 +272,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4976202_RigidBody_StopsWhenBelowKineticThreshold(EditorSharedTest):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
 
+    class C13351703_COM_NotIncludeTriggerShapes(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_COM_NotIncludesTriggerShapes as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -293,10 +296,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-
-
-    class C13351703_COM_NotIncludeTriggerShapes(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_COM_NotIncludesTriggerShapes as test_module
 
     class C5296614_PhysXMaterial_ColliderShape(EditorSharedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
