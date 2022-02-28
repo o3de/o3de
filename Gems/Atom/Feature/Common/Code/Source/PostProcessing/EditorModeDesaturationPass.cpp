@@ -43,12 +43,7 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmoun
             SetSrgConstants();
             EditorModeFeedbackPassBase::FrameBeginInternal(params);
         }
-
-        bool EditorModeDesaturationPass::IsEnabled() const
-        {
-            return true;
-        }
-
+        
         void EditorModeDesaturationPass::SetDesaturationAmount(const float amount)
         {
             m_desaturationAmount = amount;

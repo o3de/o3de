@@ -30,8 +30,6 @@ namespace AZ
             EditorModeFeedbackParentPass(const RPI::PassDescriptor& descriptor);
 
             //! Pass behavior overrides
-            void InitializeInternal() override;
-            void FrameBeginInternal(FramePrepareParams params) override;
             bool IsEnabled() const override;
 
         private:

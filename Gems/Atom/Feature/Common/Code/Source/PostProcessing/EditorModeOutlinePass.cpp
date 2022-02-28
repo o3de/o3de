@@ -47,11 +47,6 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Col
             EditorModeFeedbackPassBase::FrameBeginInternal(params);
         }
 
-        bool EditorModeOutlinePass::IsEnabled() const
-        {
-            return true;
-        }
-
         void EditorModeOutlinePass::SetLineThickness(const float thickness)
         {
             m_lineThickness = thickness;

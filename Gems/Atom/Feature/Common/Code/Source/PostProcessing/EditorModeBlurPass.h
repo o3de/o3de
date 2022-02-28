@@ -36,7 +36,6 @@ namespace AZ
             //! Pass behavior overrides
             void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
-            bool IsEnabled() const override;
 
         private:
             //! Sets the shader constant values for the blur effect.

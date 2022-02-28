@@ -29,24 +29,14 @@ namespace AZ
         {
         }
 
-        void EditorModeFeedbackParentPass::InitializeInternal()
-        {
-            ParentPass::InitializeInternal();
-        }
-
-        void EditorModeFeedbackParentPass::FrameBeginInternal(FramePrepareParams params)
-        {
-            ParentPass::FrameBeginInternal(params);
-        }
-
         bool EditorModeFeedbackParentPass::IsEnabled() const
         {
             if (const auto editorModeFeedback = AZ::Interface<EditorModeFeedbackInterface>::Get())
             {
-                return editorModeFeedback->IsEnabled();
+                return ParentPass::IsEnabled() && editorModeFeedback->IsEnabled();
             }
 
-            return false;
+            return ParentPass::IsEnabled();
         }
     } // namespace Render
 } // namespace AZ
