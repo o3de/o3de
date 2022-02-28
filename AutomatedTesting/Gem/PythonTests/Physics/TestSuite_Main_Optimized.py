@@ -239,6 +239,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C6090551_ForceRegion_LocalSpaceForceNegative(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroLocalSpaceForceDoesNothing as test_module
 
+    class C6090553_ForceRegion_SimpleDragForceOnRigidBodies(EditorSharedTest):
+        from .tests.force_region import ForceRegion_ZeroSimpleDragForceDoesNothing as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -257,9 +260,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-
-    class C6090553_ForceRegion_SimpleDragForceOnRigidBodies(EditorSharedTest):
-        from .tests.force_region import ForceRegion_ZeroSimpleDragForceDoesNothing as test_module
 
     class C4976209_RigidBody_ComputesCOM(EditorSharedTest):
         from .tests.rigid_body import RigidBody_COM_ComputingWorks as test_module

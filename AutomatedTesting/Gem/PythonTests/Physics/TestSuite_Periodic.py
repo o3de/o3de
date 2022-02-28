@@ -181,7 +181,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_ZeroSimpleDragForceDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroSimpleDragForceDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_COM_ComputingWorks(self, request, workspace, editor, launcher_platform):
