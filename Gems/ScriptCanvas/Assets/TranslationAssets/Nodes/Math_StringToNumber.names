@@ -31,7 +31,7 @@
                 {
                     "base": "DataInput_StringValue_0",
                     "details": {
-                        "name": "StringValue"
+                        "name": "String Value"
                     }
                 }
             ]
