@@ -1155,7 +1155,6 @@ class TestsAssetRelocator_WindowsAndMac(object):
             extraParams += ["--confirm"]
 
         result, ap_batch_output = asset_processor.batch_process(capture_output=True, extra_params=extraParams)
-        print(f"AP Output: {ap_batch_output}")
 
         # Validate resulting file paths in source and output directories
         src_assets_final = utils.get_relative_file_paths(testingAssets_dir)
@@ -1181,7 +1180,6 @@ class TestsAssetRelocator_WindowsAndMac(object):
 
         # Validate the log based on expected and unexpected messages
         if test["expected_messages"] or test["unexpected_messages"]:
-            print(f"AP Output: {ap_batch_output}")
             utils.validate_log_output(
                 ap_batch_output, test["expected_messages"], test["unexpected_messages"]
             )
@@ -1557,8 +1555,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file; destination = absolute (path outside scan folder)",
             asset_folder="one_txt_file",
-            encoded_command="project_test_assets_dir\\testFile.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\testFile.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
         ),
@@ -1719,8 +1717,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\test*.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\test*.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="partial file name",
             output_messages=["Destination must exist within a scanfolder."],
@@ -1732,8 +1730,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\*.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\*.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="no filename",
             output_messages=["Destination must exist within a scanfolder."],
@@ -1745,8 +1743,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_dir\\wildcard_fi*\\testFile.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_dir\\wildcard_fi*\\testFile.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="wildcard on folder",
             output_messages=["Destination must exist within a scanfolder."],
@@ -1976,8 +1974,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\test*.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\test*.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard on File to a wildcard before the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -1989,8 +1987,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_dir\\wildcard_fi*\\testFile.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_dir\\wildcard_fi*\\testFile.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with wildcard on folder before filename to a folder with a wildcard before the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2002,8 +2000,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\*.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\*.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard for the Filename to a folder wildcard after the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2041,8 +2039,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\test*.txt,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\test*.txt,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard in Filename to a folder wildcard after the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2054,8 +2052,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = absolute-file (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\*.txt,C:\\MoveOutput\\*.txt",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\*.txt,engine_dir\\MoveOutput\\*.txt",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard for the Filename to a folder wildcard after the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2109,8 +2107,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file; destination = absolute (path outside scan folder)",
             asset_folder="one_txt_file",
-            encoded_command="one_txt_file\\testFile.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="one_txt_file\\testFile.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
         ),
@@ -2271,8 +2269,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\test*.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\test*.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard on File to a wildcard before the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2284,8 +2282,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_fi*\\testFile.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_fi*\\testFile.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with wildcard on folder before filename to a folder with a wildcard before the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2297,8 +2295,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\*.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\*.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard for the Filename to a folder wildcard after the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2528,8 +2526,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\test*.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\test*.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard on File to a wildcard before the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2541,8 +2539,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files*\\testFile.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files*\\testFile.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with wildcard on folder before filename to a folder with a wildcard before the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2554,8 +2552,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\*.txt,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\*.txt,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard for the Filename to a folder wildcard after the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2593,8 +2591,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\test*.txt,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\test*.txt,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard in Filename to a folder wildcard after the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2606,8 +2604,8 @@ move_a_file_tests = [
         MoveTest(
             description="Move a file: source = relative-file (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\*.txt,C:\\MoveOutput\\*.txt",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\*.txt,engine_dir\\MoveOutput\\*.txt",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             step="Move with Wildcard for the Filename to a folder wildcard after the folder declaration",
             output_messages=["Destination must exist within a scanfolder."],
@@ -2866,8 +2864,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = absolute-folder (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\*,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\*,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
             step="1",
@@ -2879,8 +2877,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = absolute-folder (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_dir\\wildcard_file*\\,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_dir\\wildcard_file*\\,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Wildcard search did not match any files."],
             step="2",
@@ -2892,8 +2890,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = absolute-folder (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_dir\\wildcard_file*\\*,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_dir\\wildcard_file*\\*,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
             step="3",
@@ -3186,8 +3184,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = relative-folder; destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=[
                 "Cannot operate on directories.  Please specify a file or use a wildcard to select all files within a directory."
@@ -3353,8 +3351,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = relative-folder (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\*,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\*,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
             step=1,
@@ -3366,8 +3364,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = relative-folder (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_file*\\*,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_file*\\*,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
             step=2,
@@ -3379,8 +3377,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = relative-folder (wildcards); destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_file*\\,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_file*\\,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Wildcard search did not match any files."],
             step=3,
@@ -3629,8 +3627,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = relative-folder (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_files\\*,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_files\\*,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
             step=1,
@@ -3642,8 +3640,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = relative-folder (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_file*\\*,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_file*\\*,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             output_messages=["Destination must exist within a scanfolder."],
             move_successful=False,
             step=2,
@@ -3655,8 +3653,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = relative-folder (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="wildcard_file*\\,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="wildcard_file*\\,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Wildcard search did not match any files."],
             step=3,
@@ -3705,8 +3703,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = absolute-folder; destination = absolute (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\,C:\\MoveOutput\\",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\,engine_dir\\MoveOutput\\",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=[
                 "Cannot operate on directories.  Please specify a file or use a wildcard to select all files within a directory."
@@ -3719,8 +3717,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = absolute-folder (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_test_assets_dir\\*,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_test_assets_dir\\*,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
             step=1,
@@ -3732,8 +3730,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = absolute-folder (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_dir\\wildcard_file*\\*,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_dir\\wildcard_file*\\*,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Destination must exist within a scanfolder."],
             step=2,
@@ -3745,8 +3743,8 @@ move_a_folder_tests = [
         MoveTest(
             description="Move a folder: source = absolute-folder (wildcards); destination = absolute (wildcards) (path outside scan folder)",
             asset_folder="wildcard_files",
-            encoded_command="project_dir\\wildcard_file*\\,C:\\MoveOutput\\*",
-            encoded_output_dir="C:\\MoveOutput\\",
+            encoded_command="project_dir\\wildcard_file*\\,engine_dir\\MoveOutput\\*",
+            encoded_output_dir="engine_dir\\MoveOutput\\",
             move_successful=False,
             output_messages=["Wildcard search did not match any files."],
             step=3,
