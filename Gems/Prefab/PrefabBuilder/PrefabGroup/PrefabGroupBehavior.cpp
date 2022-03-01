@@ -47,8 +47,6 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 
-#include <C:\work\o3de_feature\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabLoader.h>
-
 namespace AZStd
 {
     template<> struct hash<AZ::SceneAPI::Containers::SceneGraph::NodeIndex>
