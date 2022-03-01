@@ -66,16 +66,16 @@ namespace AZ
             bool m_enabled = false;
 
             //! Data to construct draw packets for meshes.
-            struct MeshDrawPackets
+            struct MeshHandleDrawPackets
             {
-                ~MeshDrawPackets();
+                ~MeshHandleDrawPackets();
 
                 const MeshFeatureProcessorInterface::MeshHandle* m_meshHandle;
-                AZStd::vector<RPI::MeshDrawPacket> m_drawPackets;
+                AZStd::vector<RPI::MeshDrawPacket> m_meshDrawPackets;
             };
             
             //! Map for entities and their drawable components.
-            AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, MeshDrawPackets>> m_entityComponentMeshDrawPackets;
+            AZStd::unordered_map<EntityId, AZStd::unordered_map<ComponentId, MeshHandleDrawPackets>> m_entityComponentMeshHandleDrawPackets;
 
             //! Material for sending draw packets to the entity mask pass.
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;
