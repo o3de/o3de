@@ -47,6 +47,8 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 
+#include <C:\work\o3de_feature\Code\Framework\AzToolsFramework\AzToolsFramework\Prefab\PrefabLoader.h>
+
 namespace AZStd
 {
     template<> struct hash<AZ::SceneAPI::Containers::SceneGraph::NodeIndex>
@@ -781,6 +783,44 @@ namespace AZ::SceneAPI::Behaviors
         if (serializeContext)
         {
             serializeContext->Class<PrefabGroupBehavior, BehaviorComponent>()->Version(1);
+        }
+
+        BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            using namespace AzToolsFramework::Prefab;
+
+            auto loadTemplate = [](const AZStd::string& prefabPath)
+            {
+                AZ::IO::FixedMaxPath path {prefabPath};
+                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                if (prefabLoaderInterface)
+                {
+                    return prefabLoaderInterface->LoadTemplateFromFile(path);
+                }
+                return TemplateId{};
+            };
+
+            behaviorContext->Method("LoadTemplate", loadTemplate)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "prefab");
+
+            auto saveTemplateToString = [](TemplateId templateId) -> AZStd::string
+            {
+                AZStd::string output;
+                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                if (prefabLoaderInterface)
+                {
+                    prefabLoaderInterface->SaveTemplateToString(templateId, output);
+                }
+                return output;
+            };
+
+            behaviorContext->Method("SaveTemplateToString", saveTemplateToString)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "prefab");
         }
     }
 }
