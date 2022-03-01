@@ -125,10 +125,10 @@ namespace AzToolsFramework
     void PlanarManipulator::OnLeftMouseDownImpl(
         const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
+        const AZ::Transform worldFromLocal = GetSpace();
 
         m_startInternal = CalculateManipulationDataStart(
-            m_fixed, worldFromLocalUniformScale, GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()), interaction,
+            m_fixed, worldFromLocal, GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()), interaction,
             rayIntersectionDistance);
 
         if (m_onLeftMouseDownCallback)
@@ -136,7 +136,7 @@ namespace AzToolsFramework
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
             m_onLeftMouseDownCallback(CalculateManipulationDataAction(
-                m_fixed, m_startInternal, worldFromLocalUniformScale, GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()),
+                m_fixed, m_startInternal, worldFromLocal, GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()),
                 gridSnapParams, interaction));
         }
     }
@@ -148,8 +148,8 @@ namespace AzToolsFramework
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
             m_onMouseMoveCallback(CalculateManipulationDataAction(
-                m_fixed, m_startInternal, TransformUniformScale(GetSpace()), GetNonUniformScale(),
-                TransformNormalizedScale(GetLocalTransform()), gridSnapParams, interaction));
+                m_fixed, m_startInternal, GetSpace(), GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()), gridSnapParams,
+                interaction));
         }
     }
 
@@ -160,8 +160,8 @@ namespace AzToolsFramework
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                m_fixed, m_startInternal, TransformUniformScale(GetSpace()), GetNonUniformScale(),
-                TransformNormalizedScale(GetLocalTransform()), gridSnapParams, interaction));
+                m_fixed, m_startInternal, GetSpace(), GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()), gridSnapParams,
+                interaction));
         }
     }
 
@@ -177,13 +177,13 @@ namespace AzToolsFramework
             {
                 const GridSnapParameters gridSnapParams = GridSnapSettings(mouseInteraction.m_interactionId.m_viewportId);
                 const auto action = CalculateManipulationDataAction(
-                    m_fixed, m_startInternal, TransformUniformScale(GetSpace()), GetNonUniformScale(),
-                    TransformNormalizedScale(GetLocalTransform()), gridSnapParams, mouseInteraction);
+                    m_fixed, m_startInternal, GetSpace(), GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()),
+                    gridSnapParams, mouseInteraction);
 
                 // display the exact hit (ray intersection) of the mouse pick on the manipulator
                 DrawTransformAxes(
                     debugDisplay,
-                    TransformUniformScale(GetSpace()) *
+                    GetSpace() *
                         AZ::Transform::CreateTranslation(
                             action.m_start.m_localHitPosition + GetNonUniformScale() * action.m_current.m_localOffset));
             }
