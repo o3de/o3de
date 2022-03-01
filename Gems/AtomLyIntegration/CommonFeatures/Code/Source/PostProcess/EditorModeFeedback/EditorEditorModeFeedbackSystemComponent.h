@@ -43,7 +43,6 @@ namespace AZ
             ~EditorEditorModeFeedbackSystemComponent();
 
             // EditorComponentBase overrides ...
-            void Init() override;
             void Activate() override;
             void Deactivate() override;
 

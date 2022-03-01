@@ -126,11 +126,6 @@ namespace AZ
 
         EditorEditorModeFeedbackSystemComponent::~EditorEditorModeFeedbackSystemComponent() = default;
 
-        void EditorEditorModeFeedbackSystemComponent::Init()
-        {
-            AzToolsFramework::Components::EditorComponentBase::Init();
-        }
-
         void EditorEditorModeFeedbackSystemComponent::Activate()
         {
             AzToolsFramework::Components::EditorComponentBase::Activate();
