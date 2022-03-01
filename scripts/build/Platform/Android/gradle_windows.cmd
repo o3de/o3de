@@ -157,8 +157,8 @@ REM Stop any running or orphaned gradle daemon
 ECHO [ci_build] gradlew --stop
 CALL gradlew --stop
 
-ECHO [ci_build] gradlew --console=verbose --info --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION% 
-CALL gradlew --console=verbose --info --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION%
+ECHO [ci_build] gradlew --info --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION% 
+CALL gradlew --info --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION%
 
 IF %ERRORLEVEL%==0 GOTO gradle_build_success
 
