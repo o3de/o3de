@@ -34,8 +34,16 @@ namespace PhysX
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        void SetupRadiusManipulator(const AZ::EntityComponentIdPair& idPair, const AZ::Transform& worldTransform);
-        void SetupHeightManipulator(const AZ::EntityComponentIdPair& idPair, const AZ::Transform& worldTransform);
+        void SetupRadiusManipulator(
+            const AZ::EntityComponentIdPair& idPair,
+            const AZ::Transform& worldTransform,
+            const AZ::Transform& localTransform,
+            const AZ::Vector3& nonUniformScale);
+        void SetupHeightManipulator(
+            const AZ::EntityComponentIdPair& idPair,
+            const AZ::Transform& worldTransform,
+            const AZ::Transform& localTransform,
+            const AZ::Vector3& nonUniformScale);
         void OnRadiusManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
         void OnHeightManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
         void AdjustRadiusManipulator(const AZ::EntityComponentIdPair& idPair, const float capsuleHeight);

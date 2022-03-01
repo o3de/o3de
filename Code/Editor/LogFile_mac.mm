@@ -26,8 +26,13 @@ QString graphicsCardName()
     // Create an iterator
     io_iterator_t iterator;
 
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_12_0
+    if (IOServiceGetMatchingServices(kIOMainPortDefault,matchDict,
+                                     &iterator) == kIOReturnSuccess)
+#else
     if (IOServiceGetMatchingServices(kIOMasterPortDefault,matchDict,
                                      &iterator) == kIOReturnSuccess)
+#endif
     {
         // Iterator for devices found
         io_registry_entry_t regEntry;

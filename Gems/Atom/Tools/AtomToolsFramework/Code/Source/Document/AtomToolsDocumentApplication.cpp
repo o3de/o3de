@@ -11,9 +11,21 @@
 
 namespace AtomToolsFramework
 {
-    AtomToolsDocumentApplication::AtomToolsDocumentApplication(int* argc, char*** argv)
-        : Base(argc, argv)
+    AtomToolsDocumentApplication::AtomToolsDocumentApplication(const char* targetName, int* argc, char*** argv)
+        : Base(targetName, argc, argv)
     {
+    }
+
+    void AtomToolsDocumentApplication::StartCommon(AZ::Entity* systemEntity)
+    {
+        Base::StartCommon(systemEntity);
+        m_documentSystem.reset(aznew AtomToolsDocumentSystem(m_toolId));
+    }
+
+    void AtomToolsDocumentApplication::Destroy()
+    {
+        m_documentSystem.reset();
+        Base::Destroy();
     }
 
     void AtomToolsDocumentApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
@@ -24,8 +36,8 @@ namespace AtomToolsFramework
         {
             const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
 
-            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
+            AZ_Printf(m_targetName.c_str(), "Opening document: %s", openDocumentPath.c_str());
+            AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
         }
 
         Base::ProcessCommandLine(commandLine);

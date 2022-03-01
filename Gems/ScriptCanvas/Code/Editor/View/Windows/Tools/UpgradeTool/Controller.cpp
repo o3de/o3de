@@ -542,7 +542,7 @@ namespace ScriptCanvasEditor
             }
 
             QToolButton* doneButton = new QToolButton(this);
-            doneButton->setIcon(QIcon(":/stylesheet/img/UI20/titlebar-close.svg"));
+            doneButton->setIcon(QIcon(":/Application/titlebar-close.svg"));
             doneButton->setToolTip(message.data());
             m_view->tableWidget->setCellWidget(index, ColumnStatus, doneButton);
         }

@@ -1360,6 +1360,19 @@ namespace AzToolsFramework
                 EndRecordManipulatorCommand();
             });
 
+        translationManipulators->InstallSurfaceManipulatorEntityIdsToIgnoreFn(
+            [this](const ViewportInteraction::MouseInteraction& interaction)
+            {
+                if (interaction.m_keyboardModifiers.Ctrl())
+                {
+                    return AZStd::unordered_set<AZ::EntityId>();
+                }
+                else
+                {
+                    return m_selectedEntityIds;
+                }
+            });
+
         // transfer ownership
         m_entityIdManipulators.m_manipulators = AZStd::move(translationManipulators);
     }
@@ -3608,9 +3621,10 @@ namespace AzToolsFramework
         debugDisplay.SetLineWidth(1.0f);
 
         const float labelOffset = ed_viewportGizmoAxisLabelOffset;
-        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize;
-        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize;
-        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto viewportSize = AzFramework::Vector2FromScreenSize(editorCameraState.m_viewportSize);
+        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * viewportSize;
+        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * viewportSize;
+        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * viewportSize;
 
         // draw the label of of each axis for the gizmo
         const float labelSize = ed_viewportGizmoAxisLabelSize;
