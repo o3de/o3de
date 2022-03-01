@@ -58,6 +58,12 @@ namespace AzToolsFramework
 
     SurfaceManipulator::SurfaceManipulator(const AZ::Transform& worldFromLocal)
     {
+        // default handler for when no handler is installed via InstallEntityIdsToIgnoreFn
+        m_entityIdsToIgnoreFn = [](const ViewportInteraction::MouseInteraction&)
+        {
+            return UniqueEntityIds{};
+        };
+
         SetSpace(worldFromLocal);
         AttachLeftMouseDownImpl();
 
@@ -88,7 +94,7 @@ namespace AzToolsFramework
     void SurfaceManipulator::OnLeftMouseDownImpl(
         const ViewportInteraction::MouseInteraction& interaction, [[maybe_unused]] float rayIntersectionDistance)
     {
-        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
+        const AZ::Transform worldFromLocal = GetSpace();
         const AzFramework::ViewportId viewportId = interaction.m_interactionId.m_viewportId;
 
         m_rayRequest.m_entityFilter.m_ignoreEntities = m_entityIdsToIgnoreFn(interaction);
@@ -102,13 +108,13 @@ namespace AzToolsFramework
         const AZ::Vector3 worldSurfacePosition = FindClosestPickIntersection(m_rayRequest, GetDefaultEntityPlacementDistance());
 
         m_startInternal = CalculateManipulationDataStart(
-            worldFromLocalUniformScale, worldSurfacePosition, GetLocalPosition(), gridSnapParams.m_gridSnap, gridSnapParams.m_gridSize,
+            worldFromLocal, worldSurfacePosition, GetLocalPosition(), gridSnapParams.m_gridSnap, gridSnapParams.m_gridSize,
             interaction.m_interactionId.m_viewportId);
 
         if (m_onLeftMouseDownCallback)
         {
             m_onLeftMouseDownCallback(CalculateManipulationDataAction(
-                m_startInternal, worldFromLocalUniformScale, worldSurfacePosition, gridSnapParams.m_gridSnap, gridSnapParams.m_gridSize,
+                m_startInternal, worldFromLocal, worldSurfacePosition, gridSnapParams.m_gridSnap, gridSnapParams.m_gridSize,
                 interaction.m_keyboardModifiers, interaction.m_interactionId.m_viewportId));
         }
     }
@@ -123,8 +129,8 @@ namespace AzToolsFramework
             const AZ::Vector3 worldSurfacePosition = FindClosestPickIntersection(m_rayRequest, GetDefaultEntityPlacementDistance());
 
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                m_startInternal, TransformUniformScale(GetSpace()), worldSurfacePosition, gridSnapParams.m_gridSnap,
-                gridSnapParams.m_gridSize, interaction.m_keyboardModifiers, viewportId));
+                m_startInternal, GetSpace(), worldSurfacePosition, gridSnapParams.m_gridSnap, gridSnapParams.m_gridSize,
+                interaction.m_keyboardModifiers, viewportId));
         }
     }
 
@@ -145,8 +151,8 @@ namespace AzToolsFramework
             const AZ::Vector3 worldSurfacePosition = FindClosestPickIntersection(m_rayRequest, GetDefaultEntityPlacementDistance());
 
             m_onMouseMoveCallback(CalculateManipulationDataAction(
-                m_startInternal, TransformUniformScale(GetSpace()), worldSurfacePosition, gridSnapParams.m_gridSnap,
-                gridSnapParams.m_gridSize, interaction.m_keyboardModifiers, interaction.m_interactionId.m_viewportId));
+                m_startInternal, GetSpace(), worldSurfacePosition, gridSnapParams.m_gridSnap, gridSnapParams.m_gridSize,
+                interaction.m_keyboardModifiers, interaction.m_interactionId.m_viewportId));
         }
     }
 
@@ -163,7 +169,7 @@ namespace AzToolsFramework
     {
         m_manipulatorView->Draw(
             GetManipulatorManagerId(), managerState, GetManipulatorId(),
-            ManipulatorState{ TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalPosition(), MouseOver() }, debugDisplay,
+            ManipulatorState{ GetSpace(), GetNonUniformScale(), GetLocalPosition(), MouseOver() }, debugDisplay,
             cameraState, interaction);
     }
 
