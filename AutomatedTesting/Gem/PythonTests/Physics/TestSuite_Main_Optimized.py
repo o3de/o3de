@@ -290,6 +290,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C15845879_ForceRegion_HighLinearDampingForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_NoQuiverOnHighLinearDampingForce as test_module
 
+    class C4976218_RigidBodies_InertiaObjectsNotComputed(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -310,9 +313,6 @@ class TestAutomation(EditorTestSuite):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
 
-
-    class C4976218_RigidBodies_InertiaObjectsNotComputed(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
 
     class C14902098_ScriptCanvas_PostPhysicsUpdate(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
