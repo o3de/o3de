@@ -264,5 +264,5 @@ namespace AZ
         {
             return AZ::TICK_PRE_RENDER;
         }
-    }
-}
+    } // namespace Render
+} // namespace AZ
