@@ -215,6 +215,8 @@ set(FILES
     Physics/Configuration/SimulatedBodyConfiguration.cpp
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
+    Physics/DebugDraw/CharacterPhysicsDebugDraw.h
+    Physics/DebugDraw/CharacterPhysicsDebugDraw.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h
