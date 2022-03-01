@@ -58,59 +58,6 @@ namespace PhysX
         m_subModes[m_subMode]->Refresh(GetEntityComponentIdPair());
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> ColliderComponentMode::PopulateActionsImpl()
-    {
-        AzToolsFramework::ActionOverride setOffsetModeAction;
-        setOffsetModeAction.SetUri(SetOffsetSubModeActionUri);
-        setOffsetModeAction.SetKeySequence(QKeySequence(Qt::Key_1));
-        setOffsetModeAction.SetTitle("Set Offset Mode");
-        setOffsetModeAction.SetTip("Set offset mode");
-        setOffsetModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        setOffsetModeAction.SetCallback(
-            [this]()
-            {
-                SetCurrentMode(SubMode::Offset);
-            });
-
-        AzToolsFramework::ActionOverride setRotationModeAction;
-        setRotationModeAction.SetUri(SetRotationSubModeActionUri);
-        setRotationModeAction.SetKeySequence(QKeySequence(Qt::Key_2));
-        setRotationModeAction.SetTitle("Set Rotation Mode");
-        setRotationModeAction.SetTip("Set rotation mode");
-        setRotationModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        setRotationModeAction.SetCallback(
-            [this]()
-            {
-                SetCurrentMode(SubMode::Rotation);
-            });
-
-        AzToolsFramework::ActionOverride setDimensionsModeAction;
-        setDimensionsModeAction.SetUri(SetDimensionsSubModeActionUri);
-        setDimensionsModeAction.SetKeySequence(QKeySequence(Qt::Key_3));
-        setDimensionsModeAction.SetTitle("Set Resize Mode");
-        setDimensionsModeAction.SetTip("Set resize mode");
-        setDimensionsModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        setDimensionsModeAction.SetCallback(
-            [this]()
-            {
-                SetCurrentMode(SubMode::Dimensions);
-            });
-
-        AzToolsFramework::ActionOverride resetModeAction;
-        resetModeAction.SetUri(ResetSubModeActionUri);
-        resetModeAction.SetKeySequence(QKeySequence(Qt::Key_R));
-        resetModeAction.SetTitle("Reset Current Mode");
-        resetModeAction.SetTip("Reset current mode");
-        resetModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        resetModeAction.SetCallback(
-            [this]()
-            {
-                ResetCurrentMode();
-            });
-
-        return { setDimensionsModeAction, setOffsetModeAction, setRotationModeAction, resetModeAction };
-    }
-
     void ColliderComponentMode::CreateSubModes()
     {
         Physics::ShapeType shapeType = Physics::ShapeType::Box;

@@ -399,10 +399,6 @@ MainWindow::~MainWindow()
     m_connectionListener.reset();
     GetIEditor()->UnregisterNotifyListener(this);
 
-    // tear down the ActionOverride (clear the overrideWidget's parent)
-    ActionOverrideRequestBus::Event(
-        GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
-
     m_instance = nullptr;
 }
 
@@ -469,10 +465,6 @@ void MainWindow::Initialize()
             MainWindow::instance()->ResetBackgroundUpdateTimer();
         });
     }
-
-    // setup the ActionOverride (set overrideWidgets parent to be the MainWindow)
-    ActionOverrideRequestBus::Event(
-        GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
 
     if (auto imGuiManager = AZ::Interface<ImGui::IImGuiManager>::Get())
     {

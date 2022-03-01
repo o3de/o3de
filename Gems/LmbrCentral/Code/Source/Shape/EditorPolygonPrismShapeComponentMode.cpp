@@ -70,11 +70,6 @@ namespace LmbrCentral
         ContainerChanged();
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> EditorPolygonPrismShapeComponentMode::PopulateActionsImpl()
-    {
-        return m_vertexSelection.ActionOverrides();
-    }
-
     bool EditorPolygonPrismShapeComponentMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {

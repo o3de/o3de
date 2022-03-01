@@ -29,7 +29,6 @@ struct QtViewPane;
 class LevelEditorMenuHandler
     : public QObject
     , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
-    , private AzToolsFramework::EditorMenuRequestBus::Handler
 {
     Q_OBJECT
 public:
@@ -93,11 +92,6 @@ private:
         const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
     void OnEditorModeDeactivated(
         const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
-
-    // EditorMenuRequestBus
-    void AddEditMenuAction(QAction* action) override;
-    void AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar) override;
-    void RestoreEditMenuToDefault() override;
 
     MainWindow* m_mainWindow;
     QtViewPaneManager* m_viewPaneManager;

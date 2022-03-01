@@ -39,7 +39,6 @@ namespace LmbrCentral
     private:
         // EditorBaseComponentMode
         void Refresh() override;
-        AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         bool HandleMouseInteraction(
             const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
 

@@ -38,7 +38,6 @@ namespace PhysX
 
         // EditorBaseComponentMode ...
         void Refresh() override;
-        AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         AZStd::vector<AzToolsFramework::ViewportUi::ClusterId> PopulateViewportUiImpl() override;
     private:
         //! Used to identify the group of component modes.

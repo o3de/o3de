@@ -264,14 +264,10 @@ ActionManager::ActionManager(
     timer->setInterval(250);
     connect(timer, &QTimer::timeout, this, &ActionManager::UpdateActions);
     timer->start();
-
-    // connect to the Action Request Bus and notify other listeners this has happened
-    AzToolsFramework::EditorActionRequestBus::Handler::BusConnect();
 }
 
 ActionManager::~ActionManager()
 {
-    AzToolsFramework::EditorActionRequestBus::Handler::BusDisconnect();
 }
 
 void ActionManager::AddMenu(QMenu* menu)
@@ -603,43 +599,6 @@ void SetDefaultActionsEnabled(
             action->setEnabled(enabled);
         }
     });
-}
-
-void ActionManager::AddActionViaBus(int id, QAction* action)
-{
-    AddAction(id, action);
-}
-
-void ActionManager::AddActionViaBusCrc(AZ::Crc32 id, QAction* action)
-{
-    AddAction(id, action);
-}
-
-void ActionManager::RemoveActionViaBus(QAction* action)
-{
-    RemoveAction(action);
-}
-
-void ActionManager::EnableDefaultActions()
-{
-     SetDefaultActionsEnabled(GetActions(), true);
-     m_defaultActionsSuspended = false;
-}
-
-void ActionManager::DisableDefaultActions()
-{
-    SetDefaultActionsEnabled(GetActions(), false);
-    m_defaultActionsSuspended = true;
-}
-
-void ActionManager::AttachOverride(QWidget* object)
-{
-    m_shortcutDispatcher->AttachOverride(object);
-}
-
-void ActionManager::DetachOverride()
-{
-    m_shortcutDispatcher->DetachOverride();
 }
 
 WidgetAction::WidgetAction(int actionId, MainWindow* mainWindow, const QString& name, QObject* parent)

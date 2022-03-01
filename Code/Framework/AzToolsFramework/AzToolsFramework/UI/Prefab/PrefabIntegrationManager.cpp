@@ -171,9 +171,6 @@ namespace AzToolsFramework
                         }
                     });
 
-                EditorActionRequestBus::Broadcast(
-                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("org.o3de.action.editortransform.prefabopen"),
-                    m_actions.back().get());
             }
 
             // Close Prefab (-)
@@ -191,9 +188,6 @@ namespace AzToolsFramework
                         ContextMenu_ClosePrefab();
                     });
 
-                EditorActionRequestBus::Broadcast(
-                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("org.o3de.action.editortransform.prefabclose"),
-                    m_actions.back().get());
             }
         }
 

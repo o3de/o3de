@@ -261,16 +261,6 @@ namespace WhiteBox
         return interactionHandled;
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> EditorWhiteBoxComponentMode::PopulateActionsImpl()
-    {
-        return AZStd::visit(
-            [entityComponentIdPair = GetEntityComponentIdPair()](auto& mode)
-            {
-                return mode->PopulateActions(entityComponentIdPair);
-            },
-            m_modes);
-    }
-
     static void SetViewportUiClusterActiveButton(
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
     {

@@ -20,7 +20,6 @@ namespace AzToolsFramework
     //! The default selection/input handler for the editor (includes handling ComponentMode).
     class EditorDefaultSelection
         : public ViewportInteraction::InternalViewportSelectionRequests
-        , private ActionOverrideRequestBus::Handler
         , private ComponentModeFramework::ComponentModeSystemRequestBus::Handler
     {
     public:
@@ -47,13 +46,6 @@ namespace AzToolsFramework
             const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
         void DisplayViewportSelection2d(
             const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
-
-        // ActionOverrideRequestBus ...
-        void SetupActionOverrideHandler(QWidget* parent) override;
-        void TeardownActionOverrideHandler() override;
-        void AddActionOverride(const ActionOverride& actionOverride) override;
-        void RemoveActionOverride(AZ::Crc32 actionOverrideUri) override;
-        void ClearActionOverrides() override;
 
         // ComponentModeSystemRequestBus ...
         void BeginComponentMode(

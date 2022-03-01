@@ -57,42 +57,6 @@ namespace LmbrCentral
         ContainerChanged();
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> EditorTubeShapeComponentMode::PopulateActionsImpl()
-    {
-        return AZStd::vector<AzToolsFramework::ActionOverride>
-        {
-            AzToolsFramework::ActionOverride()
-                .SetUri(s_resetVariableRadii)
-                .SetKeySequence(QKeySequence(Qt::Key_R))
-                .SetTitle(s_resetRadiiTitle)
-                .SetTip(s_resetRadiiDesc)
-                .SetEntityComponentIdPair(GetEntityComponentIdPair())
-                .SetCallback([this]()
-            {
-                const AZ::EntityId entityId = GetEntityId();
-
-                // ensure we record undo command for reset
-                AzToolsFramework::ScopedUndoBatch undoBatch("Reset variable radii");
-                AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(entityId);
-
-                TubeShapeComponentRequestsBus::Event(
-                    entityId, &TubeShapeComponentRequests::SetAllVariableRadii, 0.0f);
-
-                RefreshManipulatorsLocal(entityId);
-
-                EditorTubeShapeComponentRequestBus::Event(
-                    entityId, &EditorTubeShapeComponentRequests::GenerateVertices);
-
-                AzToolsFramework::OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
-
-                // ensure property grid values are refreshed
-                AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay,
-                    AzToolsFramework::Refresh_Values);
-            })
-        };
-    }
-
     void EditorTubeShapeComponentMode::CreateManipulators()
     {
         const AZ::EntityId entityId = GetEntityId();

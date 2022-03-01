@@ -173,10 +173,6 @@ namespace AzToolsFramework
         //! terrain position with all vertices moved relative to it.
         void SnapVerticesToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
-        //! The Actions provided by the EditorVertexSelection while it is active.
-        //! e.g. Vertex deletion, duplication etc.
-        AZStd::vector<ActionOverride> ActionOverrides() const;
-
         //! Let the EditorVertexSelection know a batch movement is about to begin so it
         //! can avoid certain unnecessary updates.
         void BeginBatchMovement();
@@ -254,7 +250,6 @@ namespace AzToolsFramework
             nullptr; //!< Manipulator when vertex is selected to translate it.
         AZStd::vector<AZStd::shared_ptr<SelectionManipulator>>
             m_selectionManipulators; //!< Manipulators for each vertex when entity is selected.
-        AZStd::array<AZStd::vector<ActionOverride>, 2> m_actionOverrides; //!< Available actions corresponding to each mode.
 
     private:
         // AzFramework::EntityDebugDisplayEventBus

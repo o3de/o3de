@@ -26,8 +26,6 @@ namespace AzToolsFramework
     {
         struct MouseInteractionEvent;
     }
-
-    struct ActionOverride;
 } // namespace AzToolsFramework
 
 namespace WhiteBox
@@ -48,8 +46,6 @@ namespace WhiteBox
 
         // Submode interface
         void Refresh();
-        AZStd::vector<AzToolsFramework::ActionOverride> PopulateActions(
-            const AZ::EntityComponentIdPair& entityComponentIdPair);
         void Display(
             const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Transform& worldFromLocal,
             const IntersectionAndRenderData& renderData, const AzFramework::ViewportInfo& viewportInfo,

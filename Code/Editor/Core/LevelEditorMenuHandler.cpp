@@ -173,12 +173,10 @@ LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPan
 #endif
 
     ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
-    EditorMenuRequestBus::Handler::BusConnect();
 }
 
 LevelEditorMenuHandler::~LevelEditorMenuHandler()
 {
-    EditorMenuRequestBus::Handler::BusDisconnect();
     ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
 }
 
@@ -754,24 +752,8 @@ void LevelEditorMenuHandler::OnEditorModeActivated(
 }
 
 void LevelEditorMenuHandler::OnEditorModeDeactivated(
-    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
-{
-    if (mode == ViewportEditorMode::Component)
-    {
-        RestoreEditMenuToDefault();
-    }
-}
-
-void LevelEditorMenuHandler::AddEditMenuAction([[maybe_unused]] QAction* action)
-{
-}
-
-void LevelEditorMenuHandler::AddMenuAction(
-    [[maybe_unused]] AZStd::string_view categoryId, [[maybe_unused]] QAction* action, [[maybe_unused]]  bool addToToolsToolbar)
-{
-}
-
-void LevelEditorMenuHandler::RestoreEditMenuToDefault()
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
+    [[maybe_unused]] AzToolsFramework::ViewportEditorMode mode)
 {
 }
 

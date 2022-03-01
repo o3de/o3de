@@ -72,16 +72,6 @@ namespace AzToolsFramework
             return AZStd::vector<ViewportUi::ClusterId>();
         }
 
-        AZStd::vector<ActionOverride> EditorBaseComponentMode::PopulateActionsImpl()
-        {
-            return AZStd::vector<ActionOverride>{};
-        }
-
-        AZStd::vector<ActionOverride> EditorBaseComponentMode::PopulateActions()
-        {
-            return PopulateActionsImpl();
-        }
-
         void EditorBaseComponentMode::PostHandleMouseInteraction()
         {
             ComponentModeViewportUiRequestBus::Event(

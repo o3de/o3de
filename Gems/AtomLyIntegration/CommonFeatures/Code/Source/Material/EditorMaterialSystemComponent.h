@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
@@ -29,7 +30,6 @@ namespace AZ
             , public EditorMaterialSystemComponentNotificationBus::Handler
             , public EditorMaterialSystemComponentRequestBus::Handler
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
-            , public AzToolsFramework::EditorMenuNotificationBus::Handler
             , public AzToolsFramework::EditorEvents::Bus::Handler
         {
         public:
@@ -65,10 +65,6 @@ namespace AZ
 
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
-
-            // EditorMenuNotificationBus::Handler overrides ...
-            void OnPopulateToolMenuItems() override;
-            void OnResetToolMenuItems() override;
 
             // AztoolsFramework::EditorEvents::Bus::Handler overrides...
             void NotifyRegisterViews() override;

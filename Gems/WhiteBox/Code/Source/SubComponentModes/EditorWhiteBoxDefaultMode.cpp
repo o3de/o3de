@@ -143,61 +143,6 @@ namespace WhiteBox
         m_selectedModifier = AZStd::monostate{};
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> DefaultMode::PopulateActions(
-        const AZ::EntityComponentIdPair& entityComponentIdPair)
-    {
-        // edge selection test - ensure an edge is selected before allowing this shortcut
-        if (auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier))
-        {
-            return AZStd::vector<AzToolsFramework::ActionOverride>{
-                AzToolsFramework::ActionOverride()
-                    .SetUri(HideEdge)
-                    .SetKeySequence(HideKey)
-                    .SetTitle(HideEdgeTitle)
-                    .SetTip(HideEdgeDesc)
-                    .SetEntityComponentIdPair(entityComponentIdPair)
-                    .SetCallback(
-                        [entityComponentIdPair, modifier]()
-                        {
-                            WhiteBoxMesh* whiteBox = nullptr;
-                            EditorWhiteBoxComponentRequestBus::EventResult(
-                                whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
-
-                            Api::HideEdge(*whiteBox, (*modifier)->GetEdgeHandle());
-                            (*modifier)->SetEdgeHandle(Api::EdgeHandle{});
-
-                            RecordWhiteBoxAction(*whiteBox, entityComponentIdPair, HideEdgeUndoRedoDesc);
-                        })};
-        }
-        // vertex selection test - ensure a vertex is selected before allowing this shortcut
-        else if (auto modifier2 = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier))
-        {
-            return AZStd::vector<AzToolsFramework::ActionOverride>{
-                AzToolsFramework::ActionOverride()
-                    .SetUri(HideVertex)
-                    .SetKeySequence(HideKey)
-                    .SetTitle(HideVertexTitle)
-                    .SetTip(HideVertexDesc)
-                    .SetEntityComponentIdPair(entityComponentIdPair)
-                    .SetCallback(
-                        [entityComponentIdPair, modifier2]()
-                        {
-                            WhiteBoxMesh* whiteBox = nullptr;
-                            EditorWhiteBoxComponentRequestBus::EventResult(
-                                whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
-
-                            Api::HideVertex(*whiteBox, (*modifier2)->GetVertexHandle());
-                            (*modifier2)->SetVertexHandle(Api::VertexHandle{});
-
-                            RecordWhiteBoxAction(*whiteBox, entityComponentIdPair, HideVertexUndoRedoDesc);
-                        })};
-        }
-        else
-        {
-            return {};
-        }
-    }
-
     template<typename ModifierUniquePtr>
     static void TryDestroyModifier(ModifierUniquePtr& modifier)
     {

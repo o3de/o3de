@@ -99,7 +99,6 @@ namespace AZ
             EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
-            AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
 
             m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
@@ -111,7 +110,6 @@ namespace AZ
             EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
-            AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
 
             m_materialBrowserInteractions.reset();
@@ -245,36 +243,6 @@ namespace AZ
         {
             PurgePreviews();
             m_materialPreviews[entityId][materialAssignmentId] = pixmap;
-        }
-
-        void EditorMaterialSystemComponent::OnPopulateToolMenuItems()
-        {
-            if (!m_openMaterialEditorAction)
-            {
-                m_openMaterialEditorAction = new QAction("Material Editor");
-                m_openMaterialEditorAction->setShortcut(QKeySequence(Qt::Key_M));
-                m_openMaterialEditorAction->setCheckable(false);
-                m_openMaterialEditorAction->setChecked(false);
-                m_openMaterialEditorAction->setIcon(QIcon(":/Menu/material_editor.svg"));
-                QObject::connect(
-                    m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
-                    {
-                        OpenMaterialEditor("");
-                    }
-                );
-
-                AzToolsFramework::EditorMenuRequestBus::Broadcast(
-                    &AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction, true);
-            }
-        }
-
-        void EditorMaterialSystemComponent::OnResetToolMenuItems()
-        {
-            if (m_openMaterialEditorAction)
-            {
-                delete m_openMaterialEditorAction;
-                m_openMaterialEditorAction = nullptr;
-            }
         }
 
         void EditorMaterialSystemComponent::NotifyRegisterViews()

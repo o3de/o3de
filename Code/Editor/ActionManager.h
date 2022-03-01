@@ -85,7 +85,6 @@ private:
 
 class ActionManager
     : public QObject
-    , private AzToolsFramework::EditorActionRequestBus::Handler
 {
     Q_OBJECT
 
@@ -312,15 +311,6 @@ public:
 
     QAction* GetAction(int id) const;
     QList<QAction*> GetActions() const;
-
-    // AzToolsFramework::EditorActionRequests
-    void AddActionViaBus(int id, QAction* action) override;
-    void AddActionViaBusCrc(AZ::Crc32 id, QAction* action) override;
-    void RemoveActionViaBus(QAction* action) override;
-    void EnableDefaultActions() override;
-    void DisableDefaultActions() override;
-    void AttachOverride(QWidget* object) override;
-    void DetachOverride() override;
 
     template<typename T>
     void RegisterUpdateCallback(int id, T* object, void (T::*method)(QAction*))

@@ -45,9 +45,6 @@ namespace AzToolsFramework
             /// changed and its state should be updated (Manipulators etc).
             virtual void Refresh() = 0;
 
-            /// Notify the ActionManager which actions should be enabled for this Mode.
-            virtual AZStd::vector<ActionOverride> PopulateActions() = 0;
-
             /// Add UI elements for this ComponentMode onto the Viewport UI system. 
             virtual AZStd::vector<ViewportUi::ClusterId> PopulateViewportUi() = 0;
 

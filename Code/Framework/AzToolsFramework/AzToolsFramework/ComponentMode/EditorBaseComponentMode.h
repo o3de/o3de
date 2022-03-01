@@ -33,14 +33,6 @@ namespace AzToolsFramework
             virtual ~EditorBaseComponentMode();
             /// @endcond
 
-            /// ComponentMode interface - populate actions for this ComponentMode.
-            /// When PopulateActions is called, if a second action override is found with the
-            /// same key, it should override the existing action if one already exists.
-            /// (e.g. The 'escape' key will first deselect a vertex, then leave ComponentMode if
-            /// an action is added to deselect a vertex when one is selected)
-            /// @attention More specific actions come later in the ordering when they are added.
-            AZStd::vector<ActionOverride> PopulateActions() final;
-
             /// Populate the Viewport UI widget for this ComponentMode.
             AZStd::vector<ViewportUi::ClusterId> PopulateViewportUi() final;
 
@@ -64,10 +56,6 @@ namespace AzToolsFramework
             virtual AZStd::vector<ViewportUi::ClusterId> PopulateViewportUiImpl();
 
         private:
-            /// EditorBaseComponentMode interface
-            /// @see To be overridden by derived ComponentModes
-            virtual AZStd::vector<ActionOverride> PopulateActionsImpl();
-
             // ToolsApplicationNotificationBus
             void AfterUndoRedo() override;
 

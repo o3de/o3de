@@ -46,7 +46,6 @@ namespace LmbrCentral
     private:
         // EditorBaseComponentMode
         void Refresh() override;
-        AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
 
         // Manipulator handling
         void CreateManipulators();

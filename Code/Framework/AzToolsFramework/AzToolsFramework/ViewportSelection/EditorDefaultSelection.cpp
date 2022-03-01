@@ -30,7 +30,6 @@ namespace AzToolsFramework
             AZ::Interface<ComponentModeCollectionInterface>::Get() == nullptr, "Unexpected registration of component mode collection.")
         AZ::Interface<ComponentModeCollectionInterface>::Register(&m_componentModeCollection);
 
-        ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
@@ -41,7 +40,6 @@ namespace AzToolsFramework
     EditorDefaultSelection::~EditorDefaultSelection()
     {
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusDisconnect();
-        ActionOverrideRequestBus::Handler::BusDisconnect();
         m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
 
         AZ_Assert(
@@ -91,12 +89,6 @@ namespace AzToolsFramework
 
     void EditorDefaultSelection::TransitionToComponentMode()
     {
-        // entering ComponentMode - disable all default actions in the ActionManager
-        EditorActionRequestBus::Broadcast(&EditorActionRequests::DisableDefaultActions);
-
-        // attach widget to store ComponentMode specific actions
-        EditorActionRequestBus::Broadcast(&EditorActionRequests::AttachOverride, &PhantomWidget());
-
         if (m_transformComponentSelection)
         {
             // hide manipulators
@@ -119,13 +111,6 @@ namespace AzToolsFramework
             // safe to show manipulators again
             m_transformComponentSelection->RegisterManipulator();
         }
-
-        EditorActionRequestBus::Broadcast(&EditorActionRequests::DetachOverride);
-
-        ClearActionOverrides();
-
-        // leaving ComponentMode - enable all default actions in ActionManager
-        EditorActionRequestBus::Broadcast(&EditorActionRequests::EnableDefaultActions);
 
         // refresh button ui
         ToolsApplicationEvents::Bus::Broadcast(
@@ -322,96 +307,6 @@ namespace AzToolsFramework
         if (m_transformComponentSelection)
         {
             m_transformComponentSelection->DisplayViewportSelection2d(viewportInfo, debugDisplay);
-        }
-    }
-
-    void EditorDefaultSelection::SetupActionOverrideHandler(QWidget* parent)
-    {
-        PhantomWidget().setParent(parent);
-        // note: widget must be 'visible' for actions to fire
-        // hide by setting size to zero dimensions
-        PhantomWidget().setFixedSize(0, 0);
-    }
-
-    void EditorDefaultSelection::TeardownActionOverrideHandler()
-    {
-        PhantomWidget().setParent(nullptr);
-    }
-
-    void EditorDefaultSelection::AddActionOverride(const ActionOverride& actionOverride)
-    {
-        // check if an action with this uri is already added
-        const auto actionIt = AZStd::find_if(
-            m_actions.begin(), m_actions.end(),
-            [actionOverride](const AZStd::shared_ptr<ActionOverrideMapping>& actionOverrideMapping)
-            {
-                return actionOverride.m_uri == actionOverrideMapping->m_uri;
-            });
-
-        // if an action with the same uri is already added, store the callback for this action
-        if (actionIt != m_actions.end())
-        {
-            (*actionIt)->m_callbacks.push_back(actionOverride.m_callback);
-        }
-        else
-        {
-            // create a new action with the override widget as the parent
-            AZStd::unique_ptr<QAction> action = AZStd::make_unique<QAction>(&PhantomWidget());
-
-            // setup action specific data for the editor
-            action->setShortcut(actionOverride.m_keySequence);
-            action->setStatusTip(actionOverride.m_statusTip);
-            action->setText(actionOverride.m_title);
-
-            // bind action to widget
-            PhantomWidget().addAction(action.get());
-
-            // set callbacks that should happen when this action is triggered
-            auto index = static_cast<int>(m_actions.size());
-            QObject::connect(
-                action.get(), &QAction::triggered,
-                [this, index]()
-                {
-                    const auto vec = m_actions; // increment ref count of shared_ptr, callback may clear actions
-                    for (auto& callback : vec[index]->m_callbacks)
-                    {
-                        callback();
-                    }
-                });
-
-            m_actions.emplace_back(AZStd::make_shared<ActionOverrideMapping>(
-                actionOverride.m_uri, AZStd::vector<AZStd::function<void()>>{ actionOverride.m_callback }, AZStd::move(action)));
-
-            // register action with edit menu
-            EditorMenuRequestBus::Broadcast(&EditorMenuRequests::AddEditMenuAction, m_actions.back()->m_action.get());
-        }
-    }
-
-    void EditorDefaultSelection::ClearActionOverrides()
-    {
-        AZStd::for_each(
-            m_actions.begin(), m_actions.end(),
-            [this](const AZStd::shared_ptr<ActionOverrideMapping>& actionMapping)
-            {
-                PhantomWidget().removeAction(actionMapping->m_action.get());
-            });
-
-        m_actions.clear();
-    }
-
-    void EditorDefaultSelection::RemoveActionOverride(const AZ::Crc32 actionOverrideUri)
-    {
-        const auto it = AZStd::find_if(
-            m_actions.begin(), m_actions.end(),
-            [actionOverrideUri](const AZStd::shared_ptr<ActionOverrideMapping>& actionMapping)
-            {
-                return actionMapping->m_uri == actionOverrideUri;
-            });
-
-        if (it != m_actions.end())
-        {
-            PhantomWidget().removeAction((*it)->m_action.get());
-            m_actions.erase(it);
         }
     }
 } // namespace AzToolsFramework

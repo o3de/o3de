@@ -40,11 +40,6 @@ namespace LmbrCentral
         ContainerChanged();
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> EditorSplineComponentMode::PopulateActionsImpl()
-    {
-        return m_vertexSelection.ActionOverrides();
-    }
-
     bool EditorSplineComponentMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {

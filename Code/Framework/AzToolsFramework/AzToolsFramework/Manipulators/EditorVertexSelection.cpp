@@ -1156,12 +1156,6 @@ namespace AzToolsFramework
     }
 
     template<typename Vertex>
-    AZStd::vector<ActionOverride> EditorVertexSelectionBase<Vertex>::ActionOverrides() const
-    {
-        return m_actionOverrides[static_cast<size_t>(m_state)];
-    }
-
-    template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::SetState(const State state)
     {
         using namespace AzToolsFramework::ComponentModeFramework;
@@ -1199,17 +1193,6 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionFixed<Vertex>::PrepareActions()
     {
-        ActionOverride backAction = CreateBackAction(
-            "Deselect Vertex", "Deselect current vertex selection",
-            [this]()
-            {
-                EditorVertexSelectionBase<Vertex>::ClearSelected();
-            });
-
-        backAction.SetEntityComponentIdPair(EditorVertexSelectionBase<Vertex>::GetEntityComponentIdPair());
-
-        EditorVertexSelectionBase<Vertex>::m_actionOverrides[static_cast<size_t>(EditorVertexSelectionBase<Vertex>::State::Translating)] =
-            AZStd::vector<ActionOverride>{ backAction };
     }
 
     template<typename Vertex>
@@ -1298,42 +1281,6 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionVariable<Vertex>::PrepareActions()
     {
-        ActionOverride deleteAction = CreateDeleteAction(
-            s_deleteVerticesTitle, s_deleteVerticesDesc,
-            [this]()
-            {
-                DestroySelected();
-            });
-
-        const AZ::EntityComponentIdPair entityComponentIdPair(
-            EditorVertexSelectionBase<Vertex>::GetEntityId(), EditorVertexSelectionBase<Vertex>::GetComponentId());
-
-        // note: important to register which entity/component id pair this action is associated with
-        deleteAction.SetEntityComponentIdPair(entityComponentIdPair);
-
-        ActionOverride deselectAction = CreateBackAction(
-            s_deselectVerticesTitle, s_deselectVerticesDesc,
-            [this]()
-            {
-                EditorVertexSelectionBase<Vertex>::ClearSelected();
-            });
-
-        // note: important to register which entity/component id pair this action is associated with
-        deselectAction.SetEntityComponentIdPair(entityComponentIdPair);
-
-        EditorVertexSelectionBase<Vertex>::m_actionOverrides[static_cast<size_t>(EditorVertexSelectionBase<Vertex>::State::Translating)] =
-            AZStd::vector<ActionOverride>{ ActionOverride()
-                                               .SetUri(AzToolsFramework::s_duplicateAction)
-                                               .SetKeySequence(QKeySequence(Qt::CTRL + Qt::Key_D))
-                                               .SetTitle(s_duplicateVerticesTitle)
-                                               .SetTip(s_duplicateVerticesDesc)
-                                               .SetCallback(
-                                                   [this]()
-                                                   {
-                                                       DuplicateSelected();
-                                                   })
-                                               .SetEntityComponentIdPair(entityComponentIdPair),
-                                           deleteAction, deselectAction };
     }
 
     template<typename Vertex>

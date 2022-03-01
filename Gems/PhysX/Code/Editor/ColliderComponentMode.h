@@ -33,7 +33,6 @@ namespace PhysX
 
         // EditorBaseComponentMode overrides ...
         void Refresh() override;
-        AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         AZStd::vector<AzToolsFramework::ViewportUi::ClusterId> PopulateViewportUiImpl() override;
 
         // ColliderComponentModeBus overrides ...
