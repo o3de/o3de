@@ -67,7 +67,7 @@ class TestAutomationAutoTestMode(EditorTestSuite):
         from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
 
     #@pytest.mark.skip("Passes locally/fails on Jenkins. https://github.com/o3de/o3de/issues/6747")
-    @pytest.mark.REQUIRES_gpu
+    #@pytest.mark.REQUIRES_gpu
     class test_Docking_BasicDockedTools(EditorSharedTest):
         # Disable null renderer
         use_null_renderer = False
