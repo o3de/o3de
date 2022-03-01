@@ -471,7 +471,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Collider_ColliderRotationOffset(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_ColliderRotationOffset as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_ParentChildForcesCombineForces(self, request, workspace, editor, launcher_platform):
