@@ -41,7 +41,6 @@ namespace AzToolsFramework
             AZStd::vector<ViewBookmark> m_localBookmarks;
             ViewBookmark m_lastKnownLocation;
             AZStd::string m_bookmarkfileName = "";
-
         };
 
     } // namespace Prefab
