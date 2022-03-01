@@ -5,25 +5,64 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/UnitTest/UnitTest.h>
+
 #include <AzTest/AzTest.h>
 
-#include <AzCore/Math/Crc.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/parallel/thread.h>
-#include <AzCore/std/parallel/shared_spin_mutex.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/parallel/spin_mutex.h>
+#include <AzCore/std/parallel/thread.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/Utils/TypeHash.h>
 
 namespace UnitTest
 {
+    AZ_TYPE_SAFE_INTEGRAL(StringHash, size_t);
+
     constexpr int SmallIterationCount  = 10;
     constexpr int MediumIterationCount = 1000;
     constexpr int LargeIterationCount  = 100000;
 
     constexpr AZ::u32 ProfilerProxyGroup = AZ_CRC_CE("StatisticalProfilerProxyTests");
+
+    template<typename StatIdType>
+    StatIdType ConvertNameToStatId(const AZStd::string& name);
+
+    template<>
+    AZStd::string ConvertNameToStatId<AZStd::string>(const AZStd::string& name)
+    {
+        return name;
+    }
+
+    template<>
+    StringHash ConvertNameToStatId<StringHash>(const AZStd::string& name)
+    {
+        AZStd::hash<AZStd::string> hasher;
+        return StringHash(hasher(name));
+    }
+
+    template<>
+    AZ::Crc32 ConvertNameToStatId<AZ::Crc32>(const AZStd::string& name)
+    {
+        return AZ::Crc32(name);
+    }
+
+    template<>
+    AZ::HashValue32 ConvertNameToStatId<AZ::HashValue32>(const AZStd::string& name)
+    {
+        return AZ::TypeHash32(name.c_str());
+    }
+
+    template<>
+    AZ::HashValue64 ConvertNameToStatId<AZ::HashValue64>(const AZStd::string& name)
+    {
+        return AZ::TypeHash64(name.c_str());
+    }
 
     template<typename ProfilerType, typename StatIdType>
     void RecordStatistics(ProfilerType& profiler, const int loopCount, const StatIdType& rootId, const StatIdType& loopId)
@@ -99,10 +138,28 @@ namespace UnitTest
 
     using StatisticalProfilerTestTypes = ::testing::Types<
         StatisticalProfilerTestTraits<>,
+        StatisticalProfilerTestTraits<StringHash>,
         StatisticalProfilerTestTraits<AZ::Crc32>,
+        StatisticalProfilerTestTraits<AZ::HashValue32>,
+        StatisticalProfilerTestTraits<AZ::HashValue64>,
 
-        StatisticalProfilerTestTraits<AZStd::string, AZStd::shared_spin_mutex>,
-        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::shared_spin_mutex>
+        StatisticalProfilerTestTraits<AZStd::string, AZStd::mutex>,
+        StatisticalProfilerTestTraits<StringHash, AZStd::mutex>,
+        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::mutex>,
+
+        StatisticalProfilerTestTraits<AZStd::string, AZStd::spin_mutex>,
+        StatisticalProfilerTestTraits<StringHash, AZStd::spin_mutex>,
+        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::spin_mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::spin_mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::spin_mutex>,
+
+        StatisticalProfilerTestTraits<AZStd::string, AZStd::shared_mutex>,
+        StatisticalProfilerTestTraits<StringHash, AZStd::shared_mutex>,
+        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::shared_mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::shared_mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::shared_mutex>
     >;
     TYPED_TEST_CASE(StatisticalProfilerFixture, StatisticalProfilerTestTypes);
 
@@ -113,10 +170,10 @@ namespace UnitTest
         typename TypeParam::ProfilerType profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
-        const StatIdType statIdPerformance(statNamePerformance);
+        const auto statIdPerformance = ConvertNameToStatId<StatIdType>(statNamePerformance);
 
         const AZStd::string statNameBlock("Block");
-        const StatIdType statIdBlock(statNameBlock);
+        const auto statIdBlock = ConvertNameToStatId<StatIdType>(statNameBlock);
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
@@ -137,8 +194,23 @@ namespace UnitTest
     };
 
     using ThreadedStatisticalProfilerTestTypes = ::testing::Types<
-        StatisticalProfilerTestTraits<AZStd::string, AZStd::shared_spin_mutex>,
-        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::shared_spin_mutex>
+        StatisticalProfilerTestTraits<AZStd::string, AZStd::mutex>,
+        StatisticalProfilerTestTraits<StringHash, AZStd::mutex>,
+        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::mutex>,
+
+        StatisticalProfilerTestTraits<AZStd::string, AZStd::spin_mutex>,
+        StatisticalProfilerTestTraits<StringHash, AZStd::spin_mutex>,
+        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::spin_mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::spin_mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::spin_mutex>,
+
+        StatisticalProfilerTestTraits<AZStd::string, AZStd::shared_mutex>,
+        StatisticalProfilerTestTraits<StringHash, AZStd::shared_mutex>,
+        StatisticalProfilerTestTraits<AZ::Crc32, AZStd::shared_mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::shared_mutex>,
+        StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::shared_mutex>
     >;
     TYPED_TEST_CASE(ThreadedStatisticalProfilerFixture, ThreadedStatisticalProfilerTestTypes);
 
@@ -149,24 +221,24 @@ namespace UnitTest
         typename TypeParam::ProfilerType profiler;
 
         const AZStd::string statNameThread1("thread1");
-        const StatIdType statIdThread1(statNameThread1);
+        const auto statIdThread1 = ConvertNameToStatId<StatIdType>(statNameThread1);
         const AZStd::string statNameThread1Loop("thread1_loop");
-        const StatIdType statIdThread1Loop(statNameThread1Loop);
+        const auto statIdThread1Loop = ConvertNameToStatId<StatIdType>(statNameThread1Loop);
 
         const AZStd::string statNameThread2("thread2");
-        const StatIdType statIdThread2(statNameThread2);
+        const auto statIdThread2 = ConvertNameToStatId<StatIdType>(statNameThread2);
         const AZStd::string statNameThread2Loop("thread2_loop");
-        const StatIdType statIdThread2Loop(statNameThread2Loop);
+        const auto statIdThread2Loop = ConvertNameToStatId<StatIdType>(statNameThread2Loop);
 
         const AZStd::string statNameThread3("thread3");
-        const StatIdType statIdThread3(statNameThread3);
+        const auto statIdThread3 = ConvertNameToStatId<StatIdType>(statNameThread3);
         const AZStd::string statNameThread3Loop("thread3_loop");
-        const StatIdType statIdThread3Loop(statNameThread3Loop);
+        const auto statIdThread3Loop = ConvertNameToStatId<StatIdType>(statNameThread3Loop);
 
         const AZStd::string statNameThread4("thread4");
-        const StatIdType statIdThread4(statNameThread4);
+        const auto statIdThread4 = ConvertNameToStatId<StatIdType>(statNameThread4);
         const AZStd::string statNameThread4Loop("thread4_loop");
-        const StatIdType statIdThread4Loop(statNameThread4Loop);
+        const auto statIdThread4Loop = ConvertNameToStatId<StatIdType>(statNameThread4Loop);
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1, statNameThread1, "us"));
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1Loop, statNameThread1Loop, "us"));
@@ -177,7 +249,6 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread4, statNameThread4, "us"));
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread4Loop, statNameThread4Loop, "us"));
 
-        //Let's kickoff the threads to see how much contention affects the profiler's performance.
         AZStd::thread t1([&](){
             RecordStatistics(profiler, MediumIterationCount, statIdThread1, statIdThread1Loop);
         });
@@ -241,10 +312,10 @@ namespace UnitTest
         ProxyType::StatisticalProfilerType& profiler = proxy->GetProfiler(ProfilerProxyGroup);
 
         const AZStd::string statNamePerformance("PerformanceResult");
-        const ProxyType::StatIdType statIdPerformance(statNamePerformance);
+        const auto statIdPerformance = ConvertNameToStatId<ProxyType::StatIdType>(statNamePerformance);
 
         const AZStd::string statNameBlock("Block");
-        const ProxyType::StatIdType statIdBlock(statNameBlock);
+        const auto statIdBlock = ConvertNameToStatId<ProxyType::StatIdType>(statNameBlock);
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
@@ -270,24 +341,24 @@ namespace UnitTest
         ProxyType::StatisticalProfilerType& profiler = proxy->GetProfiler(ProfilerProxyGroup);
 
         const AZStd::string statNameThread1("thread1");
-        const ProxyType::StatIdType statIdThread1(statNameThread1);
+        const auto statIdThread1 = ConvertNameToStatId<ProxyType::StatIdType>(statNameThread1);
         const AZStd::string statNameThread1Loop("thread1_loop");
-        const ProxyType::StatIdType statIdThread1Loop(statNameThread1Loop);
+        const auto statIdThread1Loop = ConvertNameToStatId<ProxyType::StatIdType>(statNameThread1Loop);
 
         const AZStd::string statNameThread2("thread2");
-        const ProxyType::StatIdType statIdThread2(statNameThread2);
+        const auto statIdThread2 = ConvertNameToStatId<ProxyType::StatIdType>(statNameThread2);
         const AZStd::string statNameThread2Loop("thread2_loop");
-        const ProxyType::StatIdType statIdThread2Loop(statNameThread2Loop);
+        const auto statIdThread2Loop = ConvertNameToStatId<ProxyType::StatIdType>(statNameThread2Loop);
 
         const AZStd::string statNameThread3("thread3");
-        const ProxyType::StatIdType statIdThread3(statNameThread3);
+        const auto statIdThread3 = ConvertNameToStatId<ProxyType::StatIdType>(statNameThread3);
         const AZStd::string statNameThread3Loop("thread3_loop");
-        const ProxyType::StatIdType statIdThread3Loop(statNameThread3Loop);
+        const auto statIdThread3Loop = ConvertNameToStatId<ProxyType::StatIdType>(statNameThread3Loop);
 
         const AZStd::string statNameThread4("thread4");
-        const ProxyType::StatIdType statIdThread4(statNameThread4);
+        const auto statIdThread4 = ConvertNameToStatId<ProxyType::StatIdType>(statNameThread4);
         const AZStd::string statNameThread4Loop("thread4_loop");
-        const ProxyType::StatIdType statIdThread4Loop(statNameThread4Loop);
+        const auto statIdThread4Loop = ConvertNameToStatId<ProxyType::StatIdType>(statNameThread4Loop);
 
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1, statNameThread1, "us"));
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread1Loop, statNameThread1Loop, "us"));
@@ -374,14 +445,14 @@ namespace Benchmark
                 for (int i = 0; i < state.threads; ++i)
                 {
                     const AZStd::string threadStatName = AZStd::string::format("thread%03d", i);
-                    const StatIdType threadStatId(threadStatName);
+                    const auto threadStatId = UnitTest::ConvertNameToStatId<StatIdType>(threadStatName);
 
                     m_profiler->GetStatsManager().AddStatistic(threadStatId, threadStatName, "us");
                 }
             }
 
             const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
-            const StatIdType statId(statName);
+            const auto statId = UnitTest::ConvertNameToStatId<StatIdType>(statName);
 
             for (auto _ : state)
             {
@@ -403,25 +474,125 @@ namespace Benchmark
     {
         RunBenchmark(state);
     }
-    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SingleThreadedPerf)
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Hash_SingleThreadedPerf, UnitTest::StringHash)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
 
     BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SingleThreadedPerf, AZ::Crc32)(benchmark::State& state)
     {
         RunBenchmark(state);
     }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue32_SingleThreadedPerf, AZ::HashValue32)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue64_SingleThreadedPerf, AZ::HashValue64)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SingleThreadedPerf)
+    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, Hash_SingleThreadedPerf)
     REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SingleThreadedPerf)
+    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue32_SingleThreadedPerf)
+    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue64_SingleThreadedPerf)
 
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_SharedSpinMutex_ThreadedPerf, AZStd::string, AZStd::shared_spin_mutex)(benchmark::State& state)
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_Mutex_ThreadedPerf, AZStd::string, AZStd::mutex)(benchmark::State& state)
     {
         RunBenchmark(state);
     }
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SharedSpinMutex_ThreadedPerf)
 
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SharedSpinMutex_ThreadedPerf, AZ::Crc32, AZStd::shared_spin_mutex)(benchmark::State& state)
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Hash_Mutex_ThreadedPerf, UnitTest::StringHash, AZStd::mutex)(benchmark::State& state)
     {
         RunBenchmark(state);
     }
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SharedSpinMutex_ThreadedPerf)
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_Mutex_ThreadedPerf, AZ::Crc32, AZStd::mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue32_Mutex_ThreadedPerf, AZ::HashValue32, AZStd::mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue64_Mutex_ThreadedPerf, AZ::HashValue64, AZStd::mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_Mutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Hash_Mutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_Mutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue32_Mutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue64_Mutex_ThreadedPerf)
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_SpinMutex_ThreadedPerf, AZStd::string, AZStd::spin_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Hash_SpinMutex_ThreadedPerf, UnitTest::StringHash, AZStd::spin_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SpinMutex_ThreadedPerf, AZ::Crc32, AZStd::spin_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue32_SpinMutex_ThreadedPerf, AZ::HashValue32, AZStd::spin_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue64_SpinMutex_ThreadedPerf, AZ::HashValue64, AZStd::spin_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SpinMutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Hash_SpinMutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SpinMutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue32_SpinMutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue64_SpinMutex_ThreadedPerf)
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_SharedMutex_ThreadedPerf, AZStd::string, AZStd::shared_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Hash_SharedMutex_ThreadedPerf, UnitTest::StringHash, AZStd::shared_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SharedMutex_ThreadedPerf, AZ::Crc32, AZStd::shared_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue32_SharedMutex_ThreadedPerf, AZ::HashValue32, AZStd::shared_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue64_SharedMutex_ThreadedPerf, AZ::HashValue64, AZStd::shared_mutex)(benchmark::State& state)
+    {
+        RunBenchmark(state);
+    }
+
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SharedMutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Hash_SharedMutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SharedMutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue32_SharedMutex_ThreadedPerf)
+    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue64_SharedMutex_ThreadedPerf)
 
     // -- AZ::Statistics::StatisticalProfilerProxy benchmarks --
 
@@ -446,7 +617,7 @@ namespace Benchmark
                 for (int i = 0; i < state.threads; ++i)
                 {
                     const AZStd::string threadStatName = AZStd::string::format("thread%03d", i);
-                    const StatIdType threadStatId(threadStatName);
+                    const auto threadStatId = UnitTest::ConvertNameToStatId<StatIdType>(threadStatName);
 
                     profiler.GetStatsManager().AddStatistic(threadStatId, threadStatName, "us");
                 }
@@ -455,7 +626,7 @@ namespace Benchmark
             }
 
             const AZStd::string statName = AZStd::string::format("thread%03d", state.thread_index);
-            const StatIdType statId(statName);
+            const auto statId = UnitTest::ConvertNameToStatId<StatIdType>(statName);
 
             for (auto _ : state)
             {
@@ -477,6 +648,7 @@ namespace Benchmark
     {
         RunBenchmark(state);
     }
+
     REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerProxyBenchmark, GeneralPerf)
 } // namespace Benchmark
 
