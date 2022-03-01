@@ -308,7 +308,7 @@ class TestAutomation(TestAutomationBase):
     def test_ScriptCanvas_PostPhysicsUpdate(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
         # Fixme: unexpected_lines = ["Assert"] + test_module.Lines.unexpected
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_NoneCollisionGroupSameLayerNotCollide.setreg_override',

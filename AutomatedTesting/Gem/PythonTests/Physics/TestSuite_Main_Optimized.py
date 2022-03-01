@@ -293,6 +293,11 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4976218_RigidBodies_InertiaObjectsNotComputed(EditorSharedTest):
         from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
 
+    class C14902098_ScriptCanvas_PostPhysicsUpdate(EditorSharedTest):
+        from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
+        # Note: Test needs to be updated to log for unexpected lines
+        # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -314,10 +319,7 @@ class TestAutomation(EditorTestSuite):
 
 
 
-    class C14902098_ScriptCanvas_PostPhysicsUpdate(EditorSharedTest):
-        from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
-        # Note: Test needs to be updated to log for unexpected lines
-        # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
+
 
     class C5959761_ForceRegion_PhysAssetExertsPointForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
@@ -330,6 +332,8 @@ class TestAutomation(EditorTestSuite):
 
     class C18243584_Joints_HingeSoftLimitsConstrained(EditorSharedTest):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
+
+
 
     class C18243589_Joints_BallSoftLimitsConstrained(EditorSharedTest):
         from .tests.joints import Joints_BallSoftLimitsConstrained as test_module
