@@ -301,6 +301,12 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5959761_ForceRegion_PhysAssetExertsPointForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
 
+    # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
+    # The test still runs, but a failure of the test doesn't result in the test run failing
+    @pytest.mark.xfail(reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
+    class C13352089_RigidBodies_MaxAngularVelocity(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -320,14 +326,6 @@ class TestAutomation(EditorTestSuite):
     class C12712455_ScriptCanvas_ShapeCastVerification(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
-
-
-        
-    # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
-    # The test still runs, but a failure of the test doesn't result in the test run failing
-    @pytest.mark.xfail(reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
-    class C13352089_RigidBodies_MaxAngularVelocity(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
 
     class C18243584_Joints_HingeSoftLimitsConstrained(EditorSharedTest):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
