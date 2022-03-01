@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
 
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -680,6 +681,28 @@ namespace AZ
             }
 
             return true;
+        }
+
+        AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix)
+        {
+            AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
+            if (!pipelineAsset.IsReady())
+            {
+                // Error already reported by LoadAssetByProductPath
+                return AZStd::nullopt;
+            }
+            const RenderPipelineDescriptor* assetPipelineDesc = GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
+            if (!assetPipelineDesc)
+            {
+                AZ_Error("RPIUtils", false, "Invalid render pipeline descriptor from asset %s", pipelineAssetPath.c_str());
+                return AZStd::nullopt;
+            }
+
+            RenderPipelineDescriptor pipelineDesc = *assetPipelineDesc;
+            pipelineDesc.m_name += nameSuffix;
+
+            return { AZStd::move(pipelineDesc) };
         }
     }
 }

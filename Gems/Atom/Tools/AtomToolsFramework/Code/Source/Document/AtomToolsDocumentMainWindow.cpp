@@ -10,7 +10,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -25,10 +24,9 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    AtomToolsDocumentMainWindow::AtomToolsDocumentMainWindow(const AZ::Crc32& toolId, QWidget* parent /* = 0 */)
-        : AtomToolsMainWindow(toolId, parent)
+    AtomToolsDocumentMainWindow::AtomToolsDocumentMainWindow(const AZ::Crc32& toolId, QWidget* parent)
+        : Base(toolId, parent)
     {
-        setObjectName("AtomToolsDocumentMainWindow");
         AddDocumentMenus();
         AddDocumentTabBar();
         AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
@@ -479,15 +477,10 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentMainWindow::closeEvent(QCloseEvent* closeEvent)
     {
-        bool didClose = true;
-        AtomToolsDocumentSystemRequestBus::EventResult(didClose, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
-        if (!didClose)
-        {
-            closeEvent->ignore();
-            return;
-        }
-
-        AtomToolsMainWindowNotificationBus::Event(m_toolId, &AtomToolsMainWindowNotifications::OnMainWindowClosing);
+        bool canClose = true;
+        AtomToolsDocumentSystemRequestBus::EventResult(canClose, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
+        closeEvent->setAccepted(canClose);
+        Base::closeEvent(closeEvent);
     }
 
     template<typename Functor>

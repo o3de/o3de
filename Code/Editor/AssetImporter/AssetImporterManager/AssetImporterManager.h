@@ -14,6 +14,7 @@
 
 class QStringList;
 class QFile;
+class QFileDialog;
 
 enum class ImportFilesMethod
 {
@@ -54,7 +55,6 @@ Q_SIGNALS:
 private Q_SLOTS:
     void reject();
     void OnDragAndDropFiles(const QStringList* fileList);
-    bool OnBrowseFiles();
     void OnBrowseDestinationFilePath(QLineEdit* destinationLineEdit);
     void OnCopyFiles();
     void OnMoveFiles();
@@ -92,4 +92,7 @@ private:
     // Key = absolute path, Value = relative path
     QMap<QString, QString> m_pathMap;
     QString m_destinationRootDirectory;
+    QFileDialog* m_fileDialog{ nullptr };
+    QString m_gameRootAbsPath;
+    QString m_currentAbsolutePath;
 };
