@@ -15,26 +15,20 @@ set(FILES
     Source/Document/MaterialCanvasDocument.cpp
     Source/Document/MaterialCanvasDocument.h
 
-    Source/Viewport/MaterialCanvasViewportModule.h
-    Source/Viewport/MaterialCanvasViewportModule.cpp
     Source/Viewport/MaterialCanvasViewportSettings.h
-    Source/Viewport/MaterialCanvasViewportRequestBus.h
-    Source/Viewport/MaterialCanvasViewportNotificationBus.h
+    Source/Viewport/MaterialCanvasViewportSettingsRequestBus.h
+    Source/Viewport/MaterialCanvasViewportSettingsNotificationBus.h
     Source/Viewport/MaterialCanvasViewportSettings.cpp
-    Source/Viewport/MaterialCanvasViewportComponent.cpp
-    Source/Viewport/MaterialCanvasViewportComponent.h
+    Source/Viewport/MaterialCanvasViewportSettingsSystem.cpp
+    Source/Viewport/MaterialCanvasViewportSettingsSystem.h
     Source/Viewport/MaterialCanvasViewportWidget.cpp
     Source/Viewport/MaterialCanvasViewportWidget.h
 
     Source/Window/MaterialCanvasMainWindow.h
     Source/Window/MaterialCanvasMainWindow.cpp
-    Source/Window/MaterialCanvasMainWindowSettings.h
-    Source/Window/MaterialCanvasMainWindowSettings.cpp
     Source/Window/MaterialCanvas.qrc
     Source/Window/ToolBar/MaterialCanvasToolBar.h
     Source/Window/ToolBar/MaterialCanvasToolBar.cpp
-    Source/Window/ToolBar/ModelPresetComboBox.h
-    Source/Window/ToolBar/ModelPresetComboBox.cpp
-    Source/Window/ToolBar/LightingPresetComboBox.h
-    Source/Window/ToolBar/LightingPresetComboBox.cpp
+    Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h
+    Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.cpp
 )

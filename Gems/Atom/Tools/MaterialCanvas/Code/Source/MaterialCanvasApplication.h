@@ -11,18 +11,17 @@
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
+#include <Viewport/MaterialCanvasViewportSettingsSystem.h>
 #include <Window/MaterialCanvasMainWindow.h>
 
 namespace MaterialCanvas
 {
-    class MaterialThumbnailRenderer;
-
     class MaterialCanvasApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private AzToolsFramework::EditorWindowRequestBus::Handler
     {
     public:
-        AZ_TYPE_INFO(MaterialCanvas::MaterialCanvasApplication, "{65B57D58-16EF-4CC2-BB22-A293A5240BB9}");
+        AZ_TYPE_INFO(MaterialCanvas::MaterialCanvasApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
 
         using Base = AtomToolsFramework::AtomToolsDocumentApplication;
 
@@ -31,7 +30,6 @@ namespace MaterialCanvas
 
         // AzFramework::Application overrides...
         void Reflect(AZ::ReflectContext* context) override;
-        void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
@@ -43,6 +41,7 @@ namespace MaterialCanvas
         QWidget* GetAppMainWindow() override;
 
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;
+        AZStd::unique_ptr<MaterialCanvasViewportSettingsSystem> m_viewportSettingsSystem;
         AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
     };
 } // namespace MaterialCanvas

@@ -8,14 +8,17 @@
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AtomToolsFramework/CreateDocumentDialog/CreateDocumentDialog.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzCore/Utils/Utils.h>
 #include <Document/MaterialCanvasDocumentRequestBus.h>
 #include <Viewport/MaterialCanvasViewportWidget.h>
 #include <Window/MaterialCanvasMainWindow.h>
-#include <Window/MaterialCanvasMainWindowSettings.h>
+#include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
@@ -34,17 +37,9 @@ namespace MaterialCanvas
     MaterialCanvasMainWindow::MaterialCanvasMainWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, parent)
     {
-        // Among other things, we need the window wrapper to save the main window size, position, and state
-        auto mainWindowWrapper =
-            new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
-        mainWindowWrapper->setGuest(this);
-        mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "MaterialCanvas", "mainWindowGeometry");
-
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
-        setObjectName("MaterialCanvasMainWindow");
-
-        m_toolBar = new MaterialCanvasToolBar(this);
+        m_toolBar = new MaterialCanvasToolBar(m_toolId, this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
@@ -74,25 +69,19 @@ namespace MaterialCanvas
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/MaterialInspector");
         m_materialInspector->SetIndicatorFunction(
-            [](const AzToolsFramework::InstanceDataNode* /*node*/)
+            [](const AzToolsFramework::InstanceDataNode* node)
             {
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
+                if (property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue))
+                {
+                    return ":/Icons/changed_property.svg";
+                }
                 return ":/Icons/blank.png";
             });
 
         AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
-
-        // Restore geometry and show the window
-        mainWindowWrapper->showFromSettings();
-
-        // Restore additional state for docked windows
-        auto windowSettings = AZ::UserSettings::CreateFind<MaterialCanvasMainWindowSettings>(
-            AZ::Crc32("MaterialCanvasMainWindowSettings"), AZ::UserSettings::CT_GLOBAL);
-
-        if (!windowSettings->m_mainWindowState.empty())
-        {
-            QByteArray windowState(windowSettings->m_mainWindowState.data(), static_cast<int>(windowSettings->m_mainWindowState.size()));
-            m_advancedDockManager->restoreState(windowState);
-        }
+        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId), Qt::LeftDockWidgetArea, Qt::Vertical);
+        SetDockWidgetVisible("Viewport Settings", false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
@@ -134,8 +123,30 @@ namespace MaterialCanvas
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    bool MaterialCanvasMainWindow::GetCreateDocumentParams(AZStd::string& /*openPath*/, AZStd::string& /*savePath*/)
+    bool MaterialCanvasMainWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
     {
+        AtomToolsFramework::CreateDocumentDialog createDialog(
+            tr("Create Material"),
+            tr("Select Material Type"),
+            tr("Select Material Path"),
+            QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets",
+            { AZ::RPI::MaterialSourceData::Extension },
+            AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
+                "/O3DE/Atom/MaterialCanvas/DefaultMaterialTypeAsset",
+                AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype")),
+            [](const AZ::Data::AssetInfo& assetInfo) {
+                return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".azmaterialtype"); },
+            this);
+        createDialog.adjustSize();
+
+        if (createDialog.exec() == QDialog::Accepted &&
+            !createDialog.m_targetPath.isEmpty() &&
+            !createDialog.m_sourcePath.isEmpty())
+        {
+            savePath = createDialog.m_targetPath.toUtf8().constData();
+            openPath = createDialog.m_sourcePath.toUtf8().constData();
+            return true;
+        }
         return false;
     }
 
@@ -163,23 +174,6 @@ namespace MaterialCanvas
             <p><b>Ctrl+LMB</b> - rotate model</p>
             <p><b>Shift+LMB</b> - rotate environment</p>
             </body></html>)");
-    }
-
-    void MaterialCanvasMainWindow::OpenAbout()
-    {
-        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
-    }
-
-    void MaterialCanvasMainWindow::closeEvent(QCloseEvent* closeEvent)
-    {
-        // Capture docking state before shutdown
-        auto windowSettings = AZ::UserSettings::CreateFind<MaterialCanvasMainWindowSettings>(
-            AZ::Crc32("MaterialCanvasMainWindowSettings"), AZ::UserSettings::CT_GLOBAL);
-
-        QByteArray windowState = m_advancedDockManager->saveState();
-        windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());
-
-        Base::closeEvent(closeEvent);
     }
 } // namespace MaterialCanvas
 
