@@ -24,6 +24,14 @@ def install_root(request):
     return Path(request.config.getoption("--install-root")).resolve()
 
 @pytest.fixture(scope="session")
+def engine_bin_path(request, install_root):
+    return install_root / 'bin' / 'Windows' / 'profile' / 'Default'
+
+@pytest.fixture(scope="session")
+def log_path(request):
+    return Path(request.config.getoption("--log-path")).resolve()
+
+@pytest.fixture(scope="session")
 def project_path(request):
     # MSBuild doesn't want us to output in the temp directory MSB8029
     # so we use a pre-defined folder outside of %TMP%
@@ -37,8 +45,17 @@ def project_path(request):
     shutil.rmtree(path)
 
 @pytest.fixture(scope="session")
+def project_build_path(request, project_path):
+    return project_path / 'build' / 'Windows'
+
+@pytest.fixture(scope="session")
+def project_bin_path(request, project_build_path):
+    return project_build_path / 'bin' / 'profile'
+
+@pytest.fixture(scope="session")
 def cmake_path(install_root):
-    return install_root / 'cmake' / 'runtime' / 'cmake-3.20.2-windows-x86_64' / 'bin' / 'cmake.exe'
+    cmake_runtime_path = install_root / 'cmake' / 'runtime'
+    return cmake_runtime_path.glob('**/cmake.exe')
 
 @pytest.fixture(scope="session")
 def test_installer(installer_path, install_root):
@@ -61,16 +78,14 @@ def test_installer(installer_path, install_root):
         pytest.param('o3de.exe'),
     ]
 )
-def test_binaries_exist(test_installer, install_root, filename):
-    bin_folder = install_root / 'bin/Windows/profile/Default'
-    assert (bin_folder / filename).is_file(), f"{filename} not found in {bin_folder}"
+def test_binaries_exist(test_installer, install_root, filename, engine_bin_path):
+    assert (engine_bin_path / filename).is_file(), f"{filename} not found in {engine_bin_path}"
 
 
 @pytest.fixture(scope="session")
-def test_o3de_registers_engine_fixture(install_root, test_installer):
+def test_o3de_registers_engine_fixture(install_root, test_installer, engine_bin_path):
     try:
-        bin_folder = install_root / 'bin' / 'Windows' / 'profile' / 'Default'
-        result = run([str(bin_folder / 'o3de.exe')], timeout=7)
+        result = run([str(engine_bin_path / 'o3de.exe')], timeout=7)
 
         # o3de.exe should not close with an error code 
         assert result.returncode == 0, f"o3de.exe failed with exit code {result.returncode}"
@@ -112,37 +127,30 @@ def test_create_project(test_create_project_fixture):
     assert True
 
 @pytest.fixture(scope="session")
-def test_compile_project_fixture(install_root, project_path, test_create_project_fixture, cmake_path):
+def test_compile_project_fixture(install_root, project_path, test_create_project_fixture, cmake_path, project_build_path):
     """Project can be configured and compiled"""
-    build_folder = project_path / 'build' / 'windows_vs2019'
     project_name = Path(project_path).name
     launcher_target = f"{project_name}.GameLauncher"
 
     # configure
-    result = run([str(cmake_path),'-B', str(build_folder), '-S', '.', '-G', 'Visual Studio 16 2019'], cwd=project_path, capture_output=True)
+    result = run([str(cmake_path),'-B', str(project_build_path), '-S', '.', '-G', 'Visual Studio 16 2019'], cwd=project_path, capture_output=True)
     assert result.returncode == 0
-    assert (build_folder / f'{project_name}.sln').is_file()
+    assert (project_build_path / f'{project_name}.sln').is_file()
 
     # build profile
-    result = run([str(cmake_path),'--build', str(build_folder), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=project_path)
+    result = run([str(cmake_path),'--build', str(project_build_path), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=project_path)
     assert result.returncode == 0
-    assert (build_folder / 'bin' / 'profile' / f'{launcher_target}.exe').is_file()
-
-    # build release not yet supported in pre-built SDK
-    #result = run([str(cmake_path),'--build', str(build_folder), '--target', launcher_target, '--config', 'release','--','-m'], cwd=project_path)
-    #assert result.returncode == 0
-    #assert (build_folder / 'bin' / 'release' / f'{launcher_target}.exe').is_file()
+    assert (project_build_path / 'bin' / 'profile' / f'{launcher_target}.exe').is_file()
 
 def test_compile_project(test_compile_project_fixture):
     """Utility test to run the fixture test from Visual Code Test Explorer"""
     assert True
 
 @pytest.fixture(scope="session")
-def test_run_asset_processor_batch_fixture(install_root, project_path, test_compile_project_fixture):
+def test_run_asset_processor_batch_fixture(install_root, project_path, test_compile_project_fixture, engine_bin_path):
     """Test asset batch processing before running Editor and Launcher tests which need assets"""
-    bin_folder = install_root /'bin/Windows/profile/Default'
     try:
-        result = run([str(bin_folder / 'AssetProcessorBatch.exe'),f'--project-path="{project_path}"','/platform=pc'], timeout=30*60)
+        result = run([str(engine_bin_path / 'AssetProcessorBatch.exe'),f'--project-path="{project_path}"','/platform=pc'], timeout=30*60)
         assert result.returncode == 0, f"AssetProcessorBatch.exe failed with exit code {result.returncode}"
     except TimeoutExpired as e:
         pass
@@ -152,10 +160,8 @@ def test_run_asset_processor_batch(test_run_asset_processor_batch_fixture):
     assert True
 
 @pytest.fixture(scope="session")
-def test_run_editor_fixture(install_root, project_path, test_run_asset_processor_batch_fixture):
+def test_run_editor_fixture(install_root, project_path, test_run_asset_processor_batch_fixture, engine_bin_path):
     """Editor can be run without crashing"""
-    bin_folder = install_root /'bin/Windows/profile/Default'
-
     # write out the attribution shown to avoid the popup stalling editor load
     aws_attribution_regset = {
             "Amazon": {
@@ -173,7 +179,7 @@ def test_run_editor_fixture(install_root, project_path, test_run_asset_processor
     
     try:
         # run Editor.exe for 2 mins 
-        result = run([str(bin_folder / 'Editor.exe'),f'--project-path="{project_path}"','--rhi=null','--skipWelcomeScreenDialog=True','+wait_seconds','10','+quit'], timeout=2*60)
+        result = run([str(engine_bin_path / 'Editor.exe'),f'--project-path="{project_path}"','--rhi=null','--skipWelcomeScreenDialog=True','+wait_seconds','10','+quit'], timeout=2*60)
         assert result.returncode == 0, f"Editor.exe failed with exit code {result.returncode}"
     except TimeoutExpired as e:
         pass
@@ -193,14 +199,13 @@ def test_run_editor(test_run_editor_fixture):
     assert True
 
 @pytest.fixture(scope="session")
-def test_run_launcher_fixture(install_root, project_path, test_run_asset_processor_batch_fixture):
+def test_run_launcher_fixture(install_root, project_path, test_run_asset_processor_batch_fixture, project_bin_path):
     """Game launcher can be run without crashing"""
-    bin_folder = project_path / 'build' / 'windows_vs2019' / 'bin' / 'profile'
     project_name = Path(project_path).name
     launcher_filename = f"{project_name}.GameLauncher.exe"
     try:
         # run launcher for 2 mins 
-        result = run([str(launcher_filename),'--rhi=null'], cwd=bin_folder, timeout=2*60)
+        result = run([str(launcher_filename),'--rhi=null'], cwd=project_bin_path, timeout=2*60)
         assert result.returncode == 0, f"{launcher_filename} failed with exit code {result.returncode}"
     except TimeoutExpired as e:
         # we expect to close the app on timeout ourselves
