@@ -108,6 +108,12 @@ namespace CommandSystem
             GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -actorID %i", actor->GetID()).c_str(), outResult);
         }
 
+        // Automatically set the motion extraction node if one is not provided.
+        if (!actor->GetMotionExtractionNode())
+        {
+            actor->AutoSetMotionExtractionNode();
+        }
+
         // mark the workspace as dirty
         m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
