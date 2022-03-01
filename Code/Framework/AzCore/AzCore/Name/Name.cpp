@@ -18,6 +18,7 @@
 
 namespace AZ
 {
+    AZStd::thread::id Name::s_staticNameListThread = 0;
     Name* Name::s_staticNameBegin = nullptr;
 
     NameRef::NameRef()
@@ -210,6 +211,11 @@ namespace AZ
     {
         if (name[0] != '\0')
         {
+            if (s_staticNameListThread == 0)
+            {
+                s_staticNameListThread = AZStd::this_thread::get_id();
+            }
+            AZ_Assert(s_staticNameListThread == AZStd::this_thread::get_id(), "Attempted to construct a name literal on a different thread from the first initialized static name, this is unsafe");
             m_view = name;
             if (!NameDictionary::IsReady(false))
             {
