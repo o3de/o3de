@@ -322,6 +322,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5932044_ForceRegion_PointForceOnRigidBody(EditorSharedTest):
         from .tests.force_region import ForceRegion_PointForceOnRigidBodies as test_module
 
+    class C5959759_RigidBody_ForceRegionSpherePointForce(EditorSharedTest):
+        from .tests.force_region import ForceRegion_SphereShapedForce as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -340,13 +343,8 @@ class TestAutomation(EditorTestSuite):
 
     class C12712455_ScriptCanvas_ShapeCastVerification(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
-
-
         
 
-        
-    class C5959759_RigidBody_ForceRegionSpherePointForce(EditorSharedTest):
-        from .tests.force_region import ForceRegion_SphereShapedForce as test_module
         
     class C5959809_ForceRegion_RotationalOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_RotationalOffset as test_module
