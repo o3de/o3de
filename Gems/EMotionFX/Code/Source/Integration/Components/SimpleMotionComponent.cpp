@@ -30,7 +30,7 @@ namespace EMotionFX
             if (serializeContext)
             {
                 serializeContext->Class<Configuration>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("MotionAsset", &Configuration::m_motionAsset)
                     ->Field("Loop", &Configuration::m_loop)
                     ->Field("Retarget", &Configuration::m_retarget)
@@ -41,6 +41,7 @@ namespace EMotionFX
                     ->Field("BlendOut", &Configuration::m_blendOutTime)
                     ->Field("PlayOnActivation", &Configuration::m_playOnActivation)
                     ->Field("InPlace", &Configuration::m_inPlace)
+                    ->Field("FreezeAtLastFrame", &Configuration::m_freezeAtLastFrame)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -50,6 +51,7 @@ namespace EMotionFX
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_motionAsset, "Motion", "EMotion FX motion to be loaded for this actor")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_loop, "Loop motion", "Toggles looping of the animation")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_retarget, "Retarget motion", "Toggles retargeting of the animation")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_reverse, "Reverse motion", "Toggles reversing of the animation")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_mirror, "Mirror motion", "Toggles mirroring of the animation")
@@ -60,14 +62,34 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_blendOutTime, "Blend Out Time", "Determines the blend out time in seconds")
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &Configuration::GetBlendOutTimeVisibility)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_playOnActivation, "Play on active", "Playing animation immediately after activation.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_inPlace, "In-place",
                             "Plays the animation in-place and removes any positional and rotational changes from root joints.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_freezeAtLastFrame, "Freeze At Last Frame",
+                            "Go back to bind pose after finishing the motion or freeze at the last frame. This only applies for non-looping motions.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &Configuration::GetFreezeAtLastFrameVisibility)
                         ;
                 }
             }
+        }
+
+        AZ::Crc32 SimpleMotionComponent::Configuration::GetBlendOutTimeVisibility() const
+        {
+            if (!m_loop && !m_freezeAtLastFrame)
+            {
+                return AZ::Edit::PropertyVisibility::Show;
+            }
+
+            return AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        AZ::Crc32 SimpleMotionComponent::Configuration::GetFreezeAtLastFrameVisibility() const
+        {
+            return m_loop ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
         }
 
         void SimpleMotionComponent::Reflect(AZ::ReflectContext* context)
@@ -460,6 +482,7 @@ namespace EMotionFX
             info.m_blendInTime = cfg.m_blendInTime;
             info.m_blendOutTime = cfg.m_blendOutTime;
             info.m_inPlace = cfg.m_inPlace;
+            info.m_freezeAtLastFrame = cfg.m_freezeAtLastFrame;
             return actorInstance->GetMotionSystem()->PlayMotion(motionAsset->m_emfxMotion.get(), &info);
         }
 

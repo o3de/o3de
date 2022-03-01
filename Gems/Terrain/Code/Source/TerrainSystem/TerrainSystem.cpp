@@ -863,6 +863,14 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
                                 "The sizes of the surface weights list and in/out positions list should match.");
                             Terrain::TerrainAreaSurfaceRequestBus::Event(areaId, &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeightsFromList,
                                 inPositions, outSurfaceWeights);
+
+                            // Sort the surface weights on each output weight list in decreasing weight order.
+                            for (auto& outSurfaceWeight : outSurfaceWeights)
+                            {
+                                AZStd::sort(
+                                    outSurfaceWeight.begin(), outSurfaceWeight.end(),
+                                    AzFramework::SurfaceData::SurfaceTagWeightComparator());
+                            }
                         };
     
     // This will be unused for surface weights. It's fine if it's empty.
