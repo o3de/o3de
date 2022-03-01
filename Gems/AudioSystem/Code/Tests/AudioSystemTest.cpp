@@ -19,8 +19,10 @@
 #include <ATLComponents.h>
 #include <ATLUtils.h>
 #include <ATL.h>
+#include <AudioProxy.h>
 
 #include <Mocks/ATLEntitiesMock.h>
+#include <Mocks/AudioSystemImplementationMock.h>
 #include <Mocks/FileCacheManagerMock.h>
 
 #include <Mocks/IConsoleMock.h>
@@ -891,6 +893,11 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_LookupAudioEnvironmentNam
 #endif
 
 
+
+//-----------------------//
+// Test CATLXmlProcessor //
+//-----------------------//
+
 class ATLPreloadXmlParsingTestFixture
     : public ::testing::Test
 {
@@ -1063,4 +1070,179 @@ TEST_F(ATLPreloadXmlParsingTestFixture, ParsePreloadsXml_OnePreloadMultipleBanks
 #endif // AZ_TRAIT_DISABLE_FAILED_AUDIO_SYSTEM_TESTS
 {
     TestSuccessfulPreloadParsing("OneMultiple", 1, 2);
+}
+
+
+
+//-----------------------------//
+// Test CAudioTranslationLayer //
+//-----------------------------//
+
+class ATLTestFixture
+    : public ::testing::Test
+{
+public:
+    void SetUp() override
+    {
+        m_requestStatus = EAudioRequestStatus::None;
+        m_callbackCaller = [this](AudioRequestVariant&& requestVariant)
+        {
+            AZStd::visit(
+                [this](auto&& request)
+                {
+                    if (request.m_callback)
+                    {
+                        request.m_callback(request);
+                    }
+                    m_requestStatus = request.m_status;
+                },
+                requestVariant);
+        };
+
+        m_atl.Initialize();
+        m_impl.BusConnect();
+    }
+
+    void TearDown() override
+    {
+        m_impl.BusDisconnect();
+        m_atl.ShutDown();
+
+        m_callbackCaller.clear();
+    }
+
+protected:
+    NiceMock<AudioSystemImplMock> m_impl;
+    NiceMock<AudioSystemMock> m_sys;
+    CAudioTranslationLayer m_atl;
+    CAudioProxy m_proxy;
+    AudioRequestVariant m_requestHolder;
+
+    AZStd::function<void(AudioRequestVariant&&)> m_callbackCaller;
+    EAudioRequestStatus m_requestStatus;
+};
+
+TEST_F(ATLTestFixture, ATLProcessRequest_CheckCallback_WasCalled)
+{
+    Audio::SystemRequest::GetFocus getFocus;
+    bool callbackRan = false;
+    getFocus.m_callback = [&callbackRan]([[maybe_unused]] const Audio::SystemRequest::GetFocus& request)
+    {
+        callbackRan = true;
+    };
+
+    EXPECT_CALL(m_sys, PushCallback).WillOnce(m_callbackCaller);
+
+    m_atl.ProcessRequest(AZStd::move(getFocus));
+    EXPECT_TRUE(callbackRan);
+}
+
+TEST_F(ATLTestFixture, ATLProcessRequest_CheckResult_Matches)
+{
+    Audio::SystemRequest::LoseFocus loseFocus;
+    loseFocus.m_callback = [](const Audio::SystemRequest::LoseFocus& request)
+    {
+        // Force a particular result status...
+        const_cast<Audio::SystemRequest::LoseFocus&>(request).m_status = EAudioRequestStatus::PartialSuccess;
+    };
+
+    EXPECT_CALL(m_sys, PushCallback).WillOnce(m_callbackCaller);
+    m_atl.ProcessRequest(AZStd::move(loseFocus));
+    EXPECT_EQ(m_requestStatus, EAudioRequestStatus::PartialSuccess);
+}
+
+TEST_F(ATLTestFixture, ATLProcessRequest_SimulateInitShutdown_ExpectedResults)
+{
+    // Don't need to do anything in the callbacks this time,
+    // but still need to supply them because it sets the m_requestStatus variable.
+    // Use the impl mock to simulate a scucessful init/shutdown pair.
+    // Then check the result.
+    Audio::SystemRequest::Initialize initialize;
+    initialize.m_callback = [](const Audio::SystemRequest::Initialize&)
+    {
+    };
+    Audio::SystemRequest::Shutdown shutdown;
+    shutdown.m_callback = [](const Audio::SystemRequest::Shutdown&)
+    {
+    };
+
+    EXPECT_CALL(m_sys, PushCallback).WillRepeatedly(m_callbackCaller);
+
+    using ::testing::Return;
+    using ::testing::_;
+
+    EXPECT_CALL(m_impl, Initialize).WillOnce(Return(EAudioRequestStatus::Success));
+    EXPECT_CALL(m_impl, NewGlobalAudioObjectData(_)).WillOnce(Return(nullptr));
+    EXPECT_CALL(m_impl, GetImplSubPath).WillOnce(Return("test_subpath"));
+    m_atl.ProcessRequest(AZStd::move(initialize));
+    EXPECT_EQ(m_requestStatus, EAudioRequestStatus::Success);
+
+    m_requestStatus = EAudioRequestStatus::None;
+
+    EXPECT_CALL(m_impl, ShutDown).WillOnce(Return(EAudioRequestStatus::Success));
+    EXPECT_CALL(m_impl, Release).WillOnce(Return(EAudioRequestStatus::Success));
+    m_atl.ProcessRequest(AZStd::move(shutdown));
+    EXPECT_EQ(m_requestStatus, EAudioRequestStatus::Success);
+}
+
+TEST_F(ATLTestFixture, AudioProxy_SimulateQueuedCommands_NumCommandsExecutedMatches)
+{
+    EXPECT_EQ(m_proxy.GetAudioObjectID(), INVALID_AUDIO_OBJECT_ID);
+    constexpr TAudioObjectID objectId{ 2000 };
+
+    // Setup what PushRequest will do when 'Initialize' is called on the proxy...
+    EXPECT_CALL(m_sys, PushRequest)
+        .WillOnce(
+            [this](AudioRequestVariant&& requestVariant)
+            {
+                AZStd::visit(
+                    [](auto&& request)
+                    {
+                        using T = AZStd::decay_t<decltype(request)>;
+                        if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::ReserveObject>)
+                        {
+                            request.m_objectId = objectId;
+                        }
+                    },
+                    requestVariant);
+                // Hold onto the request before executing the callback so we can queue up additional requests.
+                m_requestHolder = AZStd::move(requestVariant);
+            });
+
+    // 1. Initialize the audio proxy
+    m_proxy.Initialize("test_proxy");
+
+    // Confirm the proxy object still doesn't have an ID...
+    EXPECT_EQ(m_proxy.GetAudioObjectID(), INVALID_AUDIO_OBJECT_ID);
+
+    constexpr AZ::u32 numCommands = 2;
+    AZ::u32 commandCount = 0;
+
+    // Setup what PushRequest will do when additional commands are queued...
+    EXPECT_CALL(m_sys, PushRequest)
+        .WillRepeatedly(
+            [&commandCount](AudioRequestVariant&&)
+            {
+                ++commandCount;
+            });
+
+    // 2. Call additional commands on the proxy
+    m_proxy.SetPosition(AZ::Vector3::CreateOne());
+    m_proxy.SetRtpcValue(TAudioControlID{ 123 }, 0.765f);
+
+    // Calling functions on the proxy before it's received an ID
+    // shouldn't get pushed to the audio system yet.
+    EXPECT_EQ(commandCount, 0);
+
+    // 3. Now execute the initialize callback, which "gives" the ID to the proxy
+    // and will also execute the queued commands.
+    m_callbackCaller(AZStd::move(m_requestHolder));
+
+    // Check that the proxy has the expected ID and expected number of commands
+    // were fake-pushed.
+    EXPECT_EQ(m_proxy.GetAudioObjectID(), objectId);
+    EXPECT_EQ(commandCount, numCommands);
+
+    // Resets data on the audio proxy object
+    m_proxy.Release();
 }

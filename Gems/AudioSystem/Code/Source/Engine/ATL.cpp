@@ -77,7 +77,10 @@ namespace Audio
         , m_oXmlProcessor(m_cTriggers, m_cRtpcs, m_cSwitches, m_cEnvironments, m_cPreloadRequests, m_oFileCacheMgr)
         , m_nFlags(eAIS_NONE)
     {
-        GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
+        if (GetISystem() && GetISystem()->GetISystemEventDispatcher())
+        {
+            GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
+        }
 
 #if !defined(AUDIO_RELEASE)
         m_oAudioEventMgr.SetDebugNameStore(&m_oDebugNameStore);
@@ -91,7 +94,10 @@ namespace Audio
     {
         // By the time ATL is being destroyed, ReleaseImplComponent should have been called already
         // to release the implementation object.  See CAudioSystem::Release().
-        GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
+        if (GetISystem() && GetISystem()->GetISystemEventDispatcher())
+        {
+            GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,8 +148,6 @@ namespace Audio
 
                 if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::Initialize>)
                 {
-                    AZ_Printf("ATL Request Lambda", "Initialize Audio System\n");
-
                     result = InitializeImplComponent();
                     // Immediately release the impl if it failed to init...
                     if (result != EAudioRequestStatus::Success)
@@ -154,7 +158,6 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::Shutdown>)
                 {
-                    AZ_Printf("ATL Request Lambda", "Shutdown Audio System\n");
                     ReleaseImplComponent();
                     result = EAudioRequestStatus::Success;
                 }
@@ -590,9 +593,10 @@ namespace Audio
             }
             , requestVariant);
 
-        if (hasCallback)
+        if (auto audioSystem = AZ::Interface<IAudioSystem>::Get();
+            audioSystem != nullptr && hasCallback)
         {
-            AZ::Interface<IAudioSystem>::Get()->PushCallback(AZStd::move(requestVariant));
+            audioSystem->PushCallback(AZStd::move(requestVariant));
         }
 
         if (status != EAudioRequestStatus::Success)

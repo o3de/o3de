@@ -46,7 +46,6 @@ namespace Audio
             ExecuteQueuedRequests();
         };
 
-        // TODO: sort out the init types.  Figure out if we're going to support queued initialize or not.
         // Seems like we should just do async init all the time.
         // 0: instance-specific initialization (default).  So the bAsync flag is used to determine init type.
         // 1: All initialize sync
@@ -55,16 +54,13 @@ namespace Audio
         auto audioProxiesInitType = static_cast<AZ::u32>(Audio::CVars::s_AudioProxiesInitType);
         if ((bInitAsync && audioProxiesInitType == 0) || audioProxiesInitType == 2)
         {
-            // TODO:
-            // This request used flags eARF_PRIORITY_HIGH and eARF_SYNC_CALLBACK and request.pOwner = this !!
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(reserveObject));
         }
         else
         {
             AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(reserveObject));
 
-            // TODO:
-            // Problem is that even with the blocking request, the callback is still async, so this assert will hit.
+            // Problem is that even with the blocking request, the callback is still async, so this assert can still hit.
             // Either remove this check/assert or get true sync callbacks working again.
 
     #if !defined(AUDIO_RELEASE)
