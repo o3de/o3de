@@ -256,12 +256,6 @@ namespace AzToolsFramework
 
         ViewBookmark ViewBookmarkLoader::GetLastKnownLocationInLevel() const
         {
-            ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
-            if (bookmarkComponent)
-            {
-                return bookmarkComponent->GetLastKnownLocation();
-            }
-
             return ViewBookmark();
         }
 

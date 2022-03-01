@@ -111,14 +111,8 @@ namespace AzToolsFramework
         bookmarkVector.push_back(viewBookmark);
     }
 
-    void ViewBookmarkComponent::SaveLastKnownLocation([[maybe_unused]]ViewBookmark newLastKnownLocation)
+    void ViewBookmarkComponent::RemoveBookmark([[maybe_unused]]int index)
     {
-        //m_viewBookmark.m_lastKnownLocation = newLastKnownLocation;
-    }
-
-    ViewBookmark ViewBookmarkComponent::GetLastKnownLocation() const
-    {
-        return ViewBookmark(); // m_viewBookmark.m_lastKnownLocation;
     }
 
     void ViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
