@@ -7,9 +7,9 @@
         {
             "name": "irradianceColorSource",
             "displayName": "Irradiance Color Source",
-            "description": "Where to get the irradiance color from? This color can be automatically derived from the diffuse base color (average texture color if textured), or the manually provided color below.",
+            "description": "Where to get the irradiance color from? This color can be automatically derived from the diffuse base color (BaseColor: including average texture color if textured; BaseColorTint: base color only, ignoring texture), or the manually provided color below (Manual).",
             "type": "Enum",
-            "enumValues": [ "BaseColor", "Manual"],
+            "enumValues": [ "BaseColor", "BaseColorTint", "Manual"],
             "defaultValue": "BaseColor"
         },
         {

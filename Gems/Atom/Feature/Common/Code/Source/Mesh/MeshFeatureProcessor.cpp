@@ -1040,6 +1040,11 @@ namespace AZ
                                                 ->GetPropertyDescriptor(propertyIndex)
                                                 ->GetEnumName(enumVal);
             }
+            if (irradianceColorSource == AZ::Name("BaseColorTint"))
+            {
+                // Use only the baseColor, no texture on top of it
+                subMesh.m_irradianceColor = subMesh.m_baseColor;
+            }
             if (irradianceColorSource == AZ::Name("BaseColor"))
             {
                 // Check if texturing is enabled
@@ -1114,9 +1119,18 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning("MeshFeatureProcessor", false, "Requested manual color as irradianceColorSource "
-                            "but I could not find an irradiance.manualColor field. Defaulting to black.");
-                    subMesh.m_irradianceColor = AZ::Color(0.0f);
+                    /* Couldn't find irradianc.manualColor -> check for an irradiance.color legacy fallback */
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
+                    if (propertyIndex.IsValid())
+                    {
+                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                    }
+                    else
+                    {
+                        AZ_Warning("MeshFeatureProcessor", false, "Requested manual color as irradianceColorSource "
+                                "but I could not find an irradiance.manualColor field. Defaulting to black.");
+                        subMesh.m_irradianceColor = AZ::Color(0.0f);
+                    }
                 }
             }
             else

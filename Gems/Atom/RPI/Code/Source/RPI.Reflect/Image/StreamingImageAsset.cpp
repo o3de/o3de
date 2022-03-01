@@ -97,7 +97,17 @@ namespace AZ
 
         Color StreamingImageAsset::GetAverageColor() const
         {
-            return m_averageColor;
+            if (m_averageColor.IsFinite())
+            {
+                return m_averageColor;
+            }
+            else
+            {
+                AZ_Warning(
+                    "Streaming Image", false,
+                    "Non-finite average color, it probably was never initialized. Returning black.");
+                return Color(0.0f);
+            }
         }
 
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)

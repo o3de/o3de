@@ -133,7 +133,7 @@ namespace AZ
             StreamingImageFlags m_flags = StreamingImageFlags::None;
 
             // Cached value of the average color of this image (alpha-weighted average in case of 4-component images)
-            AZ::Color m_averageColor;
+            AZ::Color m_averageColor = AZ::Color(AZStd::numeric_limits<float>::quiet_NaN());
         };
     }
 }

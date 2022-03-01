@@ -14,14 +14,16 @@ function GetMaterialPropertyDependencies()
 end
  
 IrradianceColorSource_BaseColor = 0
-IrradianceColorSource_ManualColor = 1
+IrradianceColorSource_BaseColorTint = 1
+IrradianceColorSource_ManualColor = 2
 
 function ProcessEditor(context)
     local irradianceColorSource = context:GetMaterialPropertyValue_enum("irradianceColorSource")
-    
-    if(irradianceColorSource == IrradianceColorSource_BaseColor) then
+
+    if ( irradianceColorSource == IrradianceColorSource_BaseColor
+      or irradianceColorSource == IrradianceColorSource_BaseColorTint ) then
         context:SetMaterialPropertyVisibility("manualColor", MaterialPropertyVisibility_Hidden)
-    elseif(irradianceColorSource == IrradianceColorSource_ManualColor) then
+    elseif (irradianceColorSource == IrradianceColorSource_ManualColor) then
         context:SetMaterialPropertyVisibility("manualColor", MaterialPropertyVisibility_Enabled)
     end
 end
