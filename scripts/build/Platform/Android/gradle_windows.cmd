@@ -141,6 +141,8 @@ IF "%GENERATE_SIGNED_APK%"=="true" (
     CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%ANDROID_HOME% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
 )
 
+SET CMAKE_BUILD_PARALLEL_LEVEL=!NUMBER_OF_PROCESSORS!
+
 REM Validate the android project generation
 IF %ERRORLEVEL%==0 GOTO generate_project_success
 ECHO Error Generating Android Project
@@ -155,8 +157,8 @@ REM Stop any running or orphaned gradle daemon
 ECHO [ci_build] gradlew --stop
 CALL gradlew --stop
 
-ECHO [ci_build] gradlew --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION%
-CALL gradlew --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION%
+ECHO [ci_build] gradlew --console=verbose --info --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION% 
+CALL gradlew --console=verbose --info --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION%
 
 IF %ERRORLEVEL%==0 GOTO gradle_build_success
 
