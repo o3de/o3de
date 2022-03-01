@@ -416,7 +416,7 @@ namespace ScriptCanvasEditor
     }
 
     AZStd::optional<ScriptCanvas::NodeConfiguration> CreateVariableNodeThatRequiresUpdate
-        ( ScriptCanvas::Node& node, const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasGraphId)
+        ( ScriptCanvas::Node& node, const ScriptCanvas::VariableId& variableId, [[maybe_unused]] ScriptCanvas::ScriptCanvasId scriptCanvasGraphId)
     {
         ScriptCanvas::NodeConfiguration config;
         config.modify = [variableId](const ScriptCanvas::Node& oldNode, ScriptCanvas::Node& newNode)
@@ -437,29 +437,18 @@ namespace ScriptCanvasEditor
             return Nodes::CreateGetVariableNodeResult(variableId, oldNode.GetOwningScriptCanvasId()).node;
         };
 
-
         if (auto getVarNode = azrtti_cast<ScriptCanvas::Nodes::Core::GetVariableNode*>(&node);
         getVarNode && getVarNode->GetId() == variableId)
         {
-            auto nodeIdPair = ScriptCanvasEditor::Nodes::CreateGetVariableNodeResult(variableId, scriptCanvasGraphId);
-            if (nodeIdPair.node)
-            {
-                //config.m_node.reset(nodeIdPair.node);
-                config.m_type = azrtti_typeid<ScriptCanvas::Nodes::Core::GetVariableNode>();
-                return config;
-            }
+            config.m_type = azrtti_typeid<ScriptCanvas::Nodes::Core::GetVariableNode>();
+            return config;
         }
 
         if (auto setVarNode = azrtti_cast<ScriptCanvas::Nodes::Core::SetVariableNode*>(&node);
         setVarNode && setVarNode->GetId() == variableId)
         {
-            auto nodeIdPair = ScriptCanvasEditor::Nodes::CreateSetVariableNodeResult(variableId, scriptCanvasGraphId);
-            if (nodeIdPair.node)
-            {
-                //config.m_node.reset(nodeIdPair.node);
-                config.m_type = azrtti_typeid<ScriptCanvas::Nodes::Core::SetVariableNode>();
-                return config;
-            }
+            config.m_type = azrtti_typeid<ScriptCanvas::Nodes::Core::SetVariableNode>();
+            return config;
         }
 
         return AZStd::nullopt;
@@ -499,30 +488,32 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceLiveNode(ScriptCanvas::Node* node
+    AZ::Outcome<ScriptCanvas::Node*> EditorGraph::ReplaceLiveNode(ScriptCanvas::Node* oldNode
         , ScriptCanvas::NodeConfiguration& nodeConfig
         , ScriptCanvas::NodeUpdateSlotReport& /*nodeSlotUpdateReport*/)
     {
-        // start with remove node, like the user would
-        AZ::EntityId graphCanvasGraphId = GetGraphCanvasGraphId();
-        AZStd::unordered_set<AZ::EntityId> nodeGraphCanvasIds;
-        AZ::EntityId nodeGraphCanvasId;
-        SceneMemberMappingRequestBus::EventResult(nodeGraphCanvasId, node->GetEntityId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
-        nodeGraphCanvasIds.insert(nodeGraphCanvasId);
-
         ScriptCanvas::Node* returnNode = nullptr;
         if (nodeConfig.create)
         {
-            returnNode = nodeConfig.create(*node);
+            returnNode = nodeConfig.create(*oldNode);
         }
 
-        // AZ::Vector2 position;
-        // GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
-
-        if (returnNode)
+        if (returnNode) // or replace with nothing...disable in that case?
         {
-            // do this last
-            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, nodeGraphCanvasIds);
+            AZ::EntityId graphCanvasGraphId = GetGraphCanvasGraphId();
+            AZ::EntityId oldNodeGraphCanvasId;
+            SceneMemberMappingRequestBus::EventResult(oldNodeGraphCanvasId, oldNode->GetEntityId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
+
+            AZ::Vector2 position(0, 0);
+            GraphCanvas::GeometryRequestBus::EventResult(position, oldNodeGraphCanvasId, &GraphCanvas::GeometryRequests::GetPosition);
+            AZStd::unordered_set<AZ::EntityId> oldNodeGraphCanvasIds;
+            oldNodeGraphCanvasIds.insert(oldNodeGraphCanvasId);
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, oldNodeGraphCanvasIds);
+
+            AZ::EntityId newNodeGraphCanvasId;
+            SceneMemberMappingRequestBus::EventResult(newNodeGraphCanvasId, returnNode->GetEntityId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, newNodeGraphCanvasId, position, false);
+
             return AZ::Success(returnNode);
         }
         else
