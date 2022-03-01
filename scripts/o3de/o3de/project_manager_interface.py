@@ -18,7 +18,9 @@ logger = logging.getLogger('o3de.project_manager_interface')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
 
-def get_engine_info(engine_name: str = None, engine_path: str or pathlib.Path = None) -> dict or None:
+#### Engine methods ###
+
+def get_engine_info(engine_name: str = None, engine_path: str = None) -> dict or None:
     """
         If engine_path is provided then continue
         Elif only engine_name is provided then call get_registered and use returned path as engine_path
@@ -39,7 +41,7 @@ def get_engine_info(engine_name: str = None, engine_path: str or pathlib.Path = 
     return dict()
 
 
-def set_engine_info(engine_info: dict) -> int:
+def set_engine_info(engine_info: dict):
     """
         Call get_engine_info using path from engine_info
 
@@ -48,11 +50,11 @@ def set_engine_info(engine_info: dict) -> int:
         Call register if any relevant properties have changed
 
         :param engine_info: dict containing values to change in engine
-
-        :return int exit code
     """
-    return -1
+    pass
 
+
+#### Template methods ###
 
 def get_project_template_infos() -> list:
     """
@@ -65,28 +67,26 @@ def get_project_template_infos() -> list:
     return list()
 
 
-def register_project(project_path: str or pathlib.Path, remove: bool = False) -> int:
+#### Project methods ###
+
+def register_project(project_path: str, remove: bool = False):
     """
         Registers project with engine or removes it
 
         :param project_path: Project path to register
         :param remove: bool if False register project, otherwise remove the project from registry
-
-        :return int exit code.
     """
-    return -1
+    pass
 
 
-def unregister_invalid_projects() -> int:
+def unregister_invalid_projects():
     """
         Call remove_invalid_o3de_projects
-
-        :return int exit code.
     """
-    return -1
+    pass
 
 
-def create_project(project_info: dict, template_path: str or pathlib.Path) -> int:
+def create_project(project_info: dict, template_path: str):
     """
         Creates project from project_info data with template_path using create_project
 
@@ -94,13 +94,24 @@ def create_project(project_info: dict, template_path: str or pathlib.Path) -> in
 
         :param project_info: dict containing project info to create new project
         :param template_path: Path to template to create project with
-
-        :return int exit code.
     """
-    return -1
+    pass
 
 
-def get_project_info(project_path: str or pathlib.Path) -> dict or None:
+def get_enabled_gem_names(project_path: str) -> list:
+    """
+        Call get_enabled_gem_cmake_file for project_path
+
+        Return get_enabled_gems for cmake file
+
+        :param project_path: Project path to gather enable gems for
+
+        :return list of strs of enable gems for project.
+    """
+    return list()
+
+
+def get_project_info(project_path: str) -> dict or None:
     """
         Call get_project_json_data
 
@@ -122,54 +133,37 @@ def get_all_project_infos() -> list:
     return list()
 
 
-def set_project_info(project_info: dict) -> int:
+def set_project_info(project_info: dict):
     """
         Call edit_project_props using parameters gathered from project_info
 
         :param engine_info: dict containing values to change in project
-
-        :return int exit code
     """
-    return -1
+    pass
 
 
-def get_enabled_gem_names(project_path: str or pathlib.Path) -> list:
-    """
-        Call get_enabled_gem_cmake_file for project_path
-
-        Return get_enabled_gems for cmake file
-
-        :param project_path: Project path to gather enable gems for
-
-        :return list of strs of enable gems for project.
-    """
-    return list()
-
-
-def add_gem_to_project(gem_path: str or pathlib.Path, project_path: str or pathlib.Path) -> int:
+def add_gem_to_project(gem_path: str, project_path: str):
     """
         Activates gem_path in project_path
 
         :param gem_path: Gem path to activate
         :param project_path: Project path to activate
-
-        :return int exit code.
     """
-    return -1
+    pass
 
-def remove_gem_from_project(gem_path: str or pathlib.Path, project_path: str or pathlib.Path) -> int:
+def remove_gem_from_project(gem_path: str, project_path: str):
     """
         Deactivates gem_path in project_path
 
         :param gem_path: Gem path to deactivate
         :param project_path: Project path to deactivate
-
-        :return int exit code.
     """
-    return -1
+    pass
 
 
-def register_gem(gem_path: str or pathlib.Path, project_path: str or pathlib.Path = None, remove: bool = False) -> int:
+#### Gem methods ###
+
+def register_gem(gem_path: str, project_path: str = None, remove: bool = False):
     """
         Un/Registers gem with engine if only gem_path is provided
         Un/Registers gem to project if path is provided
@@ -177,13 +171,11 @@ def register_gem(gem_path: str or pathlib.Path, project_path: str or pathlib.Pat
         :param gem_path: Gem path to register
         :param project_path: Project path to register project gem with
         :param remove: bool if False register gem, otherwise remove the gem from registry
-
-        :return int exit code.
     """
-    return -1
+    pass
 
 
-def get_gem_info(gem_path: str or pathlib.Path) -> dict or None:
+def get_gem_info(gem_path: str) -> dict or None:
         """
         Call get_gem_json_data
 
@@ -194,7 +186,7 @@ def get_gem_info(gem_path: str or pathlib.Path) -> dict or None:
     return dict()
 
 
-def get_all_gem_infos(project_path: str or pathlib.Path) -> list:
+def get_all_gem_infos(project_path: str) -> list:
     """
         Get list of all avaliable gem paths for project at project_path using get_all_gems
 
@@ -207,16 +199,39 @@ def get_all_gem_infos(project_path: str or pathlib.Path) -> list:
     return list()
 
 
-def register_gem_repo(repo_uri: str, remove: bool = False) -> int:
+def download_gem(gem_name: str, force_overwrite: bool = False, progress_callback = None):
+    """
+        Call download_gem
+
+        :param gem_name: Name of gem to download from a repo
+        :param force_overwrite: bool if False does not overwrite gem if already downloaded, otherwise overwrites gem
+        :param progress_callback: A cpp function callback to update progress
+    """
+    pass
+
+
+def is_gem_update_avaliable(gem_name: str, last_updated: str) -> bool:
+    """
+        Call is_o3de_gem_update_available
+
+        :param gem_name: Name of gem to check for update on
+        :param last_updated: Timestamp when gem was last updated, must be parsable using datetime.fromisoformat
+
+        :return bool True if update is avaliable, otherwise False.
+    """
+    return False
+
+
+#### Gem Repo methods ###
+
+def register_gem_repo(repo_uri: str, remove: bool = False):
     """
         Un/Registers gem repo using register
 
         :param repo_uri: Uri of repo to register
         :param remove: bool if False register repo, otherwise remove the repo from registry
-
-        :return int exit code.
     """
-    return -1
+    pass
 
 
 def get_all_repo_infos() -> list:
@@ -255,46 +270,16 @@ def get_gem_infos_from_all_repos() -> list:
     return list()
 
 
-def refresh_gem_repo(repo_uri: str) -> int:
+def refresh_gem_repo(repo_uri: str):
     """
         Call refresh_repo with repo_uri
 
         :param repo_uri: Uri of repo to refresh
-
-        :return int exit code.
     """
-    return -1
+    pass
 
-
-def refresh_all_gem_repos() -> int:
+def refresh_all_gem_repos():
     """
         Call refresh_repos
-
-        :return int exit code.
     """
-    return -1
-
-
-def download_gem(gem_name: str, force_overwrite: bool = False, progress_callback = None) -> int:
-    """
-        Call download_gem
-
-        :param gem_name: Name of gem to download from a repo
-        :param force_overwrite: bool if False does not overwrite gem if already downloaded, otherwise overwrites gem
-        :param progress_callback: A cpp function callback to update progress
-
-        :return int exit code.
-    """
-    return -1
-
-
-def is_gem_update_avaliable(gem_name: str, last_updated: str) -> bool:
-    """
-        Call is_o3de_gem_update_available
-
-        :param gem_name: Name of gem to check for update on
-        :param last_updated: Timestamp when gem was last updated, must be parsable using datetime.fromisoformat
-
-        :return bool True if update is avaliable, otherwise False.
-    """
-    return -1
+    pass
