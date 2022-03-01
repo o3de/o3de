@@ -130,7 +130,6 @@ namespace AZ
             MeshFeatureProcessor() = default;
             virtual ~MeshFeatureProcessor() = default;
 
-
             // FeatureProcessor overrides ...
             //! Creates pools, buffers, and buffer views
             void Activate() override;
