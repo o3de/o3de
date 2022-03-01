@@ -16,11 +16,8 @@
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
-
-#include "meshoptimizer.h"
-//#include "../../External/Include/meshoptimizer.h"
+#include "../../External/meshoptimizer.h"
 //#include <meshoptimizer.h>
-//#include <Mesh/EditorMeshComponent.h>
 
 namespace AZ
 {
@@ -71,9 +68,13 @@ namespace AZ
         {
             std::vector<GeneratorVertex> vertices;
             std::vector<unsigned int> indices;
+        };
 
-//            bool Create();
-//            bool ExportToOBJ(const char* path);
+        struct MeshletsData
+        {
+            std::vector<meshopt_Meshlet> meshlets;
+            std::vector<unsigned int> meshlet_vertices;		// Vertex Index indirection map
+            std::vector<unsigned char> meshlet_triangles;	// Meshlet triangles into the vertex index indirection - local to meshlet.
         };
 
         //! Currently assuming single model without Lods so that the handling of the
@@ -99,22 +100,22 @@ namespace AZ
             Name UVSemanticName;
 
             Name MeshletsDescriptorsName;
-            Name MeshletsVertexIndicesName;
-            Name MeshletsIndicesName;
+            Name MeshletsTrianglesName;
+            Name MeshletsIndicesLookupName;
 
             MeshletModel(Data::Asset<RPI::ModelAsset> sourceModelAsset);
             ~MeshletModel();
 
             Data::Instance<RPI::Model> GetMeshletModel() { return m_meshletModel; }
-//            Data::Asset<RPI::ModelAsset> GetAtomModelAsset() { return m_atomModelAsset; }
 
             AZStd::string& GetName() { return m_name;  }
 
         protected:
 
             bool ProcessBuffersData(float* position, uint32_t vtxNum);
+            void debugMarkMeshletsUVs(GeneratorMesh& mesh);
 
-            uint32_t CreateMeshlest(GeneratorMesh& mesh);
+            uint32_t CreateMeshlets(GeneratorMesh& mesh);
 
             uint8_t* RetrieveBufferData(
                 const RPI::BufferAssetView* bufferView,
@@ -130,22 +131,26 @@ namespace AZ
 
             uint32_t CreateMeshlets(
                 float* positions, float* normals, float* texCoords, uint32_t vtxNum,
-                uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat);
+                uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat
+            );
             uint32_t CreateMeshletsFromModel(Data::Instance<RPI::Model>);
             uint32_t CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset);
 
             uint32_t CreateMeshletModel(const RPI::ModelLodAsset::Mesh& meshAsset);
-//            bool ProcessBuffersData();
-//            bool CreateAtomModel();
+
+            uint32_t GetMehsletsAmount() { m_meshletsAmount;  }
 
         private:
             AZStd::string m_name;
             Aabb m_aabb;
 
             Data::Asset<RPI::ModelAsset> m_sourceModelAsset;
-//            Data::Instance<RPI::Model> m_sourceModel;
+
             Data::Instance<RPI::Model> m_meshletModel;
 
+            MeshletsData m_meshletsData;    // the actual model meshlets' data
+
+            uint32_t m_meshletsAmount = 0;
 //            RPI::MeshDrawPacket m_drawPacket;
 //            AZStd::vector<RPI::MeshDrawPacket> m_drawPackets;
         };

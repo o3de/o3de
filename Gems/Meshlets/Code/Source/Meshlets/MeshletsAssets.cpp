@@ -33,24 +33,19 @@ namespace AZ
         //----------------------------------------------------------------------
         // Meshlets Generation
         //----------------------------------------------------------------------
-        void debugMarkMeshletsUVs(
-            GeneratorMesh& mesh,	// Results will alter the mesh here
-            std::vector<meshopt_Meshlet>& meshlets,
-            std::vector<unsigned int> meshlet_vertices,
-            std::vector<unsigned char> meshlet_triangles
-        )
+        void MeshletModel::debugMarkMeshletsUVs(GeneratorMesh& mesh )	// Results will alter the mesh 
         {
-            for (uint32_t meshletId = 0; meshletId < meshlets.size(); ++meshletId)
+            for (uint32_t meshletId = 0; meshletId < m_meshletsData.meshlets.size(); ++meshletId)
             {
-                meshopt_Meshlet& meshlet = meshlets[meshletId];
+                meshopt_Meshlet& meshlet = m_meshletsData.meshlets[meshletId];
                 float tx = (meshletId % 3) * 0.5f;
                 float ty = ((meshletId / 3) % 3) * 0.5f;
                 for (uint32_t triIdx = 0, triOffset = meshlet.triangle_offset; triIdx < meshlet.triangle_count; ++triIdx, triOffset += 3)
                 {
                     for (uint32_t vtx = 0; vtx < 3; ++vtx)
                     {
-                        unsigned char vtxIndirectIndex = meshlet_triangles[triOffset + vtx];
-                        unsigned int vtxIndex = meshlet_vertices[meshlet.vertex_offset + vtxIndirectIndex];
+                        unsigned char vtxIndirectIndex = m_meshletsData.meshlet_triangles[triOffset + vtx];
+                        unsigned int vtxIndex = m_meshletsData.meshlet_vertices[meshlet.vertex_offset + vtxIndirectIndex];
 
                         mesh.vertices[vtxIndex].tx = tx;
                         mesh.vertices[vtxIndex].ty = ty;
@@ -59,7 +54,7 @@ namespace AZ
             }
         }
 
-        uint32_t MeshletModel::CreateMeshlest(GeneratorMesh& mesh)
+        uint32_t MeshletModel::CreateMeshlets(GeneratorMesh& mesh)
         {
             const size_t max_vertices = 64;
             const size_t max_triangles = 124; // NVidia-recommended 126, rounded down to a multiple of 4
@@ -67,6 +62,30 @@ namespace AZ
 
             //----------------------------------------------------------------
             size_t max_meshlets = meshopt_buildMeshletsBound(mesh.indices.size(), max_vertices, max_triangles);
+
+/*
+            // NO scan seems to return more localized meshlets
+            m_meshletsData.meshlets.resize(meshopt_buildMeshlets(
+            &m_meshletsData.meshlets[0], &m_meshletsData.meshlet_vertices[0], &m_meshletsData.meshlet_triangles[0],
+            &mesh.indices[0], mesh.indices.size(),
+            &mesh.vertices[0].px, mesh.vertices.size(), sizeof(GeneratorVertex),
+            max_vertices, max_triangles, cone_weight));
+            
+            if (!m_meshletsData.meshlets.size())
+            {
+                printf("Error generating meshlets - no meshlets were built\n");
+                return 0;
+            }
+
+            // this is an example of how to trim the vertex/triangle arrays when copying data out to GPU storage
+            const meshopt_Meshlet& last = m_meshletsData.meshlets.back();
+            m_meshletsData.meshlet_vertices.resize(last.vertex_offset + last.vertex_count);
+            m_meshletsData.meshlet_triangles.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
+            uint32_t meshletsAmount = (uint32_t) m_meshletsData.meshlets.size();
+            //----------------------------------------------------------------
+            */
+
+            ////////////////////////////
             std::vector<meshopt_Meshlet> meshlets(max_meshlets);
             std::vector<unsigned int> meshlet_vertices(max_meshlets * max_vertices);		// Vertex Index indirection map
             std::vector<unsigned char> meshlet_triangles(max_meshlets * max_triangles * 3);	// Meshlet triangles into the vertex index indirection - local to meshlet.
@@ -76,24 +95,22 @@ namespace AZ
                 &meshlets[0], &meshlet_vertices[0], &meshlet_triangles[0], &mesh.indices[0], mesh.indices.size(),
                 &mesh.vertices[0].px, mesh.vertices.size(), sizeof(GeneratorVertex), max_vertices, max_triangles, cone_weight));
 
-            if (!meshlets.size())
-            {
-                printf("Error generating meshlets - no meshlets were built\n");
-                return 0;
-            }
-
             // this is an example of how to trim the vertex/triangle arrays when copying data out to GPU storage
             const meshopt_Meshlet& last = meshlets.back();
             meshlet_vertices.resize(last.vertex_offset + last.vertex_count);
             meshlet_triangles.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
             uint32_t meshletsAmount = (uint32_t) meshlets.size();
-            //----------------------------------------------------------------
+
+            m_meshletsData.meshlets = meshlets;
+            m_meshletsData.meshlet_vertices = meshlet_vertices;
+            m_meshletsData.meshlet_triangles = meshlet_triangles;
+            ////////////////////////////
 
             // [Adi] - add this to display meshlet separation - debug purpose only
             static bool markTextureCoordinates = true;
             if (markTextureCoordinates)
             {
-                debugMarkMeshletsUVs(mesh, meshlets, meshlet_vertices, meshlet_triangles);
+                debugMarkMeshletsUVs(mesh);
             }
 
             AZ_Warning("Meshlets", false, "Successfully generated [%d] meshlets\n", meshletsAmount);
@@ -139,7 +156,7 @@ namespace AZ
                 Vector3* positionV3 = (Vector3*)position;
 
                 float length = positionV3->GetLength();
-                const float maxVertexSize = 999.0f;
+                const float maxVertexSize = 99.0f;
                 if (length < maxVertexSize)
                 {
                     m_aabb.AddPoint(*positionV3);
@@ -215,28 +232,41 @@ namespace AZ
                 nullptr;
             const auto bitangentsAsset = CreateBufferAsset(BiTangentSemanticName.GetStringView(), bufferDescriptors[5], bitangents);
 
-            // At this point we create the meshlets and mark the UVs based on meshlet index
+            if (!positionsAsset || !normalsAsset || !tangentsAsset || !indicesAsset || !texCoords)
+            {
+                AZ_Error("Meshlets", false, "Failed to create meshlet model [%s] - buffer assets were not created successfully", m_name.c_str());
+                return 0;
+            }
+
+            // The following is crucial for the AABB generation - it can be used
+            // for scaling the actual vertices or create transform based on it.
+            ProcessBuffersData(positions, vertexCount);
+
             meshletsAmount = CreateMeshlets(positions, normals, texCoords, vertexCount,
                 (uint16_t*)indices, indexCount, IndexStreamFormat);
 
-            // This is done here since we update the data to indicate meshlets
+            if (!meshletsAmount)
+            {
+                AZ_Error("Meshlets", false, "Failed to create meshlet model [%s] - the meshlet creation process failed", m_name.c_str());
+                return 0;
+            }
+
+            // Done only here since we update the UV data to represent meshlets coloring
             const auto texCoordsAsset = CreateBufferAsset(UVSemanticName.GetStringView(), bufferDescriptors[3], texCoords);
 
             // Model LOD Creation
             {
-                if (!positionsAsset || !normalsAsset || !tangentsAsset || !texCoordsAsset || !indicesAsset)
-                {
-                    AZ_Error("Meshlets", false, "Failed creating model [%s] - buffer assets were not created successfully", m_name.c_str());
-                    return 0;
-                }
-
                 //--------------------------------------------
                 RPI::ModelLodAssetCreator modelLodAssetCreator;
                 modelLodAssetCreator.Begin(Uuid::CreateRandom());
 
                 modelLodAssetCreator.BeginMesh();
                 {
+                    // Original model replication
                     {
+                        modelLodAssetCreator.SetMeshAabb(AZStd::move(m_aabb));
+                        modelLodAssetCreator.SetMeshName(Name{ m_name.c_str() });
+
                         modelLodAssetCreator.SetMeshIndexBuffer({ indicesAsset, bufferDescriptors[0] });
 
                         modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ "POSITION" }, PositionSemanticName,
@@ -249,12 +279,27 @@ namespace AZ
                             RPI::BufferAssetView{ tangentsAsset, bufferDescriptors[4] });
                         modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ "BITANGENT" }, BiTangentSemanticName,
                             RPI::BufferAssetView{ bitangentsAsset, bufferDescriptors[5] });
+                    }
 
-                        // The following is crucial for the AABB generation.
-                        ProcessBuffersData(positions, vertexCount);
+                    // Meshlets data creation
+                    {
+                        // Meshlets descriptors buffer
+                        const auto meshletsDesc = RHI::BufferViewDescriptor::CreateTyped(0, meshletsAmount, RHI::Format::R32G32B32A32_UINT);
+                        const auto meshletsAsset = CreateBufferAsset(MeshletsDescriptorsName.GetCStr(), meshletsDesc, (void*)m_meshletsData.meshlets.data());
+                        modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsDescriptorsName }, MeshletsDescriptorsName,
+                            RPI::BufferAssetView{ meshletsAsset, meshletsDesc });
 
-                        modelLodAssetCreator.SetMeshAabb(AZStd::move(m_aabb));
-                        modelLodAssetCreator.SetMeshName(Name{ m_name.c_str() });
+                        // Meshlets triangles - sending it as uint32 to simplify calculations
+                        const auto meshletsTrisDesc = RHI::BufferViewDescriptor::CreateTyped(0, (uint32_t)m_meshletsData.meshlet_triangles.size() >> 2, RHI::Format::R32_UINT);
+                        const auto meshletsTrisAsset = CreateBufferAsset(MeshletsTrianglesName.GetCStr(), meshletsTrisDesc, (void*)m_meshletsData.meshlet_triangles.data());
+                        modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsTrianglesName }, MeshletsTrianglesName,
+                            RPI::BufferAssetView{ meshletsTrisAsset, meshletsTrisDesc });
+
+                        // Meshlets indirect indices buffer
+                        const auto meshletsIndicesDesc = RHI::BufferViewDescriptor::CreateTyped(0, (uint32_t)m_meshletsData.meshlet_vertices.size(), RHI::Format::R32_UINT);
+                        const auto meshletsIndicesAsset = CreateBufferAsset(MeshletsIndicesLookupName.GetCStr(), meshletsIndicesDesc, (void*)m_meshletsData.meshlet_vertices.data());
+                        modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsIndicesLookupName }, MeshletsIndicesLookupName,
+                            RPI::BufferAssetView{ meshletsIndicesAsset, meshletsIndicesDesc });
                     }
                 }
                 modelLodAssetCreator.EndMesh();
@@ -326,7 +371,8 @@ namespace AZ
 
         uint32_t MeshletModel::CreateMeshlets(
             float* positions, float* normals, float* texCoords, uint32_t vtxNum,
-            uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat)
+            uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat
+        )
         {
             GeneratorMesh mesh;
 
@@ -359,7 +405,7 @@ namespace AZ
             }
 
             // The meshlets creation - meshlet data is not stored for now.
-            uint32_t meshletsAmount = CreateMeshlest(mesh);
+            uint32_t meshletsAmount = CreateMeshlets(mesh);
 
             // Copy back the altered UVs for visual verification
             for (uint32_t vtx = 0, uvIdx = 0; vtx < vtxNum; ++vtx, uvIdx += 2)
@@ -412,10 +458,15 @@ namespace AZ
             BiTangentSemanticName = Name{ "BITANGENT" };
             UVSemanticName = Name{ "UV" };
 
+
+            MeshletsDescriptorsName = Name{ "MESHLETS" };
+            MeshletsTrianglesName = Name{ "MESHLETS_TRIANGLES" };     
+            MeshletsIndicesLookupName = Name{ "MESHLETS_LOOKUP" };     
+
             m_name = "Model_" + AZStd::to_string(s_modelNumber++);
             m_aabb.CreateNull();
 
-            CreateMeshletsFromModelAsset(sourceModelAsset);
+            m_meshletsAmount = CreateMeshletsFromModelAsset(sourceModelAsset);
         }
 
         MeshletModel::~MeshletModel()

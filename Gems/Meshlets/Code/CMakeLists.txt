@@ -24,6 +24,9 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
+            External/Include
+            Source
+            Source/Meshlets
         PRIVATE
             External/Include
             Source
@@ -46,6 +49,8 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
+            Source
+            Source/Meshlets
         PRIVATE
             Source
             Source/Meshlets
