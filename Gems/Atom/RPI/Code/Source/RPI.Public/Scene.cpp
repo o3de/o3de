@@ -178,6 +178,18 @@ namespace AZ
             m_dynamicDrawSystem = nullptr;
         }
 
+        void Scene::CheckRecreateRenderPipeline()
+        {
+            // need to recreate render pipeline passes if the pipeline can be modified by FPs
+            for (auto& renderPipeline : m_pipelines)
+            {
+                if (renderPipeline->m_descriptor.m_allowModification)
+                {
+                    renderPipeline->SetPassNeedsRecreate();
+                }
+            }
+        }
+
         FeatureProcessor* Scene::EnableFeatureProcessor(const FeatureProcessorId& featureProcessorId)
         {
             FeatureProcessor* foundFeatureProcessor = GetFeatureProcessor(featureProcessorId);
@@ -226,15 +238,7 @@ namespace AZ
             if (m_activated)
             {
                 fp->Activate();
-                
-                // need to recreate render pipeline passes if the pipeline can be modified by FP
-                for (auto& renderPipeline : m_pipelines)
-                {
-                    if (renderPipeline->m_descriptor.m_allowModification)
-                    {
-                        renderPipeline->SetPassNeedsRecreate();
-                    }
-                }
+                CheckRecreateRenderPipeline();
             }
 
             m_featureProcessors.emplace_back(AZStd::move(fp));
@@ -258,15 +262,7 @@ namespace AZ
                 if (m_activated)
                 {
                     (*foundFeatureProcessor)->Deactivate();
-                    
-                    // need to recreate render pipeline passes if the pipeline can be modified by FP
-                    for (auto& renderPipeline : m_pipelines)
-                    {
-                        if (renderPipeline->m_descriptor.m_allowModification)
-                        {
-                            renderPipeline->SetPassNeedsRecreate();
-                        }
-                    }
+                    CheckRecreateRenderPipeline();
                 }
 
                 m_featureProcessors.erase(foundFeatureProcessor);
