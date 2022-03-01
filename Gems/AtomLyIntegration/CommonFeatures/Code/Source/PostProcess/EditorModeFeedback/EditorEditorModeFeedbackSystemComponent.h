@@ -79,5 +79,5 @@ namespace AZ
             //! Material for sending draw packets to the entity mask pass.
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;
         };
-    }
-}
+    } // namespace Render
+} // namespace AZ
