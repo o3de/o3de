@@ -865,6 +865,8 @@ bool OutlinerListModel::CanDropMimeDataAssets(const QMimeData* data, Qt::DropAct
     return false;
 }
 
+// There are two paths for generating entities by dragging and dropping from the asset browser.
+// This logic handles dropping them into the outliner. Dropping them in the viewport is handled by AzAssetBrowserRequestHandler::Drop.
 bool OutlinerListModel::DropMimeDataAssets(const QMimeData* data, [[maybe_unused]] Qt::DropAction action, int row, [[maybe_unused]] int column, const QModelIndex& parent)
 {
     using namespace AzToolsFramework;
@@ -2599,11 +2601,12 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         optionV4.text.clear();
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
-        // Now we setup a Text Document so it can draw the rich text
         int verticalOffset = GetEntityNameVerticalOffset(entityId);
-        painter->translate(textRect.topLeft() + QPoint(0, verticalOffset));
 
-        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(
+            entityNameRichText, painter, optionV4, textRect, QPoint(0, verticalOffset));
+
+        painter->restore();
 
         OutlinerListModel::s_paintingName = false;
     }

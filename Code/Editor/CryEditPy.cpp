@@ -26,7 +26,6 @@
 #include "Core/QtEditorApplication.h"
 #include "CheckOutDialog.h"
 #include "GameEngine.h"
-#include "UndoConfigSpec.h"
 #include "ViewManager.h"
 #include "EditorViewportCamera.h"
 
@@ -261,11 +260,6 @@ namespace
 
 namespace
 {
-    void PyStartProcessDetached(const char* process, const char* args)
-    {
-        CCryEditApp::instance()->StartProcessDetached(process, args);
-    }
-
     void PyLaunchLUAEditor(const char* files)
     {
         CCryEditApp::instance()->OpenLUAEditor(files);
@@ -369,21 +363,6 @@ namespace
 
 inline namespace Commands
 {
-    void PySetConfigSpec(int spec, int platform)
-    {
-        CUndo undo("Set Config Spec");
-        if (CUndo::IsRecording())
-        {
-            CUndo::Record(new CUndoConficSpec());
-        }
-        GetIEditor()->SetEditorConfigSpec((ESystemConfigSpec)spec, (ESystemConfigPlatform)platform);
-    }
-
-    int PyGetConfigSpec()
-    {
-        return static_cast<int>(GetIEditor()->GetEditorConfigSpec());
-    }
-
     int PyGetConfigPlatform()
     {
         return static_cast<int>(GetIEditor()->GetEditorConfigPlatform());
@@ -434,9 +413,7 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles in degrees."));
 
             addLegacyGeneral(behaviorContext->Method("export_to_engine", CCryEditApp::Command_ExportToEngine, nullptr, "Exports the current level to the engine."));
-            addLegacyGeneral(behaviorContext->Method("set_config_spec", PySetConfigSpec, nullptr, "Sets the system config spec and platform."));
             addLegacyGeneral(behaviorContext->Method("get_config_platform", PyGetConfigPlatform, nullptr, "Gets the system config platform."));
-            addLegacyGeneral(behaviorContext->Method("get_config_spec", PyGetConfigSpec, nullptr, "Gets the system config spec."));
 
             addLegacyGeneral(behaviorContext->Method("set_result_to_success", PySetResultToSuccess, nullptr, "Sets the result of a script execution to success. Used only for Sandbox AutoTests."));
             addLegacyGeneral(behaviorContext->Method("set_result_to_failure", PySetResultToFailure, nullptr, "Sets the result of a script execution to failure. Used only for Sandbox AutoTests."));
@@ -447,7 +424,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("idle_wait", PyIdleWait, nullptr, "Waits idling for a given seconds. Primarily used for auto-testing."));
             addLegacyGeneral(behaviorContext->Method("idle_wait_frames", PyIdleWaitFrames, nullptr, "Waits idling for a frames. Primarily used for auto-testing."));
 
-            addLegacyGeneral(behaviorContext->Method("start_process_detached", PyStartProcessDetached, nullptr, "Launches a detached process with an optional space separated list of arguments."));
             addLegacyGeneral(behaviorContext->Method("launch_lua_editor", PyLaunchLUAEditor, nullptr, "Launches the Lua editor, may receive a list of space separate file paths, or an empty string to only open the editor."));
 
             addLegacyGeneral(behaviorContext->Method("attach_debugger", PyAttachDebugger, nullptr, "Prompts for attaching the debugger"));
@@ -463,17 +439,6 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Module, "legacy.checkout_dialog");
             };
             addCheckoutDialog(behaviorContext->Method("enable_for_all", PyCheckOutDialogEnableForAll, nullptr, "Enables the 'Apply to all' button in the checkout dialog; useful for allowing the user to apply a decision to check out files to multiple, related operations."));
-
-            behaviorContext->EnumProperty<ESystemConfigSpec::CONFIG_AUTO_SPEC>("SystemConfigSpec_Auto")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
-            behaviorContext->EnumProperty<ESystemConfigSpec::CONFIG_LOW_SPEC>("SystemConfigSpec_Low")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
-            behaviorContext->EnumProperty<ESystemConfigSpec::CONFIG_MEDIUM_SPEC>("SystemConfigSpec_Medium")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
-            behaviorContext->EnumProperty<ESystemConfigSpec::CONFIG_HIGH_SPEC>("SystemConfigSpec_High")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
-            behaviorContext->EnumProperty<ESystemConfigSpec::CONFIG_VERYHIGH_SPEC>("SystemConfigSpec_VeryHigh")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
 
             behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_INVALID_PLATFORM>("SystemConfigPlatform_InvalidPlatform")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);

@@ -7,6 +7,7 @@
  */
 #include "SpriteBorderEditorCommon.h"
 
+#include <AzCore/Interface/Interface.h>
 #include <QMessageBox>
 #include <QApplication>
 #include <Util/PathUtil.h>
@@ -35,7 +36,7 @@ SpriteBorderEditor::SpriteBorderEditor(const char* path, QWidget* parent)
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint);
 
     // Make sure the sprite can load and be displayed before continuing
-    m_sprite = gEnv->pLyShine->LoadSprite(m_spritePath.toLatin1().constData());
+    m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePath.toLatin1().constData());
     QString fullPath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
     const bool imageWontLoad = !m_sprite || QPixmap(fullPath).isNull();
     if (imageWontLoad)

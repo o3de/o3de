@@ -43,10 +43,29 @@ namespace AZ
             m_irradianceImageAttachmentId = AZStd::string::format("ProbeIrradianceImageAttachmentId_%s", uuidString.c_str());
             m_distanceImageAttachmentId = AZStd::string::format("ProbeDistanceImageAttachmentId_%s", uuidString.c_str());
             m_probeDataImageAttachmentId = AZStd::string::format("ProbeDataImageAttachmentId_%s", uuidString.c_str());
+            m_gridDataBufferAttachmentId = AZStd::string::format("ProbeGridDataBufferAttachmentId_%s", uuidString.c_str());
+            m_visualizationTlasAttachmentId = AZStd::string::format("ProbeVisualizationTlasAttachmentId_%s", uuidString.c_str());
+            m_visualizationTlasInstancesAttachmentId = AZStd::string::format("ProbeVisualizationTlasInstancesAttachmentId_%s", uuidString.c_str());
 
             // setup culling
             m_cullable.m_cullData.m_scene = m_scene;
             m_cullable.SetDebugName(AZ::Name("DiffuseProbeGrid Volume"));
+
+            // create the visualization TLAS
+            m_visualizationTlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
+
+            // create the grid data buffer
+            m_gridDataBuffer = RHI::Factory::Get().CreateBuffer();
+
+            RHI::BufferDescriptor descriptor;
+            descriptor.m_byteCount = DiffuseProbeGridRenderData::GridDataBufferSize;
+            descriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+
+            RHI::BufferInitRequest request;
+            request.m_buffer = m_gridDataBuffer.get();
+            request.m_descriptor = descriptor;
+            [[maybe_unused]] RHI::ResultCode result = m_renderData->m_bufferPool->InitBuffer(request);
+            AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize GridData buffer");
         }
 
         void DiffuseProbeGrid::Simulate(uint32_t probeIndex)
@@ -116,9 +135,6 @@ namespace AZ
             // recompute the number of probes since the spacing changed
             UpdateProbeCount();
 
-            // probes need to be relocated since the grid density changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
-
             m_updateTextures = true;
         }
 
@@ -132,6 +148,12 @@ namespace AZ
         {
             m_normalBias = normalBias;
             m_updateRenderObjectSrg = true;
+        }
+
+        void DiffuseProbeGrid::SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        {
+            m_numRaysPerProbe = numRaysPerProbe;
+            m_updateTextures = true;
         }
 
         void DiffuseProbeGrid::SetTransform(const AZ::Transform& transform)
@@ -163,9 +185,6 @@ namespace AZ
 
             m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_renderExtents / 2.0f);
 
-            // probes need to be relocated since the grid extents changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
-
             m_updateTextures = true;
         }
 
@@ -195,9 +214,21 @@ namespace AZ
             }
 
             m_updateTextures = true;
+        }
 
-            // probes need to be relocated since the mode has changed
+        void DiffuseProbeGrid::SetScrolling(bool scrolling)
+        {
+            if (m_scrolling == scrolling)
+            {
+                return;
+            }
+
+            m_scrolling = scrolling;
+
+            // probes need to be relocated since the scrolling mode changed
             m_remainingRelocationIterations = DefaultNumRelocationIterations;
+
+            m_gridDataInitialized = false;
         }
 
         void DiffuseProbeGrid::SetBakedTextures(const DiffuseProbeGridBakedTextures& bakedTextures)
@@ -247,6 +278,23 @@ namespace AZ
             return m_cullable.m_isVisible;
         }
 
+        void DiffuseProbeGrid::SetVisualizationEnabled(bool visualizationEnabled)
+        {
+            m_visualizationEnabled = visualizationEnabled;
+            m_visualizationTlasUpdateRequired = true;
+        }
+
+        void DiffuseProbeGrid::SetVisualizationSphereRadius(float visualizationSphereRadius)
+        {
+            m_visualizationSphereRadius = visualizationSphereRadius;
+            m_visualizationTlasUpdateRequired = true;
+        }
+
+        bool DiffuseProbeGrid::GetVisualizationTlasUpdateRequired() const
+        {
+            return m_visualizationTlasUpdateRequired || m_remainingRelocationIterations > 0;
+        }
+
         uint32_t DiffuseProbeGrid::GetTotalProbeCount() const
         {
             return m_probeCountX * m_probeCountY * m_probeCountZ;
@@ -280,7 +328,7 @@ namespace AZ
 
                 // probe raytrace
                 {
-                    uint32_t width = m_numRaysPerProbe;
+                    uint32_t width = GetNumRaysPerProbe().m_rayCount;
                     uint32_t height = GetTotalProbeCount();
 
                     m_rayTraceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
@@ -335,6 +383,9 @@ namespace AZ
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDataImage image");
                 }
+
+                // probes need to be relocated since the textures changed
+                m_remainingRelocationIterations = DefaultNumRelocationIterations;
             }
 
             m_updateTextures = false;
@@ -342,8 +393,8 @@ namespace AZ
             // textures have changed so we need to update the render Srg to bind the new ones
             m_updateRenderObjectSrg = true;
 
-            // we need to clear the irradiance texture
-            m_irradianceClearRequired = true;
+            // we need to clear the Irradiance, Distance, and ProbeData textures
+            m_textureClearRequired = true;
         }
 
         void DiffuseProbeGrid::ComputeProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing, uint32_t& probeCountX, uint32_t& probeCountY, uint32_t& probeCountZ)
@@ -394,93 +445,108 @@ namespace AZ
                               m_probeCountZ);
         }
 
-        void DiffuseProbeGrid::SetGridConstants(Data::Instance<RPI::ShaderResourceGroup>& srg)
+        void DiffuseProbeGrid::UpdatePrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
         {
-            const RHI::ShaderResourceGroupLayout* srgLayout = srg->GetLayout();
+            if (!m_prepareSrg)
+            {
+                m_prepareSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
+                AZ_Error("DiffuseProbeGrid", m_prepareSrg.get(), "Failed to create Prepare shader resource group");
+            }
+
+            RHI::ShaderInputBufferIndex bufferIndex;
             RHI::ShaderInputConstantIndex constantIndex;
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.origin"));
-            srg->SetConstant(constantIndex, m_transform.GetTranslation());
+            bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_prepareSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.rotation"));
-            srg->SetConstant(constantIndex, m_transform.GetRotation());
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_gridDataInitialized"));
+            m_prepareSrg->SetConstant(constantIndex, m_gridDataInitialized);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRayRotation"));
-            srg->SetConstant(constantIndex, m_probeRayRotation);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.origin"));
+            m_prepareSrg->SetConstant(constantIndex, m_transform.GetTranslation());
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.movementType"));
-            srg->SetConstant(constantIndex, 0);
+            // pass identity for the rotation when scrolling is enabled
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.rotation"));
+            m_prepareSrg->SetConstant(constantIndex, m_transform.GetRotation());
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeSpacing"));
-            srg->SetConstant(constantIndex, m_probeSpacing);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRayRotation"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeRayRotation);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeCounts"));
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.movementType"));
+            m_prepareSrg->SetConstant(constantIndex, (uint32_t)m_scrolling);
+
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeSpacing"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeSpacing);
+
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeCounts"));
             uint32_t probeGridCounts[3];
             probeGridCounts[0] = m_probeCountX;
             probeGridCounts[1] = m_probeCountY;
             probeGridCounts[2] = m_probeCountZ;
-            srg->SetConstantRaw(constantIndex, &probeGridCounts[0], sizeof(probeGridCounts));
+            m_prepareSrg->SetConstantRaw(constantIndex, &probeGridCounts[0], sizeof(probeGridCounts));
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumRays"));
-            srg->SetConstant(constantIndex, m_numRaysPerProbe);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumRays"));
+            m_prepareSrg->SetConstant(constantIndex, GetNumRaysPerProbe().m_rayCount);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumIrradianceTexels"));
-            srg->SetConstant(constantIndex, DefaultNumIrradianceTexels);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumIrradianceTexels"));
+            m_prepareSrg->SetConstant(constantIndex, DefaultNumIrradianceTexels);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumDistanceTexels"));
-            srg->SetConstant(constantIndex, DefaultNumDistanceTexels);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumDistanceTexels"));
+            m_prepareSrg->SetConstant(constantIndex, DefaultNumDistanceTexels);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeHysteresis"));
-            srg->SetConstant(constantIndex, m_probeHysteresis);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeHysteresis"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeHysteresis);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMaxRayDistance"));
-            srg->SetConstant(constantIndex, m_probeMaxRayDistance);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMaxRayDistance"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeMaxRayDistance);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNormalBias"));
-            srg->SetConstant(constantIndex, m_normalBias);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNormalBias"));
+            m_prepareSrg->SetConstant(constantIndex, m_normalBias);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeViewBias"));
-            srg->SetConstant(constantIndex, m_viewBias);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeViewBias"));
+            m_prepareSrg->SetConstant(constantIndex, m_viewBias);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeDistanceExponent"));
-            srg->SetConstant(constantIndex, m_probeDistanceExponent);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeDistanceExponent"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeDistanceExponent);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceThreshold"));
-            srg->SetConstant(constantIndex, m_probeIrradianceThreshold);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceThreshold"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeIrradianceThreshold);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeBrightnessThreshold"));
-            srg->SetConstant(constantIndex, m_probeBrightnessThreshold);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeBrightnessThreshold"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeBrightnessThreshold);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceEncodingGamma"));
-            srg->SetConstant(constantIndex, m_probeIrradianceEncodingGamma);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceEncodingGamma"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeIrradianceEncodingGamma);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeBackfaceThreshold"));
-            srg->SetConstant(constantIndex, m_probeBackfaceThreshold);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeBackfaceThreshold"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeBackfaceThreshold);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMinFrontfaceDistance"));
-            srg->SetConstant(constantIndex, m_probeMinFrontfaceDistance);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMinFrontfaceDistance"));
+            m_prepareSrg->SetConstant(constantIndex, m_probeMinFrontfaceDistance);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollOffsets"));
-            srg->SetConstant(constantIndex, Vector3::CreateZero());
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollOffsets"));
+            m_prepareSrg->SetConstant(constantIndex, Vector3::CreateZero());
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRayDataFormat"));
-            srg->SetConstant(constantIndex, 1);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRayDataFormat"));
+            m_prepareSrg->SetConstant(constantIndex, 1);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceFormat"));
-            srg->SetConstant(constantIndex, 1);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceFormat"));
+            m_prepareSrg->SetConstant(constantIndex, 1);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRelocationEnabled"));
-            srg->SetConstant(constantIndex, true);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRelocationEnabled"));
+            m_prepareSrg->SetConstant(constantIndex, true);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeClassificationEnabled"));
-            srg->SetConstant(constantIndex, true);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeClassificationEnabled"));
+            m_prepareSrg->SetConstant(constantIndex, true);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[0]"));
-            srg->SetConstant(constantIndex, false);
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[1]"));
-            srg->SetConstant(constantIndex, false);
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[2]"));
-            srg->SetConstant(constantIndex, false);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[0]"));
+            m_prepareSrg->SetConstant(constantIndex, false);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[1]"));
+            m_prepareSrg->SetConstant(constantIndex, false);
+            constantIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[2]"));
+            m_prepareSrg->SetConstant(constantIndex, false);
+
+            m_gridDataInitialized = true;
         }
 
         void DiffuseProbeGrid::UpdateRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -494,6 +560,11 @@ namespace AZ
             const RHI::ShaderResourceGroupLayout* srgLayout = m_rayTraceSrg->GetLayout();
             RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            // grid data
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_rayTraceSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
 
             // probe raytrace
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
@@ -520,8 +591,6 @@ namespace AZ
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_useDiffuseIbl"));
             m_rayTraceSrg->SetConstant(constantIndex, m_useDiffuseIbl);
-
-            SetGridConstants(m_rayTraceSrg);
         }
 
         void DiffuseProbeGrid::UpdateBlendIrradianceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -534,7 +603,11 @@ namespace AZ
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_blendIrradianceSrg->GetLayout();
             RHI::ShaderInputImageIndex imageIndex;
-        
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_blendIrradianceSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
             m_blendIrradianceSrg->SetImageView(imageIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
                     
@@ -543,8 +616,6 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
             m_blendIrradianceSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
-
-            SetGridConstants(m_blendIrradianceSrg);
         }
 
         void DiffuseProbeGrid::UpdateBlendDistanceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -557,6 +628,10 @@ namespace AZ
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_blendDistanceSrg->GetLayout();
             RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_blendDistanceSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
             m_blendDistanceSrg->SetImageView(imageIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
@@ -566,8 +641,6 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
             m_blendDistanceSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
-
-            SetGridConstants(m_blendDistanceSrg);
         }
 
         void DiffuseProbeGrid::UpdateBorderUpdateSrgs(
@@ -660,20 +733,17 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_relocationSrg->GetLayout();
-            RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_relocationSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
             m_relocationSrg->SetImageView(imageIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
             m_relocationSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
-
-            float probeDistanceScale = (aznumeric_cast<float>(m_remainingRelocationIterations) / DefaultNumRelocationIterations);
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeDistanceScale"));
-            m_relocationSrg->SetConstant(constantIndex, probeDistanceScale);
-
-            SetGridConstants(m_relocationSrg);
         }
 
         void DiffuseProbeGrid::UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -686,14 +756,16 @@ namespace AZ
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_classificationSrg->GetLayout();
             RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_classificationSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
             m_classificationSrg->SetImageView(imageIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
             m_classificationSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
-
-            SetGridConstants(m_classificationSrg);
         }
 
         void DiffuseProbeGrid::UpdateRenderObjectSrg()
@@ -712,6 +784,10 @@ namespace AZ
             const RHI::ShaderResourceGroupLayout* srgLayout = m_renderObjectSrg->GetLayout();
             RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_renderObjectSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorld"));
             AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromTransform(m_transform) * AZ::Matrix3x4::CreateScale(m_renderExtents);
@@ -739,12 +815,85 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeData"));
             m_renderObjectSrg->SetImageView(imageIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
-            SetGridConstants(m_renderObjectSrg);
-
             m_updateRenderObjectSrg = false;
 
             // update culling now since the position and/or extents may have changed
             UpdateCulling();
+        }
+
+        void DiffuseProbeGrid::UpdateVisualizationPrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
+        {
+            if (!m_visualizationPrepareSrg)
+            {
+                m_visualizationPrepareSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
+                AZ_Error("DiffuseProbeGrid", m_visualizationPrepareSrg.get(), "Failed to create VisualizationPrepare shader resource group");
+            }
+
+            RHI::ShaderInputConstantIndex constantIndex;
+            RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            // TLAS instances
+            bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_tlasInstances"));
+            uint32_t tlasInstancesBufferByteCount = aznumeric_cast<uint32_t>(m_visualizationTlas->GetTlasInstancesBuffer()->GetDescriptor().m_byteCount);
+            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, tlasInstancesBufferByteCount / RayTracingTlasInstanceElementSize, RayTracingTlasInstanceElementSize);
+            m_visualizationPrepareSrg->SetBufferView(bufferIndex, m_visualizationTlas->GetTlasInstancesBuffer()->GetBufferView(bufferViewDescriptor).get());
+
+            // grid data
+            bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_visualizationPrepareSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+
+            // probe data
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_visualizationPrepareSrg->SetImageView(imageIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            // probe sphere radius
+            constantIndex = layout->FindShaderInputConstantIndex(Name("m_probeSphereRadius"));
+            m_visualizationPrepareSrg->SetConstant(constantIndex, m_visualizationSphereRadius);
+        }
+
+        void DiffuseProbeGrid::UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout, const RHI::ImageView* outputImageView)
+        {
+            if (!m_visualizationRayTraceSrg)
+            {
+                m_visualizationRayTraceSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
+                AZ_Error("DiffuseProbeGrid", m_visualizationRayTraceSrg.get(), "Failed to create VisualizationRayTrace shader resource group");
+            }
+
+            RHI::ShaderInputConstantIndex constantIndex;
+            RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            // TLAS
+            uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(m_visualizationTlas->GetTlasBuffer()->GetDescriptor().m_byteCount);
+            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
+
+            bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_tlas"));
+            m_visualizationRayTraceSrg->SetBufferView(bufferIndex, m_visualizationTlas->GetTlasBuffer()->GetBufferView(bufferViewDescriptor).get());
+
+            // grid data
+            bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_visualizationRayTraceSrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+
+            // probe irradiance
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeIrradiance"));
+            m_visualizationRayTraceSrg->SetImageView(imageIndex, GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+
+            // probe distance
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeDistance"));
+            m_visualizationRayTraceSrg->SetImageView(imageIndex, GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+
+            // probe data
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_visualizationRayTraceSrg->SetImageView(imageIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            // show inactive probes
+            constantIndex = layout->FindShaderInputConstantIndex(Name("m_showInactiveProbes"));
+            m_visualizationRayTraceSrg->SetConstant(constantIndex, m_visualizationShowInactiveProbes);
+
+            // output
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_output"));
+            m_visualizationRayTraceSrg->SetImageView(imageIndex, outputImageView);
         }
 
         void DiffuseProbeGrid::UpdateCulling()

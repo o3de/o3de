@@ -40,17 +40,17 @@ namespace AZ
             const BufferFrameAttachment* GetFrameAttachment() const;
 
             Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
-            
+
+            // Get the hash associated with the Buffer
+            const HashValue64 GetHash() const;
+
         protected:
             Buffer() = default;
 
             void SetDescriptor(const BufferDescriptor& descriptor);
 
         private:
-            
-            // Get the hash associated with the passed view descriptor
-            const size_t GetHash(const BufferViewDescriptor& bufferViewDescriptor) const;
-            
+
             // The RHI descriptor for this buffer.
             BufferDescriptor m_descriptor;
 

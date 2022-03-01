@@ -649,6 +649,7 @@ namespace ScriptCanvasEditor
 
         QToolButton*                        m_createFunctionInput = nullptr;
         QToolButton*                        m_createFunctionOutput = nullptr;
+        QToolButton*                        m_takeScreenshot = nullptr;
 
         QToolButton*                        m_createScriptCanvas = nullptr;
 

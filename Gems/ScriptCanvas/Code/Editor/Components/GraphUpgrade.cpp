@@ -25,7 +25,7 @@ namespace ScriptCanvasEditor
 
     namespace Helpers
     {
-        static AZStd::string ConnectionToText(ScriptCanvasEditor::Graph* graph, ScriptCanvas::Endpoint& from, ScriptCanvas::Endpoint& to)
+        static AZStd::string ConnectionToText(ScriptCanvasEditor::EditorGraph* graph, ScriptCanvas::Endpoint& from, ScriptCanvas::Endpoint& to)
         {
             AZ_Assert(graph, "A valid graph must be provided");
 
@@ -328,7 +328,7 @@ namespace ScriptCanvasEditor
         {
             if (sm->m_assetSanitizationSet.find(currentIter->first) == sm->m_assetSanitizationSet.end())
             {
-                currentIter->second = {};
+                currentIter->second = ScriptEvents::ScriptEventsAssetPtr{};
                 currentIter = graph->GetGraphData()->m_scriptEventAssets.erase(currentIter);
                 sm->m_graphNeedsDirtying = true;
             }
@@ -653,7 +653,7 @@ namespace ScriptCanvasEditor
 
 #define RegisterState(stateName) m_states.emplace_back(new stateName(this));
 
-    EditorGraphUpgradeMachine::EditorGraphUpgradeMachine(Graph* graph)
+    EditorGraphUpgradeMachine::EditorGraphUpgradeMachine(EditorGraph* graph)
         : m_graph(graph)
     {
         RegisterState(Start);

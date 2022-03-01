@@ -24,6 +24,15 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_CreatePrefab_UnderAnotherPrefab(EditorSharedTest):
         from .tests.create_prefab import CreatePrefab_UnderAnotherPrefab as test_module
 
+    class test_CreatePrefab_UnderChildEntityOfAnotherPrefab(EditorSharedTest):
+        from .tests.create_prefab import CreatePrefab_UnderChildEntityOfAnotherPrefab as test_module
+
+    class test_CreatePrefab_WithNestedEntities(EditorSharedTest):
+        from .tests.create_prefab import CreatePrefab_WithNestedEntities as test_module
+    
+    class test_CreatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+        from .tests.create_prefab import CreatePrefab_WithNestedEntitiesAndNestedPrefabs as test_module
+
     class test_DeleteEntity_UnderAnotherPrefab(EditorSharedTest):
         from .tests.delete_entity import DeleteEntity_UnderAnotherPrefab as test_module
 
@@ -45,8 +54,12 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_InstantiatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
 
+    class test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
+
     class test_DeletePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
 
     class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
+    

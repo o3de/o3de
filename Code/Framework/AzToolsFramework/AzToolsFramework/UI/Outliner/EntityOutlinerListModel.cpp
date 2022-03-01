@@ -80,7 +80,6 @@ namespace AzToolsFramework
     EntityOutlinerListModel::EntityOutlinerListModel(QObject* parent)
         : QAbstractItemModel(parent)
         , m_entitySelectQueue()
-        , m_entityExpandQueue()
         , m_entityChangeQueue()
         , m_entityChangeQueued(false)
         , m_entityLayoutQueued(false)
@@ -1275,7 +1274,6 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::QueueEntityToExpand(AZ::EntityId entityId, bool expand)
     {
         m_entityExpansionState[entityId] = expand;
-        m_entityExpandQueue.insert(entityId);
         QueueEntityUpdate(entityId);
     }
 
@@ -1300,16 +1298,7 @@ namespace AzToolsFramework
         {
             return;
         }
-
-        {
-            AZ_PROFILE_SCOPE(Editor, "EntityOutlinerListModel::ProcessEntityUpdates:ExpandQueue");
-            for (auto entityId : m_entityExpandQueue)
-            {
-                emit ExpandEntity(entityId, IsExpanded(entityId));
-            };
-            m_entityExpandQueue.clear();
-        }
-
+        
         {
             AZ_PROFILE_SCOPE(Editor, "EntityOutlinerListModel::ProcessEntityUpdates:SelectQueue");
             for (auto entityId : m_entitySelectQueue)
@@ -2102,8 +2091,14 @@ namespace AzToolsFramework
             customOption.state ^= QStyle::State_HasFocus;
         }
 
+        // Don't allow to paint on the spacing column
+        if (index.column() == EntityOutlinerListModel::ColumnSpacing)
+        {
+            return;
+        }
+
         // Retrieve the Entity UI Handler
-        auto firstColumnIndex = index.siblingAtColumn(0);
+        auto firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
 
@@ -2367,6 +2362,8 @@ namespace AzToolsFramework
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
         AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
+
+        painter->restore();
 
         EntityOutlinerListModel::s_paintingName = false;
     }

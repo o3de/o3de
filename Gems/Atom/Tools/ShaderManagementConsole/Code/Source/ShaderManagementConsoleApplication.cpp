@@ -6,22 +6,66 @@
  *
  */
 
-#include <Atom/Document/ShaderManagementConsoleDocumentModule.h>
-#include <Atom/Window/ShaderManagementConsoleWindowModule.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <Document/ShaderManagementConsoleDocument.h>
+#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <ShaderManagementConsoleApplication.h>
 #include <ShaderManagementConsole_Traits_Platform.h>
 
+#include <QDesktopServices>
+#include <QDialog>
+#include <QFile>
+#include <QFileDialog>
+#include <QMenu>
+#include <QMessageBox>
+#include <QUrl>
+
+void InitShaderManagementConsoleResources()
+{
+    // Must register qt resources from other modules
+    Q_INIT_RESOURCE(ShaderManagementConsole);
+    Q_INIT_RESOURCE(InspectorWidget);
+    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+}
+
 namespace ShaderManagementConsole
 {
-    //! This function returns the build system target name of "ShaderManagementConsole"
-    AZStd::string ShaderManagementConsoleApplication::GetBuildTargetName() const
+    static const char* GetBuildTargetName()
     {
 #if !defined(LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
-        return AZStd::string_view{ LY_CMAKE_TARGET };
+        return LY_CMAKE_TARGET;
+    }
+
+    ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
+        : Base(GetBuildTargetName(), argc, argv)
+    {
+        InitShaderManagementConsoleResources();
+
+        QApplication::setOrganizationName("O3DE");
+        QApplication::setApplicationName("O3DE Shader Management Console");
+
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+    }
+
+    ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
+    {
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
+        m_window.reset();
+    }
+
+    void ShaderManagementConsoleApplication::Reflect(AZ::ReflectContext* context)
+    {
+        Base::Reflect(context);
+        ShaderManagementConsoleDocument::Reflect(context);
     }
 
     const char* ShaderManagementConsoleApplication::GetCurrentConfigurationName() const
@@ -35,21 +79,66 @@ namespace ShaderManagementConsole
 #endif
     }
 
-    ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
-        : AtomToolsApplication(argc, argv)
+    void ShaderManagementConsoleApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        QApplication::setApplicationName("O3DE Shader Management Console");
+        Base::StartCommon(systemEntity);
 
-        // The settings registry has been created at this point, so add the CMake target
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
-            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
+            [](const AZ::Crc32& toolId) { return aznew ShaderManagementConsoleDocument(toolId); });
+
+        m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
+        m_window->show();
+
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
+            },
+            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                if (AzFramework::StringFunc::Path::IsExtension(
+                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderSourceData::Extension))
+                {
+                    menu->addAction("Generate Shader Variant List", [entries]()
+                        {
+                            const QString script =
+                                "@engroot@/Gems/Atom/Tools/ShaderManagementConsole/Scripts/GenerateShaderVariantListForMaterials.py";
+                            AZStd::vector<AZStd::string_view> pythonArgs{ entries.front()->GetFullPath() };
+                            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(),
+                                pythonArgs);
+                        });
+                }
+
+                if (AzFramework::StringFunc::Path::IsExtension(
+                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderSourceData::Extension) ||
+                    AzFramework::StringFunc::Path::IsExtension(
+                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
+                {
+                    menu->addAction(QObject::tr("Open"), [entries, this]()
+                        {
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument,
+                                entries.front()->GetFullPath());
+                        });
+                }
+                else
+                {
+                    menu->addAction(QObject::tr("Open"), [entries]()
+                        {
+                            QDesktopServices::openUrl(QUrl::fromLocalFile(entries.front()->GetFullPath().c_str()));
+                        });
+                }
+            });
     }
 
-    void ShaderManagementConsoleApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
+    void ShaderManagementConsoleApplication::Destroy()
     {
-        Base::CreateStaticModules(outModules);
-        outModules.push_back(aznew ShaderManagementConsoleDocumentModule);
-        outModules.push_back(aznew ShaderManagementConsoleWindowModule);
+        m_window.reset();
+        Base::Destroy();
     }
 
     AZStd::vector<AZStd::string> ShaderManagementConsoleApplication::GetCriticalAssetFilters() const
@@ -57,19 +146,8 @@ namespace ShaderManagementConsole
         return AZStd::vector<AZStd::string>({ "passes/", "config/" });
     }
 
-    void ShaderManagementConsoleApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
+    QWidget* ShaderManagementConsoleApplication::GetAppMainWindow()
     {
-        // Process command line options for opening one or more documents on startup
-        size_t openDocumentCount = commandLine.GetNumMiscValues();
-        for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
-        {
-            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
-
-            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
-        }
-
-        Base::ProcessCommandLine(commandLine);
+        return m_window.get();
     }
 } // namespace ShaderManagementConsole

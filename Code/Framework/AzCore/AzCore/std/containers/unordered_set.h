@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_UNORDERED_SET_H
-#define AZSTD_UNORDERED_SET_H 1
+#pragma once
 
 #include <AzCore/std/containers/node_handle.h>
 #include <AzCore/std/hash_table.h>
@@ -87,7 +86,7 @@ namespace AZStd
         typedef typename base_type::const_local_iterator        const_local_iterator;
 
         using node_type = set_node_handle<set_node_traits<value_type, allocator_type, typename base_type::list_node_type, typename base_type::node_deleter>>;
-        using insert_return_type = insert_return_type<iterator, node_type>;
+        using insert_return_type = AZStd::AssociativeInternal::insert_return_type<iterator, node_type>;
 
         AZ_FORCE_INLINE unordered_set()
             : base_type(hasher(), key_eq(), allocator_type()) {}
@@ -252,6 +251,55 @@ namespace AZStd
 
         return originalSize - container.size();
     }
+
+    // deduction guides
+    template<class InputIterator,
+        class Hash = hash<iter_value_type<InputIterator>>,
+        class Pred = equal_to<iter_value_type<InputIterator>>,
+        class Allocator = allocator>
+        unordered_set(InputIterator, InputIterator,
+            typename Internal::UnorderedSetTableTraits<iter_value_type<InputIterator>, Hash, Pred, Allocator, false>::size_type = {},
+            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_set<iter_value_type<InputIterator>,
+        Hash, Pred, Allocator>;
+
+    template<class T, class Hash = hash<T>,
+        class Pred = equal_to<T>, class Allocator = allocator>
+        unordered_set(initializer_list<T>,
+            typename Internal::UnorderedSetTableTraits<T, Hash, Pred, Allocator, false>::size_type = {},
+            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_set<T, Hash, Pred, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    unordered_set(InputIterator, InputIterator,
+        typename Internal::UnorderedSetTableTraits<iter_value_type<InputIterator>, hash<iter_value_type<InputIterator>>,
+        equal_to<iter_value_type<InputIterator>>, Allocator, false>::size_type,
+        Allocator)
+        ->unordered_set<iter_value_type<InputIterator>,
+        hash<iter_value_type<InputIterator>>,
+        equal_to<iter_value_type<InputIterator>>,
+        Allocator>;
+
+    template<class InputIterator, class Hash, class Allocator>
+    unordered_set(InputIterator, InputIterator,
+        typename Internal::UnorderedSetTableTraits<iter_value_type<InputIterator>, Hash,
+        equal_to<iter_value_type<InputIterator>>, Allocator, false>::size_type,
+        Hash, Allocator)
+        ->unordered_set<iter_value_type<InputIterator>, Hash,
+        equal_to<iter_value_type<InputIterator>>,
+        Allocator>;
+
+    template<class T, class Allocator>
+    unordered_set(initializer_list<T>,
+        typename Internal::UnorderedSetTableTraits<T, hash<T>, equal_to<T>, Allocator, false>::size_type,
+        Allocator)
+        ->unordered_set<T, hash<T>, equal_to<T>, Allocator>;
+
+    template<class T, class Hash, class Allocator>
+    unordered_set(initializer_list<T>,
+        typename Internal::UnorderedSetTableTraits<T, Hash, equal_to<T>, Allocator, false>::size_type,
+        Hash, Allocator)
+        ->unordered_set<T, Hash, equal_to<T>, Allocator>;
 
     /**
     * Unordered multi set container is complaint with \ref CTR1 (6.2.4.5)
@@ -448,7 +496,52 @@ namespace AZStd
         return originalSize - container.size();
     }
 
-}
+    // deduction guides
+    template<class InputIterator,
+        class Hash = hash<iter_value_type<InputIterator>>,
+        class Pred = equal_to<iter_value_type<InputIterator>>,
+        class Allocator = allocator>
+        unordered_multiset(InputIterator, InputIterator,
+            typename Internal::UnorderedSetTableTraits<iter_value_type<InputIterator>, Hash, Pred, Allocator, true>::size_type = {},
+            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_multiset<iter_value_type<InputIterator>,
+        Hash, Pred, Allocator>;
 
-#endif // AZSTD_UNORDERED_SET_H
-#pragma once
+    template<class T, class Hash = hash<T>,
+        class Pred = equal_to<T>, class Allocator = allocator>
+        unordered_multiset(initializer_list<T>,
+            typename Internal::UnorderedSetTableTraits<T, Hash, Pred, Allocator, true>::size_type = {},
+            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_multiset<T, Hash, Pred, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    unordered_multiset(InputIterator, InputIterator,
+        typename Internal::UnorderedSetTableTraits<iter_value_type<InputIterator>, hash<iter_value_type<InputIterator>>,
+        equal_to<iter_value_type<InputIterator>>, Allocator, true>::size_type,
+        Allocator)
+        ->unordered_multiset<iter_value_type<InputIterator>,
+        hash<iter_value_type<InputIterator>>,
+        equal_to<iter_value_type<InputIterator>>,
+        Allocator>;
+
+    template<class InputIterator, class Hash, class Allocator>
+    unordered_multiset(InputIterator, InputIterator,
+        typename Internal::UnorderedSetTableTraits<iter_value_type<InputIterator>, Hash,
+        equal_to<iter_value_type<InputIterator>>, Allocator, true>::size_type,
+        Hash, Allocator)
+        ->unordered_multiset<iter_value_type<InputIterator>, Hash,
+        equal_to<iter_value_type<InputIterator>>,
+        Allocator>;
+
+    template<class T, class Allocator>
+    unordered_multiset(initializer_list<T>,
+        typename Internal::UnorderedSetTableTraits<T, hash<T>, equal_to<T>, Allocator, true>::size_type,
+        Allocator)
+        ->unordered_multiset<T, hash<T>, equal_to<T>, Allocator>;
+
+    template<class T, class Hash, class Allocator>
+    unordered_multiset(initializer_list<T>,
+        typename Internal::UnorderedSetTableTraits<T, Hash, equal_to<T>, Allocator, true>::size_type,
+        Hash, Allocator)
+        ->unordered_multiset<T, Hash, equal_to<T>, Allocator>;
+}

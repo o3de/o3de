@@ -513,7 +513,6 @@ namespace ScriptCanvasEditor
         m_editorToolbar->AddCustomAction(m_createFunctionOutput);
         connect(m_createFunctionOutput, &QToolButton::clicked, this, &MainWindow::CreateFunctionOutput);
 
-
         {
             m_validateGraphToolButton = new QToolButton();
             m_validateGraphToolButton->setToolTip("Will run a validation check on the current graph and report any warnings/errors discovered.");
@@ -522,6 +521,18 @@ namespace ScriptCanvasEditor
         }
 
         m_editorToolbar->AddCustomAction(m_validateGraphToolButton);
+
+        // Screenshot
+        {
+            m_takeScreenshot = new QToolButton();
+            m_takeScreenshot->setToolTip("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard");
+            m_takeScreenshot->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/scriptcanvas_screenshot.png"));
+            m_takeScreenshot->setEnabled(false);
+        }
+
+        m_editorToolbar->AddCustomAction(m_takeScreenshot);
+        connect(m_takeScreenshot, &QToolButton::clicked, this, &MainWindow::OnScreenshot);
+
 
         connect(m_validateGraphToolButton, &QToolButton::clicked, this, &MainWindow::OnValidateCurrentGraph);
 
@@ -1538,7 +1549,7 @@ namespace ScriptCanvasEditor
     {
         int outTabIndex = -1;
 
-        ScriptCanvas::DataPtr graph = Graph::Create();
+        ScriptCanvas::DataPtr graph = EditorGraph::Create();
         AZ::Uuid assetId = AZ::Uuid::CreateRandom();
         ScriptCanvasEditor::SourceHandle handle = ScriptCanvasEditor::SourceHandle(graph, assetId, assetPath);
 
@@ -3204,6 +3215,7 @@ namespace ScriptCanvasEditor
 
         m_createFunctionOutput->setEnabled(enabled);
         m_createFunctionInput->setEnabled(enabled);
+        m_takeScreenshot->setEnabled(enabled);
 
         // File Menu
         ui->action_Close->setEnabled(enabled);

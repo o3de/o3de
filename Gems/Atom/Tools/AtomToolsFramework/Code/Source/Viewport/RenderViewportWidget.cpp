@@ -231,14 +231,24 @@ namespace AtomToolsFramework
         return QWidget::event(event);
     }
 
-    void RenderViewportWidget::enterEvent([[maybe_unused]] QEvent* event)
+    void RenderViewportWidget::enterEvent(QEvent* event)
     {
-        m_mouseOver = true;
+        if (const auto eventType = event->type();
+            eventType == QEvent::Type::MouseMove)
+        {
+            const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
+            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
+        }
     }
 
     void RenderViewportWidget::leaveEvent([[maybe_unused]] QEvent* event)
     {
-        m_mouseOver = false;
+        m_mousePosition.reset();
+    }
+
+    void RenderViewportWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
+    {
+        m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
     }
 
     void RenderViewportWidget::SendWindowResizeEvent()
@@ -327,17 +337,22 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::IsMouseOver() const
     {
-        return m_mouseOver;
+        return m_mousePosition.has_value();
+    }
+
+    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::MousePosition() const
+    {
+        return m_mousePosition;
     }
 
     void RenderViewportWidget::BeginCursorCapture()
     {
-        m_inputChannelMapper->SetCursorCaptureEnabled(true);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeCaptured);
     }
 
     void RenderViewportWidget::EndCursorCapture()
     {
-        m_inputChannelMapper->SetCursorCaptureEnabled(false);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeNone);
     }
 
     void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)

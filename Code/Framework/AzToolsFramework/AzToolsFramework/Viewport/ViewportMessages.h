@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/optional.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -149,6 +150,9 @@ namespace AzToolsFramework
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         };
+
+        //! A bus to listen to just the MouseViewportRequests.
+        using ViewportMouseRequestBus = AZ::EBus<MouseViewportRequests, ViewportEBusTraits>;
 
         //! Requests that can be made to the viewport to query and modify its state.
         class ViewportInteractionRequests
@@ -325,6 +329,8 @@ namespace AzToolsFramework
             virtual void SetOverrideCursor(CursorStyleOverride cursorStyleOverride) = 0;
             //! Clear the cursor style override.
             virtual void ClearOverrideCursor() = 0;
+            //! Returns the viewport position of the cursor if a valid position exists (the cursor is over the viewport).
+            virtual AZStd::optional<AzFramework::ScreenPoint> MousePosition() const = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;

@@ -56,7 +56,7 @@ namespace GradientSignal
          * \param positions The input list of positions to query.
          * \param outValues The output list of values. This list is expected to be the same size as the positions list.
          */
-        virtual void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+        virtual void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
         {
             // Reference implementation of GetValues for any gradients that don't have their own optimized implementations.
             // This is 10%-60% faster than calling GetValue via EBus many times due to the per-call EBus overhead.

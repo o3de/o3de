@@ -7,21 +7,154 @@
         "ShaderAssetFileName": "diffuseprobegridblenddistance.azshader",
         "PlatformIdentifiers": 
         [
-            "pc", "linux"
+            "pc", 
+            "linux"
         ],
-        "RootShaderVariantAssets":
+        "Supervariants":
         [
             {
-                "APIName": "dx12",
-                "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_dx12_0.azshadervariant"
+                "Name": "",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_null_0.azshadervariant"
+                    }
+                ]
             },
             {
-                "APIName": "vulkan",
-                "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_vulkan_0.azshadervariant"
+                "Name": "NumRaysPerProbe144",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe144_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe144_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe144_null_0.azshadervariant"
+                    }
+                ]
             },
             {
-                "APIName": "null",
-                "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_null_0.azshadervariant"
+                "Name": "NumRaysPerProbe288",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe288_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe288_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe288_null_0.azshadervariant"
+                    }
+                ]
+            },
+            {
+                "Name": "NumRaysPerProbe432",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe432_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe432_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe432_null_0.azshadervariant"
+                    }
+                ]
+            },
+            {
+                "Name": "NumRaysPerProbe576",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe576_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe576_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe576_null_0.azshadervariant"
+                    }
+                ]
+            },
+            {
+                "Name": "NumRaysPerProbe720",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe720_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe720_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe720_null_0.azshadervariant"
+                    }
+                ]
+            },
+            {
+                "Name": "NumRaysPerProbe864",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe864_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe864_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe864_null_0.azshadervariant"
+                    }
+                ]
+            },
+            {
+                "Name": "NumRaysPerProbe1008",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe1008_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe1008_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance-numraysperprobe1008_null_0.azshadervariant"
+                    }
+                ]
             }
         ]
     }

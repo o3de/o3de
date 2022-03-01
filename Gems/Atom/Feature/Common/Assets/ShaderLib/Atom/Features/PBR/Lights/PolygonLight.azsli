@@ -68,10 +68,12 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout Light
 
 void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
 {
+#if ENABLE_POLYGON_LTC_LIGHTS
     for (uint currLightIndex = 0; currLightIndex <  ViewSrg::m_polygonLightCount; ++currLightIndex)
     {
         ViewSrg::PolygonLight light = ViewSrg::m_polygonLights[currLightIndex];
         
         ApplyPoylgonLight(light, surface, lightingData);
     }
+#endif
 }

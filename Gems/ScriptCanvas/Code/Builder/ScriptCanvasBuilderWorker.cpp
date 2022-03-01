@@ -44,7 +44,7 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        const ScriptCanvasEditor::Graph* sourceGraph = nullptr;
+        const ScriptCanvasEditor::EditorGraph* sourceGraph = nullptr;
         const ScriptCanvas::GraphData* graphData = nullptr;
         ScriptCanvasEditor::SourceHandle sourceHandle;
 
@@ -167,7 +167,10 @@ namespace ScriptCanvasBuilder
         {
             // compute it the first time
             const AZStd::string runtimeAssetTypeId = azrtti_typeid<ScriptCanvas::RuntimeAsset>().ToString<AZStd::string>();
-            m_fingerprintString = AZStd::string::format("%i%s", GetVersionNumber(), runtimeAssetTypeId.c_str());
+            m_fingerprintString = AZStd::string::format("%s%i%s", 
+                AZ::ScriptDataContext::GetInterpreterVersion(), // this is the version of LUA - if it changes, we need to rebuild
+                GetVersionNumber(), 
+                runtimeAssetTypeId.c_str());
         }
         return m_fingerprintString.c_str();
     }

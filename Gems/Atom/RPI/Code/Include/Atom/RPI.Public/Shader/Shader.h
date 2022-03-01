@@ -127,7 +127,7 @@ namespace AZ
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindFallbackShaderResourceGroupLayout() const;
 
             /// Returns the set of shader resource groups referenced by all variants in the shader asset.
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const;
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const;
 
             /// Returns a reference to the asset used to initialize this shader.
             const Data::Asset<ShaderAsset>& GetAsset() const;

@@ -202,19 +202,42 @@ namespace GradientSignal
 
     float SurfaceAltitudeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        float result = 0.0f;
+        GetValues(AZStd::span<const AZ::Vector3>(&sampleParams.m_position, 1), AZStd::span<float>(&result, 1));
+        return result;
+    }
 
-        SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, points);
-
-        if (points.empty())
+    void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            return 0.0f;
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
         }
 
-        const AZ::Vector3& position = points.front().m_position;
-        return GetRatio(m_configuration.m_altitudeMin, m_configuration.m_altitudeMax, position.GetZ());
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+        SurfaceData::SurfacePointList points;
+        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
+            points);
+
+        // For each position, turn the height into a 0-1 value based on our min/max altitudes.
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            if (!points.IsEmpty(index))
+            {
+                // Get the point with the highest Z value and use that for the altitude.
+                const float highestAltitude = points.GetHighestSurfacePoint(index).m_position.GetZ();
+
+                // Turn the absolute altitude value into a 0-1 value by returning the % of the given altitude range that it falls at.
+                outValues[index] = GetRatio(m_configuration.m_altitudeMin, m_configuration.m_altitudeMax, highestAltitude);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
+        }
     }
 
     void SurfaceAltitudeGradientComponent::OnCompositionChanged()
@@ -246,7 +269,7 @@ namespace GradientSignal
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_configuration.m_shapeEntityId.IsValid())
         {

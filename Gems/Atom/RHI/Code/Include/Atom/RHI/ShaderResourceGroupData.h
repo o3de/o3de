@@ -24,16 +24,16 @@ namespace AZ
         //! and shader constants. It utilizes basic reflection information from the shader resource group layout
         //! to construct the table in the correct format for the platform-specific compile phase. The user
         //! is expected to create instances of this class, fill data, and then push it to an SRG instance.
-        //! 
+        //!
         //! The shader resource group (SRG) includes a set of built-in SRG constants in a single internally-managed
         //! constant buffer. This is separate from any custom constant buffers that some SRG layouts may include
         //! as shader resources. SRG constants can be conveniently accessed through a variety of SetConstant.
-        //! 
+        //!
         //! This data structure holds strong references to the resource views bound onto it.
-        //! 
+        //!
         //! NOTE [Performance Warning]: This data structure allocates memory. If compiling several SRG's in a batch,
         //! prefer to share the data between them (i.e. within a single job).
-        //! 
+        //!
         //! NOTE [SRG Constants]: The ConstantsData class is used for efficiently setting/getting the constants values of the SRG.
         class ShaderResourceGroupData
         {
@@ -65,25 +65,25 @@ namespace AZ
             bool SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex);
 
             //! Sets an array of image view for the given shader input index.
-            bool SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::array_view<const ImageView*> imageViews, uint32_t arrayIndex = 0);
+            bool SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::span<const ImageView* const> imageViews, uint32_t arrayIndex = 0);
 
             //! Sets an unbounded array of image view for the given shader input index.
-            bool SetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::array_view<const ImageView*> imageViews);
+            bool SetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const ImageView* const> imageViews);
 
             //! Sets one buffer view for the given shader input index.
             bool SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex = 0);
 
             //! Sets an array of image view for the given shader input index.
-            bool SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews, uint32_t arrayIndex = 0);
+            bool SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::span<const BufferView* const> bufferViews, uint32_t arrayIndex = 0);
 
             //! Sets an unbounded array of buffer view for the given shader input index.
-            bool SetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews);
+            bool SetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::span<const BufferView* const> bufferViews);
 
             //! Sets one sampler for the given shader input index, using the bindingIndex as the key.
             bool SetSampler(ShaderInputSamplerIndex inputIndex, const SamplerState& sampler, uint32_t arrayIndex = 0);
 
             //! Sets an array of samplers for the given shader input index.
-            bool SetSamplerArray(ShaderInputSamplerIndex inputIndex, AZStd::array_view<SamplerState> samplers, uint32_t arrayIndex = 0);
+            bool SetSamplerArray(ShaderInputSamplerIndex inputIndex, AZStd::span<const SamplerState> samplers, uint32_t arrayIndex = 0);
 
             //! Assigns constant data for the given constant shader input index.
             bool SetConstantRaw(ShaderInputConstantIndex inputIndex, const void* bytes, uint32_t byteCount);
@@ -96,17 +96,17 @@ namespace AZ
             //! Assigns a specified number of rows from a Matrix
             template <typename T>
             bool SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount);
-                        
+
             //! Assigns a value of type T to the constant shader input, at an array offset.
             template <typename T>
             bool SetConstant(ShaderInputConstantIndex inputIndex, const T& value, uint32_t arrayIndex);
 
             //! Assigns an array of type T to the constant shader input.
             template <typename T>
-            bool SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::array_view<T> values);
+            bool SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::span<const T> values);
 
             //! Assigns constant data as a whole.
-            //! 
+            //!
             //! CAUTION!
             //! Different platforms might follow different packing rules for the internally-managed SRG constant buffer.
             //! To set manually a constant buffer as a whole please use Constant Buffers in AZSL,
@@ -118,33 +118,33 @@ namespace AZ
             //! Returns a single image view associated with the image shader input index and array offset.
             const ConstPtr<ImageView>& GetImageView(ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns an array of image views associated with the given image shader input index.
-            AZStd::array_view<ConstPtr<ImageView>> GetImageViewArray(ShaderInputImageIndex inputIndex) const;
+            //! Returns a span of image views associated with the given image shader input index.
+            AZStd::span<const ConstPtr<ImageView>> GetImageViewArray(ShaderInputImageIndex inputIndex) const;
 
-            //! Returns an unbounded array of image views associated with the given buffer shader input index.
-            AZStd::array_view<ConstPtr<ImageView>> GetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex) const;
+            //! Returns an unbounded span of image views associated with the given buffer shader input index.
+            AZStd::span<const ConstPtr<ImageView>> GetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex) const;
 
             //! Returns a single buffer view associated with the buffer shader input index and array offset.
             const ConstPtr<BufferView>& GetBufferView(ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns an array of buffer views associated with the given buffer shader input index.
-            AZStd::array_view<ConstPtr<BufferView>> GetBufferViewArray(ShaderInputBufferIndex inputIndex) const;
+            //! Returns a span of buffer views associated with the given buffer shader input index.
+            AZStd::span<const ConstPtr<BufferView>> GetBufferViewArray(ShaderInputBufferIndex inputIndex) const;
 
-            //! Returns an unbounded array of buffer views associated with the given buffer shader input index.
-            AZStd::array_view<ConstPtr<BufferView>> GetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex) const;
+            //! Returns an unbounded span of buffer views associated with the given buffer shader input index.
+            AZStd::span<const ConstPtr<BufferView>> GetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex) const;
 
             //! Returns a single sampler associated with the sampler shader input index and array offset.
             const SamplerState& GetSampler(ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns an array of samplers associated with the sampler shader input index.
-            AZStd::array_view<SamplerState> GetSamplerArray(ShaderInputSamplerIndex inputIndex) const;
+            //! Returns a span of samplers associated with the sampler shader input index.
+            AZStd::span<const SamplerState> GetSamplerArray(ShaderInputSamplerIndex inputIndex) const;
 
             //! Returns constant data for the given shader input index as a template type.
             //! The stride of T must match the size of the constant input region. The number
-            //! of elements in the returned array is the number of evenly divisible elements.
-            //! If the strides do not match, an empty array is returned.
+            //! of elements in the returned span is the number of evenly divisible elements.
+            //! If the strides do not match, an empty span is returned.
             template <typename T>
-            AZStd::array_view<T> GetConstantArray(ShaderInputConstantIndex inputIndex) const;
+            AZStd::span<const T> GetConstantArray(ShaderInputConstantIndex inputIndex) const;
 
             //! Returns the constant data as type 'T' returned by value. The size of the constant region
             //! must match the size of T exactly. Otherwise, an empty instance is returned.
@@ -157,25 +157,25 @@ namespace AZ
             template <typename T>
             T GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns constant data for the given shader input index as an array of bytes.
-            AZStd::array_view<uint8_t> GetConstantRaw(ShaderInputConstantIndex inputIndex) const;
+            //! Returns constant data for the given shader input index as a span of bytes.
+            AZStd::span<const uint8_t> GetConstantRaw(ShaderInputConstantIndex inputIndex) const;
 
             //! Returns a {Buffer, Image, Sampler} shader resource group. Each resource type has its own separate group.
             //!  - The size of this group matches the size provided by ShaderResourceGroupLayout::GetGroupSizeFor{Buffer, Image, Sampler}.
-            //!  - Use ShaderResourceGroupLayout::GetGroupInterval to retrieve a [min, max) interval into the array.
-            AZStd::array_view<ConstPtr<ImageView>> GetImageGroup() const;
-            AZStd::array_view<ConstPtr<BufferView>> GetBufferGroup() const;
-            AZStd::array_view<SamplerState> GetSamplerGroup() const;
-            
+            //!  - Use ShaderResourceGroupLayout::GetGroupInterval to retrieve a [min, max) interval into the span.
+            AZStd::span<const ConstPtr<ImageView>> GetImageGroup() const;
+            AZStd::span<const ConstPtr<BufferView>> GetBufferGroup() const;
+            AZStd::span<const SamplerState> GetSamplerGroup() const;
+
             //! Reset image and buffer views setup for this ShaderResourceGroupData
             //! So it won't hold references for any RHI resources
             void ResetViews();
 
             //! Returns the opaque constant data populated by calls to SetConstant and SetConstantData.
-            //! 
+            //!
             //! CAUTION!
             //! Different platforms might follow different packing rules for the internally-managed SRG constant buffer.
-            AZStd::array_view<uint8_t> GetConstantData() const;
+            AZStd::span<const uint8_t> GetConstantData() const;
 
             //! Returns the underlying ConstantsData struct
             const ConstantsData& GetConstantsData() const;
@@ -205,20 +205,15 @@ namespace AZ
                 SamplerMask = AZ_BIT(static_cast<uint32_t>(ResourceType::Sampler))
             };
 
-            //! Returns true if a resource type specified by resourceTypeMask is enabled for compilation
-            bool IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const;
+            //! Reset the update mask
+            void ResetUpdateMask();
 
-            //! Disables all resource types for compilation after m_updateMaskResetLatency number of compiles
-            //! This allows higher level code to ensure that if SRG is multi-buffered it can compile multiple
-            //! times in order to ensure all SRG buffers are updated.
-            void DisableCompilationForAllResourceTypes();
+            //! Enable compilation for a resourceType specified by resourceTypeMask
+            void EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask);
 
-            //! Returns true if any of the resource type has been enabled for compilation. 
-            bool IsAnyResourceTypeUpdated() const;
-
-            //! Enable compilation for a resourceType specified by resourceType/resourceTypeMask
-            void EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask, ResourceType resourceType);
-
+            //! Returns the mask that is suppose to indicate which resource type was updated
+            uint32_t GetUpdateMask() const;
+            
         private:
             static const ConstPtr<ImageView> s_nullImageView;
             static const ConstPtr<BufferView> s_nullBufferView;
@@ -244,47 +239,43 @@ namespace AZ
             //! The backing data store of constants for the shader resource group.
             ConstantsData m_constantsData;
 
-            //! Mask used to check whether to compile a specific resource type
+            //! Mask used to check whether to compile a specific resource type. This mask is managed by RPI and copied over to the RHI every frame. 
             uint32_t m_updateMask = 0;
-
-            //! Track iteration for each resource type in order to keep compiling it for m_updateMaskResetLatency number of times
-            uint32_t m_resourceTypeIteration[static_cast<uint32_t>(ResourceType::Count)] = { 0 };
-            uint32_t m_updateMaskResetLatency = RHI::Limits::Device::FrameCountMax;
         };
 
         template <typename T>
         bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstant(inputIndex, value);
         }
 
         template <typename T>
         bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value, uint32_t arrayIndex)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstant(inputIndex, value, arrayIndex);
         }
-        
+
         template<typename T>
         bool ShaderResourceGroupData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)
         {
-            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             return m_constantsData.SetConstantMatrixRows(inputIndex, value, rowCount);
         }
 
         template <typename T>
-        bool ShaderResourceGroupData::SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::array_view<T> values)
+        bool ShaderResourceGroupData::SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::span<const T> values)
         {
             if (!values.empty())
             {
-                EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+                EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
             }
             return m_constantsData.SetConstantArray(inputIndex, values);
         }
 
         template <typename T>
-        AZStd::array_view<T> ShaderResourceGroupData::GetConstantArray(ShaderInputConstantIndex inputIndex) const
+        AZStd::span<const T> ShaderResourceGroupData::GetConstantArray(ShaderInputConstantIndex inputIndex) const
         {
             return m_constantsData.GetConstantArray<T>(inputIndex);
         }

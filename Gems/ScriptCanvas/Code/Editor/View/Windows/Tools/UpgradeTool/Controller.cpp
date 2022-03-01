@@ -154,7 +154,7 @@ namespace ScriptCanvasEditor
                 {
                     asset.Mod()->UpgradeGraph
                         ( asset
-                        , m_view->forceUpgrade->isChecked() ? Graph::UpgradeRequest::Forced : Graph::UpgradeRequest::IfOutOfDate
+                        , m_view->forceUpgrade->isChecked() ? EditorGraph::UpgradeRequest::Forced : EditorGraph::UpgradeRequest::IfOutOfDate
                         , m_view->verbose->isChecked());
                 }
             };
@@ -542,7 +542,7 @@ namespace ScriptCanvasEditor
             }
 
             QToolButton* doneButton = new QToolButton(this);
-            doneButton->setIcon(QIcon(":/stylesheet/img/UI20/titlebar-close.svg"));
+            doneButton->setIcon(QIcon(":/Application/titlebar-close.svg"));
             doneButton->setToolTip(message.data());
             m_view->tableWidget->setCellWidget(index, ColumnStatus, doneButton);
         }

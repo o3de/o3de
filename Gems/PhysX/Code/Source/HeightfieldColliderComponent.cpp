@@ -140,13 +140,23 @@ namespace PhysX
         Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig.second);
 
         configuration = Utils::CreateHeightfieldShapeConfiguration(GetEntityId());
+
+        // Update material selection from the mapping
+        Physics::ColliderConfiguration* colliderConfig = m_shapeConfig.first.get();
+        Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), colliderConfig->m_materialSelection);
     }
 
     void HeightfieldColliderComponent::RefreshHeightfield()
     {
         ClearHeightfield();
         InitHeightfieldShapeConfiguration();
-        InitStaticRigidBody();
+
+        Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig.second);
+        if (!configuration.GetSamples().empty())
+        {
+            InitStaticRigidBody();
+        }
+
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 

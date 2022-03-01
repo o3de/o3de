@@ -13,8 +13,10 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceAltitudeGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <GradientSignal/Util.h>
 
 namespace LmbrCentral
 {
@@ -89,6 +91,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -105,7 +108,7 @@ namespace GradientSignal
         void AddTag(AZStd::string tag) override;
 
     private:
-        mutable AZStd::recursive_mutex m_cacheMutex;
+        mutable AZStd::shared_mutex m_cacheMutex;
         SurfaceAltitudeGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };

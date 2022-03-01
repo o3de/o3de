@@ -105,6 +105,11 @@ namespace AZ
                     seed = TypeHash64(m_rootConstantsLayout->GetHash(), seed);
                 }
 
+                for (const auto& index : m_bindingSlotToIndex)
+                {
+                    seed = TypeHash64(index, seed);
+                }
+
                 m_hash = GetHashInternal(seed);
             }
 

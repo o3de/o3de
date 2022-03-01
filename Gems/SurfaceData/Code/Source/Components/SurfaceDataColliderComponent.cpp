@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceDataColliderComponent.h"
+#include <SurfaceData/Components/SurfaceDataColliderComponent.h>
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -132,6 +132,7 @@ namespace SurfaceData
         Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
 
         // Update the cached collider data and bounds, then register the surface data provider / modifier
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f);
         UpdateColliderData();
     }
 
@@ -157,7 +158,7 @@ namespace SurfaceData
 
         // Clear the cached mesh data
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
             m_colliderBounds = AZ::Aabb::CreateNull();
         }
     }
@@ -182,92 +183,95 @@ namespace SurfaceData
         return false;
     }
 
-    bool SurfaceDataColliderComponent::DoRayTrace(const AZ::Vector3& inPosition, bool queryPointOnly, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
-    {
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
-
-        // test AABB as first pass to claim the point
-        const AZ::Vector3 testPosition = AZ::Vector3(
-            inPosition.GetX(),
-            inPosition.GetY(),
-            m_colliderBounds.GetCenter().GetZ());
-
-        if (!m_colliderBounds.Contains(testPosition))
-        {
-            return false;
-        }
-
-        AzPhysics::RayCastRequest request;
-        request.m_direction = AZ::Vector3(0.0f, 0.0f, -1.0f);
-        if (queryPointOnly)
-        {
-            // We're checking to see if the point is *inside* the collider, so give it a distance of 0.
-            request.m_start = inPosition;
-            request.m_distance = 0.0f;
-        }
-        else
-        {
-            // We're casting the ray to look for a collision, so start at the top of the collider and cast downwards
-            // the full height of the collider.
-            request.m_start = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_colliderBounds.GetMax().GetZ());
-            request.m_distance = m_colliderBounds.GetExtents().GetZ();
-        }
-
-        AzPhysics::SceneQueryHit result;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(result, GetEntityId(), &AzPhysics::SimulatedBodyComponentRequestsBus::Events::RayCast, request);
-
-        if (result)
-        {
-            outPosition = result.m_position;
-            outNormal = result.m_normal;
-            return true;
-        }
-
-        return false;
-    }
-
     void SurfaceDataColliderComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
-        AZ::Vector3 hitPosition;
-        AZ::Vector3 hitNormal;
-
-        // We want a full raycast, so don't just query the start point.
-        constexpr bool queryPointOnly = false;
-
-        if (DoRayTrace(inPosition, queryPointOnly, hitPosition, hitNormal))
-        {
-            SurfacePoint point;
-            point.m_entityId = GetEntityId();
-            point.m_position = hitPosition;
-            point.m_normal = hitNormal;
-            AddMaxValueForMasks(point.m_masks, m_configuration.m_providerTags, 1.0f);
-            surfacePointList.push_back(point);
-        }
+        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
     }
 
-    void SurfaceDataColliderComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
+    void SurfaceDataColliderComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
-
-        if (m_colliderBounds.IsValid() && !m_configuration.m_modifierTags.empty())
-        {
-            const AZ::EntityId entityId = GetEntityId();
-            for (auto& point : surfacePointList)
+        AzPhysics::SimulatedBodyComponentRequestsBus::Event(
+            GetEntityId(),
+            [this, inPositions, &surfacePointList](AzPhysics::SimulatedBodyComponentRequestsBus::Events* simBody)
             {
-                if (point.m_entityId != entityId && m_colliderBounds.Contains(point.m_position))
+                AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+                AzPhysics::RayCastRequest request;
+                request.m_direction = -AZ::Vector3::CreateAxisZ();
+
+                for (auto& inPosition : inPositions)
                 {
-                    AZ::Vector3 hitPosition;
-                    AZ::Vector3 hitNormal;
-                    constexpr bool queryPointOnly = true;
-                    if (DoRayTrace(point.m_position, queryPointOnly, hitPosition, hitNormal))
+                    // test AABB as first pass to claim the point
+                    if (SurfaceData::AabbContains2D(m_colliderBounds, inPosition))
                     {
-                        AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                        // We're casting the ray to look for a collision, so start at the top of the collider and cast downwards
+                        // the full height of the collider.
+                        request.m_start = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_colliderBounds.GetMax().GetZ());
+                        request.m_distance = m_colliderBounds.GetExtents().GetZ();
+
+                        AzPhysics::SceneQueryHit result = simBody->RayCast(request);
+
+                        if (result)
+                        {
+                            surfacePointList.AddSurfacePoint(
+                                GetEntityId(), inPosition, result.m_position, result.m_normal, m_newPointWeights);
+                        }
                     }
                 }
-            }
+
+            });
+    }
+
+    void SurfaceDataColliderComponent::ModifySurfacePoints(
+            AZStd::span<const AZ::Vector3> positions,
+            AZStd::span<const AZ::EntityId> creatorEntityIds,
+            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
+    {
+        AZ_Assert(
+            (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
+            "Sizes of the passed-in spans don't match");
+
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+        // If we don't have a valid volume or don't have any modifier tags, there's nothing to do.
+        if (!m_colliderBounds.IsValid() || m_configuration.m_modifierTags.empty())
+        {
+            return;
         }
+
+        AzPhysics::SimulatedBodyComponentRequestsBus::Event(
+            GetEntityId(),
+            [this, positions, creatorEntityIds, &weights](AzPhysics::SimulatedBodyComponentRequestsBus::Events* simBody)
+            {
+                // We're checking to see if each point is inside the body, so we can initialize direction and distance for every check.
+                // The direction shouldn't matter and the distance needs to be 0.
+                AzPhysics::RayCastRequest request;
+                request.m_direction = AZ::Vector3::CreateAxisZ();
+                request.m_distance = 0.0f;
+
+                AzPhysics::SceneQueryHit result;
+
+                for (size_t index = 0; index < positions.size(); index++)
+                {
+                    // Only modify points that weren't created by this entity.
+                    if (creatorEntityIds[index] != GetEntityId())
+                    {
+                        // Do a quick bounds check before performing the more expensive raycast.
+                        if (m_colliderBounds.Contains(positions[index]))
+                        {
+                            // We're in bounds, so if the raycast succeeds too, then we're inside the volume.
+                            request.m_start = positions[index];
+                            result = simBody->RayCast(request);
+                            if (result)
+                            {
+                                // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
+                                weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
+                            }
+                        }
+                    }
+                }
+            });
     }
 
     void SurfaceDataColliderComponent::OnCompositionChanged()
@@ -307,7 +311,7 @@ namespace SurfaceData
         bool colliderValidAfterUpdate = false;
 
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
             colliderValidBeforeUpdate = m_colliderBounds.IsValid();
 
@@ -321,10 +325,11 @@ namespace SurfaceData
         providerRegistryEntry.m_entityId = GetEntityId();
         providerRegistryEntry.m_bounds = m_colliderBounds;
         providerRegistryEntry.m_tags = m_configuration.m_providerTags;
+        providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
 
         SurfaceDataRegistryEntry modifierRegistryEntry(providerRegistryEntry);
         modifierRegistryEntry.m_tags = m_configuration.m_modifierTags;
-
+        modifierRegistryEntry.m_maxPointsCreatedPerInput = 0;
 
         if (!colliderValidBeforeUpdate && !colliderValidAfterUpdate)
         {
