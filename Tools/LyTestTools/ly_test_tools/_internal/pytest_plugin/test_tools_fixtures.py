@@ -14,6 +14,7 @@ import os
 import socket
 import time
 from datetime import datetime
+from warnings import warn
 
 import pytest
 
@@ -234,10 +235,10 @@ def _launcher(request, workspace, launcher_platform, level=""):
     """Separate implementation to call directly during unit tests"""
 
     if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             workspace, launcher_platform)
     else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             workspace, launcher_platform, ['+map', level])
 
     def teardown():
@@ -251,6 +252,9 @@ def _launcher(request, workspace, launcher_platform, level=""):
 @pytest.fixture(scope="function")
 def dedicated_launcher(request, workspace, crash_log_watchdog):
     # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
+
+    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
+         DeprecationWarning, stacklevel=2)
     return _dedicated_launcher(
         request=request,
         workspace=workspace,
@@ -261,11 +265,13 @@ def dedicated_launcher(request, workspace, crash_log_watchdog):
 def _dedicated_launcher(request, workspace, launcher_platform, level=""):
     """Separate implementation to call directly during unit tests"""
 
+    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
+         DeprecationWarning, stacklevel=2)
     if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
             workspace, launcher_platform)
     else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
             workspace, launcher_platform, ['+map', level])
 
     def teardown():

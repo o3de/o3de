@@ -309,8 +309,6 @@ namespace Multiplayer
         float GetCurrentBlendFactor() const override { return {}; }
         INetworkTime* GetNetworkTime() override { return {}; }
         INetworkEntityManager* GetNetworkEntityManager() override { return &m_manager; }
-        void SetFilterEntityManager([[maybe_unused]] IFilterEntityManager* entityFilter) override {}
-        IFilterEntityManager* GetFilterEntityManager() override { return {}; }
         void AddClientMigrationStartEventHandler([[maybe_unused]] ClientMigrationStartEvent::Handler& handler) override {}
         void AddClientMigrationEndEventHandler([[maybe_unused]] ClientMigrationEndEvent::Handler& handler) override {}
         void AddNotifyClientMigrationHandler([[maybe_unused]] NotifyClientMigrationEvent::Handler& handler) override {}

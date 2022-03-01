@@ -148,10 +148,12 @@ namespace GradientSignal
 
     void PerlinGradientComponent::Deactivate()
     {
-        m_perlinImprovedNoise.reset();
         GradientRequestBus::Handler::BusDisconnect();
         PerlinGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
+
+        AZStd::unique_lock lock(m_transformMutex);
+        m_perlinImprovedNoise.reset();
     }
 
     bool PerlinGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)

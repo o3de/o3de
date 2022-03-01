@@ -342,8 +342,6 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(Bitset, BitsetStdComparisonTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
 
-    using namespace AZStd;
-
     class BitsetTests
         : public AllocatorsFixture
     {
@@ -351,14 +349,14 @@ namespace UnitTest
 
     TEST_F(BitsetTests, DefaultConstructor_IsZero)
     {
-        bitset<8> bitset;
+        AZStd::bitset<8> bitset;
         ASSERT_EQ(bitset.to_ullong(), 0);
     }
 
     TEST_F(BitsetTests, Constructor64Bits_MatchesInput)
     {
         constexpr AZ::u64 initValue = std::numeric_limits<AZ::u64>::max();
-        bitset<64> bitset(initValue);
+        AZStd::bitset<64> bitset(initValue);
 
         ASSERT_EQ(bitset.to_ullong(), initValue);
     }
@@ -366,7 +364,7 @@ namespace UnitTest
     TEST_F(BitsetTests, Constructor64BitsInto32Bits_MatchesLeastSignificant32Bits)
     {
         constexpr AZ::u64 initValue = std::numeric_limits<AZ::u64>::max();
-        bitset<32> bitset(initValue);
+        AZStd::bitset<32> bitset(initValue);
 
         constexpr AZ::u64 expectedValue(initValue & static_cast<AZ::u32>(-1));
 
@@ -376,7 +374,7 @@ namespace UnitTest
     TEST_F(BitsetTests, Constructor32BitsInto64Bits_ZeroPadRemaining)
     {
         constexpr AZ::u32 initValue = std::numeric_limits<AZ::u32>::max();
-        bitset<64> bitset(initValue);
+        AZStd::bitset<64> bitset(initValue);
 
         constexpr AZ::u64 expectedValue = static_cast<AZ::u64>(initValue);;
 
@@ -386,7 +384,7 @@ namespace UnitTest
     TEST_F(BitsetTests, GeneralTesting)
     {
         // BitsetTest-Begin
-        typedef bitset<25> bitset25_type;
+        typedef AZStd::bitset<25> bitset25_type;
 
         bitset25_type bs;
         AZ_TEST_ASSERT(bs.count() == 0);
@@ -395,7 +393,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(bs1.count() == 2);
         AZ_TEST_ASSERT(bs1[0] && bs1[2]);
 
-        string str("10110");
+        AZStd::string str("10110");
         bitset25_type bs2(str, 0, str.length());
         AZ_TEST_ASSERT(bs2.count() == 3);
         AZ_TEST_ASSERT(bs2[1] && bs2[2] && bs2[4]);
@@ -467,7 +465,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(bs1.count() == 22);
 
         // extensions
-        bitset25_type bs3(string("10110"));
+        bitset25_type bs3(AZStd::string("10110"));
         AZ_TEST_ASSERT(bs3.num_words() == 1); // check number of words
         bitset25_type::word_t tempWord = *bs3.data(); // access the bits data
         AZ_TEST_ASSERT((tempWord & 0x16) == 0x16); // check values
