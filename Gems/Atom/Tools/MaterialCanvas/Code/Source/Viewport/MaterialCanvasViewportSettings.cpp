@@ -16,15 +16,13 @@ namespace MaterialCanvas
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<MaterialCanvasViewportSettings, AZ::UserSettings>()
-                ->Version(1)
+            serializeContext->Class<MaterialCanvasViewportSettings>()
+                ->Version(3)
                 ->Field("enableGrid", &MaterialCanvasViewportSettings::m_enableGrid)
                 ->Field("enableShadowCatcher", &MaterialCanvasViewportSettings::m_enableShadowCatcher)
                 ->Field("enableAlternateSkybox", &MaterialCanvasViewportSettings::m_enableAlternateSkybox)
                 ->Field("fieldOfView", &MaterialCanvasViewportSettings::m_fieldOfView)
                 ->Field("displayMapperOperationType", &MaterialCanvasViewportSettings::m_displayMapperOperationType)
-                ->Field("selectedModelPresetName", &MaterialCanvasViewportSettings::m_selectedModelPresetName)
-                ->Field("selectedLightingPresetName", &MaterialCanvasViewportSettings::m_selectedLightingPresetName)
             ;
 
             if (auto editContext = serializeContext->GetEditContext())

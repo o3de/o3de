@@ -13,15 +13,13 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/UserSettings/UserSettings.h>
 #endif
 
 namespace MaterialCanvas
 {
-    struct MaterialCanvasViewportSettings
-        : public AZ::UserSettings
+    struct MaterialCanvasViewportSettings final
     {
-        AZ_RTTI(MaterialCanvasViewportSettings, "{16150503-A314-4765-82A3-172670C9EA90}", AZ::UserSettings);
+        AZ_RTTI(MaterialCanvasViewportSettings, "{16150503-A314-4765-82A3-172670C9EA90}");
         AZ_CLASS_ALLOCATOR(MaterialCanvasViewportSettings, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -31,7 +29,5 @@ namespace MaterialCanvas
         bool m_enableAlternateSkybox = false;
         float m_fieldOfView = 90.0f;
         AZ::Render::DisplayMapperOperationType m_displayMapperOperationType = AZ::Render::DisplayMapperOperationType::Aces;
-        AZStd::string m_selectedModelPresetName = "Shader Ball";
-        AZStd::string m_selectedLightingPresetName = "Neutral Urban";
     };
 } // namespace MaterialCanvas

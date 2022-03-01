@@ -5,20 +5,26 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
 
+#include <ACES/Aces.h>
 #include <AzCore/EBus/EBus.h>
+#include <Atom/Feature/Utils/LightingPreset.h>
+#include <Atom/Feature/Utils/ModelPreset.h>
 
 namespace MaterialCanvas
 {
-    class MaterialCanvasDocumentRequests : public AZ::EBusTraits
+    class MaterialCanvasViewportNotifications
+        : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        typedef AZ::Uuid BusIdType;
+        typedef AZ::Crc32 BusIdType;
+
+        //! Notify when any setting changes
+        virtual void OnViewportSettingsChanged() {}
     };
 
-    using MaterialCanvasDocumentRequestBus = AZ::EBus<MaterialCanvasDocumentRequests>;
+    using MaterialCanvasViewportSettingsNotificationBus = AZ::EBus<MaterialCanvasViewportNotifications>;
 } // namespace MaterialCanvas

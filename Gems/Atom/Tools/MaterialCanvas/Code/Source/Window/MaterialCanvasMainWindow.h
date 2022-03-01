@@ -24,8 +24,7 @@ namespace MaterialCanvas
     //! its panels, managing selection of assets, and performing high-level actions like saving. It contains...
     //! 2) MaterialCanvasViewport        - The user can see the selected Material applied to a model.
     //! 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
-    class MaterialCanvasMainWindow
-        : public AtomToolsFramework::AtomToolsDocumentMainWindow
+    class MaterialCanvasMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT
     public:
@@ -49,9 +48,6 @@ namespace MaterialCanvas
         bool GetOpenDocumentParams(AZStd::string& openPath) override;
         void OpenSettings() override;
         void OpenHelp() override;
-        void OpenAbout() override;
-
-        void closeEvent(QCloseEvent* closeEvent) override;
 
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
         MaterialCanvasViewportWidget* m_materialViewport = {};

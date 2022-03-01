@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
+
+#include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <Document/MaterialCanvasDocumentRequestBus.h>
 
 namespace MaterialCanvas
@@ -20,7 +22,7 @@ namespace MaterialCanvas
         , public MaterialCanvasDocumentRequestBus::Handler
     {
     public:
-        AZ_RTTI(MaterialCanvasDocument, "{3C87BBF0-912B-43D0-9A86-E2A0CE85F04F}", AtomToolsFramework::AtomToolsDocument);
+        AZ_RTTI(MaterialCanvasDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
         AZ_CLASS_ALLOCATOR(MaterialCanvasDocument, AZ::SystemAllocator, 0);
         AZ_DISABLE_COPY_MOVE(MaterialCanvasDocument);
 
@@ -29,5 +31,25 @@ namespace MaterialCanvas
         MaterialCanvasDocument() = default;
         MaterialCanvasDocument(const AZ::Crc32& toolId);
         virtual ~MaterialCanvasDocument();
+
+        // AtomToolsFramework::AtomToolsDocument overrides...
+        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> GetObjectInfo() const override;
+        bool Open(AZStd::string_view loadPath) override;
+        bool Save() override;
+        bool SaveAsCopy(AZStd::string_view savePath) override;
+        bool SaveAsChild(AZStd::string_view savePath) override;
+        bool IsOpen() const override;
+        bool IsModified() const override;
+        bool IsSavable() const override;
+        bool BeginEdit() override;
+        bool EndEdit() override;
+
+        // MaterialCanvasDocumentRequestBus::Handler overrides...
+
+    private:
+        // AtomToolsFramework::AtomToolsDocument overrides...
+        void Clear() override;
+        bool ReopenRecordState() override;
+        bool ReopenRestoreState() override;
     };
 } // namespace MaterialCanvas
