@@ -328,6 +328,10 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C5959809_ForceRegion_RotationalOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_RotationalOffset as test_module
 
+    class C100000_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
+
+
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -348,8 +352,7 @@ class TestAutomation(EditorTestSuite):
         
 
 
-    class C100000_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
-        from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
+
 
     class C4982798_Collider_ColliderRotationOffset(EditorSharedTest):
         from .tests.collider import Collider_ColliderRotationOffset as test_module

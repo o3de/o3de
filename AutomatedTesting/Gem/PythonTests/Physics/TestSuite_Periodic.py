@@ -459,7 +459,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_RigidBody_EnablingGravityWorksPoC(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_CollisionGroupsWorkflow.setreg_override',
