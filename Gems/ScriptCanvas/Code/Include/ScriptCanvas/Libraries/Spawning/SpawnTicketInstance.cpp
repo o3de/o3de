@@ -77,15 +77,4 @@ namespace ScriptCanvas::Nodeables::Spawning
 
         HashContainerReflector<SpawnTicketInstance>::Reflect(context);
     }
-    
-    SpawnTicketInstance::SpawnTicketInstance(const SpawnTicketInstance& rhs)
-        : m_ticket(rhs.m_ticket)
-    {
-    }
-
-    SpawnTicketInstance& SpawnTicketInstance::operator=(const SpawnTicketInstance& rhs)
-    {
-        m_ticket = rhs.m_ticket;
-        return *this;
-    }
 }

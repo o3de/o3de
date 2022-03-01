@@ -20,11 +20,6 @@ namespace ScriptCanvas::Nodeables::Spawning
         AZ_RTTI(SpawnTicketInstance, "{2B5EB938-8962-4A43-A97B-112F398C604B}");
         static void Reflect(AZ::ReflectContext* context);
 
-        SpawnTicketInstance() = default;
-        SpawnTicketInstance(const SpawnTicketInstance& rhs);
-        SpawnTicketInstance& operator=(const SpawnTicketInstance& rhs);
-        ~SpawnTicketInstance() = default;
-
         AZStd::shared_ptr<AzFramework::EntitySpawnTicket> m_ticket;
     };
 }
