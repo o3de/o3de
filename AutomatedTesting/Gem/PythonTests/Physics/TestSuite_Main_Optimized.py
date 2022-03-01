@@ -334,6 +334,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4982798_Collider_ColliderRotationOffset(EditorSharedTest):
         from .tests.collider import Collider_ColliderRotationOffset as test_module
 
+    class C6090547_ForceRegion_ParentChildForceRegions(EditorSharedTest):
+        from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -352,15 +355,3 @@ class TestAutomation(EditorTestSuite):
 
     class C12712455_ScriptCanvas_ShapeCastVerification(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
-        
-
-
-
-
-
-
-    class C6090547_ForceRegion_ParentChildForceRegions(EditorSharedTest):
-        from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
-
-    class C15425929_Undo_Redo(EditorSharedTest):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
