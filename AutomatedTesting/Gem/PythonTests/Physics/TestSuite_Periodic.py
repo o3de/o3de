@@ -421,7 +421,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_ForceRegion_PointForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_PointForceOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ForceRegion_SphereShapedForce(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SphereShapedForce as test_module
