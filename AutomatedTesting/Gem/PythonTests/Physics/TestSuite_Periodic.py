@@ -361,7 +361,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Joints_HingeSoftLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Joints_BallSoftLimitsConstrained(self, request, workspace, editor, launcher_platform):

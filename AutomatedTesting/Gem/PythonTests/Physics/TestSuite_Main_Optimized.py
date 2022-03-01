@@ -307,6 +307,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C13352089_RigidBodies_MaxAngularVelocity(EditorSharedTest):
         from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
 
+    class C18243584_Joints_HingeSoftLimitsConstrained(EditorSharedTest):
+        from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -326,9 +329,6 @@ class TestAutomation(EditorTestSuite):
     class C12712455_ScriptCanvas_ShapeCastVerification(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
-
-    class C18243584_Joints_HingeSoftLimitsConstrained(EditorSharedTest):
-        from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
 
 
 
