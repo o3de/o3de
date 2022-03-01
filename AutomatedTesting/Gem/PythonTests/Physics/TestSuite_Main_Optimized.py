@@ -298,6 +298,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
         # Note: Test needs to be updated to log for unexpected lines
         # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
 
+    class C5959761_ForceRegion_PhysAssetExertsPointForce(EditorSharedTest):
+        from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -319,10 +322,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-
-
-    class C5959761_ForceRegion_PhysAssetExertsPointForce(EditorSharedTest):
-        from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
         
     # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
     # The test still runs, but a failure of the test doesn't result in the test run failing
