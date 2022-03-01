@@ -313,6 +313,9 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C18243589_Joints_BallSoftLimitsConstrained(EditorSharedTest):
         from .tests.joints import Joints_BallSoftLimitsConstrained as test_module
 
+    class C18243591_Joints_BallLeadFollowerCollide(EditorSharedTest):
+        from .tests.joints import Joints_BallLeadFollowerCollide as test_module
+
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -334,9 +337,6 @@ class TestAutomation(EditorTestSuite):
 
 
 
-
-    class C18243591_Joints_BallLeadFollowerCollide(EditorSharedTest):
-        from .tests.joints import Joints_BallLeadFollowerCollide as test_module
 
     class C5932040_ForceRegion_CubeExertsWorldForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
