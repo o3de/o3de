@@ -280,7 +280,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_RigidBody_SetGravityWorks(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_SetGravityWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_CharacterController.setreg_override',
@@ -292,7 +292,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Material_EmptyLibraryUsesDefault(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_EmptyLibraryUsesDefault as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_NoQuiverOnHighLinearDampingForce(self, request, workspace, editor, launcher_platform):
