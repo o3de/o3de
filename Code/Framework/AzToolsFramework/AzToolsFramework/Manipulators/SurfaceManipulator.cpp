@@ -58,6 +58,12 @@ namespace AzToolsFramework
 
     SurfaceManipulator::SurfaceManipulator(const AZ::Transform& worldFromLocal)
     {
+        // default handler for when no handler is installed via InstallEntityIdsToIgnoreFn
+        m_entityIdsToIgnoreFn = [](const ViewportInteraction::MouseInteraction&)
+        {
+            return UniqueEntityIds{};
+        };
+
         SetSpace(worldFromLocal);
         AttachLeftMouseDownImpl();
 
