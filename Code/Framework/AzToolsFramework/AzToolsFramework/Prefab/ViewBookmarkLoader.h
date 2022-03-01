@@ -24,15 +24,24 @@ namespace AzToolsFramework
             void UnregisterViewBookmarkLoaderInterface();
 
             void SaveBookmarkSettingsFile() override;
-            bool SaveBookmark(ViewBookmark bookamark) override;
+            bool SaveBookmark(ViewBookmark bookamark, StorageMode mode) override;
+
             bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
             bool LoadViewBookmarks() override;
             ViewBookmark GetBookmarkAtIndex(int index) const override;
             ViewBookmark GetLastKnownLocationInLevel() const override;
 
         private:
+            bool SaveLocalBookmark(ViewBookmark& bookmark, bool isLastKnownLocation = false);
+            bool SaveSharedBookmark(ViewBookmark& bookmark);
             ViewBookmarkComponent* FindBookmarkComponent() const;
             AZStd::string GenerateBookmarkFileName() const;
+
+        private:
+            AZStd::vector<ViewBookmark> m_localBookmarks;
+            ViewBookmark m_lastKnownLocation;
+            AZStd::string m_bookmarkfileName = "";
+
         };
 
     } // namespace Prefab

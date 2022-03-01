@@ -40,14 +40,14 @@ namespace AzToolsFramework
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorViewBookmarks>()
-                ->Field("LastKnownLocation", &EditorViewBookmarks::m_lastKnownLocation)
+                ->Field("LocalBookmarkFileName", &EditorViewBookmarks::m_localBookmarksFileName)
                 ->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorViewBookmarks>("EditorViewBookmarks", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Editor View Bookmarks")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_lastKnownLocation, "Last Known Location", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_localBookmarksFileName, "Local Bookmarks FileName", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_viewBookmarks, "View Bookmarks", "")
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -111,20 +111,30 @@ namespace AzToolsFramework
         bookmarkVector.push_back(viewBookmark);
     }
 
-    void ViewBookmarkComponent::SaveLastKnownLocation(ViewBookmark newLastKnownLocation)
+    void ViewBookmarkComponent::SaveLastKnownLocation([[maybe_unused]]ViewBookmark newLastKnownLocation)
     {
-        m_viewBookmark.m_lastKnownLocation = newLastKnownLocation;
+        //m_viewBookmark.m_lastKnownLocation = newLastKnownLocation;
     }
 
     ViewBookmark ViewBookmarkComponent::GetLastKnownLocation() const
     {
-        return m_viewBookmark.m_lastKnownLocation;
+        return ViewBookmark(); // m_viewBookmark.m_lastKnownLocation;
     }
 
     void ViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
     {
         auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
         bookmarkVector[index] = newBookmark;
+    }
+
+    AZStd::string ViewBookmarkComponent::GetLocalBookmarksFileName() const
+    {
+        return m_viewBookmark.m_localBookmarksFileName;
+    }
+
+    void ViewBookmarkComponent::SetLocalBookmarksFileName(const AZStd::string& localBookmarksFileName)
+    {
+        m_viewBookmark.m_localBookmarksFileName = localBookmarksFileName;
     }
 
     void ViewBookmarkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)

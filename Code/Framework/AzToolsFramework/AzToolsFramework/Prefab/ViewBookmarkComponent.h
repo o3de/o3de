@@ -37,7 +37,7 @@ namespace AzToolsFramework
 
         AZStd::string GetBookmarkLabel(int index) const;
 
-        ViewBookmark m_lastKnownLocation;
+        AZStd::string m_localBookmarksFileName;
         AZStd::vector<ViewBookmark> m_viewBookmarks;
     };
 
@@ -61,6 +61,8 @@ namespace AzToolsFramework
         void SaveLastKnownLocation(ViewBookmark newLastKnownLocation);
         ViewBookmark GetLastKnownLocation() const;
         void ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark);
+        AZStd::string GetLocalBookmarksFileName() const;
+        void SetLocalBookmarksFileName(const AZStd::string& localBookmarksFileName);
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
