@@ -18,7 +18,7 @@
 #include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
 #include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
 
-void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float2 screenUv)
+void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
     if (o_enableDirectionalLights)
     {

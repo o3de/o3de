@@ -37,3 +37,15 @@ float4 WorldPositionFromDepthBuffer(const Texture2D<float2> depthStencilTexture,
     depthStencilTexture.GetDimensions(dimensions.x, dimensions.y);
     return WorldPositionFromDepthBuffer(dimensions, zDepth, screenCoords);
 }
+
+
+float4 ViewPositionFromDepthBuffer(const float2 UV, const float zDepth )
+{ 
+    float x = UV.x * 2.0f - 1.0f;
+    float y = (1.0f - UV.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(x, y, zDepth, 1.0f);    // warped projected space [0..1]
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+
+    positionVS /= positionVS.w;
+    return positionVS;
+}

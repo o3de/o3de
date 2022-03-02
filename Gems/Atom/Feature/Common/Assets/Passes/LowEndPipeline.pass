@@ -100,7 +100,7 @@
                             "LocalSlot": "Depth",
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
-                                "Attachment": "DepthMSAA" 
+                                "Attachment": "Depth" 
                             }
                         }                           
                     ]

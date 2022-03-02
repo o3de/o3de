@@ -18,7 +18,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2DArray<float> m_projectedShadowmaps;
     Texture2DArray<float> m_projectedExponentialShadowmap;
     Texture2D m_brdfMap;
-    Texture2DMS<float> m_fullscreenShadow;
+    Texture2D<float2> m_fullscreenShadow;
 
     Sampler LinearSampler
     {

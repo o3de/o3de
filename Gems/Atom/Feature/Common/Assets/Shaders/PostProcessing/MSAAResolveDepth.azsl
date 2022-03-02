@@ -35,12 +35,14 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
   
     float result = 1.0f;
+    float avg = 0;
     for(int sampleIndex = 0 ; sampleIndex < numberOfSamples ; ++sampleIndex)
     {
         const float currDepth = PassSrg::m_depthTexture.Load(coord, sampleIndex);
-        result = min(result, currDepth);
+        avg += currDepth;
+        result = max(result, currDepth);
     }
-    OUT.m_depth = result;
+    OUT.m_depth = avg / (float)numberOfSamples;//result;
 
     return OUT;
 }
