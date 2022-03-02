@@ -12,7 +12,7 @@
 #include <AzCore/Component/TransformBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugBus.h>
-#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfiguration.h>
+#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfig.h>
 
 #include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>

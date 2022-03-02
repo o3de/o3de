@@ -10,7 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Components/ComponentAdapter.h>
-#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfiguration.h>
+#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfig.h>
 #include <Atom/Feature/Debug/RenderDebugConstants.h>
 #include <Debug/RenderDebugComponentController.h>
 

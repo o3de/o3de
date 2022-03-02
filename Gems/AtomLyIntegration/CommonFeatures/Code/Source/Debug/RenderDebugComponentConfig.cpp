@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfiguration.h>
+#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfig.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
