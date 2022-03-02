@@ -1130,10 +1130,12 @@ AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(
     const AZ::Aabb& inRegion,
     const AZ::Vector2& stepSize) const
 {
-    const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
-    const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
+    int32_t firstSampleX = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetX() / stepSize.GetX()));
+    int32_t lastSampleX = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetX() / stepSize.GetX()));
+    int32_t firstSampleY = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetY() / stepSize.GetY()));
+    int32_t lastSampleY = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetY() / stepSize.GetY()));
 
-    return AZStd::make_pair(numSamplesX, numSamplesY);
+    return AZStd::make_pair(lastSampleX - firstSampleX + 1, lastSampleY - firstSampleY + 1);
 }
 
 void TerrainSystem::ProcessHeightsFromRegion(
