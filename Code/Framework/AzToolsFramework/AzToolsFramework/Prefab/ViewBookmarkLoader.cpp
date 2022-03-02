@@ -42,40 +42,15 @@ namespace AzToolsFramework
                 return;
             }
 
-            // Resolve path user/.o3de
-            AZ::IO::FixedMaxPath editorBookmarkFilePath = AZ::Utils::GetO3deManifestDirectory();
+            // Resolve path to user folder
+            AZ::IO::FixedMaxPath editorBookmarkFilePath = AZ::IO::FixedMaxPath(AZ::Utils::GetProjectPath()) / "user/Registry/ViewBookmarks/";
 
-            // This adds a dependency on the ViewBookmarkComponent. If necessary we could move the "localBookmarksFile" field
-            // to another part of the prefab.
-            ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
-
-            if (bookmarkComponent)
-            {
-                // if the field is not empty then we have a file linked to the prefab.
-                if (bookmarkComponent && !bookmarkComponent->GetLocalBookmarksFileName().empty())
-                {
-                    // TODO: check that the file actually exists
-                    m_bookmarkfileName = bookmarkComponent->GetLocalBookmarksFileName();
-                }
-                else // if the field is empty we don't have a file linked to the prefab, so we create one and we save it in the component
-                {
-                    m_bookmarkfileName = GenerateBookmarkFileName();
-                    bookmarkComponent->SetLocalBookmarksFileName(m_bookmarkfileName);
-                }
-            }
-            else
-            {
-                AZ_Error("ViewBookmarkLoader", false, "Couldn't retreive a ViewBookmarkComponent from the level entity.");
-                return;
-            }
-
-            editorBookmarkFilePath /= "Registry/ViewBookmarks/";
             editorBookmarkFilePath /= m_bookmarkfileName;
 
             AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
             dumperSettings.m_prettifyOutput = true;
 
-            AZStd::string bookmarkKey = s_viewBookmarksRegistryPath + m_bookmarkfileName;
+            AZStd::string bookmarkKey = "/" + m_bookmarkfileName;
             dumperSettings.m_includeFilter = [&bookmarkKey](AZStd::string_view path)
             {
                 AZStd::string_view o3dePrefixPath(bookmarkKey);
@@ -100,7 +75,8 @@ namespace AzToolsFramework
                 saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
             }
 
-            registry->Remove(s_viewBookmarksRegistryPath);
+            //Once written to the desired file remove the key from the settings registry
+            registry->Remove(bookmarkKey + "/");
             AZ_Warning(
                 "SEditorSettings", saved, R"(Unable to save Editor Preferences registry file to path "%s"\n)",
                 editorBookmarkFilePath.c_str());
@@ -165,7 +141,7 @@ namespace AzToolsFramework
                     AZ::StringFunc::TokenizeLast(path, "/");
                     AZStd::optional<AZStd::string_view> dataType = AZ::StringFunc::TokenizeLast(path, "/");
                     AZStd::optional<AZStd::string_view> bookmarkIndexStr = AZ::StringFunc::TokenizeLast(path, "/");
-                    //differentiate between local Bookmarks and LastKnownLocation
+                    // differentiate between local Bookmarks and LastKnownLocation
                     AZStd::optional<AZStd::string_view> bookmarkType = AZ::StringFunc::TokenizeLast(path, "/");
                     AZStd::optional<AZStd::string_view> localBookmarksID = AZ::StringFunc::TokenizeLast(path, "/");
 
@@ -318,16 +294,42 @@ namespace AzToolsFramework
             // Write to the settings registry
             if (auto registry = AZ::SettingsRegistry::Get())
             {
+
+                // This adds a dependency on the ViewBookmarkComponent. If necessary we could move the "localBookmarksFile" field
+                // to another part of the prefab.
+                ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
+
+                if (bookmarkComponent)
+                {
+                    // if the field is not empty then we have a file linked to the prefab.
+                    if (bookmarkComponent && !bookmarkComponent->GetLocalBookmarksFileName().empty())
+                    {
+                        // TODO: check that the file actually exists
+                        m_bookmarkfileName = bookmarkComponent->GetLocalBookmarksFileName();
+                    }
+                    else // if the field is empty we don't have a file linked to the prefab, so we create one and we save it in the
+                         // component
+                    {
+                        m_bookmarkfileName = GenerateBookmarkFileName();
+                        bookmarkComponent->SetLocalBookmarksFileName(m_bookmarkfileName);
+                    }
+                }
+                else
+                {
+                    AZ_Warning("ViewBookmarkLoader", false, "Couldn't retreive a ViewBookmarkComponent from the level entity.");
+                    return false;
+                }
+
                 AZStd::string finalPath;
                 if (!isLastKnownLocation)
                 {
                     m_localBookmarks.push_back(bookmark);
-                    finalPath = s_viewBookmarksRegistryPath + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(m_localBookmarks.size() - 1);
+                    finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(m_localBookmarks.size() - 1);
                 }
                 else
                 {
                     m_lastKnownLocation = bookmark;
-                    finalPath = s_viewBookmarksRegistryPath + m_bookmarkfileName + "/" + "LastKnownLocation";
+                    finalPath = "/" + m_bookmarkfileName + "/" + "LastKnownLocation";
                 }
 
                 bool success = registry->SetObject(finalPath, bookmark);
@@ -336,6 +338,7 @@ namespace AzToolsFramework
                 if (success)
                 {
                     SaveBookmarkSettingsFile();
+                    LoadViewBookmarks();
                 }
 
                 return success;

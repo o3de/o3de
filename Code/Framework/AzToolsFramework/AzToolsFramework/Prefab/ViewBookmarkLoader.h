@@ -23,7 +23,6 @@ namespace AzToolsFramework
             void RegisterViewBookmarkLoaderInterface();
             void UnregisterViewBookmarkLoaderInterface();
 
-            void SaveBookmarkSettingsFile() override;
             bool SaveBookmark(ViewBookmark bookamark, StorageMode mode) override;
 
             bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
@@ -32,6 +31,7 @@ namespace AzToolsFramework
             ViewBookmark GetLastKnownLocationInLevel() const override;
 
         private:
+            void SaveBookmarkSettingsFile() override;
             bool SaveLocalBookmark(ViewBookmark& bookmark, bool isLastKnownLocation = false);
             bool SaveSharedBookmark(ViewBookmark& bookmark);
             ViewBookmarkComponent* FindBookmarkComponent() const;
@@ -40,7 +40,7 @@ namespace AzToolsFramework
         private:
             AZStd::vector<ViewBookmark> m_localBookmarks;
             ViewBookmark m_lastKnownLocation;
-            AZStd::string m_bookmarkfileName = "";
+            AZStd::string m_bookmarkfileName;
         };
 
     } // namespace Prefab

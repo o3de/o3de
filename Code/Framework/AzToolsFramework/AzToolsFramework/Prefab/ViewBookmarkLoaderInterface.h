@@ -30,11 +30,13 @@ namespace AzToolsFramework
             Invalid = -1
         };
 
-        virtual void SaveBookmarkSettingsFile() = 0;
         virtual bool SaveBookmark(ViewBookmark bookamark, StorageMode mode) = 0;
         virtual bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) = 0;
         virtual bool LoadViewBookmarks() = 0;
         virtual ViewBookmark GetBookmarkAtIndex(int index) const = 0;
         virtual ViewBookmark GetLastKnownLocationInLevel() const = 0;
+
+    private:
+        virtual void SaveBookmarkSettingsFile() = 0;
     };
 } // namespace AzToolsFramework
