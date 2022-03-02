@@ -12,50 +12,49 @@
 
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 
-#include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>
+#include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <PostProcess/PostProcessBase.h>
 
 #include <Atom/RPI.Public/View.h>
 
-namespace AZ
-{
-    namespace Render
-    {
+namespace AZ {
+    namespace Render {
+
         class PostProcessSettings;
 
         // The post process sub-settings class for SSAO (Screen-Space Ambient Occlusion)
-        class SsaoSettings final
-            : public SsaoSettingsInterface
+        class RenderDebugSettings final
+            : public RenderDebugSettingsInterface
             , public PostProcessBase
         {
             friend class PostProcessSettings;
             friend class PostProcessFeatureProcessor;
 
         public:
-            AZ_RTTI(AZ::Render::SsaoSettings, "{6CFCBD33-7419-4BFC-A7E8-30D29373EE29}",
-                AZ::Render::SsaoSettingsInterface, AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(SsaoSettings, SystemAllocator, 0);
+            AZ_RTTI(AZ::Render::RenderDebugSettings, "{942CB951-C5D0-4E90-9F55-633DAA561A03}",
+                AZ::Render::RenderDebugSettingsInterface, AZ::Render::PostProcessBase);
+            AZ_CLASS_ALLOCATOR(RenderDebugSettings, SystemAllocator, 0);
 
-            SsaoSettings(PostProcessFeatureProcessor* featureProcessor);
-            ~SsaoSettings() = default;
+            RenderDebugSettings(PostProcessFeatureProcessor* featureProcessor);
+            ~RenderDebugSettings() = default;
 
-            // SsaoSettingsInterface overrides...
+            // RenderDebugSettingsInterface overrides...
             void OnConfigChanged() override;
 
             // Applies settings from this onto target using override settings and passed alpha value for blending
-            void ApplySettingsTo(SsaoSettings* target, float alpha) const;
+            void ApplySettingsTo(RenderDebugSettings* target, float alpha) const;
 
             // Generate getters and setters.
 #include <Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
         private:
 
             // Generate members...
 #include <Atom/Feature/ParamMacros/StartParamMembers.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             void Simulate(float deltaTime);

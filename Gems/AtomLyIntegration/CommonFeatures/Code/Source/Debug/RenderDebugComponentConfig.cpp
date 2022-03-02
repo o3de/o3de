@@ -6,32 +6,31 @@
  *
  */
 
-#include <AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoComponentConfiguration.h>
+#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfiguration.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-namespace AZ
-{
-    namespace Render
-    {
-        void SsaoComponentConfig::Reflect(ReflectContext* context)
+namespace AZ {
+    namespace Render {
+
+        void RenderDebugComponentConfig::Reflect(ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<SsaoComponentConfig, ComponentConfig>()
+                serializeContext->Class<RenderDebugComponentConfig, ComponentConfig>()
                     ->Version(0)
 
                     // Auto-gen serialize context code...
-#define SERIALIZE_CLASS SsaoComponentConfig
+#define SERIALIZE_CLASS RenderDebugComponentConfig
 #include <Atom/Feature/ParamMacros/StartParamSerializeContext.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef SERIALIZE_CLASS
                     ;
             }
         }
 
-        void SsaoComponentConfig::CopySettingsFrom(SsaoSettingsInterface* settings)
+        void RenderDebugComponentConfig::CopySettingsFrom(RenderDebugSettingsInterface* settings)
         {
             if (!settings)
             {
@@ -40,12 +39,12 @@ namespace AZ
 
 #define COPY_SOURCE settings
 #include <Atom/Feature/ParamMacros/StartParamCopySettingsFrom.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef COPY_SOURCE
         }
 
-        void SsaoComponentConfig::CopySettingsTo(SsaoSettingsInterface* settings)
+        void RenderDebugComponentConfig::CopySettingsTo(RenderDebugSettingsInterface* settings)
         {
             if (!settings)
             {
@@ -54,7 +53,7 @@ namespace AZ
 
 #define COPY_TARGET settings
 #include <Atom/Feature/ParamMacros/StartParamCopySettingsTo.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef COPY_TARGET
         }

@@ -10,20 +10,19 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Component/EntityId.h>
-#include <Atom/Feature/PostProcess/Ssao/SsaoConstants.h>
+#include <Atom/Feature/Debug/RenderDebugConstants.h>
 
-namespace AZ
-{
-    namespace Render
-    {
-        class SsaoSettingsInterface
+namespace AZ {
+    namespace Render {
+
+        class RenderDebugSettingsInterface
         {
         public:
-            AZ_RTTI(AZ::Render::SsaoSettingsInterface, "{3316BA94-CCCA-4088-BAC4-91CFA8149533}");
+            AZ_RTTI(AZ::Render::RenderDebugSettingsInterface, "{03E799EC-E682-4C09-BE62-B8055B5FD936}");
 
             // Auto-gen virtual getter and setter functions...
 #include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             virtual void OnConfigChanged() = 0;

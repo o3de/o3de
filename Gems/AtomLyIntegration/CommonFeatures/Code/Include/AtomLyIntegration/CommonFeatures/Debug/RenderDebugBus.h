@@ -9,29 +9,28 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <Atom/Feature/PostProcess/Ssao/SsaoConstants.h>
+#include <Atom/Feature/Debug/RenderDebugConstants.h>
 
-namespace AZ
-{
-    namespace Render
-    {
-        class SsaoRequests
+namespace AZ {
+    namespace Render {
+
+        class RenderDebugRequests
             : public ComponentBus
         {
         public:
-            AZ_RTTI(AZ::Render::SsaoRequests, "{6F518EA6-D912-44C0-A79E-ABC16A30D2F7}");
+            AZ_RTTI(AZ::Render::RenderDebugRequests, "{A5038F75-F397-42E7-B3B5-8EF7226EE1A4}");
 
             /// Overrides the default AZ::EBusTraits handler policy to allow one listener only.
             static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
-            virtual ~SsaoRequests() {}
+            virtual ~RenderDebugRequests() {}
 
             // Auto-gen virtual getters/setters...
 #include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
         };
 
-        typedef AZ::EBus<SsaoRequests> SsaoRequestBus;
+        typedef AZ::EBus<RenderDebugRequests> RenderDebugRequestBus;
     }
 }

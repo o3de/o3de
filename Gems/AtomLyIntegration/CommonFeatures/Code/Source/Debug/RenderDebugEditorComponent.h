@@ -9,30 +9,29 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
-#include <Atom/Feature/PostProcess/Ssao/SsaoConstants.h>
-#include <PostProcess/Ssao/SsaoComponent.h>
+#include <Atom/Feature/Debug/RenderDebugConstants.h>
+#include <Debug/RenderDebugComponent.h>
 
-namespace AZ
-{
-    namespace Render
-    {
-        namespace Ssao
+namespace AZ {
+    namespace Render {
+
+        namespace RenderDebug
         {
-            static constexpr const char* const EditorSsaoComponentTypeId = "{5A807489-4FB2-4421-A4D2-9D9E523ABF83}";
+            static constexpr const char* const RenderDebugEditorComponentTypeId = "{235031F8-2AAD-442D-AB4D-F9B5B8337DCD}";
         }
 
-        class EditorSsaoComponent final
-            : public AzToolsFramework::Components::EditorComponentAdapter<SsaoComponentController, SsaoComponent, SsaoComponentConfig>
+        class RenderDebugEditorComponent final
+            : public AzToolsFramework::Components::EditorComponentAdapter<RenderDebugComponentController, RenderDebugComponent, RenderDebugComponentConfig>
         {
         public:
 
-            using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<SsaoComponentController, SsaoComponent, SsaoComponentConfig>;
-            AZ_EDITOR_COMPONENT(AZ::Render::EditorSsaoComponent, Ssao::EditorSsaoComponentTypeId, BaseClass);
+            using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<RenderDebugComponentController, RenderDebugComponent, RenderDebugComponentConfig>;
+            AZ_EDITOR_COMPONENT(AZ::Render::RenderDebugEditorComponent, RenderDebug::RenderDebugEditorComponentTypeId, BaseClass);
 
             static void Reflect(AZ::ReflectContext* context);
 
-            EditorSsaoComponent() = default;
-            EditorSsaoComponent(const SsaoComponentConfig& config);
+            RenderDebugEditorComponent() = default;
+            RenderDebugEditorComponent(const RenderDebugComponentConfig& config);
 
             //! EditorRenderComponentAdapter overrides...
             AZ::u32 OnConfigurationChanged() override;

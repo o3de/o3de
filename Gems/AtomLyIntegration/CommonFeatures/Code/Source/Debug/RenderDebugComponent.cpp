@@ -7,32 +7,30 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <PostProcess/Ssao/SsaoComponent.h>
+#include <Debug/RenderDebugComponent.h>
 
-namespace AZ
-{
-    namespace Render
-    {
+namespace AZ {
+    namespace Render {
 
-        SsaoComponent::SsaoComponent(const SsaoComponentConfig& config)
+        RenderDebugComponent::RenderDebugComponent(const RenderDebugComponentConfig& config)
             : BaseClass(config)
         {
         }
 
-        void SsaoComponent::Reflect(AZ::ReflectContext* context)
+        void RenderDebugComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
 
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<SsaoComponent, BaseClass>();
+                serializeContext->Class<RenderDebugComponent, BaseClass>();
             }
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext->Class<SsaoComponent>()->RequestBus("SsaoRequestBus");
+                behaviorContext->Class<RenderDebugComponent>()->RequestBus("RenderDebugRequestBus");
 
-                behaviorContext->ConstantProperty("SsaoComponentTypeId", BehaviorConstant(Uuid(Ssao::SsaoComponentTypeId)))
+                behaviorContext->ConstantProperty("RenderDebugComponentTypeId", BehaviorConstant(Uuid(RenderDebug::RenderDebugComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
             }

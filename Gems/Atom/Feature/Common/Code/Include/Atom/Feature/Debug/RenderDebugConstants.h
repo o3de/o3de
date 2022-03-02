@@ -14,14 +14,9 @@ namespace AZ
 {
     namespace Render
     {
-        namespace Ssao
+        namespace RenderDebug
         {
-            static constexpr float DefaultStrength = 1.0f;
-            static constexpr float DefaultSamplingRadius = 0.05f;
-
-            static constexpr float DefaultBlurConstFalloff = 0.85f;
-            static constexpr float DefaultBlurDepthFalloffThreshold = 0.0f;
-            static constexpr float DefaultBlurDepthFalloffStrength = 200.0f;
+            // static constexpr float DefaultStrength = 1.0f;
         }
     }
 }

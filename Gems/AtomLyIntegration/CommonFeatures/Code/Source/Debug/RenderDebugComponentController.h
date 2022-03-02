@@ -11,50 +11,49 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 
-#include <AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoBus.h>
-#include <AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoComponentConfiguration.h>
+#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugBus.h>
+#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfiguration.h>
 
-#include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>
+#include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 
-namespace AZ
-{
-    namespace Render
-    {
-        class SsaoComponentController final
-            : public SsaoRequestBus::Handler
+namespace AZ {
+    namespace Render {
+
+        class RenderDebugComponentController final
+            : public RenderDebugRequestBus::Handler
         {
         public:
-            friend class EditorSsaoComponent;
+            friend class RenderDebugEditorComponent;
 
-            AZ_TYPE_INFO(AZ::Render::SsaoComponentController, "{B53B6F29-C803-46AD-83E1-526457BDFBAE}");
+            AZ_TYPE_INFO(AZ::Render::RenderDebugComponentController, "{365E4B90-7145-4803-B990-B6D3E0C4B80B}");
             static void Reflect(AZ::ReflectContext* context);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-            SsaoComponentController() = default;
-            SsaoComponentController(const SsaoComponentConfig& config);
+            RenderDebugComponentController() = default;
+            RenderDebugComponentController(const RenderDebugComponentConfig& config);
 
             void Activate(EntityId entityId);
             void Deactivate();
-            void SetConfiguration(const SsaoComponentConfig& config);
-            const SsaoComponentConfig& GetConfiguration() const;
+            void SetConfiguration(const RenderDebugComponentConfig& config);
+            const RenderDebugComponentConfig& GetConfiguration() const;
 
             // Auto-gen function override declarations (functions definitions in .cpp)...
 #include <Atom/Feature/ParamMacros/StartParamFunctionsOverride.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
         private:
-            AZ_DISABLE_COPY(SsaoComponentController);
+            AZ_DISABLE_COPY(RenderDebugComponentController);
 
             void OnConfigChanged();
 
             PostProcessSettingsInterface* m_postProcessInterface = nullptr;
-            SsaoSettingsInterface* m_ssaoSettingsInterface = nullptr;
-            SsaoComponentConfig m_configuration;
+            RenderDebugSettingsInterface* m_ssaoSettingsInterface = nullptr;
+            RenderDebugComponentConfig m_configuration;
             EntityId m_entityId;
         };
     }

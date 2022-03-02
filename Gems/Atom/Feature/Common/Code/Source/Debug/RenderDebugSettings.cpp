@@ -18,39 +18,37 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <PostProcess/Ssao/SsaoSettings.h>
+#include <Debug/RenderDebugSettings.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
-namespace AZ
-{
-    namespace Render
-    {
+namespace AZ {
+    namespace Render {
 
-        SsaoSettings::SsaoSettings(PostProcessFeatureProcessor* featureProcessor)
+        RenderDebugSettings::RenderDebugSettings(PostProcessFeatureProcessor* featureProcessor)
             : PostProcessBase(featureProcessor)
         {
         }
 
-        void SsaoSettings::OnConfigChanged()
+        void RenderDebugSettings::OnConfigChanged()
         {
             m_parentSettings->OnConfigChanged();
         }
 
-        void SsaoSettings::ApplySettingsTo(SsaoSettings* target, float alpha) const
+        void RenderDebugSettings::ApplySettingsTo(RenderDebugSettings* target, float alpha) const
         {
-            AZ_Assert(target != nullptr, "SsaoSettings::ApplySettingsTo called with nullptr as argument.");
+            AZ_Assert(target != nullptr, "RenderDebugSettings::ApplySettingsTo called with nullptr as argument.");
 
             // Auto-gen code to blend individual params based on their override value onto target settings
 #define OVERRIDE_TARGET target
 #define OVERRIDE_ALPHA alpha
 #include <Atom/Feature/ParamMacros/StartOverrideBlend.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef OVERRIDE_TARGET
 #undef OVERRIDE_ALPHA
         }
 
-        void SsaoSettings::Simulate(float deltaTime)
+        void RenderDebugSettings::Simulate(float deltaTime)
         {
             m_deltaTime = deltaTime;
         }

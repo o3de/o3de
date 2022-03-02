@@ -10,30 +10,30 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Components/ComponentAdapter.h>
-#include <AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoComponentConfiguration.h>
-#include <Atom/Feature/PostProcess/Ssao/SsaoConstants.h>
-#include <PostProcess/Ssao/SsaoComponentController.h>
+#include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfiguration.h>
+#include <Atom/Feature/Debug/RenderDebugConstants.h>
+#include <Debug/RenderDebugComponentController.h>
 
-namespace AZ
-{
-    namespace Render
-    {
-        namespace Ssao
+namespace AZ {
+    namespace Render {
+
+        namespace RenderDebug
         {
-            static constexpr const char* const SsaoComponentTypeId = "{F1203F4B-89B6-409E-AB99-B9CC87AABC2E}";
+            static constexpr const char* const RenderDebugComponentTypeId = "{98A72F68-3DA3-451A-BC79-707370EE4AC0}";
         }
 
-        class SsaoComponent final
-            : public AzFramework::Components::ComponentAdapter<SsaoComponentController, SsaoComponentConfig>
+        class RenderDebugComponent final
+            : public AzFramework::Components::ComponentAdapter<RenderDebugComponentController, RenderDebugComponentConfig>
         {
         public:
-            using BaseClass = AzFramework::Components::ComponentAdapter<SsaoComponentController, SsaoComponentConfig>;
-            AZ_COMPONENT(AZ::Render::SsaoComponent, Ssao::SsaoComponentTypeId , BaseClass);
+            using BaseClass = AzFramework::Components::ComponentAdapter<RenderDebugComponentController, RenderDebugComponentConfig>;
+            AZ_COMPONENT(AZ::Render::RenderDebugComponent, RenderDebug::RenderDebugComponentTypeId , BaseClass);
 
-            SsaoComponent() = default;
-            SsaoComponent(const SsaoComponentConfig& config);
+            RenderDebugComponent() = default;
+            RenderDebugComponent(const RenderDebugComponentConfig& config);
 
             static void Reflect(AZ::ReflectContext* context);
         };
+
     } // namespace Render
 } // namespace AZ

@@ -9,32 +9,32 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>
+#include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
 
-namespace AZ
-{
-    namespace Render
-    {
-        class SsaoComponentConfig final
+namespace AZ {
+    namespace Render {
+
+        class RenderDebugComponentConfig final
             : public ComponentConfig
         {
         public:
-            AZ_RTTI(AZ::Render::SsaoComponentConfig, "{C1ACBBE7-C3BD-4245-B571-3B5FDCAC0B0B}", AZ::ComponentConfig);
+            AZ_RTTI(AZ::Render::RenderDebugComponentConfig, "{07362463-95C9-40CE-89E7-76FD25978E96}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);
 
             // Generate members...
 #include <Atom/Feature/ParamMacros/StartParamMembers.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             // Generate Getters/Setters...
 #include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-            void CopySettingsFrom(SsaoSettingsInterface* settings);
-            void CopySettingsTo(SsaoSettingsInterface* settings);
+            void CopySettingsFrom(RenderDebugSettingsInterface* settings);
+            void CopySettingsTo(RenderDebugSettingsInterface* settings);
         };
+
     }
 }
