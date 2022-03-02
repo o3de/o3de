@@ -52,7 +52,7 @@ namespace AZ {
             void OnConfigChanged();
 
             PostProcessSettingsInterface* m_postProcessInterface = nullptr;
-            RenderDebugSettingsInterface* m_ssaoSettingsInterface = nullptr;
+            RenderDebugSettingsInterface* m_renderDebugSettingsInterface = nullptr;
             RenderDebugComponentConfig m_configuration;
             EntityId m_entityId;
         };

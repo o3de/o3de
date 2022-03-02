@@ -53,6 +53,7 @@ namespace AZ {
         void RenderDebugFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
         {
             AZ_PROFILE_SCOPE(RPI, "RenderDebugFeatureProcessor: Render");
+            AZ_UNUSED(packet);
         }
 
     } // namespace Render

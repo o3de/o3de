@@ -19,19 +19,18 @@ namespace AZ {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<RenderDebugEditorComponent, BaseClass>()
-                    ->Version(2);
+                    ->Version(0);
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<RenderDebugEditorComponent>(
-                        "SSAO", "Controls SSAO.")
+                        "Render Debug", "Controls for debugging rendering.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Atom")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                             ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                            ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/ssao/") // [GFX TODO][ATOM-2672][PostFX] need create page for PostProcessing.
                         ;
 
                     editContext->Class<RenderDebugComponentController>(
@@ -47,60 +46,15 @@ namespace AZ {
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &RenderDebugComponentConfig::m_enabled,
-                            "Enable SSAO",
-                            "Enable SSAO.")
-
-                        ->DataElement(Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_strength,
-                            "SSAO Strength",
-                            "Multiplier for how much strong SSAO appears.")
-                            ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 2.0f)
-
-                        ->DataElement(Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_samplingRadius,
-                            "Sampling Radius",
-                            "The sampling radius of the SSAO effect in screen UV space")
-                            ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 0.25f)
-
-                        ->DataElement(Edit::UIHandlers::CheckBox,
-                            &RenderDebugComponentConfig::m_enableBlur,
-                            "Enable Blur",
-                            "Enables SSAO Blur")
-
-                        ->DataElement(Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_blurConstFalloff,
-                            "Blur Strength",
-                            "Affects how strong the blur is. Recommended value is 0.67")
-                        ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->Attribute(Edit::Attributes::Max, 0.95f)
-
-                        ->DataElement(Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_blurDepthFalloffStrength,
-                            "Blur Sharpness",
-                            "Affects how sharp the SSAO blur appears around edges. Recommended value is 50")
-                        ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->Attribute(Edit::Attributes::Max, 400.0f)
-
-                        ->DataElement(Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_blurDepthFalloffThreshold,
-                            "Blur Edge Threshold",
-                            "Affects the threshold needed for the blur algorithm to detect an edge. Recommended to be left at 0.")
-                        ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->Attribute(Edit::Attributes::Max, 1.0f)
-
-                        ->DataElement(Edit::UIHandlers::CheckBox,
-                            &RenderDebugComponentConfig::m_enableDownsample,
-                            "Enable Downsample",
-                            "Enables depth downsampling before SSAO. Slightly lower quality but 2x as fast as regular SSAO.")
-
-
-                        // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                            "Enable Render Debugging",
+                            "Enable Render Debugging.")
 
                         // Auto-gen editor context settings for overrides
-#define EDITOR_CLASS RenderDebugComponentConfig
-#include <Atom/Feature/ParamMacros/StartOverrideEditorContext.inl>
-#include <Atom/Feature/Debug/RenderDebugParams.inl>
-#include <Atom/Feature/ParamMacros/EndParams.inl>
-#undef EDITOR_CLASS
+// #define EDITOR_CLASS RenderDebugComponentConfig
+// #include <Atom/Feature/ParamMacros/StartOverrideEditorContext.inl>
+// #include <Atom/Feature/Debug/RenderDebugParams.inl>
+// #include <Atom/Feature/ParamMacros/EndParams.inl>
+// #undef EDITOR_CLASS
                             ;
                 }
             }

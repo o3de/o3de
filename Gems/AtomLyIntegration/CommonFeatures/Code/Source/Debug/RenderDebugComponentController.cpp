@@ -10,31 +10,31 @@
 
 #include <Atom/RPI.Public/Scene.h>
 
-#include <PostProcess/Ssao/SsaoComponentController.h>
+#include <Debug/RenderDebugComponentController.h>
 
 namespace AZ
 {
     namespace Render
     {
-        void SsaoComponentController::Reflect(ReflectContext* context)
+        void RenderDebugComponentController::Reflect(ReflectContext* context)
         {
-            SsaoComponentConfig::Reflect(context);
+            RenderDebugComponentConfig::Reflect(context);
 
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<SsaoComponentController>()
+                serializeContext->Class<RenderDebugComponentController>()
                     ->Version(0)
-                    ->Field("Configuration", &SsaoComponentController::m_configuration);
+                    ->Field("Configuration", &RenderDebugComponentController::m_configuration);
             }
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->EBus<SsaoRequestBus>("SsaoRequestBus")
+                behaviorContext->EBus<RenderDebugRequestBus>("RenderDebugRequestBus")
 
                     // Auto-gen behavior context...
-#define PARAM_EVENT_BUS SsaoRequestBus::Events
+#define PARAM_EVENT_BUS RenderDebugRequestBus::Events
 #include <Atom/Feature/ParamMacros/StartParamBehaviorContext.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef PARAM_EVENT_BUS
 
@@ -42,27 +42,27 @@ namespace AZ
             }
         }
 
-        void SsaoComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        void RenderDebugComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC_CE("SsaoService"));
+            provided.push_back(AZ_CRC_CE("RenderDebugService"));
         }
 
-        void SsaoComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        void RenderDebugComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC_CE("SsaoService"));
+            incompatible.push_back(AZ_CRC_CE("RenderDebugService"));
         }
 
-        void SsaoComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        void RenderDebugComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC_CE("PostFXLayerService"));
+            AZ_UNUSED(required);
         }
 
-        SsaoComponentController::SsaoComponentController(const SsaoComponentConfig& config)
+        RenderDebugComponentController::RenderDebugComponentController(const RenderDebugComponentConfig& config)
             : m_configuration(config)
         {
         }
 
-        void SsaoComponentController::Activate(EntityId entityId)
+        void RenderDebugComponentController::Activate(EntityId entityId)
         {
             m_entityId = entityId;
 
@@ -72,46 +72,46 @@ namespace AZ
                 m_postProcessInterface = fp->GetOrCreateSettingsInterface(m_entityId);
                 if (m_postProcessInterface)
                 {
-                    m_ssaoSettingsInterface = m_postProcessInterface->GetOrCreateSsaoSettingsInterface();
+                    // m_renderDebugSettingsInterface = m_postProcessInterface->GetOrCreateRenderDebugSettingsInterface();
                     OnConfigChanged();
                 }
             }
-            SsaoRequestBus::Handler::BusConnect(m_entityId);
+            RenderDebugRequestBus::Handler::BusConnect(m_entityId);
         }
 
-        void SsaoComponentController::Deactivate()
+        void RenderDebugComponentController::Deactivate()
         {
-            SsaoRequestBus::Handler::BusDisconnect(m_entityId);
+            RenderDebugRequestBus::Handler::BusDisconnect(m_entityId);
 
-            if (m_postProcessInterface)
-            {
-                m_postProcessInterface->RemoveSsaoSettingsInterface();
-            }
+            // if (m_postProcessInterface)
+            // {
+            //     m_postProcessInterface->RemoveRenderDebugSettingsInterface();
+            // }
 
             m_postProcessInterface = nullptr;
-            m_ssaoSettingsInterface = nullptr;
+            m_renderDebugSettingsInterface = nullptr;
             m_entityId.SetInvalid();
         }
 
         // Getters & Setters...
 
-        void SsaoComponentController::SetConfiguration(const SsaoComponentConfig& config)
+        void RenderDebugComponentController::SetConfiguration(const RenderDebugComponentConfig& config)
         {
             m_configuration = config;
             OnConfigChanged();
         }
 
-        const SsaoComponentConfig& SsaoComponentController::GetConfiguration() const
+        const RenderDebugComponentConfig& RenderDebugComponentController::GetConfiguration() const
         {
             return m_configuration;
         }
 
-        void SsaoComponentController::OnConfigChanged()
+        void RenderDebugComponentController::OnConfigChanged()
         {
-            if (m_ssaoSettingsInterface)
+            if (m_renderDebugSettingsInterface)
             {
-                m_configuration.CopySettingsTo(m_ssaoSettingsInterface);
-                m_ssaoSettingsInterface->OnConfigChanged();
+                m_configuration.CopySettingsTo(m_renderDebugSettingsInterface);
+                m_renderDebugSettingsInterface->OnConfigChanged();
             }
         }
 
@@ -120,17 +120,17 @@ namespace AZ
         // from the settings class to set the local configuration. This is in case the settings class
         // applies some custom logic that results in the set value being different from the input
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                  \
-        ValueType SsaoComponentController::Get##Name() const                                            \
+        ValueType RenderDebugComponentController::Get##Name() const                                     \
         {                                                                                               \
             return m_configuration.MemberName;                                                          \
         }                                                                                               \
-        void SsaoComponentController::Set##Name(ValueType val)                                          \
+        void RenderDebugComponentController::Set##Name(ValueType val)                                   \
         {                                                                                               \
-            if(m_ssaoSettingsInterface)                                                                 \
+            if(m_renderDebugSettingsInterface)                                                          \
             {                                                                                           \
-                m_ssaoSettingsInterface->Set##Name(val);                                                \
-                m_ssaoSettingsInterface->OnConfigChanged();                                             \
-                m_configuration.MemberName = m_ssaoSettingsInterface->Get##Name();                      \
+                m_renderDebugSettingsInterface->Set##Name(val);                                         \
+                m_renderDebugSettingsInterface->OnConfigChanged();                                      \
+                m_configuration.MemberName = m_renderDebugSettingsInterface->Get##Name();               \
             }                                                                                           \
             else                                                                                        \
             {                                                                                           \
@@ -139,22 +139,22 @@ namespace AZ
         }                                                                                               \
 
 #define AZ_GFX_COMMON_OVERRIDE(ValueType, Name, MemberName, OverrideValueType)                          \
-        OverrideValueType SsaoComponentController::Get##Name##Override() const                          \
+        OverrideValueType RenderDebugComponentController::Get##Name##Override() const                   \
         {                                                                                               \
             return m_configuration.MemberName##Override;                                                \
         }                                                                                               \
-        void SsaoComponentController::Set##Name##Override(OverrideValueType val)                        \
+        void RenderDebugComponentController::Set##Name##Override(OverrideValueType val)                 \
         {                                                                                               \
             m_configuration.MemberName##Override = val;                                                 \
-            if(m_ssaoSettingsInterface)                                                                 \
+            if(m_renderDebugSettingsInterface)                                                          \
             {                                                                                           \
-                m_ssaoSettingsInterface->Set##Name##Override(val);                                      \
-                m_ssaoSettingsInterface->OnConfigChanged();                                             \
+                m_renderDebugSettingsInterface->Set##Name##Override(val);                               \
+                m_renderDebugSettingsInterface->OnConfigChanged();                                      \
             }                                                                                           \
         }                                                                                               \
 
 #include <Atom/Feature/ParamMacros/MapAllCommon.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
 
