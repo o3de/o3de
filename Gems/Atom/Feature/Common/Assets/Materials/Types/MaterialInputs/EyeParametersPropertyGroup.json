@@ -6,7 +6,7 @@
         {
             "name": "irisDepth",
             "displayName": "Iris Depth",
-            "description": "Distance from the origin to the plane (XZ) where the iris lays.",
+            "description": "Distance from the object origin to the plane (XZ) where the iris lays.",
             "type": "float",
             "defaultValue": 1.4,
             "min": 0.0,
@@ -19,7 +19,7 @@
         {
             "name": "irisRadius",
             "displayName": "Iris Radius",
-            "description": "Radius of the iris (it samples the same color texture, it should be smaller than the actual iris size in the texture).",
+            "description": "Radius of the iris. It extends the iris/sclera mask to get more samples from one or the other (no UV deformation/stretching).",
             "type": "float",
             "defaultValue": 0.6,
             "min": 0.0,
@@ -32,7 +32,7 @@
         {
             "name": "innerEyeIOR",
             "displayName": "IOR Inner Eye",
-            "description": "Index of Refraction (IOR) of the watery fluid inside the cornea known as the aqueous humor",
+            "description": "Index of Refraction (IOR) of the watery fluid between the cornea and the iris (aqueous humor). Also referred as refraction strength/factor.",
             "type": "float",
             "defaultValue": 1.336, // http://hyperphysics.phy-astr.gsu.edu/hbase/vision/eyescal.html
             "min": 1.0,
@@ -45,6 +45,7 @@
         {
             "name": "limbusSize",
             "displayName": "Limbus Size",
+            "description": "Size of the transition region between the iris/sclera layers. The lower this value, the sharper the transition.",
             "type": "float",
             "defaultValue": 0.03,
             "min": 0.0,

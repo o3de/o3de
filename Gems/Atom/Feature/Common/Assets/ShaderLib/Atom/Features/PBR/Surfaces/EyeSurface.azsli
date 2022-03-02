@@ -15,8 +15,11 @@
 
 class Surface
 {
-    ClearCoatSurfaceData clearCoat;
     TransmissionSurfaceData transmission;
+
+#if ENABLE_CLEAR_COAT
+    ClearCoatSurfaceData clearCoat;
+#endif
 
     // ------- BasePbrSurfaceData -------
     
@@ -28,6 +31,7 @@ class Surface
     float roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
     float roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
     float roughnessA2;          //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
+    float subsurfaceScatteringFactor;
 
     //! Applies specular anti-aliasing to roughnessA2 
     void ApplySpecularAA();

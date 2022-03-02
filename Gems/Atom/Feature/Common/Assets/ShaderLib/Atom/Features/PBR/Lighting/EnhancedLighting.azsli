@@ -97,13 +97,12 @@ PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingDat
 {
     PbrLightingOutput lightingOutput;
 
-    float3 test = lightingData.diffuseLighting;
-    lightingOutput.m_diffuseColor = float4(1.0, 1.0, 1.0, 1.0);
-    lightingOutput.m_specularColor = float4(1.0, 1.0, 1.0, 1.0);
+    lightingOutput.m_diffuseColor = float4(lightingData.diffuseLighting, alpha);
+    lightingOutput.m_specularColor = float4(lightingData.specularLighting, 1.0);
 
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
     lightingOutput.m_specularF0 = float4(surface.specularF0, surface.roughnessLinear);
-    lightingOutput.m_albedo.rgb = test;//surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
+    lightingOutput.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
     lightingOutput.m_albedo.a = lightingData.specularOcclusion;
     lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
     lightingOutput.m_normal.a = o_specularF0_enableMultiScatterCompensation ? 1.0f : 0.0f;

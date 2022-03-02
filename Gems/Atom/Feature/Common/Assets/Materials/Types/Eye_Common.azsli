@@ -11,19 +11,24 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
-#include "MaterialInputs/RoughnessInput.azsli"
 #include "MaterialInputs/SpecularInput.azsli"
 #include "MaterialInputs/OcclusionInput.azsli"
 #include "MaterialInputs/UvSetCount.azsli"
+#include "MaterialInputs/SubsurfaceInput.azsli"
+#include "MaterialInputs/TransmissionInput.azsli"
+
+// This includes base color, normal, and roughness input azsli's.
 #include "MaterialInputs/EyeInput.azsli"
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     // Auto-generate material SRG fields for common inputs
-    COMMON_SRG_INPUTS_ROUGHNESS()
     COMMON_SRG_INPUTS_SPECULAR_F0()
     COMMON_SRG_INPUTS_OCCLUSION()
+
+    // This includes common base color, normal, and roughness inputs for iris/sclera.
     COMMON_SRG_INPUTS_EYE()
 
     Sampler m_sampler
@@ -65,7 +70,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     Texture2D m_transmissionThicknessMap;
     uint m_transmissionThicknessMapUvIndex;
 
-    // Eye properties
+    // Eye parameters
     float m_irisDepth;
     float m_eyeIrisRadius;
     float m_limbusSize;

@@ -15,6 +15,9 @@
                     },
                     {
                         "$import": "MaterialInputs/NormalPropertyGroup.json"
+                    },
+                    { 
+                        "$import": "MaterialInputs/RoughnessPropertyGroup.json"
                     }
                 ]
             },
@@ -30,14 +33,14 @@
                     },
                     {
                         "$import": "MaterialInputs/NormalPropertyGroup.json"
+                    },
+                    { 
+                        "$import": "MaterialInputs/RoughnessPropertyGroup.json"
                     }
                 ]
             },
             { 
                 "$import": "MaterialInputs/EyeParametersPropertyGroup.json"
-            },
-            { 
-                "$import": "MaterialInputs/RoughnessPropertyGroup.json"
             },
             { 
                 "$import": "MaterialInputs/SpecularPropertyGroup.json"
@@ -56,7 +59,7 @@
     "shaders": [
         {
             "file": "./Eye.shader",
-            "tag": "ForwardPass"
+            "tag": "ForwardPass_EDS"
         },
         {
             "file": "Shaders/Shadow/Shadowmap.shader",
