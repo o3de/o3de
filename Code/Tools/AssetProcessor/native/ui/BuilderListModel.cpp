@@ -34,3 +34,14 @@ QVariant BuilderListModel::data(const QModelIndex& index, int role) const
 
     return {};
 }
+
+void BuilderListModel::Reset()
+{
+    beginResetModel();
+    endResetModel();
+}
+
+bool BuilderListSortFilterProxy::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
+{
+    return sourceModel()->data(source_left).toString() < sourceModel()->data(source_right).toString();
+}

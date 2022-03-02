@@ -100,6 +100,8 @@ MainWindow::MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* pa
     , ui(new Ui::MainWindow)
     , m_loggingPanel(nullptr)
     , m_fileSystemWatcher(new QFileSystemWatcher(this))
+    , m_builderList(new BuilderListModel(this))
+    , m_builderListSortFilterProxy(new BuilderListSortFilterProxy(this))
 {
     ui->setupUi(this);
 
@@ -396,9 +398,23 @@ void MainWindow::Activate()
 
     // Builders Tab:
 
-    ui->builderList->setModel(&m_builderList);
+    m_builderListSortFilterProxy->setDynamicSortFilter(true);
+    m_builderListSortFilterProxy->setSourceModel(m_builderList);
+    m_builderListSortFilterProxy->sort(0);
+    ui->builderList->setModel(m_builderListSortFilterProxy);
     connect(ui->builderList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::BuilderTabSelectionChanged);
-    connect(m_guiApplicationManager, &GUIApplicationManager::OnBuildersRegistered, ui->builderList, &QListView::reset);
+    connect(m_guiApplicationManager, &GUIApplicationManager::OnBuildersRegistered, [this]()
+    {
+        if(m_builderList)
+        {
+            m_builderList->Reset();
+
+            if(m_builderListSortFilterProxy)
+            {
+                m_builderListSortFilterProxy->sort(0);
+            }
+        }
+    });
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
@@ -426,7 +442,8 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
 {
     if (selected.size() > 0)
     {
-        const auto& index = selected.indexes().at(0);
+        const auto& proxyIndex = selected.indexes().at(0);
+        const auto& index = m_builderListSortFilterProxy->mapToSource(proxyIndex);
 
         AssetProcessor::BuilderInfoList builders;
         AssetProcessor::AssetBuilderInfoBus::Broadcast(&AssetProcessor::AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
