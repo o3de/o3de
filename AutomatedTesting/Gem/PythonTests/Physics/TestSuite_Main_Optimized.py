@@ -152,9 +152,6 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4976243_Collision_SameCollisionGroupDiffCollisionLayers(EditorSharedTest):
         from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
 
-    class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
-        from .tests.character_controller import CharacterController_SwitchLevels as test_module
-
     class C3510642_Terrain_NotCollideWithTerrain(EditorSharedTest):
         from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
 
