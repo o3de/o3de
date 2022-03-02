@@ -91,7 +91,6 @@ namespace AzToolsFramework
         void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
         
         QMouseEvent* m_queuedMouseEvent;
-        QModelIndex m_currentHoveredIndex = QModelIndex();
         QPoint m_mousePosition;
 
         bool m_isDragSelectActive = false;
