@@ -341,7 +341,7 @@ namespace AssetProcessor
                     }
 
                     // The purpose of this section is to copy the Gem's SourcePaths from the Global Settings Registry
-                    // the local SettingsRegistry. The reason this is needed is so that the call to
+                    // to a local SettingsRegistry. The reason this is needed is so that the call to
                     // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gem's "<gem-root>/Registry" folder
                     // that will be merged into the bootstrap.game.<configuration>.setreg file
                     // This is used by the GameLauncher applications to read from a single merged .setreg file
