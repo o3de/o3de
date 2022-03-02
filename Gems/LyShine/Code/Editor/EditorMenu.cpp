@@ -6,7 +6,6 @@
  *
  */
 #include "EditorCommon.h"
-#include "FeedbackDialog.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -916,22 +915,6 @@ void EditorWindow::AddMenu_Help()
             [forumUrl]([[maybe_unused]] bool checked)
             {
                 QDesktopServices::openUrl(QUrl(forumUrl));
-            });
-        menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
-    }
-
-    // Give Us Feedback
-    {
-        QAction* action = new QAction("&Give Us Feedback", this);
-
-        QObject::connect(action,
-            &QAction::triggered,
-            this,
-            [this]([[maybe_unused]] bool checked)
-            {
-                FeedbackDialog dialog(this);
-                dialog.exec();
             });
         menu->addAction(action);
         addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
