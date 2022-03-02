@@ -70,8 +70,6 @@ set(FILES
     Editor/EnterPreviewToolbar.h
     Editor/EntityHelpers.cpp
     Editor/EntityHelpers.h
-    Editor/FeedbackDialog.cpp
-    Editor/FeedbackDialog.h
     Editor/FileHelpers.cpp
     Editor/FileHelpers.h
     Editor/FindEntityItemModel.cpp
