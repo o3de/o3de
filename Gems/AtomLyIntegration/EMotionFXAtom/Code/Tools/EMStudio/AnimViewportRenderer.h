@@ -59,8 +59,11 @@ namespace EMStudio
         AZ::EntityId GetEntityId() const;
         AzFramework::EntityContextId GetEntityContextId() const;
 
-        // Moves the groundplane along with the character.
+        //! Moves the groundplane along with the character.
         void UpdateGroundplane();
+
+        //! Apply the identity transform to the actor entities.
+        void MoveActorEntitiesToOrigin();
 
     private:
 

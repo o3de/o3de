@@ -132,14 +132,7 @@ namespace AzToolsFramework
         // Prevent multiple updates throughout the function for changing UIs.
         bool forceUpdate = false;
 
-        QModelIndex previousHoveredIndex = m_currentHoveredIndex;
         m_mousePosition = event->pos();
-
-        if (QModelIndex hoveredIndex = indexAt(m_mousePosition);
-            m_currentHoveredIndex != hoveredIndex)
-        {
-            m_currentHoveredIndex = hoveredIndex;
-        }
         
         if (m_queuedMouseEvent)
         {
@@ -164,11 +157,6 @@ namespace AzToolsFramework
                 SelectAllEntitiesInSelectionRect();
                 forceUpdate = true;
             }
-        }
-
-        if (previousHoveredIndex != m_currentHoveredIndex)
-        {
-            forceUpdate = true;
         }
 
         if (forceUpdate)
@@ -331,7 +319,6 @@ namespace AzToolsFramework
         {
             m_mousePosition = QPoint(-1, -1);
         }
-        m_currentHoveredIndex = QModelIndex();
         update();
     }
 
@@ -366,7 +353,8 @@ namespace AzToolsFramework
         const bool isEnabled = (this->model()->flags(index) & Qt::ItemIsEnabled);
 
         const bool isSelected = selectionModel()->isSelected(index);
-        const bool isHovered = (index == m_currentHoveredIndex.siblingAtColumn(0)) && isEnabled;
+        QModelIndex hoveredIndex = indexAt(m_mousePosition);
+        const bool isHovered = index == hoveredIndex.siblingAtColumn(0) && isEnabled;
 
         // Paint the branch Selection/Hover Rect
         PaintBranchSelectionHoverRect(painter, rect, isSelected, isHovered);
