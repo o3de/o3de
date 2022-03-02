@@ -327,7 +327,7 @@ namespace AzToolsFramework
                 }
             }
 
-            return AZStd::string("");
+            return AZStd::string();
         }
         bool ViewBookmarkLoader::SaveSharedBookmark(ViewBookmark& bookmark)
         {
