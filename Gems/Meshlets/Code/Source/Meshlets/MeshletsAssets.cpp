@@ -216,18 +216,18 @@ namespace AZ
             const auto normalsAsset = CreateBufferAsset(NormalSemanticName.GetStringView(), bufferDescriptors[2], normals);
 
             bufferView = meshAsset.GetSemanticBufferAssetView(UVSemanticName);
-            float* texCoords = normals ?
+            float* texCoords = normals && bufferView ?
                 (float*)RetrieveBufferData(bufferView, UVStreamFormat, vertexCount, vertexCount, bufferDescriptors[3]) :
                 nullptr;
 
             bufferView = meshAsset.GetSemanticBufferAssetView(TangentSemanticName);
-            [[maybe_unused]] float* tangents = normals ?
+            [[maybe_unused]] float* tangents = normals && bufferView ?
                 (float*)RetrieveBufferData(bufferView, TangentStreamFormat, vertexCount, vertexCount, bufferDescriptors[4]) :
                 nullptr;
             const auto tangentsAsset = CreateBufferAsset(TangentSemanticName.GetStringView(), bufferDescriptors[4], tangents);
 
             bufferView = meshAsset.GetSemanticBufferAssetView(BiTangentSemanticName);
-            [[maybe_unused]] float* bitangents = normals ?
+            [[maybe_unused]] float* bitangents = normals && bufferView ?
                 (float*)RetrieveBufferData(bufferView, BitangentStreamFormat, vertexCount, vertexCount, bufferDescriptors[5]) :
                 nullptr;
             const auto bitangentsAsset = CreateBufferAsset(BiTangentSemanticName.GetStringView(), bufferDescriptors[5], bitangents);
