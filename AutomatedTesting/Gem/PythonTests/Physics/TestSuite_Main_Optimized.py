@@ -233,9 +233,6 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4976204_Verify_Start_Asleep_Condition(EditorSharedTest):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
 
-    class C6090546_ForceRegion_SliceFileInstantiates(EditorSharedTest):
-        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
-
     class C6090551_ForceRegion_LocalSpaceForceNegative(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroLocalSpaceForceDoesNothing as test_module
 
@@ -355,3 +352,6 @@ class TestAutomation(EditorTestSuite):
 
     class C12712455_ScriptCanvas_ShapeCastVerification(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
+
+    class C6090546_ForceRegion_SliceFileInstantiates(EditorSharedTest):
+        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module

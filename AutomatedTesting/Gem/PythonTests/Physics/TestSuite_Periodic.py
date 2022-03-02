@@ -171,7 +171,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_SliceFileInstantiates(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     @revert_physics_config
     def test_ForceRegion_ZeroLocalSpaceForceDoesNothing(self, request, workspace, editor, launcher_platform):
