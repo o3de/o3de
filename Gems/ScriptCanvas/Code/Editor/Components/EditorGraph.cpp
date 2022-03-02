@@ -466,6 +466,7 @@ namespace ScriptCanvasEditor
                     ScriptCanvas::NodeUpdateSlotReport report;
                     // do a test run, and see what happens, just replace with a new node type in place
                     auto replaceOutcome = ReplaceLiveNode(node, *configOptional, report);
+                    // all the connections and slots will have to be type checked
                     if (replaceOutcome.IsSuccess())
                     {
                         node = replaceOutcome.GetValue();
@@ -479,6 +480,7 @@ namespace ScriptCanvasEditor
 
                 for (auto slot : node->ModAllSlots())
                 {
+                    // check this one more carefully
                     if (slot->IsData())
                     {
                         slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
