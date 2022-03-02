@@ -103,6 +103,6 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         surface.albedo = lerp(surface.albedo, baseMap.rgb, opacity);      
       
         float3 normalMapWS = GetWorldSpaceNormal(normalMap, decalRot[2], decalRot[0], decalRot[1], 1.0f);      
-        surface.normal = normalize(lerp(surface.normal, normalMapWS, opacity));
+        surface.normal = normalize(lerp(surface.normal, normalMapWS, decal.m_normalMapOpacity));
     }
 }

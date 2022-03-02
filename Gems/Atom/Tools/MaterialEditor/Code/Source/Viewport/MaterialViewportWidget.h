@@ -19,7 +19,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#include <Viewport/MaterialViewportNotificationBus.h>
+#include <Viewport/MaterialViewportSettingsNotificationBus.h>
 #endif
 
 namespace AZ
@@ -47,7 +47,7 @@ namespace MaterialEditor
         : public AtomToolsFramework::RenderViewportWidget
         , public AZ::Data::AssetBus::Handler
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
-        , public MaterialViewportNotificationBus::Handler
+        , public MaterialViewportSettingsNotificationBus::Handler
         , public AZ::TransformNotificationBus::MultiHandler
     {
     public:
@@ -62,7 +62,7 @@ namespace MaterialEditor
         // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
-        // MaterialViewportNotificationBus::Handler overrides...
+        // MaterialViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
 
         // AZ::Data::AssetBus::Handler overrides...
