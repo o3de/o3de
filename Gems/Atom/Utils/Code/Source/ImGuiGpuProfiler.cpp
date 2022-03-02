@@ -123,7 +123,6 @@ namespace AZ
 
             static constexpr u64 KB = 1024;
             static constexpr u64 MB = 1024 * KB;
-            static constexpr u64 GB = 1024 * MB;
         } // namespace GpuProfilerImGuiHelper 
 
         // --- PassEntry ---
