@@ -111,6 +111,10 @@ set(FILES
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
     Source/Checkerboard/CheckerboardPass.h
+    Source/Debug/RenderDebugFeatureProcessor.h
+    Source/Debug/RenderDebugFeatureProcessor.cpp
+    Source/Debug/RenderDebugSettings.h
+    Source/Debug/RenderDebugSettings.cpp
     Source/Decals/DecalFeatureProcessor.h
     Source/Decals/DecalFeatureProcessor.cpp
     Source/Decals/DecalTextureArray.h

@@ -36,6 +36,11 @@ set(FILES
     Source/CoreLights/SimpleSpotLightDelegate.cpp
     Source/CoreLights/SphereLightDelegate.h
     Source/CoreLights/SphereLightDelegate.cpp
+    Source/Debug/RenderDebugComponent.cpp
+    Source/Debug/RenderDebugComponent.h
+    Source/Debug/RenderDebugComponentConfig.cpp
+    Source/Debug/RenderDebugComponentController.cpp
+    Source/Debug/RenderDebugComponentController.h
     Source/Decals/DecalComponent.h
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h
