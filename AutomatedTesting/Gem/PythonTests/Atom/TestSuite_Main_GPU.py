@@ -185,5 +185,4 @@ class TestMaterialEditor(object):
             null_renderer=False,
             cfg_args=[cfg_args],
             log_file_name="MaterialEditor.log",
-            enable_prefab_system=True,
         )
