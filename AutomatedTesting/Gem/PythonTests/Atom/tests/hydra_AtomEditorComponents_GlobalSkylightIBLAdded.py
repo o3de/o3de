@@ -182,21 +182,21 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
             specular_image_asset.id == global_skylight_component.get_component_property_value(
                                            AtomComponentProperties.global_skylight('Specular Image')))
 
-        #11. Set Exposure valuye to min value
+        # 10. Set Exposure valuye to min value
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Exposure'), value=-5)
         current_exposure_value = global_skylight_component.get_component_property_value(
             AtomComponentProperties.global_skylight('Exposure'))
-        Report.result(Tests.exposure_set_max_value, current_exposure_value == -5)
+        Report.result(Tests.exposure_set_min_value, current_exposure_value == -5)
 
-        #12. Set Exposure valuye to max value
+        # 11. Set Exposure valuye to max value
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Exposure'), value=5)
         current_exposure_value = global_skylight_component.get_component_property_value(
             AtomComponentProperties.global_skylight('Exposure'))
         Report.result(Tests.exposure_set_max_value, current_exposure_value == 5)
 
-        # 13. Set the High Contrast Diffuse Image asset on the Global Skylight (IBL) entity.
+        # 12. Set the High Contrast Diffuse Image asset on the Global Skylight (IBL) entity.
         diffuse_image_path = os.path.join(
             "LightingPresets", "HighContrast", "goegap_4k_iblglobalcm_ibldiffuse.exr.streamingimage")
         diffuse_image_asset = Asset.find_asset_by_path(diffuse_image_path, False)
@@ -207,7 +207,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
             diffuse_image_asset.id == global_skylight_component.get_component_property_value(
                                           AtomComponentProperties.global_skylight('Diffuse Image')))
 
-        # 14. Set the High Contrast Specular Image asset on the Global Light (IBL) entity.
+        # 13. Set the High Contrast Specular Image asset on the Global Light (IBL) entity.
         specular_image_path = os.path.join(
             "LightingPresets", "HighContrast", "goegap_4k_iblglobalcm_iblspecular.exr.streamingimage")
         specular_image_asset = Asset.find_asset_by_path(specular_image_path, False)
@@ -218,35 +218,35 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
             specular_image_asset.id == global_skylight_component.get_component_property_value(
                                            AtomComponentProperties.global_skylight('Specular Image')))
 
-        #11. Set Exposure valuye to min value
+        # 14. Set Exposure valuye to min value
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Exposure'), value=-5)
         current_exposure_value = global_skylight_component.get_component_property_value(
             AtomComponentProperties.global_skylight('Exposure'))
-        Report.result(Tests.exposure_set_max_value, current_exposure_value == -5)
+        Report.result(Tests.exposure_set_min_value, current_exposure_value == -5)
 
-        #12. Set Exposure value to max value
+        # 15. Set Exposure value to max value
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Exposure'), value=5)
         current_exposure_value = global_skylight_component.get_component_property_value(
             AtomComponentProperties.global_skylight('Exposure'))
         Report.result(Tests.exposure_set_max_value, current_exposure_value == 5)
 
-        # 15. Delete Global Skylight (IBL) entity.
+        # 16. Delete Global Skylight (IBL) entity.
         global_skylight_entity.delete()
         Report.result(Tests.entity_deleted, not global_skylight_entity.exists())
 
-        # 16. UNDO deletion.
+        # 17. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, global_skylight_entity.exists())
 
-        # 17. REDO deletion.
+        # 18. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not  global_skylight_entity.exists())
 
-        # 18. Look for errors and asserts.
+        # 19. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
