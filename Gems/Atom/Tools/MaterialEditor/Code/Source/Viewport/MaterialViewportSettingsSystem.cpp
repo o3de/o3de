@@ -19,24 +19,24 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <Viewport/MaterialViewportComponent.h>
-#include <Viewport/MaterialViewportNotificationBus.h>
 #include <Viewport/MaterialViewportSettings.h>
+#include <Viewport/MaterialViewportSettingsNotificationBus.h>
+#include <Viewport/MaterialViewportSettingsSystem.h>
 
 namespace MaterialEditor
 {
-    void MaterialViewportComponent::Reflect(AZ::ReflectContext* context)
+    void MaterialViewportSettingsSystem::Reflect(AZ::ReflectContext* context)
     {
         MaterialViewportSettings::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<MaterialViewportComponent, AZ::Component>()
+            serialize->Class<MaterialViewportSettingsSystem>()
                 ->Version(0);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<MaterialViewportComponent>("MaterialViewport", "Manages configurations for lighting and models displayed in the viewport")
+                editContext->Class<MaterialViewportSettingsSystem>("MaterialViewportSettingsSystem", "Manages and serializes settings for the application viewport")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -46,90 +46,60 @@ namespace MaterialEditor
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<MaterialViewportRequestBus>("MaterialViewportRequestBus")
+            behaviorContext->EBus<MaterialViewportSettingsRequestBus>("MaterialViewportSettingsRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("SetLightingPreset", &MaterialViewportRequestBus::Events::SetLightingPreset)
-                ->Event("GetLightingPreset", &MaterialViewportRequestBus::Events::GetLightingPreset)
-                ->Event("SaveLightingPreset", &MaterialViewportRequestBus::Events::SaveLightingPreset)
-                ->Event("LoadLightingPreset", &MaterialViewportRequestBus::Events::LoadLightingPreset)
-                ->Event("LoadLightingPresetByAssetId", &MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId)
-                ->Event("GetLastLightingPresetPath", &MaterialViewportRequestBus::Events::GetLastLightingPresetPath)
-                ->Event("GetLastLightingPresetAssetId", &MaterialViewportRequestBus::Events::GetLastLightingPresetAssetId)
-                ->Event("SetModelPreset", &MaterialViewportRequestBus::Events::SetModelPreset)
-                ->Event("GetModelPreset", &MaterialViewportRequestBus::Events::GetModelPreset)
-                ->Event("SaveModelPreset", &MaterialViewportRequestBus::Events::SaveModelPreset)
-                ->Event("LoadModelPreset", &MaterialViewportRequestBus::Events::LoadModelPreset)
-                ->Event("LoadModelPresetByAssetId", &MaterialViewportRequestBus::Events::LoadModelPresetByAssetId)
-                ->Event("GetLastModelPresetPath", &MaterialViewportRequestBus::Events::GetLastModelPresetPath)
-                ->Event("GetLastModelPresetAssetId", &MaterialViewportRequestBus::Events::GetLastModelPresetAssetId)
-                ->Event("SetShadowCatcherEnabled", &MaterialViewportRequestBus::Events::SetShadowCatcherEnabled)
-                ->Event("GetShadowCatcherEnabled", &MaterialViewportRequestBus::Events::GetShadowCatcherEnabled)
-                ->Event("SetGridEnabled", &MaterialViewportRequestBus::Events::SetGridEnabled)
-                ->Event("GetGridEnabled", &MaterialViewportRequestBus::Events::GetGridEnabled)
-                ->Event("SetAlternateSkyboxEnabled", &MaterialViewportRequestBus::Events::SetAlternateSkyboxEnabled)
-                ->Event("GetAlternateSkyboxEnabled", &MaterialViewportRequestBus::Events::GetAlternateSkyboxEnabled)
-                ->Event("SetFieldOfView", &MaterialViewportRequestBus::Events::SetFieldOfView)
-                ->Event("GetFieldOfView", &MaterialViewportRequestBus::Events::GetFieldOfView)
+                ->Event("SetLightingPreset", &MaterialViewportSettingsRequestBus::Events::SetLightingPreset)
+                ->Event("GetLightingPreset", &MaterialViewportSettingsRequestBus::Events::GetLightingPreset)
+                ->Event("SaveLightingPreset", &MaterialViewportSettingsRequestBus::Events::SaveLightingPreset)
+                ->Event("LoadLightingPreset", &MaterialViewportSettingsRequestBus::Events::LoadLightingPreset)
+                ->Event("LoadLightingPresetByAssetId", &MaterialViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId)
+                ->Event("GetLastLightingPresetPath", &MaterialViewportSettingsRequestBus::Events::GetLastLightingPresetPath)
+                ->Event("GetLastLightingPresetAssetId", &MaterialViewportSettingsRequestBus::Events::GetLastLightingPresetAssetId)
+                ->Event("SetModelPreset", &MaterialViewportSettingsRequestBus::Events::SetModelPreset)
+                ->Event("GetModelPreset", &MaterialViewportSettingsRequestBus::Events::GetModelPreset)
+                ->Event("SaveModelPreset", &MaterialViewportSettingsRequestBus::Events::SaveModelPreset)
+                ->Event("LoadModelPreset", &MaterialViewportSettingsRequestBus::Events::LoadModelPreset)
+                ->Event("LoadModelPresetByAssetId", &MaterialViewportSettingsRequestBus::Events::LoadModelPresetByAssetId)
+                ->Event("GetLastModelPresetPath", &MaterialViewportSettingsRequestBus::Events::GetLastModelPresetPath)
+                ->Event("GetLastModelPresetAssetId", &MaterialViewportSettingsRequestBus::Events::GetLastModelPresetAssetId)
+                ->Event("SetShadowCatcherEnabled", &MaterialViewportSettingsRequestBus::Events::SetShadowCatcherEnabled)
+                ->Event("GetShadowCatcherEnabled", &MaterialViewportSettingsRequestBus::Events::GetShadowCatcherEnabled)
+                ->Event("SetGridEnabled", &MaterialViewportSettingsRequestBus::Events::SetGridEnabled)
+                ->Event("GetGridEnabled", &MaterialViewportSettingsRequestBus::Events::GetGridEnabled)
+                ->Event("SetAlternateSkyboxEnabled", &MaterialViewportSettingsRequestBus::Events::SetAlternateSkyboxEnabled)
+                ->Event("GetAlternateSkyboxEnabled", &MaterialViewportSettingsRequestBus::Events::GetAlternateSkyboxEnabled)
+                ->Event("SetFieldOfView", &MaterialViewportSettingsRequestBus::Events::SetFieldOfView)
+                ->Event("GetFieldOfView", &MaterialViewportSettingsRequestBus::Events::GetFieldOfView)
                 ;
 
-            behaviorContext->EBus<MaterialViewportNotificationBus>("MaterialViewportNotificationBus")
+            behaviorContext->EBus<MaterialViewportSettingsNotificationBus>("MaterialViewportSettingsNotificationBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("OnLightingPresetAdded", &MaterialViewportNotificationBus::Events::OnLightingPresetAdded)
-                ->Event("OnLightingPresetSelected", &MaterialViewportNotificationBus::Events::OnLightingPresetSelected)
-                ->Event("OnLightingPresetChanged", &MaterialViewportNotificationBus::Events::OnLightingPresetChanged)
-                ->Event("OnModelPresetAdded", &MaterialViewportNotificationBus::Events::OnModelPresetAdded)
-                ->Event("OnModelPresetSelected", &MaterialViewportNotificationBus::Events::OnModelPresetSelected)
-                ->Event("OnModelPresetChanged", &MaterialViewportNotificationBus::Events::OnModelPresetChanged)
+                ->Event("OnViewportSettingsChanged", &MaterialViewportSettingsNotificationBus::Events::OnViewportSettingsChanged)
                 ;
         }
     }
 
-    MaterialViewportComponent::MaterialViewportComponent()
+    MaterialViewportSettingsSystem::MaterialViewportSettingsSystem(const AZ::Crc32& toolId)
+        : m_toolId(toolId)
     {
-    }
-
-    void MaterialViewportComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-        required.push_back(AZ_CRC_CE("RPISystem"));
-        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
-        required.push_back(AZ_CRC_CE("PerformanceMonitorService"));
-    }
-
-    void MaterialViewportComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-    {
-        provided.push_back(AZ_CRC_CE("MaterialViewportService"));
-    }
-
-    void MaterialViewportComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-        incompatible.push_back(AZ_CRC_CE("MaterialViewportService"));
-    }
-
-    void MaterialViewportComponent::Init()
-    {
-    }
-
-    void MaterialViewportComponent::Activate()
-    {
-        ClearContent();
-        MaterialViewportRequestBus::Handler::BusConnect();
+        MaterialViewportSettingsRequestBus::Handler::BusConnect(m_toolId);
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
     }
 
-    void MaterialViewportComponent::Deactivate()
+    MaterialViewportSettingsSystem::~MaterialViewportSettingsSystem()
     {
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-        MaterialViewportRequestBus::Handler::BusDisconnect();
+        MaterialViewportSettingsRequestBus::Handler::BusDisconnect();
         ClearContent();
     }
 
-    void MaterialViewportComponent::ClearContent()
+    void MaterialViewportSettingsSystem::ClearContent()
     {
         m_lightingPresetCache.clear();
         m_lightingPreset = {};
@@ -140,27 +110,28 @@ namespace MaterialEditor
         m_settingsNotificationPending = {};
     }
 
-    void MaterialViewportComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void MaterialViewportSettingsSystem::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         if (m_settingsNotificationPending)
         {
             m_settingsNotificationPending = false;
-            MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnViewportSettingsChanged);
+            MaterialViewportSettingsNotificationBus::Event(
+                m_toolId, &MaterialViewportSettingsNotificationBus::Events::OnViewportSettingsChanged);
         }
     }
 
-    void MaterialViewportComponent::SetLightingPreset(const AZ::Render::LightingPreset& preset)
+    void MaterialViewportSettingsSystem::SetLightingPreset(const AZ::Render::LightingPreset& preset)
     {
         m_lightingPreset = preset;
         m_settingsNotificationPending = true;
     }
 
-    const AZ::Render::LightingPreset& MaterialViewportComponent::GetLightingPreset() const
+    const AZ::Render::LightingPreset& MaterialViewportSettingsSystem::GetLightingPreset() const
     {
         return m_lightingPreset;
     }
 
-    bool MaterialViewportComponent::SaveLightingPreset(const AZStd::string& path) const
+    bool MaterialViewportSettingsSystem::SaveLightingPreset(const AZStd::string& path) const
     {
         if (!path.empty() && AZ::JsonSerializationUtils::SaveObjectToFile(&m_lightingPreset, path).IsSuccess())
         {
@@ -172,7 +143,7 @@ namespace MaterialEditor
         return false;
     }
 
-    bool MaterialViewportComponent::LoadLightingPreset(const AZStd::string& path)
+    bool MaterialViewportSettingsSystem::LoadLightingPreset(const AZStd::string& path)
     {
         auto cacheItr = m_lightingPresetCache.find(path);
         if (cacheItr != m_lightingPresetCache.end())
@@ -200,35 +171,35 @@ namespace MaterialEditor
         return false;
     }
 
-    bool MaterialViewportComponent::LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId)
+    bool MaterialViewportSettingsSystem::LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId)
     {
         return LoadLightingPreset(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
-    AZStd::string MaterialViewportComponent::GetLastLightingPresetPath() const
+    AZStd::string MaterialViewportSettingsSystem::GetLastLightingPresetPath() const
     {
         return AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetLastLightingPresetAssetId());
     }
 
-    AZ::Data::AssetId MaterialViewportComponent::GetLastLightingPresetAssetId() const
+    AZ::Data::AssetId MaterialViewportSettingsSystem::GetLastLightingPresetAssetId() const
     {
         return AtomToolsFramework::GetSettingsObject(
             "/O3DE/Atom/MaterialEditor/ViewportSettings/LightingPresetAssetId",
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/lightingpresets/neutral_urban.lightingpreset.azasset"));
     }
 
-    void MaterialViewportComponent::SetModelPreset(const AZ::Render::ModelPreset& preset)
+    void MaterialViewportSettingsSystem::SetModelPreset(const AZ::Render::ModelPreset& preset)
     {
         m_modelPreset = preset;
         m_settingsNotificationPending = true;
     }
 
-    const AZ::Render::ModelPreset& MaterialViewportComponent::GetModelPreset() const
+    const AZ::Render::ModelPreset& MaterialViewportSettingsSystem::GetModelPreset() const
     {
         return m_modelPreset;
     }
 
-    bool MaterialViewportComponent::SaveModelPreset(const AZStd::string& path) const
+    bool MaterialViewportSettingsSystem::SaveModelPreset(const AZStd::string& path) const
     {
         if (!path.empty() && AZ::JsonSerializationUtils::SaveObjectToFile(&m_modelPreset, path).IsSuccess())
         {
@@ -240,7 +211,7 @@ namespace MaterialEditor
         return false;
     }
 
-    bool MaterialViewportComponent::LoadModelPreset(const AZStd::string& path)
+    bool MaterialViewportSettingsSystem::LoadModelPreset(const AZStd::string& path)
     {
         auto cacheItr = m_modelPresetCache.find(path);
         if (cacheItr != m_modelPresetCache.end())
@@ -268,105 +239,105 @@ namespace MaterialEditor
         return false;
     }
 
-    bool MaterialViewportComponent::LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId)
+    bool MaterialViewportSettingsSystem::LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId)
     {
         return LoadModelPreset(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
-    AZStd::string MaterialViewportComponent::GetLastModelPresetPath() const
+    AZStd::string MaterialViewportSettingsSystem::GetLastModelPresetPath() const
     {
         return AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetLastModelPresetAssetId());
     }
 
-    AZ::Data::AssetId MaterialViewportComponent::GetLastModelPresetAssetId() const
+    AZ::Data::AssetId MaterialViewportSettingsSystem::GetLastModelPresetAssetId() const
     {
         return AtomToolsFramework::GetSettingsObject(
             "/O3DE/Atom/MaterialEditor/ViewportSettings/ModelPresetAssetId",
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/shaderball.modelpreset.azasset"));
     }
 
-    void MaterialViewportComponent::SetShadowCatcherEnabled(bool enable)
+    void MaterialViewportSettingsSystem::SetShadowCatcherEnabled(bool enable)
     {
         AtomToolsFramework::SetSettingsValue<bool>("/O3DE/Atom/MaterialEditor/ViewportSettings/EnableShadowCatcher", enable);
         m_settingsNotificationPending = true;
     }
 
-    bool MaterialViewportComponent::GetShadowCatcherEnabled() const
+    bool MaterialViewportSettingsSystem::GetShadowCatcherEnabled() const
     {
         return AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialEditor/ViewportSettings/EnableShadowCatcher", true);
     }
 
-    void MaterialViewportComponent::SetGridEnabled(bool enable)
+    void MaterialViewportSettingsSystem::SetGridEnabled(bool enable)
     {
         AtomToolsFramework::SetSettingsValue<bool>("/O3DE/Atom/MaterialEditor/ViewportSettings/EnableGrid", enable);
         m_settingsNotificationPending = true;
     }
 
-    bool MaterialViewportComponent::GetGridEnabled() const
+    bool MaterialViewportSettingsSystem::GetGridEnabled() const
     {
         return AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialEditor/ViewportSettings/EnableGrid", true);
     }
 
-    void MaterialViewportComponent::SetAlternateSkyboxEnabled(bool enable)
+    void MaterialViewportSettingsSystem::SetAlternateSkyboxEnabled(bool enable)
     {
         AtomToolsFramework::SetSettingsValue<bool>("/O3DE/Atom/MaterialEditor/ViewportSettings/EnableAlternateSkybox", enable);
         m_settingsNotificationPending = true;
     }
 
-    bool MaterialViewportComponent::GetAlternateSkyboxEnabled() const
+    bool MaterialViewportSettingsSystem::GetAlternateSkyboxEnabled() const
     {
         return AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialEditor/ViewportSettings/EnableAlternateSkybox", false);
     }
 
-    void MaterialViewportComponent::SetFieldOfView(float fieldOfView)
+    void MaterialViewportSettingsSystem::SetFieldOfView(float fieldOfView)
     {
         AtomToolsFramework::SetSettingsValue<double>(
             "/O3DE/Atom/MaterialEditor/ViewportSettings/FieldOfView", aznumeric_cast<double>(fieldOfView));
         m_settingsNotificationPending = true;
     }
 
-    float MaterialViewportComponent::GetFieldOfView() const
+    float MaterialViewportSettingsSystem::GetFieldOfView() const
     {
         return aznumeric_cast<float>(
             AtomToolsFramework::GetSettingsValue<double>("/O3DE/Atom/MaterialEditor/ViewportSettings/FieldOfView", 90.0));
     }
 
-    void MaterialViewportComponent::SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType)
+    void MaterialViewportSettingsSystem::SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType)
     {
         AtomToolsFramework::SetSettingsValue<AZ::u64>(
             "/O3DE/Atom/MaterialEditor/ViewportSettings/DisplayMapperOperationType", aznumeric_cast<AZ::u64>(operationType));
         m_settingsNotificationPending = true;
     }
 
-    AZ::Render::DisplayMapperOperationType MaterialViewportComponent::GetDisplayMapperOperationType() const
+    AZ::Render::DisplayMapperOperationType MaterialViewportSettingsSystem::GetDisplayMapperOperationType() const
     {
         return aznumeric_cast<AZ::Render::DisplayMapperOperationType>(AtomToolsFramework::GetSettingsValue<AZ::u64>(
             "/O3DE/Atom/MaterialEditor/ViewportSettings/DisplayMapperOperationType",
             aznumeric_cast<AZ::u64>(AZ::Render::DisplayMapperOperationType::Aces)));
     }
 
-    void MaterialViewportComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
+    void MaterialViewportSettingsSystem::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
     {
         ClearContent();
         LoadModelPreset(GetLastModelPresetPath());
         LoadLightingPreset(GetLastLightingPresetPath());
     }
 
-    void MaterialViewportComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+    void MaterialViewportSettingsSystem::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
     {
         AZ::Data::AssetInfo assetInfo;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
         QueueLoadPresetCache(assetInfo);
     }
 
-    void MaterialViewportComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+    void MaterialViewportSettingsSystem::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
         AZ::Data::AssetInfo assetInfo;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
         QueueLoadPresetCache(assetInfo);
     }
 
-    void MaterialViewportComponent::QueueLoadPresetCache(const AZ::Data::AssetInfo& assetInfo)
+    void MaterialViewportSettingsSystem::QueueLoadPresetCache(const AZ::Data::AssetInfo& assetInfo)
     {
         if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
         {

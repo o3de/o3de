@@ -11,7 +11,6 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <Window/ShaderManagementConsoleTableView.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
@@ -25,16 +24,6 @@ namespace ShaderManagementConsole
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, parent)
     {
-        // Among other things, we need the window wrapper to save the main window size, position, and state
-        auto mainWindowWrapper =
-            new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
-        mainWindowWrapper->setGuest(this);
-        mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "ShaderManagementConsole", "mainWindowGeometry");
-
-        setWindowTitle("Shader Management Console");
-
-        setObjectName("ShaderManagementConsoleWindow");
-
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
         m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath)
             {
@@ -48,9 +37,6 @@ namespace ShaderManagementConsole
 
                 QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
             });
-
-        // Restore geometry and show the window
-        mainWindowWrapper->showFromSettings();
 
         // Disable unused actions
         m_actionNew->setVisible(false);

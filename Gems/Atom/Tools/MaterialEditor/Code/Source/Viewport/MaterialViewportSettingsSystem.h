@@ -11,54 +11,45 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
-#include <Viewport/MaterialViewportRequestBus.h>
+#include <Viewport/MaterialViewportSettingsRequestBus.h>
 
 namespace MaterialEditor
 {
-    //! MaterialViewportComponent registers reflected datatypes and manages different configurations for lighting and models displayed in the viewport
-    class MaterialViewportComponent
-        : public AZ::Component
-        , private MaterialViewportRequestBus::Handler
-        , private AZ::TickBus::Handler
-        , private AzFramework::AssetCatalogEventBus::Handler
+    //! MaterialViewportSettingsSystem manages storing and retrieving different viewport settings, loading and saving lighting and model
+    //! presets
+    class MaterialViewportSettingsSystem final
+        : public MaterialViewportSettingsRequestBus::Handler
+        , public AZ::TickBus::Handler
+        , public AzFramework::AssetCatalogEventBus::Handler
     {
     public:
-        AZ_COMPONENT(MaterialViewportComponent, "{A92305C3-32AB-4D50-BE4D-430FCF436C4E}");
-        AZ_DISABLE_COPY_MOVE(MaterialViewportComponent);
-
-        MaterialViewportComponent();
-        ~MaterialViewportComponent() = default;
+        AZ_RTTI(MaterialViewportSettingsSystem, "{3CA1A2F4-AD6E-478A-B1E8-565E66BD5B69}");
+        AZ_CLASS_ALLOCATOR(MaterialViewportSettingsSystem, AZ::SystemAllocator, 0);
+        AZ_DISABLE_COPY_MOVE(MaterialViewportSettingsSystem);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        MaterialViewportSettingsSystem() = default;
+        MaterialViewportSettingsSystem(const AZ::Crc32& toolId);
+        ~MaterialViewportSettingsSystem();
 
     private:
         void ClearContent();
 
-        // AZ::Component interface implementation
-        void Init() override;
-        void Activate() override;
-        void Deactivate() override;
-
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // MaterialViewportRequestBus::Handler overrides ...
+        // MaterialViewportSettingsRequestBus::Handler overrides ...
         void SetLightingPreset(const AZ::Render::LightingPreset& preset) override;
         const AZ::Render::LightingPreset& GetLightingPreset() const override;
         bool SaveLightingPreset(const AZStd::string& path) const override;
         bool LoadLightingPreset(const AZStd::string& path) override;
         bool LoadLightingPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastLightingPresetPath() const override;
-        AZ::Data::AssetId GetLastLightingPresetAssetId() const override;        
+        AZ::Data::AssetId GetLastLightingPresetAssetId() const override;
 
         void SetModelPreset(const AZ::Render::ModelPreset& preset) override;
         const AZ::Render::ModelPreset& GetModelPreset() const override;
@@ -66,7 +57,7 @@ namespace MaterialEditor
         bool LoadModelPreset(const AZStd::string& path) override;
         bool LoadModelPresetByAssetId(const AZ::Data::AssetId& assetId) override;
         AZStd::string GetLastModelPresetPath() const override;
-        AZ::Data::AssetId GetLastModelPresetAssetId() const override;        
+        AZ::Data::AssetId GetLastModelPresetAssetId() const override;
 
         void SetShadowCatcherEnabled(bool enable) override;
         bool GetShadowCatcherEnabled() const override;
@@ -86,6 +77,8 @@ namespace MaterialEditor
 
         void QueueLoadPresetCache(const AZ::Data::AssetInfo& assetInfo);
 
+        const AZ::Crc32 m_toolId = {};
+
         AZ::Render::LightingPreset m_lightingPreset;
         AZ::Render::ModelPreset m_modelPreset;
 
@@ -94,4 +87,4 @@ namespace MaterialEditor
 
         bool m_settingsNotificationPending = {};
     };
-}
+} // namespace MaterialEditor

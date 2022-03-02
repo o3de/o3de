@@ -14,6 +14,7 @@
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzQtComponents/Components/WindowDecorationWrapper.h>
 
 #include <QLabel>
 #include <QTimer>
@@ -25,10 +26,15 @@ namespace AtomToolsFramework
         , protected AtomToolsMainWindowRequestBus::Handler
     {
     public:
+        using Base = AzQtComponents::DockMainWindow;
+
         AtomToolsMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~AtomToolsMainWindow();
 
     protected:
+        void showEvent(QShowEvent* showEvent) override;
+        void closeEvent(QCloseEvent* closeEvent) override;
+
         // AtomToolsMainWindowRequestBus::Handler overrides...
         void ActivateWindow() override;
         bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation) override;
@@ -53,7 +59,9 @@ namespace AtomToolsFramework
 
         const AZ::Crc32 m_toolId = {};
 
-        AzQtComponents::FancyDocking* m_advancedDockManager = {};
+        QPointer<AzQtComponents::FancyDocking> m_advancedDockManager = {};
+        AzQtComponents::WindowDecorationWrapper* m_mainWindowWrapper = {};
+        bool m_shownBefore = {};
 
         QLabel* m_statusMessage = {};
         QLabel* m_statusBarFps = {};
