@@ -67,30 +67,25 @@ def Docking_BasicDockedTools():
 
         # Open an existing simple level
         hydra.open_base_level()
-        Report.info(f"############ open_base_level")
 
         # Make sure the Entity Outliner, Entity Inspector and Console tools are open
         general.open_pane("Entity Outliner (PREVIEW)")
         general.open_pane("Entity Inspector")
         general.open_pane("Console")
 
-        Report.info(f"############ open_panes")
         # Create an Entity to test with
         entity_original_name = 'MyTestEntity'
         entity_id = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())
         editor.EditorEntityAPIBus(bus.Event, 'SetName', entity_id, entity_original_name)
-        Report.info(f"############ Create entity")
 
         editor_window = pyside_utils.get_editor_main_window()
         entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner")
 
-        Report.info(f"############ Get Entity Outliner")
         # 1) Open the tools and dock them together in a floating tabbed widget.
         # We drag/drop it over the viewport since it doesn't allow docking, so this will undock it
         render_overlay = editor_window.findChild(QtWidgets.QWidget, "renderOverlay")
         pyside_utils.drag_and_drop(entity_outliner, render_overlay)
 
-        Report.info(f"############ drag_and_drop 1")
         # We need to grab a new reference to the Entity Outliner QDockWidget because when it gets moved
         # to the floating window, its parent changes so the wrapped instance we had becomes invalid
         entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner")
@@ -98,7 +93,6 @@ def Docking_BasicDockedTools():
         # Dock the Entity Inspector tabbed with the floating Entity Outliner
         entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
         pyside_utils.drag_and_drop(entity_inspector, entity_outliner)
-        Report.info(f"############ drag_and_drop 2")
 
         # We need to grab a new reference to the Entity Inspector QDockWidget because when it gets moved
         # to the floating window, its parent changes so the wrapped instance we had becomes invalid
@@ -108,7 +102,6 @@ def Docking_BasicDockedTools():
         console = editor_window.findChild(QtWidgets.QDockWidget, "Console")
         pyside_utils.drag_and_drop(console, entity_inspector)
 
-        Report.info(f"############ drag_and_drop 3")
         # Check to ensure all the tools are parented to the same QStackedWidget
         def check_all_panes_tabbed():
             entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
