@@ -69,12 +69,20 @@ def get_project_template_infos() -> list:
 
 #### Project methods ###
 
-def register_project(project_path: str, remove: bool = False):
+def register_project(project_path: str):
     """
-        Registers project with engine or removes it
+        Registers project with engine
 
         :param project_path: Project path to register
-        :param remove: bool if False register project, otherwise remove the project from registry
+    """
+    pass
+
+
+def unregister_project(project_path: str):
+    """
+        Unregisters project with engine
+
+        :param project_path: Project path to unregister
     """
     pass
 
@@ -163,14 +171,24 @@ def remove_gem_from_project(gem_path: str, project_path: str):
 
 #### Gem methods ###
 
-def register_gem(gem_path: str, project_path: str = None, remove: bool = False):
+def register_gem(gem_path: str, project_path: str = None,):
     """
-        Un/Registers gem with engine if only gem_path is provided
-        Un/Registers gem to project if path is provided
+        Registers gem with engine if only gem_path is provided
+        Registers gem to project if path is provided
 
         :param gem_path: Gem path to register
         :param project_path: Project path to register project gem with
-        :param remove: bool if False register gem, otherwise remove the gem from registry
+    """
+    pass
+
+
+def unregister_gem(gem_path: str, project_path: str = None,):
+    """
+        Unregisters gem with engine if only gem_path is provided
+        Unregisters gem to project if path is provided
+
+        :param gem_path: Gem path to unregister
+        :param project_path: Project path to unregister project gem with
     """
     pass
 
@@ -224,12 +242,20 @@ def is_gem_update_avaliable(gem_name: str, last_updated: str) -> bool:
 
 #### Gem Repo methods ###
 
-def register_gem_repo(repo_uri: str, remove: bool = False):
+def register_gem_repo(repo_uri: str):
     """
-        Un/Registers gem repo using register
+        Registers gem repo using register
 
         :param repo_uri: Uri of repo to register
-        :param remove: bool if False register repo, otherwise remove the repo from registry
+    """
+    pass
+
+
+def unregister_gem_repo(repo_uri: str):
+    """
+        Unregisters gem repo using register
+
+        :param repo_uri: Uri of repo to unregister
     """
     pass
 
