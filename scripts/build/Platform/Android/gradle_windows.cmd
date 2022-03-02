@@ -29,6 +29,11 @@ IF NOT "%ANDROID_GRADLE_PLUGIN%" == "" (
 
 IF NOT EXIST %OUTPUT_DIRECTORY% (
     mkdir %OUTPUT_DIRECTORY%
+) ELSE (
+    ECHO Clearing and reseting existing build folder
+    DEL /S /F /Q %OUTPUT_DIRECTORY%
+    RMDIR /S /Q %OUTPUT_DIRECTORY%
+    mkdir %OUTPUT_DIRECTORY%
 )
 
 REM Jenkins does not defined TMP
@@ -45,8 +50,6 @@ IF "%TMP%"=="" (
         )
     )
 )
-
-REM 
 
 REM Create a minimal project for the native build process
 IF EXIST "%TMP%\o3de_gradle_ar" (
