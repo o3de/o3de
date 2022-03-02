@@ -1,0 +1,123 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/RPI/BitOperations.azsli>
+
+
+#define ENABLE_DEBUG_ASSERT     1
+
+#define ENABLE_SHADER_DEBUG     1
+
+#define TEMP_NORMAL_OUTPUT      1
+
+
+// Options controlling various aspects of the rendering
+enum DebugOptions
+{
+    UseVertexNormal,
+    IgnoreDetailNormal,
+
+    OverrideAlbedo,
+    OverrideRoughness,
+    OverrideMetallic,
+
+    UseDebugLight,
+
+    Count
+};
+
+// Specifies what debug info to render to the view
+enum DebugView
+{
+    None,
+
+    Normal,
+    Tangent,
+    Bitangent,
+    
+    Albedo,
+    Roughness,
+    Metallic,
+
+    DiffuseLighting,
+    SpecularLighting,
+
+    Count
+};
+
+uint GetDebugOptions()
+{
+    // return ViewSrg::m_debugOptions;
+    return 0;
+}
+
+uint GetDebugOption(uint option)
+{
+    uint debugOptions = GetDebugOptions;
+    return GetBit(debugOptions, option);
+}
+
+uint GetDebugView()
+{
+    // return ViewSrg::m_debugView;
+    return 0;
+}
+
+void DebugModifySurface(inout float3 normal, inout float3 vertexNormal, 
+                        inout float3 tangent, inout float3 verexTangent,
+                        inout float3 bitangent, inout float3 vertexBitangent,
+                        inout float3 baseColor, inout float3 albedo,
+                        inout float roughness, inout float metallic)
+{
+#if ENABLE_SHADER_DEBUG
+
+    uint debugOptions = ViewSrg::m_debugOptions;
+    debugOptions = 0;
+
+    if( GetDebugOption( DebugOptions::UseVertexNormal ) )
+    {
+        normal = vertexNormal;
+        tangent = vertexTangent;
+        bitangent = vertexBitangent;
+    }
+
+    if( GetDebugOption( DebugOptions::OverrideAlbedo ) )
+    {
+        albedo = SceneSrg::m_debugOverrideAlbedo;
+    }
+
+    if( GetDebugOption( DebugOptions::OverrideRoughness ) )
+    {
+        roughness = SceneSrg::m_debugOverrideRoughness;
+    }
+
+    if( GetDebugOption( DebugOptions::OverrideMetallic ) )
+    {
+        metallic = SceneSrg::m_debugOverrideMetallic;
+    }
+
+    // float3 m_debugLightingDirection;
+    // float3 m_debugLightingIntensity;
+
+#endif
+}
+
+void DebugModifyOutput(inout float4 output01, inout float4 output02, 
+                       float3 diffuseLighting, float3 specularLighting,
+                       uint debugView)
+{
+    uint debugView = ViewSrg::m_debugView;
+
+
+
+}
+
+
+
