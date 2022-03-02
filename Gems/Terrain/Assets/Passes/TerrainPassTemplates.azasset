@@ -11,6 +11,10 @@
             {
                 "Name": "TerrainMacroTextureComputePassTemplate",
                 "Path": "Passes/TerrainMacroTextureComputePass.pass"
+            },
+            {
+                "Name": "TerrainParentPassTemplate",
+                "Path": "Passes/TerrainParentPass.pass"
             }
         ]
     }

@@ -87,7 +87,6 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        AZ_TracePrintf("ScriptCanvas", "DataSystem::CompileBuilderDataInternal SUCCEEDED: %s", sourceHandle.ToString().c_str());
         parseOutcome.GetValue().SetHandlesToDescription();
         result.data = parseOutcome.TakeValue();
         result.status = BuilderDataStatus::Good;
