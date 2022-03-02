@@ -77,7 +77,5 @@ namespace Terrain
         AZ::RHI::ShaderInputNameIndex m_currentClipmapCentersIndex = "m_currentClipmapCenters";
         AZ::RHI::ShaderInputNameIndex m_previousClipmapCentersIndex = "m_previousClipmapCenters";
         AZ::RHI::ShaderInputNameIndex m_fullUpdateFlagIndex = "m_fullUpdateFlag";
-
-        float m_debugFlag = 0.0f;
     };
 } // namespace AZ::Render
