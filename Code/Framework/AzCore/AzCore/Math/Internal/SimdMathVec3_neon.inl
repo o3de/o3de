@@ -378,7 +378,7 @@ namespace AZ
         {
             // NeonQuad::CmpAllGt compares all 4 elements.
             // This makes sure unused fourth element of arg1 > arg2.
-            return NeonQuad::CmpAllLt(
+            return NeonQuad::CmpAllGt(
                 NeonQuad::ReplaceFourth(arg1, 1.0f),
                 NeonQuad::ReplaceFourth(arg2, 0.0f));
         }
