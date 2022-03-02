@@ -68,7 +68,6 @@
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Viewport/ViewportBus.h>
-#include <GridMate/Memory.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include "Application.h"
