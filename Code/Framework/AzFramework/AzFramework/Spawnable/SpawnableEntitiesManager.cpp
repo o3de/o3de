@@ -297,7 +297,8 @@ namespace AzFramework
         m_totalTickets++;
         m_ticketsPendingRegistration++;
         AZ_Assert(
-            m_ticketsPendingRegistration <= m_totalTickets, "There are less total tickets than there are tickets pending registration.");
+            m_ticketsPendingRegistration <= m_totalTickets,
+            "There are less total entity spawn tickets than there are tickets pending registration in the SpawnableEntitiesManager.");
 
         RegisterTicketCommand queueEntry;
         queueEntry.m_ticket = result;
@@ -539,7 +540,7 @@ namespace AzFramework
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
                 {
                     AZ::Entity* clone = (*it);
-                    clone->SetSpawnTicketId(request.m_ticketId);
+                    clone->SetEntitySpawnTicketId(request.m_ticketId);
                     GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
                 }
 
@@ -672,7 +673,7 @@ namespace AzFramework
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
                 {
                     AZ::Entity* clone = (*it);
-                    clone->SetSpawnTicketId(request.m_ticketId);
+                    clone->SetEntitySpawnTicketId(request.m_ticketId);
                     GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
                 }
 
@@ -701,7 +702,7 @@ namespace AzFramework
                 if (entity != nullptr)
                 {
                     // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
-                    entity->SetSpawnTicketId(0);
+                    entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
@@ -735,7 +736,7 @@ namespace AzFramework
                 if (*entityIterator != nullptr && (*entityIterator)->GetId() == request.m_entityId)
                 {
                     // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
-                    (*entityIterator)->SetSpawnTicketId(0);
+                    (*entityIterator)->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, (*entityIterator)->GetId());
                     AZStd::iter_swap(entityIterator, spawnedEntities.rbegin());
@@ -772,7 +773,7 @@ namespace AzFramework
                 if (entity != nullptr)
                 {
                     // Setting it to 0 is needed to avoid the infite loop between GameEntityContext and SpawnableEntitiesManager.
-                    entity->SetSpawnTicketId(0);
+                    entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
@@ -975,7 +976,8 @@ namespace AzFramework
         {
             if (m_ticketsPendingRegistration > 0)
             {
-                // There are still tickets pending registration, which may hold the reference, so 
+                // There are still tickets pending registration, which may hold the reference, so delay this request
+                // until all tickets are registered and it's known for sure if the ticket doesn't exist anymore.
                 return CommandResult::Requeue;
             }
             else
@@ -999,7 +1001,8 @@ namespace AzFramework
             request.m_ticket->m_currentRequestId++;
             AZ_Assert(
                 m_ticketsPendingRegistration > 0,
-                "Attempting to decrement the number of tickets pending registration while there are no registrations pending.");
+                "Attempting to decrement the number of entity spawn tickets pending registration while there are no registrations pending "
+                "in the SpawnableEntitiesManager.");
             m_ticketsPendingRegistration--;
             return CommandResult::Executed;
         }
@@ -1018,7 +1021,7 @@ namespace AzFramework
                 if (entity != nullptr)
                 {
                     // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
-                    entity->SetSpawnTicketId(0);
+                    entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
@@ -1027,7 +1030,9 @@ namespace AzFramework
             m_entitySpawnTicketMap.erase(request.m_ticket->m_ticketId);
 
             delete request.m_ticket;
-            AZ_Assert(m_totalTickets > 0, "Attempting to decrement the total number of tickets while it's zero.");
+            AZ_Assert(
+                m_totalTickets > 0,
+                "Attempting to decrement the total number of entity spawn tickets while are zero tickets in the SpawnableEntitiesManager.");
             m_totalTickets--;
 
             return CommandResult::Executed;

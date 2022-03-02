@@ -181,7 +181,7 @@ namespace AzFramework
         EntitySpawnTicket& operator=(const EntitySpawnTicket& rhs);
         EntitySpawnTicket& operator=(EntitySpawnTicket&& rhs);
 
-        //! Returns an id that uniquely identifies this ticket or 0 if not spawnable has been assigned.
+        //! Returns an id that uniquely identifies this ticket or 0 if no spawnable has been assigned.
         Id GetId() const;
         //! Returns the assets associated with the ticket or a nullptr if no spawnable has been assigned yet.
         const AZ::Data::Asset<Spawnable>* GetSpawnable() const;
