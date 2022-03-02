@@ -21,12 +21,22 @@ namespace AzToolsFramework
     class ViewBookmarkLoaderInterface
     {
     public:
-        AZ_RTTI(ViewBookmarkLoaderInterface, "{71E7E178-4107-4975-A6E6-1C4B005C981A}");
+        AZ_RTTI(ViewBookmarkLoaderInterface, "{71E7E178-4107-4975-A6E6-1C4B005C981A}")
 
-        virtual void SaveBookmarkSettingsFile() = 0;
-        virtual bool SaveBookmark(ViewBookmark bookamark) = 0;
+        enum StorageMode
+        {
+            Shared = 0,
+            Local = 1,
+            Invalid = -1
+        };
+
+        virtual bool SaveBookmark(ViewBookmark bookamark, StorageMode mode) = 0;
         virtual bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) = 0;
         virtual bool LoadViewBookmarks() = 0;
         virtual ViewBookmark GetBookmarkAtIndex(int index) const = 0;
+        virtual ViewBookmark GetLastKnownLocationInLevel() const = 0;
+
+    private:
+        virtual void SaveBookmarkSettingsFile() = 0;
     };
 } // namespace AzToolsFramework

@@ -12,22 +12,37 @@
 
 namespace AzToolsFramework
 {
-    class ViewBookmarkLoader final : public ViewBookmarkLoaderInterface
+    namespace Prefab
     {
-    public:
-        AZ_CLASS_ALLOCATOR(ViewBookmarkLoader, AZ::SystemAllocator, 0);
-        AZ_RTTI(ViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkLoaderInterface);
+        class ViewBookmarkLoader final : public ViewBookmarkLoaderInterface
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(ViewBookmarkLoader, AZ::SystemAllocator, 0);
+            AZ_RTTI(ViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkLoaderInterface);
 
-        void RegisterViewBookmarkLoaderInterface();
-        void UnregisterViewBookmarkLoaderInterface();
+            void RegisterViewBookmarkLoaderInterface();
+            void UnregisterViewBookmarkLoaderInterface();
 
-        void SaveBookmarkSettingsFile() override;
-        bool SaveBookmark(ViewBookmark bookamark) override;
-        bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
-        bool LoadViewBookmarks() override;
-        ViewBookmark GetBookmarkAtIndex(int index) const override;
+            bool SaveBookmark(ViewBookmark bookamark, StorageMode mode) override;
 
-    private:
-        ViewBookmarkComponent* FindBookmarkComponent() const;
-    };
+            bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
+            bool LoadViewBookmarks() override;
+            ViewBookmark GetBookmarkAtIndex(int index) const override;
+            ViewBookmark GetLastKnownLocationInLevel() const override;
+
+        private:
+            void SaveBookmarkSettingsFile() override;
+            bool SaveLocalBookmark(ViewBookmark& bookmark, bool isLastKnownLocation = false);
+            bool SaveSharedBookmark(ViewBookmark& bookmark);
+            ViewBookmarkComponent* FindBookmarkComponent() const;
+            AZStd::string GenerateBookmarkFileName() const;
+
+        private:
+            AZStd::vector<ViewBookmark> m_localBookmarks;
+            ViewBookmark m_lastKnownLocation;
+            size_t m_localBookmarkCount = 0;
+            AZStd::string m_bookmarkfileName;
+        };
+
+    } // namespace Prefab
 } // namespace AzToolsFramework

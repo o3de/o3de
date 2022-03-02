@@ -16,16 +16,12 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(ViewBookmark, AZ::SystemAllocator, 0);
         AZ_RTTI(ViewBookmark, "{522A38D9-6FFF-4B96-BECF-B4D0F7ABCD25}");
 
-        ViewBookmark()
-            : m_position(AZ::Vector3::CreateZero())
-            , m_rotation(AZ::Vector3::CreateZero())
-        {
-        }
+        ViewBookmark() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Vector3 m_position;
-        AZ::Vector3 m_rotation;
+        AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();
     };
 
     struct EditorViewBookmarks final
@@ -37,7 +33,7 @@ namespace AzToolsFramework
 
         AZStd::string GetBookmarkLabel(int index) const;
 
-        ViewBookmark m_lastKnownLocation;
+        AZStd::string m_localBookmarksFileName;
         AZStd::vector<ViewBookmark> m_viewBookmarks;
     };
 
@@ -50,17 +46,18 @@ namespace AzToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+            //////////////////////////////////////////////////////////////////////////
+            // AZ::Component interface implementation
         void Activate() override{};
         void Deactivate() override{};
-        //////////////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////
 
         ViewBookmark GetBookmarkAtIndex(int index) const;
         void AddBookmark(ViewBookmark viewBookmark);
-        void SaveLastKnownLocation(ViewBookmark newLastKnownLocation);
-        ViewBookmark GetLastKnownLocation() const;
+        void RemoveBookmark(int index);
         void ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark);
+        AZStd::string GetLocalBookmarksFileName() const;
+        void SetLocalBookmarksFileName(const AZStd::string& localBookmarksFileName);
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
