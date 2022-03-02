@@ -716,7 +716,7 @@ void CCryEditApp::OnUpdateFileOpen(QAction* action)
 
 bool CCryEditApp::ShowEnableDisableGemDialog(const QString& title, const QString& message)
 {
-    const QString informativeMessage = QObject::tr("Please follow the instructions <a href=\"http://docs.aws.amazon.com/lumberyard/latest/userguide/gems-system-gems.html\">here</a>, after which the Editor will be re-launched automatically.");
+    const QString informativeMessage = QObject::tr("Please follow the instructions <a href=\"https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/\">here</a>, after which the Editor will be re-launched automatically.");
 
     QMessageBox box(AzToolsFramework::GetActiveWindow());
     box.addButton(QObject::tr("Continue"), QMessageBox::AcceptRole);
@@ -1961,7 +1961,7 @@ void CCryEditApp::OnUpdateShowWelcomeScreen(QAction* action)
 
 void CCryEditApp::OnDocumentationTutorials()
 {
-    QString webLink = tr("https://o3deorg.netlify.app/docs/learning-guide/");
+    QString webLink = tr("https://o3de.org/docs/learning-guide/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -1973,7 +1973,7 @@ void CCryEditApp::OnDocumentationGlossary()
 
 void CCryEditApp::OnDocumentationO3DE()
 {
-    QString webLink = tr("https://o3deorg.netlify.app/docs/");
+    QString webLink = tr("https://o3de.org/docs/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -1985,7 +1985,7 @@ void CCryEditApp::OnDocumentationGamelift()
 
 void CCryEditApp::OnDocumentationReleaseNotes()
 {
-    QString webLink = tr("https://o3deorg.netlify.app/docs/release-notes/");
+    QString webLink = tr("https://o3de.org/docs/release-notes/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -1997,7 +1997,7 @@ void CCryEditApp::OnDocumentationGameDevBlog()
 
 void CCryEditApp::OnDocumentationForums()
 {
-    QString webLink = tr("https://o3deorg.netlify.app/community/");
+    QString webLink = tr("https://o3de.org/community/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 

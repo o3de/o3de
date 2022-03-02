@@ -871,7 +871,7 @@ void EditorWindow::AddMenu_Help()
 {
     const char* documentationUrl = "https://o3de.org/docs/user-guide/interactivity/user-interface/";
     const char* tutorialsUrl = "https://o3de.org/docs/learning-guide/tutorials/";
-    const char* forumUrl = "https://o3deorg.netlify.app/community/";
+    const char* forumUrl = "https://o3de.org/community/";
 
     QMenu* menu = menuBar()->addMenu("&Help");
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);

@@ -604,7 +604,7 @@ bool ApplicationManager::Activate()
     // the following controls what registry keys (or on mac or linux what entries in home folder) are used
     // so they should not be translated!
     qApp->setOrganizationName(GetOrganizationName());
-    qApp->setOrganizationDomain("amazon.com");
+    qApp->setOrganizationDomain("o3de.org");
     qApp->setApplicationName(GetApplicationName());
 
     return true;

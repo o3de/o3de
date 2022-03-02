@@ -71,9 +71,8 @@ namespace AZ
          * In that case, the component is in the default state (not activated). However, 
          * except in the case of tools, you typically should not use this function. It is a best 
          * practice to access other components through EBuses instead of accessing them directly. 
-         * For more information, see the 
-         * <a href="http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-intro.html">Programmer's Guide to Entities and Components</a> 
-         * in the Open 3D Engine Developer Guide.
+         * For more information, see the O3DE
+         * <a href="https://www.o3de.org/docs/user-guide/programming/components/">Component Development</a> documentation.
          * @return A pointer to the entity. If the component is not attached to any entity,
          * the return value is a null pointer.
          */
