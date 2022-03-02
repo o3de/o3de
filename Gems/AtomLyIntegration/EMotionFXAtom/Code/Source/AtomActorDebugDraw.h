@@ -39,6 +39,8 @@ namespace AZ::Render
     class AtomActorDebugDraw
     {
     public:
+        AZ_CLASS_ALLOCATOR(AtomActorDebugDraw, AZ::SystemAllocator, 0)
+
         struct TrajectoryPathParticle
         {
             EMotionFX::Transform m_worldTm;
@@ -46,16 +48,10 @@ namespace AZ::Render
 
         struct TrajectoryTracePath
         {
+            AZ_CLASS_ALLOCATOR(AtomActorDebugDraw::TrajectoryTracePath, AZ::SystemAllocator, 0)
             AZStd::vector<TrajectoryPathParticle> m_traceParticles;
-            const EMotionFX::ActorInstance* m_actorInstance;
-            float m_timePassed;
-
-            TrajectoryTracePath()
-            {
-                m_traceParticles.reserve(250);
-                m_timePassed = 0.0f;
-                m_actorInstance = NULL;
-            }
+            const EMotionFX::ActorInstance* m_actorInstance = nullptr;
+            float m_timePassed = 0.0f;
         };
 
         AtomActorDebugDraw(AZ::EntityId entityId);
@@ -106,14 +102,12 @@ namespace AZ::Render
             float size,                 //!< The size value in units is used to control the scaling of the axis. */
             bool selected,              //!< Set to true if you want to render the axis using the selection color. */
             bool renderAxisName = false);
-
-
-
         void RenderTrajectoryPath(
             AzFramework::DebugDisplayRequests* debugDisplay,
             const EMotionFX::ActorInstance* actorInstance,
             const AZ::Color& headColor,
             const AZ::Color& pathColor);
+        // Return a non-owning trajectory path pointer.
         TrajectoryTracePath* FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance);
         EMotionFX::Mesh* m_currentMesh = nullptr; //!< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                                   //!< NULL in case we haven't pre-calculated any positions yet.

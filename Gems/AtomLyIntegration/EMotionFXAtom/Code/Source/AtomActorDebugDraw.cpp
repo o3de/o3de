@@ -903,14 +903,19 @@ namespace AZ::Render
 
         const EMotionFX::Actor* actor = actorInstance->GetActor();
         const EMotionFX::Node* motionExtractionNode = actor->GetMotionExtractionNode();
+        const uint32 particleSampleRate = 30;
+        const float minLengthEstimate = 0.0001f;
+        const float maxdeltaRot = 0.99;
+        const uint32 maxNumberParticles = 50;
         if (motionExtractionNode)
         {
             const EMotionFX::Transform& worldTM = actorInstance->GetWorldSpaceTransform();
 
-            bool distanceTraveledEnough = false;
+            // Add a particle to the trajectory path once we travel certain distance.
+            bool distanceTravelledEnough = false;
             if (trajectoryPath->m_traceParticles.empty())
             {
-                distanceTraveledEnough = true;
+                distanceTravelledEnough = true;
             }
             else
             {
@@ -923,17 +928,15 @@ namespace AZ::Render
 
                 const AZ::Vector3 deltaPos = worldTM.m_position - oldPos;
                 const float deltaRot = AZStd::abs(rotation.Dot(oldRot));
-                if (deltaPos.GetLengthEstimate() > 0.0001f || deltaRot < 0.99f)
+                if (deltaPos.GetLengthEstimate() > minLengthEstimate || deltaRot < maxdeltaRot)
                 {
-                    distanceTraveledEnough = true;
+                    distanceTravelledEnough = true;
                 }
             }
 
             // Add the time delta to the time passed since the last add
             trajectoryPath->m_timePassed += deltaTime;
-
-            const uint32 particleSampleRate = 30;
-            if (trajectoryPath->m_timePassed >= (1.0f / particleSampleRate) && distanceTraveledEnough)
+            if (trajectoryPath->m_timePassed >= (1.0f / particleSampleRate) && distanceTravelledEnough)
             {
                 // Create the particle, fill its data and add it to the trajectory trace path
                 TrajectoryPathParticle trajectoryParticle;
@@ -946,7 +949,7 @@ namespace AZ::Render
         }
 
         // Make sure we don't have too many items in our array
-        if (trajectoryPath->m_traceParticles.size() > 50)
+        if (trajectoryPath->m_traceParticles.size() > maxNumberParticles)
         {
             trajectoryPath->m_traceParticles.erase(begin(trajectoryPath->m_traceParticles));
         }
@@ -1023,7 +1026,7 @@ namespace AZ::Render
             }
         }
 
-        // we haven't created a path for the given actor instance yet, do so
+        // We haven't created a path for the given actor instance yet, do so
         TrajectoryTracePath* tracePath = new TrajectoryTracePath();
 
         tracePath->m_actorInstance = actorInstance;
@@ -1053,12 +1056,12 @@ namespace AZ::Render
 
         // Fast access to the trajectory trace particles
         const AZStd::vector<TrajectoryPathParticle>& traceParticles = trajectoryPath->m_traceParticles;
-        const size_t numTraceParticles = traceParticles.size();
         if (traceParticles.empty())
         {
             return;
         }
 
+        const size_t numTraceParticles = traceParticles.size();
         const float trailWidthHalf = 0.25f;
         const float trailLength = 2.0f;
         const float arrowWidthHalf = 0.75f;
@@ -1072,10 +1075,10 @@ namespace AZ::Render
         //////////////////////////////////////////////////////////////////////////////////////////////////////
         // Get the position and some direction vectors of the trajectory node matrix
         EMotionFX::Transform worldTM = traceParticles[numTraceParticles - 1].m_worldTm;
-        AZ::Vector3 right = trajectoryWorldTM.GetBasisX().GetNormalized();
-        AZ::Vector3 center = trajectoryWorldTM.GetTranslation();
-        AZ::Vector3 forward = trajectoryWorldTM.GetBasisY().GetNormalized();
-        AZ::Vector3 up(0.0f, 0.0f, 1.0f);
+        const AZ::Vector3 right = trajectoryWorldTM.GetBasisX().GetNormalized();
+        const AZ::Vector3 center = trajectoryWorldTM.GetTranslation();
+        const AZ::Vector3 forward = trajectoryWorldTM.GetBasisY().GetNormalized();
+        const AZ::Vector3 up(0.0f, 0.0f, 1.0f);
 
         AZ::Vector3 vertices[7];
         AZ::Vector3 oldLeft, oldRight;
@@ -1134,7 +1137,7 @@ namespace AZ::Render
             worldTM = traceParticles[i].m_worldTm;
             a = worldTM.m_position;
             b = traceParticles[i - 1].m_worldTm.m_position;
-            right = worldTM.ToAZTransform().GetBasisX().GetNormalized();
+            AZ::Vector3 particleRight = worldTM.ToAZTransform().GetBasisX().GetNormalized();
 
             if (i > 1 && i < numTraceParticles - 3)
             {
@@ -1145,7 +1148,7 @@ namespace AZ::Render
                 AZ::Vector3 delta = deltaA + deltaB + deltaC + deltaD;
                 delta = delta.GetNormalizedSafe();
 
-                right = up.Cross(delta);
+                particleRight = up.Cross(delta);
             }
 
             /*
@@ -1164,8 +1167,8 @@ namespace AZ::Render
             // Construct the arrow vertices
             vertices[0] = oldLeft;
             vertices[1] = oldRight;
-            vertices[2] = b + AZ::Vector3(-right * trailWidthHalf) * scale;
-            vertices[3] = b + AZ::Vector3(right * trailWidthHalf) * scale;
+            vertices[2] = b + AZ::Vector3(-particleRight * trailWidthHalf) * scale;
+            vertices[3] = b + AZ::Vector3(particleRight * trailWidthHalf) * scale;
 
             // Make sure we perfectly align with the arrow head
             if (i == numTraceParticles - 1)
