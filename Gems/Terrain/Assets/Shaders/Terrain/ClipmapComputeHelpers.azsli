@@ -19,26 +19,83 @@
 //         |    ------    |         level 6 pyramid mip 2
 //         |      --      |         level 7 pyramid mip 3
 
-float2 CalculateWorldPosition(uint2 pixelPosition, float2 viewPosition, uint clipmapLevel)
+float2 GetPreviousClipmapCenter(uint clipmapLevel)
 {
-    float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y);
-    normalizedPixelPosition = normalizedPixelPosition / ((float)CLIPMAP_SIZE) - 0.5;
+    return float2(PassSrg::m_previousClipmapCenters[clipmapLevel].xy);
+}
+
+float2 GetCurrentClipmapCenter(uint clipmapLevel)
+{
+    return float2(PassSrg::m_currentClipmapCenters[clipmapLevel].xy);
+}
+
+float2 GetPreviousWorldPosition(uint2 pixelPosition, uint clipmapLevel)
+{
+    float2 previousClipmapCenter = GetPreviousClipmapCenter(clipmapLevel);
+
+    float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y) / ((float)CLIPMAP_SIZE);
+    
+    float2 distance = normalizedPixelPosition - previousClipmapCenter;
+
+    distance.x -= 1.0 * step(0.5, distance.x);
+    distance.x += 1.0 * step(distance.x, -0.5);
+    distance.y -= 1.0 * step(0.5, distance.y);
+    distance.y += 1.0 * step(distance.y, -0.5);
 
     float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
     float2 worldSize = PassSrg::m_worldBoundsMax.xy - PassSrg::m_worldBoundsMin.xy;
-    float2 viewRelativePosition = normalizedPixelPosition * (worldSize * clipmapScale);
-
-    return viewPosition + viewRelativePosition;
+    float2 viewRelativePosition = distance * (worldSize * clipmapScale / 2.0);
+    return PassSrg::m_previousViewPosition.xy + viewRelativePosition;
 }
 
-float2 ddxPosition(uint2 pixelPosition, float2 viewPosition, uint clipmapLevel)
+float2 GetCurrentWorldPosition(uint2 pixelPosition, uint clipmapLevel)
+{
+    float2 currentClipmapCenter = GetCurrentClipmapCenter(clipmapLevel);
+
+    float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y) / ((float)CLIPMAP_SIZE);
+    
+    float2 distance = normalizedPixelPosition - currentClipmapCenter;
+
+    distance.x -= 1.0 * step(0.5, distance.x);
+    distance.x += 1.0 * step(distance.x, -0.5);
+    distance.y -= 1.0 * step(0.5, distance.y);
+    distance.y += 1.0 * step(distance.y, -0.5);
+
+    float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
+    float2 worldSize = PassSrg::m_worldBoundsMax.xy - PassSrg::m_worldBoundsMin.xy;
+    float2 viewRelativePosition = distance * (worldSize * clipmapScale);
+    return PassSrg::m_currentViewPosition.xy + viewRelativePosition;
+}
+
+bool NeedsUpdate(uint2 pixelPosition, uint clipmapLevel)
+{
+    float2 worldPosition = GetPreviousWorldPosition(pixelPosition, clipmapLevel);
+    
+    float2 currentViewPosition = PassSrg::m_currentViewPosition.xy;
+    float2 distance = abs(worldPosition - currentViewPosition);
+    
+    float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
+    float2 worldSize = PassSrg::m_worldBoundsMax.xy - PassSrg::m_worldBoundsMin.xy;
+    
+    float2 clipmapMaxDistance = worldSize * (clipmapScale / 2.0);
+    
+    // If the previous world position of this texel is within the current
+    // range of the clipmap, then we can claim this texel is still valid
+    // and it represents the same world position as the clipmap in the previous
+    // frame.
+    return any(clipmapMaxDistance < distance);
+}
+
+// Clipmap generation works like a pixel shader, but derivative functions are
+// not available in compute shaders.
+float2 ddxPosition(uint2 pixelPosition, uint clipmapLevel)
 {
     uint2 pixelPositionNextX = uint2(pixelPosition.x + 1, pixelPosition.y);
-    return CalculateWorldPosition(pixelPositionNextX, viewPosition, clipmapLevel) - CalculateWorldPosition(pixelPosition, viewPosition, clipmapLevel);
+    return GetCurrentWorldPosition(pixelPositionNextX, clipmapLevel) - GetCurrentWorldPosition(pixelPosition, clipmapLevel);
 }
 
-float2 ddyPosition(uint2 pixelPosition, float2 viewPosition, uint clipmapLevel)
+float2 ddyPosition(uint2 pixelPosition, uint clipmapLevel)
 {
     uint2 pixelPositionNextY = uint2(pixelPosition.x, pixelPosition.y + 1);
-    return CalculateWorldPosition(pixelPositionNextY, viewPosition, clipmapLevel) - CalculateWorldPosition(pixelPosition, viewPosition, clipmapLevel);
+    return GetCurrentWorldPosition(pixelPositionNextY, clipmapLevel) - GetCurrentWorldPosition(pixelPosition, clipmapLevel);
 }

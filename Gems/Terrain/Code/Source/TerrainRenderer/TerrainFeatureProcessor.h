@@ -83,6 +83,8 @@ namespace Terrain
 
         void Initialize();
 
+        void CreateClipmaps();
+
         void UpdateHeightmapImage();
         void PrepareMaterialData();
 

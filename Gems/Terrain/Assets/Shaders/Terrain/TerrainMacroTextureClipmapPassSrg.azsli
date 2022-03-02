@@ -41,8 +41,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float3 m_worldBoundsMin;
     float3 m_worldBoundsMax;
 
+    float4 m_previousClipmapCenters[5];
+    float4 m_currentClipmapCenters[5];
+
+    uint m_fullUpdateFlag;
+
     RWTexture2D<float4> m_macroColorClipmaps[4];
     RWTexture2D<float4> m_macroColorClipmapPyramid;
-
-    //RWTexture2D<float4> m_macroNormalClipmaps[5];
 }
