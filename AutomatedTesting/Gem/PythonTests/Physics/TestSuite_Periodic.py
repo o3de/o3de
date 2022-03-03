@@ -505,7 +505,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_Joints_BallBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallBreakable as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_HingeNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeNoLimitsConstrained as test_module
