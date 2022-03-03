@@ -78,13 +78,16 @@ namespace SandboxEditor
                 AzFramework::WindowRequestBus::EventResult(
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                if (m_virtualNormalizedPosition && (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority))
+                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
                 {
-                    (*m_virtualNormalizedPosition) += position->m_normalizedPositionDelta;
-                }
-                else
-                {
-                    m_virtualNormalizedPosition = AZStd::optional<AZ::Vector2>{ position->m_normalizedPosition };
+                    if (m_virtualNormalizedPosition)
+                    {
+                        (*m_virtualNormalizedPosition) += position->m_normalizedPositionDelta;
+                    }
+                    else
+                    {
+                        m_virtualNormalizedPosition = { position->m_normalizedPosition };
+                    }
                 }
 
                 const auto normalizedPosition = m_virtualNormalizedPosition.value_or(position->m_normalizedPosition);
@@ -152,11 +155,11 @@ namespace SandboxEditor
                 }
                 if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
                 {
-                    m_virtualNormalizedPosition = AZStd::nullopt;
                     AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
                         GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
                         AzToolsFramework::CursorInputMode::CursorModeNone);
                 }
+                m_virtualNormalizedPosition = AZStd::nullopt;
             }
         }
         else if (auto keyboardModifier = Helpers::GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
