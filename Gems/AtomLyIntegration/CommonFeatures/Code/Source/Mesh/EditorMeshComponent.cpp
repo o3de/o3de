@@ -250,16 +250,18 @@ namespace AZ
                 m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
             }
 
+            // Register this component with the editor mode feedback system
+            if (auto* editorModeFeedbackInterface = AZ::Interface<EditorModeFeedbackInterface>::Get())
+            {
+                editorModeFeedbackInterface->RegisterOrUpdateDrawableComponent(
+                    EntityComponentIdPair{ GetEntityId(), GetId() }, m_controller.m_meshHandle);
+            }
+
             // Refresh the tree when the model loads to update UI based on the model.
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
                 AzToolsFramework::Refresh_EntireTree);
 
-            // Register this component with the editor mode feedback system
-            if (auto* editorModeFeedbackInterface = AZ::Interface<EditorModeFeedbackInterface>::Get())
-            {
-                editorModeFeedbackInterface->RegisterDrawableComponent({ GetEntityId(), GetId() }, m_controller.m_meshHandle);
-            }
         }
 
         AZ::u32 EditorMeshComponent::OnConfigurationChanged()

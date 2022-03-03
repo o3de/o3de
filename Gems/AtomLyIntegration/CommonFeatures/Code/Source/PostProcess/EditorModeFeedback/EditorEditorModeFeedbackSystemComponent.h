@@ -16,6 +16,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
+#include <Atom/RPI.Reflect/Model/ModelLodIndex.h>
 #include <AtomCore/Instance/Instance.h>
 
 namespace AZ
@@ -48,7 +49,8 @@ namespace AZ
 
             // EditorModeFeedbackInterface overrides ...
             bool IsEnabled() const override;
-            void RegisterDrawableComponent(EntityComponentIdPair entityComponentId, const MeshFeatureProcessorInterface::MeshHandle& meshHandle) override;
+            void RegisterOrUpdateDrawableComponent(
+                EntityComponentIdPair entityComponentId, const MeshFeatureProcessorInterface::MeshHandle& meshHandle) override;
 
         private:
             // ViewportEditorModeNotificationsBus overrides ...
@@ -70,6 +72,7 @@ namespace AZ
                 ~MeshHandleDrawPackets();
 
                 const MeshFeatureProcessorInterface::MeshHandle* m_meshHandle;
+                RPI::ModelLodIndex m_modelLodIndex = RPI::ModelLodIndex::Null; 
                 AZStd::vector<RPI::MeshDrawPacket> m_meshDrawPackets;
             };
             

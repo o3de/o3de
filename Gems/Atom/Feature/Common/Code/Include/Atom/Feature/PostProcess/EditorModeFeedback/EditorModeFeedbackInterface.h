@@ -26,10 +26,10 @@ namespace AZ
             //! Returns true if the editor mode feedback effect is enabled, otherwise false.
             virtual bool IsEnabled() const = 0;
 
-            //! Registers a drawable component to be associated with the provided entity id.
+            //! Registers a new (or updates an existing) drawable component to be associated with the provided entity id.
             //! @param entityComponentId The id of the entity and drawable component to be registered.
             //! @param meshHandle The handle of this drawable component's mesh.
-            virtual void RegisterDrawableComponent(
+            virtual void RegisterOrUpdateDrawableComponent(
                 EntityComponentIdPair entityComponentId, const MeshFeatureProcessorInterface::MeshHandle& meshHandle) = 0;
         };
     } // namespace Render

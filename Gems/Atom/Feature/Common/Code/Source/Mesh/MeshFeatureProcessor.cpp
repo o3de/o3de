@@ -75,7 +75,12 @@ namespace AZ
 
         TransformServiceFeatureProcessorInterface::ObjectId MeshFeatureProcessor::GetObjectId(const MeshHandle& meshHandle) const
         {
-            return meshHandle->m_objectId;
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_objectId;
+            }
+
+            return TransformServiceFeatureProcessorInterface::ObjectId::Null;
         }
 
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
