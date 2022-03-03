@@ -352,7 +352,8 @@ namespace AZ
 
         float FreeListAllocator::ComputeFragmentation() const
         {
-            if (m_byteCountTotal == 0 || m_descriptor.m_capacityInBytes == static_cast<size_t>(-1))
+            if (m_byteCountTotal == 0 || m_byteCountTotal == m_descriptor.m_capacityInBytes ||
+                m_descriptor.m_capacityInBytes == static_cast<size_t>(-1))
             {
                 return 0.f;
             }
