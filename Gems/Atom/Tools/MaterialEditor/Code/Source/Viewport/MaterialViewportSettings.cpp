@@ -16,15 +16,13 @@ namespace MaterialEditor
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<MaterialViewportSettings, AZ::UserSettings>()
-                ->Version(1)
+            serializeContext->Class<MaterialViewportSettings>()
+                ->Version(3)
                 ->Field("enableGrid", &MaterialViewportSettings::m_enableGrid)
                 ->Field("enableShadowCatcher", &MaterialViewportSettings::m_enableShadowCatcher)
                 ->Field("enableAlternateSkybox", &MaterialViewportSettings::m_enableAlternateSkybox)
                 ->Field("fieldOfView", &MaterialViewportSettings::m_fieldOfView)
                 ->Field("displayMapperOperationType", &MaterialViewportSettings::m_displayMapperOperationType)
-                ->Field("selectedModelPresetName", &MaterialViewportSettings::m_selectedModelPresetName)
-                ->Field("selectedLightingPresetName", &MaterialViewportSettings::m_selectedLightingPresetName)
             ;
 
             if (auto editContext = serializeContext->GetEditContext())

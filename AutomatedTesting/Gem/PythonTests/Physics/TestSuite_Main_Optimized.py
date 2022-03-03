@@ -116,24 +116,11 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
 
     class C4976236_AddPhysxColliderComponent(EditorSharedTest):
         from .tests.collider import Collider_AddColliderComponent as test_module
-    
-
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(EditorTestSuite):
-
-    enable_prefab_system = False
-
-    @staticmethod
-    def get_number_parallel_editors():
-        return 16
 
     #########################################
     # Non-atomic tests: These need to be run in a single editor because they have custom setup and teardown
     class C4044459_Material_DynamicFriction(EditorSingleTest_WithFileOverrides):
-        from .tests.material import Material_DynamicFriction as test_module        
+        from .tests.material import Material_DynamicFriction as test_module
         files_to_override = [
             ('physxsystemconfiguration.setreg', 'Material_DynamicFriction.setreg_override')
         ]
@@ -153,23 +140,17 @@ class TestAutomation(EditorTestSuite):
     class C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_LocalSpaceForceOnRigidBodies as test_module
 
-    class C15425929_Undo_Redo(EditorSharedTest):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-        
-    class C4976243_Collision_SameCollisionGroupDiffCollisionLayers(EditorSharedTest):
-        from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
-
-    class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
-        from .tests.character_controller import CharacterController_SwitchLevels as test_module
-
-    class C12712453_ScriptCanvas_MultipleRaycastNode(EditorSharedTest):
-        from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
-
     class C18243586_Joints_HingeLeadFollowerCollide(EditorSharedTest):
         from .tests.joints import Joints_HingeLeadFollowerCollide as test_module
 
     class C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain(EditorSharedTest):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
+
+    class C12712453_ScriptCanvas_MultipleRaycastNode(EditorSharedTest):
+        from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
+
+    class C4976243_Collision_SameCollisionGroupDiffCollisionLayers(EditorSharedTest):
+        from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
 
     class C3510642_Terrain_NotCollideWithTerrain(EditorSharedTest):
         from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
@@ -249,9 +230,6 @@ class TestAutomation(EditorTestSuite):
     class C4976204_Verify_Start_Asleep_Condition(EditorSharedTest):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
 
-    class C6090546_ForceRegion_SliceFileInstantiates(EditorSharedTest):
-        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
-
     class C6090551_ForceRegion_LocalSpaceForceNegative(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroLocalSpaceForceDoesNothing as test_module
 
@@ -267,17 +245,11 @@ class TestAutomation(EditorTestSuite):
     class C12868580_ForceRegion_SplineModifiedTransform(EditorSharedTest):
         from .tests.force_region import ForceRegion_SplineRegionWithModifiedTransform as test_module
 
-    class C12712455_ScriptCanvas_ShapeCastVerification(EditorSharedTest):
-        from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
-
     class C4976197_RigidBodies_InitialAngularVelocity(EditorSharedTest):
         from .tests.rigid_body import RigidBody_InitialAngularVelocity as test_module
 
     class C6090555_ForceRegion_SplineFollowOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
-
-    class C6131473_StaticSlice_OnDynamicSliceSpawn(EditorSharedTest):
-        from .tests import Physics_DynamicSliceWithPhysNotSpawnsStaticSlice as test_module
 
     class C5959808_ForceRegion_PositionOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_PositionOffset as test_module
@@ -285,11 +257,12 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.xfail(reason="Something with the CryRenderer disabling is causing this test to fail now.")
     class C13895144_Ragdoll_ChangeLevel(EditorSharedTest):
         from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
-    
+
     class C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody(EditorSharedTest):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
 
-    @pytest.mark.xfail(reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
+    @pytest.mark.xfail(
+        reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
     class C4976202_RigidBody_StopsWhenBelowKineticThreshold(EditorSharedTest):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
 
@@ -321,7 +294,7 @@ class TestAutomation(EditorTestSuite):
 
     class C5959761_ForceRegion_PhysAssetExertsPointForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
-        
+
     # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
     # The test still runs, but a failure of the test doesn't result in the test run failing
     @pytest.mark.xfail(reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
@@ -339,13 +312,13 @@ class TestAutomation(EditorTestSuite):
 
     class C5932040_ForceRegion_CubeExertsWorldForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
-        
+
     class C5932044_ForceRegion_PointForceOnRigidBody(EditorSharedTest):
         from .tests.force_region import ForceRegion_PointForceOnRigidBodies as test_module
-        
+
     class C5959759_RigidBody_ForceRegionSpherePointForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_SphereShapedForce as test_module
-        
+
     class C5959809_ForceRegion_RotationalOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_RotationalOffset as test_module
 
@@ -358,5 +331,24 @@ class TestAutomation(EditorTestSuite):
     class C6090547_ForceRegion_ParentChildForceRegions(EditorSharedTest):
         from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
 
+
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomation(EditorTestSuite):
+
+    enable_prefab_system = False
+
+    @staticmethod
+    def get_number_parallel_editors():
+        return 16
+
     class C15425929_Undo_Redo(EditorSharedTest):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
+
+    class C12712455_ScriptCanvas_ShapeCastVerification(EditorSharedTest):
+        from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
+
+    class C6090546_ForceRegion_SliceFileInstantiates(EditorSharedTest):
+        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
