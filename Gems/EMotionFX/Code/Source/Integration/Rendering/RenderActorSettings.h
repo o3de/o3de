@@ -60,5 +60,7 @@ namespace AZ::Render
         AZ::Color m_nodeAABBColor{ 1.0f, 0.0f, 0.0f, 1.0f };
         AZ::Color m_meshAABBColor{ 0.0f, 0.0f, 0.7f, 1.0f };
         AZ::Color m_staticAABBColor{ 0.0f, 0.7f, 0.7f, 1.0f };
+        AZ::Color m_trajectoryHeadColor{ 0.230f, 0.580f, 0.980, 1.0f };
+        AZ::Color m_trajectoryPathColor{ 0.184f, 0.494f, 0.866f, 1.0f };
     };
 } // namespace AZ::Render

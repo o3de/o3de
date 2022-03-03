@@ -76,6 +76,9 @@ namespace Terrain
 
         // AZ::RPI::SceneNotificationBus overrides...
         void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
+        
+        // AZ::RPI::FeatureProcessor overrides...
+        void ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline) override;
 
         void Initialize();
 

@@ -29,10 +29,7 @@ namespace AtomToolsFramework
 
         connect(
             this, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this,
-            [this](const int index)
-            {
-                emit AssetSelected(AZ::Data::AssetId::CreateString(itemData(index).toString().toUtf8().constData()));
-            });
+            [this]() { emit AssetSelected(GetSelectedAsset()); });
 
         SetFilterCallback(filterCallback);
 
@@ -50,10 +47,7 @@ namespace AtomToolsFramework
         m_thumbnailKeys.clear();
 
         AZ::Data::AssetCatalogRequests::AssetEnumerationCB enumerateCB =
-            [&]([[maybe_unused]] const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo)
-        {
-            AddAsset(assetInfo);
-        };
+            [this]([[maybe_unused]] const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo) { AddAsset(assetInfo); };
 
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
@@ -72,6 +66,21 @@ namespace AtomToolsFramework
     void AssetSelectionComboBox::SelectAsset(const AZ::Data::AssetId& assetId)
     {
         setCurrentIndex(findData(QVariant(QString(assetId.ToString<AZStd::string>().c_str()))));
+    }
+
+    AZ::Data::AssetId AssetSelectionComboBox::GetSelectedAsset() const
+    {
+        return AZ::Data::AssetId::CreateString(currentData().toString().toUtf8().constData());
+    }
+
+    AZStd::string AssetSelectionComboBox::GetSelectedAssetSourcePath() const
+    {
+        return AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetSelectedAsset());
+    }
+
+    AZStd::string AssetSelectionComboBox::GetSelectedAssetProductPath() const
+    {
+        return AZ::RPI::AssetUtils::GetProductPathByAssetId(GetSelectedAsset());
     }
 
     void AssetSelectionComboBox::SetThumbnailsEnabled(bool enabled)

@@ -234,6 +234,14 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        void BufferPool::ComputeFragmentation() const
+        {
+            float fragmentation = m_memoryAllocator.ComputeFragmentation();
+
+            const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
+            m_memoryUsage.GetHeapMemoryUsage(descriptor.m_heapMemoryLevel).m_fragmentation = fragmentation;
+        }
+
         void BufferPool::SetNameInternal(const AZStd::string_view& name)
         {
              m_memoryAllocator.SetName(AZ::Name{ name });

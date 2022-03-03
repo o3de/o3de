@@ -7,9 +7,12 @@
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
+    set(SMOKETEST_FILTER "SUITE_smoke and not SerializeContext")
+
     include(${LY_ROOT_FOLDER}/Code/Tools/SerializeContextTools/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     if (PAL_TRAIT_BUILD_SERIALIZECONTEXTTOOLS)
         list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
+        set(SMOKETEST_FILTER "SUITE_smoke")
     endif()
 
     ly_add_pytest(
@@ -17,7 +20,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE smoke
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}
-        PYTEST_MARKS "SUITE_smoke"
+        PYTEST_MARKS ${SMOKETEST_FILTER}
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             AZ::PythonBindingsExample

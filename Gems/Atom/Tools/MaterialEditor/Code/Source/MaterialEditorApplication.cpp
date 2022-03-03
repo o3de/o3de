@@ -8,7 +8,9 @@
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomToolsFramework/CreateDocumentDialog/CreateDocumentDialog.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -22,10 +24,7 @@
 #include <Document/MaterialDocumentRequestBus.h>
 #include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
-#include <Viewport/MaterialViewportModule.h>
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
-#include <Window/MaterialEditorWindowSettings.h>
 
 #include <QDesktopServices>
 #include <QDialog>
@@ -55,6 +54,7 @@ namespace MaterialEditor
     {
         InitMaterialEditorResources();
 
+        QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Material Editor");
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -70,13 +70,7 @@ namespace MaterialEditor
     {
         Base::Reflect(context);
         MaterialDocument::Reflect(context);
-        MaterialEditorWindowSettings::Reflect(context);
-    }
-
-    void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
-    {
-        Base::CreateStaticModules(outModules);
-        outModules.push_back(aznew MaterialViewportModule);
+        MaterialViewportSettingsSystem::Reflect(context);
     }
 
     const char* MaterialEditorApplication::GetCurrentConfigurationName() const
@@ -98,7 +92,10 @@ namespace MaterialEditor
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
             [](const AZ::Crc32& toolId) { return aznew MaterialDocument(toolId); });
 
+        m_viewportSettingsSystem.reset(aznew MaterialViewportSettingsSystem(m_toolId));
+
         m_window.reset(aznew MaterialEditorWindow(m_toolId));
+        m_window->show();
 
         m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
 
@@ -157,17 +154,29 @@ namespace MaterialEditor
             {
                 menu->addAction(QObject::tr("Create Material..."), [caller, entries, this]()
                     {
-                        CreateMaterialDialog createDialog(entries.front()->GetFullPath().c_str(), caller);
+                        AtomToolsFramework::CreateDocumentDialog createDialog(
+                            tr("Create Material"),
+                            tr("Select Material Type"),
+                            tr("Select Material Path"),
+                            entries.front()->GetFullPath().c_str(),
+                            { AZ::RPI::MaterialSourceData::Extension },
+                            AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
+                                "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
+                                AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype")),
+                            [](const AZ::Data::AssetInfo& assetInfo)
+                            {
+                                return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".azmaterialtype"); },
+                            caller);
                         createDialog.adjustSize();
 
                         if (createDialog.exec() == QDialog::Accepted &&
-                            !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
-                            !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
+                            !createDialog.m_sourcePath.isEmpty() &&
+                            !createDialog.m_targetPath.isEmpty())
                         {
                             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
                                 m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
-                                createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
-                                createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
+                                createDialog.m_sourcePath.toUtf8().constData(),
+                                createDialog.m_targetPath.toUtf8().constData());
                         }
                     });
             });
@@ -176,6 +185,8 @@ namespace MaterialEditor
     void MaterialEditorApplication::Destroy()
     {
         m_window.reset();
+        m_viewportSettingsSystem.reset();
+        m_assetBrowserInteractions.reset();
         Base::Destroy();
     }
 

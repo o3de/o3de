@@ -15,6 +15,7 @@ import time
 import azlmbr.atom
 import azlmbr.atomtools as atomtools
 import azlmbr.materialeditor as materialeditor
+import azlmbr.math as math
 import azlmbr.bus as bus
 
 
@@ -132,34 +133,36 @@ def set_pane_visibility(pane_name, value):
     atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
-def select_lighting_config(config_name):
-    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectLightingPresetByName", config_name)
+def select_lighting_config(asset_path):
+    asset_id = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', asset_path, azlmbr.math.Uuid(), False)
+    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
 
 
 def set_grid_enable_disable(value):
-    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
+    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
 
 
 def get_grid_enable_disable():
     """
     :return: bool
     """
-    return azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
+    return azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
 
 
 def set_shadowcatcher_enable_disable(value):
-    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
+    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
 
 
 def get_shadowcatcher_enable_disable():
     """
     :return: bool
     """
-    return azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
+    return azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
 
 
-def select_model_config(configname):
-    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectModelPresetByName", configname)
+def select_model_config(asset_path):
+    asset_id = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', asset_path, azlmbr.math.Uuid(), False)
+    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
 
 
 def exit():
