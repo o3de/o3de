@@ -30,24 +30,24 @@ class TestAutomation(TestAutomationBase):
 
     def test_RigidBody_EnablingGravityWorksUsingNotificationsPoC(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ForceRegion_LocalSpaceForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_LocalSpaceForceOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_DynamicFriction.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_DynamicFriction(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_DynamicFriction as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_SameCollisionGroupDiffLayersCollide(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_CharacterController_SwitchLevels(self, request, workspace, editor, launcher_platform):
@@ -64,19 +64,19 @@ class TestAutomation(TestAutomationBase):
         # Fixme: This test previously relied on unexpected lines log reading with is now not supported.
         # Now the log reading must be done inside the test, preferably with the Tracer() utility
         #  unexpected_lines = ["Assert"] + test_module.Lines.unexpected
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_DiffCollisionGroupDiffCollidingLayersNotCollide.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Collider_DiffCollisionGroupDiffCollidingLayersNotCollide(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_DiffCollisionGroupDiffCollidingLayersNotCollide as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Joints_HingeLeadFollowerCollide(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeLeadFollowerCollide as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_PxMeshConvexMeshCollides(self, request, workspace, editor, launcher_platform):
@@ -86,7 +86,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config    
     def test_ShapeCollider_CylinderShapeCollides(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
@@ -97,10 +97,10 @@ class TestAutomation(TestAutomationBase):
     @pytest.mark.xfail(reason="Test still under development.")
     def test_Tick_InterpolatedRigidBodyMotionIsSmooth(self, request, workspace, editor, launcher_platform):
         from .tests.tick import Tick_InterpolatedRigidBodyMotionIsSmooth as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.GROUP_tick
     @pytest.mark.xfail(reason="Test still under development.")
     def test_Tick_CharacterGameplayComponentMotionIsSmooth(self, request, workspace, editor, launcher_platform):
         from .tests.tick import Tick_CharacterGameplayComponentMotionIsSmooth as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
