@@ -244,6 +244,8 @@ namespace AZ
                 {
                     resource.ReportMemoryUsage(builder);
                 });
+
+                ComputeFragmentation();
             }
 
             poolStats->m_name = GetName();
