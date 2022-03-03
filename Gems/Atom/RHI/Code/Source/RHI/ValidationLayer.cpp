@@ -35,7 +35,8 @@ namespace AZ
                 console->GetCvarValue("r_debugBuildDeviceValidationOverride", debugBuildDeviceValidationOverride);
             }
 
-            if (AZ::RHI::BuildOptions::IsDebugBuild && debugBuildDeviceValidationOverride)
+            bool isDebugBuild = AZ::RHI::BuildOptions::IsDebugBuild;
+            if (isDebugBuild && debugBuildDeviceValidationOverride)
             {
                 mode = ValidationMode::Enabled;
             }
