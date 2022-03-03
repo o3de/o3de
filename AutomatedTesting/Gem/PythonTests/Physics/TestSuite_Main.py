@@ -340,6 +340,7 @@ class TestAutomation(EditorTestSuite):
     class ForceRegion_ParentChildForcesCombineForces(EditorSharedTest):
         from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
 
+
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
