@@ -13,6 +13,7 @@
 #include <Integration/Components/ActorComponent.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h>
@@ -64,12 +65,12 @@ namespace EMStudio
         // Link our RPI::Scene to the AzFramework::Scene
         m_frameworkScene->SetSubsystem(m_scene);
 
-        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
-        AZStd::string defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
-        AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *m_windowContext.get());
-        pipelineAsset.Release();
+        const char* pipelineAssetPath = "passes/MainRenderPipeline.azasset";
+        AZStd::optional<AZ::RPI::RenderPipelineDescriptor> renderPipelineDesc =
+            AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath, AZStd::string::format("_%i", viewportContext->GetId()));
+        AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
+        
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *m_windowContext.get());
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_renderPipeline->SetDefaultView(viewportContext->GetDefaultView());
 
@@ -173,6 +174,14 @@ namespace EMStudio
         ResetEnvironment();
     }
 
+    void AnimViewportRenderer::MoveActorEntitiesToOrigin()
+    {
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateIdentity());
+        }
+    }
+
     AZ::Vector3 AnimViewportRenderer::GetCharacterCenter() const
     {
         AZ::Vector3 result = AZ::Vector3::CreateZero();
@@ -224,20 +233,17 @@ namespace EMStudio
         return m_entityContext->GetContextId();
     }
 
-    void AnimViewportRenderer::CheckBounds()
+    void AnimViewportRenderer::UpdateGroundplane()
     {
         AZ::Vector3 groundPos;
         AZ::TransformBus::EventResult(groundPos, m_groundEntity->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
         const AZ::Vector3 characterPos = GetCharacterCenter();
-        if (AZStd::abs(characterPos.GetX() - groundPos.GetX()) > BoundMaxDistance ||
-            AZStd::abs(characterPos.GetY() - groundPos.GetY()) > BoundMaxDistance)
-        {
-            const float tileOffsetX = AZStd::fmod(characterPos.GetX(), TileSize);
-            const float tileOffsetY = AZStd::fmod(characterPos.GetX(), TileSize);
-            const AZ::Vector3 newGroundPos(characterPos.GetX() - tileOffsetX, characterPos.GetY() - tileOffsetY, groundPos.GetZ());
-            AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, newGroundPos);
-        }
+        const float tileOffsetX = AZStd::fmod(characterPos.GetX(), TileSize);
+        const float tileOffsetY = AZStd::fmod(characterPos.GetY(), TileSize);
+        const AZ::Vector3 newGroundPos(characterPos.GetX() - tileOffsetX, characterPos.GetY() - tileOffsetY, groundPos.GetZ());
+
+        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, newGroundPos);
     }
 
     void AnimViewportRenderer::ResetEnvironment()
@@ -251,13 +257,19 @@ namespace EMStudio
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
 
         // Reset ground entity
-        AZ::Transform groundTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, groundTransform);
+        AZ::Transform identityTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, identityTransform);
 
         auto modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
             "objects/groudplane/groundplane_512x512m.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
         AZ::Render::MeshComponentRequestBus::Event(
             m_groundEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, modelAsset);
+
+        // Reset actor position
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetLocalTM, identityTransform);
+        }
     }
 
     void AnimViewportRenderer::ReinitActorEntities()

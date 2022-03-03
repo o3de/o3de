@@ -14,6 +14,7 @@
 #include "MotionEventPresetManager.h"
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 
 // include MCore related
 #include <MCore/Source/LogManager.h>
@@ -176,17 +177,14 @@ namespace EMStudio
         m_pluginManager->LoadPluginsFromDirectory(pluginDir.c_str());
 #endif // EMFX_EMSTUDIOLYEMBEDDED
 
-        // Give a chance to every plugin to reflect data
-        const size_t numPlugins = m_pluginManager->GetNumPlugins();
-        if (numPlugins)
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ_Error("EMotionFX", serializeContext, "Can't get serialize context from component application.");
+        if (serializeContext)
         {
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            if (!serializeContext)
-            {
-                AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
-            }
-            else
+            // Reflect plugin related data.
+            const size_t numPlugins = m_pluginManager->GetNumPlugins();
+            if (numPlugins)
             {
                 for (size_t i = 0; i < numPlugins; ++i)
                 {
@@ -194,6 +192,9 @@ namespace EMStudio
                     plugin->Reflect(serializeContext);
                 }
             }
+
+            // Reflect shared data that might be used by multiple plugins.
+            RenderOptions::Reflect(serializeContext);
         }
         
         // Register the command event processing callback.

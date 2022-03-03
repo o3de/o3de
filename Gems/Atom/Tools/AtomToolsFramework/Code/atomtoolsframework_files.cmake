@@ -10,7 +10,9 @@ set(FILES
     Include/AtomToolsFramework/Application/AtomToolsApplication.h
     Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h
     Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h
-    Include/AtomToolsFramework/AssetGridDialog/AssetGridDialog.h
+    Include/AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h
+    Include/AtomToolsFramework/AssetSelection/AssetSelectionGrid.h
+    Include/AtomToolsFramework/CreateDocumentDialog/CreateDocumentDialog.h
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
@@ -46,8 +48,10 @@ set(FILES
     Source/AssetBrowser/AtomToolsAssetBrowser.qrc
     Source/AssetBrowser/AtomToolsAssetBrowser.ui
     Source/AssetBrowser/AtomToolsAssetBrowserInteractions.cpp
-    Source/AssetGridDialog/AssetGridDialog.cpp
-    Source/AssetGridDialog/AssetGridDialog.ui
+    Source/AssetSelection/AssetSelectionComboBox.cpp
+    Source/AssetSelection/AssetSelectionGrid.cpp
+    Source/AssetSelection/AssetSelectionGrid.ui
+    Source/CreateDocumentDialog/CreateDocumentDialog.cpp
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
