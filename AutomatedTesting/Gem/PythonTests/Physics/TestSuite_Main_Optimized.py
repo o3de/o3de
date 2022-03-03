@@ -331,6 +331,7 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C6090547_ForceRegion_ParentChildForceRegions(EditorSharedTest):
         from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
 
+    @pytest.mark.xfail(reason="LYN-10733 - Error messages from deleting entities")
     class C15425929_Undo_Redo(EditorSharedTest):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 

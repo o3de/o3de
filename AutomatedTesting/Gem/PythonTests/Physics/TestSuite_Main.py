@@ -88,6 +88,7 @@ class TestAutomation(TestAutomationBase):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="LYN-10733 - Error messages from deleting entities")
     @revert_physics_config
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
