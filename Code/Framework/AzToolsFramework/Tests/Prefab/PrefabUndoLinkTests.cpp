@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma optimize("", off)
 #include <Prefab/PrefabTestDomUtils.h>
 #include <Prefab/PrefabTestUndoFixture.h>
 
@@ -335,4 +334,3 @@ namespace UnitTest
         ASSERT_EQ(nestedTestComponent->m_intProperty, 1);
     }
 } // namespace UnitTest
-#pragma optimize("", on)
