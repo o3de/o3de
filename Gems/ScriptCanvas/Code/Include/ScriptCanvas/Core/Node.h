@@ -387,13 +387,13 @@ namespace ScriptCanvas
         AZStd::string               m_originalName;
     };
 
-    struct NodeConfiguration
+    struct NodeReplacementConfiguration
     {
         AZ::Uuid m_type = AZ::Uuid::CreateNull();
         AZStd::string m_className;
         AZStd::string m_methodName;
         PropertyStatus m_propertyStatus = PropertyStatus::None;
-        AZStd::function<void(const Node&, Node&)> modify;
+        // AZStd::function<void(const Node&, Node&)> modify;
         AZStd::function<Node*(const Node&)> create;
 
         bool IsValid()
@@ -654,7 +654,7 @@ namespace ScriptCanvas
         // Hook here to allow CodeGen to override this
         virtual bool IsDeprecated() const { return false; };
         virtual size_t GenerateFingerprint() const { return 0; }
-        virtual NodeConfiguration GetReplacementNodeConfiguration() const { return {}; };
+        virtual NodeReplacementConfiguration GetReplacementNodeConfiguration() const { return {}; };
         virtual AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const { return {}; };
 
         // Use following function to customize node replacement
