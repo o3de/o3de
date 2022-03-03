@@ -1100,7 +1100,7 @@ R"DELIMITER(<ObjectStream version="1">
         bool m_transformUpdated = false;
     };
     
-    TEST_F(TransformComponentActivationTest, DISABLED_TransformChangedEventIsSentWhenEntityIsActivatedViaUndoRedo)
+    TEST_F(TransformComponentActivationTest, TransformChangedEventIsSentWhenEntityIsActivatedViaUndoRedo)
     {
         AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
         MoveEntity(entityId);
