@@ -50,5 +50,6 @@ namespace SandboxEditor
         AZ::ScriptTimePoint m_currentTime;
         
         AZStd::optional<AZ::Vector2> m_virtualNormalizedPosition = AZStd::nullopt;
+        bool m_usingMouseWrap = false;
     };
 } // namespace SandboxEditor

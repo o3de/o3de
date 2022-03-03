@@ -78,7 +78,7 @@ namespace SandboxEditor
                 AzFramework::WindowRequestBus::EventResult(
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
+                if (m_usingMouseWrap && event.m_priority == ManipulatorPriority)
                 {
                     if (m_virtualNormalizedPosition)
                     {
@@ -91,9 +91,9 @@ namespace SandboxEditor
                 }
 
                 const auto normalizedPosition = m_virtualNormalizedPosition.value_or(position->m_normalizedPosition);
-                auto screenPoint = AzFramework::ScreenPointFromVector2(AZ::Vector2(
-                    normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width),
-                    normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height)));
+                const auto screenPoint = AzFramework::ScreenPoint(
+                    aznumeric_cast<int>(normalizedPosition.GetX() * windowSize.m_width),
+                    aznumeric_cast<int>(normalizedPosition.GetY() * windowSize.m_height));
 
                 ProjectedViewportRay ray{};
                 ViewportInteractionRequestBus::EventResult(
@@ -131,8 +131,7 @@ namespace SandboxEditor
                     }
                     eventType = MouseEvent::Down;
                 }
-
-                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
+                if (m_usingMouseWrap && event.m_priority == ManipulatorPriority)
                 {
                     AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
                         GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
@@ -153,7 +152,7 @@ namespace SandboxEditor
                     }
                     eventType = MouseEvent::Up;
                 }
-                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
+                if (m_usingMouseWrap && event.m_priority == ManipulatorPriority)
                 {
                     AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
                         GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
@@ -235,6 +234,7 @@ namespace SandboxEditor
 
     void ViewportManipulatorControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
+        m_usingMouseWrap = SandboxEditor::ManipulatorMouseWrap();
         m_currentTime = event.m_time;
     }
 
