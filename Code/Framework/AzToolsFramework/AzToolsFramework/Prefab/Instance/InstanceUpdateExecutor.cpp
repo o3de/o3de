@@ -92,6 +92,7 @@ namespace AzToolsFramework
 
         bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
         {
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             bool isUpdateSuccessful = true;
             if (!m_updatingTemplateInstancesInQueue)
             {
@@ -190,7 +191,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
+                        PrefabDomValueConstReference instanceDomFromRoot = *instanceDomFromRootValue;
                         if (!instanceDomFromRoot.has_value())
                         {
                             AZ_Assert(
@@ -205,7 +206,7 @@ namespace AzToolsFramework
                         // If a link was created for a nested instance before the changes were propagated,
                         // then we associate it correctly here
                         instanceDomFromRootDocument.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDocument.GetAllocator());
-                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument))
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
                         {
                             Template& currentTemplate = currentTemplateReference->get();
                             instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 

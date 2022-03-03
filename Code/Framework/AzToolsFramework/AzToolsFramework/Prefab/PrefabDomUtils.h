@@ -43,7 +43,7 @@ namespace AzToolsFramework
 
             enum class StoreFlags : uint8_t
             {
-                //! No flags used during the call to LoadInstanceFromPrefabDom.
+                //! No flags used.
                 None = 0,
 
                 //! By default an instance will be stored with default values. In cases where we want to store less json without defaults
@@ -93,11 +93,14 @@ namespace AzToolsFramework
 
             enum class LoadFlags : uint8_t
             {
-                //! No flags used during the call to LoadInstanceFromPrefabDom.
+                //! No flags used.
                 None = 0,
                 //! By default entities will get a stable id when they're deserialized. In cases where the new entities need to be kept
                 //! unique, e.g. when they are duplicates of live entities, this flag will assign them a random new id.
-                AssignRandomEntityId = 1 << 0
+                AssignRandomEntityId = 1 << 0,
+
+                //! Identifies the entities modified since the last deserialization and only loads them.
+                UseSelectiveDeserialization = 1 << 1
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadFlags);
 
@@ -178,6 +181,13 @@ namespace AzToolsFramework
                 AZ_RTTI(LinkIdMetadata, "{8FF7D299-14E3-41D4-90C5-393A240FAE7C}");
 
                 virtual ~LinkIdMetadata() {}
+            };
+
+            //! An empty struct to pass to the JsonDeserializerSettings, which will be used to identify whether we should selectively
+            //! deserialize only modified entities.
+            struct InstanceDomMetadata
+            {
+                AZ_RTTI(InstanceDomMetadata, "{4B509C7B-91B6-4C5E-9696-F7E2C67B6E1B}");
             };
         } // namespace PrefabDomUtils
     } // namespace Prefab
