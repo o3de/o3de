@@ -37,7 +37,7 @@ namespace AzToolsFramework
     {
         ViewBookmark::Reflect(context);
 
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorViewBookmarks>()
                 ->Field("LocalBookmarkFileName", &EditorViewBookmarks::m_localBookmarksFileName)
@@ -47,7 +47,8 @@ namespace AzToolsFramework
             {
                 editContext->Class<EditorViewBookmarks>("EditorViewBookmarks", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Editor View Bookmarks")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_localBookmarksFileName, "Local Bookmarks FileName", "")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_localBookmarksFileName, "Local Bookmarks FileName", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_viewBookmarks, "View Bookmarks", "")
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -65,8 +66,7 @@ namespace AzToolsFramework
     {
         EditorViewBookmarks::Reflect(context);
 
-        auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->RegisterGenericType<EditorViewBookmarks>();
 
@@ -75,8 +75,7 @@ namespace AzToolsFramework
 
             serializeContext->RegisterGenericType<AZStd::vector<AZ::Uuid>>();
 
-            AZ::EditContext* editContext = serializeContext->GetEditContext();
-            if (editContext)
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext
                     ->Class<ViewBookmarkComponent>(
@@ -111,7 +110,7 @@ namespace AzToolsFramework
         bookmarkVector.push_back(viewBookmark);
     }
 
-    void ViewBookmarkComponent::RemoveBookmark([[maybe_unused]]int index)
+    void ViewBookmarkComponent::RemoveBookmark([[maybe_unused]] int index)
     {
     }
 
@@ -133,12 +132,12 @@ namespace AzToolsFramework
 
     void ViewBookmarkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("EditoViewbookmarkingService"));
+        services.push_back(AZ_CRC_CE("EditorViewbookmarkingService"));
     }
 
     void ViewBookmarkComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("EditoViewbookmarkingService"));
+        services.push_back(AZ_CRC_CE("EditorViewbookmarkingService"));
     }
 
 } // namespace AzToolsFramework

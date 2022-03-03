@@ -12,25 +12,23 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Prefab/ViewBookmarkComponent.h>
 
-/*!
- * ViewBookmarkIntereface
- * Interface for saving/loading View Bookmarks.
- */
 namespace AzToolsFramework
 {
+    //! @class ViewBookmarkIntereface
+    //! @brief Interface for saving/loading View Bookmarks.
     class ViewBookmarkLoaderInterface
     {
     public:
         AZ_RTTI(ViewBookmarkLoaderInterface, "{71E7E178-4107-4975-A6E6-1C4B005C981A}")
 
-        enum StorageMode
+        enum class StorageMode : int
         {
             Shared = 0,
             Local = 1,
             Invalid = -1
         };
 
-        virtual bool SaveBookmark(ViewBookmark bookamark, StorageMode mode) = 0;
+        virtual bool SaveBookmark(ViewBookmark bookamark, const StorageMode mode) = 0;
         virtual bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) = 0;
         virtual bool LoadViewBookmarks() = 0;
         virtual ViewBookmark GetBookmarkAtIndex(int index) const = 0;

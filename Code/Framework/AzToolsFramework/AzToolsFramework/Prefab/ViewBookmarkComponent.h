@@ -14,7 +14,7 @@ namespace AzToolsFramework
     struct ViewBookmark
     {
         AZ_CLASS_ALLOCATOR(ViewBookmark, AZ::SystemAllocator, 0);
-        AZ_RTTI(ViewBookmark, "{522A38D9-6FFF-4B96-BECF-B4D0F7ABCD25}");
+        AZ_TYPE_INFO(ViewBookmark, "{522A38D9-6FFF-4B96-BECF-B4D0F7ABCD25}");
 
         ViewBookmark() = default;
 
@@ -27,7 +27,7 @@ namespace AzToolsFramework
     struct EditorViewBookmarks final
     {
         AZ_CLASS_ALLOCATOR(EditorViewBookmarks, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorViewBookmarks, "{EA0B8FF9-F706-4115-8226-E3F54F1EE8A1}");
+        AZ_TYPE_INFO(EditorViewBookmarks, "{EA0B8FF9-F706-4115-8226-E3F54F1EE8A1}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -46,7 +46,7 @@ namespace AzToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
-        // AZ::Component overrides
+        // AZ::Component overrides ...
         void Activate() override{};
         void Deactivate() override{};
 
@@ -62,7 +62,7 @@ namespace AzToolsFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
 
     private:
-        // A user editable list of View Bookmarks
+        //! A user editable list of View Bookmarks
         EditorViewBookmarks m_viewBookmark;
     };
 
