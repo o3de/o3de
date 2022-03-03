@@ -77,7 +77,7 @@ public: // member functions
         const QTreeWidgetItemRawPtrQList& selectedItems);
     void MouseReleaseEvent(QMouseEvent* ev,
         const QTreeWidgetItemRawPtrQList& selectedItems);
-    void MouseWheelEvent(QWheelEvent* ev);
+    bool MouseWheelEvent(QWheelEvent* ev);
 
     bool KeyPressEvent(QKeyEvent* ev);
     bool KeyReleaseEvent(QKeyEvent* ev);

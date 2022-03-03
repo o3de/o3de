@@ -12,6 +12,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Math/MathTest.h>
 
 using namespace AZ;
 
@@ -47,7 +48,9 @@ namespace UnitTest
     TEST(MATH_Plane, TestSet)
     {
         Plane pl;
+        AZ_MATH_TEST_START_TRACE_SUPPRESSION;
         pl.Set(12.0f, 13.0f, 14.0f, 15.0f);
+        AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(1);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetDistance(), 15.0f);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetNormal().GetX(), 12.0f);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetNormal().GetY(), 13.0f);
@@ -57,7 +60,9 @@ namespace UnitTest
     TEST(MATH_Plane, TestSetVector3)
     {
         Plane pl;
+        AZ_MATH_TEST_START_TRACE_SUPPRESSION;
         pl.Set(Vector3(22.0f, 23.0f, 24.0f), 25.0f);
+        AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(1);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetDistance(), 25.0f);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetNormal().GetX(), 22.0f);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetNormal().GetY(), 23.0f);
@@ -177,16 +182,20 @@ namespace UnitTest
         pl.Set(1.0f, 0.0f, 0.0f, 0.0f);
         AZ_TEST_ASSERT(pl.IsFinite());
         const float infinity = std::numeric_limits<float>::infinity();
+        AZ_MATH_TEST_START_TRACE_SUPPRESSION;
         pl.Set(infinity, infinity, infinity, infinity);
+        AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(1);
         AZ_TEST_ASSERT(!pl.IsFinite());
     }
 
     TEST(MATH_Plane, CreateFromVectorCoefficients_IsEquivalentToCreateFromCoefficients)
     {
+        AZ_MATH_TEST_START_TRACE_SUPPRESSION;
         Plane planeFromCoefficients = Plane::CreateFromCoefficients(1.0, 2.0, 3.0, 4.0);
-
+        AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(1);
         Vector4 coefficients(1.0, 2.0, 3.0, 4.0);
         Plane planeFromVectorCoefficients = Plane::CreateFromVectorCoefficients(coefficients);
+
 
         EXPECT_EQ(planeFromVectorCoefficients, planeFromCoefficients);
     }

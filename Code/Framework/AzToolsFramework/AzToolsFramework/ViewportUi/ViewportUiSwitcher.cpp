@@ -22,8 +22,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // Add am empty active button (is set in the call to SetActiveMode)
         m_activeButton = new QToolButton();
-        // No hover effect for the main button as it's not clickable
-        m_activeButton->setProperty("IconHasHoverEffect", false);
         m_activeButton->setCheckable(false);
         m_activeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         addWidget(m_activeButton);
@@ -55,9 +53,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             return;
         }
-
-        // set hover to true by default
-        action->setProperty("IconHasHoverEffect", true);
 
         // add the action
         addAction(action);

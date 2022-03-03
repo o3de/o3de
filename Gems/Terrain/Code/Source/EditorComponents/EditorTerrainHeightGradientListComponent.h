@@ -27,6 +27,6 @@ namespace Terrain
         static constexpr const char* const s_componentDescription = "Provides height data for a region to the terrain system";
         static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainHeight.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainHeight.svg";
-        static constexpr const char* const s_helpUrl = "";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/terrain/height_gradient_list/";
     };
 }

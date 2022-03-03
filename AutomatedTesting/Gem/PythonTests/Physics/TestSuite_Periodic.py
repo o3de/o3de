@@ -171,7 +171,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_SliceFileInstantiates(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     @revert_physics_config
     def test_ForceRegion_ZeroLocalSpaceForceDoesNothing(self, request, workspace, editor, launcher_platform):
@@ -208,7 +208,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ScriptCanvas_ShapeCast(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     @revert_physics_config
     def test_RigidBody_InitialAngularVelocity(self, request, workspace, editor, launcher_platform):
@@ -218,11 +218,6 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ForceRegion_ZeroSplineForceDoesNothing(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_Physics_DynamicSliceWithPhysNotSpawnsStaticSlice(self, request, workspace, editor, launcher_platform):
-        from .tests import Physics_DynamicSliceWithPhysNotSpawnsStaticSlice as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -334,7 +329,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PostUpdateEvent as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
@@ -348,7 +343,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PreUpdateEvent(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PreUpdateEvent as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     @revert_physics_config
     def test_ForceRegion_PxMeshShapedForce(self, request, workspace, editor, launcher_platform):
@@ -403,20 +398,17 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Collider_SphereShapeEditing(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_SphereShapeEditing as test_module
-        self._run_test(request, workspace, editor, test_module,
-                       extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_BoxShapeEditing(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_BoxShapeEditing as test_module
-        self._run_test(request, workspace, editor, test_module,
-                       extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_CapsuleShapeEditing(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_CapsuleShapeEditing as test_module
-        self._run_test(request, workspace, editor, test_module,
-                       extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ForceRegion_WithNonTriggerColliderWarning(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
@@ -490,12 +482,7 @@ class TestAutomation(TestAutomationBase):
     def test_ShapeCollider_CanBeAddedWitNoWarnings(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
         self._run_test(request, workspace, editor, test_module)
-        
-    @revert_physics_config
-    def test_Physics_UndoRedoWorksOnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-        self._run_test(request, workspace, editor, test_module)
-    
+
     def test_Joints_Fixed2BodiesConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_Fixed2BodiesConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -518,7 +505,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_Joints_BallBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallBreakable as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_Joints_HingeNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeNoLimitsConstrained as test_module
@@ -540,7 +527,7 @@ class TestAutomation(TestAutomationBase):
                           search_subdirs=True)
         def levels_before(self, request, workspace, editor, launcher_platform):
             from .tests.material import Material_DefaultLibraryUpdatedAcrossLevels_before as test_module_0
-            self._run_test(request, workspace, editor, test_module_0)
+            self._run_test(request, workspace, editor, test_module_0, enable_prefab_system=False)
 
         # File override replaces the previous physxconfiguration file with another where the only difference is the default material library
         @fm.file_override("physxsystemconfiguration.setreg",
@@ -549,7 +536,7 @@ class TestAutomation(TestAutomationBase):
                           search_subdirs=True)
         def levels_after(self, request, workspace, editor, launcher_platform):
             from .tests.material import Material_DefaultLibraryUpdatedAcrossLevels_after as test_module_1
-            self._run_test(request, workspace, editor, test_module_1)
+            self._run_test(request, workspace, editor, test_module_1, enable_prefab_system=False)
 
         levels_before(self, request, workspace, editor, launcher_platform)
         levels_after(self, request, workspace, editor, launcher_platform)

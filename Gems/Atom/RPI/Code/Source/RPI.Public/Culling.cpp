@@ -19,8 +19,6 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Debug/EventTrace.h>
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Task/TaskGraph.h>
@@ -36,7 +34,7 @@
 
 //Enables more detailed profiling descriptions within the culling system, but adds some performance overhead.
 //Enable this to more easily see which jobs are associated with which view.
-//#define AZ_CULL_PROFILE_VERBOSE   
+//#define AZ_CULL_PROFILE_VERBOSE
 
 namespace AZ
 {
@@ -45,6 +43,7 @@ namespace AZ
         AZ_CVAR(bool, r_CullInParallel, true, nullptr, ConsoleFunctorFlags::Null, "");
         AZ_CVAR(uint32_t, r_CullWorkPerBatch, 500, nullptr, ConsoleFunctorFlags::Null, "");
 
+#ifdef AZ_CULL_DEBUG_ENABLED
         void DebugDrawWorldCoordinateAxes(AuxGeomDraw* auxGeom)
         {
             auxGeom->DrawCylinder(Vector3(.5, .0, .0), Vector3(1, 0, 0), 0.02f, 1.0f, Colors::Red, AuxGeomDraw::DrawStyle::Solid, AuxGeomDraw::DepthTest::Off);
@@ -200,6 +199,7 @@ namespace AZ
                 AZ_Assert(false, "invalid frustum, cannot draw");
             }
         }
+#endif //AZ_CULL_DEBUG_ENABLED
 
         CullingDebugContext::~CullingDebugContext()
         {
@@ -267,7 +267,7 @@ namespace AZ
             return m_visScene->GetEntryCount();
         }
 
-        
+
         struct WorklistData
         {
             CullingDebugContext* m_debugCtx = nullptr;
@@ -284,7 +284,7 @@ namespace AZ
             const Scene& scene,
             View& view,
             Frustum& frustum,
-            void* maskedOcclusionCulling)
+            [[maybe_unused]] void* maskedOcclusionCulling)
         {
             AZStd::shared_ptr<WorklistData> worklistData = AZStd::make_shared<WorklistData>();
             worklistData->m_debugCtx = &debugCtx;
@@ -296,13 +296,13 @@ namespace AZ
 #endif
             return worklistData;
         }
-            
+
         constexpr size_t WorkListCapacity = 5;
         using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilityScene::NodeData, WorkListCapacity>;
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
         static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
-                    const AZStd::shared_ptr<WorklistData>& worklistData, 
+                    const AZStd::shared_ptr<WorklistData>& worklistData,
                     AzFramework::VisibilityEntry* visibleEntry);
 #endif
 
@@ -312,22 +312,27 @@ namespace AZ
 
             const View::UsageFlags viewFlags = worklistData->m_view->GetUsageFlags();
             const RHI::DrawListMask drawListMask = worklistData->m_view->GetDrawListMask();
-            uint32_t numDrawPackets = 0;
-            uint32_t numVisibleCullables = 0;
+            #ifdef AZ_CULL_DEBUG_ENABLED
+                // These variable are only used for the gathering of debug information.
+                uint32_t numDrawPackets = 0;
+                uint32_t numVisibleCullables = 0;
+            #endif
 
             AZ_Assert(worklist.size() > 0, "Received empty worklist in ProcessWorklist");
 
             for (const AzFramework::IVisibilityScene::NodeData& nodeData : worklist)
             {
                 //If a node is entirely contained within the frustum, then we can skip the fine grained culling.
-                bool nodeIsContainedInFrustum = ShapeIntersection::Contains(worklistData->m_frustum, nodeData.m_bounds);
+                bool nodeIsContainedInFrustum =
+                    !worklistData->m_debugCtx->m_enableFrustumCulling ||
+                    ShapeIntersection::Contains(worklistData->m_frustum, nodeData.m_bounds);
 
 #ifdef AZ_CULL_PROFILE_VERBOSE
-                AZ_PROFILE_SCOPE(RPI, "process node (view: %s, skip fine cull: %d",
-                    m_view->GetName().GetCStr(), nodeIsContainedInFrustum ? 1 : 0);
+                AZ_PROFILE_SCOPE(RPI, "process node (view: %s, skip fine cull: %ds",
+                    worklistData->m_view->GetName().GetCStr(), nodeIsContainedInFrustum ? "true" : "false");
 #endif
 
-                if (nodeIsContainedInFrustum || !worklistData->m_debugCtx->m_enableFrustumCulling)
+                if (nodeIsContainedInFrustum)
                 {
                     //Add all objects within this node to the view, without any extra culling
                     for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
@@ -349,8 +354,15 @@ namespace AZ
                                 if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
                                 {
-                                    numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
-                                    ++numVisibleCullables;
+                                    // There are ways to write this without [[maybe_unused]], but they are brittle.
+                                    // For example, using #else could cause a bug where the function's parameter
+                                    // is changed in #ifdef but not in #else.
+                                    [[maybe_unused]] const uint32_t drawPacketCount=AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
+                                    #ifdef AZ_CULL_DEBUG_ENABLED
+                                        ++numVisibleCullables;
+                                        numDrawPackets += drawPacketCount;
+                                    #endif
+
                                     c->m_isVisible = true;
                                 }
                             }
@@ -385,15 +397,22 @@ namespace AZ
                                 if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
                                 {
-                                    numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
-                                    ++numVisibleCullables;
+                                    // There are ways to write this without [[maybe_unused]], but they are brittle.
+                                    // For example, using #else could cause a bug where the function's parameter
+                                    // is changed in #ifdef but not in #else.
+                                    [[maybe_unused]] const uint32_t drawPacketCount=AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
+                                    #ifdef AZ_CULL_DEBUG_ENABLED
+                                        ++numVisibleCullables;
+                                        numDrawPackets += drawPacketCount;
+                                    #endif
+
                                     c->m_isVisible = true;
                                 }
                             }
                         }
                     }
                 }
-
+#ifdef AZ_CULL_DEBUG_ENABLED
                 if (worklistData->m_debugCtx->m_debugDraw && (worklistData->m_view->GetName() == worklistData->m_debugCtx->m_currentViewSelectionName))
                 {
                     AZ_PROFILE_SCOPE(RPI, "debug draw culling");
@@ -445,8 +464,10 @@ namespace AZ
                         }
                     }
                 }
+#endif
             }
 
+#ifdef AZ_CULL_DEBUG_ENABLED
             if (worklistData->m_debugCtx->m_enableStats)
             {
                 CullingDebugContext::CullStats& cullStats = worklistData->m_debugCtx->GetCullStatsForView(worklistData->m_view);
@@ -456,17 +477,22 @@ namespace AZ
                 cullStats.m_numVisibleCullables += numVisibleCullables;
                 ++cullStats.m_numJobs;
             }
+#endif //AZ_CULL_DEBUG_ENABLED
         }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
         static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
-            const AZStd::shared_ptr<WorklistData>& worklistData, 
+            const AZStd::shared_ptr<WorklistData>& worklistData,
             AzFramework::VisibilityEntry* visibleEntry)
         {
             if (!worklistData->m_maskedOcclusionCulling)
             {
                 return MaskedOcclusionCulling::CullingResult::VISIBLE;
             }
+
+#ifdef AZ_CULL_PROFILE_VERBOSE
+            AZ_PROFILE_SCOPE(RPI, "TestOcclusionCulling");
+#endif
 
             if (visibleEntry->m_boundingVolume.Contains(worklistData->m_view->GetCameraTransform().GetTranslation()))
             {
@@ -517,10 +543,15 @@ namespace AZ
         }
 #endif
 
-        void CullingScene::ProcessCullablesCommon(const Scene& scene, View& view, AZ::Frustum& frustum, void*& maskedOcclusionCulling)
+        void CullingScene::ProcessCullablesCommon(
+            const Scene& scene [[maybe_unused]],
+            View& view,
+            AZ::Frustum& frustum [[maybe_unused]],
+            void*& maskedOcclusionCulling [[maybe_unused]])
         {
             AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullablesCommon() - %s", view.GetName().GetCStr());
 
+#ifdef AZ_CULL_DEBUG_ENABLED
             if (m_debugCtx.m_freezeFrustums)
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_debugCtx.m_frozenFrustumsMutex);
@@ -545,7 +576,7 @@ namespace AZ
                 CullingDebugContext::CullStats& cullStats = m_debugCtx.GetCullStatsForView(&view);
                 cullStats.m_cameraViewToWorld = view.GetViewToWorldMatrix();
             }
-
+#endif //AZ_CULL_DEBUG_ENABLED
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             // setup occlusion culling, if necessary
             maskedOcclusionCulling = m_occlusionPlanes.empty() ? nullptr : view.GetMaskedOcclusionCulling();
@@ -807,6 +838,7 @@ namespace AZ
                     beginCullingDescriptor,
                     [&view]()
                     {
+                        AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCullingTaskGraph");
                         view->BeginCulling();
                     });
             }
@@ -824,6 +856,7 @@ namespace AZ
             {
                 const auto cullingLambda = [&view]()
                 {
+                    AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCullingJob");
                     view->BeginCulling();
                 };
 
@@ -845,7 +878,11 @@ namespace AZ
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
 
-            if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
+            if(views.size() == 1) // avoid job overhead when only 1 job
+            {
+                views[0]->BeginCulling();
+            }
+            else if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
             {
                 BeginCullingTaskGraph(views);
             }
@@ -854,6 +891,7 @@ namespace AZ
                 BeginCullingJobs(views);
             }
 
+#ifdef AZ_CULL_DEBUG_ENABLED
             AuxGeomDrawPtr auxGeom;
             if (m_debugCtx.m_debugDraw)
             {
@@ -877,7 +915,7 @@ namespace AZ
                         {
                             const Matrix4x4& worldToClip = viewPtr->GetWorldToClipMatrix();
                             Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip, Frustum::ReverseDepth::True);
-                            m_debugCtx.m_frozenFrustums.insert({ viewPtr.get(), frustum });                            
+                            m_debugCtx.m_frozenFrustums.insert({ viewPtr.get(), frustum });
                         }
                     }
                 }
@@ -886,10 +924,11 @@ namespace AZ
                     m_debugCtx.m_frozenFrustums.clear();
                 }
             }
+#endif
         }
 
         void CullingScene::EndCulling()
-        {            
+        {
             m_cullDataConcurrencyCheck.soft_unlock();
         }
 

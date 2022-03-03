@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "TransformComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "TransformComponent"
+            }
+        }
+    ]
+}

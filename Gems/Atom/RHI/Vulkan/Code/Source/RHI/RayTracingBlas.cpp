@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/Buffer.h>
 #include <RHI/Conversion.h>
@@ -115,13 +114,13 @@ namespace AZ
             // create scratch buffer
             buffers.m_scratchBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor scratchBufferDescriptor;
-            scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+            scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = buildSizesInfo.buildScratchSize;
             
             AZ::RHI::BufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();
             scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
-            RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
+            [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS scratch buffer");
             
             BufferMemoryView* scratchMemoryView = static_cast<Buffer*>(buffers.m_scratchBuffer.get())->GetBufferMemoryView();

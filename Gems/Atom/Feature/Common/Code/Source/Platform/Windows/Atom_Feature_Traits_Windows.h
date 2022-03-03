@@ -7,5 +7,5 @@
  */
 #pragma once
 
-#define AZ_TRAIT_LUXCORE_SUPPORTED 0
-#define AZ_TRAIT_LUXCORE_EXEPATH "Gems/Atom/Feature/Common/External/LuxCore2.2/win64/dll/luxcoreui.exe"
+#define AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED 1
+

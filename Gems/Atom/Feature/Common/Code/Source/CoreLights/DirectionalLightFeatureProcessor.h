@@ -134,9 +134,6 @@ namespace AZ
                 // Default far depth of each cascade.
                 AZStd::array<float, Shadow::MaxNumberOfCascades> m_defaultFarDepths;
 
-                // Transforms of camera who offers view frustum for each camera view.
-                AZStd::unordered_map<const RPI::View*, Transform> m_cameraTransforms;
-
                 // Configuration offers shape of the camera view frustum for each camera view.
                 AZStd::unordered_map<const RPI::View*, CascadeShadowCameraConfiguration> m_cameraConfigurations;
 
@@ -179,6 +176,8 @@ namespace AZ
                 // If true, this will reduce the shadow acne introduced by large pcf kernels by estimating the angle of the triangle being shaded
                 // with the ddx/ddy functions. 
                 bool m_isReceiverPlaneBiasEnabled = true;
+
+                bool m_blendBetwenCascades = false;
             };
 
             static void Reflect(ReflectContext* context);
@@ -218,6 +217,7 @@ namespace AZ
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
+            void SetCascadeBlendingEnabled(LightHandle handle, bool enable) override;
             void SetShadowBias(LightHandle handle, float bias) override;
             void SetNormalShadowBias(LightHandle handle, float normalShadowBias) override;
 
@@ -258,11 +258,6 @@ namespace AZ
             //! If it has not been registered for the given camera view.
             //! it returns one of the fallback render pipeline ID.
             const CascadeShadowCameraConfiguration& GetCameraConfiguration(LightHandle handle, const RPI::View* cameraView) const;
-
-            //! This returns the camera transform.
-            //! If it has not been registered for the given camera view.
-            //! it returns one of the fallback render pipeline ID.
-            const Transform& GetCameraTransform(LightHandle handle, const RPI::View* cameraView) const;
 
             //! This update view frustum of camera.
             void UpdateFrustums(LightHandle handle);
@@ -341,6 +336,9 @@ namespace AZ
             //! This draws bounding boxes of cascades.
             void DrawCascadeBoundingBoxes(LightHandle handle);
 
+            float GetShadowmapSizeFromCameraView(const LightHandle handle, const RPI::View* cameraView) const;
+            void SnapAabbToPixelIncrements(const float invShadowmapSize, Vector3& orthoMin, Vector3& orthoMax);
+
             IndexedDataVector<ShadowProperty> m_shadowProperties;
             // [GFX TODO][ATOM-2012] shadow for multiple directional lights
             LightHandle m_shadowingLightHandle;
@@ -372,6 +370,7 @@ namespace AZ
             Name m_lightTypeName = Name("directional");
             Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
             Name m_directionalShadowReceiverPlaneBiasEnableName = Name("o_directional_shadow_receiver_plane_bias_enable");
+            Name m_BlendBetweenCascadesEnableName = Name("o_blend_between_cascades_enable");
             static constexpr const char* FeatureProcessorName = "DirectionalLightFeatureProcessor";
         };
     } // namespace Render

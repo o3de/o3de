@@ -34,8 +34,8 @@ namespace PhysX
                     "PhysX Heightfield Collider", "Creates geometry in the PhysX simulation based on an attached heightfield component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXHeightfieldCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/PhysXHeightfieldCollider.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(
                             AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/heightfield-collider/")
@@ -189,6 +189,9 @@ namespace PhysX
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
 
+        // Update material selection from the mapping
+        Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), m_colliderConfig.m_materialSelection);
+
         AzPhysics::ShapeColliderPairList colliderShapePairs;
         colliderShapePairs.emplace_back(AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), m_shapeConfig);
         configuration.m_colliderAndShapeData = colliderShapePairs;
@@ -208,7 +211,12 @@ namespace PhysX
     {
         ClearHeightfield();
         InitHeightfieldShapeConfiguration();
-        InitStaticRigidBody();
+
+        if (!m_shapeConfig->GetSamples().empty())
+        {
+            InitStaticRigidBody();
+        }
+
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 

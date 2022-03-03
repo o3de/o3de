@@ -26,6 +26,19 @@ namespace AZ
         {
         }
 
+        bool ReflectionScreenSpaceCompositePass::IsEnabled() const
+        {
+            // delay for a few frames to ensure that the previous frame texture is populated
+            static const uint32_t FrameDelay = 10;
+            if (m_frameDelayCount < FrameDelay)
+            {
+                m_frameDelayCount++;
+                return false;
+            }
+
+            return true;
+        }
+
         void ReflectionScreenSpaceCompositePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
             if (!m_shaderResourceGroup)
@@ -33,22 +46,8 @@ namespace AZ
                 return;
             }
 
-            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceBlurPass"), GetRenderPipeline());
-
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
-                {
-                    Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(pass);
-
-                    // compute the max mip level based on the available mips in the previous frame image, and capping it
-                    // to stay within a range that has reasonable data
-                    const uint32_t MaxNumRoughnessMips = 8;
-                    uint32_t maxMipLevel = AZStd::min(MaxNumRoughnessMips, blurPass->GetNumBlurMips()) - 1;
-
-                    auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxMipLevel"));
-                    m_shaderResourceGroup->SetConstant(constantIndex, maxMipLevel);
-
-                     return RPI::PassFilterExecutionFlow::StopVisitingPasses;
-                });
+            auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxMipLevel"));
+            m_shaderResourceGroup->SetConstant(constantIndex, ReflectionScreenSpaceBlurPass::NumMipLevels - 1);
 
             FullscreenTrianglePass::CompileResources(context);
         }

@@ -7,6 +7,9 @@
  */
 
 #include <GemCatalog/GemFilterWidget.h>
+
+#include <AzCore/Math/MathUtils.h>
+
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QLabel>
@@ -113,7 +116,7 @@ namespace O3DE::ProjectManager
         // Separating line
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
-        hLine->setStyleSheet("color: #666666;");
+        hLine->setObjectName("horizontalSeparatingLine");
         vLayout->addWidget(hLine);
 
         UpdateCollapseState();
@@ -221,7 +224,6 @@ namespace O3DE::ProjectManager
         ResetGemStatusFilter();
         ResetGemOriginFilter();
         ResetTypeFilter();
-        ResetPlatformFilter();
         ResetFeatureFilter();
     }
 

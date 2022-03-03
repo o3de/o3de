@@ -30,6 +30,7 @@ namespace PhysX
         static const AZ::Crc32 Sphere = AZ_CRC("Sphere", 0x55f96687);
         static const AZ::Crc32 PolygonPrism = AZ_CRC("PolygonPrism", 0xd6b50036);
         static const AZ::Crc32 Cylinder = AZ_CRC("Cylinder", 0x9b045bea);
+        static const AZ::Crc32 Quad = AZ_CRC("QuadShape", 0x40d75e14);
     } // namespace ShapeConstants
 
     /// Component that provides a collider based on geometry from a shape component.

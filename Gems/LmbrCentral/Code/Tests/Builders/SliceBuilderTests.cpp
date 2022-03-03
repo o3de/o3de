@@ -311,7 +311,6 @@ namespace UnitTest
         SerializeContext* GetSerializeContext() override { return m_serializeContext; }
         BehaviorContext* GetBehaviorContext() override { return nullptr; }
         JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}

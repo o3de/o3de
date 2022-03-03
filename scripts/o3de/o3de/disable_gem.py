@@ -15,10 +15,10 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest
+from o3de import cmake, manifest, project_properties, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.disable_gem')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def disable_gem_in_project(gem_name: str = None,
@@ -68,20 +68,16 @@ def disable_gem_in_project(gem_name: str = None,
                      f' {project_path / "project.json"}, engine.json')
         return 1
     gem_path = pathlib.Path(gem_path).resolve()
-    # make sure this gem already exists if we're adding.  We can always remove a gem.
+    # make sure the gem path is a directory
     if not gem_path.is_dir():
         logger.error(f'Gem Path {gem_path} does not exist.')
         return 1
-
 
     # Read gem.json from the gem path
     gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
     if not gem_json_data:
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
-
-    # when removing we will try to do as much as possible even with failures so ret_val will be the last error code
-    ret_val = 0
 
     if not enabled_gem_file:
         enabled_gem_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
@@ -90,18 +86,19 @@ def disable_gem_in_project(gem_name: str = None,
     if not enabled_gem_file.is_file():
         logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
         return 1
+
     # remove the gem
     error_code = cmake.remove_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
-    if error_code:
-        ret_val = error_code
+
+    # Remove the name of the gem from the project.json "gem_names" field if the gem is neither
+    # registered with the project.json nor engine.json
+    ret_val = project_properties.edit_project_props(project_path,
+                                                    delete_gem_names=gem_json_data['gem_name']) or error_code
 
     return ret_val
 
 
 def _run_disable_gem_in_project(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
     return disable_gem_in_project(args.gem_name,
                                    args.gem_path,
                                    args.project_name,
@@ -116,6 +113,10 @@ def add_parser_args(parser):
     Ex. Directly run from this file alone with: python disable_gem.py --project-path D:/Test --gem-name Atom
     :param parser: the caller passes an argparse parser like instance to this method
     """
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(parser)
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
                        help='The path to the project.')
@@ -129,9 +130,6 @@ def add_parser_args(parser):
     parser.add_argument('-egf', '--enabled-gem-file', type=pathlib.Path, required=False,
                                       help='The cmake enabled gem file in which gem names are to be removed from.'
                                            'If not specified it will assume ')
-
-    parser.add_argument('-ohf', '--override-home-folder', type=pathlib.Path, required=False,
-                                      help='By default the home folder is the user folder, override it to this folder.')
 
     parser.set_defaults(func=_run_disable_gem_in_project)
 
@@ -155,8 +153,6 @@ def main():
     # parse the command line args
     the_parser = argparse.ArgumentParser()
 
-    # add subparsers
-
     # add args to the parser
     add_parser_args(the_parser)
 
@@ -165,6 +161,7 @@ def main():
 
     # run
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+    logger.info('Success!' if ret == 0 else 'Completed with issues: result {}'.format(ret))
 
     # return
     sys.exit(ret)

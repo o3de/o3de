@@ -33,7 +33,17 @@ namespace AZ
             ~SharedThumbnailRenderer();
 
         private:
-            //! ThumbnailerRendererRequestsBus::Handler interface overrides...
+            struct ThumbnailConfig
+            {
+                bool IsValid() const;
+                Data::Asset<RPI::ModelAsset> m_modelAsset;
+                Data::Asset<RPI::MaterialAsset> m_materialAsset;
+                Data::Asset<RPI::AnyAsset> m_lightingAsset;
+            };
+
+            ThumbnailConfig GetThumbnailConfig(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey);
+
+            //! ThumbnailerRendererRequestBus::Handler interface overrides...
             void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
             bool Installed() const override;
 
@@ -42,15 +52,12 @@ namespace AZ
 
             // Default assets to be kept loaded and used for rendering if not overridden
             static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
-            const Data::AssetId DefaultLightingPresetAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath);
             Data::Asset<RPI::AnyAsset> m_defaultLightingPresetAsset;
 
             static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
-            const Data::AssetId DefaultModelAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath);
             Data::Asset<RPI::ModelAsset> m_defaultModelAsset;
 
             static constexpr const char* DefaultMaterialPath = "";
-            const Data::AssetId DefaultMaterialAssetId;
             Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
         };
     } // namespace LyIntegration

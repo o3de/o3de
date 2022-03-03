@@ -15,6 +15,7 @@
 namespace AZ
 {
     class Matrix4x4;
+    class Matrix3x4;
     class Transform;
     class ReflectContext;
 } // namespace AZ
@@ -32,6 +33,8 @@ namespace AzFramework
 
         //! Gets the current camera's world to view matrix.
         virtual const AZ::Matrix4x4& GetCameraViewMatrix() const = 0;
+        //! Gets the current camera's world to view matrix as a Matrix3x4.
+        virtual AZ::Matrix3x4 GetCameraViewMatrixAsMatrix3x4() const = 0;
         //! Sets the current camera's world to view matrix.
         virtual void SetCameraViewMatrix(const AZ::Matrix4x4& matrix) = 0;
         //! Gets the current camera's projection (view to clip) matrix.

@@ -19,9 +19,6 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/std/string/wildcard.h>
-#include <AzCore/std/tuple.h>
-#include <AzCore/std/containers/variant.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <cinttypes>
@@ -88,6 +85,16 @@ namespace AZ::Internal
                     [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
                 {
                     m_enginePaths.emplace_back(EngineInfo{ AZ::IO::FixedMaxPath{value}.LexicallyNormal(), FixedValueString{valueName} });
+                    // Make sure any engine paths read from the manifest are absolute
+                    AZ::IO::FixedMaxPath& recentEnginePath = m_enginePaths.back().m_path;
+                    if (recentEnginePath.IsRelative())
+                    {
+                        if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(recentEnginePath.Native());
+                            engineRootAbsPath.has_value())
+                        {
+                            recentEnginePath = AZStd::move(*engineRootAbsPath);
+                        }
+                    }
                 }
 
                 AZStd::vector<EngineInfo> m_enginePaths{};
@@ -212,8 +219,15 @@ namespace AZ::Internal
         return {};
     }
 
-    void InjectSettingToCommandLineBack(AZ::SettingsRegistryInterface& settingsRegistry,
-        AZStd::string_view path, AZStd::string_view value)
+    enum class InjectLocation : bool
+    {
+        Front,
+        Back
+    };
+
+    void InjectSettingToCommandLine(AZ::SettingsRegistryInterface& settingsRegistry,
+        AZStd::string_view path, AZStd::string_view value,
+        InjectLocation injectLocation = InjectLocation::Front)
     {
         AZ::CommandLine commandLine;
         AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(settingsRegistry, commandLine);
@@ -222,7 +236,8 @@ namespace AZ::Internal
 
         auto projectPathOverride = AZStd::string::format(R"(--regset="%.*s=%.*s")",
             aznumeric_cast<int>(path.size()), path.data(), aznumeric_cast<int>(value.size()), value.data());
-        paramContainer.emplace(paramContainer.end(), AZStd::move(projectPathOverride));
+        auto emplaceIter = injectLocation == InjectLocation::Front ? paramContainer.begin() : paramContainer.end();
+        paramContainer.emplace(emplaceIter, AZStd::move(projectPathOverride));
         commandLine.Parse(paramContainer);
         AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
     }
@@ -247,13 +262,26 @@ namespace AZ::SettingsRegistryMergeUtils
         {
             // We can scan up from exe directory to find engine.json, use that for engine root if it exists.
             engineRoot = Internal::ScanUpRootLocator("engine.json");
+            // The Internal ScanUp Engine Root Key will be set as an absolute path
+            if (!engineRoot.empty())
+            {
+                if (engineRoot.IsRelative())
+                {
+                    if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(engineRoot.Native());
+                        engineRootAbsPath.has_value())
+                    {
+                        engineRoot = AZStd::move(*engineRootAbsPath);
+                    }
+                }
+            }
+
             // Set the {InternalScanUpEngineRootKey} to make sure this code path isn't called again for this settings registry
             settingsRegistry.Set(InternalScanUpEngineRootKey, engineRoot.Native());
             if (!engineRoot.empty())
             {
                 settingsRegistry.Set(engineRootKey, engineRoot.Native());
-                // Inject the engine root at the end of the command line settings
-                Internal::InjectSettingToCommandLineBack(settingsRegistry, engineRootKey, engineRoot.Native());
+                // Inject the engine root to the front of the command line settings
+                Internal::InjectSettingToCommandLine(settingsRegistry, engineRootKey, engineRoot.Native());
                 return engineRoot;
             }
         }
@@ -261,12 +289,21 @@ namespace AZ::SettingsRegistryMergeUtils
         // Step 2 check if the engine_path key has been supplied
         if (settingsRegistry.Get(engineRoot.Native(), engineRootKey); !engineRoot.empty())
         {
+            if (engineRoot.IsRelative())
+            {
+                if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(engineRoot.Native());
+                    engineRootAbsPath.has_value())
+                {
+                    engineRoot = AZStd::move(*engineRootAbsPath);
+                }
+            }
             return engineRoot;
         }
 
         // Step 3 locate the project root and attempt to find the engine root using the registered engine
         // for the project in the project.json file
-        AZ::IO::FixedMaxPath projectRoot = FindProjectRoot(settingsRegistry);
+        AZ::IO::FixedMaxPath projectRoot;
+        settingsRegistry.Get(projectRoot.Native(), FilePathKey_ProjectPath);
         if (projectRoot.empty())
         {
             return {};
@@ -300,13 +337,28 @@ namespace AZ::SettingsRegistryMergeUtils
         if (settingsRegistry.GetType(InternalScanUpProjectRootKey) == Type::NoType)
         {
             projectRoot = Internal::ScanUpRootLocator("project.json");
+            // Convert the path to an absolute path before adding it as a setting to the
+            // InternalScanUpProjectRootKey
+            if (!projectRoot.empty())
+            {
+                if (projectRoot.IsRelative())
+                {
+                    if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectRoot.Native());
+                        projectAbsPath.has_value())
+                    {
+                        projectRoot = AZStd::move(*projectAbsPath);
+                    }
+                }
+            }
+
             // Set the {InternalScanUpProjectRootKey} to make sure this code path isn't called again for this settings registry
             settingsRegistry.Set(InternalScanUpProjectRootKey, projectRoot.Native());
             if (!projectRoot.empty())
             {
                 settingsRegistry.Set(projectRootKey, projectRoot.c_str());
-                // Inject the project root at the end of the command line settings
-                Internal::InjectSettingToCommandLineBack(settingsRegistry, projectRootKey, projectRoot.Native());
+                // Inject the project root at to the front of the command line settings
+                Internal::InjectSettingToCommandLine(settingsRegistry, projectRootKey, projectRoot.Native());
+
                 return projectRoot;
             }
         }
@@ -314,6 +366,18 @@ namespace AZ::SettingsRegistryMergeUtils
         // Step 2 Check the project-path key
         // This is the project path root key, as passed from command-line or *.setreg files.
         settingsRegistry.Get(projectRoot.Native(), projectRootKey);
+        if (!projectRoot.empty())
+        {
+            if (projectRoot.IsRelative())
+            {
+                if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectRoot.Native());
+                    projectAbsPath.has_value())
+                {
+                    projectRoot = AZStd::move(*projectAbsPath);
+                }
+            }
+        }
+
         return projectRoot;
     }
 
@@ -327,13 +391,22 @@ namespace AZ::SettingsRegistryMergeUtils
         constexpr auto projectCachePathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_cache_path";
 
         // Step 1 Check the project-cache-path key
-        if (AZ::IO::FixedMaxPath projectCachePath; settingsRegistry.Get(projectCachePath.Native(), projectCachePathKey))
+        AZ::IO::FixedMaxPath projectCachePath;
+        if (!settingsRegistry.Get(projectCachePath.Native(), projectCachePathKey))
         {
-            return projectCachePath;
+            // Step 2 Append the "Cache" directory to the project-path
+            projectCachePath = projectPath / Internal::ProductCacheDirectoryName;
         }
 
-        // Step 2 Append the "Cache" directory to the project-path
-        return projectPath / Internal::ProductCacheDirectoryName;
+        if (projectCachePath.IsRelative())
+        {
+            if (auto projectCacheAbsPath = AZ::Utils::ConvertToAbsolutePath(projectCachePath.Native());
+                projectCacheAbsPath.has_value())
+            {
+                projectCachePath = AZStd::move(*projectCacheAbsPath);
+            }
+        }
+        return projectCachePath;
     }
 
     //! Set the user directory with the provided path or using <project-path>/user as default
@@ -346,13 +419,22 @@ namespace AZ::SettingsRegistryMergeUtils
         constexpr auto projectUserPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_user_path";
 
         // Step 1 Check the project-user-path key
-        if (AZ::IO::FixedMaxPath projectUserPath; settingsRegistry.Get(projectUserPath.Native(), projectUserPathKey))
+        AZ::IO::FixedMaxPath projectUserPath;
+        if (!settingsRegistry.Get(projectUserPath.Native(), projectUserPathKey))
         {
-            return projectUserPath;
+            // Step 2 Append the "User" directory to the project-path
+            projectUserPath = projectPath / "user";
         }
 
-        // Step 2 Append the "User" directory to the project-path
-        return projectPath / "user";
+        if (projectUserPath.IsRelative())
+        {
+            if (auto projectUserAbsPath = AZ::Utils::ConvertToAbsolutePath(projectUserPath.Native());
+                projectUserAbsPath.has_value())
+            {
+                projectUserPath = AZStd::move(*projectUserAbsPath);
+            }
+        }
+        return projectUserPath;
     }
 
     //! Set the log directory using the settings registry path or using <project-user-path>/log as default
@@ -365,20 +447,37 @@ namespace AZ::SettingsRegistryMergeUtils
         constexpr auto projectLogPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_log_path";
 
         // Step 1 Check the project-user-path key
-        if (AZ::IO::FixedMaxPath projectLogPath; settingsRegistry.Get(projectLogPath.Native(), projectLogPathKey))
+        AZ::IO::FixedMaxPath projectLogPath;
+        if (!settingsRegistry.Get(projectLogPath.Native(), projectLogPathKey))
         {
-            return projectLogPath;
+            // Step 2 Append the "Log" directory to the project-user-path
+            projectLogPath = projectUserPath / "log";
         }
 
-        // Step 2 Append the "Log" directory to the project-user-path
-        return projectUserPath / "log";
+        if (projectLogPath.IsRelative())
+        {
+            if (auto projectLogAbsPath = AZ::Utils::ConvertToAbsolutePath(projectLogPath.Native()))
+            {
+                projectLogPath = AZStd::move(*projectLogAbsPath);
+            }
+        }
+
+        return projectLogPath;
     }
 
     // check for a default write storage path, fall back to the <project-user-path> if not
     static AZ::IO::FixedMaxPath FindDevWriteStoragePath(const AZ::IO::FixedMaxPath& projectUserPath)
     {
         AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
-        return devWriteStorage.has_value() ? *devWriteStorage : projectUserPath;
+        AZ::IO::FixedMaxPath devWriteStoragePath = devWriteStorage.has_value() ? *devWriteStorage : projectUserPath;
+        if (devWriteStoragePath.IsRelative())
+        {
+            if (auto devWriteStorageAbsPath = AZ::Utils::ConvertToAbsolutePath(devWriteStoragePath.Native()))
+            {
+                devWriteStoragePath = AZStd::move(*devWriteStorageAbsPath);
+            }
+        }
+        return devWriteStoragePath;
     }
 
     // check for the project build path, which is a relative path from the project root
@@ -668,18 +767,9 @@ namespace AZ::SettingsRegistryMergeUtils
         // NOTE: We make the project-path in the BootstrapSettingsRootKey absolute first
 
         AZ::IO::FixedMaxPath projectPath = FindProjectRoot(registry);
-        if (constexpr auto projectPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
+        if ([[maybe_unused]] constexpr auto projectPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
             !projectPath.empty())
         {
-            if (projectPath.IsRelative())
-            {
-                if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectPath.Native());
-                    projectAbsPath.has_value())
-                {
-                    projectPath = AZStd::move(*projectAbsPath);
-                }
-            }
-
             projectPath = projectPath.LexicallyNormal();
             AZ_Warning("SettingsRegistryMergeUtils", AZ::IO::SystemFile::Exists(projectPath.c_str()),
                 R"(Project path "%s" does not exist. Is the "%.*s" registry setting set to a valid absolute path?)"
@@ -693,6 +783,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 R"(Project path isn't set in the Settings Registry at "%.*s".)"
                 " Project-related filepaths will be set relative to the executable directory\n",
                 AZ_STRING_ARG(projectPathKey));
+            projectPath = exePath;
             registry.Set(FilePathKey_ProjectPath, exePath.Native());
         }
 
@@ -700,15 +791,6 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
         if (!engineRoot.empty())
         {
-            if (engineRoot.IsRelative())
-            {
-                if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(engineRoot.Native());
-                    engineRootAbsPath.has_value())
-                {
-                    engineRoot = AZStd::move(*engineRootAbsPath);
-                }
-            }
-
             engineRoot = engineRoot.LexicallyNormal();
             registry.Set(FilePathKey_EngineRootFolder, engineRoot.Native());
         }
@@ -717,15 +799,6 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath projectCachePath = FindProjectCachePath(registry, projectPath).LexicallyNormal();
         if (!projectCachePath.empty())
         {
-            if (projectCachePath.IsRelative())
-            {
-                if (auto projectCacheAbsPath = AZ::Utils::ConvertToAbsolutePath(projectCachePath.Native());
-                    projectCacheAbsPath.has_value())
-                {
-                    projectCachePath = AZStd::move(*projectCacheAbsPath);
-                }
-            }
-
             projectCachePath = projectCachePath.LexicallyNormal();
             registry.Set(FilePathKey_CacheProjectRootFolder, projectCachePath.Native());
 
@@ -756,15 +829,6 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath projectUserPath = FindProjectUserPath(registry, projectPath);
         if (!projectUserPath.empty())
         {
-            if (projectUserPath.IsRelative())
-            {
-                if (auto projectUserAbsPath = AZ::Utils::ConvertToAbsolutePath(projectUserPath.Native());
-                    projectUserAbsPath.has_value())
-                {
-                    projectUserPath = AZStd::move(*projectUserAbsPath);
-                }
-            }
-
             projectUserPath = projectUserPath.LexicallyNormal();
             registry.Set(FilePathKey_ProjectUserPath, projectUserPath.Native());
         }
@@ -772,14 +836,6 @@ namespace AZ::SettingsRegistryMergeUtils
         // Log folder
         if (AZ::IO::FixedMaxPath projectLogPath = FindProjectLogPath(registry, projectUserPath); !projectLogPath.empty())
         {
-            if (projectLogPath.IsRelative())
-            {
-                if (auto projectLogAbsPath = AZ::Utils::ConvertToAbsolutePath(projectLogPath.Native()))
-                {
-                    projectLogPath = AZStd::move(*projectLogAbsPath);
-                }
-            }
-
             projectLogPath = projectLogPath.LexicallyNormal();
             registry.Set(FilePathKey_ProjectLogPath, projectLogPath.Native());
         }
@@ -787,14 +843,6 @@ namespace AZ::SettingsRegistryMergeUtils
         // Developer Write Storage folder
         if (AZ::IO::FixedMaxPath devWriteStoragePath = FindDevWriteStoragePath(projectUserPath); !devWriteStoragePath.empty())
         {
-            if (devWriteStoragePath.IsRelative())
-            {
-                if (auto devWriteStorageAbsPath = AZ::Utils::ConvertToAbsolutePath(devWriteStoragePath.Native()))
-                {
-                    devWriteStoragePath = AZStd::move(*devWriteStorageAbsPath);
-                }
-            }
-
             devWriteStoragePath = devWriteStoragePath.LexicallyNormal();
             registry.Set(FilePathKey_DevWriteStorage, devWriteStoragePath.Native());
         }
@@ -981,7 +1029,7 @@ namespace AZ::SettingsRegistryMergeUtils
     // code in the loop makes calls that mutates the `commandLine` instance, invalidating the iterators. Making a copy
     // ensures that the iterators remain valid.
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeCommands)
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeRegdumpCommands)
     {
         // Iterate over all the command line options in order to parse the --regset and --regremove
         // arguments in the order they were supplied
@@ -996,18 +1044,44 @@ namespace AZ::SettingsRegistryMergeUtils
                     continue;
                 }
             }
+            else if (commandArgument.m_option == "regset-file")
+            {
+                AZStd::string_view fileArg(commandArgument.m_value);
+                AZStd::string_view jsonAnchorPath;
+                // double colons is treated as the separator for an anchor path
+                // single colon cannot be used as it is used in Windows paths
+                if (auto anchorPathIndex = AZ::StringFunc::Find(fileArg, "::");
+                    anchorPathIndex != AZStd::string_view::npos)
+                {
+                    jsonAnchorPath = fileArg.substr(anchorPathIndex + 2);
+                    fileArg = fileArg.substr(0, anchorPathIndex);
+                }
+                if (!fileArg.empty())
+                {
+                    AZ::IO::PathView filePath(fileArg);
+                    const auto mergeFormat = filePath.Extension() != ".setregpatch"
+                        ? AZ::SettingsRegistryInterface::Format::JsonMergePatch
+                        : AZ::SettingsRegistryInterface::Format::JsonPatch;
+                    if (!registry.MergeSettingsFile(filePath.Native(), mergeFormat, jsonAnchorPath))
+                    {
+                        AZ_Warning("SettingsRegistryMergeUtils", false, R"(Merging of file "%.*s" to the Settings Registry has failed at anchor  "%.*s".)",
+                            AZ_STRING_ARG(filePath.Native()), AZ_STRING_ARG(jsonAnchorPath));
+                        continue;
+                    }
+                }
+            }
             else if (commandArgument.m_option == "regremove")
             {
                 if (!registry.Remove(commandArgument.m_value))
                 {
                     AZ_Warning("SettingsRegistryMergeUtils", false, "Unable to remove value at JSON Pointer %s for --regremove.",
-                        commandArgument.m_value.data());
+                        commandArgument.m_value.c_str());
                     continue;
                 }
             }
         }
 
-        if (executeCommands)
+        if (executeRegdumpCommands)
         {
             constexpr bool prettifyOutput = true;
             const size_t regdumpSwitchValues = commandLine.GetNumSwitchValues("regdump");

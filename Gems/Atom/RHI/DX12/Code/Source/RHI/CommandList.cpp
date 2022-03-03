@@ -20,7 +20,6 @@
 #include <RHI/CommandQueue.h>
 #include <RHI/QueryPool.h>
 #include <Atom/RHI/IndirectArguments.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
@@ -97,7 +96,7 @@ namespace AZ
             SetName(name);
 
             PIXBeginEvent(PIX_MARKER_CMDLIST_COL, name.GetCStr());
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
             }
@@ -107,7 +106,7 @@ namespace AZ
         {
             FlushBarriers();
             PIXEndEvent();
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXEndEvent(GetCommandList());
             }
@@ -130,14 +129,14 @@ namespace AZ
             const RHI::Viewport* viewports,
             uint32_t count)
         {
-            m_state.m_viewportState.Set(AZStd::array_view<RHI::Viewport>(viewports, count));            
+            m_state.m_viewportState.Set(AZStd::span<const RHI::Viewport>(viewports, count));
         }
 
         void CommandList::SetScissors(
             const RHI::Scissor* scissors,
             uint32_t count)
         {
-            m_state.m_scissorState.Set(AZStd::array_view<RHI::Scissor>(scissors, count));            
+            m_state.m_scissorState.Set(AZStd::span<const RHI::Scissor>(scissors, count));
         }
 
         void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
@@ -563,7 +562,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             D3D12_VIEWPORT dx12Viewports[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
 
             const auto& viewports = m_state.m_viewportState.m_states;
@@ -588,7 +587,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             D3D12_RECT dx12Scissors[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
 
             const auto& scissors = m_state.m_scissorState.m_states;

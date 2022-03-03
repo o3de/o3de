@@ -103,7 +103,7 @@
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>General Availability</string>
+            <string>development</string>
            </property>
           </widget>
          </item>

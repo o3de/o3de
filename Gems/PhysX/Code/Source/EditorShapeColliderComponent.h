@@ -41,6 +41,8 @@ namespace PhysX
         Sphere,
         PolygonPrism,
         Cylinder,
+        QuadDoubleSided,
+        QuadSingleSided,
         Unsupported
     };
 
@@ -89,6 +91,7 @@ namespace PhysX
         AZ::u32 OnConfigurationChanged();
         void UpdateShapeConfigs();
         void UpdateBoxConfig(const AZ::Vector3& scale);
+        void UpdateQuadConfig(const AZ::Vector3& scale);
         void UpdateCapsuleConfig(const AZ::Vector3& scale);
         void UpdateSphereConfig(const AZ::Vector3& scale);
         void UpdateCylinderConfig(const AZ::Vector3& scale);
@@ -102,7 +105,9 @@ namespace PhysX
         void RefreshUiProperties();
 
         AZ::u32 OnSubdivisionCountChange();
-        AZ::Crc32 SubdivisionCountVisibility();
+        AZ::Crc32 SubdivisionCountVisibility() const;
+        void OnSingleSidedChange();
+        AZ::Crc32 SingleSidedVisibility() const;
 
         // AZ::Component
         void Activate() override;
@@ -137,6 +142,9 @@ namespace PhysX
         AZ::Aabb GetColliderShapeAabb() override;
         bool IsTrigger() override;
 
+        void UpdateTriggerSettings();
+        void UpdateSingleSidedSettings();
+
         Physics::ColliderConfiguration m_colliderConfig; //!< Stores collision layers, whether the collider is a trigger, etc.
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local
         AzPhysics::SceneInterface* m_sceneInterface = nullptr;
@@ -151,6 +159,9 @@ namespace PhysX
         //! @note 16 is the number of subdivisions in the debug cylinder that is loaded as a mesh (not generated procedurally)
         AZ::u8 m_subdivisionCount = 16; 
         mutable GeometryCache m_geometryCache; //!< Cached data for generating sample points inside the attached shape.
+        AZStd::optional<bool> m_previousIsTrigger; //!< Stores the previous trigger setting if the shape is changed to one which does not support triggers.
+        bool m_singleSided = false; //!< Used for 2d shapes like quad which may be treated as either single or doubled sided.
+        AZStd::optional<bool> m_previousSingleSided; //!< Stores the previous single sided setting when unable to support single-sided shapes (such as when used with a dynamic rigid body).
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
         AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;

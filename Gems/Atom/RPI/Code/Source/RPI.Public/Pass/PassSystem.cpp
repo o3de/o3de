@@ -9,7 +9,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Utils.h>
@@ -40,6 +39,7 @@
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
+#include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 
 namespace AZ
 {
@@ -68,6 +68,7 @@ namespace AZ
             PassSlot::Reflect(context);
 
             PassData::Reflect(context);
+            SlowClearPassData::Reflect(context);
             CopyPassData::Reflect(context);
             RenderPassData::Reflect(context);
             ComputePassData::Reflect(context);
@@ -312,7 +313,6 @@ namespace AZ
             Pass::FramePrepareParams params{ &frameGraphBuilder };
 
             {
-                AZ_PROFILE_SCOPE(RPI, "Pass: FrameBegin");
                 m_rootPass->FrameBegin(params);
             }
         }
@@ -429,7 +429,7 @@ namespace AZ
             return m_passFactory.CreatePassFromClass(passClassName, passName);
         }
 
-        Ptr<Pass> PassSystem::CreatePassFromTemplate(const AZStd::shared_ptr<PassTemplate>& passTemplate, Name passName)
+        Ptr<Pass> PassSystem::CreatePassFromTemplate(const AZStd::shared_ptr<const PassTemplate>& passTemplate, Name passName)
         {
             return m_passFactory.CreatePassFromTemplate(passTemplate, passName);
         }
@@ -451,6 +451,11 @@ namespace AZ
 
         // --- Pass Library Functions --- 
 
+        bool PassSystem::HasTemplate(const Name& templateName) const
+        {
+            return m_passLibrary.HasTemplate(templateName);
+        }
+
         bool PassSystem::HasPassesForTemplateName(const Name& templateName) const
         {
             return m_passLibrary.HasPassesForTemplate(templateName);
@@ -461,7 +466,7 @@ namespace AZ
             return m_passLibrary.AddPassTemplate(name, passTemplate);
         }
 
-        const AZStd::shared_ptr<PassTemplate> PassSystem::GetPassTemplate(const Name& name) const
+        const AZStd::shared_ptr<const PassTemplate> PassSystem::GetPassTemplate(const Name& name) const
         {
             return m_passLibrary.GetPassTemplate(name);
         }

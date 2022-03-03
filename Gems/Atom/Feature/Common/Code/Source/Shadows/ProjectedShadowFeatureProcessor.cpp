@@ -8,7 +8,6 @@
 
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <Math/GaussianMathFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -155,8 +154,9 @@ namespace AZ::Render
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetNormalShadowBias().");
 
-        ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
-        shadowProperty.m_normalShadowBias = normalShadowBias;
+        ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
+        shadowData.m_normalShadowBias = normalShadowBias;
+        m_deviceBufferNeedsUpdate = true;
     }
 
     void ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size)

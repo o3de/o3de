@@ -32,6 +32,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/ImageConvert.h>
 #include <Processing/ImageToProcess.h>
@@ -45,7 +46,6 @@
 
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <BuilderSettings/CubemapSettings.h>
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/PresetSettings.h>
 
 #include <Editor/EditorCommon.h>
@@ -111,7 +111,6 @@ namespace UnitTest
         AZ::SerializeContext* GetSerializeContext() override { return m_context.get(); }
         AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return m_jsonRegistrationContext.get(); }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
         void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
@@ -204,7 +203,7 @@ namespace UnitTest
             m_gemFolder = AZ::Test::GetEngineRootPath() + "/Gems/Atom/Asset/ImageProcessingAtom/";
             m_outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
 
-            m_defaultSettingFolder = m_gemFolder + AZStd::string("Config/");
+            m_defaultSettingFolder = m_gemFolder + AZStd::string("Assets/Config/");
             m_testFileFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/");
 
             InitialImageFilenames();

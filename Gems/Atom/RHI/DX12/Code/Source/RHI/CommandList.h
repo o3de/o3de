@@ -18,7 +18,7 @@
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/ObjectPool.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 
@@ -390,7 +390,6 @@ namespace AZ
             }
 
             const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
-            const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout.GetPipelineLayoutDescriptor();
 
             // Pull from slot bindings dictated by the pipeline layout. Re-bind anything that has changed
             // at the flat index level.
@@ -499,12 +498,15 @@ namespace AZ
                     }
                 }
 
+#if defined (AZ_RHI_ENABLE_VALIDATION)
                 if (updatePipelineState || updateSRG)
                 {
+                    const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout.GetPipelineLayoutDescriptor();
                     m_validator.ValidateShaderResourceGroup(
                         *shaderResourceGroup,
                         pipelineLayoutDescriptor.GetShaderResourceGroupBindingInfo(srgIndex));
                 }
+#endif
             }
             return true;
         }

@@ -1,0 +1,147 @@
+{
+    "entries": [
+        {
+            "base": "AWSGameLiftAcceptMatchRequest",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Accept Match Request",
+                "category": "AWS Game Lift"
+            },
+            "methods": [
+                {
+                    "base": "GetAcceptMatch",
+                    "details": {
+                        "name": "Get Accept Match"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{AD289D76-CEE2-424F-847E-E62AA83B7D79}",
+                            "details": {
+                                "name": "Accept Match Request",
+                                "tooltip": "The container for AcceptMatch request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Accept Match"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAcceptMatch",
+                    "details": {
+                        "name": "Set Accept Match"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{AD289D76-CEE2-424F-847E-E62AA83B7D79}",
+                            "details": {
+                                "name": "Accept Match Request",
+                                "tooltip": "The container for AcceptMatch request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Accept Match"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPlayerIds",
+                    "details": {
+                        "name": "Get Player Ids"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{AD289D76-CEE2-424F-847E-E62AA83B7D79}",
+                            "details": {
+                                "name": "Accept Match Request",
+                                "tooltip": "The container for AcceptMatch request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "Player Ids"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPlayerIds",
+                    "details": {
+                        "name": "Set Player Ids"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{AD289D76-CEE2-424F-847E-E62AA83B7D79}",
+                            "details": {
+                                "name": "Accept Match Request",
+                                "tooltip": "The container for AcceptMatch request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "Player Ids"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTicketId",
+                    "details": {
+                        "name": "Get Ticket Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{AD289D76-CEE2-424F-847E-E62AA83B7D79}",
+                            "details": {
+                                "name": "Accept Match Request",
+                                "tooltip": "The container for AcceptMatch request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Ticket Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTicketId",
+                    "details": {
+                        "name": "Set Ticket Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{AD289D76-CEE2-424F-847E-E62AA83B7D79}",
+                            "details": {
+                                "name": "Accept Match Request",
+                                "tooltip": "The container for AcceptMatch request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Ticket Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

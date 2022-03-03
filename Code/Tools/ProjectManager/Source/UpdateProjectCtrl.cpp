@@ -15,6 +15,8 @@
 #include <UpdateProjectCtrl.h>
 #include <UpdateProjectSettingsScreen.h>
 #include <ProjectUtils.h>
+#include <DownloadController.h>
+#include <SettingsInterface.h>
 
 #include <QDialogButtonBox>
 #include <QMessageBox>
@@ -94,6 +96,17 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::UpdateProject;
     }
 
+    bool UpdateProjectCtrl::ContainsScreen(ProjectManagerScreen screen)
+    {
+        // Do not include GemRepos because we don't want to advertise jumping to it from all other screens here
+        return screen == GetScreenEnum() || screen == ProjectManagerScreen::GemCatalog;
+    }
+
+    void UpdateProjectCtrl::GoToScreen(ProjectManagerScreen screen)
+    {
+        OnChangeScreenRequest(screen);
+    }
+
     // Called when pressing "Edit Project Settings..."
     void UpdateProjectCtrl::NotifyCurrentScreen()
     {
@@ -112,6 +125,16 @@ namespace O3DE::ProjectManager
         if (screen == ProjectManagerScreen::GemRepos)
         {
             m_stack->setCurrentWidget(m_gemRepoScreen);
+            Update();
+        }
+        else if (screen == ProjectManagerScreen::GemCatalog)
+        {
+            m_stack->setCurrentWidget(m_gemCatalogScreen);
+            Update();
+        }
+        else if (screen == ProjectManagerScreen::UpdateProjectSettings)
+        {
+            m_stack->setCurrentWidget(m_updateSettingsScreen);
             Update();
         }
         else
@@ -278,6 +301,15 @@ namespace O3DE::ProjectManager
                     QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
                     return false;
                 }
+            }
+
+            if (newProjectSettings.m_projectName != m_projectInfo.m_projectName)
+            {
+                // Remove project build successfully paths for both old and new project names
+                // because a full rebuild is required when moving projects
+                auto settings = SettingsInterface::Get();
+                settings->SetProjectBuiltSuccessfully(m_projectInfo, false);
+                settings->SetProjectBuiltSuccessfully(newProjectSettings, false);
             }
 
             if (!newProjectSettings.m_newPreviewImagePath.isEmpty())

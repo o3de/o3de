@@ -23,17 +23,6 @@ namespace AzToolsFramework
 {
     AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
-    const QColor PrefabUiHandler::m_backgroundColor = QColor("#444444");
-    const QColor PrefabUiHandler::m_backgroundHoverColor = QColor("#5A5A5A");
-    const QColor PrefabUiHandler::m_backgroundSelectedColor = QColor("#656565");
-    const QColor PrefabUiHandler::m_prefabCapsuleColor = QColor("#1E252F");
-    const QColor PrefabUiHandler::m_prefabCapsuleDisabledColor = QColor("#35383C");
-    const QColor PrefabUiHandler::m_prefabCapsuleEditColor = QColor("#4A90E2");
-    const QString PrefabUiHandler::m_prefabIconPath = QString(":/Entity/prefab.svg");
-    const QString PrefabUiHandler::m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
-    const QString PrefabUiHandler::m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");
-    const QString PrefabUiHandler::m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
-
     PrefabUiHandler::PrefabUiHandler()
     {
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
@@ -110,7 +99,7 @@ namespace AzToolsFramework
             return;
         }
 
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
@@ -194,7 +183,7 @@ namespace AzToolsFramework
             return;
         }
 
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
@@ -294,7 +283,7 @@ namespace AzToolsFramework
 
     void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const QPoint offset = QPoint(-18, 3);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         const int iconSize = 16;
@@ -317,41 +306,37 @@ namespace AzToolsFramework
         {
             // Only show the close icon if the prefab is expanded.
             // This allows the prefab container to be opened if it was collapsed during propagation.
-            if (!isExpanded)
+            if (isExpanded)
             {
-                return;
-            }
+                // Use the same color as the background.
+                QColor backgroundColor = m_backgroundColor;
+                if (isSelected)
+                {
+                    backgroundColor = m_backgroundSelectedColor;
+                }
+                else if (isHovered)
+                {
+                    backgroundColor = m_backgroundHoverColor;
+                }
 
-            // Use the same color as the background.
-            QColor backgroundColor = m_backgroundColor;
-            if (isSelected)
-            {
-                backgroundColor = m_backgroundSelectedColor;
-            }
-            else if (isHovered)
-            {
-                backgroundColor = m_backgroundHoverColor;
-            }
+                // Paint a rect to cover up the expander.
+                QRect rect = QRect(0, 0, 16, 16);
+                rect.translate(option.rect.topLeft() + offset);
+                painter->fillRect(rect, backgroundColor);
 
-            // Paint a rect to cover up the expander.
-            QRect rect = QRect(0, 0, 16, 16);
-            rect.translate(option.rect.topLeft() + offset);
-            painter->fillRect(rect, backgroundColor);
-
-            // Paint the icon.
-            QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-            painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+                // Paint the icon.
+                QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
+                painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+            }
         }
         else
         {
             // Only show the edit icon on hover.
-            if (!isHovered)
+            if (isHovered)
             {
-                return;
+                QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
+                painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
             }
-
-            QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-            painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
         }
 
         painter->restore();
@@ -400,7 +385,7 @@ namespace AzToolsFramework
 
     bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const QPoint offset = QPoint(-18, 3);
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
@@ -426,7 +411,7 @@ namespace AzToolsFramework
 
     void PrefabUiHandler::OnOutlinerItemCollapse(const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
@@ -435,8 +420,10 @@ namespace AzToolsFramework
         }
     }
 
-    bool PrefabUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
+    bool PrefabUiHandler::OnOutlinerItemDoubleClick(const QModelIndex& index) const
     {
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+
         if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             // Focus on this prefab

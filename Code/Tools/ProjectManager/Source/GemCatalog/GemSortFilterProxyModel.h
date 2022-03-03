@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     class GemSortFilterProxyModel
         : public QSortFilterProxyModel
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         enum class GemSelected
@@ -70,7 +70,7 @@ namespace O3DE::ProjectManager
         void SetFeatures(const QSet<QString>& features) { m_featureFilter = features; InvalidateFilter(); }
 
         void InvalidateFilter();
-        void ResetFilters();
+        void ResetFilters(bool clearSearchString = true);
 
     signals:
         void OnInvalidated();

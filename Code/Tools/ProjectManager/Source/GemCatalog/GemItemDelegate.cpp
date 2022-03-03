@@ -9,6 +9,9 @@
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <AdjustableHeaderWidget.h>
+#include <ProjectManagerDefs.h>
+
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <QEvent>
@@ -22,12 +25,15 @@
 #include <QAbstractTextDocumentLayout>
 #include <QDesktopServices>
 #include <QMovie>
+#include <QHeaderView>
+#include <QDir>
 
 namespace O3DE::ProjectManager
 {
-    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QObject* parent)
+    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent)
         : QStyledItemDelegate(parent)
         , m_model(model)
+        , m_headerWidget(header)
     {
         AddPlatformIcon(GemInfo::Android, ":/Android.svg");
         AddPlatformIcon(GemInfo::iOS, ":/iOS.svg");
@@ -37,6 +43,8 @@ namespace O3DE::ProjectManager
 
         SetStatusIcon(m_notDownloadedPixmap, ":/Download.svg");
         SetStatusIcon(m_unknownStatusPixmap, ":/X.svg");
+        SetStatusIcon(m_downloadSuccessfulPixmap, ":/checkmark.svg");
+        SetStatusIcon(m_downloadFailedPixmap, ":/Warning.svg");
 
         m_downloadingMovie = new QMovie(":/in_progress.gif");
     }
@@ -111,15 +119,27 @@ namespace O3DE::ProjectManager
             painter->restore();
         }
 
+        // Gem preview
+        QString previewPath = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
+        QPixmap gemPreviewImage(previewPath);
+        QRect gemPreviewRect(
+            contentRect.left() + AdjustableHeaderWidget::s_headerTextIndent,
+            contentRect.center().y() - GemPreviewImageHeight / 2,
+            GemPreviewImageWidth, GemPreviewImageHeight);
+        painter->drawPixmap(gemPreviewRect, gemPreviewImage);
+
         // Gem name
         QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
-        const int firstColumnMaxTextWidth = s_summaryStartX - 30;
+        QPair<int, int> nameXBounds = CalcColumnXBounds(HeaderOrder::Name);
+        const int nameStartX = nameXBounds.first;
+        const int nameColumnTextStartX = s_itemMargins.left() + nameStartX + AdjustableHeaderWidget::s_headerTextIndent;
+        const int nameColumnMaxTextWidth = nameXBounds.second - nameStartX - AdjustableHeaderWidget::s_headerTextIndent;
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
-        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
+        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
-        gemNameRect.moveTo(contentRect.left(), contentRect.top());
+        gemNameRect.moveTo(nameColumnTextStartX, contentRect.top());
         painter->setFont(gemNameFont);
         painter->setPen(m_textColor);
         gemNameRect = painter->boundingRect(gemNameRect, Qt::TextSingleLine, gemName);
@@ -127,9 +147,9 @@ namespace O3DE::ProjectManager
 
         // Gem creator
         QString gemCreator = GemModel::GetCreator(modelIndex);
-        gemCreator = standardFontMetrics.elidedText(gemCreator, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
+        gemCreator = standardFontMetrics.elidedText(gemCreator, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemCreatorRect = GetTextRect(standardFont, gemCreator, s_fontSize);
-        gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
+        gemCreatorRect.moveTo(nameColumnTextStartX, contentRect.top() + gemNameRect.height());
 
         painter->setFont(standardFont);
         gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
@@ -152,13 +172,16 @@ namespace O3DE::ProjectManager
 
     QRect GemItemDelegate::CalcSummaryRect(const QRect& contentRect, bool hasTags) const
     {
-        const int featureTagAreaHeight = 30;
+        const int featureTagAreaHeight = 40;
         const int summaryHeight = contentRect.height() - (hasTags * featureTagAreaHeight);
 
-        const int additionalSummarySpacing = s_itemMargins.right() * 3;
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
+        const auto [summaryStartX, summaryEndX] = CalcColumnXBounds(HeaderOrder::Summary);
+
+        const QSize summarySize =
+            QSize(summaryEndX - summaryStartX - AdjustableHeaderWidget::s_headerTextIndent - s_extraSummarySpacing,
             summaryHeight);
-        return QRect(QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
+        return QRect(
+            QPoint(s_itemMargins.left() + summaryStartX + AdjustableHeaderWidget::s_headerTextIndent, contentRect.top()), summarySize);
     }
 
     QSize GemItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -167,7 +190,7 @@ namespace O3DE::ProjectManager
         initStyleOption(&options, modelIndex);
 
         int marginsHorizontal = s_itemMargins.left() + s_itemMargins.right() + s_contentMargins.left() + s_contentMargins.right();
-        return QSize(marginsHorizontal + s_buttonWidth + s_summaryStartX, s_height);
+        return QSize(marginsHorizontal + s_buttonWidth + s_defaultSummaryStartX, s_height);
     }
 
     bool GemItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex)
@@ -297,9 +320,17 @@ namespace O3DE::ProjectManager
         return QFontMetrics(font).boundingRect(text);
     }
 
+    QPair<int, int> GemItemDelegate::CalcColumnXBounds(HeaderOrder header) const
+    {
+        return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
+    }
+
     QRect GemItemDelegate::CalcButtonRect(const QRect& contentRect) const
     {
-        const QPoint topLeft = QPoint(contentRect.right() - s_buttonWidth, contentRect.center().y() - s_buttonHeight / 2);
+        const QPoint topLeft = QPoint(
+            s_itemMargins.left() + CalcColumnXBounds(HeaderOrder::Status).first + AdjustableHeaderWidget::s_headerTextIndent + s_statusIconSize +
+                s_statusButtonSpacing,
+            contentRect.center().y() - s_buttonHeight / 2);
         const QSize size = QSize(s_buttonWidth, s_buttonHeight);
         return QRect(topLeft, size);
     }
@@ -307,7 +338,7 @@ namespace O3DE::ProjectManager
     void GemItemDelegate::DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
     {
         const GemInfo::Platforms platforms = GemModel::GetPlatforms(modelIndex);
-        int startX = 0;
+        int startX = s_itemMargins.left() + CalcColumnXBounds(HeaderOrder::Name).first + AdjustableHeaderWidget::s_headerTextIndent;
 
         // Iterate and draw the platforms in the order they are defined in the enum.
         for (int i = 0; i < GemInfo::NumPlatforms; ++i)
@@ -329,18 +360,23 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemItemDelegate::DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const
+    void GemItemDelegate::DrawFeatureTags(
+        QPainter* painter,
+        const QRect& contentRect,
+        const QStringList& featureTags,
+        const QFont& standardFont,
+        const QRect& summaryRect) const
     {
         QFont gemFeatureTagFont(standardFont);
         gemFeatureTagFont.setPixelSize(s_featureTagFontSize);
         gemFeatureTagFont.setBold(false);
         painter->setFont(gemFeatureTagFont);
 
-        int x = s_summaryStartX;
+        int x = CalcColumnXBounds(HeaderOrder::Summary).first + AdjustableHeaderWidget::s_headerTextIndent;
         for (const QString& featureTag : featureTags)
         {
             QRect featureTagRect = GetTextRect(gemFeatureTagFont, featureTag, s_featureTagFontSize);
-            featureTagRect.moveTo(contentRect.left() + x + s_featureTagBorderMarginX,
+            featureTagRect.moveTo(s_itemMargins.left() + x + s_featureTagBorderMarginX,
                 contentRect.top() + 47);
             featureTagRect = painter->boundingRect(featureTagRect, Qt::TextSingleLine, featureTag);
 
@@ -428,7 +464,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius, 1);
+            circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius + 1, 1);
         }
 
         // Rounded rect
@@ -479,6 +515,14 @@ namespace O3DE::ProjectManager
             currentFrame = m_downloadingMovie->currentPixmap();
             currentFrame = currentFrame.scaled(s_statusIconSize, s_statusIconSize);
             statusPixmap = &currentFrame;
+        }
+        else if (downloadStatus == GemInfo::DownloadStatus::DownloadSuccessful)
+        {
+            statusPixmap = &m_downloadSuccessfulPixmap;
+        }
+        else if (downloadStatus == GemInfo::DownloadStatus::DownloadFailed)
+        {
+            statusPixmap = &m_downloadFailedPixmap;
         }
         else if (downloadStatus == GemInfo::DownloadStatus::NotDownloaded)
         {

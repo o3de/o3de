@@ -86,6 +86,8 @@ namespace AZ
             const RPISystemDescriptor& GetDescriptor() const override;
             Name GetRenderApiName() const override;
             uint64_t GetCurrentTick() const override;
+            void SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState) override;
+            const RHI::MultisampleState& GetApplicationMultisampleState() const override;
 
             // AZ::Debug::TraceMessageBus::Handler overrides...
             bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
@@ -97,7 +99,7 @@ namespace AZ
             // SystemTickBus::OnTick
             void OnSystemTick() override;
 
-            float GetCurrentTime();
+            float GetCurrentTime() const;
 
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;
@@ -123,7 +125,6 @@ namespace AZ
             // The job policy used for feature processor's rendering prepare
             RHI::JobPolicy m_prepareRenderJobPolicy = RHI::JobPolicy::Parallel;
 
-            ScriptTimePoint m_startTime;
             float m_currentSimulationTime = 0.0f;
 
             RPISystemDescriptor m_descriptor;
@@ -137,6 +138,9 @@ namespace AZ
             bool m_systemAssetsInitialized = false;
 
             uint64_t m_renderTick = 0;
+
+            // Application multisample state
+            RHI::MultisampleState m_multisampleState;
         };
 
     } // namespace RPI

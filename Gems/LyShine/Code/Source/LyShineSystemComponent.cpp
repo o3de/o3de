@@ -377,24 +377,46 @@ namespace LyShine
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
+    void LyShineSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
     {
 #if !defined(AZ_MONOLITHIC_BUILD)
         // When module is linked dynamically, we must set our gEnv pointer.
         // When module is linked statically, we'll share the application's gEnv pointer.
         gEnv = system.GetGlobalEnvironment();
 #endif
-        m_pLyShine = new CLyShine(gEnv->pSystem);
-        gEnv->pLyShine = m_pLyShine;
+        m_lyShine = AZStd::make_unique<CLyShine>();
+        AZ::Interface<ILyShine>::Register(m_lyShine.get());
+
+        system.GetILevelSystem()->AddListener(this);
 
         BroadcastCursorImagePathname();
+
+        if (AZ::Interface<ILyShine>::Get())
+        {
+            AZ::Interface<ILyShine>::Get()->PostInit();
+        }
     }
 
-    void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnCrySystemShutdown(ISystem& system)
     {
-        gEnv->pLyShine = nullptr;
-        delete m_pLyShine;
-        m_pLyShine = nullptr;       
+        system.GetILevelSystem()->RemoveListener(this);
+
+        if (m_lyShine)
+        {
+            AZ::Interface<ILyShine>::Unregister(m_lyShine.get());
+            m_lyShine.reset();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnUnloadComplete([[maybe_unused]] const char* levelName)
+    {
+        // Perform level unload procedures for the LyShine UI system
+        if (AZ::Interface<ILyShine>::Get())
+        {
+            AZ::Interface<ILyShine>::Get()->OnLevelUnload();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

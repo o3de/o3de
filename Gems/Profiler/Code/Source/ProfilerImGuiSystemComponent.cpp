@@ -8,6 +8,7 @@
 
 #include <ProfilerImGuiSystemComponent.h>
 
+#include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -107,7 +108,7 @@ namespace Profiler
         {
             if (ImGui::MenuItem("CPU", "", &m_showCpuProfiler))
             {
-                CpuProfiler::Get()->SetProfilerEnabled(m_showCpuProfiler);
+                AZ::Debug::ProfilerSystemInterface::Get()->SetActive(m_showCpuProfiler);
             }
             ImGui::EndMenu();
         }

@@ -8,6 +8,7 @@
 
 #include <Components/TerrainSurfaceGradientListComponent.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -25,26 +26,17 @@ namespace Terrain
                 ->Field("Gradient Entity", &TerrainSurfaceGradientMapping::m_gradientEntityId)
                 ->Field("Surface Tag", &TerrainSurfaceGradientMapping::m_surfaceTag)
             ;
+        }
 
-            if (auto edit = serialize->GetEditContext())
-            {
-                edit->Class<TerrainSurfaceGradientMapping>("Terrain Surface Gradient Mapping", "Mapping between a gradient and a surface.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientMapping::m_gradientEntityId,
-                        "Gradient Entity", "ID of Entity providing a gradient.")
-                       ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->UIElement("GradientPreviewer", "Previewer")
-                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC_CE("GradientEntity"), &TerrainSurfaceGradientMapping::m_gradientEntityId)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientMapping::m_surfaceTag, "Surface Tag",
-                        "Surface type to map to this gradient.")
-                ;
-            }
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<TerrainSurfaceGradientMapping>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                ->Attribute(AZ::Script::Attributes::Module, "terrain")
+                ->Constructor()
+                ->Property("gradientEntityId", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_gradientEntityId))
+                ->Property("surfaceTag", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_surfaceTag));
         }
     }
 
@@ -59,21 +51,6 @@ namespace Terrain
                 ->Version(1)
                 ->Field("Mappings", &TerrainSurfaceGradientListConfig::m_gradientSurfaceMappings)
             ;
-
-            AZ::EditContext* edit = serialize->GetEditContext();
-            if (edit)
-            {
-                edit->Class<TerrainSurfaceGradientListConfig>(
-                    "Terrain Surface Gradient List Component", "Provide mapping between gradients and surfaces.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientListConfig::m_gradientSurfaceMappings,
-                        "Gradient to Surface Mappings", "Maps Gradient Entities to Surfaces.")
-                    ;
-            }
         }
     }
 
@@ -170,7 +147,7 @@ namespace Terrain
     {
         outSurfaceWeights.clear();
 
-        const GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), 0.0f));
+        const GradientSignal::GradientSampleParams params(inPosition);
 
         for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
         {
@@ -179,6 +156,27 @@ namespace Terrain
                 mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
 
             outSurfaceWeights.emplace_back(mapping.m_surfaceTag, weight);
+        }
+    }
+
+    void TerrainSurfaceGradientListComponent::GetSurfaceWeightsFromList(
+        AZStd::span<const AZ::Vector3> inPositionList,
+        AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const
+    {
+        AZ_Assert(
+            inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
+
+        AZStd::vector<float> gradientValues(inPositionList.size());
+
+        for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
+        {
+            GradientSignal::GradientRequestBus::Event(
+                mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValues, inPositionList, gradientValues);
+
+            for (size_t index = 0; index < outSurfaceWeightsList.size(); index++)
+            {
+                outSurfaceWeightsList[index].emplace_back(mapping.m_surfaceTag, gradientValues[index]);
+            }
         }
     }
 

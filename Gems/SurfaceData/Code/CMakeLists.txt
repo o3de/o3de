@@ -18,9 +18,10 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Legacy::CryCommon
             Gem::LmbrCentral
         PUBLIC
+            AZ::AzCore
+            AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Static
 )
@@ -36,8 +37,7 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryCommon
+        PUBLIC
             Gem::SurfaceData.Static
             Gem::LmbrCentral
     RUNTIME_DEPENDENCIES
@@ -66,7 +66,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Legacy::CryCommon
                 AZ::AzToolsFramework
                 Gem::SurfaceData.Static
                 Gem::LmbrCentral.Editor
@@ -97,11 +96,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Legacy::CryCommon
                 Gem::SurfaceData.Static
                 Gem::LmbrCentral
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Gem::SurfaceData.Tests
+    )
+    ly_add_googlebenchmark(
+        NAME Gem::SurfaceData.Benchmarks
+        TARGET Gem::SurfaceData.Tests
     )
 endif()

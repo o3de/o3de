@@ -207,7 +207,7 @@ namespace AZ::IO
         uint64_t FTell(AZ::IO::HandleType handle) override;
         int FFlush(AZ::IO::HandleType handle) override;
         int FClose(AZ::IO::HandleType handle) override;
-        AZ::IO::ArchiveFileIterator FindFirst(AZStd::string_view pDir, EFileSearchType searchType = eFileSearchType_AllowInZipsOnly) override;
+        AZ::IO::ArchiveFileIterator FindFirst(AZStd::string_view pDir, FileSearchLocation searchType = FileSearchLocation::InPak) override;
         AZ::IO::ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator fileIterator) override;
         bool FindClose(AZ::IO::ArchiveFileIterator fileIterator) override;
         int FEof(AZ::IO::HandleType handle) override;
@@ -219,7 +219,7 @@ namespace AZ::IO
         bool RemoveDir(AZStd::string_view pName) override;  // remove directory from FS (if supported)
         bool IsAbsPath(AZStd::string_view pPath) override;
 
-        bool IsFileExist(AZStd::string_view sFilename, EFileSearchLocation fileLocation = eFileLocation_Any) override;
+        bool IsFileExist(AZStd::string_view sFilename, FileSearchLocation fileLocation = FileSearchLocation::Any) override;
         bool IsFolder(AZStd::string_view sPath) override;
         IArchive::SignedFileSize GetFileSizeOnDisk(AZStd::string_view filename) override;
 
@@ -255,7 +255,7 @@ namespace AZ::IO
         bool DisableRuntimeFileAccess(bool status, AZStd::thread_id threadId) override;
 
         // gets the current archive priority
-        ArchiveLocationPriority GetPakPriority() const override;
+        FileSearchPriority GetPakPriority() const override;
 
         uint64_t GetFileOffsetOnMedia(AZStd::string_view szName) const override;
 
@@ -305,7 +305,7 @@ namespace AZ::IO
         AZStd::shared_ptr<AzFramework::AssetRegistry> GetBundleCatalog(ZipDir::CachePtr pZip, const AZStd::string& catalogName);
 
         // [LYN-2376] Remove once legacy slice support is removed
-        AZStd::vector<AZStd::string> ScanForLevels(ZipDir::CachePtr pZip);
+        AZStd::vector<AZ::IO::Path> ScanForLevels(ZipDir::CachePtr pZip);
 
         mutable AZStd::shared_mutex m_csOpenFiles;
         ZipPseudoFileArray m_arrOpenFiles;

@@ -1,17 +1,16 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "Materials\\Presets\\MacBeth\\00_illuminant.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "00_illuminant.material",
+    "materialType": "../../Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
                 0.0,
-                0.24620431661605836,
+                0.24620431661605835,
                 0.3813229501247406,
                 1.0
             ],
-            "textureMap": "Materials/Presets/MacBeth/18_cyan_sRGB.tif",
             "useTexture": false
         }
     }

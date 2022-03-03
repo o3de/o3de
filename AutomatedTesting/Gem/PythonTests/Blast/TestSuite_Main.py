@@ -17,7 +17,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesti
 
 from base import TestAutomationBase
 
-@pytest.mark.SUITE_periodic
+@pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):

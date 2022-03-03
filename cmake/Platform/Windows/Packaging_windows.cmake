@@ -23,7 +23,6 @@ set(CPACK_WIX_ROOT ${LY_INSTALLER_WIX_ROOT})
 
 set(CPACK_GENERATOR WIX)
 
-set(CPACK_THREADS 0)
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
 set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103eef2b071be3112")
@@ -105,46 +104,34 @@ set(_raw_text_license [[
         <Text Name="EulaAcceptance" X="42" Y="-56" Width="-42" Height="18" TabStop="yes" FontId="1" HideWhenDisabled="yes">#(loc.InstallEulaAcceptance)</Text>
 ]])
 
-# The offline installer generation will be a single monolithic MSI. The WIX burn tool for the bootstrapper EXE has a size limitation. 
-# So we will exclude the generation of the boostrapper EXE in the offline case.
-if(LY_INSTALLER_DOWNLOAD_URL)
-    set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
+set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
 
-    if(LY_INSTALLER_LICENSE_URL)
-        set(WIX_THEME_INSTALL_LICENSE_ELEMENTS ${_hyperlink_license})
-        set(WIX_THEME_EULA_ACCEPTANCE_TEXT "&lt;a href=\"#\"&gt;Terms of Use&lt;/a&gt;")
-    else()
-        set(WIX_THEME_INSTALL_LICENSE_ELEMENTS ${_raw_text_license})
-        set(WIX_THEME_EULA_ACCEPTANCE_TEXT "Terms of Use above")
-    endif()
-
-    # theme ux file
-    configure_file(
-        "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/BootstrapperTheme.xml.in"
-        "${CPACK_BINARY_DIR}/BootstrapperTheme.xml"
-        @ONLY
-    )
-
-    # theme localization file
-    configure_file(
-        "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/BootstrapperTheme.wxl.in"
-        "${CPACK_BINARY_DIR}/BootstrapperTheme.wxl"
-        @ONLY
-    )
-
-    set(_embed_artifacts "no")
-
-    # the bootstrapper will at the very least need a different upgrade guid
-    generate_wix_guid(CPACK_WIX_BOOTSTRAP_UPGRADE_GUID "${_guid_seed_base}_Bootstrap_UpgradeCode")
-
-    set(CPACK_PRE_BUILD_SCRIPTS
-        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPreBuild.cmake
-    )
-
-    set(CPACK_POST_BUILD_SCRIPTS
-        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake
-    )
+if(LY_INSTALLER_LICENSE_URL)
+    set(WIX_THEME_INSTALL_LICENSE_ELEMENTS ${_hyperlink_license})
+    set(WIX_THEME_EULA_ACCEPTANCE_TEXT "&lt;a href=\"#\"&gt;Terms of Use&lt;/a&gt;")
+else()
+    set(WIX_THEME_INSTALL_LICENSE_ELEMENTS ${_raw_text_license})
+    set(WIX_THEME_EULA_ACCEPTANCE_TEXT "Terms of Use above")
 endif()
+
+# theme ux file
+configure_file(
+    "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/BootstrapperTheme.xml.in"
+    "${CPACK_BINARY_DIR}/BootstrapperTheme.xml"
+    @ONLY
+)
+
+# theme localization file
+configure_file(
+    "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/BootstrapperTheme.wxl.in"
+    "${CPACK_BINARY_DIR}/BootstrapperTheme.wxl"
+    @ONLY
+)
+
+set(_embed_artifacts "no")
+
+# the bootstrapper will at the very least need a different upgrade guid
+generate_wix_guid(CPACK_WIX_BOOTSTRAP_UPGRADE_GUID "${_guid_seed_base}_Bootstrap_UpgradeCode")
 
 set(CPACK_WIX_CANDLE_EXTRA_FLAGS
     -dCPACK_EMBED_ARTIFACTS=${_embed_artifacts}

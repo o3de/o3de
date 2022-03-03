@@ -59,8 +59,6 @@ namespace AzQtComponents
 
             bool eventFilter(QObject* object, QEvent* event) override;
 
-            static const char* s_layerStyle;
-
             QVector<Button> m_buttons;
             QScopedPointer<Ui::OverlayWidgetLayer> m_ui;
             OverlayWidget* m_parent;

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MCOMMON_CAMERA_H
-#define __MCOMMON_CAMERA_H
+#pragma once
 
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Vector2.h>
@@ -280,6 +279,3 @@ namespace MCommon
     // include inline code
 #include "Camera.inl"
 } // namespace MCommon
-
-
-#endif

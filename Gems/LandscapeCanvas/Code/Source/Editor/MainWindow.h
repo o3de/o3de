@@ -20,6 +20,7 @@
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -30,6 +31,16 @@
 // LandscapeCanvas
 #include <LandscapeCanvas/LandscapeCanvasBus.h>
 #endif
+
+namespace AzToolsFramework
+{
+    class ReadOnlyEntityPublicInterface;
+
+    namespace Prefab
+    {
+        class PrefabFocusPublicInterface;
+    }
+}
 
 namespace LandscapeCanvasEditor
 {
@@ -81,6 +92,7 @@ namespace LandscapeCanvasEditor
         , private AzToolsFramework::EntityCompositionNotificationBus::Handler
         , private AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
+        , private AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler
         , private AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
         , private CrySystemEventBus::Handler
     {
@@ -181,6 +193,9 @@ namespace LandscapeCanvasEditor
         void EntityParentChanged(AZ::EntityId entityId, AZ::EntityId newParentId, AZ::EntityId oldParentId) override;
         ////////////////////////////////////////////////////////////////////////
 
+        //! PrefabFocusNotificationBus overrides
+        void OnPrefabFocusChanged() override;
+
         //! PrefabPublicNotificationBus overrides
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
@@ -247,6 +262,10 @@ namespace LandscapeCanvasEditor
         GraphModel::SlotPtr EnsureInboundDataSlotWithIndex(GraphCanvas::GraphId graphId, GraphModel::NodePtr node, GraphModel::DataTypePtr dataType, int index);
 
         AZ::SerializeContext* m_serializeContext = nullptr;
+
+        static AzFramework::EntityContextId s_editorEntityContextId;
+        AzToolsFramework::Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
+        AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
         bool m_ignoreGraphUpdates = false;
         bool m_prefabPropagationInProgress = false;

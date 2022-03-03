@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "base": "{A2A41479-B90B-5615-A72E-AAB3A6D0332E}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Columns",
+                "category": "Math/Matrix4x4",
+                "tooltip": "returns all columns from matrix"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Column1_0",
+                    "details": {
+                        "name": "Column1"
+                    }
+                },
+                {
+                    "base": "DataOutput_Column2_1",
+                    "details": {
+                        "name": "Column2"
+                    }
+                },
+                {
+                    "base": "DataOutput_Column3_2",
+                    "details": {
+                        "name": "Column3"
+                    }
+                },
+                {
+                    "base": "DataOutput_Column4_3",
+                    "details": {
+                        "name": "Column4"
+                    }
+                }
+            ]
+        }
+    ]
+}

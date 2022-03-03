@@ -1,0 +1,484 @@
+{
+    "entries": [
+        {
+            "base": "Unit Testing",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Unit Testing"
+            },
+            "methods": [
+                {
+                    "base": "ExpectLessThanEqual",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expect Less Than Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expect Less Than Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Expect Less Than Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Candidate",
+                                "tooltip": "left of <="
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Reference",
+                                "tooltip": "right of <="
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExpectGreaterThanEqual",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expect Greater Than Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expect Greater Than Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Expect Greater Than Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Candidate",
+                                "tooltip": "left of >="
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Reference",
+                                "tooltip": "right of >="
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MarkComplete",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Mark Complete"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Mark Complete is invoked"
+                    },
+                    "details": {
+                        "name": "Mark Complete"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExpectTrue",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expect True"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expect True is invoked"
+                    },
+                    "details": {
+                        "name": "Expect True"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Candidate",
+                                "tooltip": "a value that must be true"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Checkpoint",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Checkpoint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Checkpoint is invoked"
+                    },
+                    "details": {
+                        "name": "Checkpoint"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExpectFalse",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expect False"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expect False is invoked"
+                    },
+                    "details": {
+                        "name": "Expect False"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Candidate",
+                                "tooltip": "a value that must be false"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExpectEqual",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expect Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expect Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Expect Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Candidate",
+                                "tooltip": "left of =="
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Reference",
+                                "tooltip": "right of =="
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExpectLessThan",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expect Less Than"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expect Less Than is invoked"
+                    },
+                    "details": {
+                        "name": "Expect Less Than"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Candidate",
+                                "tooltip": "left of <"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Reference",
+                                "tooltip": "right of <"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddSuccess",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Success"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Success is invoked"
+                    },
+                    "details": {
+                        "name": "Add Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExpectNotEqual",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expect Not Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expect Not Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Expect Not Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Candidate",
+                                "tooltip": "left of !="
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Reference",
+                                "tooltip": "right of !="
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExpectGreaterThan",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Expect Greater Than"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Expect Greater Than is invoked"
+                    },
+                    "details": {
+                        "name": "Expect Greater Than"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Candidate",
+                                "tooltip": "left of >"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Reference",
+                                "tooltip": "right of >"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddFailure",
+                    "context": "Unit Testing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Failure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Failure is invoked"
+                    },
+                    "details": {
+                        "name": "Add Failure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

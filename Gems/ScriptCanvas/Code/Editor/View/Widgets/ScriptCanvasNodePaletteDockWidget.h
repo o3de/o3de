@@ -193,8 +193,6 @@ namespace ScriptCanvasEditor
             void OnSelectionChanged() override;
             ////
 
-            
-
         protected:
 
             GraphCanvas::GraphCanvasTreeItem* CreatePaletteRoot() const override;
@@ -209,6 +207,9 @@ namespace ScriptCanvasEditor
         private:
 
             void HandleTreeItemDoubleClicked(GraphCanvas::GraphCanvasTreeItem* treeItem);
+            void OpenTranslationData();
+            void GenerateTranslation();
+            void NavigateToTranslationFile(GraphCanvas::NodePaletteTreeItem*);
 
             void ConfigureHelper();
             void ParseCycleTargets(GraphCanvas::GraphCanvasTreeItem* treeItem);
@@ -225,6 +226,10 @@ namespace ScriptCanvasEditor
             QAction* m_previousCycleAction;
 
             bool     m_ignoreSelectionChanged;
+
+            QMenu* m_contextMenu;
+            QAction* m_openTranslationData;
+            QAction* m_generateTranslation;
         };
     }    
 }

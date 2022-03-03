@@ -10,12 +10,13 @@
 #include <viewsrg.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
-#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/RPI/Math.azsli>
 #include "ReflectionScreenSpaceBlurCommon.azsli"
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
+    Texture2DMS<float>  m_depth;
     RWTexture2D<float4> m_input;
     RWTexture2D<float4> m_output;
     uint m_imageWidth;
@@ -26,13 +27,39 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 // Pixel Shader
+struct PSOutput
+{    
+    float4 m_color  : SV_Target0;
+    float m_depth   : SV_Depth;
+};
+
 PSOutput MainPS(VSOutput IN)
 {
     // vertical blur uses coordinates from the mip0 input image
-    uint2 coords = IN.m_position.xy * PassSrg::m_outputScale;
-    float3 result = GaussianFilter(coords, TexelOffsetsV, PassSrg::m_input);
+    uint2 halfResCoords = IN.m_position.xy * PassSrg::m_outputScale;
+    float3 result = GaussianFilter(halfResCoords, TexelOffsetsV, PassSrg::m_input);
+
+    // downsample depth, using fullscreen image coordinates
+    float downsampledDepth = 0;
+    if (PassSrg::m_input[halfResCoords].w > 0.0f)
+    {
+        uint2 fullScreenCoords = halfResCoords * 2;
+
+        for (int y = -2; y < 2; ++y)
+        {
+            for (int x = -2; x < 2; ++x)
+            {
+                float depth = PassSrg::m_depth.Load(fullScreenCoords + int2(x, y), 0).r;
+                if (depth > downsampledDepth)
+                {
+                    downsampledDepth = depth;
+                }
+            }
+        }
+    }
 
     PSOutput OUT;
     OUT.m_color = float4(result, 1.0f);
+    OUT.m_depth = downsampledDepth;
     return OUT;
 }

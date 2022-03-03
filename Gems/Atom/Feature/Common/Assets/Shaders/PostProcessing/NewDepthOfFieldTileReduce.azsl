@@ -48,6 +48,9 @@ void MainCS(uint3 group_thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupI
         LDS_MAX_COC[group_thread_id.x] = 0;
     }
 
+    // Sync LDS
+    GroupMemoryBarrierWithGroupSync();
+    
     // We use gather to get 2x2 values at once, so thread samples are spaced 2 pixels apart (+1 so the sample position is in between the four pixels)
     float2 samplePos = float2(dispatch_id.xy) * 2 + float2(1, 1);
     float2 sampleUV = samplePos * PassSrg::m_inputDimensions.zw;
@@ -73,6 +76,9 @@ void MainCS(uint3 group_thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupI
     // Min the mins and max the maxs
     InterlockedMin( LDS_MIN_COC[0], LDS_MIN_COC[group_thread_id.x] );
     InterlockedMax( LDS_MAX_COC[0], LDS_MAX_COC[group_thread_id.x] );
+
+    // Sync LDS
+    GroupMemoryBarrierWithGroupSync();
 
     // Each group write to just one pixel. If we're the last thread in the group, write out
     if(group_thread_id.x == 0)

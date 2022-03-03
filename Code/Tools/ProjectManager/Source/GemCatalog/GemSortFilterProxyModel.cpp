@@ -204,9 +204,12 @@ namespace O3DE::ProjectManager
         emit OnInvalidated();
     }
 
-    void GemSortFilterProxyModel::ResetFilters()
+    void GemSortFilterProxyModel::ResetFilters(bool clearSearchString)
     {
-        m_searchString.clear();
+        if (clearSearchString)
+        {
+            m_searchString.clear();
+        }
         m_gemSelectedFilter = GemSelected::NoFilter;
         m_gemActiveFilter = GemActive::NoFilter;
         m_gemOriginFilter = {};

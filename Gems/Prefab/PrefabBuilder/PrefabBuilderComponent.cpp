@@ -7,6 +7,7 @@
  */
 
 #include "PrefabBuilderComponent.h"
+#include <AzToolsFramework/Debug/TraceContext.h>
 
 namespace AZ::Prefab
 {
@@ -32,7 +33,7 @@ namespace AZ::Prefab
     {
         AssetBuilderSDK::AssetBuilderCommandBus::Handler::BusConnect(m_builderId);
 
-        m_pipeline.LoadStackProfile("GameObjectCreation");
+        m_pipeline.LoadStackProfile(ConfigKey);
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -76,7 +77,7 @@ namespace AZ::Prefab
 
         // Deserialize all of the entities and their components (for this prefab only)
         auto newInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
-        AzToolsFramework::Prefab::Instance::EntityList entities;
+        AzToolsFramework::EntityList entities;
         if (AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, entities, genericDocument))
         {
             // Add the fingerprint of all the components and their types
@@ -237,8 +238,9 @@ namespace AZ::Prefab
 
     bool PrefabBuilderComponent::ProcessPrefab(
         const AZ::PlatformTagSet& platformTags, const char* filePath, AZ::IO::PathView tempDirPath, const AZ::Uuid& sourceFileUuid,
-        AzToolsFramework::Prefab::PrefabDom& mutableRootDom, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts)
+        AzToolsFramework::Prefab::PrefabDom&& rootDom, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts)
     {
+        AZ_TraceContext("Stack config", ConfigKey);
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext context(sourceFileUuid);
         AZStd::string rootPrefabName;
         if (!StringFunc::Path::GetFileName(filePath, rootPrefabName))
@@ -247,7 +249,9 @@ namespace AZ::Prefab
                        filePath);
             return false;
         }
-        context.AddPrefab(AZStd::move(rootPrefabName), AZStd::move(mutableRootDom));
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument rootDocument(AZStd::move(rootPrefabName));
+        rootDocument.SetPrefabDom(AZStd::move(rootDom));
+        context.AddPrefab(AZStd::move(rootDocument));
         
         context.SetPlatformTags(AZStd::move(platformTags));
 
@@ -319,8 +323,8 @@ namespace AZ::Prefab
         });
 
         if (ProcessPrefab(
-                platformTags, request.m_fullPath.c_str(), request.m_tempDirPath.c_str(), request.m_sourceFileUUID, mutableRootDom,
-                response.m_outputProducts))
+                platformTags, request.m_fullPath.c_str(), request.m_tempDirPath.c_str(), request.m_sourceFileUUID,
+                AZStd::move(mutableRootDom), response.m_outputProducts))
         {
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }

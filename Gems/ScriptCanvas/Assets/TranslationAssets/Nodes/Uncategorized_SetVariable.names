@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "{5EFD2942-AFF9-4137-939C-023AEAA72EB0}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Set Variable",
+                "tooltip": "Node for setting a property within the graph"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "When signaled sends the variable referenced by this node to a Data Output slot"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled after the referenced variable has been pushed to the Data Output slot"
+                    }
+                }
+            ]
+        }
+    ]
+}

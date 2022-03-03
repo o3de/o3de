@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
 {
@@ -35,6 +36,13 @@ namespace GradientSignal
         static bool VersionConverter(AZ::SerializeContext& context,
             AZ::SerializeContext::DataElementNode& classElement);
 
+        ImageAsset() = default;
+
+        ImageAsset(const AZ::Data::AssetId& assetId, AZ::Data::AssetData::AssetStatus status)
+            : AssetData(assetId, status)
+        {
+        }
+
         AZ::u32 m_imageWidth = 0;
         AZ::u32 m_imageHeight = 0;
         AZ::u8 m_bytesPerPixel = 0;
@@ -53,7 +61,5 @@ namespace GradientSignal
         {
         }
     };
-
-    float GetValueFromImageAsset(const AZ::Data::Asset<ImageAsset>& imageAsset, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue);
 
 } // namespace GradientSignal

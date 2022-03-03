@@ -18,8 +18,6 @@
 #include "ViewManager.h"
 #include "Include/IObjectManager.h"
 
-#include <IStatObj.h>
-
 //////////////////////////////////////////////////////////////////////////
 CSelectionGroup::CSelectionGroup()
     : m_ref(1)
@@ -226,15 +224,12 @@ void CSelectionGroup::Move(const Vec3& offset, EMoveSelectionFlag moveFlag, [[ma
 
     m_bVertexSnapped = false;
     FilterParents();
-    Vec3 newPos;
 
     bool bValidFollowGeometryMode(true);
     if (point.x() == -1 || point.y() == -1)
     {
         bValidFollowGeometryMode = false;
     }
-
-    SRayHitInfo pickedInfo;
 
     if (moveFlag == eMS_FollowGeometryPosNorm)
     {
@@ -249,6 +244,8 @@ void CSelectionGroup::Move(const Vec3& offset, EMoveSelectionFlag moveFlag, [[ma
     }
 
     m_LastestMoveSelectionFlag = moveFlag;
+    Vec3 zeroPickedInfo_vHitNormal;
+    Vec3 zeroPickedInfo_vHitPos;
 
     for (int i = 0; i < GetFilteredCount(); i++)
     {
@@ -264,16 +261,15 @@ void CSelectionGroup::Move(const Vec3& offset, EMoveSelectionFlag moveFlag, [[ma
             Vec3 zaxis = m_LastestMovedObjectRot * Vec3(0, 0, 1);
             zaxis.Normalize();
             Quat nq;
-            nq.SetRotationV0V1(zaxis, pickedInfo.vHitNormal);
-            obj->SetPos(pickedInfo.vHitPos);
+            nq.SetRotationV0V1(zaxis, zeroPickedInfo_vHitNormal);
+            obj->SetPos(zeroPickedInfo_vHitPos);
             obj->SetRotation(nq * m_LastestMovedObjectRot);
             continue;
         }
 
-        Matrix34 wtm = obj->GetWorldTM();
+        const Matrix34 &wtm = obj->GetWorldTM();
         Vec3 wp = wtm.GetTranslation();
-
-        newPos = wp + offset;
+        Vec3 newPos = wp + offset;
         if (moveFlag == eMS_FollowTerrain)
         {
             // Make sure object keeps it height.
@@ -465,17 +461,6 @@ void CSelectionGroup::SetScale(const Vec3& scale, int referenceCoordSys)
     Scale(relScale, referenceCoordSys);
 }
 
-
-void CSelectionGroup::StartScaling()
-{
-    for (int i = 0; i < GetFilteredCount(); i++)
-    {
-        CBaseObject* obj = GetFilteredObject(i);
-        obj->StartScaling();
-    }
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 void CSelectionGroup::Align()
 {
@@ -530,45 +515,6 @@ void CSelectionGroup::ResetTransformation()
         CBaseObject* pObj = GetFilteredObject(i);
         pObj->SetRotation(qIdentity);
         pObj->SetScale(vScale);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSelectionGroup::Clone(CSelectionGroup& newGroup)
-{
-    IObjectManager* pObjMan = GetIEditor()->GetObjectManager();
-    assert(pObjMan);
-
-    int i;
-    CObjectCloneContext cloneContext;
-
-    FilterParents();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Clone every object.
-    for (i = 0; i < GetFilteredCount(); i++)
-    {
-        CBaseObject* pFromObject = GetFilteredObject(i);
-        CBaseObject* newObj = pObjMan->CloneObject(pFromObject);
-        if (!newObj) // can be null, e.g. sequence can't be cloned
-        {
-            continue;
-        }
-
-        cloneContext.AddClone(pFromObject, newObj);
-        newGroup.AddObject(newObj);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Only after everything was cloned, call PostClone on all cloned objects.
-    for (i = 0; i < newGroup.GetCount(); ++i)
-    {
-        CBaseObject* pFromObject = GetFilteredObject(i);
-        CBaseObject* pClonedObject = newGroup.GetObject(i);
-        if (pClonedObject)
-        {
-            pClonedObject->PostClone(pFromObject, cloneContext);
-        }
     }
 }
 

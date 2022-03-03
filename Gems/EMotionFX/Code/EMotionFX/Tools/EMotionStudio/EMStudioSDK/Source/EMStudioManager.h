@@ -19,6 +19,8 @@
 // include the gizmos
 #include <EMotionFX/Rendering/Common/TransformationManipulator.h>
 
+#include <EMotionFX/Source/JointSelectionBus.h>
+
 // include the EMStudio Config
 #include "EMStudioConfig.h"
 #include <MysticQt/Source/MysticQtManager.h>
@@ -28,6 +30,8 @@
 #include "Workspace.h"
 #include "MainWindow.h"
 #include <Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+
+#include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 
 // include Qt
 #include <QString>
@@ -52,6 +56,7 @@ namespace EMStudio
      */
     class EMSTUDIO_API EMStudioManager
         : private EMotionFX::SkeletonOutlinerNotificationBus::Handler
+        , private EMotionFX::JointSelectionRequestBus::Handler
     {
     public:
         AZ_RTTI(EMStudio::EMStudioManager, "{D45E95CF-0C7B-44F1-A9D4-99A1E12A5AB5}")
@@ -102,6 +107,15 @@ namespace EMStudio
 
         void SetSelectedJointIndices(const AZStd::unordered_set<size_t>& selectedJointIndices);
         const AZStd::unordered_set<size_t>& GetSelectedJointIndices() const                                { return m_selectedJointIndices; }
+
+        const AZStd::unordered_set<size_t>* FindSelectedJointIndices(EMotionFX::ActorInstance* instance) const
+        {
+            if (instance == m_commandManager->GetCurrentSelection().GetSingleActorInstance())
+            {
+                return &m_selectedJointIndices;
+            }
+            return nullptr;
+        }
 
         Workspace* GetWorkspace()                                                               { return &m_workspace; }
 
@@ -156,6 +170,9 @@ namespace EMStudio
         };
         EventProcessingCallback*    m_eventProcessingCallback = nullptr;
     };
+
+    // Define the manipulator id for atom viewport in animation editor.
+    extern const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId;
 
     // Shortcuts
     QApplication* GetApp();

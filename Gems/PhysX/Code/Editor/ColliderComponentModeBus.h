@@ -19,9 +19,9 @@ namespace PhysX
     public:
         enum class SubMode : AZ::u32
         {
-            Dimensions,
             Offset,
             Rotation,
+            Dimensions,
             NumModes
         };
 

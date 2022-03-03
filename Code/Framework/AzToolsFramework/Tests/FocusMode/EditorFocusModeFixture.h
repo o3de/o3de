@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Component/TransformBus.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
@@ -18,10 +17,9 @@
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
-namespace AzToolsFramework
+namespace UnitTest
 {
-    class EditorFocusModeFixture
-        : public UnitTest::ToolsApplicationFixture
+    class EditorFocusModeFixture : public ToolsApplicationFixture
     {
     protected:
         void SetUpEditorFixtureImpl() override;
@@ -32,16 +30,13 @@ namespace AzToolsFramework
 
         AZStd::unordered_map<AZStd::string, AZ::EntityId> m_entityMap;
 
-        ContainerEntityInterface* m_containerEntityInterface = nullptr;
-        FocusModeInterface* m_focusModeInterface = nullptr;
+        AzToolsFramework::ContainerEntityInterface* m_containerEntityInterface = nullptr;
+        AzToolsFramework::FocusModeInterface* m_focusModeInterface = nullptr;
 
     public:
         AzToolsFramework::EntityIdList GetSelectedEntities();
 
         AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::CameraState m_cameraState;
-
-        inline static const AZ::Vector3 CameraPosition = AZ::Vector3(10.0f, 15.0f, 10.0f);
 
         inline static const char* CityEntityName = "City";
         inline static const char* StreetEntityName = "Street";
@@ -50,7 +45,11 @@ namespace AzToolsFramework
         inline static const char* Passenger1EntityName = "Passenger1";
         inline static const char* Passenger2EntityName = "Passenger2";
 
-        inline static AZ::Vector3 WorldCarEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
+        AzFramework::CameraState m_cameraState;
+
+        inline static const AZ::Vector3 CameraPosition = AZ::Vector3(10.0f, 15.0f, 10.0f);
+        inline static AZ::Vector3 s_worldCityEntityPosition = AZ::Vector3(5.0f, 10.0f, 0.0f);
+        inline static AZ::Vector3 s_worldCarEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
     };
 
-}
+} // namespace UnitTest

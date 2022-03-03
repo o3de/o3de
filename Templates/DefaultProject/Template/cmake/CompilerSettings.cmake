@@ -9,5 +9,5 @@
 # File to tweak compiler settings before compiler detection happens (before project() is called)
 # We dont have PAL enabled at this point, so we can only use pure-CMake variables
 if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
-    include(cmake/Platform/${CMAKE_HOST_SYSTEM_NAME}/CompilerSettings.cmake)
+    include(cmake/Platform/Linux/CompilerSettings_linux.cmake)
 endif()

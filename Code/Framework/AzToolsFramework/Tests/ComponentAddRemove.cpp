@@ -578,7 +578,6 @@ namespace UnitTest
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             AzFramework::Application::Descriptor descriptor;
-            descriptor.m_enableDrilling = false;
             m_app.Start(descriptor);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -1116,7 +1115,6 @@ namespace UnitTest
         SerializeContext* GetSerializeContext() override { return m_serializeContext.get(); }
         BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}

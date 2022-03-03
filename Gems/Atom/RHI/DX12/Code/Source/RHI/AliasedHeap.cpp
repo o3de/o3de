@@ -14,7 +14,6 @@
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/sort.h>
 
 namespace AZ
@@ -114,7 +113,7 @@ namespace AZ
 
             if (!memoryView.IsValid())
             {
-                RHI::ResultCode::OutOfMemory;
+                return RHI::ResultCode::OutOfMemory;
             }
 
             buffer->SetDescriptor(descriptor);

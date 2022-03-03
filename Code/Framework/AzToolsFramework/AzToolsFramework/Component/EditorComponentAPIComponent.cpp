@@ -597,11 +597,13 @@ namespace AzToolsFramework
                 pte.SetVisibleEnforcement(true);
             }
 
+            ScopedUndoBatch undo("Modify Entity Property");
             PropertyOutcome result = pte.SetProperty(propertyPath, value);
             if (result.IsSuccess())
             {
                 PropertyEditorEntityChangeNotificationBus::Event(componentInstance.GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, componentInstance.GetComponentId());
             }
+            undo.MarkEntityDirty(componentInstance.GetEntityId());
 
             return result;
         }

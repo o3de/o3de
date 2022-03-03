@@ -101,19 +101,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_LibraryCrudOperationsReflectOnCharacterController as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @fm.file_revert("c4888315_material_addmodifydeleteoncollider.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnCollider")
-    def test_Material_LibraryCrudOperationsReflectOnCollider(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_LibraryCrudOperationsReflectOnCollider as test_module
-        self._run_test(request, workspace, editor, test_module)
-    
-
-    @fm.file_revert("c15563573_material_addmodifydeleteoncharactercontroller.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnCharacterController")
-    def test_Material_LibraryCrudOperationsReflectOnCharacterController(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_LibraryCrudOperationsReflectOnCharacterController as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     @fm.file_revert("c4044455_material_librarychangesinstantly.physmaterial",
                     r"AutomatedTesting\Levels\Physics\C4044455_Material_LibraryChangesInstantly")
     def test_Material_LibraryChangesReflectInstantly(self, request, workspace, editor, launcher_platform):
@@ -134,10 +121,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.terrain import Terrain_CollisionAgainstRigidBody as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_ShapeCollider_CylinderShapeCollides(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import ShapeCollider_CylinderShapeCollides as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Physics_WorldBodyBusWorksOnEditorComponents(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_WorldBodyBusWorksOnEditorComponents as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -150,20 +133,12 @@ class TestAutomation(TestAutomationBase):
         from .tests.force_region import ForceRegion_ImpulsesBoxShapedRigidBody as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Terrain_SpawnSecondTerrainComponentWarning(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_SpawnSecondTerrainComponentWarning as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Terrain_AddPhysTerrainComponent(self, request, workspace, editor, launcher_platform):
         from .tests.terrain import Terrain_AddPhysTerrainComponent as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_Terrain_CanAddMultipleTerrainComponents(self, request, workspace, editor, launcher_platform):
         from .tests.terrain import Terrain_CanAddMultipleTerrainComponents as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Terrain_MultipleTerrainComponentsWarning(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_MultipleTerrainComponentsWarning as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_Terrain_MultipleTerrainComponentsWarning(self, request, workspace, editor, launcher_platform):

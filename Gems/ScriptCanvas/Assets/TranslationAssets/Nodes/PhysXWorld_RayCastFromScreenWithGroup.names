@@ -1,0 +1,88 @@
+{
+    "entries": [
+        {
+            "base": "{B164D87F-6620-5A1D-A2BC-CC09BA18C9B1}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Ray Cast From Screen With Group",
+                "category": "PhysX/World",
+                "tooltip": "Returns the first entity hit by a ray cast from the provided absolute 2D screen position."
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Screen Position_0",
+                    "details": {
+                        "name": "Screen Position"
+                    }
+                },
+                {
+                    "base": "DataInput_Distance_1",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "base": "DataInput_Collision group_2",
+                    "details": {
+                        "name": "Collision group"
+                    }
+                },
+                {
+                    "base": "DataInput_Ignore_3",
+                    "details": {
+                        "name": "Ignore"
+                    }
+                },
+                {
+                    "base": "DataOutput_Object hit_0",
+                    "details": {
+                        "name": "Object hit"
+                    }
+                },
+                {
+                    "base": "DataOutput_Position_1",
+                    "details": {
+                        "name": "Position"
+                    }
+                },
+                {
+                    "base": "DataOutput_Normal_2",
+                    "details": {
+                        "name": "Normal"
+                    }
+                },
+                {
+                    "base": "DataOutput_Distance_3",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "base": "DataOutput_EntityId_4",
+                    "details": {
+                        "name": "EntityId"
+                    }
+                },
+                {
+                    "base": "DataOutput_Surface_5",
+                    "details": {
+                        "name": "Surface"
+                    }
+                }
+            ]
+        }
+    ]
+}

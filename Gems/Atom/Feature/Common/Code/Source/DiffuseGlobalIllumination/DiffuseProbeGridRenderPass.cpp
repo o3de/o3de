@@ -11,6 +11,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
@@ -27,6 +28,13 @@ namespace AZ
         DiffuseProbeGridRenderPass::DiffuseProbeGridRenderPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                SetEnabled(false);
+                return;
+            }
+
             // create the shader resource group
             // Note: the shader may not be available on all platforms
             AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRender.azshader";
@@ -43,21 +51,38 @@ namespace AZ
             AZ_Assert(m_shaderResourceGroup, "[DiffuseProbeGridRenderPass '%s']: Failed to create SRG", GetPathName().GetCStr());
         }
 
+        bool DiffuseProbeGridRenderPass::IsEnabled() const
+        {
+            if (!RenderPass::IsEnabled())
+            {
+                return false;
+            }
+
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
+            {
+                // no diffuse probe grids
+                return false;
+            }
+
+            return true;
+        }
+
         void DiffuseProbeGridRenderPass::FrameBeginInternal(FramePrepareParams params)
         {
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
-            {
-                // no diffuse probe grids
-                return;
-            }
-
             // get output attachment size
             AZ_Assert(GetInputOutputCount() > 0, "DiffuseProbeGridRenderPass: Could not find output bindings");
-            RPI::PassAttachment* m_outputAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* m_outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             AZ_Assert(m_outputAttachment, "DiffuseProbeGridRenderPass: Output binding has no attachment!");
             
             RHI::Size size = m_outputAttachment->m_descriptor.m_image.m_size;
@@ -89,6 +114,16 @@ namespace AZ
                 if (!ShouldRender(diffuseProbeGrid))
                 {
                     continue;
+                }
+
+                // grid data
+                {
+                    RHI::BufferScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = diffuseProbeGrid->GetGridDataBufferAttachmentId();
+                    desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
                 }
 
                 // probe irradiance image
@@ -125,38 +160,21 @@ namespace AZ
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
                 }
 
-                // probe relocation image
+                // probe data image
                 {
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked)
                     {
-                        // import the relocation image now, since it is baked and therefore was not imported during the raytracing pass
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetRelocationImageAttachmentId(), diffuseProbeGrid->GetRelocationImage());
-                        AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeRelocationImage");
+                        // import the probe data image now, since it is baked and therefore was not imported during the raytracing pass
+                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetProbeDataImageAttachmentId(), diffuseProbeGrid->GetProbeDataImage());
+                        AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ProbeDataImage");
                     }
 
                     RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetRelocationImageAttachmentId();
-                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeRelocationImageViewDescriptor;
+                    desc.m_attachmentId = diffuseProbeGrid->GetProbeDataImageAttachmentId();
+                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDataImageViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
-                }
-
-                // probe classification image
-                {
-                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked)
-                    {
-                        // import the classification image now, since it is baked and therefore was not imported during the raytracing pass
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetClassificationImageAttachmentId(), diffuseProbeGrid->GetClassificationImage());
-                        AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeClassificationImage");
-                    }
-
-                    RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetClassificationImageAttachmentId();
-                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeClassificationImageViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
                 }
 
                 diffuseProbeGrid->GetTextureReadback().Update(GetName());

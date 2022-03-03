@@ -11,6 +11,7 @@
 #include "CreateNodeMimeEvent.h"
 
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
+#include "TranslationGeneration.h"
 
 namespace ScriptCanvasEditor
 {
@@ -61,6 +62,24 @@ namespace ScriptCanvasEditor
         bool IsOverload() const;
 
         ScriptCanvas::PropertyStatus GetPropertyStatus() const;
+
+        AZ::IO::Path GetTranslationDataPath() const override
+        {
+            return AZ::IO::Path("EBus\\Senders") / GetBusName();
+        }
+
+        void GenerateTranslationData() override
+        {
+            AZ::BehaviorContext* behaviorContext{};
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+
+            const char* ebusName = m_busName.toUtf8().data();
+            auto behaviorEbus = behaviorContext->m_ebuses.find(ebusName);
+
+            ScriptCanvasEditorTools::TranslationGeneration translation;
+            translation.TranslateEBus(behaviorEbus->second);
+        }
+
 
     private:
         bool m_isOverload;
@@ -153,6 +172,22 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::EBusBusId GetBusId() const;
         ScriptCanvas::EBusEventId GetEventId() const;
+
+        AZ::IO::Path GetTranslationDataPath() const override
+        {
+            return AZ::IO::Path("EBus\\Handlers") / GetBusName();
+        }
+
+        void GenerateTranslationData() override
+        {
+            AZ::BehaviorContext* behaviorContext{};
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+
+            auto behaviorEbus = behaviorContext->m_ebuses.find(m_busName.c_str());
+
+            ScriptCanvasEditorTools::TranslationGeneration translation;
+            translation.TranslateEBus(behaviorEbus->second);
+        }
 
     private:
         AZStd::string m_busName;

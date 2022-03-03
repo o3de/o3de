@@ -47,6 +47,7 @@ namespace LmbrCentral
             {
                 editContext->Class<EditorNavigationAreaComponent>("Navigation Area", "Navigation Area configuration")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
                         ->Attribute(AZ::Edit::Attributes::Category, "AI")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NavigationArea.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NavigationArea.svg")

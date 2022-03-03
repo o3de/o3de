@@ -35,7 +35,4 @@ namespace Vegetation
 
     // Vegetation Area Selectors
     static const char* EditorDescriptorWeightSelectorComponentTypeId = "{0FB90550-149B-4E05-B22C-2753F6526E97}";
-
-    // Vegetation Reference Shape
-    static const char* EditorReferenceShapeComponentTypeId = "{21BC79CA-C2F4-428F-AF2E-B76E233D4254}";
 }

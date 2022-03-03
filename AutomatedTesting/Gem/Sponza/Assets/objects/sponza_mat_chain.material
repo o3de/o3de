@@ -1,0 +1,21 @@
+{
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "propertyValues": {
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "../Textures/chain_basecolor.png",
+        "emissive.color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "general.doubleSided": true,
+        "metallic.factor": 0.8899999856948853,
+        "normal.textureMap": "../Textures/chain_normal.jpg",
+        "opacity.alphaSource": "Split",
+        "opacity.factor": 1.0,
+        "opacity.mode": "Cutout",
+        "opacity.textureMap": "../Textures/chain_alpha.png"
+    }
+}

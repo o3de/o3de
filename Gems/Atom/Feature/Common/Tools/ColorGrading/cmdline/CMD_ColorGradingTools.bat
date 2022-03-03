@@ -34,15 +34,15 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 IF EXIST "%~dp0User_Env.bat" CALL %~dp0User_Env.bat
 
 :: Initialize env
-echo 
+echo.
 echo     ... calling Env_Core.bat
 CALL %~dp0\Env_Core.bat
 
-echo 
+echo.
 echo     ... calling Env_Python.bat
 CALL %~dp0\Env_Python.bat
 
-echo 
+echo.
 echo     ... calling Env_Tools.bat
 CALL %~dp0\Env_Tools.bat
 

@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 ly_add_target(
     NAME Atom_AtomBridge.Static STATIC
@@ -68,6 +68,14 @@ ly_create_alias(NAME Atom_AtomBridge.Clients NAMESPACE Gem TARGETS Gem::Atom_Ato
 ly_create_alias(NAME Atom_AtomBridge.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
+
+    set(additional_tool_deps ${pal_dir}/additional_${PAL_PLATFORM_NAME_LOWERCASE}_tool_deps.cmake)
+    foreach(pal_tools_platform ${LY_PAL_TOOLS_ENABLED})
+        string(TOLOWER ${pal_tools_platform} pal_tools_platform_lowercase)
+        ly_get_list_relative_pal_filename(pal_runtime_dependencies_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${pal_tools_platform})
+        list(APPEND additional_tool_deps ${pal_runtime_dependencies_source_dir}/additional_${pal_tools_platform_lowercase}_tool_deps.cmake)
+    endforeach()
+
     ly_add_target(
         NAME Atom_AtomBridge.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
@@ -79,7 +87,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Include
         PLATFORM_INCLUDE_FILES
-           ${pal_dir}/additional_${PAL_PLATFORM_NAME_LOWERCASE}_tool_deps.cmake
+           ${additional_tool_deps}
         COMPILE_DEFINITIONS
             PRIVATE
                 EDITOR

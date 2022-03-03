@@ -7,7 +7,7 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-REM Deploy the CDK applcations for AWS gems (Windows only)
+REM Deploy the CDK applications for AWS gems (Windows only)
 REM Prerequisites:
 REM 1) Node.js is installed
 REM 2) Node.js version >= 10.13.0, except for versions 13.0.0 - 13.6.0. A version in active long-term support is recommended.
@@ -49,6 +49,10 @@ FOR /f "tokens=1,2,3" %%a IN ('CALL aws sts assume-role --query Credentials.[Sec
 )
 FOR /F "tokens=4 delims=:" %%a IN ("%ASSUME_ROLE_ARN%") DO SET O3DE_AWS_DEPLOY_ACCOUNT=%%a
 
+IF "%O3DE_AWS_PROJECT_NAME%"=="" (
+    SET O3DE_AWS_PROJECT_NAME=%BRANCH_NAME%-%PIPELINE_NAME%-Windows
+)
+
 REM Bootstrap and deploy the CDK applications
 ECHO [cdk_bootstrap] Bootstrap CDK
 CALL cdk bootstrap aws://%O3DE_AWS_DEPLOY_ACCOUNT%/%O3DE_AWS_DEPLOY_REGION%
@@ -57,7 +61,7 @@ IF ERRORLEVEL 1 (
     exit /b 1
 )
 
-CALL :DeployCDKApplication AWSCore "-c disable_access_log=true --all"
+CALL :DeployCDKApplication AWSCore "-c disable_access_log=true -c remove_all_storage_on_destroy=true --all"
 IF ERRORLEVEL 1 (
     exit /b 1
 )

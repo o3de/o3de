@@ -16,7 +16,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/SimdMath.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -29,6 +29,7 @@
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include <PhysX/ColliderShapeBus.h>
+#include <PhysX/EditorColliderComponentRequestBus.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/Utils.h>
@@ -66,12 +67,74 @@ namespace PhysX
             }
         }
 
+        AZStd::pair<uint8_t, uint8_t> GetPhysXMaterialIndicesFromHeightfieldSamples(
+            const AZStd::vector<Physics::HeightMaterialPoint>& samples,
+            const int32_t row, const int32_t col,
+            const int32_t numRows, const int32_t numCols)
+        {
+            uint8_t materialIndex0 = 0;
+            uint8_t materialIndex1 = 0;
+
+            const bool lastRowIndex = (row == (numRows - 1));
+            const bool lastColumnIndex = (col == (numCols - 1));
+
+            // In PhysX, the material indices refer to the quad down and to the right of the sample.
+            // If we're in the last row or last column, there aren't any quads down or to the right,
+            // so just clear these out.
+            if (lastRowIndex || lastColumnIndex)
+            {
+                return { materialIndex0, materialIndex1 };
+            }
+            
+            auto GetIndex = [numCols](int32_t row, int32_t col)
+            {
+                return (row * numCols) + col;
+            };
+
+            // Our source data is providing one material index per vertex, but PhysX wants one material index
+            // per triangle.  The heuristic that we'll go with for selecting the material index is to choose
+            // the material for the vertex that's not on the diagonal of each triangle.
+            // Ex:  A *---* B
+            //        | / |      For this, we'll use A for index0 and D for index1.
+            //      C *---* D
+            //
+            // Ex:  A *---* B
+            //        | \ |      For this, we'll use C for index0 and B for index1.
+            //      C *---* D
+            //
+            // This is a pretty arbitrary choice, so the heuristic might need to be revisited over time if this
+            // causes incorrect or unpredictable physics material mappings.
+
+            const Physics::HeightMaterialPoint& currentSample = samples[GetIndex(row, col)];
+
+            switch (currentSample.m_quadMeshType)
+            {
+            case Physics::QuadMeshType::SubdivideUpperLeftToBottomRight:
+                materialIndex0 = samples[GetIndex(row + 1, col)].m_materialIndex;
+                materialIndex1 = samples[GetIndex(row, col + 1)].m_materialIndex;
+                break;
+            case Physics::QuadMeshType::SubdivideBottomLeftToUpperRight:
+                materialIndex0 = currentSample.m_materialIndex;
+                materialIndex1 = samples[GetIndex(row + 1, col + 1)].m_materialIndex;
+                break;
+            case Physics::QuadMeshType::Hole:
+                materialIndex0 = physx::PxHeightFieldMaterial::eHOLE;
+                materialIndex1 = physx::PxHeightFieldMaterial::eHOLE;
+                break;
+            default:
+                AZ_Assert(false, "Unhandled case in GetPhysXMaterialIndicesFromHeightfieldSamples");
+                break;
+            }
+            
+            return { materialIndex0, materialIndex1 };
+        }
+
         void CreatePxGeometryFromHeightfield(
             Physics::HeightfieldShapeConfiguration& heightfieldConfig, physx::PxGeometryHolder& pxGeometry)
         {
             physx::PxHeightField* heightfield = nullptr;
 
-            const AZ::Vector2 gridSpacing = heightfieldConfig.GetGridResolution();
+            const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
             const int32_t numCols = heightfieldConfig.GetNumColumns();
             const int32_t numRows = heightfieldConfig.GetNumRows();
@@ -116,12 +179,8 @@ namespace PhysX
 
                 for (int32_t row = 0; row < numRows; row++)
                 {
-                    const bool lastRowIndex = (row == (numRows - 1));
-
                     for (int32_t col = 0; col < numCols; col++)
                     {
-                        const bool lastColumnIndex = (col == (numCols - 1));
-
                         auto GetIndex = [numCols](int32_t row, int32_t col)
                         {
                             return (row * numCols) + col;
@@ -134,52 +193,15 @@ namespace PhysX
                         AZ_Assert(currentSample.m_materialIndex < physxMaximumMaterialIndex, "MaterialIndex must be less than 128");
                         currentPhysxSample.height = azlossy_cast<physx::PxI16>(
                             AZ::GetClamp(currentSample.m_height, minHeightBounds, maxHeightBounds) * scaleFactor);
-                        if (lastRowIndex || lastColumnIndex)
-                        {
-                            // In PhysX, the material indices refer to the quad down and to the right of the sample.
-                            // If we're in the last row or last column, there aren't any quads down or to the right,
-                            // so just clear these out.
-                            currentPhysxSample.materialIndex0 = 0;
-                            currentPhysxSample.materialIndex1 = 0;
-                        }
-                        else
-                        {
-                            // Our source data is providing one material index per vertex, but PhysX wants one material index
-                            // per triangle.  The heuristic that we'll go with for selecting the material index is to choose
-                            // the material for the vertex that's not on the diagonal of each triangle.
-                            // Ex:  A *---* B
-                            //        | / |      For this, we'll use A for index0 and D for index1.
-                            //      C *---* D
-                            //
-                            // Ex:  A *---* B
-                            //        | \ |      For this, we'll use C for index0 and B for index1.
-                            //      C *---* D
-                            //
-                            // This is a pretty arbitrary choice, so the heuristic might need to be revisited over time if this
-                            // causes incorrect or unpredictable physics material mappings.
 
-                            switch (currentSample.m_quadMeshType)
-                            {
-                            case Physics::QuadMeshType::SubdivideUpperLeftToBottomRight:
-                                currentPhysxSample.materialIndex0 = samples[GetIndex(row + 1, col)].m_materialIndex;
-                                currentPhysxSample.materialIndex1 = samples[GetIndex(row, col + 1)].m_materialIndex;
-                                // Set the tesselation flag to say that we need to go from UL to BR
-                                currentPhysxSample.materialIndex0.setBit();
-                                break;
-                            case Physics::QuadMeshType::SubdivideBottomLeftToUpperRight:
-                                currentPhysxSample.materialIndex0 = currentSample.m_materialIndex;
-                                currentPhysxSample.materialIndex1 = samples[GetIndex(row + 1, col + 1)].m_materialIndex;
-                                break;
-                            case Physics::QuadMeshType::Hole:
-                                currentPhysxSample.materialIndex0 = physx::PxHeightFieldMaterial::eHOLE;
-                                currentPhysxSample.materialIndex1 = physx::PxHeightFieldMaterial::eHOLE;
-                                break;
-                            default:
-                                AZ_Warning("PhysX Heightfield", false, "Unhandled case in CreatePxGeometryFromConfig");
-                                currentPhysxSample.materialIndex0 = 0;
-                                currentPhysxSample.materialIndex1 = 0;
-                                break;
-                            }
+                        auto [materialIndex0, materialIndex1] = GetPhysXMaterialIndicesFromHeightfieldSamples(samples, row, col, numRows, numCols);
+                        currentPhysxSample.materialIndex0 = materialIndex0;
+                        currentPhysxSample.materialIndex1 = materialIndex1;
+
+                        if (currentSample.m_quadMeshType == Physics::QuadMeshType::SubdivideUpperLeftToBottomRight)
+                        {
+                            // Set the tesselation flag to say that we need to go from UL to BR
+                            currentPhysxSample.setTessFlag();
                         }
                     }
                 }
@@ -201,7 +223,7 @@ namespace PhysX
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
             {
                 AZ_Error("PhysX Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
-                    ToString(shapeConfiguration.m_scale).c_str());
+                    AZStd::to_string(shapeConfiguration.m_scale).c_str());
                 return false;
             }
 
@@ -226,7 +248,7 @@ namespace PhysX
                 if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
                 {
                     AZ_Error("PhysX Utils", false, "Negative or zero values are invalid for box dimensions %s",
-                        ToString(boxConfig.m_dimensions).c_str());
+                        AZStd::to_string(boxConfig.m_dimensions).c_str());
                     return false;
                 }
                 pxGeometry.storeAny(physx::PxBoxGeometry(PxMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale)));
@@ -809,6 +831,17 @@ namespace PhysX
             const AZ::Quaternion& colliderRelativeRotation)
         {
             return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRelativeRotation, colliderRelativePosition);
+        }
+
+        AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair)
+        {
+            AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
+            PhysX::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
+
+            AZ::Vector3 colliderOffset = AZ::Vector3::CreateZero();
+            PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
+
+            return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRotation, colliderOffset);
         }
 
         AZ::Transform GetColliderWorldTransform(const AZ::Transform& worldTransform,
@@ -1561,6 +1594,20 @@ namespace PhysX
             configuration.SetSamples(samples);
 
             return configuration;
+        }
+
+        void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSelection& materialSelection)
+        {
+            AZStd::vector<Physics::MaterialId> materialList;
+            Physics::HeightfieldProviderRequestsBus::EventResult(
+                materialList, heightfieldProviderId, &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
+
+            materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray(materialList.size(), ""));
+
+            for (int i = 0; i < materialList.size(); ++i)
+            {
+                materialSelection.SetMaterialId(materialList[i], i);
+            }
         }
     } // namespace Utils
 

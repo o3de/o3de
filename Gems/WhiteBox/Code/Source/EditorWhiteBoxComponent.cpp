@@ -92,7 +92,7 @@ namespace WhiteBox
         };
 
         const auto faceHandles = Api::MeshFaceHandles(whiteBox);
-        for (const auto faceHandle : faceHandles)
+        for (const auto& faceHandle : faceHandles)
         {
             faceData.push_back(createWhiteBoxFaceFromHandle(faceHandle));
         }
@@ -265,6 +265,7 @@ namespace WhiteBox
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         incompatible.push_back(AZ_CRC_CE("MeshService"));
+        incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));
     }
 
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;
@@ -306,9 +307,8 @@ namespace WhiteBox
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorWhiteBoxComponent, EditorWhiteBoxComponentMode>(
             entityComponentIdPair, this);
 
-        AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
-        m_worldFromLocal = AzToolsFramework::TransformUniformScale(worldFromLocal);
+        m_worldFromLocal = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(m_worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         m_editorMeshAsset->Associate(entityComponentIdPair);
 
@@ -481,12 +481,11 @@ namespace WhiteBox
         m_worldAabb.reset();
         m_localAabb.reset();
 
-        const AZ::Transform worldUniformScale = AzToolsFramework::TransformUniformScale(world);
-        m_worldFromLocal = worldUniformScale;
+        m_worldFromLocal = world;
 
         if (m_renderMesh.has_value())
         {
-            (*m_renderMesh)->UpdateTransform(worldUniformScale);
+            (*m_renderMesh)->UpdateTransform(world);
         }
     }
 
@@ -720,22 +719,19 @@ namespace WhiteBox
         // must have at least one triangle
         if (m_faces->empty())
         {
-            distance = std::numeric_limits<float>::max();
             return false;
         }
 
         // transform ray into local space
-        const AZ::Transform worldFromLocalUniform = AzToolsFramework::TransformUniformScale(m_worldFromLocal);
-        const AZ::Transform localFromWorldUniform = worldFromLocalUniform.GetInverse();
+        const AZ::Transform localFromWorld = m_worldFromLocal.GetInverse();
 
         // setup beginning/end of segment
         const float rayLength = 1000.0f;
-        const AZ::Vector3 localRayOrigin = localFromWorldUniform.TransformPoint(src);
-        const AZ::Vector3 localRayDirection = localFromWorldUniform.TransformVector(dir);
+        const AZ::Vector3 localRayOrigin = localFromWorld.TransformPoint(src);
+        const AZ::Vector3 localRayDirection = localFromWorld.TransformVector(dir);
         const AZ::Vector3 localRayEnd = localRayOrigin + localRayDirection * rayLength;
 
         bool intersection = false;
-        distance = std::numeric_limits<float>::max();
         for (const auto& face : m_faces.value())
         {
             float t;
@@ -817,7 +813,7 @@ namespace WhiteBox
 
         debugDisplay.DepthTestOn();
 
-        for (const auto faceHandle : Api::MeshFaceHandles(whiteBoxMesh))
+        for (const auto& faceHandle : Api::MeshFaceHandles(whiteBoxMesh))
         {
             const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBoxMesh, faceHandle);
 
@@ -832,7 +828,7 @@ namespace WhiteBox
                     }) /
                 3.0f;
 
-            for (const auto halfedgeHandle : faceHalfedgeHandles)
+            for (const auto& halfedgeHandle : faceHalfedgeHandles)
             {
                 const Api::VertexHandle vertexHandleAtTip =
                     Api::HalfedgeVertexHandleAtTip(whiteBoxMesh, halfedgeHandle);
@@ -887,7 +883,7 @@ namespace WhiteBox
 
         if (cl_whiteBoxDebugEdgeHandles)
         {
-            for (const auto edgeHandle : Api::MeshEdgeHandles(whiteBoxMesh))
+            for (const auto& edgeHandle : Api::MeshEdgeHandles(whiteBoxMesh))
             {
                 const AZ::Vector3 localEdgeMidpoint = Api::EdgeMidpoint(whiteBoxMesh, edgeHandle);
                 const AZ::Vector3 worldEdgeMidpoint = worldFromLocal.TransformPoint(localEdgeMidpoint);

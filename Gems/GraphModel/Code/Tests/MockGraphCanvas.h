@@ -72,8 +72,8 @@ namespace MockGraphCanvasServices
         void Deactivate() override;
 
         // GraphCanvas::DataSlotRequestBus overrides ...
-        bool ConvertToReference() override;
-        bool CanConvertToReference() const override;
+        bool ConvertToReference(bool isNewSlot = false) override;
+        bool CanConvertToReference(bool isNewSlot = false) const override;
         bool ConvertToValue() override;
         bool CanConvertToValue() const override;
         bool IsUserSlot() const override;
@@ -175,7 +175,6 @@ namespace MockGraphCanvasServices
 
         // GraphCanvas::NodeRequestBus overrides ...
         void SetTooltip(const AZStd::string& tooltip) override;
-        void SetTranslationKeyedTooltip(const GraphCanvas::TranslationKeyedString& tooltip) override;
         const AZStd::string GetTooltip() const override;
         void SetShowInOutliner(bool showInOutliner) override;
         bool ShowInOutliner() const override;

@@ -25,6 +25,9 @@ namespace AzFramework
 
     struct WindowSize;
 
+    //! Tolerance to use when limiting pitch to avoid reaching +/-Pi/2 exactly.
+    constexpr float CameraPitchTolerance = 1.0e-4f;
+
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.
     //! @note Order of rotation is Z, Y, X.
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
@@ -84,6 +87,19 @@ namespace AzFramework
 
     //! Extracts Euler angles (orientation) and translation from the transform and writes the values to the camera.
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
+
+    //! Writes the translation value and Euler angles to the camera.
+    void UpdateCameraFromTranslationAndRotation(Camera& camera, const AZ::Vector3& translation, const AZ::Vector3& eulerAngles);
+
+    //! Returns the time ('t') input value to use with SmoothValue.
+    //! Useful if it is to be reused for multiple calls to SmoothValue.
+    float SmoothValueTime(float smoothness, float deltaTime);
+
+    // Smoothly interpolate a value from current to target according to a smoothing parameter.
+    float SmoothValue(float target, float current, float smoothness, float deltaTime);
+
+    // Overload of SmoothValue that takes time ('t') value directly.
+    float SmoothValue(float target, float current, float time);
 
     //! Generic motion type.
     template<typename MotionTag>
@@ -167,6 +183,11 @@ namespace AzFramework
         void EndActivation()
         {
             m_activation = Activation::Ending;
+        }
+
+        void CancelActivation()
+        {
+            m_activation = Activation::Idle;
         }
 
         void ContinueActivation()
@@ -268,7 +289,17 @@ namespace AzFramework
 
         //! Add a camera input (behavior) to run in this set of camera inputs.
         //! The camera inputs added here will determine the overall behavior of the camera.
-        void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
+        //! @return Returns if the camera was successfully added (if the camera already exists it is not added and AddCamera returns false).
+        bool AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
+        //! Add a collection of camera inputs (behaviors) to run in this set of camera inputs.
+        //! @return Returns if all cameras were added successfully.
+        bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs);
+        //! Remove a camera input (behavior) to stop it running in the set of camera inputs.
+        //! @return Returns if the camera was removed successfully (if the could not be found RemoveCamera returns false).
+        bool RemoveCamera(const AZStd::shared_ptr<CameraInput>& cameraInput);
+        //! Remove a collection of camera inputs (behaviors) to stop them running in the set of camera inputs.
+        //! @return Returns if all cameras were removed successfully.
+        bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs);
         //! Reset the state of all cameras.
         void Reset();
         //! Remove all cameras that were added.
@@ -278,9 +309,10 @@ namespace AzFramework
         bool Exclusive() const;
 
     private:
-        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_activeCameraInputs; //!< Active camera inputs updating the camera (empty initially).
-        AZStd::vector<AZStd::shared_ptr<CameraInput>>
-            m_idleCameraInputs; //!< Idle camera inputs not contributing to the update (filled initially).
+        //! Active camera inputs updating the camera (empty initially).
+        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_activeCameraInputs;
+        //! Idle camera inputs not contributing to the update (filled initially).
+        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_idleCameraInputs;
     };
 
     //! Responsible for updating a series of cameras given various inputs.
@@ -305,11 +337,26 @@ namespace AzFramework
         return m_handlingEvents;
     }
 
-    //! Clamps pitch to be +/-90 degrees (-Pi/2, Pi/2).
+    //! Returns min/max values for camera pitch (in radians).
+    inline AZStd::tuple<float, float> CameraPitchMinMaxRadians()
+    {
+        return { -AZ::Constants::HalfPi, AZ::Constants::HalfPi };
+    }
+
+    //! Returns min/max values for camera pitch (in radians) including a small tolerance at each
+    //! extreme (looking directly up or down) to avoid floating point accuracy issues.
+    inline AZStd::tuple<float, float> CameraPitchMinMaxRadiansWithTolerance()
+    {
+        const auto [pitchMinRadians, pitchMaxRadians] = CameraPitchMinMaxRadians();
+        return { pitchMinRadians + CameraPitchTolerance, pitchMaxRadians - CameraPitchTolerance };
+    }
+
+    //! Clamps pitch to be +/-90 degrees (-Pi/2, Pi/2) with a minor tolerance at each extreme.
     //! @param pitch Pitch angle in radians.
     inline float ClampPitchRotation(const float pitch)
     {
-        return AZ::GetClamp(pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
+        const auto [pitchMin, pitchMax] = CameraPitchMinMaxRadiansWithTolerance();
+        return AZ::GetClamp(pitch, pitchMin, pitchMax);
     }
 
     //! Ensures yaw wraps between 0 and 360 degrees (0, 2Pi).
@@ -334,6 +381,12 @@ namespace AzFramework
         AZStd::function<float()> m_rotateSpeedFn;
         AZStd::function<bool()> m_invertPitchFn;
         AZStd::function<bool()> m_invertYawFn;
+        AZStd::function<bool()> m_constrainPitch;
+
+        void SetInitiateRotateFn(AZStd::function<void()> initiateRotateFn)
+        {
+            m_clickDetector.SetClickDownEventFn(AZStd::move(initiateRotateFn));
+        }
 
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.
@@ -549,10 +602,10 @@ namespace AzFramework
     };
 
     //! A camera input to handle discrete scroll events that can modify the camera offset.
-    class OrbitDollyScrollCameraInput : public CameraInput
+    class OrbitScrollDollyCameraInput : public CameraInput
     {
     public:
-        OrbitDollyScrollCameraInput();
+        OrbitScrollDollyCameraInput();
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -562,10 +615,10 @@ namespace AzFramework
     };
 
     //! A camera input to handle motion deltas that can modify the camera offset.
-    class OrbitDollyMotionCameraInput : public CameraInput
+    class OrbitMotionDollyCameraInput : public CameraInput
     {
     public:
-        explicit OrbitDollyMotionCameraInput(const InputChannelId& dollyChannelId);
+        explicit OrbitMotionDollyCameraInput(const InputChannelId& dollyChannelId);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;

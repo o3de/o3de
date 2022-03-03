@@ -142,7 +142,12 @@ namespace AZ
             Utils::PngFile image = Utils::PngFile::Create(readbackResult.m_imageDescriptor.m_size, format, *buffer);
 
             Utils::PngFile::SaveSettings saveSettings;
-            saveSettings.m_compressionLevel = r_pngCompressionLevel;
+
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("r_pngCompressionLevel", saveSettings.m_compressionLevel);
+            }
+
             // We should probably strip alpha to save space, especially for automated test screenshots. Alpha is left in to maintain
             // prior behavior, changing this is out of scope for the current task. Note, it would have bit of a cascade effect where
             // AtomSampleViewer's ScriptReporter assumes an RGBA image.

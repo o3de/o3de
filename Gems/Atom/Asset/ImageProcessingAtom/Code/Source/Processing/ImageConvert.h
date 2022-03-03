@@ -10,10 +10,10 @@
 
 #include <QRect>
 
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/PresetSettings.h>
 #include <BuilderSettings/TextureSettings.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Compressors/Compressor.h>
 
 #include <AzCore/Jobs/Job.h>
@@ -50,9 +50,6 @@ namespace ImageProcessingAtom
 
     //Converts the image to a RGBA8 format that can be displayed in a preview UI.
     IImageObjectPtr ConvertImageForPreview(IImageObjectPtr image);
-
-    //Combine image with alpha image if any and output as RGBA8
-    IImageObjectPtr MergeOutputImageForPreview(IImageObjectPtr image, IImageObjectPtr alphaImage);
 
     //get output image size and mip count based on the texture setting and preset setting
 
@@ -160,7 +157,7 @@ namespace ImageProcessingAtom
         bool FillCubemapMipmaps();
 
         //IBL cubemap generation, this creates a separate ImageConvertProcess
-        void CreateIBLCubemap(PresetName preset, const char* fileNameSuffix, IImageObjectPtr& cubemapImage);
+        bool CreateIBLCubemap(PresetName preset, const char* fileNameSuffix, IImageObjectPtr& cubemapImage);
 
         //convert color space to linear with pixel format rgba32f
         bool ConvertToLinear();

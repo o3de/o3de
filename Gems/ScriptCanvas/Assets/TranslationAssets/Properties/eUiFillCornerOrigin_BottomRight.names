@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "eUiFillCornerOrigin_BottomRight",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Bottom Right",
+                "category": "Constants/UI/Fill Corner"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFillCornerOrigin_BottomRight",
+                    "details": {
+                        "name": "Bottom Right"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

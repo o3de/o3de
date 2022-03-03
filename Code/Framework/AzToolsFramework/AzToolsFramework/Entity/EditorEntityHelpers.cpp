@@ -15,6 +15,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -467,6 +468,18 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         EntityIdList children;
         EditorEntityInfoRequestBus::EventResult(children, parentId, &EditorEntityInfoRequestBus::Events::GetChildren);
+
+        // If Prefabs are enabled, don't check the order for an invalid parent, just return its children (i.e. the root container entity)
+        // There will currently always be one root container entity, so there's no order to retrieve
+        if (!parentId.IsValid())
+        {
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            if (isPrefabEnabled)
+            {
+                return children;
+            }
+        }
 
         EntityIdList entityChildOrder;
         AZ::EntityId sortEntityId = GetEntityIdForSortInfo(parentId);
@@ -1144,7 +1157,7 @@ namespace AzToolsFramework
 
     bool CloneInstantiatedEntities(const EntityIdSet& entitiesToClone, EntityIdSet& clonedEntities)
     {
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEntitiesAboutToBeCloned);
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, true);
         ScopedUndoBatch undoBatch("Clone Selection");
 
         // Track the mapping of source to cloned entity. This both helps make sure that an entity is not accidentally
@@ -1186,7 +1199,7 @@ namespace AzToolsFramework
         // Also replace the selection with the entities that have been cloned.
         Internal::UpdateUndoStackAndSelectClonedEntities(allEntityClonesContainer.m_entities, undoBatch);
 
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEntitiesCloned);
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, false);
 
         for (const AZ::Entity* entity : allEntityClonesContainer.m_entities)
         {

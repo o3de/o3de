@@ -9,7 +9,11 @@
 import groovy.json.JsonOutput
 PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
+EBS_SNAPSHOT_SCRIPT_PATH = 'scripts/build/tools/ebs_snapshot.py'
 PIPELINE_RETRY_ATTEMPTS = 3
+
+// Number of minutes of inactivity in all stages of the pipeline to reach the timeout
+PIPELINE_TIMEOUT = 60
 
 EMPTY_JSON = readJSON text: '{}'
 
@@ -38,14 +42,17 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME')
 ]
 
-def palSh(cmd, lbl = '', winSlashReplacement = true) {
+def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
-    } else if (winSlashReplacement) {
-        bat label: lbl,
-            script: cmd.replace('/','\\')
     } else {
+        if (winSlashReplacement) {
+            cmd = cmd.replace('/','\\')
+        }
+        if (winCharReplacement) {
+            cmd = cmd.replace('%', '%%')
+        }
         bat label: lbl,
             script: cmd
     }
@@ -76,11 +83,11 @@ def palRm(path) {
 def palRmDir(path) {
     if (env.IS_UNIX) {
         sh label: "Removing ${path}",
-           script: "rm -rf ${path}"
+           script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
-            script: "rd /s /q ${win_path}"
+            script: "IF exist ${win_path} rd /s /q ${win_path}"
     }
 }
 
@@ -100,10 +107,6 @@ def IsJobEnabled(branchName, buildTypeMap, pipelineName, platformName) {
     } else {
         return params[platformName] && buildTypeMap.value.TAGS && buildTypeMap.value.TAGS.contains(pipelineName)
     }
-}
-
-def IsAPLogUpload(branchName, jobName) {
-    return !IsPullRequest(branchName) && jobName.toLowerCase().contains('asset') && env.AP_LOGS_S3_BUCKET
 }
 
 def GetRunningPipelineName(JENKINS_JOB_NAME) {
@@ -207,7 +210,8 @@ def CheckoutBootstrapScripts(String branchName) {
             [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
-                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ]
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ],
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/tools/' ]
             ]],
             // Shallow checkouts break changelog computation. Do not enable.
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
@@ -265,7 +269,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     commitDateFmt = '%%cI'
     if (env.IS_UNIX) commitDateFmt = '%cI'
 
-    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date')
+    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winSlashReplacement=true, winCharReplacement=false)
     env.CHANGE_DATE = readFile file: 'commitdate'
     env.CHANGE_DATE = env.CHANGE_DATE.trim()
     palRm('commitdate')
@@ -410,10 +414,6 @@ def ExportTestResults(Map options, String platform, String type, String workspac
         def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
         dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
             junit testResults: "Testing/**/*.xml"
-            palRmDir("Testing")
-            // Recreate test runner xml directories that need to be pre generated
-            palMkdir("Testing/Pytest")
-            palMkdir("Testing/Gtest")
         }
     }
 }
@@ -433,30 +433,58 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
     }
 }
 
-def UploadAPLogs(Map options, String branchName, String platformName, String jobName, String workspace, Map params) {
-    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-        projects = params.CMAKE_LY_PROJECTS.split(",")
-        projects.each{ project ->
-            def apLogsPath = "${project}/user/log"
-            def s3UploadScriptPath = "scripts/build/tools/upload_to_s3.py"
-            if(env.IS_UNIX) {
-                pythonPath = "${options.PYTHON_DIR}/python.sh"
-            }
-            else {
-                pythonPath = "${options.PYTHON_DIR}/python.cmd"
-            }
-            def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
-                          "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
-                          "--search_subdirectories True --key_prefix ${env.JENKINS_JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${platformName}/${jobName} " +
-                          '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
-            palSh(command, "Uploading AP logs for job ${jobName} for branch ${branchName}", false)
+// All files are included by default.
+// --include will only re-include files that have been excluded from an --exclude filter.
+//See more details at https://docs.aws.amazon.com/cli/latest/reference/s3/#use-of-exclude-and-include-filters
+def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean recursive=false, List<String> includes=[], List<String> excludes=[]) {
+    if (!fileExists(s3Prefix)) {
+        palMkdir(s3Prefix)
+    }
+    palSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
+    // archiveArtifacts is very slow, so we only archive one file and upload the rest artifacts to the same bucket using S3 CLI.
+    archiveArtifacts artifacts: "${s3Prefix}/build_url.txt"
+    def command = "aws s3 cp ${artifactsSource} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} "
+    excludes.each{ exclude ->
+        command += "--exclude \"${exclude}\" "
+    }
+    includes.each{ include ->
+        command += "--include \"${include}\" "
+    }
+    if (recursive) command += "--recursive "
+    palSh(command, "Archiving artifacts to ${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix}", false)
+}
+
+def UploadAPLogs(String platformName, String jobName, String workspace, Map params) {
+    catchError(message: "Error archiving AssetProcessor logs (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            projects = params.CMAKE_LY_PROJECTS.split(",")
+            projects.each{ project ->
+                ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", true)
             }
         }
     }
+}
 
-def PostBuildCommonSteps(String workspace, boolean mount = true) {
+def UploadTestArtifacts(String workspace, String outputDirectory) {
+    catchError(message: "Error archiving test artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
+        echo "Uploading Test Artifacts: ${cmakeBuildDir}/Testing"
+        ArchiveArtifactsOnS3("${cmakeBuildDir}/Testing", "test_artifacts", true)
+    }
+}
+
+def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
     echo 'Starting post-build common steps...'
-
+    if (params && params.containsKey('OUTPUT_DIRECTORY')){
+        dir([workspace, ENGINE_REPOSITORY_NAME, params.OUTPUT_DIRECTORY].join('/')){
+            // Clean up Testing directory
+            palRmDir("Testing")
+            // Recreate test runner xml directories that need to be pre generated to prevent race condition on incremental runs
+            palMkdir("Testing/Pytest")
+            palMkdir("Testing/Gtest")
+        }
+    }
+    
     if (mount) {
         def pythonCmd = ''
         if(env.IS_UNIX) pythonCmd = 'sudo -E python3 -u '
@@ -469,6 +497,19 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
         } catch (Exception e) {
             echo "Unmount script error ${e}"
         }
+    }
+}
+
+def HandleDriveSnapshots(String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType) {  
+    unstash name: 'ebs_snapshot_script'
+
+    catchError(message: "Error snapshotting volume (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {        
+        def pythonCmd = 'python3 -u '
+        
+        mountName = "Name:${repositoryName}_${projectName}_${pipeline}_${branchName}_${platform}_${buildType}"
+        mountName = mountName.replace('/', '_').replace('\\', '_')
+        palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action create --tags ${mountName} --execute", "Starting volume snapshots", true)
+        palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action delete --tags ${mountName} --retention ${env.SNAP_RETENTION} --execute", "Cleaning up old snapshots", true)
     }
 }
 
@@ -517,18 +558,34 @@ def CreateExportTestScreenshotsStage(Map pipelineConfig, String branchName, Stri
     }
 }
 
-def CreateUploadAPLogsStage(Map pipelineConfig, String branchName, String platformName, String jobName, String workspace, Map params) {
+def CreateUploadAPLogsStage(String platformName, String jobName, String workspace, Map params) {
     return {
         stage("${jobName}_upload_ap_logs") {
-            UploadAPLogs(pipelineConfig, branchName, platformName, jobName, workspace, params)
+            UploadAPLogs(platformName, jobName, workspace, params)
         }
     }
 }
 
-def CreateTeardownStage(Map environmentVars) {
+def CreateUploadTestArtifactStage(String jobName, String workspace, String outputDirectory) {
+    return {
+        stage("${jobName}_upload_test_artifacts") {
+            UploadTestArtifacts(workspace, outputDirectory)
+        }
+    }
+}
+
+def CreateTeardownStage(Map environmentVars, Map params) {
     return {
         stage('Teardown') {
-            PostBuildCommonSteps(environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
+            PostBuildCommonSteps(environmentVars['WORKSPACE'], params, environmentVars['MOUNT_VOLUME'])
+        }
+    }
+}
+
+def CreateSnapshotStage(String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String buildType, String jobName) {
+    return{
+        stage("${jobName}_snapshot_ebs_volume") {
+            HandleDriveSnapshots(repositoryName, projectName, pipelineName, branchName, platformName, buildType)
         }
     }
 }
@@ -545,6 +602,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                 }
                 withEnv(GetEnvStringList(envVars)) {
                     def build_job_name = build_job.key
+                    def params = platform.value.build_types[build_job_name].PARAMETERS
                     try {
                         CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
 
@@ -552,6 +610,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             pipelineEnvVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                             build_job.value.steps.each { build_step ->
                                 build_job_name = build_step
+                                params = platform.value.build_types[build_job_name].PARAMETERS
                                 // This addition of maps makes it that the right operand will override entries if they overlap with the left operand
                                 envVars = pipelineEnvVars + GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                                 try {
@@ -576,19 +635,21 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                 error "Node disconnected during build: ${e}"  // Error raised to retry stage on a new node
                             }
                         }
-                        if (IsAPLogUpload(branchName, build_job_name)) {
-                            CreateUploadAPLogsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
+                        if (build_job_name.toLowerCase().contains('asset') && env.IS_UPLOAD_AP_LOGS?.toBoolean()) {
+                            CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
+                        }
+                        // Upload test artifacts only on builds that failed and ran test suites
+                        if (env.IS_UPLOAD_TEST_ARTIFACTS?.toBoolean() && params.containsKey('CTEST_OPTIONS')) {
+                            CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY).call()
                         }
                         // All other errors will be raised outside the retry block
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
                         currentException = e.toString()
                     }
                     finally {
-                        def params = platform.value.build_types[build_job_name].PARAMETERS
+
                         if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
-                            def output_directory = params.OUTPUT_DIRECTORY
-                            def configuration = params.CONFIGURATION
-                            CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
+                            CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, params.OUTPUT_DIRECTORY, params.CONFIGURATION).call()
                         }
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
@@ -596,7 +657,10 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
-                        CreateTeardownStage(envVars).call()
+                        CreateTeardownStage(envVars, params).call()
+                        if (envVars['CREATE_SNAPSHOT']?.toBoolean()) {
+                            CreateSnapshotStage(repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, build_job_name).call()
+                        }
                     }
                 }
             }
@@ -692,139 +756,145 @@ def pipelineConfig = {}
 
 // Start Pipeline
 try {
-    stage('Setup Pipeline') {
-        node('controller') {
-            def envVarList = []
-            if(isUnix()) {
-                envVarList.add('IS_UNIX=1')
-            }
-            withEnv(envVarList) {
-                timestamps {
-                    repositoryUrl = scm.getUserRemoteConfigs()[0].getUrl()
-                    // repositoryName is the full repository name
-                    repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
-                    env.REPOSITORY_NAME = repositoryName
-                    (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
-                    env.PIPELINE_NAME = pipelineName
-                    if(env.BRANCH_NAME) {
-                        branchName = env.BRANCH_NAME
-                    } else {
-                        branchName = scm.branches[0].name // for non-multibranch pipelines
-                        env.BRANCH_NAME = branchName // so scripts that read this environment have it (e.g. incremental_build_util.py)                        
-                    }
-                    if(env.CHANGE_TARGET) {
-                        // PR builds
-                        if(BUILD_SNAPSHOTS.contains(env.CHANGE_TARGET)) {
-                            snapshot = env.CHANGE_TARGET
-                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found."
-                        } else { 
-                            snapshot = DEFAULT_BUILD_SNAPSHOT
-                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
+    timeout(time: PIPELINE_TIMEOUT, unit: 'MINUTES', activity: true) {
+        stage('Setup Pipeline') {
+            node('controller') {
+                def envVarList = []
+                if(isUnix()) {
+                    envVarList.add('IS_UNIX=1')
+                }
+                withEnv(envVarList) {
+                    timestamps {
+                        repositoryUrl = scm.getUserRemoteConfigs()[0].getUrl()
+                        // repositoryName is the full repository name
+                        repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
+                        env.REPOSITORY_NAME = repositoryName
+                        (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
+                        env.PIPELINE_NAME = pipelineName
+                        if(env.BRANCH_NAME) {
+                            branchName = env.BRANCH_NAME
+                        } else {
+                            branchName = scm.branches[0].name // for non-multibranch pipelines
+                            env.BRANCH_NAME = branchName // so scripts that read this environment have it (e.g. incremental_build_util.py)                        
                         }
-                    } else {
-                        // Non-PR builds
-                        pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
-                        snapshot = env.SNAPSHOT
-                        echo "Snapshot \"${snapshot}\" selected."
-                    }
-                    pipelineProperties.add(disableConcurrentBuilds())
+                        if(env.CHANGE_TARGET) {
+                            // PR builds
+                            if(BUILD_SNAPSHOTS.contains(env.CHANGE_TARGET)) {
+                                snapshot = env.CHANGE_TARGET
+                                echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found."
+                            } else { 
+                                snapshot = DEFAULT_BUILD_SNAPSHOT
+                                echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
+                            }
+                        } else {
+                            // Non-PR builds
+                            pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
+                            snapshot = env.SNAPSHOT
+                            echo "Snapshot \"${snapshot}\" selected."
+                        }
+                        pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
+                        echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
 
-                    CheckoutBootstrapScripts(branchName)
+                        CheckoutBootstrapScripts(branchName)
 
-                    // Load configs
-                    pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
+                        // Load configs
+                        pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
 
-                    // Add each platform as a parameter that the user can disable if needed
-                    if (!IsPullRequest(branchName)) {
-                        pipelineParameters.add(stringParam(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE'))
+                        // Add each platform as a parameter that the user can disable if needed
+                        if (!IsPullRequest(branchName)) {
+                            pipelineParameters.add(stringParam(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE'))
 
+                            pipelineConfig.platforms.each { platform ->
+                                pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
+                            }
+                        }
+                        // Add additional Jenkins parameters
                         pipelineConfig.platforms.each { platform ->
-                            pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
-                        }
-                    }
-                    // Add additional Jenkins parameters
-                    pipelineConfig.platforms.each { platform ->
-                        platformEnv = platform.value.PIPELINE_ENV
-                        pipelineJenkinsParameters = platformEnv['PIPELINE_JENKINS_PARAMETERS'] ?: [:]
-                        jenkinsParametersToAdd = pipelineJenkinsParameters[pipelineName] ?: [:]
-                        jenkinsParametersToAdd.each{ jenkinsParameter ->
-                            defaultValue = jenkinsParameter['default_value']
-                            // Use last run's value as default value so we can save values in different Jenkins environment
-                            if (jenkinsParameter['use_last_run_value']?.toBoolean()) {
-                                defaultValue = params."${jenkinsParameter['parameter_name']}" ?: jenkinsParameter['default_value']
-                            }
-                            switch (jenkinsParameter['parameter_type']) {
-                                case 'string':
-                                    pipelineParameters.add(stringParam(defaultValue: defaultValue,
-                                                                   description: jenkinsParameter['description'],
-                                                                   name: jenkinsParameter['parameter_name']
-                                                                   ))
-                                    break
-                                case 'boolean':
-                                    pipelineParameters.add(booleanParam(defaultValue: defaultValue,
-                                                                   description: jenkinsParameter['description'],
-                                                                   name: jenkinsParameter['parameter_name']
-                                                                   ))
-                                    break
-                                case 'password':
-                                    pipelineParameters.add(password(defaultValue: defaultValue,
-                                                                   description: jenkinsParameter['description'],
-                                                                   name: jenkinsParameter['parameter_name']
-                                                                   ))
-                                    break
+                            platformEnv = platform.value.PIPELINE_ENV
+                            pipelineJenkinsParameters = platformEnv['PIPELINE_JENKINS_PARAMETERS'] ?: [:]
+                            jenkinsParametersToAdd = pipelineJenkinsParameters[pipelineName] ?: [:]
+                            jenkinsParametersToAdd.each{ jenkinsParameter ->
+                                defaultValue = jenkinsParameter['default_value']
+                                // Use last run's value as default value so we can save values in different Jenkins environment
+                                if (jenkinsParameter['use_last_run_value']?.toBoolean()) {
+                                    defaultValue = params."${jenkinsParameter['parameter_name']}" ?: jenkinsParameter['default_value']
+                                }
+                                switch (jenkinsParameter['parameter_type']) {
+                                    case 'string':
+                                        pipelineParameters.add(stringParam(defaultValue: defaultValue,
+                                                                    description: jenkinsParameter['description'],
+                                                                    name: jenkinsParameter['parameter_name']
+                                                                    ))
+                                        break
+                                    case 'boolean':
+                                        pipelineParameters.add(booleanParam(defaultValue: defaultValue,
+                                                                    description: jenkinsParameter['description'],
+                                                                    name: jenkinsParameter['parameter_name']
+                                                                    ))
+                                        break
+                                    case 'password':
+                                        pipelineParameters.add(password(defaultValue: defaultValue,
+                                                                    description: jenkinsParameter['description'],
+                                                                    name: jenkinsParameter['parameter_name']
+                                                                    ))
+                                        break
+                                }
                             }
                         }
+
+                        pipelineProperties.add(parameters(pipelineParameters.unique()))
+                        properties(pipelineProperties)
+
+                        // Stash the INCREMENTAL_BUILD_SCRIPT_PATH and EBS_SNAPSHOT_SCRIPT_PATH since all nodes will use it
+                        stash name: 'incremental_build_script',
+                            includes: INCREMENTAL_BUILD_SCRIPT_PATH
+                        if (fileExists(EBS_SNAPSHOT_SCRIPT_PATH)) {
+                            stash name: 'ebs_snapshot_script',
+                            includes: EBS_SNAPSHOT_SCRIPT_PATH
+                        }
                     }
-
-                    pipelineProperties.add(parameters(pipelineParameters))
-                    properties(pipelineProperties)
-
-                    // Stash the INCREMENTAL_BUILD_SCRIPT_PATH since all nodes will use it
-                    stash name: 'incremental_build_script',
-                          includes: INCREMENTAL_BUILD_SCRIPT_PATH
-                 }
+                }
             }
         }
-    }
 
-    if(env.BUILD_NUMBER == '1' && !IsPullRequest(branchName)) {
-        // Exit pipeline early on the intial build. This allows Jenkins to load the pipeline for the branch and enables users
-        // to select build parameters on their first actual build. See https://issues.jenkins.io/browse/JENKINS-41929
-        currentBuild.result = 'SUCCESS'
-        return
-    }
+        if(env.BUILD_NUMBER == '1' && !IsPullRequest(branchName)) {
+            // Exit pipeline early on the intial build. This allows Jenkins to load the pipeline for the branch and enables users
+            // to select build parameters on their first actual build. See https://issues.jenkins.io/browse/JENKINS-41929
+            currentBuild.result = 'SUCCESS'
+            return
+        }
 
-    def someBuildHappened = false
+        def someBuildHappened = false
 
-    // Build and Post-Build Testing Stage
-    def buildConfigs = [:]
+        // Build and Post-Build Testing Stage
+        def buildConfigs = [:]
 
-    // Platform Builds run on EC2
-    pipelineConfig.platforms.each { platform ->
-        platform.value.build_types.each { build_job ->
-            if (IsJobEnabled(branchName, build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
-                def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
-                envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
-                envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
-                someBuildHappened = true
+        // Platform Builds run on EC2
+        pipelineConfig.platforms.each { platform ->
+            platform.value.build_types.each { build_job ->
+                if (IsJobEnabled(branchName, build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
+                    def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                    envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
+                    envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
+                    someBuildHappened = true
 
-                buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                }
             }
         }
-    }
 
-    timestamps {
+        timestamps {
 
-        stage('Build') {
-            parallel buildConfigs // Run parallel builds
+            stage('Build') {
+                parallel buildConfigs // Run parallel builds
+            }
+
+            echo 'All builds successful'
         }
-
-        echo 'All builds successful'
-    }
-    if (!someBuildHappened) {
-        currentBuild.result = 'NOT_BUILT'
+        if (!someBuildHappened) {
+            currentBuild.result = 'NOT_BUILT'
+        }
     }
 }
 catch(Exception e) {
@@ -847,6 +917,7 @@ finally {
                     "build_number": env.BUILD_NUMBER,
                     "repository_name": env.REPOSITORY_NAME,
                     "branch_name": env.BRANCH_NAME,
+                    "pipeline_name": GetRunningPipelineName(env.JOB_NAME)[1],
                     "build_result": "${currentBuild.currentResult}",
                     "build_failure": buildFailure,
                     "recreate_volume": env.RECREATE_VOLUME,

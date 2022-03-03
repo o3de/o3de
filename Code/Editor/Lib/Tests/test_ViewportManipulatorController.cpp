@@ -8,10 +8,11 @@
 
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <Editor/ViewportManipulatorController.h>
+#include <Mocks/MockWindowRequests.h>
 
 namespace UnitTest
 {
@@ -77,14 +78,15 @@ namespace UnitTest
     class ViewportManipulatorControllerFixture : public AllocatorsTestFixture
     {
     public:
-        static const AzFramework::ViewportId TestViewportId;
+        static inline constexpr AzFramework::ViewportId TestViewportId = 1234;
+        static inline const QSize WidgetSize = QSize(1920, 1080);
 
         void SetUp() override
         {
             AllocatorsTestFixture::SetUp();
 
             m_rootWidget = AZStd::make_unique<QWidget>();
-            m_rootWidget->setFixedSize(QSize(100, 100));
+            m_rootWidget->setFixedSize(WidgetSize);
             QApplication::setActiveWindow(m_rootWidget.get());
 
             m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
@@ -110,8 +112,6 @@ namespace UnitTest
         AzFramework::ViewportControllerListPtr m_controllerList;
         AZStd::unique_ptr<AzToolsFramework::QtEventToAzInputMapper> m_inputChannelMapper;
     };
-
-    const AzFramework::ViewportId ViewportManipulatorControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
     TEST_F(ViewportManipulatorControllerFixture, AnEventIsNotPropagatedToTheViewportWhenAManipulatorHandlesItFirst)
     {
@@ -226,5 +226,75 @@ namespace UnitTest
         // then
         // the key was released (cleared)
         EXPECT_TRUE(endedEvent);
+    }
+
+    TEST_F(ViewportManipulatorControllerFixture, DoubleClickIsNotRegisteredIfMouseDeltaHasMovedMoreThanDeadzoneInClickInterval)
+    {
+        AzFramework::NativeWindowHandle nativeWindowHandle = nullptr;
+
+        // forward input events to our controller list
+        QObject::connect(
+            m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
+            [this, nativeWindowHandle](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+            {
+                m_controllerList->HandleInputChannelEvent(
+                    AzFramework::ViewportControllerInputEvent{ TestViewportId, nativeWindowHandle, *inputChannel });
+            });
+
+        ::testing::NiceMock<MockWindowRequests> mockWindowRequests;
+        mockWindowRequests.Connect(nativeWindowHandle);
+
+        using ::testing::Return;
+        // note: WindowRequests is used internally by ViewportManipulatorController
+        ON_CALL(mockWindowRequests, GetClientAreaSize())
+            .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
+
+        EditorInteractionViewportSelectionFake editorInteractionViewportFake;
+        editorInteractionViewportFake.m_internalHandleMouseManipulatorInteraction = [](const MouseInteractionEvent&)
+        {
+            // report the event was not handled (manipulator was not interacted with)
+            return false;
+        };
+
+        bool doubleClickDetected = false;
+        editorInteractionViewportFake.m_internalHandleMouseViewportInteraction =
+            [&doubleClickDetected](const MouseInteractionEvent& mouseInteractionEvent)
+        {
+            // ensure no double click event is detected with the given inputs below
+            if (mouseInteractionEvent.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::DoubleClick)
+            {
+                doubleClickDetected = true;
+            }
+
+            return true;
+        };
+
+        editorInteractionViewportFake.Connect();
+
+        m_controllerList->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
+
+        // simulate a click, move, click
+        MouseMove(m_rootWidget.get(), QPoint(0, 0), QPoint(10, 10));
+        MousePressAndMove(m_rootWidget.get(), QPoint(10, 10), QPoint(0, 0), Qt::MouseButton::LeftButton);
+        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::LeftButton, Qt::KeyboardModifier::NoModifier, QPoint(10, 10));
+        MouseMove(m_rootWidget.get(), QPoint(10, 10), QPoint(20, 20));
+        MousePressAndMove(m_rootWidget.get(), QPoint(20, 20), QPoint(0, 0), Qt::MouseButton::LeftButton);
+        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::LeftButton, Qt::KeyboardModifier::NoModifier, QPoint(20, 20));
+
+        // ensure no double click was detected
+        EXPECT_FALSE(doubleClickDetected);
+
+        // simulate double click (sanity check it still is detected correctly with no movement)
+        MouseMove(m_rootWidget.get(), QPoint(0, 0), QPoint(10, 10));
+        MousePressAndMove(m_rootWidget.get(), QPoint(10, 10), QPoint(0, 0), Qt::MouseButton::LeftButton);
+        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::LeftButton, Qt::KeyboardModifier::NoModifier, QPoint(10, 10));
+        MousePressAndMove(m_rootWidget.get(), QPoint(10, 10), QPoint(0, 0), Qt::MouseButton::LeftButton);
+        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::LeftButton, Qt::KeyboardModifier::NoModifier, QPoint(10, 10));
+
+        // ensure a double click was detected
+        EXPECT_TRUE(doubleClickDetected);
+
+        mockWindowRequests.Disconnect();
+        editorInteractionViewportFake.Disconnect();
     }
 } // namespace UnitTest

@@ -43,8 +43,7 @@ namespace AZ
             void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
 
             AZStd::binary_semaphore m_renderWait;
-            Data::AssetId m_assetId;
-            AZ::Uuid m_typeId;
+            Data::AssetInfo m_assetInfo;
         };
 
         //! Cache configuration for shared thumbnails

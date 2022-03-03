@@ -155,9 +155,9 @@ namespace AZ
             , m_materialPropertyDependencies(materialPropertyDependencies)
         {}
 
-        const MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyMetadata(const Name& propertyName) const
+        const MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyMetadata(const Name& propertyId) const
         {
-            return QueryMaterialPropertyMetadata(propertyName);
+            return QueryMaterialPropertyMetadata(propertyId);
         }
 
         const MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const
@@ -166,9 +166,9 @@ namespace AZ
             return GetMaterialPropertyMetadata(name);
         }
         
-        const MaterialPropertyGroupDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyGroupMetadata(const Name& propertyName) const
+        const MaterialPropertyGroupDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyGroupMetadata(const Name& propertyId) const
         {
-            return QueryMaterialPropertyGroupMetadata(propertyName);
+            return QueryMaterialPropertyGroupMetadata(propertyId);
         }
         
         bool MaterialFunctor::EditorContext::SetMaterialPropertyGroupVisibility(const Name& propertyGroupName, MaterialPropertyGroupVisibility visibility)
@@ -188,9 +188,9 @@ namespace AZ
             return true;
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyVisibility(const Name& propertyName, MaterialPropertyVisibility visibility)
+        bool MaterialFunctor::EditorContext::SetMaterialPropertyVisibility(const Name& propertyId, MaterialPropertyVisibility visibility)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -199,7 +199,7 @@ namespace AZ
             if (metadata->m_visibility != visibility)
             {
                 metadata->m_visibility = visibility;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
@@ -211,9 +211,9 @@ namespace AZ
             return SetMaterialPropertyVisibility(name, visibility);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyDescription(const Name& propertyName, AZStd::string description)
+        bool MaterialFunctor::EditorContext::SetMaterialPropertyDescription(const Name& propertyId, AZStd::string description)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -222,7 +222,7 @@ namespace AZ
             if (metadata->m_description != description)
             {
                 metadata->m_description = description;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
@@ -234,9 +234,9 @@ namespace AZ
             return SetMaterialPropertyDescription(name, description);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyMinValue(const Name& propertyName, const MaterialPropertyValue& min)
+        bool MaterialFunctor::EditorContext::SetMaterialPropertyMinValue(const Name& propertyId, const MaterialPropertyValue& min)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -245,7 +245,7 @@ namespace AZ
             if(metadata->m_propertyRange.m_min != min)
             {
                 metadata->m_propertyRange.m_min = min;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
@@ -257,9 +257,9 @@ namespace AZ
             return SetMaterialPropertyMinValue(name, min);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyMaxValue(const Name& propertyName, const MaterialPropertyValue& max)
+        bool MaterialFunctor::EditorContext::SetMaterialPropertyMaxValue(const Name& propertyId, const MaterialPropertyValue& max)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -268,7 +268,7 @@ namespace AZ
             if (metadata->m_propertyRange.m_max != max)
             {
                 metadata->m_propertyRange.m_max = max;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
@@ -280,9 +280,9 @@ namespace AZ
             return SetMaterialPropertyMaxValue(name, max);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMinValue(const Name& propertyName, const MaterialPropertyValue& min)
+        bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMinValue(const Name& propertyId, const MaterialPropertyValue& min)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -291,7 +291,7 @@ namespace AZ
             if (metadata->m_propertyRange.m_softMin != min)
             {
                 metadata->m_propertyRange.m_softMin = min;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
@@ -303,9 +303,9 @@ namespace AZ
             return SetMaterialPropertySoftMinValue(name, min);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMaxValue(const Name& propertyName, const MaterialPropertyValue& max)
+        bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMaxValue(const Name& propertyId, const MaterialPropertyValue& max)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -314,7 +314,7 @@ namespace AZ
             if (metadata->m_propertyRange.m_softMax != max)
             {
                 metadata->m_propertyRange.m_softMax = max;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
@@ -326,24 +326,24 @@ namespace AZ
             return SetMaterialPropertySoftMaxValue(name, max);
         }
 
-        MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::QueryMaterialPropertyMetadata(const Name& propertyName) const
+        MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::QueryMaterialPropertyMetadata(const Name& propertyId) const
         {
-            auto it = m_propertyMetadata.find(propertyName);
+            auto it = m_propertyMetadata.find(propertyId);
             if (it == m_propertyMetadata.end())
             {
-                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property: %s.", propertyName.GetCStr());
+                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property: %s.", propertyId.GetCStr());
                 return nullptr;
             }
 
             return &it->second;
         }
         
-        MaterialPropertyGroupDynamicMetadata* MaterialFunctor::EditorContext::QueryMaterialPropertyGroupMetadata(const Name& propertyGroupName) const
+        MaterialPropertyGroupDynamicMetadata* MaterialFunctor::EditorContext::QueryMaterialPropertyGroupMetadata(const Name& propertyGroupId) const
         {
-            auto it = m_propertyGroupMetadata.find(propertyGroupName);
+            auto it = m_propertyGroupMetadata.find(propertyGroupId);
             if (it == m_propertyGroupMetadata.end())
             {
-                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property group: %s.", propertyGroupName.GetCStr());
+                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property group: %s.", propertyGroupId.GetCStr());
                 return nullptr;
             }
 
@@ -357,20 +357,20 @@ namespace AZ
         }
 
         // explicit template instantiation
-        template const bool&     MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<bool>     (const Name& propertyName) const;
-        template const int32_t&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<int32_t>  (const Name& propertyName) const;
-        template const uint32_t& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<uint32_t> (const Name& propertyName) const;
-        template const float&    MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<float>    (const Name& propertyName) const;
-        template const Vector2&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector2>  (const Name& propertyName) const;
-        template const Vector3&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector3>  (const Name& propertyName) const;
-        template const Vector4&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector4>  (const Name& propertyName) const;
-        template const Color&    MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Color>    (const Name& propertyName) const;
-        template const Data::Instance<Image>& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Data::Instance<Image>>(const Name& propertyName) const;
+        template const bool&     MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<bool>     (const Name& propertyId) const;
+        template const int32_t&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<int32_t>  (const Name& propertyId) const;
+        template const uint32_t& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<uint32_t> (const Name& propertyId) const;
+        template const float&    MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<float>    (const Name& propertyId) const;
+        template const Vector2&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector2>  (const Name& propertyId) const;
+        template const Vector3&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector3>  (const Name& propertyId) const;
+        template const Vector4&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector4>  (const Name& propertyId) const;
+        template const Color&    MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Color>    (const Name& propertyId) const;
+        template const Data::Instance<Image>& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Data::Instance<Image>>(const Name& propertyId) const;
 
         template<typename Type>
-        const Type& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const Name& propertyName) const
+        const Type& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const Name& propertyId) const
         {
-            return GetMaterialPropertyValue(propertyName).GetValue<Type>();
+            return GetMaterialPropertyValue(propertyId).GetValue<Type>();
         }
 
         // explicit template instantiation
@@ -391,19 +391,19 @@ namespace AZ
         }
 
         // explicit template instantiation
-        template const bool&     MaterialFunctor::EditorContext::GetMaterialPropertyValue<bool>     (const Name& propertyName) const;
-        template const int32_t&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<int32_t>  (const Name& propertyName) const;
-        template const uint32_t& MaterialFunctor::EditorContext::GetMaterialPropertyValue<uint32_t> (const Name& propertyName) const;
-        template const float&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<float>    (const Name& propertyName) const;
-        template const Vector2&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector2>  (const Name& propertyName) const;
-        template const Vector3&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector3>  (const Name& propertyName) const;
-        template const Vector4&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector4>  (const Name& propertyName) const;
-        template const Color&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<Color>    (const Name& propertyName) const;
+        template const bool&     MaterialFunctor::EditorContext::GetMaterialPropertyValue<bool>     (const Name& propertyId) const;
+        template const int32_t&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<int32_t>  (const Name& propertyId) const;
+        template const uint32_t& MaterialFunctor::EditorContext::GetMaterialPropertyValue<uint32_t> (const Name& propertyId) const;
+        template const float&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<float>    (const Name& propertyId) const;
+        template const Vector2&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector2>  (const Name& propertyId) const;
+        template const Vector3&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector3>  (const Name& propertyId) const;
+        template const Vector4&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector4>  (const Name& propertyId) const;
+        template const Color&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<Color>    (const Name& propertyId) const;
 
         template<typename Type>
-        const Type& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const Name& propertyName) const
+        const Type& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const Name& propertyId) const
         {
-            return GetMaterialPropertyValue(propertyName).GetValue<Type>();
+            return GetMaterialPropertyValue(propertyId).GetValue<Type>();
         }
 
         // explicit template instantiation
@@ -436,9 +436,9 @@ namespace AZ
             return m_materialPropertyValues[index.GetIndex()];
         }
 
-        const MaterialPropertyValue& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const Name& propertyName) const
+        const MaterialPropertyValue& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const Name& propertyId) const
         {
-            MaterialPropertyIndex index = m_materialPropertiesLayout->FindPropertyIndex(propertyName);
+            MaterialPropertyIndex index = m_materialPropertiesLayout->FindPropertyIndex(propertyId);
             return GetMaterialPropertyValue(index);
         }
 
@@ -449,9 +449,9 @@ namespace AZ
             return m_materialPropertyValues[index.GetIndex()];
         }
 
-        const MaterialPropertyValue& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const Name& propertyName) const
+        const MaterialPropertyValue& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const Name& propertyId) const
         {
-            MaterialPropertyIndex index = m_materialPropertiesLayout->FindPropertyIndex(propertyName);
+            MaterialPropertyIndex index = m_materialPropertiesLayout->FindPropertyIndex(propertyId);
             return GetMaterialPropertyValue(index);
         }
 

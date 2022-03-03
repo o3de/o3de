@@ -11,7 +11,7 @@
 
 #include <ATLControlsModel.h>
 #include <AudioControlsEditorPlugin.h>
-
+#include <ImplementationManager.h>
 #include <QStandardItemModel>
 #include <QList>
 
@@ -272,6 +272,51 @@ namespace AudioControls
                 pControl->SetAutoLoad(m_isAutoLoad);
                 pControl->m_connectedControls = m_connectedControls;
                 pModel->OnControlModified(pControl);
+
+                auto& tmpConnectedControls1 =
+                    connectedControls.size() > m_connectedControls.size() ? connectedControls : m_connectedControls;
+                auto& tmpConnectedControls2 =
+                    connectedControls.size() > m_connectedControls.size() ? m_connectedControls : connectedControls;
+                for (auto& connection1 : tmpConnectedControls1)
+                {
+                    bool bCheck = true;
+                    for (auto& connection2 : tmpConnectedControls2)
+                    {
+                        if (connection1 == connection2)
+                        {
+                            bCheck = false;
+                            break;
+                        }
+                    }
+
+                    if (!bCheck)
+                    {
+                        continue;
+                    }
+
+                    if (IAudioSystemEditor* audioSystemImpl = CAudioControlsEditorPlugin::GetImplementationManager()->GetImplementation())
+                    {
+                        if (IAudioSystemControl* middlewareControl = audioSystemImpl->GetControl(connection1->GetID()))
+                        {
+                            if (connectedControls.size() > m_connectedControls.size())
+                            {
+                                audioSystemImpl->ConnectionRemoved(middlewareControl);
+                                pControl->SignalConnectionRemoved(middlewareControl);
+                            }
+                            else
+                            {
+                                TConnectionPtr connection =
+                                    audioSystemImpl->CreateConnectionToControl(pControl->GetType(), middlewareControl);
+                                if (connection)
+                                {
+                                    pControl->SignalConnectionAdded(middlewareControl);
+                                }
+                            }
+
+                            pControl->SignalControlModified();
+                        }
+                    }
+                }
 
                 m_name = name;
                 m_scope = scope;

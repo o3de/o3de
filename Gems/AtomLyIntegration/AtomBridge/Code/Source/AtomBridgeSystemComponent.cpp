@@ -67,12 +67,12 @@ namespace AZ
 
         void AtomBridgeSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AtomBridgeService", 0xdb816a99));
+            provided.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
         }
 
         void AtomBridgeSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AtomBridgeService", 0xdb816a99));
+            incompatible.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
         }
 
         void AtomBridgeSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)

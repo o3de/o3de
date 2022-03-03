@@ -9,6 +9,7 @@
 
 #include <gmock/gmock.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 
 using namespace AZ::IO;
 

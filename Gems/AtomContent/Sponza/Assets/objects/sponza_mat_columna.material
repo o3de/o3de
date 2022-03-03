@@ -1,26 +1,16 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/columnA_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/columnA_1k_basecolor.png"
+            "textureMap": "../Textures/columnA_1k_basecolor.png"
         },
         "clearCoat": {
-            "enable": true,
             "factor": 0.5,
-            "normalMap": "Textures/columnA_1k_normal.jpg",
-            "roughness": 0.30000001192092898
+            "normalMap": "../Textures/columnA_1k_normal.jpg",
+            "roughness": 0.30000001192092896
         },
         "general": {
             "applySpecularAA": true
@@ -33,25 +23,23 @@
                 1.0
             ]
         },
-        "metallic": {
-            "textureMap": "Textures/columnA_1k_metallic.png"
-        },
         "normal": {
-            "textureMap": "Textures/columnA_1k_normal.jpg"
+            "textureMap": "../Textures/columnA_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/columnA_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
-            "factor": 0.017000000923871995,
+            "factor": 0.017000000923871994,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/columnA_1k_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/columnA_1k_roughness.png"
+            "textureMap": "../Textures/columnA_1k_roughness.png"
         }
     }
 }

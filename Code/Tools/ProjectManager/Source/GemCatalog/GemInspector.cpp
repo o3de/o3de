@@ -8,12 +8,15 @@
 
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemItemDelegate.h>
+#include <ProjectManagerDefs.h>
 
+#include <QDir>
 #include <QFrame>
 #include <QLabel>
 #include <QSpacerItem>
 #include <QVBoxLayout>
 #include <QIcon>
+#include <QPushButton>
 
 namespace O3DE::ProjectManager
 {
@@ -27,6 +30,10 @@ namespace O3DE::ProjectManager
         setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         m_mainWidget = new QWidget();
+        if (parent)
+        {
+            m_mainWidget->setFixedWidth(parent->width());
+        }
         setWidget(m_mainWidget);
 
         m_mainLayout = new QVBoxLayout();
@@ -52,10 +59,13 @@ namespace O3DE::ProjectManager
         Update(selectedIndices[0]);
     }
 
-    void SetLabelElidedText(QLabel* label, QString text)
+    void SetLabelElidedText(QLabel* label, QString text, int labelWidth = 0)
     {
         QFontMetrics nameFontMetrics(label->font());
-        int labelWidth = label->width();
+        if (!labelWidth)
+        {
+            labelWidth = label->width();
+        }
 
         // Don't elide if the widgets are sized too small (sometimes occurs when loading gem catalog)
         if (labelWidth > 100)
@@ -70,6 +80,8 @@ namespace O3DE::ProjectManager
 
     void GemInspector::Update(const QModelIndex& modelIndex)
     {
+        m_curModelIndex = modelIndex;
+
         if (!modelIndex.isValid())
         {
             m_mainWidget->hide();
@@ -81,7 +93,8 @@ namespace O3DE::ProjectManager
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
         m_summaryLabel->adjustSize();
 
-        m_licenseLinkLabel->setText(m_model->GetLicenseText(modelIndex));
+        // Manually define remaining space to elide text because spacer would like to take all of the space
+        SetLabelElidedText(m_licenseLinkLabel, m_model->GetLicenseText(modelIndex), width() - m_licenseLabel->width() - 35);
         m_licenseLinkLabel->SetUrl(m_model->GetLicenseLink(modelIndex));
 
         m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
@@ -111,10 +124,12 @@ namespace O3DE::ProjectManager
         {
             m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGemTags);
             m_dependingGems->show();
+            m_dependingGemsSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
         else
         {
             m_dependingGems->hide();
+            m_dependingGemsSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
 
         // Additional information
@@ -122,6 +137,20 @@ namespace O3DE::ProjectManager
         m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
         const int binarySize = m_model->GetBinarySizeInKB(modelIndex);
         m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(binarySize ? tr("%1 KB").arg(binarySize) : tr("Unknown")));
+
+        // Update and Uninstall buttons
+        if (m_model->GetGemOrigin(modelIndex) == GemInfo::Remote &&
+            (m_model->GetDownloadStatus(modelIndex) == GemInfo::Downloaded ||
+             m_model->GetDownloadStatus(modelIndex) == GemInfo::DownloadSuccessful))
+        {
+            m_updateGemButton->show();
+            m_uninstallGemButton->show();
+        }
+        else
+        {
+            m_updateGemButton->hide();
+            m_uninstallGemButton->hide();
+        }
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -158,8 +187,8 @@ namespace O3DE::ProjectManager
             licenseHLayout->setAlignment(Qt::AlignLeft);
             m_mainLayout->addLayout(licenseHLayout);
 
-            QLabel* licenseLabel = CreateStyledLabel(licenseHLayout, s_baseFontSize, s_headerColor);
-            licenseLabel->setText(tr("License: "));
+            m_licenseLabel = CreateStyledLabel(licenseHLayout, s_baseFontSize, s_headerColor);
+            m_licenseLabel->setText(tr("License: "));
 
             m_licenseLinkLabel = new LinkLabel("", QUrl(), s_baseFontSize);
             licenseHLayout->addWidget(m_licenseLinkLabel);
@@ -223,9 +252,10 @@ namespace O3DE::ProjectManager
 
         // Depending gems
         m_dependingGems = new GemsSubWidget();
-        connect(m_dependingGems, &GemsSubWidget::TagClicked, this, [=](const Tag& tag){ emit TagClicked(tag); });
+        connect(m_dependingGems, &GemsSubWidget::TagClicked, this, [this](const Tag& tag){ emit TagClicked(tag); });
         m_mainLayout->addWidget(m_dependingGems);
-        m_mainLayout->addSpacing(20);
+        m_dependingGemsSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        m_mainLayout->addSpacerItem(m_dependingGemsSpacer);
 
         // Additional information
         QLabel* additionalInfoLabel = CreateStyledLabel(m_mainLayout, 14, s_headerColor);
@@ -234,5 +264,20 @@ namespace O3DE::ProjectManager
         m_versionLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
         m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
         m_binarySizeLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+
+        m_mainLayout->addSpacing(20);
+
+        // Update and Uninstall buttons
+        m_updateGemButton = new QPushButton(tr("Update Gem"));
+        m_updateGemButton->setObjectName("gemCatalogUpdateGemButton");
+        m_mainLayout->addWidget(m_updateGemButton);
+        connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex); });
+
+        m_mainLayout->addSpacing(10);
+
+        m_uninstallGemButton = new QPushButton(tr("Uninstall Gem"));
+        m_uninstallGemButton->setObjectName("gemCatalogUninstallGemButton");
+        m_mainLayout->addWidget(m_uninstallGemButton);
+        connect(m_uninstallGemButton, &QPushButton::clicked, this , [this]{ emit UninstallGem(m_curModelIndex); });
     }
 } // namespace O3DE::ProjectManager

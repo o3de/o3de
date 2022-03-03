@@ -17,6 +17,7 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QPointer>
+#include <QToolButton>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QGridLayout>
@@ -89,7 +90,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         AZStd::shared_ptr<QWidget> GetViewportUiElement(ViewportUiElementId elementId);
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
-        void CreateViewportBorder(const AZStd::string& borderTitle);
+        void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
         void RemoveViewportBorder();
 
     private:
@@ -113,7 +114,10 @@ namespace AzToolsFramework::ViewportUi::Internal
         QWidget m_uiOverlay; //!< The UI Overlay which displays Viewport UI Elements.
         QGridLayout m_fullScreenLayout; //!< The layout which extends across the full screen.
         ViewportUiDisplayLayout m_uiOverlayLayout; //!< The layout used for optionally anchoring Viewport UI Elements.
-        QLabel m_viewportBorderText; //!< The text used for the viewport border.
+        QLabel m_viewportBorderText; //!< The text used for the viewport highlight border.
+        QToolButton m_viewportBorderBackButton; //!< The button to return from the viewport highlight border (only displayed if callback provided).
+        //! The optional callback for when the viewport highlight border back button is pressed.
+        AZStd::optional<ViewportUiBackButtonCallback> m_viewportBorderBackButtonCallback;
 
         QWidget* m_renderOverlay;
         QPointer<QWidget> m_fullScreenWidget; //!< Reference to the widget attached to m_fullScreenLayout if any.

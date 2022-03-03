@@ -6,6 +6,7 @@
  *
  */
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/lock.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
@@ -75,12 +76,12 @@ namespace AZ
 
         void CommandList::SetViewports(const RHI::Viewport* rhiViewports, uint32_t count) 
         {
-            m_state.m_viewportState.Set(AZStd::array_view<RHI::Viewport>(rhiViewports, count));            
+            m_state.m_viewportState.Set(AZStd::span<const RHI::Viewport>(rhiViewports, count));
         }
 
         void CommandList::SetScissors(const RHI::Scissor* rhiScissors, uint32_t count) 
         {
-            m_state.m_scissorState.Set(AZStd::array_view<RHI::Scissor>(rhiScissors, count));
+            m_state.m_scissorState.Set(AZStd::span<const RHI::Scissor>(rhiScissors, count));
         }
 
         void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
@@ -624,7 +625,7 @@ namespace AZ
             return ConvertResult(vkResult);
         }
 
-        void CommandList::ExecuteSecondaryCommandLists(const AZStd::array_view<RHI::Ptr<CommandList>>& commands)
+        void CommandList::ExecuteSecondaryCommandLists(const AZStd::span<const RHI::Ptr<CommandList>>& commands)
         {
             AZ_Assert(m_isUpdating, "Secondary command buffers must be executed between BeginCommandBuffer() and EndCommandBuffer().");
             AZ_Assert(m_descriptor.m_level == VK_COMMAND_BUFFER_LEVEL_PRIMARY, "Trying to execute commands from a secondary command list");
@@ -688,8 +689,8 @@ namespace AZ
             if (interval != InvalidInterval)
             {
                 uint32_t numBuffers = interval.m_max - interval.m_min + 1;
-                AZStd::vector<VkBuffer> nativeBuffers(numBuffers, VK_NULL_HANDLE);
-                AZStd::vector<VkDeviceSize> offsets(numBuffers, 0);
+                AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers(numBuffers, VK_NULL_HANDLE);
+                AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets(numBuffers, 0);
                 for (uint32_t i = 0; i < numBuffers; ++i)
                 {
                     const RHI::StreamBufferView& bufferView = streams[i + interval.m_min];
@@ -969,6 +970,26 @@ namespace AZ
             const VkAccelerationStructureBuildRangeInfoKHR& offsetInfo = tlasBuffers.m_offsetInfo;
             const VkAccelerationStructureBuildRangeInfoKHR* pOffsetInfo = &offsetInfo;
             vkCmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tlasBuffers.m_buildInfo, &pOffsetInfo);
+
+            // we need a pipeline barrier on VK_ACCESS_ACCELERATION_STRUCTURE (both read and write) in case we are building
+            // multiple TLAS objects in a command list
+            VkMemoryBarrier memoryBarrier = {};
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.pNext = nullptr;
+            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+
+            vkCmdPipelineBarrier(
+                GetNativeCommandBuffer(),
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                0,
+                1,
+                &memoryBarrier,
+                0,
+                nullptr,
+                0,
+                nullptr);
         }
 
         void CommandList::ClearImage(const ResourceClearRequest& request)

@@ -264,9 +264,9 @@ namespace AZ
             }
             {
                 AZStd::string contextKey = toolNameForLog + AZStd::string(" Command Line");
-                AZ_TraceContext(contextKey, processLaunchInfo.m_commandlineParameters);
+                AZ_TraceContext(contextKey, processLaunchInfo.GetCommandLineParametersAsString());
             }
-            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.m_commandlineParameters.c_str());
+            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.GetCommandLineParametersAsString().c_str());
 
             AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
             if (!watcher)
@@ -496,7 +496,7 @@ namespace AZ
             }
 
             AZStd::string RemoveArgumentsFromCommandLineString(
-                AZStd::array_view<AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
+                AZStd::span<const AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
             {
                 AZStd::string customizedArguments = commandLineString;
                 for (const AZStd::string& azslcArgumentName : listOfArgumentsToRemove)

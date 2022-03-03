@@ -14,7 +14,6 @@
 
 #include "Source/PythonAssetBuilderSystemComponent.h"
 #include <PythonAssetBuilder/PythonAssetBuilderBus.h>
-#include <PythonAssetBuilder/PythonBuilderRequestBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
@@ -87,65 +86,6 @@ namespace UnitTest
             &PythonAssetBuilderRequestBus::Events::GetExecutableFolder);
         EXPECT_TRUE(result.IsSuccess());
     }
-
-    // test bus API exists
-
-    TEST_F(PythonAssetBuilderTest, PythonBuilderRequestBus_CreateEditorEntity_Exists)
-    {
-        using namespace PythonAssetBuilder;
-
-        EXPECT_FALSE(PythonBuilderRequestBus::HasHandlers());
-
-        // Some static tests to make sure the public API has not changed since that
-        // would break Python asset builders using this EBus
-        {
-            AZ::Outcome<AZ::EntityId, AZStd::string> result;
-            AZStd::string name;
-            PythonBuilderRequestBus::BroadcastResult(
-                result,
-                &PythonBuilderRequestBus::Events::CreateEditorEntity,
-                name);
-            EXPECT_FALSE(result.IsSuccess());
-        }
-
-        m_app->RegisterComponentDescriptor(PythonAssetBuilderSystemComponent::CreateDescriptor());
-        m_systemEntity->CreateComponent<PythonAssetBuilderSystemComponent>();
-        m_systemEntity->Init();
-        m_systemEntity->Activate();
-
-        EXPECT_TRUE(PythonBuilderRequestBus::HasHandlers());
-    }
-
-    TEST_F(PythonAssetBuilderTest, PythonBuilderRequestBus_WriteSliceFile_Exists)
-    {
-        using namespace PythonAssetBuilder;
-
-        EXPECT_FALSE(PythonBuilderRequestBus::HasHandlers());
-
-        // Some static tests to make sure the public API has not changed since that
-        // would break Python asset builders using this EBus
-        {
-            AZ::Outcome<AZ::Data::AssetType, AZStd::string> result;
-            AZStd::string_view filename;
-            AZStd::vector<AZ::EntityId> entities;
-            bool makeDynamic = {};
-            PythonBuilderRequestBus::BroadcastResult(
-                result,
-                &PythonBuilderRequestBus::Events::WriteSliceFile,
-                filename,
-                entities,
-                makeDynamic);
-            EXPECT_FALSE(result.IsSuccess());
-        }
-
-        m_app->RegisterComponentDescriptor(PythonAssetBuilderSystemComponent::CreateDescriptor());
-        m_systemEntity->CreateComponent<PythonAssetBuilderSystemComponent>();
-        m_systemEntity->Init();
-        m_systemEntity->Activate();
-
-        EXPECT_TRUE(PythonBuilderRequestBus::HasHandlers());
-    }
-
 }
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

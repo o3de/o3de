@@ -25,7 +25,6 @@
 
 #include <Atom/RHI/CommandList.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -95,13 +94,13 @@ namespace AZ
                         renderProxy.m_instance->m_model->WaitForUpload();
                     }
 
-                    //Note: we are creating pointers to the meshDataInstance cullpacket and lod packet here,
+                    //Note: we are creating pointers to the modelDataInstance cullpacket and lod packet here,
                     //and holding them until the skinnedMeshDispatchItems are dispatched. There is an assumption that the underlying
                     //data will not move during this phase.
-                    MeshDataInstance& meshDataInstance = **renderProxy.m_meshHandle;
-                    m_workgroup.m_cullPackets.push_back(&meshDataInstance.GetCullPacket());
-                    m_workgroup.m_drawListMask |= meshDataInstance.GetCullPacket().m_drawListMask;
-                    m_lodPackets.push_back(&meshDataInstance.GetLodPacket());
+                    ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
+                    m_workgroup.m_cullPackets.push_back(&modelDataInstance.GetCullPacket());
+                    m_workgroup.m_drawListMask |= modelDataInstance.GetCullPacket().m_drawListMask;
+                    m_lodPackets.push_back(&modelDataInstance.GetLodPacket());
                     m_potentiallyVisibleProxies.push_back(&renderProxy);
                 }
             }
@@ -187,8 +186,8 @@ namespace AZ
                     renderProxy.m_instance->m_model->WaitForUpload();
                 }
 
-                MeshDataInstance& meshDataInstance = **renderProxy.m_meshHandle;
-                const RPI::Cullable& cullable = meshDataInstance.GetCullable();
+                ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
+                const RPI::Cullable& cullable = modelDataInstance.GetCullable();
 
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {
@@ -205,35 +204,56 @@ namespace AZ
                     //  do the enumeration for each view, keep track of the lowest lod for each entry,
                     //  and submit the appropriate dispatch item
 
-                    //the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
-                    //which is used to determine the (vertical) projected size in screen space
-                    const float yScale = viewToClip.GetElement(1, 1);
-                    const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
-                    const Vector3 cameraPos = view->GetViewToWorldMatrix().GetTranslation();
-
-                    const Vector3 pos = cullable.m_cullData.m_boundingSphere.GetCenter();
-
-                    const float approxScreenPercentage = RPI::ModelLodUtils::ApproxScreenPercentage(
-                        pos, cullable.m_lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
-
-                    for (size_t lodIndex = 0; lodIndex < cullable.m_lodData.m_lods.size(); ++lodIndex)
+                    switch (cullable.m_lodData.m_lodConfiguration.m_lodType)
                     {
-                        const RPI::Cullable::LodData::Lod& lod = cullable.m_lodData.m_lods[lodIndex];
-
-                        //Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
-                        if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                    case RPI::Cullable::LodType::SpecificLod:
+                    {
+                        AZStd::lock_guard lock(m_dispatchItemMutex);
+                        auto lodIndex = cullable.m_lodData.m_lodConfiguration.m_lodOverride;
+                        m_skinningDispatches.insert(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                        for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
                         {
-                            AZStd::lock_guard lock(m_dispatchItemMutex);
-                            m_skinningDispatches.insert(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
-                            for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
+                            const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
+                            if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
                             {
-                                const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
-                                if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
+                                m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                            }
+                        }
+                    }
+                    break;
+                    case RPI::Cullable::LodType::ScreenCoverage:
+                    default:
+                        //the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
+                        //which is used to determine the (vertical) projected size in screen space
+                        const float yScale = viewToClip.GetElement(1, 1);
+                        const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
+                        const Vector3 cameraPos = view->GetViewToWorldMatrix().GetTranslation();
+
+                        const Vector3 pos = cullable.m_cullData.m_boundingSphere.GetCenter();
+
+                        const float approxScreenPercentage = RPI::ModelLodUtils::ApproxScreenPercentage(
+                            pos, cullable.m_lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
+
+                        for (size_t lodIndex = 0; lodIndex < cullable.m_lodData.m_lods.size(); ++lodIndex)
+                        {
+                            const RPI::Cullable::LodData::Lod& lod = cullable.m_lodData.m_lods[lodIndex];
+
+                            //Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
+                            if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                            {
+                                AZStd::lock_guard lock(m_dispatchItemMutex);
+                                m_skinningDispatches.insert(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                                for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
                                 {
-                                    m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                                    const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
+                                    if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
+                                    {
+                                        m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                                    }
                                 }
                             }
                         }
+                        break;
                     }
                 }
             }

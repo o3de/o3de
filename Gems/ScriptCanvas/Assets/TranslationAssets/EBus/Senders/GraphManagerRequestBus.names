@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "base": "GraphManagerRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Graph Manager"
+            },
+            "methods": [
+                {
+                    "base": "GetGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetGraph"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetGraph is invoked"
+                    },
+                    "details": {
+                        "name": "GetGraph"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E51F56F8-D4E9-5C9F-AE6F-3F9C5D28F4C6}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

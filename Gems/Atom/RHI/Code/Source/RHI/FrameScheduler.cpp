@@ -24,7 +24,6 @@
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -233,9 +232,10 @@ namespace AZ
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
             {
+                AZ_PROFILE_SCOPE(RHI, "FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
                 m_frameGraph->BeginScope(*scopeProducer->GetScope());
                 scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
-
+                
                 // All scopes depend on the root scope.
                 if (scopeProducer->GetScopeId() != m_rootScopeId)
                 {
@@ -281,7 +281,7 @@ namespace AZ
                     {
                         srgPool->CompileGroupsBegin();
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
                         AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
                         AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
@@ -332,7 +332,7 @@ namespace AZ
                     const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
                     {
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
 
                         for (uint32_t i = 0; i < jobCount; ++i)
                         {
@@ -527,7 +527,10 @@ namespace AZ
                     parentJob->StartAsChild(AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr));
                 }
 
-                parentJob->WaitForChildren();
+                {
+                    AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ExecuteGroupInternal: WaitForChildren");
+                    parentJob->WaitForChildren();
+                }
             }
 
             m_frameGraphExecuter->EndGroup(groupIndex);

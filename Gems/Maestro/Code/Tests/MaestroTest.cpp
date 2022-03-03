@@ -8,7 +8,6 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/UnitTest.h>
-#include <Mocks/ITimerMock.h>
 #include <Mocks/ICryPakMock.h>
 #include <Mocks/IConsoleMock.h>
 #include <AzCore/Memory/OSAllocator.h>
@@ -33,7 +32,6 @@ protected:
     {
         AZ_TEST_CLASS_ALLOCATOR(MockHolder);
 
-        NiceMock<TimerMock> timer;
         NiceMock<CryPakMock> pak;
         NiceMock<ConsoleMock> console;
     };
@@ -51,7 +49,6 @@ protected:
         // manage their lifetime, so this solution manages the lifetime
         // and ordering via the heap.
         m_mocks = new MockHolder();
-        m_stubEnv.pTimer = &m_mocks->timer;
         m_stubEnv.pCryPak = &m_mocks->pak;
         m_stubEnv.pConsole = &m_mocks->console;
         gEnv = &m_stubEnv;

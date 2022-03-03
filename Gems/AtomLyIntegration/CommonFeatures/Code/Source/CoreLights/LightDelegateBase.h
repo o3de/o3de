@@ -58,7 +58,8 @@ namespace AZ
             void SetShadowFilterMethod([[maybe_unused]] ShadowFilterMethod method) override {};
             void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {};
             void SetEsmExponent([[maybe_unused]] float esmExponent) override{};
-
+            void SetNormalShadowBias([[maybe_unused]] float bias) override{};
+            
         protected:
             void InitBase(EntityId entityId);
 

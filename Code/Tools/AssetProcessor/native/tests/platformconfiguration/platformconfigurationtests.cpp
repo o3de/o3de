@@ -52,11 +52,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BadPlatform)
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_badplatform");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
 }
 
@@ -67,11 +68,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoPlatform)
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_noplatform");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
 }
 
@@ -81,11 +83,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoScanFolders)
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_noscans");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
 }
 
@@ -95,11 +98,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BrokenRecognizers)
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_recognizers");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
 }
 
@@ -109,11 +113,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Regular_Platforms)
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     // verify the data.
@@ -322,12 +327,13 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolder)
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
     AssetUtilities::ComputeProjectName(EmptyDummyProjectName, true);
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     ASSERT_EQ(config.GetScanFolderCount(), 3); // the two, and then the one that has the same data as prior but different identifier.
@@ -356,11 +362,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderP
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular_platform_scanfolder");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     ASSERT_EQ(config.GetScanFolderCount(), 5);
@@ -402,13 +409,14 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularExcludes)
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     
     config.AddScanFolder(ScanFolderInfo("blahblah", "Blah ScanFolder", "sf2", true, true), true);
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     ASSERT_TRUE(config.IsFileExcluded("blahblah/$tmp_01.test"));
@@ -429,11 +437,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Recognizers)
 #endif
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     const AssetProcessor::RecognizerContainer& recogs = config.GetAssetRecognizerContainer();
@@ -520,12 +529,13 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Overrides)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / DummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
 
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), DummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     const AssetProcessor::RecognizerContainer& recogs = config.GetAssetRecognizerContainer();
@@ -627,11 +637,12 @@ TEST_F(PlatformConfigurationUnitTests, ReadCheckServer_FromConfig_Valid)
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     const AssetProcessor::RecognizerContainer& recogs = config.GetAssetRecognizerContainer();
@@ -676,11 +687,12 @@ TEST_F(PlatformConfigurationUnitTests, Test_MetaFileTypes_AssetImporterExtension
     using namespace AssetProcessor;
 
     const auto testExeFolder = AZ::IO::FileIOBase::GetInstance()->ResolvePath(TestAppRoot);
+    const AZ::IO::FixedMaxPath projectPath = (*testExeFolder) / EmptyDummyProjectName;
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_metadata");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
     m_absorber.Clear();
-    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
+    ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
     ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
     ASSERT_TRUE(config.MetaDataFileTypesCount() == 2);
 

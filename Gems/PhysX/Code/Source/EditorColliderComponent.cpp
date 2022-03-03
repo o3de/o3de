@@ -60,6 +60,7 @@ namespace PhysX
                         "Specifies the PhysX mesh collider asset for this PhysX collider component.")
                         ->Attribute(AZ_CRC_CE("EditButton"), "")
                         ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Scene Settings")
+                        ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_configuration, "Configuration",
                         "PhysX mesh asset collider configuration.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
@@ -581,9 +582,8 @@ namespace PhysX
 
     AZ::Transform EditorColliderComponent::GetColliderLocalTransform() const
     {
-        const AZ::Vector3 nonUniformScale = Utils::GetTransformScale(GetEntityId());
         return AZ::Transform::CreateFromQuaternionAndTranslation(
-            m_configuration.m_rotation, m_configuration.m_position * nonUniformScale);
+            m_configuration.m_rotation, m_configuration.m_position);
     }
 
     void EditorColliderComponent::UpdateMeshAsset()
@@ -760,7 +760,7 @@ namespace PhysX
         if (asset == m_shapeConfiguration.m_physicsAsset.m_pxAsset)
         {
             m_shapeConfiguration.m_physicsAsset.m_pxAsset = asset;
-            m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset = m_shapeConfiguration.m_physicsAsset.m_pxAsset;
+            m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset = asset;
 
             UpdateMaterialSlotsFromMeshAsset();
             CreateStaticEditorCollider();
@@ -785,7 +785,9 @@ namespace PhysX
     {
         const PhysX::EditorRigidBodyComponent* entityRigidbody = m_entity->FindComponent<PhysX::EditorRigidBodyComponent>();
 
-        if (m_shapeConfiguration.m_physicsAsset.m_pxAsset && (m_shapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset) && entityRigidbody)
+        if (entityRigidbody &&
+            m_shapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset &&
+            m_shapeConfiguration.m_physicsAsset.m_pxAsset.IsReady())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
             Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
@@ -967,8 +969,10 @@ namespace PhysX
                     static_cast<const Physics::CookedMeshShapeConfiguration*>(shapeConfiguration);
 
                 const AZ::Vector3 overallScale = Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale * assetScale;
+                Physics::ColliderConfiguration nonUniformScaledColliderConfiguration = *colliderConfiguration;
+                nonUniformScaledColliderConfiguration.m_position *= m_cachedNonUniformScale;
 
-                m_colliderDebugDraw.DrawMesh(debugDisplay, *colliderConfiguration, *cookedMeshShapeConfiguration,
+                m_colliderDebugDraw.DrawMesh(debugDisplay, nonUniformScaledColliderConfiguration, *cookedMeshShapeConfiguration,
                     overallScale, static_cast<AZ::u32>(shapeIndex));
                 break;
             }
@@ -1051,12 +1055,17 @@ namespace PhysX
 
     AZ::Transform EditorColliderComponent::GetCurrentTransform()
     {
-        return GetColliderWorldTransform();
+        return GetWorldTM();
+    }
+
+    AZ::Transform EditorColliderComponent::GetCurrentLocalTransform()
+    {
+        return GetColliderLocalTransform();
     }
 
     AZ::Vector3 EditorColliderComponent::GetBoxScale()
     {
-        return AZ::Vector3(GetWorldTM().GetUniformScale());
+        return AZ::Vector3::CreateOne();
     }
 
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
@@ -1200,7 +1209,7 @@ namespace PhysX
 
     AZ::Transform EditorColliderComponent::GetColliderWorldTransform()
     {
-        return AzToolsFramework::TransformNormalizedScale(GetWorldTM()) * GetColliderLocalTransform();
+        return GetWorldTM() * GetColliderLocalTransform();
     }
 
     bool EditorColliderComponent::ShouldUpdateCollisionMeshFromRender() const

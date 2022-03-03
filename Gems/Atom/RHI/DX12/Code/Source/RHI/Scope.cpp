@@ -20,8 +20,6 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12
@@ -94,13 +92,13 @@ namespace AZ
 
         const bool Scope::IsStateSupportedByQueue(D3D12_RESOURCE_STATES state) const
         {
-            const D3D12_RESOURCE_STATES VALID_COMPUTE_QUEUE_RESOURCE_STATES =
+            constexpr D3D12_RESOURCE_STATES VALID_COMPUTE_QUEUE_RESOURCE_STATES =
                 (D3D12_RESOURCE_STATE_UNORDERED_ACCESS |
                  D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE |
                  D3D12_RESOURCE_STATE_COPY_DEST |
                  D3D12_RESOURCE_STATE_COPY_SOURCE);
 
-            const D3D12_RESOURCE_STATES VALID_GRAPHICS_QUEUE_RESOURCE_STATES =
+            constexpr D3D12_RESOURCE_STATES VALID_GRAPHICS_QUEUE_RESOURCE_STATES =
                 (D3D12_RESOURCE_STATES)DX12_RESOURCE_STATE_VALID_API_MASK;
 
             switch (GetHardwareQueueClass())
@@ -305,13 +303,13 @@ namespace AZ
             uint32_t commandListCount) const
         {
             AZ_UNUSED(commandListCount);
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             commandList.GetValidator().BeginScope(*this);
 
             PIXBeginEvent(0xFFFF00FF, GetId().GetCStr());
 
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
             }
@@ -387,7 +385,7 @@ namespace AZ
             uint32_t commandListIndex,
             uint32_t commandListCount) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             const bool isEpilogue = (commandListIndex + 1) == commandListCount;
             if (isEpilogue)
@@ -428,7 +426,7 @@ namespace AZ
                 }
             }
 
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXEndEvent(commandList.GetCommandList());
             }

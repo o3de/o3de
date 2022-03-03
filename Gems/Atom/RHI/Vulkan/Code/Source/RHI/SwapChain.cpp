@@ -59,14 +59,26 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
+        void SwapChain::ProcessRecreation()
+        {
+            if (m_pendingRecreation)
+            {
+                ShutdownImages();
+                InvalidateNativeSwapChain();
+                CreateSwapchain();
+                InitImages();
+
+                m_pendingRecreation = false;
+            }
+        }
+
         void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
         {
             if (GetDescriptor().m_verticalSyncInterval == 0 || previousVsyncInterval == 0)
             {
                 // The presentation mode may change when transitioning to or from a vsynced presentation mode
                 // In this case, the swapchain must be recreated.
-                InvalidateNativeSwapChain();
-                CreateSwapchain();
+                m_pendingRecreation = true;
             }
         }
 
@@ -231,8 +243,7 @@ namespace AZ
                 // VK_SUBOPTIMAL_KHR is treated as success, but we better update the surface info as well.
                 if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
                 {
-                    InvalidateNativeSwapChain();
-                    CreateSwapchain();
+                    m_pendingRecreation = true;
                 }
                 else
                 {
@@ -246,18 +257,16 @@ namespace AZ
                 }
             };
 
-            m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
-
             uint32_t acquiredImageIndex = GetCurrentImageIndex();
             RHI::ResultCode result = AcquireNewImage(&acquiredImageIndex);
             if (result == RHI::ResultCode::Fail)
             {
-                InvalidateNativeSwapChain();
-                CreateSwapchain();
+                m_pendingRecreation = true;
                 return 0;
             }
             else
             {
+                m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
                 return acquiredImageIndex;
             }
         }
@@ -474,12 +483,18 @@ namespace AZ
         void SwapChain::InvalidateNativeSwapChain()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            vkDeviceWaitIdle(device.GetNativeDevice());
-            if (m_nativeSwapChain != VK_NULL_HANDLE)
+            auto presentCommand = [this,  &device]([[maybe_unused]] void* queue)
             {
-                vkDestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, nullptr);
-                m_nativeSwapChain = VK_NULL_HANDLE;
-            }
+                vkDeviceWaitIdle(device.GetNativeDevice());
+                if (m_nativeSwapChain != VK_NULL_HANDLE)
+                {
+                    vkDestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, nullptr);
+                    m_nativeSwapChain = VK_NULL_HANDLE;
+                }
+            };
+
+            m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
+            m_presentationQueue->FlushCommands();
         }
 
         RHI::ResultCode SwapChain::CreateSwapchain()
@@ -487,7 +502,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
 
             m_surfaceCapabilities = GetSurfaceCapabilities();
-            m_surfaceFormat = GetSupportedSurfaceFormat(GetDescriptor().m_dimensions.m_imageFormat);
+            m_surfaceFormat = GetSupportedSurfaceFormat(m_dimensions.m_imageFormat);
             m_presentMode = GetSupportedPresentMode(GetDescriptor().m_verticalSyncInterval);
             m_compositeAlphaFlagBits = GetSupportedCompositeAlpha(); 
 
@@ -510,7 +525,7 @@ namespace AZ
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Swapchain created. Width: %u, Height: %u.", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
+            AZ_TracePrintf("Vulkan", "Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
 
             // Do not recycle the semaphore because they may not ever get signaled and since
             // we can't recycle Vulkan semaphores we just delete them.
@@ -536,13 +551,13 @@ namespace AZ
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-            AZ_TracePrintf("Swapchain", "Obtained presentable images.");
+            AZ_TracePrintf("Swapchain", "Obtained presentable images.\n");
 
             // Acquire the first image
             uint32_t imageIndex = 0;
             result = AcquireNewImage(&imageIndex);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Acquired the first image.");
+            AZ_TracePrintf("Swapchain", "Acquired the first image.\n");
 
             return RHI::ResultCode::Success;
         }

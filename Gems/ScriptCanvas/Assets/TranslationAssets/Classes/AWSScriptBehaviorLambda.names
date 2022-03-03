@@ -1,0 +1,79 @@
+{
+    "entries": [
+        {
+            "base": "AWSScriptBehaviorLambda",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "AWS Lambda",
+                "category": "AWS Core"
+            },
+            "methods": [
+                {
+                    "base": "Invoke",
+                    "context": "AWSScriptBehaviorLambda",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Invoke"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Invoke is invoked"
+                    },
+                    "details": {
+                        "name": "Invoke"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Function Resource Key"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Payload"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "InvokeRaw",
+                    "context": "AWSScriptBehaviorLambda",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke InvokeRaw"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after InvokeRaw is invoked"
+                    },
+                    "details": {
+                        "name": "Invoke Raw"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Function Name"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Payload"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Region"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

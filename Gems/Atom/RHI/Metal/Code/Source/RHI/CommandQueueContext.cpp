@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/RHI/CommandQueue.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueue.h>
@@ -60,7 +59,7 @@ namespace AZ
 
         void CommandQueueContext::WaitForIdle()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
                 m_commandQueues[hardwareQueueIdx]->WaitForIdle();

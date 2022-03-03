@@ -215,7 +215,7 @@ namespace PhysX
     {
         EditorJointComponent::DisplayEntityViewport(viewportInfo, debugDisplay);
 
-        if (!m_config.m_displayJointSetup && 
+        if (!m_config.ShowSetupDisplay() && 
             !m_config.m_inComponentMode)
         {
             return;

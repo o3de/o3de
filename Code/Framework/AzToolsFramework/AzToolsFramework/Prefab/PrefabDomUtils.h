@@ -28,6 +28,9 @@ namespace AzToolsFramework
             inline static const char* EntityIdName = "Id";
             inline static const char* EntitiesName = "Entities";
             inline static const char* ContainerEntityName = "ContainerEntity";
+            inline static const char* ComponentsName = "Components";
+            inline static const char* EntityOrderName = "Child Entity Order";
+            inline static const char* TypeName = "$type";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -49,18 +52,32 @@ namespace AzToolsFramework
 
                 //! We do not save linkIds to file. However when loading a level we want to temporarily save
                 //! linkIds to instance dom so any nested prefabs will have linkIds correctly set.
-                StoreLinkIds = 1 << 1
+                StripLinkIds = 1 << 1
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreFlags);
 
             /**
-            * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates
-            * @param instance The instance to store
-            * @param prefabDom The prefabDom that will be used to store the Instance data
-            * @param flags Controls behavior such as whether to store default values
-            * @return bool on whether the operation succeeded
+            * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
+            * @param instance The instance to store.
+            * @param prefabDom The prefabDom that will be used to store the Instance data.
+            * @param flags Controls behavior such as whether to store default values.
+            * @return bool on whether the operation succeeded.
             */
             bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreFlags flags = StoreFlags::None);
+
+            /**
+             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
+             * @param instance The instance to store.
+             * @param prefabDom The prefabDom that will be used to store the Instance data.
+             * @param referencedAssets Collect a list of the assets that are referenced during storing.
+             * @param flags Controls behavior such as whether to store default values.
+             * @return bool on whether the operation succeeded.
+             */
+            bool StoreInstanceInPrefabDom(
+                const Instance& instance,
+                PrefabDom& prefabDom,
+                AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
+                StoreFlags flags = StoreFlags::None);
 
             /**
             * Stores a valid entity in Prefab Dom format.
@@ -116,7 +133,7 @@ namespace AzToolsFramework
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
-                Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom,
+                Instance& instance, EntityList& newlyAddedEntities, const PrefabDom& prefabDom,
                 LoadFlags flags = LoadFlags::None);
 
             inline PrefabDomPath GetPrefabDomInstancePath(const char* instanceName)

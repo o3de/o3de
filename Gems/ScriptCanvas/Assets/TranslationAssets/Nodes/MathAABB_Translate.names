@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{22DBE624-D16E-51E7-BFF5-6C136E8E4581}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Translate",
+                "category": "Math/AABB",
+                "tooltip": "returns the Source with each point added with Translation"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Translation_1",
+                    "details": {
+                        "name": "Translation"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -26,6 +26,77 @@
                     "Name": "DepthStencilInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "IrradianceOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "VisualizationOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "IrradianceImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "NormalInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.25,
+                            "HeightMultiplier": 0.25
+                        }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "NormalInput"
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "IrradianceOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "IrradianceImage"
+                    }
+                },
+                {
+                    "LocalSlot": "VisualizationOutput",
+                    "AttachmentRef": {
+                        "Pass": "DiffuseProbeGridVisualizationRayTracingPass",
+                        "Attachment": "Output"
+                    }
                 }
             ],
             "PassRequests": [
@@ -78,7 +149,7 @@
                         {
                             "LocalSlot": "Output",
                             "AttachmentRef": {
-                                "Pass": "DiffuseProbeGridDownsamplePass",
+                                "Pass": "Parent",
                                 "Attachment": "IrradianceOutput"
                             }
                         }
@@ -145,6 +216,18 @@
                             }
                         }
                     ]
+                },
+                {
+                    "Name": "DiffuseProbeGridVisualizationPreparePass",
+                    "TemplateName": "DiffuseProbeGridVisualizationPreparePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridVisualizationAccelerationStructurePass",
+                    "TemplateName": "DiffuseProbeGridVisualizationAccelerationStructurePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridVisualizationRayTracingPass",
+                    "TemplateName": "DiffuseProbeGridVisualizationRayTracingPassTemplate"
                 }
             ]
         }

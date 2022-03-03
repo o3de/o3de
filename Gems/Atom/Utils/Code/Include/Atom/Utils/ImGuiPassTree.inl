@@ -19,11 +19,11 @@
 
 #include <Atom/Utils/DdsFile.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Utils/Utils.h>
 
 #ifndef SCRIPTABLE_IMGUI
 #define Scriptable_ImGui ImGui
@@ -35,9 +35,9 @@ namespace AZ::Render
     {
         for (auto& binding : pass->GetAttachmentBindings())
         {
-            if (binding.m_attachment && binding.m_attachment->GetAttachmentId() == attachmentId)
+            if (binding.GetAttachment() && binding.GetAttachment()->GetAttachmentId() == attachmentId)
             {
-                return binding.m_attachment.get();
+                return binding.GetAttachment().get();
             }
         }
         return nullptr;
@@ -172,27 +172,27 @@ namespace AZ::Render
                 binding.m_name.GetCStr());
 
             // Append attachment info if the attachment exists
-            if (binding.m_attachment)
+            if (binding.GetAttachment())
             {
-                AZ::RHI::AttachmentType type = binding.m_attachment->GetAttachmentType();
+                AZ::RHI::AttachmentType type = binding.GetAttachment()->GetAttachmentType();
 
                 // Append attachment info: [attachment type] attachment name
                 label += AZStd::string::format(" [%s] %s",
                     AZ::RHI::ToString(type),
-                    binding.m_attachment->m_name.GetCStr());
+                    binding.GetAttachment()->m_name.GetCStr());
 
                 if (type == AZ::RHI::AttachmentType::Image)
                 {
                     // Append image info: [format] [size] [msaa]
                     AZ::RHI::ImageDescriptor descriptor;
-                    if (binding.m_attachment->m_importedResource)
+                    if (binding.GetAttachment()->m_importedResource)
                     {
-                        AZ::RPI::Image* image = static_cast<AZ::RPI::Image*>(binding.m_attachment->m_importedResource.get());
+                        AZ::RPI::Image* image = static_cast<AZ::RPI::Image*>(binding.GetAttachment()->m_importedResource.get());
                         descriptor = image->GetRHIImage()->GetDescriptor();
                     }
                     else
                     {
-                        descriptor = binding.m_attachment->m_descriptor.m_image;
+                        descriptor = binding.GetAttachment()->m_descriptor.m_image;
                     }
                     auto format = descriptor.m_format;
                     auto size = descriptor.m_size;
@@ -213,15 +213,15 @@ namespace AZ::Render
                 else if (type == AZ::RHI::AttachmentType::Buffer)
                 {
                     // Append buffer info: [size]
-                    auto size = binding.m_attachment->m_descriptor.m_buffer.m_byteCount;
+                    auto size = binding.GetAttachment()->m_descriptor.m_buffer.m_byteCount;
                     label += AZStd::string::format(" [%llu]", size);
                 }
 
-                if (Scriptable_ImGui::Selectable(label.c_str(), m_attachmentId == binding.m_attachment->GetAttachmentId()))
+                if (Scriptable_ImGui::Selectable(label.c_str(), m_attachmentId == binding.GetAttachment()->GetAttachmentId()))
                 {
                     m_selectedPassPath = pass->GetPathName();
                     m_selectedPass = pass;
-                    m_attachmentId = binding.m_attachment->GetAttachmentId();
+                    m_attachmentId = binding.GetAttachment()->GetAttachmentId();
                     m_slotName = binding.m_name;
                     m_selectedChanged = true;
                 }
@@ -334,11 +334,10 @@ namespace AZ::Render
 
         if (m_engineRoot.empty())
         {
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            if (engineRoot)
+            AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+            if (!engineRoot.empty())
             {
-                m_engineRoot = AZStd::string(engineRoot);
+                m_engineRoot = AZStd::string_view(engineRoot);
             }
         }
 

@@ -42,5 +42,22 @@ const int CCmdLineArg::GetIValue() const
 {
     return atoi(m_value.c_str());
 }
+const bool CCmdLineArg::GetBoolValue(bool& cmdLineValue) const
+{
+    AZStd::string lowercaseValue(m_value);
+    AZStd::to_lower(lowercaseValue.begin(), lowercaseValue.end());
+    if (lowercaseValue == "true")
+    {
+        cmdLineValue = true;
+        return true;
+    }
 
+    if (lowercaseValue == "false")
+    {
+        cmdLineValue = false;
+        return true;
+    }
+    
+    return false;
+}
 

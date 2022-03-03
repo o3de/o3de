@@ -14,15 +14,18 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <Builder/ScriptCanvasBuilder.h>
 #include <Core/GraphBus.h>
-#include <Editor/Assets/ScriptCanvasAssetTracker.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
+#include <Builder/ScriptCanvasBuilderDataSystem.h>
 
 namespace ScriptCanvasEditor
 {
@@ -36,8 +39,12 @@ namespace ScriptCanvasEditor
         , private AZ::Data::AssetBus::MultiHandler
         , private AzToolsFramework::AssetSeedManagerRequests::Bus::Handler
         , private AzToolsFramework::EditorContextMenuBus::Handler
+        , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , private AzToolsFramework::AssetSystemBus::Handler
     {
     public:
+        
+
         AZ_COMPONENT(SystemComponent, "{1DE7A120-4371-4009-82B5-8140CB1D7B31}");
 
         SystemComponent();
@@ -76,7 +83,7 @@ namespace ScriptCanvasEditor
 
         ////////////////////////////////////////////////////////////////////////
         // ScriptCanvasExecutionBus::Handler...
-        Reporter RunAssetGraph(AZ::Data::Asset<AZ::Data::AssetData>, ScriptCanvas::ExecutionMode mode) override;
+        Reporter RunAssetGraph(SourceHandle source, ScriptCanvas::ExecutionMode mode) override;
         Reporter RunGraph(AZStd::string_view path, ScriptCanvas::ExecutionMode mode) override;
         ////////////////////////////////////////////////////////////////////////
 
@@ -97,6 +104,10 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
+
+    protected:
+        void OnStartPlayInEditor() override;
+        void OnStopPlayInEditor() override;
         
     private:
         SystemComponent(const SystemComponent&) = delete;
@@ -110,11 +121,10 @@ namespace ScriptCanvasEditor
 
         AZStd::unordered_set<ScriptCanvas::Data::Type> m_creatableTypes;
 
-        AssetTracker m_assetTracker;
-
         AZStd::vector<AZ::Data::AssetId> m_assetsThatNeedManualUpgrade;
 
         bool m_isUpgrading = false;
         bool m_upgradeDisabled = false;
+        ScriptCanvasBuilder::DataSystem m_dataSystem;
     };
 }

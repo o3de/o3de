@@ -67,12 +67,6 @@ namespace AzFramework
         /// Make path relative to the provided root.
         virtual void MakePathRelative(AZStd::string& /*fullPath*/, const char* /*rootPath*/) {}
 
-        /// Gets the engine root path where the modules for the current engine are located.
-        virtual const char* GetEngineRoot() const { return nullptr; }
-
-        /// Retrieves the app root path for the application.
-        virtual const char* GetAppRoot() const { return nullptr; }
-
         /// Get the Command Line arguments passed in.
         virtual const CommandLine* GetCommandLine() { return nullptr; }
 
@@ -118,6 +112,7 @@ namespace AzFramework
         virtual void SetPrefabSystemEnabled([[maybe_unused]] bool enable) {}
 
         /// Returns true if Prefab System is enabled for use with levels, false if legacy level system is enabled (level.pak)
+        /// @deprecated Use 'IsPrefabSystemEnabled' instead
         virtual bool IsPrefabSystemForLevelsEnabled() const { return false; }
 
         /// Returns true if code should assert when the Legacy Slice System is used

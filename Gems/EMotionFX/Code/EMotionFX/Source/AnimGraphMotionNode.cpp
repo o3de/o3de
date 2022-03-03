@@ -552,14 +552,6 @@ namespace EMotionFX
             motionNode->CreateMotionInstance(animGraphInstance->GetActorInstance(), this);
         }
 
-        // get the id of the currently used the motion set
-        MotionSet* motionSet = animGraphInstance->GetMotionSet();
-        uint32 motionSetID = MCORE_INVALIDINDEX32;
-        if (motionSet)
-        {
-            motionSetID = motionSet->GetID();
-        }
-
         // update the internally stored playback info
         motionNode->UpdatePlayBackInfo(animGraphInstance);
 

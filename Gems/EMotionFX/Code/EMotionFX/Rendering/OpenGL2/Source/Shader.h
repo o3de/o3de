@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_SHADER__H
-#define __RENDERGL_SHADER__H
+#pragma once
 
 #include <MCore/Source/Color.h>
 #include "RenderGLConfig.h"
@@ -51,6 +50,4 @@ namespace RenderGL
         virtual void SetUniform(const char* name, Texture* texture) = 0;
         virtual void SetUniform(const char* name, const float* values, uint32 numFloats) = 0;
     };
-}
-
-#endif
+} // namespace RenderGL

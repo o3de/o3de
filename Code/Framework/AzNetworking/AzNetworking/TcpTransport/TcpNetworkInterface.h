@@ -146,7 +146,7 @@ namespace AzNetworking
         AZ::Name m_name;
         TrustZone m_trustZone;
         uint16_t m_port = 0;
-        AZ::TimeMs m_timeoutMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_timeoutMs = AZ::Time::ZeroTimeMs;
         IConnectionListener& m_connectionListener;
         TcpConnectionSet m_connectionSet;
         TcpSocketManager m_tcpSocketManager;

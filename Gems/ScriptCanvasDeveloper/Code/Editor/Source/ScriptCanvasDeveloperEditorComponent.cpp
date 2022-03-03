@@ -17,7 +17,6 @@
 #include <ScriptCanvasDeveloperEditor/NodeListDumpAction.h>
 #include <ScriptCanvasDeveloperEditor/TSGenerateAction.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/DynamicSlotFullCreation.h>
-#include <ScriptCanvasDeveloperEditor/AutomationActions/FullyConnectedNodePaletteCreation.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/NodePaletteFullCreation.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/VariableListFullCreation.h>
 #include <ScriptCanvasDeveloperEditor/Developer.h>
@@ -99,9 +98,10 @@ namespace ScriptCanvasDeveloperEditor
         developerMenu->addSeparator();
 
         NodeListDumpAction::CreateNodeListDumpAction(developerMenu);
-        TSGenerateAction::SetupTSFileAction(developerMenu);
 
         developerMenu->addSeparator();
+
+        TranslationDatabaseFileAction(developerMenu, mainWindow);
 
         QAction* action = developerMenu->addAction("Open Menu Test");
 

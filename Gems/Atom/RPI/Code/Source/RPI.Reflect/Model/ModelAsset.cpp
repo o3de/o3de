@@ -9,13 +9,13 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/std/limits.h>
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AZ
 {
@@ -36,6 +36,15 @@ namespace AZ
                     ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
                     ;
+
+                // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
+                //       can open the asset with the preferred asset editor (Scene Settings).
+                if (auto* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<ModelAsset>("Model Asset", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ;
+                }
             }
         }
 
@@ -83,9 +92,9 @@ namespace AZ
             return m_lodAssets.size();
         }
 
-        AZStd::array_view<Data::Asset<ModelLodAsset>> ModelAsset::GetLodAssets() const
+        AZStd::span<const Data::Asset<ModelLodAsset>> ModelAsset::GetLodAssets() const
         {
-            return AZStd::array_view<Data::Asset<ModelLodAsset>>(m_lodAssets);
+            return AZStd::span<const Data::Asset<ModelLodAsset>>(m_lodAssets);
         }
 
         void ModelAsset::SetReady()
@@ -137,7 +146,7 @@ namespace AZ
                 // For runtime approach is to do this during asset processing and serialized spatial information alongside with mesh model assets
                 const auto jobLambda = [&]() -> void
                 {
-                    AZ_TRACE_METHOD();
+                    AZ_PROFILE_FUNCTION(RPI);
 
                     AZStd::unique_ptr<ModelKdTree> tree = AZStd::make_unique<ModelKdTree>();
                     tree->Build(this);
@@ -201,23 +210,11 @@ namespace AZ
             AZ::Vector3& normal) const
         {
             const BufferAssetView& indexBufferView = mesh.GetIndexBufferAssetView();
-            const AZStd::array_view<ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
+            const BufferAssetView* positionBufferView = mesh.GetSemanticBufferAssetView(m_positionName);
 
-            // find position semantic
-            const ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;
-
-            for (const ModelLodAsset::Mesh::StreamBufferInfo& bufferInfo : streamBufferList)
+            if (positionBufferView && positionBufferView->GetBufferAsset().Get())
             {
-                if (bufferInfo.m_semantic.m_name == m_positionName)
-                {
-                    positionBuffer = &bufferInfo;
-                    break;
-                }
-            }
-
-            if (positionBuffer && positionBuffer->m_bufferAssetView.GetBufferAsset().Get())
-            {
-                BufferAsset* bufferAssetViewPtr = positionBuffer->m_bufferAssetView.GetBufferAsset().Get();
+                BufferAsset* bufferAssetViewPtr = positionBufferView->GetBufferAsset().Get();
                 BufferAsset* indexAssetViewPtr = indexBufferView.GetBufferAsset().Get();
 
                 if (!bufferAssetViewPtr || !indexAssetViewPtr)
@@ -225,8 +222,8 @@ namespace AZ
                     return false;
                 }
 
-                RHI::BufferViewDescriptor positionBufferViewDesc = bufferAssetViewPtr->GetBufferViewDescriptor();
-                AZStd::array_view<uint8_t> positionRawBuffer = bufferAssetViewPtr->GetBuffer();
+                RHI::BufferViewDescriptor positionBufferViewDesc = positionBufferView->GetBufferViewDescriptor();
+                AZStd::span<const uint8_t> positionRawBuffer = bufferAssetViewPtr->GetBuffer();
 
                 const uint32_t positionElementSize = positionBufferViewDesc.m_elementSize;
                 const uint32_t positionElementCount = positionBufferViewDesc.m_elementCount;
@@ -234,22 +231,28 @@ namespace AZ
                 // Position is 3 floats
                 if (positionElementSize != sizeof(float) * 3)
                 {
-                    AZ_Warning("ModelAsset", false, "unsupported mesh posiiton format, only full 3 floats per vertex are supported at the moment");
+                    AZ_Warning(
+                        "ModelAsset", false, "unsupported mesh posiiton format, only full 3 floats per vertex are supported at the moment");
                     return false;
                 }
 
-                AZStd::array_view<uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
-                RHI::BufferViewDescriptor indexRawDesc = indexAssetViewPtr->GetBufferViewDescriptor();
-
-                bool anyHit = false;
+                RHI::BufferViewDescriptor indexBufferViewDesc = indexBufferView.GetBufferViewDescriptor();
+                AZStd::span<const uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
 
                 const AZ::Vector3 rayEnd = rayStart + rayDir;
                 AZ::Vector3 a, b, c;
                 AZ::Vector3 intersectionNormal;
 
+                bool anyHit = false;
                 float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
-                const AZ::u32* indexPtr = reinterpret_cast<const AZ::u32*>(indexRawBuffer.data());
-                for (uint32_t indexIter = 0; indexIter <= indexRawDesc.m_elementCount - 3; indexIter += 3, indexPtr += 3)
+
+                const AZ::u32* indexPtr = reinterpret_cast<const AZ::u32*>(
+                    indexRawBuffer.data() + (indexBufferViewDesc.m_elementOffset * indexBufferViewDesc.m_elementSize));
+                const float* positionPtr = reinterpret_cast<const float*>(
+                    positionRawBuffer.data() + (positionBufferViewDesc.m_elementOffset * positionBufferViewDesc.m_elementSize));
+
+                constexpr int StepSize = 3; // number of values per vertex (x, y, z)
+                for (uint32_t indexIter = 0; indexIter < indexBufferViewDesc.m_elementCount; indexIter += StepSize, indexPtr += StepSize)
                 {
                     AZ::u32 index0 = indexPtr[0];
                     AZ::u32 index1 = indexPtr[1];
@@ -261,17 +264,17 @@ namespace AZ
                         return false;
                     }
 
-                    const float* p = reinterpret_cast<const float*>(&positionRawBuffer[index0 * positionElementSize]);
-                    a.Set(const_cast<float*>(p)); // faster than AZ::Vector3 c-tor
-
-                    p = reinterpret_cast<const float*>(&positionRawBuffer[index1 * positionElementSize]);
-                    b.Set(const_cast<float*>(p));
-
-                    p = reinterpret_cast<const float*>(&positionRawBuffer[index2 * positionElementSize]);
-                    c.Set(const_cast<float*>(p));
+                    // faster than AZ::Vector3 c-tor
+                    const float* aRef = &positionPtr[index0 * StepSize];
+                    a.Set(aRef);
+                    const float* bRef = &positionPtr[index1 * StepSize];
+                    b.Set(bRef);
+                    const float* cRef = &positionPtr[index2 * StepSize];
+                    c.Set(cRef);
 
                     float currentDistanceNormalized;
-                    if (AZ::Intersect::IntersectSegmentTriangleCCW(rayStart, rayEnd, a, b, c, intersectionNormal, currentDistanceNormalized))
+                    if (AZ::Intersect::IntersectSegmentTriangleCCW(
+                            rayStart, rayEnd, a, b, c, intersectionNormal, currentDistanceNormalized))
                     {
                         anyHit = true;
 
@@ -304,7 +307,7 @@ namespace AZ
                 {
                     for (const ModelLodAsset::Mesh& mesh : loadAssetPtr->GetMeshes())
                     {
-                        const AZStd::array_view<ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
+                        const AZStd::span<const ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
 
                         // find position semantic
                         const ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;

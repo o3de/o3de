@@ -86,6 +86,8 @@ namespace AZ
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
             //! Sets the shadow bias
             virtual void SetShadowBias(LightHandle handle, float bias) = 0;
+            //! Sets the normal shadow bias
+            virtual void SetNormalShadowBias(LightHandle handle, float bias) = 0;
             //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
             //! Specifies filter method of shadows.
@@ -98,7 +100,8 @@ namespace AZ
             //! Sets all of the the disk data for the provided LightHandle.
             virtual void SetDiskData(LightHandle handle, const DiskLightData& data) = 0;
 
-
+            //! Get a read only copy of a disk lights data, useful for debug rendering
+            virtual const DiskLightData& GetDiskData(LightHandle handle) const = 0;
         };
     } // namespace Render
 } // namespace AZ

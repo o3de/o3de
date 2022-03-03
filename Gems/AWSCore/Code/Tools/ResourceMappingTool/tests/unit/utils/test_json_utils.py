@@ -10,6 +10,7 @@ from typing import (Dict, List)
 from unittest import TestCase
 from unittest.mock import (MagicMock, mock_open, patch)
 
+from utils import file_utils
 from utils import json_utils
 from model import constants
 from model.resource_mapping_attributes import (ResourceMappingAttributes, ResourceMappingAttributesBuilder,
@@ -49,6 +50,10 @@ class TestJsonUtils(TestCase):
     }
 
     def setUp(self) -> None:
+        schema_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__, 4),
+                                                'resource_mapping_schema.json')
+        json_utils.load_resource_mapping_json_schema(schema_path)
+
         self._mock_open = mock_open()
         open_patcher: patch = patch("utils.json_utils.open", self._mock_open)
         self.addCleanup(open_patcher.stop)
@@ -102,6 +107,11 @@ class TestJsonUtils(TestCase):
         invalid_json_dict: Dict[str, any] = copy.deepcopy(TestJsonUtils._expected_json_dict)
         invalid_json_dict.pop(json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME)
         self.assertRaises(KeyError, json_utils.validate_json_dict_according_to_json_schema, invalid_json_dict)
+
+    def test_validate_json_dict_according_to_json_schema_raise_error_when_json_dict_has_empty_accountid(self) -> None:
+        valid_json_dict: Dict[str, any] = copy.deepcopy(TestJsonUtils._expected_json_dict)
+        valid_json_dict[json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] = ''
+        json_utils.validate_json_dict_according_to_json_schema(valid_json_dict)
 
     def test_validate_json_dict_according_to_json_schema_pass_when_json_dict_has_template_accountid(self) -> None:
         valid_json_dict: Dict[str, any] = copy.deepcopy(TestJsonUtils._expected_json_dict)

@@ -13,8 +13,8 @@
 include_guard()
 
 # Read the engine name from the project_json file
-file(READ ${CMAKE_CURRENT_LIST_DIR}/project.json project_json)
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_LIST_DIR}/project.json)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/project.json project_json)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/project.json)
 
 string(JSON LY_ENGINE_NAME_TO_USE ERROR_VARIABLE json_error GET ${project_json} engine)
 if(json_error)

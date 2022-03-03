@@ -1,0 +1,694 @@
+{
+    "entries": [
+        {
+            "base": "SettingsRegistryInterface",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Settings Registry",
+                "category": "Registry"
+            },
+            "methods": [
+                {
+                    "base": "GetFloat",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Float"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Float is invoked"
+                    },
+                    "details": {
+                        "name": "Get Float"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8FE8A00F-5FE8-54A1-A314-346843AD21B6}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFloat",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Float"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Float is invoked"
+                    },
+                    "details": {
+                        "name": "Set Float"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RemoveKey",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Remove Key"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Remove Key is invoked"
+                    },
+                    "details": {
+                        "name": "Remove Key"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetInt",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Int"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Int is invoked"
+                    },
+                    "details": {
+                        "name": "Set Int"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        },
+                        {
+                            "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetUInt",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set UInt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set UInt is invoked"
+                    },
+                    "details": {
+                        "name": "Set UInt"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBool",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Bool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Bool is invoked"
+                    },
+                    "details": {
+                        "name": "Get Bool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0170062C-2E7E-5CEB-BAB8-F7663BEF7B3E}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInt",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Int"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Int is invoked"
+                    },
+                    "details": {
+                        "name": "Get Int"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8E0A7AC1-C649-56B4-99CF-8BE08EEFC47B}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUInt",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get UInt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get UInt is invoked"
+                    },
+                    "details": {
+                        "name": "Get UInt"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{858A22B8-1B5E-5016-BF33-B2469DD9CAD3}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNotifyEvent",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Notify Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Notify Event is invoked"
+                    },
+                    "details": {
+                        "name": "Get Notify Event"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{84290CFC-1335-5341-AD8B-0A3FE9FE46D0}",
+                            "details": {
+                                "name": "Script Notify Event"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MergeSettings",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Merge Settings"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Merge Settings is invoked"
+                    },
+                    "details": {
+                        "name": "Merge Settings"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Format",
+                                "tooltip": "0: Json Path, 1: Json Merge Patch"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MergeSettingsFile",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Merge Settings File"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Merge Settings File is invoked"
+                    },
+                    "details": {
+                        "name": "Merge Settings File"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "Root Key"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Format",
+                                "tooltip": "0: Json Path, 1: Json Merge Patch"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetString",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get String is invoked"
+                    },
+                    "details": {
+                        "name": "Get String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B0D91084-263A-54B9-A4F3-7C5F4240E248}",
+                            "details": {
+                                "name": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsValid",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Valid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Valid is invoked"
+                    },
+                    "details": {
+                        "name": "Is Valid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MergeSettingsFolder",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Merge Settings Folder"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Merge Settings Folder is invoked"
+                    },
+                    "details": {
+                        "name": "Merge Settings Folder"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        },
+                        {
+                            "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
+                            "details": {
+                                "name": "Specializations Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBool",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Bool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Bool is invoked"
+                    },
+                    "details": {
+                        "name": "Set Bool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetString",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set String is invoked"
+                    },
+                    "details": {
+                        "name": "Set String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DumpSettings",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Dump Settings"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Dump Settings is invoked"
+                    },
+                    "details": {
+                        "name": "Dump Settings"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "JSON Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B0D91084-263A-54B9-A4F3-7C5F4240E248}",
+                            "details": {
+                                "name": "Output"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

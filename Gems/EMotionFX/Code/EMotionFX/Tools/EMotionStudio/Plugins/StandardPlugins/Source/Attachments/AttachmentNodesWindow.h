@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_ATTACHMENTNODESWINDOW_H
-#define __EMSTUDIO_ATTACHMENTNODESWINDOW_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -80,6 +79,3 @@ namespace EMStudio
         QToolButton*                m_removeNodesButton;
     };
 } // namespace EMStudio
-
-
-#endif

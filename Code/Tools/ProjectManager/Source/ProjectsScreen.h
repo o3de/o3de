@@ -46,6 +46,7 @@ namespace O3DE::ProjectManager
         void HandleAddProjectButton();
         void HandleOpenProject(const QString& projectPath);
         void HandleEditProject(const QString& projectPath);
+        void HandleEditProjectGems(const QString& projectPath);
         void HandleCopyProject(const ProjectInfo& projectInfo);
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);

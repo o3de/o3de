@@ -15,7 +15,6 @@
 #include <GridMate/Replica/Replica.h>
 #include <GridMate/Replica/ReplicaMgr.h>
 #include <GridMate/Replica/ReplicaUtils.h>
-#include <GridMate/Replica/ReplicaDrillerEvents.h>
 #include <GridMate/Serialize/CompressionMarshal.h>
 
 namespace GridMate
@@ -41,13 +40,11 @@ namespace GridMate
         ReplicaChunkInitContext* initContext = ReplicaChunkDescriptorTable::Get().GetCurrentReplicaChunkInitContext();
         AZ_Assert(initContext, "Replica's descriptor is NOT pushed on the stack! Call Replica::Desriptor::Push() before construction!");
         initContext->m_chunk = this;
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnCreateReplicaChunk, this);
     }
     //-----------------------------------------------------------------------------
     ReplicaChunkBase::~ReplicaChunkBase()
     {
         AZ_Assert(m_refCount == 0, "Attempting to free replica with non-zero refCount(%d)!", m_refCount);
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnDestroyReplicaChunk, this);
     }
     //-----------------------------------------------------------------------------
     void ReplicaChunkBase::Init(ReplicaChunkClassId chunkTypeId)
@@ -332,7 +329,7 @@ namespace GridMate
         return dataSetMask;
     }
     //-----------------------------------------------------------------------------
-    void ReplicaChunkBase::MarshalDataSets(MarshalContext& mc, AZ::u32 chunkIndex)
+    void ReplicaChunkBase::MarshalDataSets(MarshalContext& mc, [[maybe_unused]] AZ::u32 chunkIndex)
     {
         //AZ_PROFILE_SCOPE("GridMate");
         AZ::u32 dirtyDataSetMask = CalculateDirtyDataSetMask(mc);
@@ -358,15 +355,6 @@ namespace GridMate
                 ReadBuffer data = dataset->GetMarshalData();
                 mc.m_outBuffer->WriteRaw(data.Get(), data.Size());
                 wroteDataSet = true;
-
-                EBUS_EVENT(Debug::ReplicaDrillerBus, OnSendDataSet,
-                    this,
-                    chunkIndex,
-                    dataset,
-                    mc.m_rm->GetLocalPeerId(),
-                    mc.m_peer->GetId(),
-                    data.Get(),
-                    data.Size().GetSizeInBytesRoundUp());
             }
         }
         if(wroteDataSet)
@@ -380,7 +368,7 @@ namespace GridMate
         }
     }
     //-----------------------------------------------------------------------------
-    void ReplicaChunkBase::UnmarshalDataSets(UnmarshalContext& mc, AZ::u32 chunkIndex)
+    void ReplicaChunkBase::UnmarshalDataSets(UnmarshalContext& mc, [[maybe_unused]] AZ::u32 chunkIndex)
     {
         AZ_PROFILE_FUNCTION(GridMate);
 
@@ -421,22 +409,12 @@ namespace GridMate
                 dataset->MarkAsNonDefaultValue();
                 m_nonDefaultValueBits.set(i);
 
-                const char* readPtr = mc.m_iBuf->GetCurrent();
                 dataset->Unmarshal(mc);
-
-                EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveDataSet,
-                    this,
-                    chunkIndex,
-                    dataset,
-                    mc.m_peer->GetId(),
-                    mc.m_rm->GetLocalPeerId(),
-                    readPtr,
-                    mc.m_iBuf->GetCurrent() - readPtr);
             }
         }
     }
     //-----------------------------------------------------------------------------
-    void ReplicaChunkBase::MarshalRpcs(MarshalContext& mc, AZ::u32 chunkIndex)
+    void ReplicaChunkBase::MarshalRpcs(MarshalContext& mc, [[maybe_unused]] AZ::u32 chunkIndex)
     {
         //AZ_PROFILE_SCOPE("GridMate");
 
@@ -467,22 +445,12 @@ namespace GridMate
 
             AZ::u8 rpcIndex = static_cast<AZ::u8>(GetDescriptor()->GetRpcIndex(this, rpc->m_rpc));
 
-            auto bufferSize = mc.m_outBuffer->Size();
-
             SafeGuardWrite(mc.m_outBuffer, [rpc, rpcIndex, &mc]()
             {
                 mc.m_outBuffer->Write(rpcIndex);
                 rpc->m_rpc->Marshal(*mc.m_outBuffer, rpc);
             });
 
-            EBUS_EVENT(Debug::ReplicaDrillerBus, OnSendRpc,
-                this,
-                chunkIndex,
-                rpc,
-                mc.m_rm->GetLocalPeerId(),
-                mc.m_peer->GetId(),
-                mc.m_outBuffer->Get() + bufferSize,
-                mc.m_outBuffer->Size() - bufferSize);
             rpc->m_relayed = !(mc.m_marshalFlags & ReplicaMarshalFlags::Authoritative); // marking upstream rpcs relayed, for downstream rpcs - replicamgr marks them relayed after marshaling is finished
             rpcsSent++;
         }
@@ -494,7 +462,7 @@ namespace GridMate
         }
     }
     //-----------------------------------------------------------------------------
-    void ReplicaChunkBase::UnmarshalRpcs(UnmarshalContext& mc, AZ::u32 chunkIndex)
+    void ReplicaChunkBase::UnmarshalRpcs(UnmarshalContext& mc, [[maybe_unused]] AZ::u32 chunkIndex)
     {
         AZ_PROFILE_FUNCTION(GridMate);
 
@@ -504,7 +472,7 @@ namespace GridMate
         {
             for (AZ::u32 rpcsRead = 0; rpcsRead < rpcCount; ++rpcsRead)
             {
-                SafeGuardRead(mc.m_iBuf, [this, &mc, &chunkIndex]()
+                SafeGuardRead(mc.m_iBuf, [this, &mc]()
                 {
                     unsigned char rpcIndex;
                     if (!mc.m_iBuf->Read(rpcIndex))
@@ -519,7 +487,6 @@ namespace GridMate
                         return;
                     }
 
-                    const char* dataPtr = mc.m_iBuf->GetCurrent();
                     Internal::RpcRequest* request = rpc->Unmarshal(*mc.m_iBuf);
                     if (!request)
                     {
@@ -565,15 +532,6 @@ namespace GridMate
                             request->m_sourcePeer = mc.m_peer->GetId();
                         }
 
-                        size_t dataSize = mc.m_iBuf->GetCurrent() - dataPtr;
-                        EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveRpc,
-                            this,
-                            chunkIndex,
-                            request,
-                            mc.m_peer->GetId(),
-                            mc.m_rm->GetLocalPeerId(),
-                            dataPtr,
-                            dataSize);
                         m_rpcQueue.push_back(request);
                     }
                     else
@@ -739,7 +697,6 @@ namespace GridMate
 
         m_replica = replica;
 
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnAttachReplicaChunk, this);
         {
             GM_PROFILE_USER_CALLBACK("OnAttachedToReplica");
             OnAttachedToReplica(replica);
@@ -751,7 +708,6 @@ namespace GridMate
         AZ_PROFILE_FUNCTION(GridMate);
 
         AZ_Assert(m_replica, "Should be attached to a replica");
-        EBUS_EVENT(Debug::ReplicaDrillerBus, OnDetachReplicaChunk, this);
         {
             GM_PROFILE_USER_CALLBACK("OnDetachedFromReplica");
             OnDetachedFromReplica(m_replica);

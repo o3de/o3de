@@ -124,7 +124,16 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
     set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DPI_AWARE "OFF")
     if(LY_DEFAULT_PROJECT_PATH)
-        set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+        if (TARGET ${project_name})
+            get_target_property(project_game_launcher_additional_args ${project_name} GAMELAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+            if (project_game_launcher_additional_args)
+                # Avoid pushing param-NOTFOUND into the argument in case this property wasn't found
+                set(additional_game_vs_debugger_args "${project_game_launcher_additional_args}")
+            endif()
+        endif()
+
+        set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS 
+            "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${additional_game_vs_debugger_args}")
     endif()
 
     # Associate the Clients Gem Variant with each projects GameLauncher
@@ -173,7 +182,16 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             )
 
             if(LY_DEFAULT_PROJECT_PATH)
-                set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+                if (TARGET ${project_name})
+                    get_target_property(project_server_launcher_additional_args ${project_name} SERVERLAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
+                    if (project_server_launcher_additional_args)
+                        # Avoid pushing param-NOTFOUND into the argument in case this property wasn't found
+                        set(additional_server_vs_debugger_args "${project_server_launcher_additional_args}")
+                    endif()
+                endif()
+                
+                set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS 
+                    "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\" ${additional_server_vs_debugger_args}")
             endif()
 
             # Associate the Servers Gem Variant with each projects ServerLauncher
@@ -201,7 +219,7 @@ function(ly_delayed_generate_static_modules_inl)
 
             foreach(game_gem_dependency ${all_game_gem_dependencies})
                 # Sometimes, a gem's Client variant may be an interface library
-                # which dependes on multiple gem targets. The interface libraries
+                # which depends on multiple gem targets. The interface libraries
                 # should be skipped; the real dependencies of the interface will be processed
                 if(TARGET ${game_gem_dependency})
                     get_target_property(target_type ${game_gem_dependency} TYPE)

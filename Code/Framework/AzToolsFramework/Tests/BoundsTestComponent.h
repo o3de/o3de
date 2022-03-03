@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/Render/GeometryIntersectionBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -41,5 +42,24 @@ namespace UnitTest
         // BoundsRequestBus overrides ...
         AZ::Aabb GetWorldBounds() override;
         AZ::Aabb GetLocalBounds() override;
+
+        AZ::Aabb m_localBounds; //!< Local bounds that can be modified for certain tests (defaults to unit cube).
+    };
+
+    class RenderGeometryIntersectionTestComponent
+        : public BoundsTestComponent
+        , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
+    {
+    public:
+        AZ_EDITOR_COMPONENT(RenderGeometryIntersectionTestComponent, "{6F46B5BF-60DF-4BDD-9BA7-9658E85B99C2}", BoundsTestComponent);
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        // AZ::Component overrides ...
+        void Activate() override;
+        void Deactivate() override;
+
+        // IntersectionRequestBus overrides ...
+        AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) override;
     };
 } // namespace UnitTest

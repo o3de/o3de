@@ -42,6 +42,4 @@ set(FILES
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventsBindingBus.h
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventBinding.h
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventBinding.cpp
-    Include/ScriptEvents/Components/ScriptEventReferencesComponent.h
-    Include/ScriptEvents/Components/ScriptEventReferencesComponent.cpp
 )

@@ -12,7 +12,7 @@ libxcb-xinerama0                        # For Qt plugins at runtime
 libxcb-xinput0                          # For Qt plugins at runtime
 libfontconfig1-dev                      # For Qt plugins at runtime
 libcurl4-openssl-dev                    # For HttpRequestor
-libsdl2-dev                             # For WWise/Audio
+# libsdl2-dev                             # For WWise/Audio
 libxcb-xkb-dev                          # For xcb keyboard input
 libxkbcommon-x11-dev                    # For xcb keyboard input
 libxkbcommon-dev                        # For xcb keyboard input

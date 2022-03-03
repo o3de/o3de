@@ -1,0 +1,110 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}",
+            "Name": "IBLDiffuse",
+            "Description": "The input cubemap generates an IBL diffuse output cubemap.",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "SuppressEngineReduce": true,
+            "PixelFormat": "BC6UH",
+            "DiscardAlpha": true,
+            "MinTextureSize": 32,
+            "MaxTextureSize": 128,
+            "IsPowerOf2": true,
+            "CubemapSettings": {
+                "Filter": "Cosine",
+                "Angle": 180.0,
+                "MipAngle": -431602080.0,
+                "MipSlope": -431602080.0,
+                "EdgeFixup": -431602080.0,
+                "SubId": 3000
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}",
+                "Name": "IBLDiffuse",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 32,
+                "MaxTextureSize": 128,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "Filter": "Cosine",
+                    "Angle": 180.0,
+                    "MipAngle": -431602080.0,
+                    "MipSlope": -431602080.0,
+                    "EdgeFixup": -431602080.0,
+                    "SubId": 3000
+                }
+            },
+            "ios": {
+                "UUID": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}",
+                "Name": "IBLDiffuse",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 32,
+                "MaxTextureSize": 128,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "Filter": "Cosine",
+                    "Angle": 180.0,
+                    "MipAngle": -431602080.0,
+                    "MipSlope": -431602080.0,
+                    "EdgeFixup": -431602080.0,
+                    "SubId": 3000
+                }
+            },
+            "mac": {
+                "UUID": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}",
+                "Name": "IBLDiffuse",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 32,
+                "MaxTextureSize": 128,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "Filter": "Cosine",
+                    "Angle": 180.0,
+                    "MipAngle": -431602080.0,
+                    "MipSlope": -431602080.0,
+                    "EdgeFixup": -431602080.0,
+                    "SubId": 3000
+                }
+            },
+            "provo": {
+                "UUID": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}",
+                "Name": "IBLDiffuse",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "BC6UH",
+                "DiscardAlpha": true,
+                "MinTextureSize": 32,
+                "MaxTextureSize": 128,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "Filter": "Cosine",
+                    "Angle": 180.0,
+                    "MipAngle": -431602080.0,
+                    "MipSlope": -431602080.0,
+                    "EdgeFixup": -431602080.0,
+                    "SubId": 3000
+                }
+            }
+        }
+    }
+}

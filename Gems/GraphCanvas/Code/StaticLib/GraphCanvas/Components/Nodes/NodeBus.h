@@ -15,7 +15,6 @@
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Types/EntitySaveData.h>
 #include <GraphCanvas/Types/GraphCanvasGraphSerialization.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 
@@ -39,9 +38,6 @@ namespace GraphCanvas
 
         //! Set the tooltip for the node, which will display when the mouse is over the node but not a child item.
         virtual void SetTooltip(const AZStd::string&) = 0;
-
-        //! Set the translation keyed tooltip for the node, which will display when the mouse is over the node but not a child item.
-        virtual void SetTranslationKeyedTooltip(const TranslationKeyedString&) = 0;
 
         //! Get the tooltip that is currently set for the node.
         virtual const AZStd::string GetTooltip() const = 0;

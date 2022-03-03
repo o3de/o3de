@@ -22,30 +22,17 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         SharedThumbnail::SharedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
             : Thumbnail(key)
+            , m_assetInfo(SharedPreviewUtils::GetSupportedAssetInfo(key))
         {
-            for (const AZ::Uuid& typeId : SharedPreviewUtils::GetSupportedAssetTypes())
+            if (m_assetInfo.m_assetId.IsValid())
             {
-                const AZ::Data::AssetId& assetId = SharedPreviewUtils::GetAssetId(key, typeId);
-                if (assetId.IsValid())
-                {
-                    m_assetId = assetId;
-                    m_typeId = typeId;
-                    AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusConnect(key);
-                    AzFramework::AssetCatalogEventBus::Handler::BusConnect();
-                    return;
-                }
+                AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Handler::BusConnect(m_key);
+                AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+                return;
             }
 
             AZ_Error("SharedThumbnail", false, "Failed to find matching assetId for the thumbnailKey.");
             m_state = State::Failed;
-        }
-
-        void SharedThumbnail::LoadThread()
-        {
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
-                m_typeId, &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key, SharedThumbnailSize);
-            // wait for response from thumbnail renderer
-            m_renderWait.acquire();
         }
 
         SharedThumbnail::~SharedThumbnail()
@@ -54,9 +41,21 @@ namespace AZ
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         }
 
+        void SharedThumbnail::LoadThread()
+        {
+            m_state = State::Loading;
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
+                m_assetInfo.m_assetType, &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail, m_key,
+                SharedThumbnailSize);
+
+            // wait for response from thumbnail renderer
+            m_renderWait.acquire();
+        }
+
         void SharedThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
         {
             m_pixmap = thumbnailImage;
+            m_state = State::Ready;
             m_renderWait.release();
         }
 
@@ -68,7 +67,7 @@ namespace AZ
 
         void SharedThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
         {
-            if (m_assetId == assetId && m_state == State::Ready)
+            if (m_assetInfo.m_assetId == assetId && m_state == State::Ready)
             {
                 m_state = State::Unloaded;
                 Load();

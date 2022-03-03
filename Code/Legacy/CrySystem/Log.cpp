@@ -22,6 +22,7 @@
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Time/ITime.h>
 
 #ifdef WIN32
 #include <time.h>
@@ -503,7 +504,8 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
     {
         const int sz = sizeof(m_history) / sizeof(m_history[0]);
         int i, j;
-        float time = m_pSystem->GetITimer()->GetCurrTime();
+        const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+        const float time = AZ::TimeMsToSeconds(realTimeMs);
         for (i = m_iLastHistoryItem, j = 0; m_history[i].time > time - dt && j < sz; j++, i = i - 1 & sz - 1)
         {
             if (m_history[i].type != type)
@@ -908,7 +910,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
     }
 #endif
 
-    if (m_pLogIncludeTime && gEnv && gEnv->pTimer)
+    if (m_pLogIncludeTime)
     {
         uint32 dwCVarState = m_pLogIncludeTime->GetIVal();
         //      char szTemp[MAX_TEMP_LENGTH_SIZE];
@@ -933,12 +935,12 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         }
         else if (dwCVarState == 2)     // Log_IncludeTime
         {
-            static CTimeValue lasttime;
-            CTimeValue currenttime = gEnv->pTimer->GetAsyncTime();
-            if (lasttime != CTimeValue())
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
+            const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
                 timeStr.clear();
-                uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
+                uint32 dwMs = aznumeric_cast<uint32>(currenttime - lasttime);
                 timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
                 tempString = timeStr + tempString;
             }
@@ -960,12 +962,12 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 #endif
             tempString = LogStringType(sTime) + tempString;
 
-            static CTimeValue lasttime;
-            CTimeValue currenttime = gEnv->pTimer->GetAsyncTime();
-            if (lasttime != CTimeValue())
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
+            const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
                 timeStr.clear();
-                uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
+                uint32 dwMs = (uint32)(currenttime - lasttime);
                 timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
                 tempString = timeStr + tempString;
             }
@@ -975,22 +977,19 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         {
             static bool bFirst = true;
 
-            if (gEnv->pTimer)
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
+            const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
-                static CTimeValue lasttime;
-                CTimeValue currenttime = gEnv->pTimer->GetAsyncTime();
-                if (lasttime != CTimeValue())
-                {
-                    timeStr.clear();
-                    uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
-                    timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
-                    tempString = timeStr + tempString;
-                }
-                if (bFirst)
-                {
-                    lasttime = currenttime;
-                    bFirst = false;
-                }
+                timeStr.clear();
+                uint32 dwMs = (uint32)(currenttime - lasttime);
+                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
+                tempString = timeStr + tempString;
+            }
+            if (bFirst)
+            {
+                lasttime = currenttime;
+                bFirst = false;
             }
         }
         else if (dwCVarState == 5)             // Log_IncludeTime
@@ -1465,9 +1464,10 @@ void CLog::Update()
 
         if (LogCVars::s_log_tick != 0)
         {
-            static CTimeValue t0 = GetISystem()->GetITimer()->GetAsyncTime();
-            CTimeValue t1 = GetISystem()->GetITimer()->GetAsyncTime();
-            if (fabs((t1 - t0).GetSeconds()) > LogCVars::s_log_tick)
+            static AZ::TimeUs t0 = AZ::GetElapsedTimeUs();
+            const AZ::TimeUs t1 = AZ::GetElapsedTimeUs();
+            const float tSec = AZ::TimeUsToSeconds(t1 - t0);
+            if (tSec > LogCVars::s_log_tick)
             {
                 t0 = t1;
 

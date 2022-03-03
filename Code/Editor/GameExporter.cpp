@@ -100,7 +100,7 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (usePrefabSystemForLevels)
     {
@@ -146,13 +146,11 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             exportSuccessful = false;
         }
 
-        if (exportSuccessful)
+        if (exportSuccessful && m_bAutoExportMode)
         {
-            if (m_bAutoExportMode)
-            {
-                // Remove read-only flags.
-                CrySetFileAttributes(m_levelPak.m_sPath.toUtf8().data(), FILE_ATTRIBUTE_NORMAL);
-            }
+            // Remove read-only flags.
+            auto perms = QFile::permissions(m_levelPak.m_sPath) | QFile::Permission::WriteOwner;
+            QFile::setPermissions(m_levelPak.m_sPath, perms);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -319,8 +317,8 @@ void CGameExporter::ExportLevelInfo(const QString& path)
     root->setAttr("Name", levelName.toUtf8().data());
     auto terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
     const AZ::Aabb terrainAabb = terrain ? terrain->GetTerrainAabb() : AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-    const AZ::Vector2 terrainGridResolution = terrain ? terrain->GetTerrainHeightQueryResolution() : AZ::Vector2::CreateOne();
-    const int compiledHeightmapSize = static_cast<int>(terrainAabb.GetXExtent() / terrainGridResolution.GetX());
+    const float terrainGridResolution = terrain ? terrain->GetTerrainHeightQueryResolution() : 1.0f;
+    const int compiledHeightmapSize = static_cast<int>(terrainAabb.GetXExtent() / terrainGridResolution);
     root->setAttr("HeightmapSize", compiledHeightmapSize);
 
     //////////////////////////////////////////////////////////////////////////

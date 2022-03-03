@@ -29,5 +29,4 @@ else()
 
     set_property(GLOBAL APPEND PROPERTY LY_PROJECTS_TARGET_NAME ${project_target_name})
 
-    add_subdirectory(Code)
 endif()

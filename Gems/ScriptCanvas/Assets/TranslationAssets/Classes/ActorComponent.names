@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ActorComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ActorComponent"
+            }
+        }
+    ]
+}

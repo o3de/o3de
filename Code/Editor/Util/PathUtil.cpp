@@ -14,7 +14,6 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h> // for ebus events
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
@@ -175,9 +174,8 @@ namespace Path
     //////////////////////////////////////////////////////////////////////////
     QString GetEngineRootPath()
     {
-        const char* engineRoot;
-        EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
-        return QString(engineRoot);
+        const AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+        return QString::fromUtf8(engineRoot.c_str(), static_cast<int>(engineRoot.size()));
     }
 
     //////////////////////////////////////////////////////////////////////////

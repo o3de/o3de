@@ -8,4 +8,6 @@
 
 set(FILES
     native/FileWatcher/FileWatcher_linux.cpp
+    native/FileWatcher/FileWatcher_linux.h
+    native/FileWatcher/FileWatcher_platform.h
 )

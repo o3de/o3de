@@ -177,7 +177,7 @@ float ComputeLerpBetweenInnerOuterAABBs(float3 innerAabbMin, float3 innerAabbMax
 bool ObbContainsPoint(float4x4 obbTransformInverse, float3 obbHalfExtents, float3 testPoint)
 {
     // get the position in Obb local space, force to positive quadrant with abs()
-    float4 p = abs(mul(obbTransformInverse, float4(testPoint, 1.0f)));
+    float3 p = abs(mul(obbTransformInverse, float4(testPoint, 1.0f)).xyz);
     return AabbContainsPoint(-obbHalfExtents, obbHalfExtents, p);
 }
 

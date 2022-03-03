@@ -54,9 +54,16 @@ namespace EMStudio
         //! Return the center position of the existing objects.
         AZ::Vector3 GetCharacterCenter() const;
 
-        void UpdateActorRenderFlag(EMotionFX::ActorRenderFlagBitset renderFlags);
-
+        void UpdateActorRenderFlag(EMotionFX::ActorRenderFlags renderFlags);
         AZStd::shared_ptr<AzFramework::Scene> GetFrameworkScene() const;
+        AZ::EntityId GetEntityId() const;
+        AzFramework::EntityContextId GetEntityContextId() const;
+
+        //! Moves the groundplane along with the character.
+        void UpdateGroundplane();
+
+        //! Apply the identity transform to the actor entities.
+        void MoveActorEntitiesToOrigin();
 
     private:
 
@@ -89,6 +96,8 @@ namespace EMStudio
         AZStd::vector<AZ::Entity*> m_actorEntities;
         const RenderOptions* m_renderOptions;
 
+        const float DefaultFrustumDimension = 128.0f;
+        const float TileSize = 1.0f;
         AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> m_lightHandles;
     };
 }

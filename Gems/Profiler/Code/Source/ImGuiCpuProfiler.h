@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/Time/ITime.h>
 
 #include <imgui/imgui.h>
 
@@ -89,10 +90,10 @@ namespace Profiler
         struct CpuTimingEntry
         {
             const AZStd::string& m_name;
-            double m_executeDuration;
+            double m_executeDuration = 0;
         };
 
-        ImGuiCpuProfiler() = default;
+        ImGuiCpuProfiler();
         ~ImGuiCpuProfiler() = default;
 
         //! Draws the overall CPU profiling window, defaults to the statistical view
@@ -100,7 +101,8 @@ namespace Profiler
 
     private:
         static constexpr float RowHeight = 35.0f;
-        static constexpr int DefaultFramesToCollect = 50;
+        static constexpr int DefaultFramesToCollect = 60; // 1 second @ 60 fps
+        static constexpr int DefaultUpdateFrequencyMs = 1000; // 1 second
         static constexpr float MediumFrameTimeLimit = 16.6f; // 60 fps
         static constexpr float HighFrameTimeLimit = 33.3f; // 30 fps
 
@@ -169,19 +171,23 @@ namespace Profiler
 
         //  --- Visualizer Members ---
 
+        int m_updateFrequencyMs = DefaultUpdateFrequencyMs;
+        AZ::TimeMs m_currentUpdateTimeMs = AZ::TimeMs{ 0 };
+
         int m_framesToCollect = DefaultFramesToCollect;
 
         // Tally of the number of saved profiling events so far
         AZ::u64 m_savedRegionCount = 0;
 
         // Viewport tick bounds, these are used to convert tick space -> screen space and cull so we only draw onscreen objects
-        AZStd::sys_time_t m_viewportStartTick;
-        AZStd::sys_time_t m_viewportEndTick;
+        AZStd::sys_time_t m_viewportStartTick = 0;
+        AZStd::sys_time_t m_viewportEndTick = 0;
 
         // Map to store each thread's TimeRegions, individual vectors are sorted by start tick
         // note: we use size_t as a proxy for thread_id because native_thread_id_type differs differs from
         // platform to platform, which causes problems when deserializing saved captures.
         AZStd::unordered_map<size_t, AZStd::vector<TimeRegion>> m_savedData;
+        size_t m_mainThreadId = 0;
 
         // Region color cache
         AZStd::unordered_map<GroupRegionName, ImVec4, CachedTimeRegion::GroupRegionName::Hash> m_regionColorMap;
@@ -215,7 +221,6 @@ namespace Profiler
 
         // Last captured CPU timing statistics
         AZStd::vector<CpuTimingEntry> m_cpuTimingStatisticsWhenPause;
-        AZStd::sys_time_t m_frameToFrameTime{};
 
         AZ::IO::FixedMaxPath m_lastCapturedFilePath;
 

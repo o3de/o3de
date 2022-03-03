@@ -31,8 +31,8 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Time/ITime.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -276,15 +276,10 @@ namespace AZ
             }
         }
 
-        float RPISystem::GetCurrentTime()
+        float RPISystem::GetCurrentTime() const
         {
-            ScriptTimePoint timeAtCurrentTick;
-            AZ::TickRequestBus::BroadcastResult(timeAtCurrentTick, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
-
-            // We subtract the start time to maximize precision of the time value, since we will be converting it to a float.
-            double currentTime = timeAtCurrentTick.GetSeconds() - m_startTime.GetSeconds();
-
-            return aznumeric_cast<float>(currentTime);
+            const AZ::TimeUs currentSimulationTimeUs = AZ::GetRealElapsedTimeUs();
+            return AZ::TimeUsToSeconds(currentSimulationTimeUs);
         }
 
         void RPISystem::RenderTick()
@@ -375,6 +370,7 @@ namespace AZ
             m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
             if (!m_commonShaderAssetForSrgs.IsReady())
             {
+                AZ_Error("RPI system", false, "Failed to load RPI system asset %s", m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
             m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
@@ -400,6 +396,7 @@ namespace AZ
             m_passSystem.InitPassTemplates();
 
             m_systemAssetsInitialized = true;
+            AZ_TracePrintf("RPI system", "System assets initialized\n");
         }
 
         bool RPISystem::IsInitialized() const
@@ -437,6 +434,30 @@ namespace AZ
         uint64_t RPISystem::GetCurrentTick() const
         {
             return m_renderTick;
+        }
+
+        void RPISystem::SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState)
+        {
+            m_multisampleState = multisampleState;
+
+            bool isNonMsaaPipeline = (m_multisampleState.m_samples == 1);
+            const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
+            AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
+
+            // reinitialize pipelines for all scenes
+            for (auto& scene : m_scenes)
+            {
+                for (auto& renderPipeline : scene->GetRenderPipelines())
+                {
+                    renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
+                    renderPipeline->SetPassNeedsRecreate();
+                }
+            }
+        }
+
+        const RHI::MultisampleState& RPISystem::GetApplicationMultisampleState() const
+        {
+            return m_multisampleState;
         }
 
     } //namespace RPI

@@ -50,8 +50,11 @@ namespace AZ
             void OnFrameEnd() override;
             //////////////////////////////////////////////////////////////////////////
 
-            void UpdateViewsDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
-            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
+            void UpdateViewsDescriptorTable(DescriptorTable descriptorTable,
+                                            RHI::ShaderResourceGroup& group,
+                                            const RHI::ShaderResourceGroupData& groupData,
+                                            bool forceUpdateViews = false);
+            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, RHI::ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
             void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
 
             //! Update all the buffer views for the unbounded array
@@ -82,23 +85,23 @@ namespace AZ
             void UpdateDescriptorTableRange(
                 DescriptorTable descriptorTable,
                 RHI::ShaderInputSamplerIndex samplerIndex,
-                AZStd::array_view<RHI::SamplerState> samplerStates);
+                AZStd::span<const RHI::SamplerState> samplerStates);
 
             //Cache all the gpu handles for the Descriptor tables related to all the views
             void CacheGpuHandlesForViews(ShaderResourceGroup& group);
-
+            
             DescriptorTable GetBufferTable(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
             DescriptorTable GetBufferTableUnbounded(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
             DescriptorTable GetImageTable(DescriptorTable descriptorTable, RHI::ShaderInputImageIndex imageIndex) const;
             DescriptorTable GetSamplerTable(DescriptorTable descriptorTable, RHI::ShaderInputSamplerIndex samplerInputIndex) const;
 
             template<typename T, typename U>
-            AZStd::vector<DescriptorHandle> GetSRVsFromImageViews(const AZStd::array_view<RHI::ConstPtr<T>>& imageViews, D3D12_SRV_DIMENSION dimension);
+            AZStd::vector<DescriptorHandle> GetSRVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& imageViews, D3D12_SRV_DIMENSION dimension);
 
             template<typename T, typename U>
-            AZStd::vector<DescriptorHandle> GetUAVsFromImageViews(const AZStd::array_view<RHI::ConstPtr<T>>& bufferViews, D3D12_UAV_DIMENSION dimension);
+            AZStd::vector<DescriptorHandle> GetUAVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& bufferViews, D3D12_UAV_DIMENSION dimension);
 
-            AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufferViews);
+            AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews);
 
             MemoryPoolSubAllocator m_constantAllocator;
             DescriptorContext* m_descriptorContext = nullptr;

@@ -135,7 +135,7 @@ namespace AzNetworking
         int32_t sentBytes = size;
 
 #ifdef ENABLE_LATENCY_DEBUG
-        if (connectionQuality.m_latencyMs <= AZ::TimeMs{ 0 })
+        if (connectionQuality.m_latencyMs <= AZ::Time::ZeroTimeMs)
 #endif
         {
             sentBytes = SendInternal(address, data, size, encrypt, dtlsEndpoint);
@@ -153,9 +153,9 @@ namespace AzNetworking
             }
         }
 #ifdef ENABLE_LATENCY_DEBUG
-        else if ((connectionQuality.m_latencyMs > AZ::TimeMs{ 0 }) || (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }))
+        else if ((connectionQuality.m_latencyMs > AZ::Time::ZeroTimeMs) || (connectionQuality.m_varianceMs > AZ::Time::ZeroTimeMs))
         {
-            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }
+            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs > AZ::Time::ZeroTimeMs
                                       ? connectionQuality.m_varianceMs
                                       : AZ::TimeMs{ 1 });
             const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs) + jitterMs;

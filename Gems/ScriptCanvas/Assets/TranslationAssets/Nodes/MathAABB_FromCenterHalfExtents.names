@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{3EF44A2E-F065-5F2A-906D-A139AEA6DF4E}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Center Half Extents",
+                "category": "Math/AABB",
+                "tooltip": "returns the AABB with Min = Center - HalfExtents, Max = Center + HalfExtents"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Center_0",
+                    "details": {
+                        "name": "Center"
+                    }
+                },
+                {
+                    "base": "DataInput_HalfExtents_1",
+                    "details": {
+                        "name": "HalfExtents"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

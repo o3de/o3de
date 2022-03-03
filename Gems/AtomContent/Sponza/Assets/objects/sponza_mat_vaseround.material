@@ -1,26 +1,16 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/vaseRound_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/vaseRound_1k_basecolor.png"
+            "textureMap": "../Textures/vaseRound_1k_basecolor.png"
         },
         "clearCoat": {
-            "enable": true,
             "factor": 0.5,
-            "influenceMap": "Textures/vaseRound_1k_ao.png",
-            "normalMap": "Textures/vaseRound_1k_normal.jpg",
+            "influenceMap": "../Textures/vaseRound_1k_ao.png",
+            "normalMap": "../Textures/vaseRound_1k_normal.jpg",
             "roughness": 0.25
         },
         "general": {
@@ -28,28 +18,29 @@
         },
         "irradiance": {
             "color": [
-                1.0,
-                0.5939116477966309,
-                0.29176774621009829,
+                0.46933698654174805,
+                0.3824063539505005,
+                0.47861447930336,
                 1.0
             ]
         },
         "normal": {
-            "textureMap": "Textures/vaseRound_1k_normal.jpg"
+            "textureMap": "../Textures/vaseRound_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/vaseRound_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
-            "factor": 0.019999999552965165,
+            "factor": 0.019999999552965164,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/vaseRound_1k_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/vaseRound_1k_roughness.png"
+            "textureMap": "../Textures/vaseRound_1k_roughness.png"
         },
         "specularF0": {
             "enableMultiScatterCompensation": true
