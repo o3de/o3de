@@ -375,7 +375,7 @@ void AdjustWeight(inout float weight, in float position)
     {
         weight = weight - position * (4 - 4 * position) + 1;
     }
-    saturate(weight);
+    weight = saturate(weight);
 }
 
 /*

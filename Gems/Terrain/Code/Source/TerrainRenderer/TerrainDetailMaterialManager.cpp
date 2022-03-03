@@ -95,7 +95,8 @@ namespace Terrain
 
     void TerrainDetailMaterialManager::Initialize(
         const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+        const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
+        const AZ::Data::Instance<AZ::RPI::Material>& terrainMaterial)
     {
         AZ_Error(TerrainDetailMaterialManagerName, bindlessImageHandler, "bindlessImageHandler must not be null.");
         AZ_Error(TerrainDetailMaterialManagerName, terrainSrg, "terrainSrg must not be null.");
@@ -105,6 +106,9 @@ namespace Terrain
         {
             return;
         }
+
+        m_terrainMaterial = terrainMaterial;
+        UpdateTerrainMaterial();
 
         InitializePassthroughDetailMaterial();
         InitializeTextureParams();
@@ -152,7 +156,7 @@ namespace Terrain
         }
     }
     
-    bool TerrainDetailMaterialManager::UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+    bool TerrainDetailMaterialManager::UpdateSrgIndices(const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
         const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = terrainSrg->GetLayout();
             
@@ -232,6 +236,11 @@ namespace Terrain
 
     void TerrainDetailMaterialManager::Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
+        if (m_terrainMaterial->NeedsCompile())
+        {
+            UpdateTerrainMaterial();
+        }
+
         if (m_detailMaterialBufferNeedsUpdate)
         {
             m_detailMaterialBufferNeedsUpdate = false;
@@ -257,7 +266,8 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             m_detailTextureScale, &AzFramework::Terrain::TerrainDataRequests::GetTerrainSurfaceDataQueryResolution);
 
-        m_detailTextureSize = lroundf(m_config.m_renderDistance / m_detailTextureScale);
+        // Texture size needs to be twice the render distance because the camera is positioned in the middle of the texture.
+        m_detailTextureSize = lroundf(m_config.m_renderDistance / m_detailTextureScale) * 2;
 
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;
@@ -271,6 +281,21 @@ namespace Terrain
         m_detailTextureImage = {}; // Force the image to rebuild
         m_detailImageNeedsUpdate = true;
     }
+    
+    void TerrainDetailMaterialManager::UpdateTerrainMaterial()
+    {
+        AZ::RPI::MaterialPropertyIndex detailTextureMultiplierIndex = m_terrainMaterial->FindPropertyIndex(AZ::Name("settings.detailTextureMultiplier"));
+        AZ::RPI::MaterialPropertyIndex detailTextureFadeDistanceIndex = m_terrainMaterial->FindPropertyIndex(AZ::Name("settings.detailFadeDistance"));
+        AZ::RPI::MaterialPropertyIndex detailTextureFadeLengthIndex = m_terrainMaterial->FindPropertyIndex(AZ::Name("settings.detailFadeLength"));
+
+        AZ_Assert(detailTextureMultiplierIndex.IsValid(), "Terrain Feature Processor unable to find settings.detailTextureMultiplier in the terrain material.");
+        AZ_Assert(detailTextureFadeDistanceIndex.IsValid(), "Terrain Feature Processor unable to find settings.detailFadeDistance in the terrain material.");
+        AZ_Assert(detailTextureFadeLengthIndex.IsValid(), "Terrain Feature Processor unable to find settings.detailFadeLength in the terrain material.");
+
+        m_terrainMaterial->SetPropertyValue(detailTextureMultiplierIndex, 1.0f);
+        m_terrainMaterial->SetPropertyValue(detailTextureFadeDistanceIndex, AZStd::GetMax<float>(0.0f, m_config.m_renderDistance - m_config.m_fadeDistance));
+        m_terrainMaterial->SetPropertyValue(detailTextureFadeLengthIndex, m_config.m_fadeDistance);
+    }
 
     void TerrainDetailMaterialManager::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)
     {
@@ -281,7 +306,11 @@ namespace Terrain
             AZ::RPI::ShaderOptionValue{ m_config.m_useHeightBasedBlending }
         );
 
-        InitializeTextureParams();
+        if (IsInitialized())
+        {
+            UpdateTerrainMaterial();
+            InitializeTextureParams();
+        }
     }
 
     void TerrainDetailMaterialManager::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)

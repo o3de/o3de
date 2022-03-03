@@ -357,7 +357,7 @@ namespace AZ
                     AZ_TracePrintf("MaterialBuilder", AZStd::string::format("Producing %s...", fileName.c_str()).c_str());
 
                     // Load the material type file and create the MaterialTypeAsset object
-                    materialTypeAsset = CreateMaterialTypeAsset(request.m_sourceFile, document);
+                    materialTypeAsset = CreateMaterialTypeAsset(fullSourcePath, document);
 
                     if (!materialTypeAsset)
                     {

@@ -53,10 +53,11 @@ namespace Terrain
         
         void Initialize(
             const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
+            const AZ::Data::Instance<AZ::RPI::Material>& materialInstance);
         bool IsInitialized() const;
         void Reset();
-        bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
+        bool UpdateSrgIndices(const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
         void Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
@@ -226,6 +227,9 @@ namespace Terrain
         //! Updates data regarding the material ID texture and resets it so it will get rebuilt.
         void InitializeTextureParams();
 
+        //! Updates paramters related to detail materials on the terrain material itself.
+        void UpdateTerrainMaterial();
+
         using DefaultMaterialSurfaceCallback = AZStd::function<void(DetailMaterialSurface&)>;
         bool ForSurfaceTag(DetailMaterialListRegion& materialRegion,
             SurfaceData::SurfaceTag surfaceTag, DefaultMaterialSurfaceCallback callback);
@@ -238,6 +242,7 @@ namespace Terrain
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
+        AZ::Data::Instance<AZ::RPI::Material> m_terrainMaterial;
 
         DetailMaterialContainer m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;

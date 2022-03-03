@@ -1,0 +1,112 @@
+{
+    "description": "Material Type based on standard PBR with additional properites related to terrain.",
+    "version": 1,
+    "propertyLayout": {
+        "propertyGroups": [
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/MetallicPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            {
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/SpecularPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/NormalPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OcclusionPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ParallaxPropertyGroup.json" 
+            },
+            {
+                "name": "terrain",
+                "displayName": "Terrain",
+                "description": "Terrain related properties",
+                "properties": [
+                    {
+                        "name": "heightOffset",
+                        "displayName": "Height Offset",
+                        "description": "How much to offset the heights from 0",
+                        "type": "float",
+                        "defaultValue": 0
+                    },
+                    {
+                        "name": "heightScale",
+                        "displayName": "Height Offset",
+                        "description": "How much to offset the heights from 0",
+                        "type": "float",
+                        "defaultValue": 0
+                    },
+                    {
+                        "name": "blendFactor",
+                        "displayName": "Height Offset",
+                        "description": "How much to offset the heights from 0",
+                        "type": "float",
+                        "defaultValue": 0
+                    }
+                ]
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/GeneralCommonPropertyGroup.json"
+            }
+        ]
+    },
+    "shaders": [
+        {
+            "file": "Materials/Types/StandardPBR_ForwardPass.shader",
+            "tag": "ForwardPass"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_ForwardPass_EDS.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_LowEndForward.shader",
+            "tag": "LowEndForward"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_LowEndForward_EDS.shader",
+            "tag": "LowEndForward_EDS"
+        },
+        {
+            "file": "Shaders/Shadow/Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_Shadowmap_WithPS.shader",
+            "tag": "Shadowmap_WithPS"
+        },
+        {
+            "file": "Shaders/Depth/DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_DepthPass_WithPS.shader",
+            "tag": "DepthPass_WithPS"
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/StandardPBR_ShaderEnable.lua"
+            }
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

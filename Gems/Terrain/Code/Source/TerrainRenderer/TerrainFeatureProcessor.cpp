@@ -26,6 +26,8 @@
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
+#include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
+
 namespace Terrain
 {
     namespace
@@ -176,11 +178,12 @@ namespace Terrain
 
     void TerrainFeatureProcessor::UpdateHeightmapImage()
     {
+        auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         const AZ::Vector2 stepSize(m_sampleSpacing);
         AZStd::pair<size_t, size_t> numSamples;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            m_terrainBounds, stepSize);
+            m_terrainBounds, stepSize, samplerType);
 
         const AZ::RHI::Size heightmapSize = AZ::RHI::Size(
             aznumeric_cast<uint32_t>(numSamples.first),
@@ -212,7 +215,7 @@ namespace Terrain
         {
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-                m_dirtyRegion, stepSize);
+                m_dirtyRegion, stepSize, samplerType);
         
             const uint32_t updateWidth = aznumeric_cast<uint32_t>(numSamples.first);
             const uint32_t updateHeight = aznumeric_cast<uint32_t>(numSamples.second);
@@ -244,7 +247,7 @@ namespace Terrain
 
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-                    m_dirtyRegion, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+                    m_dirtyRegion, stepSize, perPositionCallback, samplerType);
             }
 
             constexpr uint32_t BytesPerPixel = sizeof(uint16_t);
@@ -309,9 +312,9 @@ namespace Terrain
             {
                 m_detailMaterialManager.UpdateSrgIndices(m_terrainSrg);
             }
-            else
+            else if(m_materialInstance)
             {
-                m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
+                m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
             }
         }
         else
