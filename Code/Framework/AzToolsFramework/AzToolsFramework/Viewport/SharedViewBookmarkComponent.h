@@ -33,16 +33,15 @@ namespace AzToolsFramework
 
         AZStd::string GetBookmarkLabel(int index) const;
 
-        AZStd::string m_localBookmarksFileName;
         AZStd::vector<ViewBookmark> m_viewBookmarks;
     };
 
-    class ViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
+    class SharedViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
         static constexpr const char* const ViewBookmarkComponentTypeId = "{6959832F-9382-4C7D-83AC-380DA9F138DE}";
 
-        AZ_COMPONENT(ViewBookmarkComponent, ViewBookmarkComponentTypeId, EditorComponentBase);
+        AZ_COMPONENT(SharedViewBookmarkComponent, ViewBookmarkComponentTypeId, EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -54,8 +53,6 @@ namespace AzToolsFramework
         void AddBookmark(ViewBookmark viewBookmark);
         void RemoveBookmark(int index);
         void ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark);
-        AZStd::string GetLocalBookmarksFileName() const;
-        void SetLocalBookmarksFileName(const AZStd::string& localBookmarksFileName);
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);

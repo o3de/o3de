@@ -488,8 +488,10 @@ set(FILES
     Viewport/EditorContextMenu.cpp
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
-    Viewport/ViewBookmarkComponent.h
-    Viewport/ViewBookmarkComponent.cpp
+    Viewport/LocalViewBookmarkComponent.h
+    Viewport/LocalViewBookmarkComponent.cpp
+    Viewport/SharedViewBookmarkComponent.h
+    Viewport/SharedViewBookmarkComponent.cpp
     Viewport/ViewBookmarkLoader.h
     Viewport/ViewBookmarkLoader.cpp
     Viewport/ViewBookmarkLoaderInterface.h

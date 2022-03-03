@@ -32,7 +32,10 @@ namespace AzToolsFramework
         void SaveBookmarkSettingsFile() override;
         bool SaveLocalBookmark(ViewBookmark& bookmark, bool isLastKnownLocation = false);
         bool SaveSharedBookmark(ViewBookmark& bookmark);
-        ViewBookmarkComponent* FindBookmarkComponent() const;
+
+        template<typename BookmarkComponentType>
+        BookmarkComponentType* FindBookmarkComponent() const;
+
         AZStd::string GenerateBookmarkFileName() const;
 
     private:

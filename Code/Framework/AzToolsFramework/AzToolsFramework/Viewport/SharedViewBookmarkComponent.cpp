@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzToolsFramework/Viewport/ViewBookmarkComponent.h>
+#include <AzToolsFramework/Viewport/SharedViewBookmarkComponent.h>
 
 namespace AzToolsFramework
 {
@@ -40,15 +40,12 @@ namespace AzToolsFramework
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorViewBookmarks>()
-                ->Field("LocalBookmarkFileName", &EditorViewBookmarks::m_localBookmarksFileName)
                 ->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorViewBookmarks>("EditorViewBookmarks", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Editor View Bookmarks")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_localBookmarksFileName, "Local Bookmarks FileName", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_viewBookmarks, "View Bookmarks", "")
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -62,7 +59,7 @@ namespace AzToolsFramework
         return AZStd::string::format("View Bookmark %d", index);
     }
 
-    void ViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
+    void SharedViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
     {
         EditorViewBookmarks::Reflect(context);
 
@@ -70,16 +67,16 @@ namespace AzToolsFramework
         {
             serializeContext->RegisterGenericType<EditorViewBookmarks>();
 
-            serializeContext->Class<ViewBookmarkComponent, EditorComponentBase>()->Version(0)->Field(
-                "ViewBookmarks", &ViewBookmarkComponent::m_viewBookmark);
+            serializeContext->Class<SharedViewBookmarkComponent, EditorComponentBase>()->Version(0)->Field(
+                "ViewBookmarks", &SharedViewBookmarkComponent::m_viewBookmark);
 
             serializeContext->RegisterGenericType<AZStd::vector<AZ::Uuid>>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext
-                    ->Class<ViewBookmarkComponent>(
-                        "View Bookmark Component", "The ViewBookmark Component allows to store bookmarks for a prefab")
+                    ->Class<SharedViewBookmarkComponent>(
+                        "Shared View Bookmark Component", "The ViewBookmark Component allows to store bookmarks for a prefab")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
@@ -88,13 +85,13 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SharedViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
             }
         }
     }
 
-    ViewBookmark ViewBookmarkComponent::GetBookmarkAtIndex(int index) const
+    ViewBookmark SharedViewBookmarkComponent::GetBookmarkAtIndex(int index) const
     {
         if (index >= 0 && index < m_viewBookmark.m_viewBookmarks.size())
         {
@@ -103,36 +100,26 @@ namespace AzToolsFramework
         return ViewBookmark();
     }
 
-    void ViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)
+    void SharedViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)
     {
         m_viewBookmark.m_viewBookmarks.push_back(viewBookmark);
     }
 
-    void ViewBookmarkComponent::RemoveBookmark([[maybe_unused]] int index)
+    void SharedViewBookmarkComponent::RemoveBookmark([[maybe_unused]] int index)
     {
     }
 
-    void ViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
+    void SharedViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
     {
         m_viewBookmark.m_viewBookmarks[index] = newBookmark;
     }
 
-    AZStd::string ViewBookmarkComponent::GetLocalBookmarksFileName() const
-    {
-        return m_viewBookmark.m_localBookmarksFileName;
-    }
-
-    void ViewBookmarkComponent::SetLocalBookmarksFileName(const AZStd::string& localBookmarksFileName)
-    {
-        m_viewBookmark.m_localBookmarksFileName = localBookmarksFileName;
-    }
-
-    void ViewBookmarkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    void SharedViewBookmarkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         services.push_back(AZ_CRC_CE("EditorViewbookmarkingService"));
     }
 
-    void ViewBookmarkComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    void SharedViewBookmarkComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         services.push_back(AZ_CRC_CE("EditorViewbookmarkingService"));
     }

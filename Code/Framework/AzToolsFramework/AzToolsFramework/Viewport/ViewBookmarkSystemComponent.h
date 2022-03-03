@@ -32,7 +32,6 @@ namespace AzToolsFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
-
         //! Used for loading/saving Prefab View Bookmarks.
         ViewBookmarkLoader m_viewBookmarkLoader;
     };

@@ -6,11 +6,12 @@
  *
  */
 
-#include "API/ToolsApplicationAPI.h"
+#include <API/ToolsApplicationAPI.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
+#include <Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/ViewBookmarkLoader.h>
 
 namespace AzToolsFramework
@@ -214,7 +215,7 @@ namespace AzToolsFramework
             ViewBookmark m_lastKnownLocation;
         };
 
-        ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent();
+        LocalViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<LocalViewBookmarkComponent>();
         if (bookmarkComponent)
         {
             // Get the file we want to merge into the settings registry.
@@ -262,7 +263,7 @@ namespace AzToolsFramework
 
     ViewBookmark ViewBookmarkLoader::GetBookmarkAtIndex(int index) const
     {
-        if (ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent())
+        if (SharedViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<SharedViewBookmarkComponent>())
         {
             return bookmarkComponent->GetBookmarkAtIndex(index);
         }
@@ -275,7 +276,8 @@ namespace AzToolsFramework
         return ViewBookmark();
     }
 
-    ViewBookmarkComponent* ViewBookmarkLoader::FindBookmarkComponent() const
+    template<typename BookmarkComponentType>
+    BookmarkComponentType* ViewBookmarkLoader::FindBookmarkComponent() const
     {
         AZ::EntityId levelEntityId;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
@@ -287,7 +289,7 @@ namespace AzToolsFramework
             AZ::ComponentApplicationBus::BroadcastResult(levelEntity, &AZ::ComponentApplicationBus::Events::FindEntity, levelEntityId);
             if (levelEntity)
             {
-                ViewBookmarkComponent* bookmarkComponent = levelEntity->FindComponent<ViewBookmarkComponent>();
+                BookmarkComponentType* bookmarkComponent = levelEntity->FindComponent<BookmarkComponentType>();
                 if (bookmarkComponent)
                 {
                     return bookmarkComponent;
@@ -322,7 +324,7 @@ namespace AzToolsFramework
     }
     bool ViewBookmarkLoader::SaveSharedBookmark(ViewBookmark& bookmark)
     {
-        if (ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent())
+        if (SharedViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<SharedViewBookmarkComponent>())
         {
             bookmarkComponent->AddBookmark(bookmark);
             return true;
@@ -338,7 +340,7 @@ namespace AzToolsFramework
             // This adds a dependency on the ViewBookmarkComponent. If necessary we could move the "localBookmarksFile" field
             // to another part of the prefab.
 
-            if (ViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent())
+            if (LocalViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<LocalViewBookmarkComponent>())
             {
                 // if the field is not empty then we have a file linked to the prefab.
                 if (bookmarkComponent && !bookmarkComponent->GetLocalBookmarksFileName().empty())

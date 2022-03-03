@@ -56,7 +56,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
-#include <AzToolsFramework/Viewport/ViewBookmarkComponent.h>
+#include <AzToolsFramework/Viewport/SharedViewBookmarkComponent.h>
+#include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 
@@ -86,8 +87,9 @@ namespace AzToolsFramework
             Prefab::PrefabSystemComponent::CreateDescriptor(),
             Prefab::EditorPrefabComponent::CreateDescriptor(),
             Prefab::ProceduralPrefabSystemComponent::CreateDescriptor(),
-            ViewBookmarkSystemComponent::CreateDescriptor(),
-            ViewBookmarkComponent::CreateDescriptor(),
+            AzToolsFramework::ViewBookmarkSystemComponent::CreateDescriptor(),
+            AzToolsFramework::SharedViewBookmarkComponent::CreateDescriptor(),
+            AzToolsFramework::LocalViewBookmarkComponent::CreateDescriptor(),
             Components::EditorEntityActionComponent::CreateDescriptor(),
             Components::EditorEntityIconComponent::CreateDescriptor(),
             Components::EditorInspectorComponent::CreateDescriptor(),

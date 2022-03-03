@@ -10,7 +10,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Viewport/ViewBookmarkComponent.h>
+#include <Viewport/SharedViewBookmarkComponent.h>
 
 namespace AzToolsFramework
 {

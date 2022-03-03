@@ -276,7 +276,7 @@ namespace AzToolsFramework
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<Prefab::ProceduralPrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),
-                azrtti_typeid<ViewBookmarkSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::ViewBookmarkSystemComponent>(),
                 azrtti_typeid<Components::EditorComponentAPIComponent>(),
                 azrtti_typeid<Components::EditorLevelComponentAPIComponent>(),
                 azrtti_typeid<Components::EditorEntityActionComponent>(),
