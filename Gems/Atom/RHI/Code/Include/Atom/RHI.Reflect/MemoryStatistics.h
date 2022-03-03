@@ -29,6 +29,11 @@ namespace AZ
 
                 /// The memory usage of the buffer on the pool.
                 size_t m_sizeInBytes = 0;
+
+                /// The fragmentation within the buffer (optional). If supplied, should be computed as:
+                ///     1 - (largest free block byte size) / (total free memory).
+                /// Buffers that do not suballocate do not need to provide this quantity
+                float m_fragmentation = 0.f;
             };
 
             struct Image
