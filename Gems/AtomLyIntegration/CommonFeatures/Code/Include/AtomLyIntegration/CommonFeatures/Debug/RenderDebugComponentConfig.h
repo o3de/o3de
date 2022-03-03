@@ -11,30 +11,28 @@
 #include <AzCore/Component/Component.h>
 #include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
 
-namespace AZ {
-    namespace Render {
+namespace AZ::Render
+{
+    class RenderDebugComponentConfig final
+        : public ComponentConfig
+    {
+    public:
+        AZ_RTTI(AZ::Render::RenderDebugComponentConfig, "{07362463-95C9-40CE-89E7-76FD25978E96}", AZ::ComponentConfig);
 
-        class RenderDebugComponentConfig final
-            : public ComponentConfig
-        {
-        public:
-            AZ_RTTI(AZ::Render::RenderDebugComponentConfig, "{07362463-95C9-40CE-89E7-76FD25978E96}", AZ::ComponentConfig);
+        static void Reflect(ReflectContext* context);
 
-            static void Reflect(ReflectContext* context);
-
-            // Generate members...
+        // Generate members...
 #include <Atom/Feature/ParamMacros/StartParamMembers.inl>
 #include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-            // Generate Getters/Setters...
+        // Generate Getters/Setters...
 #include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
 #include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-            void CopySettingsFrom(RenderDebugSettingsInterface* settings);
-            void CopySettingsTo(RenderDebugSettingsInterface* settings);
-        };
+        void CopySettingsFrom(RenderDebugSettingsInterface* settings);
+        void CopySettingsTo(RenderDebugSettingsInterface* settings);
+    };
 
-    }
 }

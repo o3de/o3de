@@ -33,10 +33,10 @@ partial ShaderResourceGroup ViewSrg
     // Debug members...
 
     // Rendering options related to shader debugging
-    uint m_debugOptions;
+    uint m_renderDebugOptions;
 
     // Specifies what should be output to the view (i.e. normals, lighting, albedo, etc.)
-    uint m_debugView;
+    uint m_renderDebugViewMode;
 
     float GetNearZ()
     {

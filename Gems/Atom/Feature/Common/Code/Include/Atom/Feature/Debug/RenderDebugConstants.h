@@ -8,15 +8,48 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector2.h>
+#include <AZCore/Math/Vector3.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    // ! ENUM MUST MATCH DEBUG.AZSLI !
+    // Options controlling various aspects of the rendering
+    enum class RenderDebugOptions : u32
     {
-        namespace RenderDebug
-        {
-            // static constexpr float DefaultStrength = 1.0f;
-        }
+        UseVertexNormal,
+        IgnoreDetailNormal,
+
+        OverrideAlbedo,
+        OverrideRoughness,
+        OverrideMetallic,
+
+        UseDebugLight,
+
+        Count
+    };
+
+    // ! ENUM MUST MATCH DEBUG.AZSLI !
+    // Specifies what debug info to render to the view
+    enum class RenderDebugViewMode : u32
+    {
+        None,
+
+        Normal,
+        Tangent,
+        Bitangent,
+
+        Albedo,
+        Roughness,
+        Metallic,
+
+        DiffuseLighting,
+        SpecularLighting,
+
+        Count
+    };
+
+    namespace RenderDebug
+    {
+        // static constexpr float DefaultStrength = 1.0f;
     }
 }

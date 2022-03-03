@@ -19,7 +19,7 @@
 
 
 // Options controlling various aspects of the rendering
-enum DebugOptions
+enum RenderDebugOptions
 {
     UseVertexNormal,
     IgnoreDetailNormal,
@@ -34,7 +34,7 @@ enum DebugOptions
 };
 
 // Specifies what debug info to render to the view
-enum DebugView
+enum RenderDebugViewMode
 {
     None,
 
@@ -64,9 +64,9 @@ uint GetDebugOption(uint option)
     return GetBit(debugOptions, option);
 }
 
-uint GetDebugView()
+uint GetRenderDebugViewMode()
 {
-    // return ViewSrg::m_debugView;
+    // return ViewSrg::m_renderDebugViewMode;
     return 0;
 }
 
@@ -110,10 +110,9 @@ void DebugModifySurface(inout float3 normal, inout float3 vertexNormal,
 }
 
 void DebugModifyOutput(inout float4 output01, inout float4 output02, 
-                       float3 diffuseLighting, float3 specularLighting,
-                       uint debugView)
+                       float3 diffuseLighting, float3 specularLighting)
 {
-    uint debugView = ViewSrg::m_debugView;
+    uint viewMode = ViewSrg::m_renderDebugViewMode;
 
 
 

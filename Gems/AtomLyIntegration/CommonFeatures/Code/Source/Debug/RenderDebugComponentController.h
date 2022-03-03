@@ -8,15 +8,12 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/TransformBus.h>
-
 #include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugBus.h>
 #include <AtomLyIntegration/CommonFeatures/Debug/RenderDebugComponentConfig.h>
 
 #include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
-#include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>
-#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
+#include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
+#include <Atom/Feature/Debug/RenderDebugFeatureProcessorInterface.h>
 
 namespace AZ {
     namespace Render {
@@ -51,7 +48,6 @@ namespace AZ {
 
             void OnConfigChanged();
 
-            PostProcessSettingsInterface* m_postProcessInterface = nullptr;
             RenderDebugSettingsInterface* m_renderDebugSettingsInterface = nullptr;
             RenderDebugComponentConfig m_configuration;
             EntityId m_entityId;

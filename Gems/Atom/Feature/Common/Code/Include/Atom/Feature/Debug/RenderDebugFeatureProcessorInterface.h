@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
-#include <AzCore/Math/Quaternion.h>
+#include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
 
 namespace AZ {
     namespace Render {
@@ -21,6 +21,17 @@ namespace AZ {
         public:
             AZ_RTTI(AZ::Render::RenderDebugFeatureProcessorInterface, "{9774C763-178C-4CE2-99CD-3ABDE12445A4}", RPI::FeatureProcessor);
 
+            //! Retrieves existing settings. If none found, returns nullptr.
+            virtual RenderDebugSettingsInterface* GetSettingsInterface() = 0;
+
+            //! Retrieves existing settings. If none found, creates a new instance.
+            virtual RenderDebugSettingsInterface* GetOrCreateSettingsInterface() = 0;
+
+            //! Removes settings for corresponding entity ID.
+            virtual void RemoveSettingsInterface() = 0;
+
+            //! Called to notify the feature processor that changes have been made to it's owned post process settings
+            virtual void OnPostProcessSettingsChanged() = 0;
         };
 
     } // namespace Render

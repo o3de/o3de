@@ -54,7 +54,7 @@ namespace AZ
 
         void RenderDebugComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            AZ_UNUSED(required);
+            AZ_UNUSED(required)
         }
 
         RenderDebugComponentController::RenderDebugComponentController(const RenderDebugComponentConfig& config)
@@ -66,13 +66,12 @@ namespace AZ
         {
             m_entityId = entityId;
 
-            PostProcessFeatureProcessorInterface* fp = RPI::Scene::GetFeatureProcessorForEntity<PostProcessFeatureProcessorInterface>(m_entityId);
+            RenderDebugFeatureProcessorInterface* fp = RPI::Scene::GetFeatureProcessorForEntity<RenderDebugFeatureProcessorInterface>(m_entityId);
             if (fp)
             {
-                m_postProcessInterface = fp->GetOrCreateSettingsInterface(m_entityId);
-                if (m_postProcessInterface)
+                m_renderDebugSettingsInterface = fp->GetOrCreateSettingsInterface();
+                if (m_renderDebugSettingsInterface)
                 {
-                    // m_renderDebugSettingsInterface = m_postProcessInterface->GetOrCreateRenderDebugSettingsInterface();
                     OnConfigChanged();
                 }
             }
@@ -82,13 +81,6 @@ namespace AZ
         void RenderDebugComponentController::Deactivate()
         {
             RenderDebugRequestBus::Handler::BusDisconnect(m_entityId);
-
-            // if (m_postProcessInterface)
-            // {
-            //     m_postProcessInterface->RemoveRenderDebugSettingsInterface();
-            // }
-
-            m_postProcessInterface = nullptr;
             m_renderDebugSettingsInterface = nullptr;
             m_entityId.SetInvalid();
         }
