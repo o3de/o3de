@@ -29,11 +29,14 @@ namespace MaterialEditor
         , private AZ::TickBus::Handler
     {
     public:
-        AZ_RTTI(MaterialDocument, "{DBA269AE-892B-415C-8FA1-166B94B0E045}");
+        AZ_RTTI(MaterialDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
         AZ_CLASS_ALLOCATOR(MaterialDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(MaterialDocument);
+        AZ_DISABLE_COPY_MOVE(MaterialDocument);
 
-        MaterialDocument();
+        static void Reflect(AZ::ReflectContext* context);
+
+        MaterialDocument() = default;
+        MaterialDocument(const AZ::Crc32& toolId);
         virtual ~MaterialDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...

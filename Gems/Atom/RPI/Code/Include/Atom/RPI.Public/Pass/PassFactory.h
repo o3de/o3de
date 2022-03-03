@@ -59,7 +59,7 @@ namespace AZ
             Ptr<Pass> CreatePassFromClass(Name passClassName, Name passName);
 
             //! Creates a Pass using a PassTemplate
-            Ptr<Pass> CreatePassFromTemplate(const AZStd::shared_ptr<PassTemplate>& passTemplate, Name passName);
+            Ptr<Pass> CreatePassFromTemplate(const AZStd::shared_ptr<const PassTemplate>& passTemplate, Name passName);
 
             //! Creates a Pass using the name of a PassTemplate
             Ptr<Pass> CreatePassFromTemplate(Name templateName, Name passName);
@@ -80,7 +80,7 @@ namespace AZ
             CreatorIndex FindCreatorIndex(Name passClassName);
 
             // Helper function that creates a pass using an index into the list of PassCreators
-            Ptr<Pass> CreatePassFromIndex(CreatorIndex index, Name passName, const AZStd::shared_ptr<PassTemplate>& passTemplate, const PassRequest* passRequest);
+            Ptr<Pass> CreatePassFromIndex(CreatorIndex index, Name passName, const AZStd::shared_ptr<const PassTemplate>& passTemplate, const PassRequest* passRequest);
 
             // --- Members ---
 

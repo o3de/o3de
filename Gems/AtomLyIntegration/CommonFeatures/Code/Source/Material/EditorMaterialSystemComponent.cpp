@@ -186,12 +186,20 @@ namespace AZ
                     propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyOverrides,
                     materialAssignmentId);
 
+                AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+                modelAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath));
+
+                AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
+                materialAsset.Create(materialAssetId);
+
+                AZ::Data::Asset<AZ::RPI::AnyAsset> lightingPresetAsset;
+                lightingPresetAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath));
+
                 previewRenderer->AddCaptureRequest(
                     { MaterialPreviewResolution,
                       AZStd::make_shared<AZ::LyIntegration::SharedPreviewContent>(
-                          previewRenderer->GetScene(), previewRenderer->GetView(), previewRenderer->GetEntityContextId(),
-                          AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath), materialAssetId,
-                          AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath), propertyOverrides),
+                          previewRenderer->GetScene(), previewRenderer->GetView(), previewRenderer->GetEntityContextId(), modelAsset,
+                          materialAsset, lightingPresetAsset, propertyOverrides),
                       [entityId, materialAssignmentId]()
                       {
                           AZ_UNUSED(entityId);

@@ -110,7 +110,7 @@ namespace AZ
         void NewDepthOfFieldTileReducePass::FrameBeginInternal(FramePrepareParams params)
         {
             AZ_Assert(GetOutputCount() > 0, "NewDepthOfFieldTileReducePass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "NewDepthOfFieldTileReducePass: Output binding has no attachment!");
             RHI::Size outputSize = outputAttachment->m_descriptor.m_image.m_size;

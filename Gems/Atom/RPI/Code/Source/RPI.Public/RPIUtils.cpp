@@ -10,10 +10,13 @@
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
 
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 
+#include <AzCore/Math/Color.h>
+#include <AzCore/std/containers/array.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
@@ -105,6 +108,25 @@ namespace AZ
                 return ((value - origMin) / (origMax - origMin)) * (scaledMax - scaledMin) + scaledMin;
             }
 
+            // Pre-compute a lookup table for converting SRGB gamma to linear
+            // by specifying the AZ::u8 so we don't have to do the computation
+            // when retrieving pixels
+            using ConversionLookupTable = AZStd::array<float, 256>;
+            ConversionLookupTable CreateSrgbGammaToLinearLookupTable()
+            {
+                ConversionLookupTable lookupTable;
+
+                for (size_t i = 0; i < lookupTable.array_size; ++i)
+                {
+                    float srgbValue = i / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                    lookupTable[i] = AZ::Color::ConvertSrgbGammaToLinear(srgbValue);
+                }
+
+                return lookupTable;
+            }
+
+            static ConversionLookupTable s_SrgbGammaToLinearLookupTable = CreateSrgbGammaToLinearLookupTable();
+
             float RetrieveFloatValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
             {
                 switch (format)
@@ -113,12 +135,23 @@ namespace AZ
                 case AZ::RHI::Format::A8_UNORM:
                 case AZ::RHI::Format::R8G8_UNORM:
                 case AZ::RHI::Format::R8G8B8A8_UNORM:
+                case AZ::RHI::Format::A8B8G8R8_UNORM:
                 {
                     return mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+                }
+                case AZ::RHI::Format::R8_UNORM_SRGB:
+                case AZ::RHI::Format::R8G8_UNORM_SRGB:
+                case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
+                case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
+                {
+                    // Use a lookup table that takes an AZ::u8 instead of a float
+                    // for better performance
+                    return s_SrgbGammaToLinearLookupTable[mem[index]];
                 }
                 case AZ::RHI::Format::R8_SNORM:
                 case AZ::RHI::Format::R8G8_SNORM:
                 case AZ::RHI::Format::R8G8B8A8_SNORM:
+                case AZ::RHI::Format::A8B8G8R8_SNORM:
                 {
                     // Scale the value from AZ::s8 min/max to -1 to 1
                     // We need to treat -128 and -127 the same, so that we get a symmetric
@@ -452,9 +485,15 @@ namespace AZ
             case AZ::RHI::Format::A8_UNORM:
             case AZ::RHI::Format::R8G8_UNORM:
             case AZ::RHI::Format::R8G8B8A8_UNORM:
+            case AZ::RHI::Format::A8B8G8R8_UNORM:
+            case AZ::RHI::Format::R8_UNORM_SRGB:
+            case AZ::RHI::Format::R8G8_UNORM_SRGB:
+            case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
+            case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
             case AZ::RHI::Format::R8_SNORM:
             case AZ::RHI::Format::R8G8_SNORM:
             case AZ::RHI::Format::R8G8B8A8_SNORM:
+            case AZ::RHI::Format::A8B8G8R8_SNORM:
             case AZ::RHI::Format::D16_UNORM:
             case AZ::RHI::Format::R16_UNORM:
             case AZ::RHI::Format::R16G16_UNORM:
@@ -642,6 +681,28 @@ namespace AZ
             }
 
             return true;
+        }
+
+        AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix)
+        {
+            AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
+            if (!pipelineAsset.IsReady())
+            {
+                // Error already reported by LoadAssetByProductPath
+                return AZStd::nullopt;
+            }
+            const RenderPipelineDescriptor* assetPipelineDesc = GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
+            if (!assetPipelineDesc)
+            {
+                AZ_Error("RPIUtils", false, "Invalid render pipeline descriptor from asset %s", pipelineAssetPath.c_str());
+                return AZStd::nullopt;
+            }
+
+            RenderPipelineDescriptor pipelineDesc = *assetPipelineDesc;
+            pipelineDesc.m_name += nameSuffix;
+
+            return { AZStd::move(pipelineDesc) };
         }
     }
 }

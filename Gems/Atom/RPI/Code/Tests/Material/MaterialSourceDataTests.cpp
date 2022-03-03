@@ -87,7 +87,7 @@ namespace UnitTest
             RPITestFixture::TearDown();
         }
 
-        Data::Asset<MaterialTypeAsset> CreateTestMaterialTypeAsset(Data::AssetId assetId)
+        AZStd::string GetTestMaterialTypeJson()
         {
             const char* materialTypeJson = R"(
                     {
@@ -146,8 +146,13 @@ namespace UnitTest
                     }
                 )";
 
+            return materialTypeJson;
+        }
+
+        Data::Asset<MaterialTypeAsset> CreateTestMaterialTypeAsset(Data::AssetId assetId)
+        {
             MaterialTypeSourceData materialTypeSourceData;
-            LoadTestDataFromJson(materialTypeSourceData, materialTypeJson);
+            LoadTestDataFromJson(materialTypeSourceData, GetTestMaterialTypeJson());
             return materialTypeSourceData.CreateMaterialTypeAsset(assetId).TakeValue();
         }
     };
@@ -298,6 +303,64 @@ namespace UnitTest
         // The raw property values are still available (because they are needed if a hot-reload of the MaterialTypeAsset occurs)
         EXPECT_FALSE(materialAsset->WasPreFinalized());
         checkRawPropertyValues();
+    }
+    
+    TEST_F(MaterialSourceDataTests, CreateMaterialAsset_VersionUpdate_ReportTheSpecifiedMaterialTypeVersion)
+    {
+        // This is in response to a specific issue where the material type version update reported the wrong version
+        // because MaterialSourceData was not feeding it to the MaterialAsset 
+
+        AZ::Utils::WriteFile(GetTestMaterialTypeJson(), "@exefolder@/Temp/test.materialtype");
+
+        MaterialSourceData sourceData;
+
+        sourceData.m_materialType = "@exefolder@/Temp/test.materialtype";
+        sourceData.m_materialTypeVersion = 5;
+        AddPropertyGroup(sourceData, "oldGroup");
+        AddProperty(sourceData, "oldGroup", "MyFloat", 1.2f);
+
+        ErrorMessageFinder findVersionWarning;
+        findVersionWarning.AddExpectedErrorMessage("This material is based on version '5'");
+        findVersionWarning.AddExpectedErrorMessage("the material type is now at version '10'");
+        findVersionWarning.AddExpectedErrorMessage("Consider updating the .material source file");
+
+        findVersionWarning.ResetCounts();
+        sourceData.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::PreBake);
+        findVersionWarning.CheckExpectedErrorsFound();
+        
+        findVersionWarning.ResetCounts();
+        sourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom());
+        findVersionWarning.CheckExpectedErrorsFound();
+    }
+    
+    TEST_F(MaterialSourceDataTests, CreateMaterialAsset_VersionUpdate_ReportUnspecifiedMaterialTypeVersion)
+    {
+        // This is in response to a specific issue where the material type version update reported the wrong version
+        // because MaterialSourceData was not feeding it to the MaterialAsset.
+        // It's the same as CreateMaterialAsset_VersionUpdate_ReportTheSpecifiedMaterialTypeVersion except it looks
+        // for "<Unspecified>" in the warning message.
+
+        AZ::Utils::WriteFile(GetTestMaterialTypeJson(), "@exefolder@/Temp/test.materialtype");
+
+        MaterialSourceData sourceData;
+
+        sourceData.m_materialType = "@exefolder@/Temp/test.materialtype";
+        // We intentionally do not set sourceData.m_materialTypeVersion here
+        AddPropertyGroup(sourceData, "oldGroup");
+        AddProperty(sourceData, "oldGroup", "MyFloat", 1.2f);
+
+        ErrorMessageFinder findVersionWarning;
+        findVersionWarning.AddExpectedErrorMessage("This material is based on version <Unspecified>");
+        findVersionWarning.AddExpectedErrorMessage("the material type is now at version '10'");
+        findVersionWarning.AddExpectedErrorMessage("Consider updating the .material source file");
+
+        findVersionWarning.ResetCounts();
+        sourceData.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::PreBake);
+        findVersionWarning.CheckExpectedErrorsFound();
+        
+        findVersionWarning.ResetCounts();
+        sourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom());
+        findVersionWarning.CheckExpectedErrorsFound();
     }
 
     // Can return a Vector4 or a Color as a Vector4
@@ -1247,6 +1310,60 @@ namespace UnitTest
         EXPECT_EQ(properties[myFloat.GetIndex()].GetValue<float>(), 3.5f);
         EXPECT_EQ(properties[myFloat2.GetIndex()].GetValue<Vector2>(), Vector2(4.1f, 4.2f));
         EXPECT_EQ(properties[myColor.GetIndex()].GetValue<Color>(), Color(0.15f, 0.25f, 0.35f, 0.45f));
+    }
+
+
+    TEST_F(MaterialSourceDataTests, CreateAllPropertyDefaultsMaterial)
+    {
+        const char* materialTypeJson = R"(
+                {
+                    "version": 3,
+                    "propertyLayout": {
+                        "propertyGroups": [
+                            {
+                                "name": "general",
+                                "properties": [
+                                    {"name": "MyBool", "type": "bool", "defaultValue": true},
+                                    {"name": "MyInt", "type": "Int", "defaultValue": -7},
+                                    {"name": "MyUInt", "type": "UInt", "defaultValue": 78},
+                                    {"name": "MyFloat", "type": "Float", "defaultValue": 1.5},
+                                    {"name": "MyFloat2", "type": "Vector2", "defaultValue": [0.1,0.2]},
+                                    {"name": "MyFloat3", "type": "Vector3", "defaultValue": [0.1,0.2,0.3]},
+                                    {"name": "MyFloat4", "type": "Vector4", "defaultValue": [0.1,0.2,0.3,0.4]},
+                                    {"name": "MyColor", "type": "Color", "defaultValue": [0.1,0.2,0.3,0.5]},
+                                    {"name": "MyImage1", "type": "Image"},
+                                    {"name": "MyImage2", "type": "Image", "defaultValue": "@exefolder@/Temp/test.streamingimage"},
+                                    {"name": "MyEnum", "type": "Enum", "enumValues": ["Enum0", "Enum1", "Enum2"], "defaultValue": "Enum1"}
+                                ]
+                            }
+                        ]
+                    }
+                }
+            )";
+
+        MaterialTypeSourceData materialTypeSourceData;
+        LoadTestDataFromJson(materialTypeSourceData, materialTypeJson);
+        Data::Asset<MaterialTypeAsset> materialType = materialTypeSourceData.CreateMaterialTypeAsset(Uuid::CreateRandom()).TakeValue();
+
+        MaterialSourceData material = MaterialSourceData::CreateAllPropertyDefaultsMaterial(materialType, "@exefolder@/Temp/test.materialtype");
+
+        MaterialSourceData expecteMaterial;
+        expecteMaterial.m_materialType = "@exefolder@/Temp/test.materialtype";
+        expecteMaterial.m_description = "For reference, lists the default values for every available property in '@exefolder@/Temp/test.materialtype'";
+        expecteMaterial.m_materialTypeVersion = 3;
+        expecteMaterial.SetPropertyValue(Name{"general.MyBool"}, true);
+        expecteMaterial.SetPropertyValue(Name{"general.MyInt"}, -7);
+        expecteMaterial.SetPropertyValue(Name{"general.MyUInt"}, 78);
+        expecteMaterial.SetPropertyValue(Name{"general.MyFloat"}, 1.5f);
+        expecteMaterial.SetPropertyValue(Name{"general.MyFloat2"}, Vector2{0.1f,0.2f});
+        expecteMaterial.SetPropertyValue(Name{"general.MyFloat3"}, Vector3{0.1f,0.2f,0.3f});
+        expecteMaterial.SetPropertyValue(Name{"general.MyFloat4"}, Vector4{0.1f,0.2f,0.3f,0.4f});
+        expecteMaterial.SetPropertyValue(Name{"general.MyColor"}, Color{0.1f,0.2f,0.3f,0.5f});
+        expecteMaterial.SetPropertyValue(Name{"general.MyImage1"}, AZStd::string{});
+        expecteMaterial.SetPropertyValue(Name{"general.MyImage2"}, AZStd::string{"@exefolder@/Temp/test.streamingimage"});
+        expecteMaterial.SetPropertyValue(Name{"general.MyEnum"}, AZStd::string{"Enum1"});
+
+        CheckEqual(expecteMaterial, material);
     }
 }
 

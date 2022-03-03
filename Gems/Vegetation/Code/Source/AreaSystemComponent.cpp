@@ -1099,7 +1099,7 @@ namespace Vegetation
         // 0 = lower left corner, 0.5 = center
         const float texelOffset = (sectorPointSnapMode == SnapMode::Center) ? 0.5f : 0.0f;
 
-        SurfaceData::SurfacePointLists availablePointsPerPosition;
+        SurfaceData::SurfacePointList availablePointsPerPosition;
         AZ::Vector2 stepSize(vegStep, vegStep);
         AZ::Vector3 regionOffset(texelOffset * vegStep, texelOffset * vegStep, 0.0f);
         AZ::Aabb regionBounds = sectorInfo.m_bounds;
@@ -1120,27 +1120,20 @@ namespace Vegetation
             SurfaceData::SurfaceTagVector(),
             availablePointsPerPosition);
 
-        AZ_Assert(availablePointsPerPosition.size() == (sectorDensity * sectorDensity),
-            "Veg sector ended up with unexpected density (%d points created, %d expected)", availablePointsPerPosition.size(),
-            (sectorDensity * sectorDensity));
-
         uint claimIndex = 0;
-        for (auto& availablePoints : availablePointsPerPosition)
-        {
-            availablePoints.EnumeratePoints(
-                [this, &sectorInfo,
-                 &claimIndex](const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
-                {
-                    sectorInfo.m_baseContext.m_availablePoints.push_back();
-                    ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
-                    claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
-                    claimPoint.m_position = position;
-                    claimPoint.m_normal = normal;
-                    claimPoint.m_masks = masks;
-                    sectorInfo.m_baseContext.m_masks.AddSurfaceTagWeights(masks);
-                    return true;
-                });
-        }
+        availablePointsPerPosition.EnumeratePoints([this, &sectorInfo, &claimIndex]
+        ([[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+            const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+            {
+                sectorInfo.m_baseContext.m_availablePoints.push_back();
+                ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
+                claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
+                claimPoint.m_position = position;
+                claimPoint.m_normal = normal;
+                claimPoint.m_masks = masks;
+                sectorInfo.m_baseContext.m_masks.AddSurfaceTagWeights(masks);
+                return true;
+            });
     }
 
     void AreaSystemComponent::VegetationThreadTasks::UpdateSectorCallbacks(SectorInfo& sectorInfo)

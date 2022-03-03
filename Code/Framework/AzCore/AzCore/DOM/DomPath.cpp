@@ -7,9 +7,9 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzCore/DOM/DomPath.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/Console/ConsoleTypeHelpers.h>
 
 namespace AZ::Dom
 {
@@ -117,6 +117,36 @@ namespace AZ::Dom
         return AZStd::get<size_t>(m_value);
     }
 
+    size_t PathEntry::GetHash() const
+    {
+        return AZStd::visit(
+            [&](auto&& value) -> size_t
+            {
+                using CurrentType = AZStd::decay_t<decltype(value)>;
+                if constexpr (AZStd::is_same_v<CurrentType, size_t>)
+                {
+                    AZStd::hash<size_t> hasher;
+                    return hasher(value);
+                }
+                else if constexpr (AZStd::is_same_v<CurrentType, AZ::Name>)
+                {
+                    return value.GetHash();
+                }
+            },
+            m_value);
+    }
+} // namespace AZ::Dom
+
+namespace AZStd
+{
+    size_t AZStd::hash<AZ::Dom::PathEntry>::operator()(const AZ::Dom::PathEntry& entry) const
+    {
+        return entry.GetHash();
+    }
+} // namespace AZStd
+
+namespace AZ::Dom
+{
     const AZ::Name& PathEntry::GetKey() const
     {
         AZ_Assert(IsKey(), "Key called on PathEntry that is not a key");

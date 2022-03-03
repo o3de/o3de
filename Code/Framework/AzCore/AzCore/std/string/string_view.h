@@ -595,31 +595,44 @@ namespace AZStd
         static constexpr int_type not_eof(int_type c) noexcept { return c != eof() ? c : !eof(); }
     };
 
+    // string_view forward declaation
+    template <class Element, class Traits = AZStd::char_traits<Element>>
+    class basic_string_view;
+}
+
+namespace AZStd::Internal
+{
+    template <class Element, class Traits, class R, class = void>
+    struct has_operator_basic_string_view
+        : false_type
+    {};
+
+    template <class Element, class Traits, class R>
+    struct has_operator_basic_string_view<Element, Traits, R, enable_if_t<
+        bool(&decay_t<R>::operator basic_string_view<Element, Traits>)>>
+        : true_type
+    {};
+
+    // If the range has a traits_type element, it must match
+    template <class Element, class Traits, class R, class = void>
+    static constexpr bool range_trait_type_matches = true;
+    template <class Element, class Traits, class R>
+    inline constexpr bool range_trait_type_matches<Element, Traits, R,
+        enable_if_t<conjunction_v<
+        Internal::sfinae_trigger<typename remove_reference_t<R>::traits_type>,
+        bool_constant<!same_as<typename remove_reference_t<R>::traits_type, Traits>>
+        >>> = false;
+}
+namespace AZStd
+{
     /**
-     * Immutable string wrapper based on boost::const_string and std::string_view. When we operate on
+     * Immutable string wrapper based on std::string_view. When we operate on
      * const char* we don't know if this points to NULL terminated string or just a char array.
      * to have a clear distinction between them we provide this wrapper.
      */
-    template <class Element, class Traits = AZStd::char_traits<Element>>
+    template <class Element, class Traits>
     class basic_string_view
     {
-        template <class R, class = void>
-        static constexpr bool has_operator_basic_string_view = false;
-        template <class R>
-        static constexpr bool has_operator_basic_string_view<R, void_t<
-            decltype(declval<remove_cvref_t<R>>().operator basic_string_view<Element, Traits>())
-            >> = true;
-
-        // If the range has a traits_type element, it must match
-        template <class R, class = void>
-        static constexpr bool range_trait_type_matches = true;
-        template <class R>
-        static constexpr bool range_trait_type_matches<R,
-            enable_if_t<conjunction_v<
-            Internal::sfinae_trigger<typename remove_reference_t<R>::traits_type>,
-            bool_constant<!same_as<typename remove_reference_t<R>::traits_type, Traits>>
-            >>> = false;
-
     public:
         using traits_type = Traits;
         using value_type = Element;
@@ -674,8 +687,8 @@ namespace AZStd
             bool_constant<ranges::contiguous_range<R>>,
             bool_constant<ranges::sized_range<R>>,
             bool_constant<same_as<ranges::range_value_t<R>, value_type>>,
-            bool_constant<!has_operator_basic_string_view<R>>,
-            bool_constant<range_trait_type_matches<R>>
+            negation<Internal::has_operator_basic_string_view<Element, Traits, R>>,
+            bool_constant<Internal::range_trait_type_matches<Element, Traits, R>>
             >>>
         constexpr basic_string_view(R&& r)
             : m_begin(ranges::data(r))

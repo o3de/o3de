@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Color.h>
 #include <AzFramework/Font/FontInterface.h>
+#include <AzFramework/Physics/DebugDraw/CharacterPhysicsDebugDraw.h>
 #include <Integration/Rendering/RenderFlag.h>
 #include <Integration/Rendering/RenderActorInstance.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -40,10 +41,9 @@ namespace AZ::Render
     public:
         AtomActorDebugDraw(AZ::EntityId entityId);
 
-        void DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags, EMotionFX::ActorInstance* instance);
+        void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags, EMotionFX::ActorInstance* instance);
 
     private:
-
         float CalculateBoneScale(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node);
         float CalculateScaleMultiplier(EMotionFX::ActorInstance* instance) const;
         void PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
@@ -56,8 +56,12 @@ namespace AZ::Render
             const AZ::Color& meshAabbColor,
             bool enableStaticAabb,
             const AZ::Color& staticAabbColor);
-        void RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
-        void RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
+        void RenderLineSkeleton(AzFramework::DebugDisplayRequests* debugDisplay,
+            EMotionFX::ActorInstance* instance,
+            const AZ::Color& skeletonColor) const;
+        void RenderSkeleton(AzFramework::DebugDisplayRequests* debugDisplay,
+            EMotionFX::ActorInstance* instance,
+            const AZ::Color& color);
         void RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance);
         void RenderNormals(
             EMotionFX::Mesh* mesh,
@@ -72,8 +76,8 @@ namespace AZ::Render
         void RenderTangents(
             EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float tangentsScale, float scaleMultiplier,
             const AZ::Color& tangentsColor, const AZ::Color& mirroredBitangentsColor, const AZ::Color& bitangentsColor);
-        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier,
-            const AZ::Color& wireframeColor);
+        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM,
+            float scale, const AZ::Color& color);
         void RenderJointNames(EMotionFX::ActorInstance* actorInstance, RPI::ViewportContextPtr viewportContext, const AZ::Color& jointNameColor);
         void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, AzFramework::DebugDisplayRequests* debugDisplay, float scale = 1.0f);
         void RenderLineAxis(
@@ -96,6 +100,8 @@ namespace AZ::Render
         AZStd::vector<AZ::Vector3> m_auxVertices;
         AZStd::vector<AZ::Color> m_auxColors;
         EntityId m_entityId;
+
+        Physics::CharacterPhysicsDebugDraw m_characterPhysicsDebugDraw;
 
         AzFramework::TextDrawParameters m_drawParams;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;

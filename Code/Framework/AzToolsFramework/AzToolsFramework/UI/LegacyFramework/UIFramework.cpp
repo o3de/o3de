@@ -16,7 +16,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <AzFramework/CommandLine/CommandLine.h>
+#include <AzCore/Settings/CommandLine.h>
 
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
@@ -34,7 +34,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // '...' needs to have
 #include <QProxyStyle>
 AZ_POP_DISABLE_WARNING
 
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #ifndef AZ_PLATFORM_WINDOWS
 int __argc = 0;
@@ -201,8 +200,11 @@ namespace AzToolsFramework
             // enable the built-in stylesheet by default:
             bool enableStyleSheet = true;
 
-            const AzFramework::CommandLine* comp = nullptr;
-            EBUS_EVENT_RESULT(comp, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
+            const AZ::CommandLine* comp = nullptr;
+            AZ::ComponentApplicationBus::Broadcast([&comp](AZ::ComponentApplicationRequests* requests)
+                {
+                    comp = requests->GetAzCommandLine();
+                });
             if (comp != nullptr)
             {
                 if (comp->HasSwitch("nostyle"))

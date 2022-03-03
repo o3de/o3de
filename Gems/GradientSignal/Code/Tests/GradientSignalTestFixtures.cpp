@@ -75,6 +75,22 @@ namespace UnitTest
         });
     }
 
+    void GradientSignalTestEnvironment::PostCreateApplication()
+    {
+        // Ebus usage will allocate a global context on first usage. If that first usage occurs in a DLL, then the context will be
+        // invalid on subsequent unit test runs if using gtest_repeat. However, if we force the ebus to create their global context in
+        // the main test DLL (this one), the context will remain active throughout repeated runs. By creating them in
+        // PostCreateApplication(), they will be created before the DLLs get loaded and any system components from those DLLs run, so we
+        // can guarantee this will be the first usage.
+
+        // These ebuses need their contexts created here before any of the dependent DLLs get loaded:
+        AZ::AssetTypeInfoBus::GetOrCreateContext();
+        SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext();
+        SurfaceData::SurfaceDataProviderRequestBus::GetOrCreateContext();
+        SurfaceData::SurfaceDataModifierRequestBus::GetOrCreateContext();
+        LmbrCentral::ShapeComponentRequestsBus::GetOrCreateContext();
+    }
+
     void GradientSignalBaseFixture::SetupCoreSystems()
     {
         // Using the AZ::RPI::MakeAssetHandler will both create the asset handlers,
@@ -102,7 +118,6 @@ namespace UnitTest
 
         // Create a transform that locates our gradient in the center of our desired Shape.
         auto transform = testEntity->CreateComponent<AzFramework::TransformComponent>();
-        transform->SetLocalTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
         transform->SetWorldTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
 
         return testEntity;
@@ -119,7 +134,6 @@ namespace UnitTest
 
         // Create a transform that locates our gradient in the center of our desired Shape.
         auto transform = testEntity->CreateComponent<AzFramework::TransformComponent>();
-        transform->SetLocalTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeRadius)));
         transform->SetWorldTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeRadius)));
 
         return testEntity;

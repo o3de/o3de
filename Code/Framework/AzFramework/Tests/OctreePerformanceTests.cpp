@@ -142,7 +142,7 @@ namespace Benchmark
     BENCHMARK_F(BM_Octree, InsertDelete1000)(benchmark::State& state)
     {
         constexpr uint32_t EntryCount = 1000;
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             InsertEntries(EntryCount);
             RemoveEntries(EntryCount);
@@ -152,7 +152,7 @@ namespace Benchmark
     BENCHMARK_F(BM_Octree, InsertDelete10000)(benchmark::State& state)
     {
         constexpr uint32_t EntryCount = 10000;
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             InsertEntries(EntryCount);
             RemoveEntries(EntryCount);
@@ -162,7 +162,7 @@ namespace Benchmark
     BENCHMARK_F(BM_Octree, InsertDelete100000)(benchmark::State& state)
     {
         constexpr uint32_t EntryCount = 100000;
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             InsertEntries(EntryCount);
             RemoveEntries(EntryCount);
@@ -172,7 +172,7 @@ namespace Benchmark
     BENCHMARK_F(BM_Octree, InsertDelete1000000)(benchmark::State& state)
     {
         constexpr uint32_t EntryCount = 1000000;
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             InsertEntries(EntryCount);
             RemoveEntries(EntryCount);
@@ -183,7 +183,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 1000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -197,7 +197,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 10000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -211,7 +211,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 100000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -225,7 +225,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 1000000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -239,7 +239,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 1000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -253,7 +253,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 10000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -267,7 +267,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 100000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -281,7 +281,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 1000000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -295,7 +295,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 1000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -309,7 +309,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 10000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -323,7 +323,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 100000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {
@@ -337,7 +337,7 @@ namespace Benchmark
     {
         constexpr uint32_t EntryCount = 1000000;
         InsertEntries(EntryCount);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& queryData : m_queryDataArray)
             {

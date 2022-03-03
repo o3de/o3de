@@ -34,22 +34,13 @@ namespace AZ
         static AZStd::unique_ptr<AZ::IO::Scheduler> CreateStreamerStack(AZStd::string_view profile = {});
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // Component base
         void Activate() override;
         void Deactivate() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        /// \ref ComponentDescriptor::GetProvidedServices
         static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
-        /// \ref ComponentDescriptor::GetIncompatibleServices
         static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible);
-        /// \ref ComponentDescriptor::GetDependentServices
         static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
-        /// \red ComponentDescriptor::Reflect
         static void Reflect(ReflectContext* reflection);
 
         static AZStd::unique_ptr<AZ::IO::Scheduler> CreateSimpleStreamerStack();
