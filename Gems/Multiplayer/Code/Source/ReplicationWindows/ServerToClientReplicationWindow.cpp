@@ -164,6 +164,15 @@ namespace Multiplayer
             AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
         }
 
+        // Add in all entities that have forced relevancy
+        for (const ConstNetworkEntityHandle& entityHandle : GetNetworkEntityManager()->GetAlwaysRelevanyToClientsSet())
+        {
+            if (entityHandle.Exists())
+            {
+                m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f };  // Always replicate entities with forced relevancy
+            }
+        }
+
         // Add in Autonomous Entities
         // Note: Do not add any Client entities after this point, otherwise you stomp over the Autonomous mode
         m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f };  // Always replicate autonomous entities
