@@ -91,7 +91,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.GROUP_tick
     @pytest.mark.xfail(reason="Test still under development.")
