@@ -274,4 +274,44 @@ namespace UnitTest
         testDescriptor.m_addressBase = descriptor.m_addressBase.m_ptr;
         run(testDescriptor);
     }
+
+    TEST_F(AllocatorTest, FreeListFragmentation)
+    {
+        // There are several ways to measure fragmentation, with varying degrees of accuracy (at the
+        // expense of cost). The free list fragmentation computation uses a relatively simple scheme
+        // that relates the available capacity with the largest blocksize (1 minus this ratio).
+
+        // Create an allocator featuring 4 contiguous 256 byte blocks
+        RHI::FreeListAllocator::Descriptor descriptor;
+        descriptor.m_capacityInBytes = 1024;
+        descriptor.m_alignmentInBytes = 256;
+        descriptor.m_policy = RHI::FreeListAllocatorPolicy::FirstFit;
+
+        RHI::FreeListAllocator allocator;
+        allocator.Init(descriptor);
+
+        // An allocator without any allocations reports 0 fragmentation
+        ASSERT_EQ(allocator.ComputeFragmentation(), 0.f);
+
+        auto address0 = allocator.Allocate(256, 0);
+        // After allocating a single block as above, the remaining memory in the allocator remains
+        // contiguous, so fragmentation remains 0
+        ASSERT_EQ(allocator.ComputeFragmentation(), 0.f);
+
+        auto address1 = allocator.Allocate(256, 0);
+        // Same after the second allocation. The free memory is one large block at the end
+        ASSERT_EQ(allocator.ComputeFragmentation(), 0.f);
+
+        allocator.DeAllocate(address0);
+        allocator.GarbageCollect();
+
+        // Now, we have two free blocks. The large block represents 2/3rds of the available free space,
+        // so we expect 1/3 to be the reported fragmentation.
+        ASSERT_NEAR(allocator.ComputeFragmentation(), 1.f / 3, 1e-6f);
+
+        allocator.Allocate(512, 0);
+
+        // We've now occupied the last two blocks, so we once again expect 0 fragmentation
+        ASSERT_EQ(allocator.ComputeFragmentation(), 0.f);
+    }
 }
