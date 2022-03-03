@@ -79,7 +79,7 @@ namespace AutomatedTesting
         AutomatedTestingRequestBus::Handler::BusDisconnect();
     }
 
-    Multiplayer::NetworkEntityHandle AutomatedTestingSystemComponent::OnPlayerJoin(uint64_t userId, const Multiplayer::MultiplayerAgentDatum& agentDatum)
+    Multiplayer::NetworkEntityHandle AutomatedTestingSystemComponent::OnPlayerJoin([[maybe_unused]] uint64_t userId, [[maybe_unused]] const Multiplayer::MultiplayerAgentDatum& agentDatum)
     {
         AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> entityParams = AZ::Interface<IPlayerSpawner>::Get()->GetNextPlayerSpawn();
 
@@ -107,9 +107,9 @@ namespace AutomatedTesting
     }
 
     void AutomatedTestingSystemComponent::OnPlayerLeave(Multiplayer::ConstNetworkEntityHandle entityHandle,
-        const Multiplayer::ReplicationSet& replicationSet,
-        AzNetworking::DisconnectReason reason)
+        [[maybe_unused]] const Multiplayer::ReplicationSet& replicationSet,
+        [[maybe_unused]] AzNetworking::DisconnectReason reason)
     {
-        
+        AZ::Interface<Multiplayer::IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(entityHandle);
     }
 }

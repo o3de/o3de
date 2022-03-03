@@ -219,8 +219,6 @@ namespace Multiplayer
         {
             server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
         }
-
-        const auto console = AZ::Interface<AZ::IConsole>::Get();
         
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
             R"("%s" --project-path "%s" --editorsv_isDedicated true --rhi "%s")",
