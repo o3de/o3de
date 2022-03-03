@@ -103,7 +103,6 @@ namespace O3DE::ProjectManager
             return AZ::Failure(BuildCancelled);
         }
 
-        // Show some kind of progress with very approximate estimates
         UpdateProgress("Setting Up Environment");
 
         auto currentEnvironmentRequest = ProjectUtils::SetupCommandLineProcessEnvironment();

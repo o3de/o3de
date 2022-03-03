@@ -50,7 +50,6 @@ namespace O3DE::ProjectManager
         ProjectButton* m_projectButton;
         QWidget* m_parent;
 
-        int m_progressTicks;
         QString m_lastLine;
     };
 } // namespace O3DE::ProjectManager

@@ -21,7 +21,6 @@ namespace O3DE::ProjectManager
         : QObject()
         , m_projectInfo(projectInfo)
         , m_projectButton(projectButton)
-        , m_progressTicks(1)
         , m_parent(parent)
     {
         m_worker = new ProjectBuilderWorker(m_projectInfo);
@@ -73,9 +72,11 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderController::UpdateUIProgress(const QString& lastLine)
     {
+        m_lastLine = lastLine.left(s_maxDisplayedBuiltOutputChars);
+
         if (m_projectButton)
         {
-            m_projectButton->SetContextualText(lastLine.left(s_maxDisplayedBuiltOutputChars));
+            m_projectButton->SetContextualText(m_lastLine);
         }
     }
 
