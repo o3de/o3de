@@ -111,6 +111,10 @@ namespace AZ
             //! Returns the descriptor used to initialize the allocator.
             virtual const Descriptor& GetDescriptor() const = 0;
 
+            //! Compute the fragmentation present in the allocator (possibly an estimate). The returned value is expected to be a measure
+            //! between 0.f and 1.f inclusive, with 0.f indicating zero fragmentation.
+            virtual float ComputeFragmentation() const { return 0.f; }
+
             //! Clone the current allocator to the new allocator passed in
             virtual void Clone([[maybe_unused]] RHI::Allocator* newAllocator)
             {
