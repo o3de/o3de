@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/Utils/ImGuiGpuProfiler.h>
+
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -24,7 +26,7 @@ namespace AZ
         namespace GpuProfilerImGuiHelper
         {
             template<typename T>
-            inline static void TreeNode(const char* label, ImGuiTreeNodeFlags flags, T&& functor)
+            static void TreeNode(const char* label, ImGuiTreeNodeFlags flags, T&& functor)
             {
                 const bool unrolledTreeNode = ImGui::TreeNodeEx(label, flags);
                 functor(unrolledTreeNode);
@@ -36,7 +38,7 @@ namespace AZ
             }
 
             template <typename Functor>
-            inline static void Begin(const char* name, bool* open, ImGuiWindowFlags flags, Functor&& functor)
+            static void Begin(const char* name, bool* open, ImGuiWindowFlags flags, Functor&& functor)
             {
                 if (ImGui::Begin(name, open, flags))
                 {
@@ -46,7 +48,7 @@ namespace AZ
             }
 
             template <typename Functor>
-            inline static void BeginChild(const char* text, const ImVec2& size, bool border, ImGuiWindowFlags flags, Functor&& functor)
+            static void BeginChild(const char* text, const ImVec2& size, bool border, ImGuiWindowFlags flags, Functor&& functor)
             {
                 if (ImGui::BeginChild(text, size, border, flags))
                 {
@@ -55,7 +57,7 @@ namespace AZ
                 ImGui::EndChild();
             }
 
-            inline static void HoverMarker(const char* text)
+            static void HoverMarker(const char* text)
             {
                 if (ImGui::IsItemHovered())
                 {
@@ -68,7 +70,7 @@ namespace AZ
             }
 
             template <typename Functor>
-            inline static void PushStyleColor(ImGuiCol idx, const ImVec4& color, Functor&& functor)
+            static void PushStyleColor(ImGuiCol idx, const ImVec4& color, Functor&& functor)
             {
                 ImGui::PushStyleColor(idx, color);
                 functor();
@@ -76,7 +78,7 @@ namespace AZ
             }
 
             template <typename Functor>
-            inline static void WrappableSelectable(const char* text, ImVec2 size, bool selected, ImGuiSelectableFlags flags, Functor&& functor)
+            static void WrappableSelectable(const char* text, ImVec2 size, bool selected, ImGuiSelectableFlags flags, Functor&& functor)
             {
                 ImFont* font = ImGui::GetFont();
                 ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -91,7 +93,7 @@ namespace AZ
                 drawList->AddText(font, font->FontSize, pos, ImGui::GetColorU32(ImGuiCol_Text), text, nullptr, size.x);
             }
 
-            inline static AZStd::string GetImageBindStrings(AZ::RHI::ImageBindFlags imageBindFlags)
+            static AZStd::string GetImageBindStrings(AZ::RHI::ImageBindFlags imageBindFlags)
             {
                 AZStd::string imageBindStrings;
                 for (const auto& flag : AZ::RHI::ImageBindFlagsMembers)
@@ -105,7 +107,7 @@ namespace AZ
                 return imageBindStrings;
             }
 
-            inline static AZStd::string GetBufferBindStrings(AZ::RHI::BufferBindFlags bufferBindFlags)
+            static AZStd::string GetBufferBindStrings(AZ::RHI::BufferBindFlags bufferBindFlags)
             {
                 AZStd::string bufferBindStrings;
                 for (const auto& flag : AZ::RHI::BufferBindFlagsMembers)
@@ -121,12 +123,11 @@ namespace AZ
 
             static constexpr u64 KB = 1024;
             static constexpr u64 MB = 1024 * KB;
-            static constexpr u64 GB = 1024 * MB;
         } // namespace GpuProfilerImGuiHelper 
 
         // --- PassEntry ---
 
-        inline PassEntry::PassEntry(const RPI::Pass* pass, PassEntry* parent)
+        PassEntry::PassEntry(const RPI::Pass* pass, PassEntry* parent)
         {
             m_name = pass->GetName();
             m_path = pass->GetPathName();
@@ -151,7 +152,7 @@ namespace AZ
             }
         }
 
-        inline void PassEntry::LinkChild(PassEntry* childEntry)
+        void PassEntry::LinkChild(PassEntry* childEntry)
         {
             m_children.push_back(childEntry);
 
@@ -168,25 +169,25 @@ namespace AZ
             childEntry->m_linked = true;
         }
 
-        inline bool PassEntry::IsTimestampEnabled() const
+        bool PassEntry::IsTimestampEnabled() const
         {
             return m_enabled && m_timestampEnabled;
         }
 
-        inline bool PassEntry::IsPipelineStatisticsEnabled() const
+        bool PassEntry::IsPipelineStatisticsEnabled() const
         {
             return m_enabled && m_pipelineStatisticsEnabled;
         }
 
         // --- ImGuiPipelineStatisticsView ---
 
-        inline ImGuiPipelineStatisticsView::ImGuiPipelineStatisticsView() :
+        ImGuiPipelineStatisticsView::ImGuiPipelineStatisticsView() :
             m_headerColumnWidth{ 204.0f, 104.0f, 104.0f, 104.0f, 104.0f, 104.0f, 104.0f, 104.0f }
         {
 
         }
 
-        inline void ImGuiPipelineStatisticsView::DrawPipelineStatisticsWindow(bool& draw,
+        void ImGuiPipelineStatisticsView::DrawPipelineStatisticsWindow(bool& draw,
             const PassEntry* rootPassEntry, AZStd::unordered_map<Name, PassEntry>& passEntryDatabase,
             AZ::RHI::Ptr<RPI::ParentPass> rootPass)
         {
@@ -388,7 +389,7 @@ namespace AZ
             ImGui::End();
         }
 
-        inline void ImGuiPipelineStatisticsView::CreateAttributeRow(const PassEntry* passEntry, const PassEntry* rootEntry)
+        void ImGuiPipelineStatisticsView::CreateAttributeRow(const PassEntry* passEntry, const PassEntry* rootEntry)
         {
             [[maybe_unused]] const uint32_t columnCount = static_cast<uint32_t>(ImGui::GetColumnsCount());
             AZ_Assert(columnCount == ImGuiPipelineStatisticsView::HeaderAttributeCount, "The column count needs to match HeaderAttributeCount.");
@@ -493,7 +494,7 @@ namespace AZ
             }
         }
 
-        inline void ImGuiPipelineStatisticsView::SortView()
+        void ImGuiPipelineStatisticsView::SortView()
         {
             const StatisticsSortType sortType = GetSortType();
 
@@ -527,12 +528,12 @@ namespace AZ
             }
         }
 
-        inline uint32_t ImGuiPipelineStatisticsView::GetSortIndex() const
+        uint32_t ImGuiPipelineStatisticsView::GetSortIndex() const
         {
             return m_sortIndex / SortVariantPerColumn;
         }
 
-        inline ImGuiPipelineStatisticsView::StatisticsSortType ImGuiPipelineStatisticsView::GetSortType() const
+        ImGuiPipelineStatisticsView::StatisticsSortType ImGuiPipelineStatisticsView::GetSortType() const
         {
             // The first column (Pass Name) is the only column that requires the items to be sorted in an alphabetic manner.
             if (GetSortIndex() == 0u)
@@ -545,14 +546,14 @@ namespace AZ
             }
         }
 
-        inline bool ImGuiPipelineStatisticsView::IsSortStateInverted() const
+        bool ImGuiPipelineStatisticsView::IsSortStateInverted() const
         {
             return m_sortIndex % SortVariantPerColumn;
         }
 
         // --- ImGuiTimestampView ---
 
-        inline void ImGuiTimestampView::DrawTimestampWindow(
+        void ImGuiTimestampView::DrawTimestampWindow(
             bool& draw, const PassEntry* rootPassEntry, AZStd::unordered_map<Name, PassEntry>& timestampEntryDatabase,
             AZ::RHI::Ptr<RPI::ParentPass> rootPass)
         {
@@ -879,7 +880,7 @@ namespace AZ
 
         }
 
-        inline void ImGuiTimestampView::DrawFrameWorkloadBar(double value) const
+        void ImGuiTimestampView::DrawFrameWorkloadBar(double value) const
         {
             // Interpolate the color of the bar depending on the load.
             const float fvalue = AZStd::clamp(static_cast<float>(value), 0.0f, 1.0f);
@@ -893,7 +894,7 @@ namespace AZ
             ImGui::PopStyleColor(1);
         }
 
-        inline void ImGuiTimestampView::DrawHierarchicalView(const PassEntry* entry) const
+        void ImGuiTimestampView::DrawHierarchicalView(const PassEntry* entry) const
         {
             const AZStd::string entryTime = FormatTimestampLabel(entry->m_interpolatedTimestampInNanoseconds);
 
@@ -955,7 +956,7 @@ namespace AZ
             }
         }
 
-        inline void ImGuiTimestampView::SortFlatView()
+        void ImGuiTimestampView::SortFlatView()
         {
             const uint32_t ProfilerSortTypeCount = static_cast<uint32_t>(ProfilerSortType::Count);
 
@@ -980,7 +981,7 @@ namespace AZ
             AZStd::sort(m_passEntryReferences.begin(), m_passEntryReferences.end(), it->second);
         }
 
-        inline void ImGuiTimestampView::DrawFlatView() const
+        void ImGuiTimestampView::DrawFlatView() const
         {
             // Draw the flat view.
             for (const PassEntry* entry : m_passEntryReferences)
@@ -1000,14 +1001,14 @@ namespace AZ
             }
         }
 
-        inline double ImGuiTimestampView::NanoToMilliseconds(uint64_t nanoseconds) const
+        double ImGuiTimestampView::NanoToMilliseconds(uint64_t nanoseconds) const
         {
             // Nanoseconds to Milliseconds inverse multiplier (1 / 1000000)
             const double inverseMultiplier = 0.000001;
             return static_cast<double>(nanoseconds) * inverseMultiplier;
         }
 
-        inline void ImGuiTimestampView::ToggleOrSwitchSortType(ProfilerSortType start, ProfilerSortType count)
+        void ImGuiTimestampView::ToggleOrSwitchSortType(ProfilerSortType start, ProfilerSortType count)
         {
             const uint32_t startNumerical = static_cast<uint32_t>(start);
             const uint32_t countNumerical = static_cast<uint32_t>(count);
@@ -1025,7 +1026,7 @@ namespace AZ
             }
         }
 
-        inline double ImGuiTimestampView::NormalizeFrameWorkload(uint64_t timestamp) const
+        double ImGuiTimestampView::NormalizeFrameWorkload(uint64_t timestamp) const
         {
             static const AZStd::array<double, static_cast<int32_t>(FrameWorkloadView::Count)> TimestampToViewMap =
             {
@@ -1041,7 +1042,7 @@ namespace AZ
             return static_cast<double>(timestamp) / TimestampToViewMap[frameWorkloadViewNumeric];
         }
 
-        inline AZStd::string ImGuiTimestampView::FormatTimestampLabel(uint64_t timestamp) const
+        AZStd::string ImGuiTimestampView::FormatTimestampLabel(uint64_t timestamp) const
         {
             if (m_timestampMetricUnit == TimestampMetricUnit::Milliseconds)
             {
@@ -1064,7 +1065,73 @@ namespace AZ
 
         // --- ImGuiGpuMemoryView ---
 
-        inline void ImGuiGpuMemoryView::SortTable(ImGuiTableSortSpecs* sortSpecs)
+        void ImGuiGpuMemoryView::SortPoolTable(ImGuiTableSortSpecs* sortSpecs)
+        {
+            const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
+            const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
+
+            // Sort by the appropriate column in the table
+            switch (columnToSort)
+            {
+            case (0): // Sort by pool name
+                AZStd::sort(m_poolTableRows.begin(), m_poolTableRows.end(),
+                    [ascending](const PoolTableRow& lhs, const PoolTableRow& rhs)
+                    {
+                        const auto lhsParentPool = lhs.m_poolName.GetStringView();
+                        const auto rhsParentPool = rhs.m_poolName.GetStringView();
+                        return ascending ? lhsParentPool < rhsParentPool : lhsParentPool > rhsParentPool;
+                    });
+                break;
+            case (1): // Sort by pool type
+                AZStd::sort(m_poolTableRows.begin(), m_poolTableRows.end(),
+                    [ascending](const PoolTableRow& lhs, const PoolTableRow& rhs)
+                    {
+                        const auto lhsHeapType = lhs.m_deviceHeap ? 0 : 1;
+                        const auto rhsHeapType = rhs.m_deviceHeap ? 0 : 1;
+                        return ascending ? lhsHeapType < rhsHeapType : lhsHeapType > rhsHeapType;
+                    });
+                break;
+            case (2): // Sort by budget
+                AZStd::sort(m_poolTableRows.begin(), m_poolTableRows.end(),
+                    [ascending](const PoolTableRow& lhs, const PoolTableRow& rhs)
+                    {
+                        const float lhsBudget = static_cast<float>(lhs.m_budgetBytes);
+                        const float rhsBudget = static_cast<float>(rhs.m_budgetBytes);
+                        return ascending ? lhsBudget < rhsBudget : lhsBudget > rhsBudget;
+                    });
+                break;
+            case (3): // Sort by reservation
+                AZStd::sort(m_poolTableRows.begin(), m_poolTableRows.end(),
+                    [ascending](const PoolTableRow& lhs, const PoolTableRow& rhs)
+                    {
+                        const float lhsReservation = static_cast<float>(lhs.m_reservedBytes);
+                        const float rhsReservation = static_cast<float>(rhs.m_reservedBytes);
+                        return ascending ? lhsReservation < rhsReservation : lhsReservation > rhsReservation;
+                    });
+                break;
+            case (4): // Sort by residency
+                AZStd::sort(m_poolTableRows.begin(), m_poolTableRows.end(),
+                    [ascending](const PoolTableRow& lhs, const PoolTableRow& rhs)
+                    {
+                        const float lhsResidency = static_cast<float>(lhs.m_residentBytes);
+                        const float rhsResidency = static_cast<float>(rhs.m_residentBytes);
+                        return ascending ? lhsResidency < rhsResidency : lhsResidency > rhsResidency;
+                    });
+                break;
+            case (5): // Sort by fragmentation
+                AZStd::sort(m_poolTableRows.begin(), m_poolTableRows.end(),
+                    [ascending](const PoolTableRow& lhs, const PoolTableRow& rhs)
+                    {
+                        const float lhsSize = static_cast<float>(lhs.m_fragmentation);
+                        const float rhsSize = static_cast<float>(rhs.m_fragmentation);
+                        return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
+                    });
+                break;
+            }
+            sortSpecs->SpecsDirty = false;
+        }
+
+        void ImGuiGpuMemoryView::SortResourceTable(ImGuiTableSortSpecs* sortSpecs)
         {
             const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
             const ImS16 columnToSort = sortSpecs->Specs->ColumnIndex;
@@ -1073,8 +1140,8 @@ namespace AZ
             switch (columnToSort)
             {
             case (0): // Sorting by parent pool name
-                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
-                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                AZStd::sort(m_resourceTableRows.begin(), m_resourceTableRows.end(),
+                    [ascending](const ResourceTableRow& lhs, const ResourceTableRow& rhs)
                     {
                         const auto lhsParentPool = lhs.m_parentPoolName.GetStringView();
                         const auto rhsParentPool = rhs.m_parentPoolName.GetStringView();
@@ -1082,8 +1149,8 @@ namespace AZ
                     });
                 break;
             case (1): // Sort by buffer/image name
-                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
-                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                AZStd::sort(m_resourceTableRows.begin(), m_resourceTableRows.end(),
+                    [ascending](const ResourceTableRow& lhs, const ResourceTableRow& rhs)
                     {
                         const auto lhsName = lhs.m_bufImgName.GetStringView();
                         const auto rhsName = rhs.m_bufImgName.GetStringView();
@@ -1091,11 +1158,20 @@ namespace AZ
                     });
                 break;
             case (2): // Sort by memory usage
-                AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
-                    [ascending](const TableRow& lhs, const TableRow& rhs)
+                AZStd::sort(m_resourceTableRows.begin(), m_resourceTableRows.end(),
+                    [ascending](const ResourceTableRow& lhs, const ResourceTableRow& rhs)
                     {
                         const float lhsSize = static_cast<float>(lhs.m_sizeInBytes);
                         const float rhsSize = static_cast<float>(rhs.m_sizeInBytes);
+                        return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
+                    });
+                break;
+            case (3): // Sort by fragmentation
+                AZStd::sort(m_resourceTableRows.begin(), m_resourceTableRows.end(),
+                    [ascending](const ResourceTableRow& lhs, const ResourceTableRow& rhs)
+                    {
+                        const float lhsSize = static_cast<float>(lhs.m_fragmentation);
+                        const float rhsSize = static_cast<float>(rhs.m_fragmentation);
                         return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
                     });
                 break;
@@ -1103,13 +1179,54 @@ namespace AZ
             sortSpecs->SpecsDirty = false;
         }
 
-        inline void ImGuiGpuMemoryView::DrawTable()
+        void ImGuiGpuMemoryView::DrawTables()
         {
-            if (ImGui::BeginTable("Table", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
+            if (m_poolTableRows.empty())
+            {
+                return;
+            }
+
+            if (ImGui::BeginTable("PoolTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
+            {
+                ImGui::TableSetupColumn("Pool");
+                ImGui::TableSetupColumn("Heap Type");
+                ImGui::TableSetupColumn("Budget (MB)");
+                ImGui::TableSetupColumn("Reserved (MB)");
+                ImGui::TableSetupColumn("Resident (MB)");
+                ImGui::TableSetupColumn("Fragmentation (%)");
+                ImGui::TableHeadersRow();
+                ImGui::TableNextColumn();
+
+                ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+                if (sortSpecs && sortSpecs->SpecsDirty)
+                {
+                    SortPoolTable(sortSpecs);
+                }
+
+                for (const auto& tableRow : m_poolTableRows)
+                {
+                    ImGui::Text("%s", tableRow.m_poolName.GetCStr());
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", tableRow.m_deviceHeap ? "Device" : "Host");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_budgetBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_reservedBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_residentBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%.4f", tableRow.m_fragmentation);
+                    ImGui::TableNextColumn();
+                }
+            }
+            ImGui::EndTable();
+
+            if (ImGui::BeginTable("Table", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
             {
                 ImGui::TableSetupColumn("Parent pool");
                 ImGui::TableSetupColumn("Name");
                 ImGui::TableSetupColumn("Size (MB)");
+                ImGui::TableSetupColumn("Fragmentation (%)");
                 ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
                 ImGui::TableHeadersRow();
                 ImGui::TableNextColumn();
@@ -1117,11 +1234,11 @@ namespace AZ
                 ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
                 if (sortSpecs && sortSpecs->SpecsDirty)
                 {
-                    SortTable(sortSpecs);
+                    SortResourceTable(sortSpecs);
                 }
 
                 // Draw each row in the table
-                for (const auto& tableRow : m_tableRows)
+                for (const auto& tableRow : m_resourceTableRows)
                 {
                     // Don't draw the row if none of the row's text fields pass the filter
                     if (!m_nameFilter.PassFilter(tableRow.m_parentPoolName.GetCStr())
@@ -1137,6 +1254,8 @@ namespace AZ
                     ImGui::TableNextColumn();
                     ImGui::Text("%.4f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
+                    ImGui::Text("%.4f", tableRow.m_fragmentation);
+                    ImGui::TableNextColumn();
                     ImGui::Text("%s", tableRow.m_bindFlags.c_str());
                     ImGui::TableNextColumn();
                 }
@@ -1144,13 +1263,27 @@ namespace AZ
             ImGui::EndTable();
         }
 
-        inline void ImGuiGpuMemoryView::UpdateTableRows()
+        void ImGuiGpuMemoryView::UpdateTableRows()
         {
             // Update the table according to the latest filters applied
-            m_tableRows.clear();
+            m_poolTableRows.clear();
+            m_resourceTableRows.clear();
             for (const auto& pool : m_savedPools)
             {
                 Name poolName = pool.m_name.IsEmpty() ? Name("Unnamed pool") : pool.m_name;
+                auto& deviceHeapUsage = pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Device);
+                auto& hostHeapUsage = pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Host);
+
+                if (deviceHeapUsage.m_residentInBytes > 0 && deviceHeapUsage.m_residentInBytes < static_cast<size_t>(-1))
+                {
+                    m_poolTableRows.push_back({ poolName, true, deviceHeapUsage.m_budgetInBytes, deviceHeapUsage.m_reservedInBytes,
+                                                deviceHeapUsage.m_residentInBytes, deviceHeapUsage.m_fragmentation });
+                }
+                if (hostHeapUsage.m_residentInBytes > 0 && hostHeapUsage.m_residentInBytes < static_cast<size_t>(-1))
+                {
+                    m_poolTableRows.push_back({ poolName, false, hostHeapUsage.m_budgetInBytes, hostHeapUsage.m_reservedInBytes,
+                                                hostHeapUsage.m_residentInBytes, hostHeapUsage.m_fragmentation });
+                }
 
                 // Ignore transient pools
                 if (!m_includeTransientAttachments && pool.m_name.GetStringView().contains("Transient"))
@@ -1164,7 +1297,7 @@ namespace AZ
                     {
                         const Name bufName = buf.m_name.IsEmpty() ? Name("Unnamed Buffer") : buf.m_name;
                         const AZStd::string flags = GpuProfilerImGuiHelper::GetBufferBindStrings(buf.m_bindFlags);
-                        m_tableRows.push_back({ poolName, bufName, buf.m_sizeInBytes, flags });
+                        m_resourceTableRows.push_back({ poolName, bufName, buf.m_sizeInBytes, buf.m_fragmentation, flags });
                     }
                 }
 
@@ -1174,13 +1307,13 @@ namespace AZ
                     {
                         const Name imgName = img.m_name.IsEmpty() ? Name("Unnamed Image") : img.m_name;
                         const AZStd::string flags = GpuProfilerImGuiHelper::GetImageBindStrings(img.m_bindFlags);
-                        m_tableRows.push_back({ poolName, imgName, img.m_sizeInBytes, flags });
+                        m_resourceTableRows.push_back({ poolName, imgName, img.m_sizeInBytes, 0.f, flags });
                     }
                 }
             }
         }
 
-        inline void ImGuiGpuMemoryView::DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap)
+        void ImGuiGpuMemoryView::DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap)
         {
             if (ImGui::BeginChild("PieChart", {150, 150}, true))
             {
@@ -1202,7 +1335,7 @@ namespace AZ
             ImGui::EndChild();
         }
 
-        inline void ImGuiGpuMemoryView::DrawGpuMemoryWindow(bool& draw)
+        void ImGuiGpuMemoryView::DrawGpuMemoryWindow(bool& draw)
         {
             // Enable GPU memory instrumentation while the window is open. Called every draw frame, but just a bitwise operation so overhead should be low.
             auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
@@ -1223,7 +1356,6 @@ namespace AZ
                     const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
                     if (memoryStatistics) 
                     {
-                        m_tableRows.clear();
                         m_savedPools = memoryStatistics->m_pools;
                         m_savedHeaps = memoryStatistics->m_heaps;
 
@@ -1271,14 +1403,14 @@ namespace AZ
                 ImGui::Separator();
 
                 m_nameFilter.Draw("Search");
-                DrawTable();
+                DrawTables();
             }
             ImGui::End();
         }
 
         // --- ImGuiGpuProfiler ---
 
-        inline void ImGuiGpuProfiler::Draw(bool& draw, RHI::Ptr<RPI::ParentPass> rootPass)
+        void ImGuiGpuProfiler::Draw(bool& draw, RHI::Ptr<RPI::ParentPass> rootPass)
         {
             // Update the PassEntry database.
             const PassEntry* rootPassEntryRef = CreatePassEntries(rootPass);
@@ -1317,7 +1449,7 @@ namespace AZ
             }
         }
 
-        inline void ImGuiGpuProfiler::InterpolatePassEntries(AZStd::unordered_map<Name, PassEntry>& passEntryDatabase, float weight) const
+        void ImGuiGpuProfiler::InterpolatePassEntries(AZStd::unordered_map<Name, PassEntry>& passEntryDatabase, float weight) const
         {
             for (auto& entry : passEntryDatabase)
             {
@@ -1333,7 +1465,7 @@ namespace AZ
             }
         }
 
-        inline PassEntry* ImGuiGpuProfiler::CreatePassEntries(RHI::Ptr<RPI::ParentPass> rootPass)
+        PassEntry* ImGuiGpuProfiler::CreatePassEntries(RHI::Ptr<RPI::ParentPass> rootPass)
         {
             AZStd::unordered_map<Name, PassEntry> passEntryDatabase;
             const auto addPassEntry = [&passEntryDatabase](const RPI::Pass* pass, PassEntry* parent) -> PassEntry*
