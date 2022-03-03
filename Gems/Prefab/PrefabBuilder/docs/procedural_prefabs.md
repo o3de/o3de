@@ -67,7 +67,7 @@ A default procedural prefab is a prefab template that approximates a source scen
 
 The Prefab gem will automatically create a default procedural prefab for each source scene asset (such as a STL or FBX file) if no scene manifest is discovered. More details on scene manifest settings file can be found at https://www.o3de.org/docs/user-guide/assets/scene-settings. 
 
-This feature can be turned off globally or handled in the Edit Settings inside the O3DE Editor. To globally turn off the default procedural prefab logic, create a settings registry entry to set “O3DE/Preferences/Prefabs/CreateDefaults” field to false.
+This feature can be turned off globally or handled in the Edit Settings inside the O3DE Editor. To globally turn off the default procedural prefab logic, create a settings registry entry to set "O3DE/Preferences/Prefabs/CreateDefaults" field to false.
 
 An example registry setting:
 ```
@@ -82,3 +82,28 @@ An example registry setting:
 }
 ```
 
+## Procedural Prefab Editor Operations
+
+The Prefab gem adds some Editor operation user interface options such as context menus. These menu options give the user different ways to use the procedural prefabs inside an Editor’s scene.
+
+### Instantiate Procedural Prefab
+
+The most common way to use a procedural prefab is to right-click in the 3D scene view and choose the "Instantiate Procedural Prefab..." option. It is also possible to select this menu option in the Entity Outliner.
+
+![Instantiate Procedural Prefab...](/images/eo_menu_option.png)
+
+Then "Pick Procedural Prefab" dialog will come up. The procedural prefab asset should be listed under the source scene asset file entry.
+
+![Pick Procedural Prefab](/images/pick_prefab.png)
+
+The procedural prefab should show up inside the authored prefab.
+
+![Procedural Prefab in Entity Outliner](/images/eo_withprocprefab.png)
+
+### Save Off Procedural Prefab
+
+The Editor can save out a procedural prefab asset as an authored prefab source file as well. This allows Editor users to tweak a procedural prefab asset. The users should know that the prefab will get no updates from the procedural prefab once been saved off to an authored prefab.
+
+The context menu item "Save as Prefab..." for the procedural prefab asset will prompt for a file name to save as an authored prefab.
+
+![Procedural Prefab in Entity Outliner](/images/save_as_prefab.png)
