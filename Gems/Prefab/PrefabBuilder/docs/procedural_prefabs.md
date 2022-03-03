@@ -90,15 +90,15 @@ The Prefab gem adds some Editor operation user interface options such as context
 
 The most common way to use a procedural prefab is to right-click in the 3D scene view and choose the "Instantiate Procedural Prefab..." option. It is also possible to select this menu option in the Entity Outliner.
 
-![Instantiate Procedural Prefab...](/Gems/Prefab/PrefabBuilder/docs/images/eo_menu_option.png)
+![Instantiate Procedural Prefab...](/Gems/Prefab/PrefabBuilder/docs/images/eo_menu_option.webp)
 
 Then "Pick Procedural Prefab" dialog will come up. The procedural prefab asset should be listed under the source scene asset file entry.
 
-![Pick Procedural Prefab](/images/pick_prefab.png)
+![Pick Procedural Prefab](/Gems/Prefab/PrefabBuilder/docs/images/pick_prefab.webp)
 
 The procedural prefab should show up inside the authored prefab.
 
-![Procedural Prefab in Entity Outliner](/images/eo_withprocprefab.png)
+![Procedural Prefab in Entity Outliner](/Gems/Prefab/PrefabBuilder/docs/images/eo_withprocprefab.webp)
 
 ### Save Off Procedural Prefab
 
@@ -106,4 +106,4 @@ The Editor can save out a procedural prefab asset as an authored prefab source f
 
 The context menu item "Save as Prefab..." for the procedural prefab asset will prompt for a file name to save as an authored prefab.
 
-![Procedural Prefab in Entity Outliner](/images/save_as_prefab.png)
+![Procedural Prefab in Entity Outliner](/Gems/Prefab/PrefabBuilder/docs/images/save_as_prefab.webp)
