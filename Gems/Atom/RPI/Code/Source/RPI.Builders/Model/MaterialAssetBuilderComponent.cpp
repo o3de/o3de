@@ -98,7 +98,7 @@ namespace AZ
                 // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data won't be used.
                 // However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the material type asset so the builder can get it's AssetId.
                 // This can significantly reduce AP processing time when a material type or its shaders are edited.
-               jobDependency.m_type = MaterialUtils::BuildersShouldFinalizeMaterialAssets() ? AssetBuilderSDK::JobDependencyType::Order : AssetBuilderSDK::JobDependencyType::OrderOnce;
+                jobDependency.m_type = MaterialUtils::BuildersShouldFinalizeMaterialAssets() ? AssetBuilderSDK::JobDependencyType::Order : AssetBuilderSDK::JobDependencyType::OrderOnce;
 
                 jobDependencyList.push_back(jobDependency);
             }
