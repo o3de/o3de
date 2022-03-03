@@ -493,6 +493,8 @@ set(FILES
     Viewport/ViewBookmarkLoader.h
     Viewport/ViewBookmarkLoader.cpp
     Viewport/ViewBookmarkLoaderInterface.h
+    Viewport/ViewBookmarkSystemComponent.h
+    Viewport/ViewBookmarkSystemComponent.cpp
     Viewport/ViewportInteractionHelpers.h
     Viewport/ViewportInteractionHelpers.cpp
     Viewport/ViewportMessages.h

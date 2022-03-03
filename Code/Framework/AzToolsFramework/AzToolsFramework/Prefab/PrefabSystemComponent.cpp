@@ -32,7 +32,6 @@ namespace AzToolsFramework
         void PrefabSystemComponent::Activate()
         {
             AZ::Interface<PrefabSystemComponentInterface>::Register(this);
-            m_viewBookmarkLoader.RegisterViewBookmarkLoaderInterface();
             m_prefabLoader.RegisterPrefabLoaderInterface();
             m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
@@ -51,7 +50,6 @@ namespace AzToolsFramework
             m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
             m_prefabLoader.UnregisterPrefabLoaderInterface();
-            m_viewBookmarkLoader.UnregisterViewBookmarkLoaderInterface();
             AZ::Interface<PrefabSystemComponentInterface>::Unregister(this);
         }
 
