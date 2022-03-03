@@ -465,6 +465,12 @@ def UploadAPLogs(String platformName, String jobName, String workspace, Map para
     }
 }
 
+def UploadGradleLogs() {
+    catchError(message: "Error archiving Gradle logs (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        ArchiveArtifactsOnS3("C:/Users/lybuilder/.gradle/daemon/7.0", "gradle", true)
+    }
+}
+
 def UploadTestArtifacts(String workspace, String outputDirectory) {
     catchError(message: "Error archiving test artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
         def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
@@ -554,6 +560,14 @@ def CreateExportTestScreenshotsStage(Map pipelineConfig, String branchName, Stri
     return {
         stage("${jobName}_screenshots") {
             ExportTestScreenshots(pipelineConfig, branchName, platformName, jobName, environmentVars['WORKSPACE'], params)
+        }
+    }
+}
+
+def CreateUploadGradleLogsStage() {
+    return {
+        stage("${jobName}_upload_gradle_logs") {
+            UploadGradleLogs()
         }
     }
 }
@@ -656,6 +670,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
+                        }
+                        if (build_job_name.toLowerCase().contains('gradle')) {
+                            CreateUploadGradleLogsStage()
                         }
                         CreateTeardownStage(envVars, params).call()
                         if (envVars['CREATE_SNAPSHOT']?.toBoolean()) {
