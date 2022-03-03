@@ -2,14 +2,12 @@
 
 The Prefab gem handles processing the prefab source assets into spawnable product assets, the Editor behavior for procedural prefabs, and handling procedural prefab asset types.
 
-Procedural prefabs are prefabs produced through the scene building pipeline. Procedural prefabs are read-only prefab templates since the source scene assets (e.g. FBX) are authorative not the Editor; that is, procedural prefabs are created during the scene pipeline not edited in the Editor. Procedural prefabs are created by default for source scene assets or when the scene builder updates a scene manifest to add Prefab Group rules. To learn more about procedural prefabs, see link **TBL** to get more details and examples.
+Procedural prefabs are prefabs produced through the scene building pipeline. Procedural prefabs are read-only prefab templates since the source scene assets (e.g. FBX) are authorative not the Editor; that is, procedural prefabs are created during the scene pipeline not edited in the Editor. Procedural prefabs are created by default for source scene assets or when the scene builder updates a scene manifest to add Prefab Group rules. To learn more about procedural prefabs, see link [/Gems/Prefab/PrefabBuilder/docs/procedural_prefabs.md] to get more details and examples.
 
 ## Reference Links
 
-TBW
-
-- LINK_TO_PROC_PREFABS
-- LINK_TO_UDP_MATERIAL
+- ![Overview of Procedural Prefabs](/Gems/Prefab/PrefabBuilder/docs/procedural_prefabs.md)
+- ![Using Material Overrides in Procedural Prefabs](/Gems/Prefab/PrefabBuilder/docs/procedural_prefabs_material_overrides.md)
 
 ## Terminology
 

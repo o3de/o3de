@@ -107,3 +107,34 @@ The Editor can save out a procedural prefab asset as an authored prefab source f
 The context menu item "Save as Prefab..." for the procedural prefab asset will prompt for a file name to save as an authored prefab.
 
 ![Procedural Prefab in Entity Outliner](/Gems/Prefab/PrefabBuilder/docs/images/save_as_prefab.webp)
+
+## Procedural Prefab Python Overview
+
+The Python Scene Builder (PSB) system allows a script developer some mechanisms to reassemble the source scene assets into any desired mesh and procedural prefab product assets. The mechanism to create procedural prefab assets is to update the scene manifest with a Prefab Group rule. The PSB scripts use script hooks via the 'azlmbr' Python module to hook into the “Update Manifest” scene building event. 
+
+The Python script can be associated with a source scene file by either manually adding a scene manifest file along with its source scene asset file or by using the Editor’s FBX Settings menu to assign a script. In order to manually adding a scene manifest file, a new blank text file would be added next to the source scene asset. This is an example of adding an asset info file next to a source asset scene file:
+
+```
+MyProject/scenes/foo.fbx
+MyProject/scenes/foo.fbx.assetinfo
+```
+
+In this example, the foo.fbx source asset scene file was exported from a DCC tool. The foo.fbx.assetinfo file was written out as a JSON text file to describe a script rule to use a PSB script to process the scene file.
+
+The contents of the foo.fbx.assetinfo file would look like this:
+```
+{
+    "values": [
+        {
+            "$type": "ScriptProcessorRule",
+            "scriptFilename": "MyProject/pipeline/process_chunks.py"
+        }
+    ]
+}
+```
+
+This will tell the scene builder (via the ScriptProcessingRule) to load the MyProject/pipeline/process_chunks.py script file to during the “Update Manifest” scene builder event.
+ 
+The other method for assigning a Python script to a source scene asset is to use the Editor’s Asset Browser to get the FBX Settings dialog. The user can use the Editor to assign a Python scene builder script to an FBX file in the Scene Settings dialog. For example, right-click on an FBX file from the Asset Browser and select the “Edit Settings...” menu option. This creates (overwrites) the scene manifest file (.assetinfo) for the FBX source scene asset. To unassign the script file, the “Reset Settings...” menu option will remove the scene manifest file.
+
+![Assign Python Scene Builder Script](/Gems/Prefab/PrefabBuilder/docs/images/assign_build_script.webp)
