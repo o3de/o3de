@@ -16,18 +16,6 @@
 
 namespace Terrain
 {
-    AZ::RPI::Ptr<TerrainMacroTextureClipmapComputePass> TerrainMacroTextureClipmapComputePass::Create(
-        const AZ::RPI::PassDescriptor& descriptor)
-    {
-        AZ::RPI::Ptr<TerrainMacroTextureClipmapComputePass> pass = aznew TerrainMacroTextureClipmapComputePass(descriptor);
-        return pass;
-    }
-
-    TerrainMacroTextureClipmapComputePass::TerrainMacroTextureClipmapComputePass(const AZ::RPI::PassDescriptor& descriptor)
-        : AZ::RPI::ParentPass(descriptor)
-    {
-    }
-
     AZ::RPI::Ptr<TerrainMacroTextureClipmapGenerationPass> TerrainMacroTextureClipmapGenerationPass::Create(
         const AZ::RPI::PassDescriptor& descriptor)
     {

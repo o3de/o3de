@@ -76,7 +76,6 @@ namespace Terrain
 
         // Register terrain system related passes
         passSystem->AddPassCreator(AZ::Name("TerrainDetailTextureComputePass"), &TerrainDetailTextureComputePass::Create);
-        passSystem->AddPassCreator(AZ::Name("TerrainMacroTextureClipmapComputePass"), &TerrainMacroTextureClipmapComputePass::Create);
         passSystem->AddPassCreator(AZ::Name("TerrainMacroTextureClipmapGenerationPass"), &TerrainMacroTextureClipmapGenerationPass::Create);
     }
 

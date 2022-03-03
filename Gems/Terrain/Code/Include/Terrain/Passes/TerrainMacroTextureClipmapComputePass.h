@@ -19,22 +19,6 @@
 
 namespace Terrain
 {
-    class TerrainMacroTextureClipmapComputePass
-        : public AZ::RPI::ParentPass
-    {
-        AZ_RPI_PASS(TerrainMacroTextureClipmapComputePass);
-
-    public:
-        AZ_RTTI(Terrain::TerrainMacroTextureClipmapComputePass, "{4349624E-E18B-4F03-B908-13841287A4CE}", AZ::RPI::ParentPass);
-        AZ_CLASS_ALLOCATOR(Terrain::TerrainMacroTextureClipmapComputePass, AZ::SystemAllocator, 0);
-        virtual ~TerrainMacroTextureClipmapComputePass() = default;
-
-        static AZ::RPI::Ptr<TerrainMacroTextureClipmapComputePass> Create(const AZ::RPI::PassDescriptor& descriptor);
-
-    private:
-        TerrainMacroTextureClipmapComputePass(const AZ::RPI::PassDescriptor& descriptor);
-    };
-
     class TerrainMacroTextureClipmapGenerationPass
         : public AZ::RPI::ComputePass
     {

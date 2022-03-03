@@ -10,6 +10,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Material/MaterialAssignmentSerializer.h>
@@ -35,7 +36,20 @@ namespace AZ
                 serializeContext->Class<MaterialAssignment>()
                     ->Version(1)
                     ->Field("MaterialAsset", &MaterialAssignment::m_materialAsset)
-                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides);
+                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<MaterialAssignment>(
+                        "Material Assignment", "Material Assignment")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_materialAsset, "Material Asset", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_propertyOverrides, "Property Overrides", "")
+                        ;
+                }
             }
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

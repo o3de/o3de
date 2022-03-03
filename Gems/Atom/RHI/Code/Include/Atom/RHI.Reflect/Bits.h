@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Math/MathUtils.h>
 
 #ifndef AZ_BIT
 #define AZ_BIT(x) (1u << x)
@@ -237,6 +238,7 @@ namespace AZ
         }
 
         /**
+        * O3DE_DEPRECATION_NOTICE(GHI-7407)
         * Returns the value divided by alignment, where the result is rounded up if the remainder is non-zero.
         */
         template <typename T> inline T DivideByMultiple(T value, size_t alignment)

@@ -111,9 +111,6 @@ namespace UnitTest
                     slot.m_name = "DepthInputOutput";
                     slot.m_slotType = RPI::PassSlotType::InputOutput;
                     slot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::DepthStencil;
-                    slot.m_formatFilter.push_back(RHI::Format::D24_UNORM_S8_UINT);
-                    slot.m_formatFilter.push_back(RHI::Format::D24_UNORM_S8_UINT);
-                    slot.m_formatFilter.push_back(RHI::Format::D32_FLOAT_S8X24_UINT);
                     m_forwardPass.AddSlot(slot);
                 }
                 {
@@ -158,9 +155,6 @@ namespace UnitTest
                     slot.m_name = "DepthInput";
                     slot.m_slotType = RPI::PassSlotType::Input;
                     slot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                    slot.m_formatFilter.push_back(RHI::Format::D24_UNORM_S8_UINT);
-                    slot.m_formatFilter.push_back(RHI::Format::D24_UNORM_S8_UINT);
-                    slot.m_formatFilter.push_back(RHI::Format::D32_FLOAT_S8X24_UINT);
                     m_postProcessPass.AddSlot(slot);
                 }
                 {
@@ -168,7 +162,6 @@ namespace UnitTest
                     slot.m_name = "LightingInput";
                     slot.m_slotType = RPI::PassSlotType::Input;
                     slot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                    slot.m_formatFilter.push_back(RHI::Format::R16G16B16A16_FLOAT);
                     m_postProcessPass.AddSlot(slot);
                 }
                 {
@@ -337,29 +330,6 @@ namespace UnitTest
             EXPECT_TRUE(parentPass->AsParent()->GetChildren().size() == PassTestData::NumberOfChildPasses);
         }
 
-        // Tests that validation correctly fails when a connected slot does not match any of the format filters
-        void TestFormatFilterFailure()
-        {
-            AZ_TEST_START_TRACE_SUPPRESSION;
-
-            // Set the format filter to block the connected attachment
-            m_data->m_postProcessPass.m_slots[1].m_formatFilter.clear();
-            m_data->m_postProcessPass.m_slots[1].m_formatFilter.push_back(RHI::Format::R8G8B8A8_SNORM);
-            m_data->AddPassTemplatesToLibrary();
-
-            Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));
-            parentPass->Reset();
-            parentPass->Build();
-
-            PassValidationResults validationResults;
-            parentPass->Validate(validationResults);
-
-            EXPECT_FALSE(validationResults.IsValid());
-            EXPECT_EQ(1, validationResults.m_passesWithErrors.size());
-
-            AZ_TEST_STOP_TRACE_SUPPRESSION(2);
-        }
-
         // Tests that validation correctly fails when connection's local slot name is set to a garbage value
         void TestInvalidLocalSlotName()
         {
@@ -482,11 +452,6 @@ namespace UnitTest
     TEST_F(PassTests, ConstructionAndValidation)
     {
         TestPassConstructionAndValidation();
-    }
-
-    TEST_F(PassTests, FormatFilterFailure)
-    {
-        TestFormatFilterFailure();
     }
 
     TEST_F(PassTests, InvalidLocalSlotName)

@@ -225,7 +225,6 @@ namespace AzToolsFramework::Prefab
         const InstanceOptionalReference previousFocusedInstance = GetInstanceReference(previousContainerRootAliasPath);
 
         m_rootAliasFocusPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
-        m_focusedTemplateId = focusedInstance->get().GetTemplateId();
         m_rootAliasFocusPathLength = aznumeric_cast<int>(AZStd::distance(m_rootAliasFocusPath.begin(), m_rootAliasFocusPath.end()));
 
         // Focus on the descendants of the container entity in the Editor, if the interface is initialized.
@@ -266,7 +265,16 @@ namespace AzToolsFramework::Prefab
     
     TemplateId PrefabFocusHandler::GetFocusedPrefabTemplateId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        return m_focusedTemplateId;
+        InstanceOptionalReference instance = GetInstanceReference(m_rootAliasFocusPath);
+
+        if (instance.has_value())
+        {
+            return instance->get().GetTemplateId();
+        }
+        else
+        {
+            return Prefab::InvalidTemplateId;
+        }
     }
 
     InstanceOptionalReference PrefabFocusHandler::GetFocusedPrefabInstance(
@@ -292,7 +300,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        const InstanceOptionalConstReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         if (!instance.has_value())
         {
             return false;
@@ -308,7 +316,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        InstanceOptionalConstReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         while (instance.has_value())
         {
             if (instance->get().GetAbsoluteInstanceAliasPath() == m_rootAliasFocusPath)

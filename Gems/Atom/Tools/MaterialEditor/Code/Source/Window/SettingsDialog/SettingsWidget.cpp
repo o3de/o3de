@@ -6,19 +6,19 @@
  *
  */
 
-#include <Window/SettingsDialog/SettingsWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
+#include <Window/SettingsDialog/SettingsWidget.h>
 
 namespace MaterialEditor
 {
     SettingsWidget::SettingsWidget(QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
     {
+        SetGroupSettingsPrefix("/O3DE/Atom/MaterialEditor/SettingsWidget");
     }
 
     SettingsWidget::~SettingsWidget()
     {
-        AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
     }
 
     void SettingsWidget::Populate()
@@ -29,7 +29,6 @@ namespace MaterialEditor
 
     void SettingsWidget::Reset()
     {
-        AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
     }
 } // namespace MaterialEditor
