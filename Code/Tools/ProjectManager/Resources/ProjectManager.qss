@@ -453,10 +453,58 @@ QTabBar::tab:focus {
     margin-top:6px;
 }
 
-#projectButton > QFrame > QLabel {
+#projectButton QLabel {
     font-weight:bold;
     font-size:14px;
     qproperty-indent: 0;
+}
+
+#labelButton QLabel {
+    background-color: rgba(0,0,0,0.70);
+    border-radius: 5px;
+}
+
+#labelButton QPushButton {
+    min-width:140px;
+    max-width:140px;
+    min-height:26px;
+    max-height:26px;
+}
+
+#projectWarningOverlay {
+    min-width:120px;
+    max-width:120px;
+    min-height:48px;
+    max-height:48px;
+}
+
+#projectWarningIconOverlay {
+    min-width:24px;
+    max-width:24px;
+    min-height:24px;
+    max-height:24px;
+}
+
+#projectMessageOverlay, #projectSubMessageOverlay {
+    min-width:160px;
+    max-width:160px;
+    min-height:32px;
+    max-height:32px;
+}
+
+#labelButton #projectMessageOverlay {
+    font-size:16px;
+}
+
+#labelButton #projectSubMessageOverlay {
+    font-size:12px;
+}
+
+#buildingAnimationOverlay {
+    min-width:80px;
+    max-width:80px;
+    min-height:80px;
+    max-height:80px;
 }
 
 #projectMenuButton {
@@ -473,19 +521,6 @@ QTabBar::tab:focus {
     max-width:150px;
     min-height:26px;
     max-height:26px;
-}
-
-#projectActionButton, #openEditorButton {
-    min-height:26px;
-    max-height:26px;
-}
-
-#labelButtonOverlay {
-    background-color: rgba(50,50,50,200);
-    min-width:208px;
-    max-width:208px;;
-    min-height:270px;
-    max-height:270px;
 }
 
 QProgressBar {

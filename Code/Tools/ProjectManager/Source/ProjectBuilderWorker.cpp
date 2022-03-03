@@ -18,8 +18,6 @@
 #include <QTextStream>
 #include <QThread>
 
-//#define MOCK_BUILD_PROJECT true
-
 namespace O3DE::ProjectManager
 {
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
@@ -30,14 +28,7 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderWorker::BuildProject()
     {
-#ifdef MOCK_BUILD_PROJECT
-        for (int i = 0; i < 10; ++i)
-        {
-            QThread::sleep(1);
-            UpdateProgress(i * 10);
-        }
-        Done("");
-#else
+
         auto result = BuildProjectForPlatform();
 
         if (result.IsSuccess())
@@ -48,7 +39,6 @@ namespace O3DE::ProjectManager
         {
             emit Done(result.GetError());
         }
-#endif
     }
 
     QString ProjectBuilderWorker::GetLogFilePath() const

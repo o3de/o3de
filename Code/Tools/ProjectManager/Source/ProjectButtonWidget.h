@@ -37,61 +37,71 @@ namespace O3DE::ProjectManager
         explicit LabelButton(QWidget* parent = nullptr);
         ~LabelButton() = default;
 
-        void SetEnabled(bool enabled);
-        void SetOverlayText(const QString& text);
-        void SetLogUrl(const QUrl& url);
-
-        QLabel* GetOverlayLabel();
-        QProgressBar* GetProgressBar();
-        QPushButton* GetOpenEditorButton();
-        QPushButton* GetActionButton();
+        QLabel* GetMessageLabel();
+        QLabel* GetSubMessageLabel();
         QLabel* GetWarningLabel();
         QLabel* GetWarningIcon();
+        QSpacerItem* GetWarningSpacer();
+        QLabel* GetBuildingAnimationLabel();
+        QPushButton* GetOpenEditorButton();
+        QPushButton* GetActionButton();
+        QPushButton* GetShowLogsButton();
         QLayout* GetBuildOverlayLayout();
+
+    public slots:
+        void mousePressEvent(QMouseEvent* event) override;
 
     signals:
         void triggered(QMouseEvent* event);
 
-    public slots:
-        void mousePressEvent(QMouseEvent* event) override;
-        void OnLinkActivated(const QString& link);
-
     private:
-        QVBoxLayout* m_buildOverlayLayout = nullptr;
-        QLabel* m_overlayLabel = nullptr;
-        QProgressBar* m_progressBar = nullptr;
-        QPushButton* m_openEditorButton = nullptr;
-        QPushButton* m_actionButton = nullptr;
+        QVBoxLayout* m_projectOverlayLayout = nullptr;
+
+        QLabel* m_messageLabel = nullptr;
+        QLabel* m_subMessageLabel = nullptr;
+
         QLabel* m_warningText = nullptr;
         QLabel* m_warningIcon = nullptr;
+        QSpacerItem* m_warningSpacer = nullptr;
 
-        QUrl m_logUrl;
-        bool m_enabled = true;
+        QLabel* m_buildingAnimation = nullptr;
+
+        QPushButton* m_openEditorButton = nullptr;
+        QPushButton* m_actionButton = nullptr;
+        QPushButton* m_showLogsButton = nullptr;
     };
 
     class ProjectButton
         : public QFrame
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
+        enum class ProjectState
+        {
+            ReadyToLaunch = 0,
+            Launching,
+            NeedsToBuild,
+            Building,
+            BuildFailed
+        };
+
         explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
         ~ProjectButton() = default;
 
         const ProjectInfo& GetProjectInfo() const;
 
-        void RestoreDefaultState();
+        void SetState(enum ProjectState state);
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
         void SetBuildLogsLink(const QUrl& logUrl);
-        void ShowBuildFailed(bool show, const QUrl& logUrl);
-        void ShowBuildRequired();
-        void SetProjectBuilding();
 
-        void SetLaunchButtonEnabled(bool enabled);
-        void SetButtonOverlayText(const QString& text);
-        void SetProgressBarValue(int progress);
+        void SetContextualText(const QString& text);
+
         LabelButton* GetLabelButton();
+
+    public slots:
+        void ShowLogs();
 
     signals:
         void OpenProject(const QString& projectName);
@@ -106,17 +116,33 @@ namespace O3DE::ProjectManager
     private:
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
-        void ShowWarning(bool show, const QString& warning);
-        void ShowDefaultBuildButton();
+
+        void ShowReadyState();
+        void ShowLaunchingState();
+        void ShowBuildRequiredState();
+        void ShowBuildingState();
+        void ShowBuildFailedState();
+        void ShowMessage(const QString& message = {}, const QString& submessage = {});
+        void ShowWarning(const QString& warning = {});
+        void ShowBuildButton();
+        void SetLaunchingEnabled(bool enabled);
+        void SetProjectBuilding(bool isBuilding);
+        void HideContextualLabelButtonWidgets();
 
         QMenu* CreateProjectMenu();
 
         ProjectInfo m_projectInfo;
+        QUrl m_logUrl;
 
         LabelButton* m_projectImageLabel = nullptr;
         QPushButton* m_projectMenuButton = nullptr;
         QLayout* m_requiresBuildLayout = nullptr;
 
         QMetaObject::Connection m_actionButtonConnection;
+
+        bool m_isProjectBuilding = false;
+        bool m_canLaunch = true;
+
+        ProjectState m_currentState = ProjectState::ReadyToLaunch;
     };
 } // namespace O3DE::ProjectManager
