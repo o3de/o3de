@@ -215,8 +215,7 @@ namespace AzToolsFramework
             ViewBookmark m_lastKnownLocation;
         };
 
-        LocalViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<LocalViewBookmarkComponent>();
-        if (bookmarkComponent)
+        if (LocalViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<LocalViewBookmarkComponent>())
         {
             // Get the file we want to merge into the settings registry.
             if (!bookmarkComponent->GetLocalBookmarksFileName().empty())
