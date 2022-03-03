@@ -159,8 +159,6 @@ namespace UnitTest
         ASSERT_TRUE(m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityId));
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
-        ValidateInstanceEntitiesActive(*secondInstance);
-
         //get the entity id
         AZ::EntityId secondEntityId = secondInstance->GetEntityId(newEntityAlias);
         ASSERT_TRUE(secondEntityId.IsValid());
@@ -174,7 +172,7 @@ namespace UnitTest
         ASSERT_TRUE(confirmXValue == updatedXValue);
     }
 
-    TEST_F(PrefabInstanceToTemplateTests, PrefabUpdateTemplate_AddEntityToInstance)
+    TEST_F(PrefabInstanceToTemplateTests, DISABLED_PrefabUpdateTemplate_AddEntityToInstance)
     {
         //create template with single entity
         const char* newEntityName = "New Entity";
@@ -224,7 +222,7 @@ namespace UnitTest
         EXPECT_EQ(entityIdVector.size(), 2);
     }
 
-    TEST_F(PrefabInstanceToTemplateTests, PrefabUpdateTemplate_RemoveEntityFromInstance)
+    TEST_F(PrefabInstanceToTemplateTests, DISABLED_PrefabUpdateTemplate_RemoveEntityFromInstance)
     {
         //create template with single entity
 
@@ -356,4 +354,4 @@ namespace UnitTest
 
         EXPECT_EQ(secondInstance->FindNestedInstance(addedAlias), AZStd::nullopt);
     }
-}
+} // namespace UnitTest

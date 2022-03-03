@@ -23,6 +23,53 @@ namespace AzToolsFramework
     {
         AZ_CLASS_ALLOCATOR_IMPL(JsonInstanceSerializer, AZ::SystemAllocator, 0);
 
+        namespace Internal
+        {
+            inline static const char* PathStartingWithEntities = "/Entities/";
+            inline static const char* PathMatchingContainerEntity = "/ContainerEntity";
+
+            //! Identifies the instance members to reload by parsing through the patches provided.
+            static void IdentifyInstanceMembersToReload(
+                PrefabDom& patches, AZStd::unordered_set<EntityAlias>& entitiesToReload, bool& shouldReloadContainerEntity)
+            {
+                for (const PrefabDomValue& patchEntry : patches.GetArray())
+                {
+                    PrefabDomValue::ConstMemberIterator patchEntryIterator = patchEntry.FindMember("path");
+                    if (patchEntryIterator != patchEntry.MemberEnd())
+                    {
+                        AZStd::string patchPath = patchEntryIterator->value.GetString();
+                        if (patchPath.starts_with(PathStartingWithEntities))
+                        {
+                            patchPath.erase(0, strlen(PathStartingWithEntities));
+                            AZStd::size_t pathSepartorIndex = patchPath.find('/');
+                            if (pathSepartorIndex != AZStd::string::npos)
+                            {
+                                AZStd::string entityAlias = patchPath.substr(0, pathSepartorIndex);
+                                entitiesToReload.emplace(AZStd::move(entityAlias));
+                            }
+                            else
+                            {
+                                patchEntryIterator = patchEntry.FindMember("op");
+                                if (patchEntryIterator != patchEntry.MemberEnd())
+                                {
+                                    AZStd::string opPath = patchEntryIterator->value.GetString();
+                                    if (opPath != "remove") // Removal of entity needs to be addressed later.
+                                    {
+                                        // Could be an add or change from empty->full. The later case is rare but not impossible.
+                                        entitiesToReload.emplace(AZStd::move(patchPath));
+                                    }
+                                }
+                            }
+                        }
+                        else if (patchPath.starts_with(PathMatchingContainerEntity))
+                        {
+                            shouldReloadContainerEntity = true;
+                        }
+                    }
+                }
+            }
+        }
+
         AZ::JsonSerializationResult::Result JsonInstanceSerializer::Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             [[maybe_unused]] const AZ::Uuid& valueTypeId, AZ::JsonSerializerContext& context)
         {
@@ -172,64 +219,151 @@ namespace AzToolsFramework
                 }
             }
 
-            // An already filled instance should be cleared if inputValue's Entities member is empty
-            // The Json serializer will not do this by default as it will not attempt to load a missing member
-            instance->ClearEntities();
-
-            if (instance->m_containerEntity)
-            {
-                instance->m_containerEntity.reset();
-            }
-
             if (idMapper && *idMapper)
             {
                 (*idMapper)->SetLoadingInstance(*instance);
             }
 
             {
-                JSR::ResultCode containerEntityResult = ContinueLoadingFromJsonObjectField(
-                    &instance->m_containerEntity, azrtti_typeid<decltype(instance->m_containerEntity)>(), inputValue, "ContainerEntity", context);
-
-                result.Combine(containerEntityResult);
+                result.Combine(
+                    ContinueLoadingFromJsonObjectField(&instance->m_linkId, azrtti_typeid<LinkId>(), inputValue, "LinkId", context));
             }
 
+            PrefabDomUtils::InstanceDomMetadata* instanceDomMetadata = context.GetMetadata().Find<PrefabDomUtils::InstanceDomMetadata>();
+            PrefabDomValueConstReference cachedInstanceDom = instance->GetCachedInstanceDom();
+
+            if (instanceDomMetadata == nullptr || cachedInstanceDom == AZStd::nullopt)
             {
-                JSR::ResultCode entitiesResult = ContinueLoadingFromJsonObjectField(
-                    &instance->m_entities, azrtti_typeid<Instance::AliasToEntityMap>(), inputValue, "Entities", context);
-                AddEntitiesToScrub(instance, context);
-                result.Combine(entitiesResult);
-            }
+                // An already filled instance should be cleared if inputValue's Entities member is empty
+                // The Json serializer will not do this by default as it will not attempt to load a missing member
+                instance->ClearEntities();
+                {
+                    JSR::ResultCode containerEntityResult = ContinueLoadingFromJsonObjectField(
+                        &instance->m_containerEntity, azrtti_typeid<decltype(instance->m_containerEntity)>(), inputValue, "ContainerEntity",
+                        context);
 
+                    result.Combine(containerEntityResult);
+
+                    if (instance->m_containerEntity && instance->m_containerEntity->GetId().IsValid())
+                    {
+                        AddEntitiesToScrub(EntityList{ instance->m_containerEntity.get() }, context);
+                    }
+                }
+
+                {
+                    JSR::ResultCode entitiesResult = ContinueLoadingFromJsonObjectField(
+                        &instance->m_entities, azrtti_typeid<Instance::AliasToEntityMap>(), inputValue, "Entities", context);
+
+                    EntityList entitiesLoaded;
+                    entitiesLoaded.reserve(instance->m_entities.size());
+                    for (const auto& [entityAlias, entity] : instance->m_entities)
+                    {
+                        if (entity != nullptr)
+                        {
+                            entitiesLoaded.emplace_back(entity.get());
+                        }
+                    }
+                    
+                    result.Combine(entitiesResult);
+                    AddEntitiesToScrub(AZStd::move(entitiesLoaded), context);
+                }
+            }
+            else
             {
-                result.Combine(ContinueLoadingFromJsonObjectField(&instance->m_linkId, azrtti_typeid<LinkId>(), inputValue, "LinkId", context));
+                PrefabDom jsonPatch;
+                AZ::JsonSerialization::CreatePatch(
+                    jsonPatch, jsonPatch.GetAllocator(), cachedInstanceDom->get(), inputValue, AZ::JsonMergeApproach::JsonPatch);
+
+                if (jsonPatch.IsArray() && jsonPatch.GetArray().Empty())
+                {
+                    JSR::ResultCode skippedResult(JSR::Tasks::CreatePatch, JSR::Outcomes::Skipped);
+                    result.Combine(skippedResult);
+                }
+                else
+                {
+                    Reload(inputValue, context, instance, AZStd::move(jsonPatch), result);
+                }
             }
 
-            return context.Report(result,
-                result.GetProcessing() == JSR::Processing::Completed ? "Successfully loaded instance information for prefab." :
-                "Failed to load instance information for prefab");
+            if (instanceDomMetadata)
+            {
+                instance->SetCachedInstanceDom(inputValue);
+            }
+
+            return context.Report(
+                result,
+                result.GetProcessing() == JSR::Processing::Completed ? "Successfully loaded instance information for prefab."
+                                                                     : "Failed to load instance information for prefab");
         }
 
-        void JsonInstanceSerializer::AddEntitiesToScrub(const Instance* instance, AZ::JsonDeserializerContext& jsonDeserializerContext)
+        void JsonInstanceSerializer::Reload(
+            const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context,
+            Instance* instance,
+            PrefabDom patches,
+            AZ::JsonSerializationResult::ResultCode& result)
         {
-            EntityList entitiesInInstance;
-            entitiesInInstance.reserve(instance->m_entities.size() + 1);
+            AZStd::unordered_set<EntityAlias> entitiesToReload;
+            bool shouldReloadContainerEntity = false;
 
-            if (instance->m_containerEntity && instance->m_containerEntity->GetId().IsValid())
+            Internal::IdentifyInstanceMembersToReload(patches, entitiesToReload, shouldReloadContainerEntity);
+
+            if (shouldReloadContainerEntity)
             {
-                entitiesInInstance.emplace_back(instance->m_containerEntity.get());
+                if (instance->m_containerEntity)
+                {
+                    instance->UnregisterEntity(instance->m_containerEntity->GetId());
+                    instance->m_containerEntity.reset();
+                }
+
+                auto instancesMemberIter = inputValue.FindMember("ContainerEntity");
+                if (instancesMemberIter != inputValue.MemberEnd() && instancesMemberIter->value.IsObject())
+                {
+                    AZ::JsonSerializationResult::ResultCode containerEntityResult = ContinueLoadingFromJsonObjectField(
+                        &instance->m_containerEntity, azrtti_typeid<decltype(instance->m_containerEntity)>(), inputValue, "ContainerEntity",
+                        context);
+
+                    result.Combine(containerEntityResult);
+                    AddEntitiesToScrub(EntityList{ instance->m_containerEntity.get() }, context);
+                }
             }
 
-            for (const auto& [entityAlias, entity] : instance->m_entities)
             {
-                entitiesInInstance.emplace_back(entity.get());
-            }
+                auto entitiesMemberIterator = inputValue.FindMember("Entities");
+                if (entitiesMemberIterator != inputValue.MemberEnd() && entitiesMemberIterator->value.IsObject())
+                {
+                    EntityList entitiesLoaded;
+                    entitiesLoaded.reserve(entitiesToReload.size());
 
+                    for (AZStd::string entityAlias : entitiesToReload)
+                    {
+                        EntityOptionalReference existingEntity = instance->GetEntity(entityAlias);
+
+                        if (existingEntity != AZStd::nullopt)
+                        {
+                            instance->DetachEntity(existingEntity->get().GetId());
+                        }
+
+                        AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
+                        auto entityIterator = entitiesMemberIterator->value.FindMember(entityAlias.c_str());
+                        result.Combine(ContinueLoading(&entity, azrtti_typeid<decltype(entity)>(), entityIterator->value, context));
+                        entitiesLoaded.emplace_back(entity.get());
+                        instance->m_entities.emplace(entityAlias, AZStd::move(entity));
+                    }
+
+                    AddEntitiesToScrub(AZStd::move(entitiesLoaded), context);
+                }
+            }
+        }
+
+        void JsonInstanceSerializer::AddEntitiesToScrub(EntityList entitiesModified, AZ::JsonDeserializerContext& jsonDeserializerContext)
+        {
             InstanceEntityScrubber* instanceEntityScrubber = jsonDeserializerContext.GetMetadata().Find<InstanceEntityScrubber>();
             if (instanceEntityScrubber)
             {
-                instanceEntityScrubber->AddEntitiesToScrub(entitiesInInstance);
+                instanceEntityScrubber->AddEntitiesToScrub(entitiesModified);
             }
         }
 
     } // namespace Prefab
-}
+} // namespace AzToolsFramework
