@@ -13,10 +13,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <Prefab/ViewBookmarkLoader.h>
 
-/*!
- * ViewBookmarkIntereface
- * Interface for saving/loading View Bookmarks.
- */
 namespace AzToolsFramework
 {
     static constexpr const char* s_viewBookmarksRegistryPath = "/O3DE/ViewBookmarks/";

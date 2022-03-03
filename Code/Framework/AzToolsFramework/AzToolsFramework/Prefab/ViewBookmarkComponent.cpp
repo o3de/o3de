@@ -96,18 +96,16 @@ namespace AzToolsFramework
 
     ViewBookmark ViewBookmarkComponent::GetBookmarkAtIndex(int index) const
     {
-        auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
-        if (index >= 0 && index < bookmarkVector.size())
+        if (index >= 0 && index < m_viewBookmark.m_viewBookmarks.size())
         {
-            return bookmarkVector[index];
+            return m_viewBookmark.m_viewBookmarks[index];
         }
         return ViewBookmark();
     }
 
     void ViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)
     {
-        auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
-        bookmarkVector.push_back(viewBookmark);
+        m_viewBookmark.m_viewBookmarks.push_back(viewBookmark);
     }
 
     void ViewBookmarkComponent::RemoveBookmark([[maybe_unused]] int index)
@@ -116,8 +114,7 @@ namespace AzToolsFramework
 
     void ViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
     {
-        auto& bookmarkVector = m_viewBookmark.m_viewBookmarks;
-        bookmarkVector[index] = newBookmark;
+        m_viewBookmark.m_viewBookmarks[index] = newBookmark;
     }
 
     AZStd::string ViewBookmarkComponent::GetLocalBookmarksFileName() const
