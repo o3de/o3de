@@ -53,80 +53,49 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
         for f in original_file_list:
             fm._restore_file(f, file_list[f])
 
-
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
+class TestAutomation(EditorTestSuite):
+
+    global_extra_cmdline_args = ['-BatchMode', '-autotest_mode',
+                                 '--regset=/Amazon/Preferences/EnablePrefabSystem=true']
 
     @staticmethod
     def get_number_parallel_editors():
         return 16
 
-    class C4982801_PhysXColliderShape_CanBeSelected(EditorSharedTest):
+    class Collider_BoxShapeEditing(EditorSharedTest):
         from .tests.collider import Collider_BoxShapeEditing as test_module
 
-    class C4982800_PhysXColliderShape_CanBeSelected(EditorSharedTest):
+    class Collider_SphereShapeEditing(EditorSharedTest):
         from .tests.collider import Collider_SphereShapeEditing as test_module
 
-    class C4982802_PhysXColliderShape_CanBeSelected(EditorSharedTest):
+    class Collider_CapsuleShapeEditing(EditorSharedTest):
         from .tests.collider import Collider_CapsuleShapeEditing as test_module
 
-    class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
-        from .tests.character_controller import CharacterController_SwitchLevels as test_module
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomationNoPrefab(EditorTestSuite):
 
-    class C14861500_DefaultSetting_ColliderShape(EditorSharedTest):
-        from .tests.collider import Collider_CheckDefaultShapeSettingIsPxMesh as test_module
+    global_extra_cmdline_args = ["-BatchMode", "-autotest_mode",
+                                 '--regset=/Amazon/Preferences/EnablePrefabSystem=false']
 
-    class C4044695_PhysXCollider_AddMultipleSurfaceFbx(EditorSharedTest):
-        from .tests.collider import Collider_MultipleSurfaceSlots as test_module
-        
-    class C14861501_PhysXCollider_RenderMeshAutoAssigned(EditorSharedTest):
-        from .tests.collider import Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent as test_module
-
-    @pytest.mark.xfail(reason="This will fail due to this issue ATOM-15487.")
-    class C14861502_PhysXCollider_AssetAutoAssigned(EditorSharedTest):
-        from .tests.collider import Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent as test_module
-
-    class C4982803_Enable_PxMesh_Option(EditorSharedTest):
-        from .tests.collider import Collider_PxMeshConvexMeshCollides as test_module
-    
-    class C15096740_Material_LibraryUpdatedCorrectly(EditorSharedTest):
-        from .tests.material import Material_LibraryClearingAssignsDefault as test_module
-        
-    class C17411467_AddPhysxRagdollComponent(EditorSharedTest):
-        from .tests.ragdoll import Ragdoll_AddPhysxRagdollComponentWorks as test_module
- 
-    class C19578021_ShapeCollider_CanBeAdded(EditorSharedTest):
-        from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
-
-    class C19578018_ShapeColliderWithNoShapeComponent(EditorSharedTest):
-        from .tests.shape_collider import ShapeCollider_InactiveWhenNoShapeComponent as test_module
-
-    class C19723164_ShapeCollider_WontCrashEditor(EditorSharedTest):
-        from .tests.shape_collider import ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor as test_module
-
-    class C12905528_ForceRegion_WithNonTriggerCollider(EditorSharedTest):
-        from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
-        # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
-    
-    class C14861504_RenderMeshAsset_WithNoPxAsset(EditorSharedTest):
-        from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
-
-    class C4976236_AddPhysxColliderComponent(EditorSharedTest):
-        from .tests.collider import Collider_AddColliderComponent as test_module
+    @staticmethod
+    def get_number_parallel_editors():
+        return 16
 
     #########################################
     # Non-atomic tests: These need to be run in a single editor because they have custom setup and teardown
-    class C4044459_Material_DynamicFriction(EditorSingleTest_WithFileOverrides):
-        from .tests.material import Material_DynamicFriction as test_module
+    class Material_DynamicFriction(EditorSingleTest_WithFileOverrides):
+        from .tests.material import Material_DynamicFriction as test_module        
         files_to_override = [
             ('physxsystemconfiguration.setreg', 'Material_DynamicFriction.setreg_override')
         ]
         base_dir = "AutomatedTesting/Registry"
 
-    class C4982593_PhysXCollider_CollisionLayerTest(EditorSingleTest_WithFileOverrides):
+    class Collider_DiffCollisionGroupDiffCollidingLayersNotCollide(EditorSingleTest_WithFileOverrides):
         from .tests.collider import Collider_DiffCollisionGroupDiffCollidingLayersNotCollide as test_module
         files_to_override = [
             ('physxsystemconfiguration.setreg', 'Collider_DiffCollisionGroupDiffCollidingLayersNotCollide.setreg_override')
@@ -134,221 +103,259 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
         base_dir = "AutomatedTesting/Registry"
     #########################################
 
-    class C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorSharedTest):
+    class RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorSharedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
 
-    class C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies(EditorSharedTest):
+    class ForceRegion_LocalSpaceForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_LocalSpaceForceOnRigidBodies as test_module
 
-    class C18243586_Joints_HingeLeadFollowerCollide(EditorSharedTest):
-        from .tests.joints import Joints_HingeLeadFollowerCollide as test_module
-
-    class C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain(EditorSharedTest):
-        from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
-
-    class C12712453_ScriptCanvas_MultipleRaycastNode(EditorSharedTest):
-        from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
-
-    class C4976243_Collision_SameCollisionGroupDiffCollisionLayers(EditorSharedTest):
+    class Physics_UndoRedoWorksOnEntityWithPhysComponents(EditorSharedTest):
+        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
+        
+    class Collider_SameCollisionGroupDiffLayersCollide(EditorSharedTest):
         from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
 
-    class C3510642_Terrain_NotCollideWithTerrain(EditorSharedTest):
+    class CharacterController_SwitchLevels(EditorSharedTest):
+        from .tests.character_controller import CharacterController_SwitchLevels as test_module
+ 
+    class Ragdoll_AddPhysxRagdollComponentWorks(EditorSharedTest):
+        from .tests.ragdoll import Ragdoll_AddPhysxRagdollComponentWorks as test_module
+ 
+    class ScriptCanvas_MultipleRaycastNode(EditorSharedTest):
+        from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
+
+    class Joints_HingeLeadFollowerCollide(EditorSharedTest):
+        from .tests.joints import Joints_HingeLeadFollowerCollide as test_module
+
+    class Collider_PxMeshConvexMeshCollides(EditorSharedTest):
+        from .tests.collider import Collider_PxMeshConvexMeshCollides as test_module
+    
+    class ShapeCollider_CylinderShapeCollides(EditorSharedTest):
+        from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
+
+    class Terrain_NoPhysTerrainComponentNoCollision(EditorSharedTest):
         from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
 
-    class C4976195_RigidBodies_InitialLinearVelocity(EditorSharedTest):
+    class RigidBody_InitialLinearVelocity(EditorSharedTest):
         from .tests.rigid_body import RigidBody_InitialLinearVelocity as test_module
 
-    class C4976206_RigidBodies_GravityEnabledActive(EditorSharedTest):
+    class RigidBody_StartGravityEnabledWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_StartGravityEnabledWorks as test_module
 
-    class C4976207_PhysXRigidBodies_KinematicBehavior(EditorSharedTest):
+    class RigidBody_KinematicModeWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_KinematicModeWorks as test_module
 
-    class C5932042_PhysXForceRegion_LinearDamping(EditorSharedTest):
+    class ForceRegion_LinearDampingForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_LinearDampingForceOnRigidBodies as test_module
 
-    class C5932043_ForceRegion_SimpleDragOnRigidBodies(EditorSharedTest):
+    class ForceRegion_SimpleDragForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_SimpleDragForceOnRigidBodies as test_module
 
-    class C5959760_PhysXForceRegion_PointForceExertion(EditorSharedTest):
+    class ForceRegion_CapsuleShapedForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_CapsuleShapedForce as test_module
 
-    class C5959764_ForceRegion_ForceRegionImpulsesCapsule(EditorSharedTest):
+    class ForceRegion_ImpulsesCapsuleShapedRigidBody(EditorSharedTest):
         from .tests.force_region import ForceRegion_ImpulsesCapsuleShapedRigidBody as test_module
 
-    class C5340400_RigidBody_ManualMomentOfInertia(EditorSharedTest):
+    class RigidBody_MomentOfInertiaManualSetting(EditorSharedTest):
         from .tests.rigid_body import RigidBody_MomentOfInertiaManualSetting as test_module
 
-    class C4976210_COM_ManualSetting(EditorSharedTest):
+    class RigidBody_COM_ManualSettingWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_COM_ManualSettingWorks as test_module
 
-    class C4976194_RigidBody_PhysXComponentIsValid(EditorSharedTest):
+    class RigidBody_AddRigidBodyComponent(EditorSharedTest):
         from .tests.rigid_body import RigidBody_AddRigidBodyComponent as test_module
 
-    class C5932045_ForceRegion_Spline(EditorSharedTest):
+    class ForceRegion_SplineForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_SplineForceOnRigidBodies as test_module
 
-    class C4982797_Collider_ColliderOffset(EditorSharedTest):
+    class Collider_ColliderPositionOffset(EditorSharedTest):
         from .tests.collider import Collider_ColliderPositionOffset as test_module
 
-    class C4976200_RigidBody_AngularDampingObjectRotation(EditorSharedTest):
+    class RigidBody_AngularDampingAffectsRotation(EditorSharedTest):
         from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
 
-    class C5689529_Verify_Terrain_RigidBody_Collider_Mesh(EditorSharedTest):
+    class Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether(EditorSharedTest):
         from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
 
-    class C5959810_ForceRegion_ForceRegionCombinesForces(EditorSharedTest):
+    class ForceRegion_MultipleForcesInSameComponentCombineForces(EditorSharedTest):
         from .tests.force_region import ForceRegion_MultipleForcesInSameComponentCombineForces as test_module
 
-    class C5959765_ForceRegion_AssetGetsImpulsed(EditorSharedTest):
+    class ForceRegion_ImpulsesPxMeshShapedRigidBody(EditorSharedTest):
         from .tests.force_region import ForceRegion_ImpulsesPxMeshShapedRigidBody as test_module
 
-    class C6274125_ScriptCanvas_TriggerEvents(EditorSharedTest):
+    class ScriptCanvas_TriggerEvents(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_TriggerEvents as test_module
         # needs to be updated to log for unexpected lines
         # expected_lines = test_module.LogLines.expected_lines
 
-    class C6090554_ForceRegion_PointForceNegative(EditorSharedTest):
+    class ForceRegion_ZeroPointForceDoesNothing(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroPointForceDoesNothing as test_module
 
-    class C6090550_ForceRegion_WorldSpaceForceNegative(EditorSharedTest):
+    class ForceRegion_ZeroWorldSpaceForceDoesNothing(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroWorldSpaceForceDoesNothing as test_module
 
-    class C6090552_ForceRegion_LinearDampingNegative(EditorSharedTest):
+    class ForceRegion_ZeroLinearDampingDoesNothing(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroLinearDampingDoesNothing as test_module
 
-    class C5968760_ForceRegion_CheckNetForceChange(EditorSharedTest):
+    class ForceRegion_MovingForceRegionChangesNetForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_MovingForceRegionChangesNetForce as test_module
 
-    @pytest.mark.xfail(reason="Ongoing issue in Script Canvas, AZ::Event fail to compile on Script Canvas")
-    class C12712452_ScriptCanvas_CollisionEvents(EditorSharedTest):
+    class ScriptCanvas_CollisionEvents(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_CollisionEvents as test_module
 
-    class C12868578_ForceRegion_DirectionHasNoAffectOnMagnitude(EditorSharedTest):
+    class ForceRegion_DirectionHasNoAffectOnTotalForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_DirectionHasNoAffectOnTotalForce as test_module
 
-    class C4976204_Verify_Start_Asleep_Condition(EditorSharedTest):
+    class RigidBody_StartAsleepWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
 
-    class C6090551_ForceRegion_LocalSpaceForceNegative(EditorSharedTest):
+    class ForceRegion_SliceFileInstantiates(EditorSharedTest):
+        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
+
+    class ForceRegion_ZeroLocalSpaceForceDoesNothing(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroLocalSpaceForceDoesNothing as test_module
 
-    class C6090553_ForceRegion_SimpleDragForceOnRigidBodies(EditorSharedTest):
+    class ForceRegion_ZeroSimpleDragForceDoesNothing(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroSimpleDragForceDoesNothing as test_module
 
-    class C4976209_RigidBody_ComputesCOM(EditorSharedTest):
+    class RigidBody_COM_ComputingWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_COM_ComputingWorks as test_module
 
-    class C4976201_RigidBody_MassIsAssigned(EditorSharedTest):
+    class RigidBody_MassDifferentValuesWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_MassDifferentValuesWorks as test_module
 
-    class C12868580_ForceRegion_SplineModifiedTransform(EditorSharedTest):
+    class ForceRegion_SplineRegionWithModifiedTransform(EditorSharedTest):
         from .tests.force_region import ForceRegion_SplineRegionWithModifiedTransform as test_module
 
-    class C4976197_RigidBodies_InitialAngularVelocity(EditorSharedTest):
+    class ScriptCanvas_ShapeCast(EditorSharedTest):
+        from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
+
+    class RigidBody_InitialAngularVelocity(EditorSharedTest):
         from .tests.rigid_body import RigidBody_InitialAngularVelocity as test_module
 
-    class C6090555_ForceRegion_SplineFollowOnRigidBodies(EditorSharedTest):
+    class ForceRegion_ZeroSplineForceDoesNothing(EditorSharedTest):
         from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
 
-    class C5959808_ForceRegion_PositionOffset(EditorSharedTest):
+    class Physics_DynamicSliceWithPhysNotSpawnsStaticSlice(EditorSharedTest):
+        from .tests import Physics_DynamicSliceWithPhysNotSpawnsStaticSlice as test_module
+
+    class ForceRegion_PositionOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_PositionOffset as test_module
 
-    @pytest.mark.xfail(reason="Something with the CryRenderer disabling is causing this test to fail now.")
-    class C13895144_Ragdoll_ChangeLevel(EditorSharedTest):
+    class Ragdoll_LevelSwitchDoesNotCrash(EditorSharedTest):
         from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
-
-    class C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody(EditorSharedTest):
+    
+    class ForceRegion_MultipleComponentsCombineForces(EditorSharedTest):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
 
-    @pytest.mark.xfail(
-        reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
-    class C4976202_RigidBody_StopsWhenBelowKineticThreshold(EditorSharedTest):
+    class RigidBody_SleepWhenBelowKineticThreshold(EditorSharedTest):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
 
-    class C13351703_COM_NotIncludeTriggerShapes(EditorSharedTest):
+    class RigidBody_COM_NotIncludesTriggerShapes(EditorSharedTest):
         from .tests.rigid_body import RigidBody_COM_NotIncludesTriggerShapes as test_module
 
-    class C5296614_PhysXMaterial_ColliderShape(EditorSharedTest):
+    class Material_NoEffectIfNoColliderShape(EditorSharedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
 
-    class C4982595_Collider_TriggerDisablesCollision(EditorSharedTest):
+    class Collider_TriggerPassThrough(EditorSharedTest):
         from .tests.collider import Collider_TriggerPassThrough as test_module
 
-    class C14976307_Gravity_SetGravityWorks(EditorSharedTest):
+    class RigidBody_SetGravityWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_SetGravityWorks as test_module
 
-    class C4044694_Material_EmptyLibraryUsesDefault(EditorSharedTest):
+    class Material_EmptyLibraryUsesDefault(EditorSharedTest):
         from .tests.material import Material_EmptyLibraryUsesDefault as test_module
 
-    class C15845879_ForceRegion_HighLinearDampingForce(EditorSharedTest):
+    class ForceRegion_NoQuiverOnHighLinearDampingForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_NoQuiverOnHighLinearDampingForce as test_module
 
-    class C4976218_RigidBodies_InertiaObjectsNotComputed(EditorSharedTest):
+    class RigidBody_ComputeInertiaWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
 
-    class C14902098_ScriptCanvas_PostPhysicsUpdate(EditorSharedTest):
+    class ScriptCanvas_PostPhysicsUpdate(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
         # Note: Test needs to be updated to log for unexpected lines
         # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
 
-    class C5959761_ForceRegion_PhysAssetExertsPointForce(EditorSharedTest):
+    class ForceRegion_PxMeshShapedForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
-
-    # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
-    # The test still runs, but a failure of the test doesn't result in the test run failing
-    @pytest.mark.xfail(reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
-    class C13352089_RigidBodies_MaxAngularVelocity(EditorSharedTest):
+        
+    class RigidBody_MaxAngularVelocityWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
 
-    class C18243584_Joints_HingeSoftLimitsConstrained(EditorSharedTest):
+    class Joints_HingeSoftLimitsConstrained(EditorSharedTest):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
 
-    class C18243589_Joints_BallSoftLimitsConstrained(EditorSharedTest):
+    class Joints_BallSoftLimitsConstrained(EditorSharedTest):
         from .tests.joints import Joints_BallSoftLimitsConstrained as test_module
 
-    class C18243591_Joints_BallLeadFollowerCollide(EditorSharedTest):
+    class Joints_BallLeadFollowerCollide(EditorSharedTest):
         from .tests.joints import Joints_BallLeadFollowerCollide as test_module
 
-    class C5932040_ForceRegion_CubeExertsWorldForce(EditorSharedTest):
+    class ShapeCollider_InactiveWhenNoShapeComponent(EditorSharedTest):
+        from .tests.shape_collider import ShapeCollider_InactiveWhenNoShapeComponent as test_module
+
+    class Collider_CheckDefaultShapeSettingIsPxMesh(EditorSharedTest):
+        from .tests.collider import Collider_CheckDefaultShapeSettingIsPxMesh as test_module
+
+    class ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor(EditorSharedTest):
+        from .tests.shape_collider import ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor as test_module
+
+    class ForceRegion_WithNonTriggerColliderWarning(EditorSharedTest):
+        from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
+        # Note: Test needs to be updated to log for unexpected lines
+        # expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
+        
+    class ForceRegion_WorldSpaceForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
-
-    class C5932044_ForceRegion_PointForceOnRigidBody(EditorSharedTest):
+        
+    class ForceRegion_PointForceOnRigidBodies(EditorSharedTest):
         from .tests.force_region import ForceRegion_PointForceOnRigidBodies as test_module
-
-    class C5959759_RigidBody_ForceRegionSpherePointForce(EditorSharedTest):
+        
+    class ForceRegion_SphereShapedForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_SphereShapedForce as test_module
-
-    class C5959809_ForceRegion_RotationalOffset(EditorSharedTest):
+        
+    class ForceRegion_RotationalOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_RotationalOffset as test_module
+       
+    class Material_LibraryClearingAssignsDefault(EditorSharedTest):
+        from .tests.material import Material_LibraryClearingAssignsDefault as test_module
 
-    class C100000_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+    @pytest.mark.xfail(reason="This will fail due to this issue ATOM-15487.")
+    class Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent(EditorSharedTest):
+        from .tests.collider import Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent as test_module
+        
+    class Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent(EditorSharedTest):
+        from .tests.collider import Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent as test_module
+        
+    class Collider_MultipleSurfaceSlots(EditorSharedTest):
+        from .tests.collider import Collider_MultipleSurfaceSlots as test_module
+        
+    class Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx(EditorSharedTest):
+        from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
+        
+    class RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
 
-    class C4982798_Collider_ColliderRotationOffset(EditorSharedTest):
+    class Collider_ColliderRotationOffset(EditorSharedTest):
         from .tests.collider import Collider_ColliderRotationOffset as test_module
 
-    class C6090547_ForceRegion_ParentChildForceRegions(EditorSharedTest):
+    class ForceRegion_ParentChildForcesCombineForces(EditorSharedTest):
         from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
 
+    class ShapeCollider_CanBeAddedWitNoWarnings(EditorSharedTest):
+        from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(EditorTestSuite):
-
-    enable_prefab_system = False
-
-    @staticmethod
-    def get_number_parallel_editors():
-        return 16
-
-    class C15425929_Undo_Redo(EditorSharedTest):
+    class Physics_UndoRedoWorksOnEntityWithPhysComponents(EditorSharedTest):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
-    class C12712455_ScriptCanvas_ShapeCastVerification(EditorSharedTest):
-        from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
+    @pytest.mark.GROUP_tick
+    @pytest.mark.xfail(reason="Test still under development.")
+    class Tick_InterpolatedRigidBodyMotionIsSmooth(EditorSharedTest):
+        from .tests.tick import Tick_InterpolatedRigidBodyMotionIsSmooth as test_module
 
-    class C6090546_ForceRegion_SliceFileInstantiates(EditorSharedTest):
-        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
+    @pytest.mark.GROUP_tick
+    @pytest.mark.xfail(reason="Test still under development.")
+    class Tick_CharacterGameplayComponentMotionIsSmooth(EditorSharedTest):
+        from .tests.tick import Tick_CharacterGameplayComponentMotionIsSmooth as test_module
