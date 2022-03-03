@@ -135,11 +135,11 @@ namespace AZ
 
         //! Gets the ticket id used to spawn the entity.
         //! @return the ticket id used to spawn the entity. If entity is not spawned, the id will be 0.
-        u32 GetSpawnTicketId() const;
+        u32 GetEntitySpawnTicketId() const;
 
         //! Sets the ticket id used to spawn the entity. The ticket id in the entity will remain 0 unless it's set using this function.
-        //! @param spawnTicketId the ticket id used to spawn the entity.
-        void SetSpawnTicketId(u32 spawnTicketId);
+        //! @param entitySpawnTicketId the ticket id used to spawn the entity.
+        void SetEntitySpawnTicketId(u32 entitySpawnTicketId);
 
         //! Connects an entity state event handler to the entity.
         //! All state changes will be signaled through this event.
@@ -418,7 +418,7 @@ namespace AZ
         //! A user-friendly name for the entity. This makes error messages easier to read.
         AZStd::string m_name;
 
-        u32 m_spawnTicketId = 0;
+        u32 m_entitySpawnTicketId = 0;
 
         //! The state of the entity.
         State m_state;
