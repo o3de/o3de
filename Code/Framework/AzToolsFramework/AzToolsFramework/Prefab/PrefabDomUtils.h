@@ -188,6 +188,7 @@ namespace AzToolsFramework
             struct InstanceDomMetadata
             {
                 AZ_RTTI(InstanceDomMetadata, "{4B509C7B-91B6-4C5E-9696-F7E2C67B6E1B}");
+                virtual ~InstanceDomMetadata() {}
             };
         } // namespace PrefabDomUtils
     } // namespace Prefab
