@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzToolsFramework/Prefab/ViewBookmarkComponent.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkComponent.h>
 
 namespace AzToolsFramework
 {

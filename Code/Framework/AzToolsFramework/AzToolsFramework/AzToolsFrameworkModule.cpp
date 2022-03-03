@@ -57,7 +57,7 @@
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
-#include <AzToolsFramework/Prefab/ViewBookmarkComponent.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkComponent.h>
 
 
 AZ_DEFINE_BUDGET(AzToolsFramework);

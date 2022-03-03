@@ -8,7 +8,7 @@
 
 #pragma once
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <Prefab/ViewBookmarkLoaderInterface.h>
+#include <Viewport/ViewBookmarkLoaderInterface.h>
 
 namespace AzToolsFramework
 {

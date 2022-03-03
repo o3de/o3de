@@ -23,7 +23,7 @@
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
-#include <AzToolsFramework/Prefab/ViewBookmarkLoader.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkLoader.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicRequestHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>

@@ -11,7 +11,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
-#include <Prefab/ViewBookmarkLoader.h>
+#include <Viewport/ViewBookmarkLoader.h>
 
 namespace AzToolsFramework
 {

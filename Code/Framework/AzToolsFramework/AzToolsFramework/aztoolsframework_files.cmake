@@ -488,6 +488,11 @@ set(FILES
     Viewport/EditorContextMenu.cpp
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
+    Viewport/ViewBookmarkComponent.h
+    Viewport/ViewBookmarkComponent.cpp
+    Viewport/ViewBookmarkLoader.h
+    Viewport/ViewBookmarkLoader.cpp
+    Viewport/ViewBookmarkLoaderInterface.h
     Viewport/ViewportInteractionHelpers.h
     Viewport/ViewportInteractionHelpers.cpp
     Viewport/ViewportMessages.h
@@ -731,11 +736,6 @@ set(FILES
     Prefab/Spawnable/SpawnableUtils.cpp
     Prefab/Template/Template.h
     Prefab/Template/Template.cpp
-    Prefab/ViewBookmarkComponent.h
-    Prefab/ViewBookmarkComponent.cpp
-    Prefab/ViewBookmarkLoader.h
-    Prefab/ViewBookmarkLoader.cpp
-    Prefab/ViewBookmarkLoaderInterface.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
