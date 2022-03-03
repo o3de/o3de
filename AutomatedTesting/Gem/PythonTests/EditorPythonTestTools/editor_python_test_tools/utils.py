@@ -78,7 +78,7 @@ class TestHelper:
         if general.is_in_game_mode():
             general.exit_game_mode()
             TestHelper.wait_for_condition(lambda : not general.is_in_game_mode(), 1.0)
-            assert not general.is_in_game_mode(), "Editor was in gamemode when openning the level and was unable to exit from it"
+            assert not general.is_in_game_mode(), "Editor was in gamemode when opening the level and was unable to exit from it"
 
         Report.info("Open level {}/{}".format(directory, level))
         if no_prompt:
