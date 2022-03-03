@@ -11,39 +11,34 @@
                     "Name": "MacroColorClipmapOutput0",
                     "ShaderInputName": "m_macroColorClipmaps",
                     "ShaderInputArrayIndex": "0",
-                    "Lifetime": "Imported",
-                    "SlotType": "Output",
+                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "MacroColorClipmapOutput1",
                     "ShaderInputName": "m_macroColorClipmaps",
                     "ShaderInputArrayIndex": "1",
-                    "Lifetime": "Imported",
-                    "SlotType": "Output",
+                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "MacroColorClipmapOutput2",
                     "ShaderInputName": "m_macroColorClipmaps",
                     "ShaderInputArrayIndex": "2",
-                    "Lifetime": "Imported",
-                    "SlotType": "Output",
+                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "MacroColorClipmapOutput3",
                     "ShaderInputName": "m_macroColorClipmaps",
                     "ShaderInputArrayIndex": "3",
-                    "Lifetime": "Imported",
-                    "SlotType": "Output",
+                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "MacroColorClipmapOutput4",
                     "ShaderInputName": "m_macroColorClipmapPyramid",
-                    "Lifetime": "Imported",
-                    "SlotType": "Output",
+                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
                 }
             ],
@@ -53,7 +48,7 @@
                     "ImageDescriptor": {
                         "Format": "R32G32B32A32_FLOAT",
                         "BindFlags": "3",
-                        "SharedQueueMask": "1",
+                        "SharedQueueMask": "All",
                         "Size": {
                             "Width": 1024,
                             "Height": 1024
@@ -65,7 +60,7 @@
                     "ImageDescriptor": {
                         "Format": "R32G32B32A32_FLOAT",
                         "BindFlags": "3",
-                        "SharedQueueMask": "1",
+                        "SharedQueueMask": "All",
                         "Size": {
                             "Width": 1024,
                             "Height": 1024
@@ -77,7 +72,7 @@
                     "ImageDescriptor": {
                         "Format": "R32G32B32A32_FLOAT",
                         "BindFlags": "3",
-                        "SharedQueueMask": "1",
+                        "SharedQueueMask": "All",
                         "Size": {
                             "Width": 1024,
                             "Height": 1024
@@ -89,7 +84,7 @@
                     "ImageDescriptor": {
                         "Format": "R32G32B32A32_FLOAT",
                         "BindFlags": "3",
-                        "SharedQueueMask": "1",
+                        "SharedQueueMask": "All",
                         "Size": {
                             "Width": 1024,
                             "Height": 1024
@@ -101,7 +96,7 @@
                     "ImageDescriptor": {
                         "Format": "R32G32B32A32_FLOAT",
                         "BindFlags": "3",
-                        "SharedQueueMask": "1",
+                        "SharedQueueMask": "All",
                         "Size": {
                             "Width": 1024,
                             "Height": 1024

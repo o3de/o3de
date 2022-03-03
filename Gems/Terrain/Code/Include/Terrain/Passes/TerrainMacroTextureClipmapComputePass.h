@@ -47,6 +47,7 @@ namespace Terrain
 
         static AZ::RPI::Ptr<TerrainMacroTextureClipmapGenerationPass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
+        void BuildInternal() override;
         void InitializeInternal() override;
         void FrameBeginInternal(FramePrepareParams params) override;
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
@@ -61,6 +62,9 @@ namespace Terrain
 
         AZStd::array<AZ::Vector4, ClipmapStackSize + 1> m_previousClipmapCenters; // +1 for the first layer of the pyramid
         AZStd::array<AZ::Vector4, ClipmapStackSize + 1> m_currentClipmapCenters;
+
+        AZStd::array<AZ::Data::Instance<AZ::RPI::AttachmentImage>, ClipmapStackSize> m_clipmapStacks;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_clipmapPyramid;
 
         AZ::Vector3 m_previousViewPosition;
         AZ::Vector3 m_currentViewPosition;

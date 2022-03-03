@@ -40,6 +40,48 @@ namespace Terrain
     {
     }
 
+    void TerrainMacroTextureClipmapGenerationPass::BuildInternal()
+    {
+        AZ::Data::Instance<AZ::RPI::AttachmentImagePool> pool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+
+        AZ_Assert(m_ownedAttachments.size() == ClipmapStackSize + 1, "The pass should own a stack of clipmaps and a mipmap for the bottom image.");
+
+        for (uint32_t i = 0; i < ClipmapStackSize; ++i)
+        {
+            AZ::RPI::Ptr<AZ::RPI::PassAttachment> clipmapStack = m_ownedAttachments[i];
+
+            clipmapStack->Update();
+
+            clipmapStack->m_lifetime = AZ::RHI::AttachmentLifetimeType::Imported;
+
+            AZ::RHI::ImageDescriptor& imageDesc = clipmapStack->m_descriptor.m_image;
+            imageDesc.m_bindFlags |= AZ::RHI::ImageBindFlags::ShaderReadWrite;
+
+            AZ::RHI::ClearValue clearValue = AZ::RHI::ClearValue::CreateVector4Float(1.0f, 1.0f, 1.0f, 1.0f);
+            m_clipmapStacks[i] = AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(clipmapStack->m_path.GetCStr()), &clearValue, nullptr);
+
+            clipmapStack->m_path = clipmapStack->GetAttachmentId();
+            clipmapStack->m_importedResource = m_clipmapStacks[i];
+        }
+
+        {
+            AZ::RPI::Ptr<AZ::RPI::PassAttachment> clipmapPyramid = m_ownedAttachments[ClipmapStackSize];
+
+            clipmapPyramid->Update();
+
+            clipmapPyramid->m_lifetime = AZ::RHI::AttachmentLifetimeType::Imported;
+
+            AZ::RHI::ImageDescriptor& imageDesc = clipmapPyramid->m_descriptor.m_image;
+            imageDesc.m_bindFlags |= AZ::RHI::ImageBindFlags::ShaderReadWrite;
+
+            AZ::RHI::ClearValue clearValue = AZ::RHI::ClearValue::CreateVector4Float(1.0f, 1.0f, 1.0f, 1.0f);
+            m_clipmapPyramid = AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(clipmapPyramid->m_path.GetCStr()), &clearValue, nullptr);
+
+            clipmapPyramid->m_path = m_clipmapPyramid->GetAttachmentId();
+            clipmapPyramid->m_importedResource = m_clipmapPyramid;
+        }
+    }
+
     void TerrainMacroTextureClipmapGenerationPass::InitializeInternal()
     {
         for (uint32_t clipmapIndex = 0; clipmapIndex <= ClipmapStackSize; ++clipmapIndex)
