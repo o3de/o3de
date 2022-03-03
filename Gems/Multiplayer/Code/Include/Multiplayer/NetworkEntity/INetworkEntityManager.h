@@ -205,11 +205,11 @@ namespace Multiplayer
 
         //! Retrieves the set of network entities that should always be relevant to client connections.
         //! @return the set of network entities that should always be relevant to client connections
-        virtual const NetEntityHandleSet& GetAlwaysRelevanyToClientsSet() const = 0;
+        virtual const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const = 0;
 
         //! Retrieves the set of network entities that should always be relevant to server connections.
         //! @return the set of network entities that should always be relevant to server connections
-        virtual const NetEntityHandleSet& GetAlwaysRelevanyToServersSet() const = 0;
+        virtual const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const = 0;
 
         //! Overrides the default timeout time used during entity migrations.
         //! @param timeoutTimeMs the timeout time to use in milliseconds

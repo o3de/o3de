@@ -292,12 +292,12 @@ namespace Multiplayer
         }
     }
 
-    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevanyToClientsSet() const
+    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevantToClientsSet() const
     {
         return m_alwaysRelevantToClients;
     }
 
-    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevanyToServersSet() const
+    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevantToServersSet() const
     {
         return m_alwaysRelevantToServers;
     }

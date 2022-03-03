@@ -89,8 +89,8 @@ namespace Multiplayer
         void ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle) override;
         void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
         void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
-        const NetEntityHandleSet& GetAlwaysRelevanyToClientsSet() const override;
-        const NetEntityHandleSet& GetAlwaysRelevanyToServersSet() const override;
+        const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override;
+        const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override;
         void SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs) override;
         void DebugDraw() const override;
         //! @}

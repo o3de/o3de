@@ -165,7 +165,7 @@ namespace Multiplayer
         }
 
         // Add in all entities that have forced relevancy
-        for (const ConstNetworkEntityHandle& entityHandle : GetNetworkEntityManager()->GetAlwaysRelevanyToClientsSet())
+        for (const ConstNetworkEntityHandle& entityHandle : GetNetworkEntityManager()->GetAlwaysRelevantToClientsSet())
         {
             if (entityHandle.Exists())
             {
