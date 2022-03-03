@@ -816,7 +816,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState, owningInstance);
+                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState);
 
                     if (isNewParentOwnedByDifferentInstance)
                     {
@@ -844,13 +844,13 @@ namespace AzToolsFramework
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-            PrefabDom& afterState, InstanceOptionalReference instance)
+            PrefabDom& afterState)
         {
             // Update the state of the entity
             PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             state->SetParent(undoBatch);
             state->Capture(beforeState, afterState, entityId);
-            state->Redo(instance->get());
+            state->Redo();
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
