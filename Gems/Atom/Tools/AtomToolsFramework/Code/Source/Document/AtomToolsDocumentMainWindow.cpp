@@ -6,16 +6,22 @@
  *
  */
 
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Document/CreateDocumentDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QByteArray>
 #include <QCloseEvent>
+#include <QDesktopServices>
+#include <QInputDialog>
 #include <QLayout>
 #include <QMenu>
 #include <QMenuBar>
@@ -29,6 +35,24 @@ namespace AtomToolsFramework
     {
         AddDocumentMenus();
         AddDocumentTabBar();
+
+        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
+            AtomToolsFramework::DocumentTypeInfoVector documentTypes;
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
+                documentTypes, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+            for (const auto& documentType : documentTypes)
+            {
+                if (documentType.IsSupportedExtensionToOpen(absolutePath))
+                {
+                    AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                        m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                    return;
+                }
+            }
+
+            QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
+        });
+
         AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
 
@@ -48,16 +72,15 @@ namespace AtomToolsFramework
             if (GetCreateDocumentParams(openPath, savePath))
             {
                 AtomToolsDocumentSystemRequestBus::Event(
-                    m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile, openPath, savePath);
+                    m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFilePath, openPath, savePath);
             }
         }, QKeySequence::New);
         m_menuFile->insertAction(insertPostion, m_actionNew);
 
         m_actionOpen = CreateAction("&Open...", [this]() {
-            AZStd::string openPath;
-            if (GetOpenDocumentParams(openPath))
+            for (const auto& path : GetOpenDocumentParams())
             {
-                AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openPath);
+                AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
             }
         }, QKeySequence::Open);
         m_menuFile->insertAction(insertPostion, m_actionOpen);
@@ -364,23 +387,79 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentMainWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
     {
-        AZ_UNUSED(openPath);
-        AZ_UNUSED(savePath);
+        AtomToolsFramework::DocumentTypeInfoVector documentTypes;
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
+            documentTypes, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+
+        if (documentTypes.empty())
+        {
+            return false;
+        }
+
+        int documentTypeIndex = 0;
+        if (documentTypes.size() > 1)
+        {
+            QStringList items;
+            for (const auto& documentType : documentTypes)
+            {
+                items.append(documentType.m_documentTypeName.c_str());
+            }
+
+            bool result = false;
+            QString item = QInputDialog::getItem(this, tr("Select Document Type"), tr("Select document type to create"), items, 0, false, &result);
+            if (!result || item.isEmpty())
+            {
+                return false;
+            }
+
+            documentTypeIndex = items.indexOf(item);
+        }
+
+        const auto& documentType = documentTypes[documentTypeIndex];
+        AtomToolsFramework::CreateDocumentDialog createDialog(
+            documentType, QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets", this);
+        createDialog.adjustSize();
+
+        if (createDialog.exec() == QDialog::Accepted && !createDialog.m_sourcePath.isEmpty() && !createDialog.m_targetPath.isEmpty())
+        {
+            savePath = createDialog.m_targetPath.toUtf8().constData();
+            openPath = createDialog.m_sourcePath.toUtf8().constData();
+            return true;
+        }
         return false;
     }
 
-    bool AtomToolsDocumentMainWindow::GetOpenDocumentParams(AZStd::string& openPath)
+    AZStd::vector<AZStd::string> AtomToolsDocumentMainWindow::GetOpenDocumentParams()
     {
-        AZ_UNUSED(openPath);
-        return false;
+        AtomToolsFramework::DocumentTypeInfoVector documentTypes;
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
+            documentTypes, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+
+        QStringList extensionList;
+        for (const auto& documentType : documentTypes)
+        {
+            for (const auto& extensionInfo : documentType.m_supportedExtensionsToOpen)
+            {
+                extensionList.append(extensionInfo.second.c_str());
+            }
+        }
+
+        if (!extensionList.empty())
+        {
+            // Generate a regular expression that combines all of the supported extensions to use as a filter for the asset picker
+            QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
+            return AtomToolsFramework::GetOpenFileInfo(QRegExp(expression, Qt::CaseInsensitive));
+        }
+
+        return {};
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         bool isOpen = false;
         AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsDocumentRequestBus::Events::IsOpen);
-        bool isSavable = false;
-        AtomToolsDocumentRequestBus::EventResult(isSavable, documentId, &AtomToolsDocumentRequestBus::Events::IsSavable);
+        bool canSave = false;
+        AtomToolsDocumentRequestBus::EventResult(canSave, documentId, &AtomToolsDocumentRequestBus::Events::CanSave);
         bool isModified = false;
         AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsDocumentRequestBus::Events::IsModified);
         bool canUndo = false;
@@ -409,8 +488,8 @@ namespace AtomToolsFramework
         m_actionCloseAll->setEnabled(hasTabs);
         m_actionCloseOthers->setEnabled(hasTabs);
 
-        m_actionSave->setEnabled(isOpen && isSavable);
-        m_actionSaveAsCopy->setEnabled(isOpen && isSavable);
+        m_actionSave->setEnabled(isOpen && canSave);
+        m_actionSaveAsCopy->setEnabled(isOpen && canSave);
         m_actionSaveAsChild->setEnabled(isOpen);
         m_actionSaveAll->setEnabled(hasTabs);
 
@@ -422,8 +501,7 @@ namespace AtomToolsFramework
 
         m_assetBrowser->SelectEntries(absolutePath);
 
-        activateWindow();
-        raise();
+        ActivateWindow();
 
         const QString documentPath = GetDocumentPath(documentId);
         if (!documentPath.isEmpty())

@@ -75,7 +75,7 @@ namespace AtomToolsFramework
         return fileNameParts.join(" ");
     }
 
-    QFileInfo GetSaveFileInfo(const QString& initialPath)
+    QFileInfo GetSaveFileInfo(const QString& initialPath, const QString& title)
     {
         const QFileInfo initialFileInfo(initialPath);
         const QString initialExt(initialFileInfo.completeSuffix());
@@ -84,7 +84,7 @@ namespace AtomToolsFramework
         // dialog from displaying multiple extensions when the extension contains a "."
         const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
             QApplication::activeWindow(),
-            "Save File",
+            QObject::tr("Save %1").arg(title),
             initialFileInfo.absolutePath() +
             AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING +
             initialFileInfo.baseName(),
@@ -107,38 +107,22 @@ namespace AtomToolsFramework
         return QFileInfo(selectedFileInfo.absolutePath() + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + selectedFileInfo.baseName() + "." + initialExt);
     }
 
-    QFileInfo GetOpenFileInfo(const AZStd::vector<AZ::Data::AssetType>& assetTypes)
+    AZStd::vector<AZStd::string> GetOpenFileInfo(const QRegExp& filter, const QString& title)
     {
-        using namespace AZ::Data;
-        using namespace AzToolsFramework::AssetBrowser;
+        auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::SourceAssetTypeSelection(filter);
+        selection.SetTitle(title);
+        selection.SetMultiselect(true);
 
-        // [GFX TODO] Should this just be an open file dialog filtered to supported source data extensions?
-        auto selection = AssetSelectionModel::AssetTypesSelection(assetTypes);
+        AzToolsFramework::AssetBrowser::AssetBrowserComponentRequestBus::Broadcast(
+            &AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests::PickAssets, selection, QApplication::activeWindow());
 
-        // [GFX TODO] This is functional but UI is not as designed
-        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, QApplication::activeWindow());
-        if (!selection.IsValid())
+        AZStd::vector<AZStd::string> results;
+        results.reserve(selection.GetResults().size());
+        for (const auto& result : selection.GetResults())
         {
-            return QFileInfo();
+            results.push_back(result->GetFullPath());
         }
-
-        auto entry = selection.GetResult();
-        const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-        if (!sourceEntry)
-        {
-            const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(entry);
-            if (productEntry)
-            {
-                sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(productEntry->GetParent());
-            }
-        }
-
-        if (!sourceEntry)
-        {
-            return QFileInfo();
-        }
-
-        return QFileInfo(sourceEntry->GetFullPath().c_str());
+        return results;
     }
 
     QFileInfo GetUniqueFileInfo(const QString& initialPath)

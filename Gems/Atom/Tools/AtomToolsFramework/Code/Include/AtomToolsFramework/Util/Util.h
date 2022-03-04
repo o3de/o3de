@@ -18,6 +18,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QFileInfo>
+#include <QRegExp>
 #include <QString>
 #include <QStringList>
 AZ_POP_DISABLE_WARNING
@@ -30,8 +31,8 @@ namespace AtomToolsFramework
     void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback);
 
     QString GetDisplayNameFromPath(const QString& path);
-    QFileInfo GetSaveFileInfo(const QString& initialPath);
-    QFileInfo GetOpenFileInfo(const AZStd::vector<AZ::Data::AssetType>& assetTypes);
+    QFileInfo GetSaveFileInfo(const QString& initialPath, const QString& title = "Document");
+    AZStd::vector<AZStd::string> GetOpenFileInfo(const QRegExp& filter, const QString& title = "Document");
     QFileInfo GetUniqueFileInfo(const QString& initialPath);
     QFileInfo GetDuplicationFileInfo(const QString& initialPath);
     bool LaunchTool(const QString& baseName, const QStringList& arguments);

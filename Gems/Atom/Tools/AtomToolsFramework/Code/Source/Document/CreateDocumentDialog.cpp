@@ -8,7 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <AtomToolsFramework/CreateDocumentDialog/CreateDocumentDialog.h>
+#include <AtomToolsFramework/Document/CreateDocumentDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Application/Application.h>
@@ -90,6 +90,28 @@ namespace AtomToolsFramework
         gridLayout->addLayout(verticalLayout, 0, 0, 1, 1);
     }
 
+    CreateDocumentDialog::CreateDocumentDialog(const DocumentTypeInfo& documentType, const QString& initialPath, QWidget* parent)
+        : CreateDocumentDialog(
+              tr("Create %1").arg(documentType.m_documentTypeName.c_str()),
+              tr("Select Type"),
+              tr("Select %1 Path").arg(documentType.m_documentTypeName.c_str()),
+              initialPath,
+              { documentType.GetDefaultExtensionToSave().c_str() },
+              documentType.m_defaultAssetIdToCreate,
+              [documentType](const AZ::Data::AssetInfo& assetInfo)
+              {
+                  const auto& assetTypes = documentType.m_supportedAssetTypesToCreate;
+                  if (assetTypes.empty() || assetTypes.find(assetInfo.m_assetType) != assetTypes.end())
+                  {
+                      const auto& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
+                      return documentType.IsSupportedExtensionToCreate(sourcePath) && !documentType.IsSupportedExtensionToSave(sourcePath);
+                  }
+                  return false;
+              },
+              parent)
+    {
+    }
+
     void CreateDocumentDialog::UpdateTargetPath(const QFileInfo& fileInfo)
     {
         if (!fileInfo.absoluteFilePath().isEmpty())
@@ -100,4 +122,4 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/CreateDocumentDialog/moc_CreateDocumentDialog.cpp>
+#include <AtomToolsFramework/Document/moc_CreateDocumentDialog.cpp>
