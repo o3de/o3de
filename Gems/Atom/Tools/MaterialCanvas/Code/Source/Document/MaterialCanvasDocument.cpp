@@ -46,18 +46,34 @@ namespace MaterialCanvas
         MaterialCanvasDocumentRequestBus::Handler::BusDisconnect();
     }
 
-    AZStd::vector<AtomToolsFramework::DocumentObjectInfo> MaterialCanvasDocument::GetObjectInfo() const
+    AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::BuildDocumentTypeInfo()
+    {
+        AtomToolsFramework::DocumentTypeInfo documentType = AtomToolsDocument::BuildDocumentTypeInfo();
+        documentType.m_documentTypeName = "Material Canvas";
+        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId) { return aznew MaterialCanvasDocument(toolId); };
+        documentType.m_supportedExtensionsForOpen.push_back({ "Material Canvas", "materialcanvas" });
+        documentType.m_supportedExtensionsForSave.push_back({ "Material Canvas", "materialcanvas" });
+        return documentType;
+    }
+
+    AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::GetDocumentTypeInfo() const
+    {
+        return BuildDocumentTypeInfo();
+    }
+
+    AtomToolsFramework::DocumentObjectInfoVector MaterialCanvasDocument::GetObjectInfo() const
     {
         if (!IsOpen())
         {
+            AZ_Error("MaterialCanvasDocument", false, "Document is not open.");
             return {};
         }
 
-        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> objects;
+        AtomToolsFramework::DocumentObjectInfoVector objects;
         return objects;
     }
 
-    bool MaterialCanvasDocument::Open(AZStd::string_view loadPath)
+    bool MaterialCanvasDocument::Open(const AZStd::string& loadPath)
     {
         if (!AtomToolsDocument::Open(loadPath))
         {
@@ -76,10 +92,10 @@ namespace MaterialCanvas
             return false;
         }
 
-            return SaveFailed();
+        return SaveFailed();
     }
 
-    bool MaterialCanvasDocument::SaveAsCopy(AZStd::string_view savePath)
+    bool MaterialCanvasDocument::SaveAsCopy(const AZStd::string& savePath)
     {
         if (!AtomToolsDocument::SaveAsCopy(savePath))
         {
@@ -91,7 +107,7 @@ namespace MaterialCanvas
         return SaveFailed();
     }
 
-    bool MaterialCanvasDocument::SaveAsChild(AZStd::string_view savePath)
+    bool MaterialCanvasDocument::SaveAsChild(const AZStd::string& savePath)
     {
         if (!AtomToolsDocument::SaveAsChild(savePath))
         {
@@ -112,11 +128,6 @@ namespace MaterialCanvas
     {
         bool result = false;
         return result;
-    }
-
-    bool MaterialCanvasDocument::IsSavable() const
-    {
-        return false;
     }
 
     bool MaterialCanvasDocument::BeginEdit()

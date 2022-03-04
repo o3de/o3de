@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <Viewport/MaterialCanvasViewportSettingsSystem.h>
@@ -42,6 +41,5 @@ namespace MaterialCanvas
 
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;
         AZStd::unique_ptr<MaterialCanvasViewportSettingsSystem> m_viewportSettingsSystem;
-        AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
     };
 } // namespace MaterialCanvas
