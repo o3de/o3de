@@ -267,6 +267,7 @@ class AtomComponentProperties:
         Global Skylight (IBL) component properties.
           - 'Diffuse Image' Asset.id for the cubemap image for determining diffuse lighting.
           - 'Specular Image' Asset.id for the cubemap image for determining specular lighting.
+          - 'Exposure' Exposure setting for Global Skylight, value range is -5 to 5
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -274,6 +275,7 @@ class AtomComponentProperties:
             'name': 'Global Skylight (IBL)',
             'Diffuse Image': 'Controller|Configuration|Diffuse Image',
             'Specular Image': 'Controller|Configuration|Specular Image',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 

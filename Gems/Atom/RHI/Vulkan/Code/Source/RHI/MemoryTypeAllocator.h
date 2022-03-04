@@ -46,6 +46,8 @@ namespace AZ
 
             const Descriptor& GetDescriptor() const;
 
+            float ComputeFragmentation() const;
+
         private:
             View AllocateUnique(const uint64_t sizeInBytes);
 
@@ -147,6 +149,12 @@ namespace AZ
         const typename MemoryTypeAllocator<SubAllocator, View>::Descriptor& MemoryTypeAllocator<SubAllocator, View>::GetDescriptor() const
         {
             return m_descriptor;
+        }
+
+        template<typename SubAllocator, typename View>
+        float MemoryTypeAllocator<SubAllocator, View>::ComputeFragmentation() const
+        {
+            return m_subAllocator.ComputeFragmentation();
         }
 
         template<typename SubAllocator, typename View>

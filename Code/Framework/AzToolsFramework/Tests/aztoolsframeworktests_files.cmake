@@ -98,6 +98,9 @@ set(FILES
     Prefab/PrefabUpdateTemplateTests.cpp
     Prefab/PrefabUpdateWithPatchesTests.cpp
     Prefab/Spawnable/SpawnableMetaDataTests.cpp
+    Prefab/Spawnable/SpawnableTestFixture.h
+    Prefab/Spawnable/SpawnableTestFixture.cpp
+    Prefab/Spawnable/SpawnableTicketTests.cpp
     Prefab/SpawnableCreateTests.cpp
     Prefab/SpawnableRemoveEditorInfoTestFixture.cpp
     Prefab/SpawnableRemoveEditorInfoTestFixture.h
