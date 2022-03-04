@@ -137,8 +137,7 @@ class TestAutomation(EditorTestSuite):
     class Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent(EditorSharedTest):
         from .tests.collider import Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent as test_module
         
-    @pytest.mark.xfail(reason="Couldn't find Asset with path: Objects\SphereBot\r0-b_body.azmodel")
-    # Fixme: modify tests so it doesn't use r0-b_body.azmodel
+    @pytest.mark.xfail(reason="This fails because depends Asset is not part of AutomatedTesting: Objects/SphereBot/r0-b_body.azmodel")
     class Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent(EditorSharedTest):
         from .tests.collider import Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent as test_module
         
@@ -274,8 +273,8 @@ class TestAutomation(EditorTestSuite):
     class ForceRegion_MultipleComponentsCombineForces(EditorSharedTest):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
 
-    #@pytest.mark.xfail(
-    #    reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
+    @pytest.mark.xfail(
+        reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
     class RigidBody_SleepWhenBelowKineticThreshold(EditorSharedTest):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
 
@@ -308,7 +307,9 @@ class TestAutomation(EditorTestSuite):
     class ForceRegion_PxMeshShapedForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
         
-    @pytest.mark.xfail(reason="Seem to fail")
+    # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
+    # The test still runs, but a failure of the test doesn't result in the test run failing
+    @pytest.mark.xfail(reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
     class RigidBody_MaxAngularVelocityWorks(EditorSharedTest):
         from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
 
@@ -355,14 +356,14 @@ class TestAutomationNoPrefab(EditorTestSuite):
     def get_number_parallel_editors():
         return 16
 
-    @pytest.mark.xfail(reason="Seem to fail")
+    @pytest.mark.xfail(reason="AssertionError: No run data for test: Physics_UndoRedoWorksOnEntityWithPhysComponents.")
     class Physics_UndoRedoWorksOnEntityWithPhysComponents(EditorSharedTest):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
-    @pytest.mark.xfail(reason="Seem to fail")
-    class ScriptCanvas_ShapeCastVerification(EditorSharedTest):
+    @pytest.mark.xfail(reason="AssertionError: Failed to open level: ScriptCanvas_ShapeCast does not exist or is invalid")
+    class ScriptCanvas_ShapeCast(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
-    @pytest.mark.xfail(reason="Seem to fail")
+    @pytest.mark.xfail(reason="AssertionError: Failed to open level: ForceRegion_SliceFileInstantiates does not exist or is invalid")
     class ForceRegion_SliceFileInstantiates(EditorSharedTest):
         from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
