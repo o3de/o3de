@@ -31,8 +31,8 @@ ly_add_target(
             Legacy::CryCommon
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzNetworking
             AZ::AzToolsFramework
-            AZ::GridMate
             AZ::AzQtComponents
             ${additional_dependencies}
     COMPILE_DEFINITIONS 

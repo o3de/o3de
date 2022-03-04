@@ -40,9 +40,7 @@ namespace AzToolsFramework
     void TargetSelectorButton::DoPopup()
     {
         AzFramework::TargetContainer targets;
-        
-        EBUS_EVENT(AzFramework::TargetManager::Bus, EnumTargetInfos, targets);
-        
+               
         QMenu menu;
 
         QAction *pNoneAction = new QAction(QIcon(":/general/target_none"), "Disconnect", this);
@@ -67,8 +65,7 @@ namespace AzToolsFramework
         
         if (resultAction)
         {
-            AZ::u32 networkId = resultAction->property("targetID").toUInt();
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SetDesiredTarget, networkId);
+            [[maybe_unused]] AZ::u32 networkId = resultAction->property("targetID").toUInt();
         }
     }
 
@@ -83,7 +80,7 @@ namespace AzToolsFramework
         }
 
         AzFramework::TargetInfo info;
-        EBUS_EVENT_RESULT(info, AzFramework::TargetManager::Bus, GetDesiredTarget);
+
         if (!info.GetPersistentId())
         {
             this->setIcon(QIcon(":/general/target_none"));
@@ -115,7 +112,7 @@ namespace AzToolsFramework
     void TargetSelectorButton::UpdateStatus()
     {
         AzFramework::TargetInfo info;
-        EBUS_EVENT_RESULT(info, AzFramework::TargetManager::Bus, GetDesiredTarget);
+
         if (!info.GetPersistentId())
         {
             this->setIcon(QIcon(":/general/target_none"));

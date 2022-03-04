@@ -24,8 +24,6 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <GridMate/Serialize/Buffer.h>
-#include <GridMate/Serialize/DataMarshal.h>
 
 namespace AzFramework
 {
@@ -444,16 +442,18 @@ namespace AzFramework
             m_msgMutex.unlock();
             AZ_Assert(msg, "We received a NULL message in the script debug agent's message queue!");
             TargetInfo sender;
-            EBUS_EVENT_RESULT(sender, TargetManager::Bus, GetTargetInfo, msg->GetSenderTargetId());
+            EBUS_EVENT_RESULT(sender, TargetManager::Bus, GetTargetInfo);
 
-            // The only message we accept without a target match is AttachDebugger
-            if (m_debugger.GetNetworkId() != sender.GetNetworkId())
             {
                 ScriptDebugRequest* request = azdynamic_cast<ScriptDebugRequest*>(msg.get());
-                if (!request || (request->m_request != AZ_CRC("AttachDebugger", 0x6590ff36) && request->m_request != AZ_CRC("EnumContexts", 0xbdb959ba)))
+                if (!request ||
+                    (request->m_request != AZ_CRC("AttachDebugger", 0x6590ff36) &&
+                     request->m_request != AZ_CRC("EnumContexts", 0xbdb959ba)))
                 {
-                    AZ_TracePrintf("LUA", "Rejecting msg 0x%x (%s is not the attached debugger)\n", request->m_request, sender.GetDisplayName());
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("AccessDenied", 0xde72ce21)));
+                    AZ_TracePrintf(
+                        "LUA", "Rejecting msg 0x%x (%s is not the attached debugger)\n", request->m_request, sender.GetDisplayName());
+                    EBUS_EVENT(
+                        TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("AccessDenied", 0xde72ce21)));
                     continue;
                 }
             }
@@ -695,12 +695,12 @@ namespace AzFramework
         // Check if our debugger is still around
         if (m_executionState != SDA_STATE_DETACHED)
         {
-            bool debuggerOnline = false;
-            EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline, m_debugger.GetNetworkId());
-            if (!debuggerOnline)
-            {
-                m_executionState = SDA_STATE_DETACHING;
-            }
+            //bool debuggerOnline = false;
+            //EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline, m_debugger.GetNetworkId());
+            //if (!debuggerOnline)
+            //{
+            //    m_executionState = SDA_STATE_DETACHING;
+            //}
         }
     }
     //-------------------------------------------------------------------------

@@ -17,6 +17,11 @@
 
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkApplication.h>
 
+namespace AzNetworking
+{
+    class INetworkInterface;
+}
+
 namespace StandaloneTools
 {
     class BaseApplication
@@ -36,10 +41,11 @@ namespace StandaloneTools
         void OnApplicationEntityActivated() override;
 
         void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override;
+
     private:
         AZStd::string GetStoragePath() const;
         
-        bool LaunchDiscoveryService();
+        bool StartDebugService();
 
         // AZ::UserSettingsFileLocatorBus::Handler
         AZStd::string ResolveFilePath(AZ::u32 /*providerId*/) override;

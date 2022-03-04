@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
@@ -66,9 +67,10 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <AzCore/Console/Console.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 #include "Application.h"
 #include <AzFramework/AzFrameworkModule.h>
@@ -275,6 +277,7 @@ namespace AzFramework
             azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>(),
             azrtti_typeid<AzFramework::GameEntityContextComponent>(),
 #if !defined(_RELEASE)
+            azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
             azrtti_typeid<AzFramework::TargetManagementComponent>(),
 #endif
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),

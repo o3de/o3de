@@ -15,19 +15,31 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
 namespace AZ
 {
     class SerializeContext;
 }
 
+namespace AzFrameworkPackets
+{
+    class Neighbor;
+    class TargetManagementMessage;
+}
+
+namespace AzNetworking
+{
+    class INetworkInterface;
+}
+
 namespace AzFramework
 {
     class TargetManagementNetworkImpl;
-    struct TargetManagementSettings;
 
     class TargetManagementComponent
         : public AZ::Component
+        , public AzNetworking::IConnectionListener
         , private TargetManager::Bus::Handler
         , private AZ::SystemTickBus::Handler
     {
@@ -49,21 +61,22 @@ namespace AzFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         //////////////////////////////////////////////////////////////////////////
 
+        bool HandleRequest(
+            AzNetworking::IConnection* connection,
+            const AzNetworking::IPacketHeader& packetHeader,
+            const AzFrameworkPackets::Neighbor& packet);
+        bool HandleRequest(
+            AzNetworking::IConnection* connection,
+            const AzNetworking::IPacketHeader& packetHeader,
+            const AzFrameworkPackets::TargetManagementMessage& packet);
+
     protected:
         //////////////////////////////////////////////////////////////////////////
         // target management api
-        void EnumTargetInfos(TargetContainer& infos) override;
-        void SetDesiredTarget(AZ::u32 desiredTargetID) override;
-        void SetDesiredTargetInfo(const TargetInfo& targetInfo) override;
-        TargetInfo GetDesiredTarget() override;
-        TargetInfo GetTargetInfo(AZ::u32 desiredTargetID) override;
-        bool IsTargetOnline(AZ::u32 desiredTargetID) override;
-        bool IsDesiredTargetOnline() override;
         void SetMyPersistentName(const char* name) override;
         const char* GetMyPersistentName() override;
-        TargetInfo GetMyTargetInfo() const override;
-        void SetNeighborhood(const char* name) override;
-        const char* GetNeighborhood() override;
+        TargetInfo GetTargetInfo() const override;
+        bool IsTargetOnline() const override;
         void SendTmMessage(const TargetInfo& target, const TmMsg& msg) override;
         void DispatchMessages(MsgSlotId id) override;
         //////////////////////////////////////////////////////////////////////////
@@ -78,17 +91,32 @@ namespace AzFramework
         void OnMsgParsed(TmMsg** ppMsg, void* classPtr, const AZ::Uuid& classId, const AZ::SerializeContext* sc);
         //////////////////////////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////////////////////////
+        // IConnectionListener interface
+        AzNetworking::ConnectResult ValidateConnect(
+            const AzNetworking::IpAddress& remoteAddress,
+            const AzNetworking::IPacketHeader& packetHeader,
+            AzNetworking::ISerializer& serializer) override;
+        void OnConnect(AzNetworking::IConnection* connection) override;
+        AzNetworking::PacketDispatchResult OnPacketReceived(
+            AzNetworking::IConnection* connection,
+            const AzNetworking::IPacketHeader& packetHeader,
+            AzNetworking::ISerializer& serializer) override;
+        void OnPacketLost(AzNetworking::IConnection* connection, AzNetworking::PacketId packetId) override;
+        void OnDisconnect(
+            AzNetworking::IConnection* connection,
+            AzNetworking::DisconnectReason reason,
+            AzNetworking::TerminationEndpoint endpoint) override;
+        ////////////////////////////////////////////////////////////////////////
+
         // All communication updates run on a separate thread to avoid being blocked by breakpoints
         void TickThread();
 
-        // Joins the hub's neighborhood
-        void JoinNeighborhood();
-
-        AZStd::intrusive_ptr<TargetManagementSettings>  m_settings;
-        TargetContainer                                 m_availableTargets;
+        TargetInfo                                      m_targetInfo;
         AZStd::chrono::system_clock::time_point         m_reconnectionTime; // time of next connection attempt
 
         AZStd::vector<char, AZ::OSStdAllocator> m_tmpInboundBuffer;
+        uint32_t m_tmpInboundBufferPos;
 
         TmMsgQueue          m_inbox;
         AZStd::mutex        m_inboxMutex;
@@ -101,9 +129,10 @@ namespace AzFramework
         AZ::SerializeContext*   m_serializeContext;
 
         // these are used for target communication
-        AZStd::atomic_bool              m_stopRequested;
-        AZStd::thread                   m_threadHandle;
-        TargetManagementNetworkImpl*    m_networkImpl;
+        AZStd::atomic_bool                  m_stopRequested;
+        AZStd::thread                       m_threadHandle;
+        TargetManagementNetworkImpl*        m_networkImpl;
+        AzNetworking::INetworkInterface*    m_networkInterface;
     };
 }   // namespace AzFramework
 

@@ -11,7 +11,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Script/ScriptContextDebug.h>
-#include <GridMate/Serialize/Buffer.h>
 
 /*
  * Remote script debugging is accomplished through the ScriptDebugAgent, which

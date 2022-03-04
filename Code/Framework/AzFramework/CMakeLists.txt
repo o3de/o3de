@@ -16,6 +16,7 @@ ly_add_target(
     NAMESPACE AZ
     FILES_CMAKE
         AzFramework/azframework_files.cmake
+        AzFramework/azframework_autogen_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
@@ -23,15 +24,22 @@ ly_add_target(
         PUBLIC
             .
             ${pal_dir}
+            AZ::AzNetworking
         PRIVATE
             ${common_dir}
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
         PUBLIC
-            AZ::GridMate
+            AZ::AzNetworking
             3rdParty::zstd
             3rdParty::lz4
+    AUTOGEN_RULES
+        *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
+        *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
+        *.AutoPackets.xml,AutoPackets_Source.jinja,$path/$fileprefix.AutoPackets.cpp
+        *.AutoPackets.xml,AutoPacketDispatcher_Header.jinja,$path/$fileprefix.AutoPacketDispatcher.h
+        *.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,$path/$fileprefix.AutoPacketDispatcher.inl
 )
 
 set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)

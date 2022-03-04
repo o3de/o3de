@@ -1744,8 +1744,8 @@ namespace LUAEditor
     void Context::MoveBreakpoint(const AZ::Uuid& breakpointUID, int lineNumber)
     {
         // moving a breakpoint will cause it to update where it is in the document in question
-        // however, we don't actually re-transmit the breakpoint to the gridmate core, because we haven't re-run the script
-        // this is just housekeeping so that when gridmate says a certain breakpoint came in at a certain place,
+        // however, we don't actually re-transmit the breakpoint over the wire, because we haven't re-run the script
+        // this is just housekeeping so that when the network says a certain breakpoint came in at a certain place,
         // we know what they're talking about.
 
         if (lineNumber >= 0)

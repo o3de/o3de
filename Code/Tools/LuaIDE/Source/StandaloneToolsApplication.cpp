@@ -13,6 +13,9 @@
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
+#include <AzNetworking/Framework/INetworking.h>
+#include <AzNetworking/Framework/INetworkInterface.h>
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/IPCComponent.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
@@ -37,6 +40,8 @@ namespace StandaloneTools
 
         RegisterComponentDescriptor(LegacyFramework::IPCComponent::CreateDescriptor());
 
+        RegisterComponentDescriptor(AzNetworking::NetworkingSystemComponent::CreateDescriptor());
+
         RegisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
 
@@ -58,6 +63,7 @@ namespace StandaloneTools
 
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
+        EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
         EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
@@ -83,9 +89,22 @@ namespace StandaloneTools
         }
     }
 
+    bool BaseApplication::StartDebugService()
+    {
+        for (auto& networkInterface : AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces())
+        {
+            if (networkInterface.first == AZ::Name("TargetManagement"))
+            {
+                networkInterface.second->Listen(6777);
+                return true;
+            }
+        }
+        return false;
+    }
+
     void BaseApplication::OnApplicationEntityActivated()
     {
-        [[maybe_unused]] bool launched = LaunchDiscoveryService();
+        [[maybe_unused]] bool launched = StartDebugService();
         AZ_Warning("EditorApplication", launched, "Could not launch GridHub; Only replay is available.");
     }
 
