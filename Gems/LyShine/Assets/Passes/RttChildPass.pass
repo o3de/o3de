@@ -37,7 +37,7 @@
                         "LoadAction": "Clear",
                         "LoadActionStencil": "Clear"
                     }
-                }            
+                }
             ],
             "Connections": [
                 {
@@ -49,10 +49,10 @@
                 }
             ],
             "PassData": {
-				"$type": "RasterPassData",
+                "$type": "RasterPassData",
                 "DrawListTag": "uicanvas",
-				"PipelineViewTag": "MainCamera"
-			}
+                "PipelineViewTag": "MainCamera"
+            }
         }
     }
 }

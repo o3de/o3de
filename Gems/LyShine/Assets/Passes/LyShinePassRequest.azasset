@@ -16,7 +16,7 @@
             {
                 "LocalSlot": "DepthInputOutput",
                 "AttachmentRef": {
-                    "Pass": "HairParentPass",
+                    "Pass": "DepthPrePass",
                     "Attachment": "Depth"
                 }
             }

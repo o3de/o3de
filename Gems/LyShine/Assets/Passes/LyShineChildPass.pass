@@ -16,7 +16,7 @@
                     "Name": "DepthInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "DepthStencil"
-                }            
+                }
             ],
             "Connections": [
                 {
@@ -35,10 +35,10 @@
                 }
             ],
             "PassData": {
-				"$type": "RasterPassData",
+                "$type": "RasterPassData",
                 "DrawListTag": "uicanvas",
-				"PipelineViewTag": "MainCamera"
-			}
+                "PipelineViewTag": "MainCamera"
+            }
         }
     }
 }
