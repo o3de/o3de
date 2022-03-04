@@ -80,10 +80,10 @@ class TestsAssetBuilder_WindowsAndMac(object):
         assert result, "AP GUI failed to launch"
 
         # Add test assets to project folder and save the new file paths
-        temp_project_source, _ = asset_processor.prepare_test_environment(env["tests_dir"], "C1569087",
+        temp_project_source, _ = asset_processor.prepare_test_environment(env["tests_dir"], "TestAssets",
                                                                           use_current_root=True)
-        INTACT_PREFAB_PATH = os.path.join(temp_project_source, "C1569087_intact.prefab")
-        CORRUPTED_PREFAB_PATH = os.path.join(temp_project_source, "C1569087_corrupted.prefab")
+        INTACT_PREFAB_PATH = os.path.join(temp_project_source, "Working Prefab", "Working_Prefab.prefab")
+        CORRUPTED_PREFAB_PATH = os.path.join(temp_project_source, "Corrupted Prefab", "Corrupted_Prefab.prefab")
 
         # Verify test assets were added to the project folder
         assert os.path.exists(INTACT_PREFAB_PATH), "Intact prefab was not added to the project folder"
@@ -100,7 +100,7 @@ class TestsAssetBuilder_WindowsAndMac(object):
         intact_prefab_output = utils.safe_subprocess(intact_prefab_command)
 
         # Verify intact prefab did not fail
-        if 'C1569087_intact.prefab" failed' in intact_prefab_output.stdout:
+        if 'Working_Prefab.prefab" failed' in intact_prefab_output.stdout:
             intact_prefab_failed = True
 
         assert not intact_prefab_failed, "Intact prefab failed"
