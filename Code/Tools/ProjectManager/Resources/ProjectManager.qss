@@ -509,10 +509,6 @@ QTabBar::tab:focus {
 
 #labelButtonOverlay {
     background-color: rgba(0,0,0,0.7);
-    min-width:208px;
-    max-width:208px;;
-    min-height:278px;
-    max-height:278px;
 }
 
 #projectMessageOverlay, #projectSubMessageOverlay {
@@ -528,13 +524,6 @@ QTabBar::tab:focus {
 
 #labelButton #projectSubMessageOverlay {
     font-size:12px;
-}
-
-#buildingAnimationOverlay {
-    min-width:80px;
-    max-width:80px;
-    min-height:80px;
-    max-height:80px;
 }
 
 #projectMenuButton {
