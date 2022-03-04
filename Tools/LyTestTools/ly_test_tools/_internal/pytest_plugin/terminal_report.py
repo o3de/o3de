@@ -66,6 +66,9 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 "Use the following commands to re-run each test that failed locally\n"
                 "(NOTE: The 'PYTHON' or 'PYTHONPATH' environment variables need values for accurate commands): ",
                 test_path, nodeids, build_dir)
+            terminalreporter.write_line("Here is the link to the test artifacts for the tests that failed:")
+            # regex is searching for this exact string, do not modify it unless you update the regex
+            terminalreporter.write_line("replace_me")
 
         if error_count:
             nodeids = [os.path.basename(report.nodeid) for report in errors]
@@ -75,3 +78,6 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 "Use the following commands to re-run each test that had errors locally\n"
                 "(NOTE: The 'PYTHON' or 'PYTHONPATH' environment variables need values for accurate commands): ",
                 test_path, nodeids, build_dir)
+            terminalreporter.write_line("Here is the link to the test artifacts for the tests that had errors:")
+            # regex is searching for this exact string, do not modify it unless you update the regex
+            terminalreporter.write_line("replace_me")

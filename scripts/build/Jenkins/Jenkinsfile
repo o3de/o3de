@@ -11,6 +11,7 @@ PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
 EBS_SNAPSHOT_SCRIPT_PATH = 'scripts/build/tools/ebs_snapshot.py'
 PIPELINE_RETRY_ATTEMPTS = 3
+ARTIFACTS_URL = "https://jenkins.build.o3de.org/job/O3DE/"
 
 // Number of minutes of inactivity in all stages of the pipeline to reach the timeout
 PIPELINE_TIMEOUT = 60
@@ -513,6 +514,46 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
     }
 }
 
+def ReplaceArtifactLink(String jobName, String buildNumber, String s3Prefix) {
+    echo 'Replacing artifact link...'
+    // branches have different URLs than dev
+    if (IsPullRequest(env.BRANCH_NAME)) {
+        contentReplace(
+            configs: [
+                fileContentReplaceConfig(
+                configs: [
+                    fileContentReplaceItemConfig(
+                    search: '(replace_me)',
+                    replace: ARTIFACTS_URL + 'view/change-requests/job/' + jobName + '/' + buildNumber + '/artifact/' + s3Prefix,
+                    matchCount: 0,
+                    verbose: true,
+                    )
+                ],
+                fileEncoding: 'UTF-8',
+                filePath:'${JENKINS_HOME}/jobs/O3DETesting/branches/scspaldi-jen.10o8v7.ifacts-links/builds/${BUILD_NUMBER}/log'
+                )
+            ]
+        )
+    } else {
+        contentReplace(
+            configs: [
+                fileContentReplaceConfig(
+                configs: [
+                    fileContentReplaceItemConfig(
+                    search: '(replace_me)',
+                    replace: ARTIFACTS_URL + 'job/'  + jobName + '/' + buildNumber + '/artifacts/' + s3Prefix,
+                    matchCount: 0,
+                    verbose: true,
+                    )
+                ],
+                fileEncoding: 'UTF-8',
+                filePath:'${JENKINS_HOME}/jobs/O3DETesting/branches/scspaldi-jen.10o8v7.ifacts-links/builds/${BUILD_NUMBER}/log'
+                )
+            ]
+        )
+    }
+}
+
 def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars, boolean onlyMountEBSVolume = false) {
     return {
         stage('Setup') {
@@ -903,6 +944,7 @@ catch(Exception e) {
 finally {
     try {
         node('controller') {
+            ReplaceArtifactLink(env.JOB_NAME, env.BUILD_NUMBER, "test_artifacts")
             if("${currentBuild.currentResult}" == "SUCCESS") {
                 buildFailure = ""
                 emailBody = "${BUILD_URL}\nSuccess!"
