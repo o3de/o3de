@@ -21,9 +21,9 @@ namespace AzToolsFramework
         void RegisterViewBookmarkLoaderInterface();
         void UnregisterViewBookmarkLoaderInterface();
 
-        bool SaveBookmark(ViewBookmark bookamark, const StorageMode mode) override;
+        bool SaveBookmark(ViewBookmark bookmark, const StorageMode mode) override;
 
-        bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
+        bool SaveLastKnownLocationInLevel(ViewBookmark bookmark) override;
         bool LoadViewBookmarks() override;
         ViewBookmark GetBookmarkAtIndex(int index) const override;
         ViewBookmark GetLastKnownLocationInLevel() const override;

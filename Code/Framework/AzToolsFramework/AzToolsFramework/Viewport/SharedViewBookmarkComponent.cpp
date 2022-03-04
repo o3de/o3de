@@ -105,7 +105,7 @@ namespace AzToolsFramework
         m_viewBookmark.m_viewBookmarks.push_back(viewBookmark);
     }
 
-    void SharedViewBookmarkComponent::RemoveBookmark([[maybe_unused]] int index)
+    void SharedViewBookmarkComponent::RemoveBookmarkAtIndex([[maybe_unused]] int index)
     {
     }
 

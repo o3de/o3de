@@ -51,7 +51,7 @@ namespace AzToolsFramework
 
         ViewBookmark GetBookmarkAtIndex(int index) const;
         void AddBookmark(ViewBookmark viewBookmark);
-        void RemoveBookmark(int index);
+        void RemoveBookmarkAtIndex(int index);
         void ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark);
 
     protected:

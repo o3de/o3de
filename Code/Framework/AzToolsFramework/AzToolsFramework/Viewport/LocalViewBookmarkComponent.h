@@ -23,8 +23,8 @@ namespace AzToolsFramework
         // AZ::Component overrides ...
         void Activate() override{};
         void Deactivate() override{};
-        AZStd::string GetLocalBookmarksFileName() const;
-        void SetLocalBookmarksFileName(const AZStd::string& localBookmarksFileName);
+        const AZStd::string& GetLocalBookmarksFileName() const;
+        void SetLocalBookmarksFileName(AZStd::string localBookmarksFileName);
 
     private:
         AZStd::string m_localBookmarksFileName;

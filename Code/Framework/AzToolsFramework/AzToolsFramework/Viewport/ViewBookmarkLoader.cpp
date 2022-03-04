@@ -33,7 +33,7 @@ namespace AzToolsFramework
         auto registry = AZ::SettingsRegistry::Get();
         if (registry == nullptr)
         {
-            AZ_Warning("SEditorSettings", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
+            AZ_Warning("ViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
             return;
         }
 
@@ -57,7 +57,7 @@ namespace AzToolsFramework
         if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
         {
             AZ_Warning(
-                "SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
+                "ViewBookmarkLoader", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
                 editorBookmarkFilePath.c_str());
             return;
         }
@@ -73,7 +73,7 @@ namespace AzToolsFramework
         // Once written to the desired file remove the key from the settings registry
         registry->Remove(bookmarkKey + "/");
         AZ_Warning(
-            "SEditorSettings", saved, R"(Unable to save Editor Preferences registry file to path "%s"\n)", editorBookmarkFilePath.c_str());
+            "ViewBookmarkLoader", saved, R"(Unable to save Editor Preferences registry file to path "%s"\n)", editorBookmarkFilePath.c_str());
     }
 
     bool ViewBookmarkLoader::SaveBookmark(ViewBookmark bookmark, const StorageMode mode)
@@ -223,7 +223,7 @@ namespace AzToolsFramework
                 auto registry = AZ::SettingsRegistry::Get();
                 if (registry == nullptr)
                 {
-                    AZ_Warning("SEditorSettings", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
+                    AZ_Warning("ViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
                     return false;
                 }
 
