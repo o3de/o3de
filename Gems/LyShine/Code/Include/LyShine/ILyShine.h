@@ -8,6 +8,8 @@
 #pragma once
 
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/PlatformDef.h>
+
 #include <LyShine/UiBase.h>
 #include <AtomCore/Instance/Instance.h>
 

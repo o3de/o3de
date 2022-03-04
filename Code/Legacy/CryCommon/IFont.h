@@ -14,6 +14,8 @@
 #define CRYINCLUDE_CRYCOMMON_IFONT_H
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #include <Cry_Math.h>
 #include <Cry_Color.h>
 #include <smartptr.h>
