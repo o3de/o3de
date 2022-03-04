@@ -19,6 +19,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -272,7 +273,9 @@ namespace Multiplayer
         auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (!prefabEditorEntityOwnershipInterface)
         {
-            AZ_Error("MultiplayerEditor", prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface unavailable");
+            bool prefabSystemEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
             return;
         }
 
@@ -361,7 +364,9 @@ namespace Multiplayer
         const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (!prefabEditorEntityOwnershipInterface)
         {
-            AZ_Error("MultiplayerEditor", prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface unavailable")
+            bool prefabSystemEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
             return;
         }
 
