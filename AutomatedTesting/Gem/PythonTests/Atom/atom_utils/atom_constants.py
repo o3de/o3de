@@ -1,9 +1,10 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Hold constants used across both hydra and non-hydra scripts.
+Holds constants used across both hydra and non-hydra scripts.
 """
 
 # Light type options for the Light component.
@@ -18,11 +19,34 @@ LIGHT_TYPES = {
     'simple_spot': 7,
 }
 
+# Intensity mode options for the Light component.
+INTENSITY_MODE = {
+    'Candela': 0,
+    'Lumen': 1,
+    'Ev100': 3,
+    'Nit': 5,
+}
 
 # Attenuation Radius Mode options for the Light component.
 ATTENUATION_RADIUS_MODE = {
-    'automatic': 1,
     'explicit': 0,
+    'automatic': 1,
+}
+
+# Shadow Map Size options for the Light component.
+SHADOWMAP_SIZE = {
+    'Size256': 256,
+    'Size512': 512,
+    'Size1024': 1024,
+    'Size2048': 2048,
+}
+
+# Shadow filter method options for the Light component.
+SHADOW_FILTER_METHOD = {
+    'PCF': 1,
+    'ESM': 2,
+    'PCF+ESM': 3,
+    'None': 0,
 }
 
 # Qualiity Level settings for Diffuse Global Illumination level component
@@ -30,6 +54,13 @@ GLOBAL_ILLUMINATION_QUALITY = {
     'Low': 0,
     'Medium': 1,
     'High': 2,
+}
+
+# Mesh LOD type
+MESH_LOD_TYPE = {
+    'default': 0,
+    'screen coverage': 1,
+    'specific lod': 2,
 }
 
 # Level list used in Editor Level Load Test
@@ -236,6 +267,7 @@ class AtomComponentProperties:
         Global Skylight (IBL) component properties.
           - 'Diffuse Image' Asset.id for the cubemap image for determining diffuse lighting.
           - 'Specular Image' Asset.id for the cubemap image for determining specular lighting.
+          - 'Exposure' Exposure setting for Global Skylight, value range is -5 to 5
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -243,6 +275,7 @@ class AtomComponentProperties:
             'name': 'Global Skylight (IBL)',
             'Diffuse Image': 'Controller|Configuration|Diffuse Image',
             'Specular Image': 'Controller|Configuration|Specular Image',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -297,27 +330,48 @@ class AtomComponentProperties:
     def light(property: str = 'name') -> str:
         """
         Light component properties.
-          - 'Attenuation Radius Mode' controls whether the attenuation radius is calculated automatically or explicitly.
-          - 'Color' the RGB value to set for the color of the light.
-          - 'Enable shadow' toggle for enabling shadows for the light.
-          - 'Enable shutters' toggle for enabling shutters for the light.
-          - 'Inner angle' inner angle value for the shutters (in degrees)
-          - 'Intensity' the intensity of the light in the set photometric unit (float with no ceiling).
           - 'Light type' from atom_constants.py LIGHT_TYPES
-          - 'Outer angle' outer angle value for the shutters (in degrees)
+          - 'Color' the RGBA value to set for the color of the light using azlmbr.math.Color tuple.
+          - 'Intensity mode' from atom_constants.py INTENSITY_MODE
+          - 'Intensity' the intensity of the light in the set photometric unit (float with no ceiling).
+          - 'Attenuation radius Mode' from atom_constants.py ATTENUATION_RADIUS_MODE
+          - 'Attenuation radius Radius' sets the distance at which the light no longer has effect.
+          - 'Enable shadow' toggle for enabling shadows for the light.
+          - 'Shadows Bias' how deep in shadow a surface must be before being affected by it (Range 0-100).
+          - 'Normal Shadow Bias' reduces shadow acne (Range 0-10).
+          - 'Shadowmap size' from atom_constants.py SHADOWMAP_SIZE
+          - 'Shadow filter method' from atom_constants.py SHADOW_FILTER_METHOD
+          - 'Filtering sample count' smooths/hardens shadow edges - specific to PCF & ESM+PCF (Range 4-64).
+          - 'ESM exponent' smooths/hardens shadow edges - specific to ESM & ESM+PCF (Range 50-5000).
+          - 'Enable shutters' toggle for enabling shutters for the light.
+          - 'Inner angle' inner angle value for the shutters (in degrees) (Range 0.5-90).
+          - 'Outer angle' outer angle value for the shutters (in degrees) (Range 0.5-90).
+          - 'Both directions' Enables/Disables light emitting from both sides of a surface.
+          - 'Fast approximation' Enables/Disables fast approximation of linear transformed cosines.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Light',
-            'Attenuation Radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
+            'Light type': 'Controller|Configuration|Light type',
             'Color': 'Controller|Configuration|Color',
+            'Intensity mode': 'Controller|Configuration|Intensity mode',
+            'Intensity': 'Controller|Configuration|Intensity',
+            'Attenuation radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
+            'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
+            'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias\n',
+            'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
+            'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
+            'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',
+            'ESM exponent': 'Controller|Configuration|Shadows|ESM exponent',
             'Enable shutters': 'Controller|Configuration|Shutters|Enable shutters',
             'Inner angle': 'Controller|Configuration|Shutters|Inner angle',
-            'Intensity': 'Controller|Configuration|Intensity',
-            'Light type': 'Controller|Configuration|Light type',
             'Outer angle': 'Controller|Configuration|Shutters|Outer angle',
+            'Both directions': 'Controller|Configuration|Both directions',
+            'Fast approximation': 'Controller|Configuration|Fast approximation',
+
         }
         return properties[property]
 
@@ -362,6 +416,15 @@ class AtomComponentProperties:
         """
         Mesh component properties.
           - 'Mesh Asset' Asset.id of the mesh model.
+          - 'Sort Key' dis-ambiguates which mesh renders in front of others (signed int 64)
+          - 'Use ray tracing' Toggles interaction with ray tracing (bool)
+          - 'Lod Type' options: default, screen coverage, specific lod
+          - 'Exclude from reflection cubemaps' Toggles inclusion in generated cubemaps (bool)
+          - 'Use Forward Pass IBL Specular' Toggles Forward Pass IBL Specular (bool)
+          - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
+          - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
+          - 'Lod Override' which specific LOD to always use; default or other named LOD
+          - 'Add Material Component' the button to add a material; set True to add a material component
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -369,6 +432,15 @@ class AtomComponentProperties:
         properties = {
             'name': 'Mesh',
             'Mesh Asset': 'Controller|Configuration|Mesh Asset',
+            'Sort Key': 'Controller|Configuration|Sort Key',
+            'Use ray tracing': 'Controller|Configuration|Use ray tracing',
+            'Lod Type': 'Controller|Configuration|Lod Type',
+            'Exclude from reflection cubemaps': 'Controller|Configuration|Exclude from reflection cubemaps',
+            'Use Forward Pass IBL Specular': 'Controller|Configuration|Use Forward Pass IBL Specular',
+            'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
+            'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
+            'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
+            'Add Material Component': 'Add Material Component',
         }
         return properties[property]
 

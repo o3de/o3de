@@ -26,7 +26,6 @@ namespace AZ
             friend class PassFactory;
             friend class PassLibrary;
             friend class PassSystem;
-            friend class PassFactory;
             friend class RenderPipeline;
             friend class UnitTest::PassTests;
             friend class Pass;
@@ -66,6 +65,7 @@ namespace AZ
             //! Inserts a pass at specified position
             //! If the position is invalid, the child pass won't be added, and the function returns false
             bool InsertChild(const Ptr<Pass>& child, ChildPassIndex position);
+            bool InsertChild(const Ptr<Pass>& child, uint32_t index);
 
             //! Searches for a child pass with the given name. Returns the child's index if found, null index otherwise
             ChildPassIndex FindChildPassIndex(const Name& passName) const;

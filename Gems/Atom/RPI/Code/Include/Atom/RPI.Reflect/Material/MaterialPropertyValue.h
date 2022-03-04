@@ -67,6 +67,7 @@ namespace AZ
             MaterialPropertyValue(const Data::Asset<ImageAsset>& value) : m_value(value) {}
             MaterialPropertyValue(const Data::Instance<Image>& value) : m_value(value) {}
             MaterialPropertyValue(const AZStd::string& value) : m_value(value) {}
+            MaterialPropertyValue(const Name& value) : m_value(AZStd::string{value.GetStringView()}) {}
 
             //! Copy constructor
             MaterialPropertyValue(const MaterialPropertyValue& value) : m_value(value.m_value) {}
@@ -75,9 +76,10 @@ namespace AZ
             //! The type will be restricted to those defined in the variant at compile time.
             //! If out-of-definition type is used, the compiler will report error.
             template<typename T>
-            void operator=(const T& value)
+            MaterialPropertyValue& operator=(const T& value)
             {
                 m_value = value;
+                return *this;
             }
 
             //! Get actual value from the variant.

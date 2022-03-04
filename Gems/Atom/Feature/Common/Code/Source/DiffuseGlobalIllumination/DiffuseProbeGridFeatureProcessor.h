@@ -48,6 +48,7 @@ namespace AZ
             void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) override;
             void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) override;
             void SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode) override;
+            void SetScrolling(const DiffuseProbeGridHandle& probeGrid, bool scrolling) override;
             void SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures) override;
             void SetVisualizationEnabled(const DiffuseProbeGridHandle& probeGrid, bool visualizationEnabled) override;
             void SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes) override;

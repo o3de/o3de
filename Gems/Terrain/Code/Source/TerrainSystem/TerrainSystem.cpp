@@ -11,6 +11,7 @@
 #include <AzCore/std/sort.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
+#include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #include <Atom/RPI.Public/Scene.h>
@@ -273,8 +274,10 @@ void TerrainSystem::MakeBulkQueries(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
     BulkQueriesCallback queryCallback) const
 {
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
     AZ::Aabb bounds;
-    AZ::EntityId prevAreaId = FindBestAreaEntityAtPosition(inPositions[0].GetX(), inPositions[0].GetY(), bounds);
+    AZ::EntityId prevAreaId = FindBestAreaEntityAtPosition(inPositions[0], bounds);
     
     // We use a sliding window here and update the window end for each
     // position that falls in the same area as the previous positions. This consumes lesser memory
@@ -286,7 +289,7 @@ void TerrainSystem::MakeBulkQueries(
     const size_t numPositions = inPositions.size();
     for(int i = 1; i < numPositions; i++)
     {
-        AZ::EntityId areaId = FindBestAreaEntityAtPosition(inPositions[i].GetX(), inPositions[i].GetY(), bounds);
+        AZ::EntityId areaId = FindBestAreaEntityAtPosition(inPositions[i], bounds);
         bool queryHeights = false;
         if (areaId == prevAreaId)
         {
@@ -822,18 +825,13 @@ AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> 
         inRegion, stepSize, perPositionCallback, sampleFilter, params);
 }
 
-AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const
+AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const
 {
-    AZ::Vector3 inPosition = AZ::Vector3(x, y, 0);
-
     // Find the highest priority layer that encompasses this position
-    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
-
     // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
     for (const auto& [areaId, areaData] : m_registeredAreas)
     {
-        inPosition.SetZ(areaData.m_areaBounds.GetMin().GetZ());
-        if (areaData.m_areaBounds.Contains(inPosition))
+        if (SurfaceData::AabbContains2D(areaData.m_areaBounds, position))
         {
             bounds = areaData.m_areaBounds;
             return areaId;
@@ -865,6 +863,14 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
                                 "The sizes of the surface weights list and in/out positions list should match.");
                             Terrain::TerrainAreaSurfaceRequestBus::Event(areaId, &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeightsFromList,
                                 inPositions, outSurfaceWeights);
+
+                            // Sort the surface weights on each output weight list in decreasing weight order.
+                            for (auto& outSurfaceWeight : outSurfaceWeights)
+                            {
+                                AZStd::sort(
+                                    outSurfaceWeight.begin(), outSurfaceWeight.end(),
+                                    AzFramework::SurfaceData::SurfaceTagWeightComparator());
+                            }
                         };
     
     // This will be unused for surface weights. It's fine if it's empty.
@@ -879,8 +885,10 @@ void TerrainSystem::GetOrderedSurfaceWeights(
     AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
     bool* terrainExistsPtr) const
 {
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
     AZ::Aabb bounds;
-    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(x, y, bounds);
+    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(AZ::Vector3(x, y, 0.0f), bounds);
 
     if (terrainExistsPtr)
     {
