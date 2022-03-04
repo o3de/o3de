@@ -271,7 +271,8 @@ namespace AzToolsFramework::Prefab
         SetInstanceContainersOpenStateOfAllDescendantContainers(
             GetInstanceReference(m_rootAliasFocusPath), m_prefabEditScope == PrefabEditScope::NESTED_INSTANCES);
 
-        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged,
+            previousFocusedInstance->get().GetContainerEntityId(), focusedInstance->get().GetContainerEntityId());
 
         // Force propagation both the previous and the new focused instances to ensure they are represented correctly.
         if (m_instanceUpdateExecutorInterface)
@@ -413,7 +414,7 @@ namespace AzToolsFramework::Prefab
             {
                 // Refresh the path and notify changes.
                 RefreshInstanceFocusPath();
-                PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+                PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
             }
         }
     }
@@ -422,7 +423,7 @@ namespace AzToolsFramework::Prefab
     {
         // Refresh the path and notify changes in case propagation updated any container names.
         RefreshInstanceFocusPath();
-        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
     }
 
     void PrefabFocusHandler::OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, [[maybe_unused]] bool status)
@@ -450,7 +451,7 @@ namespace AzToolsFramework::Prefab
             {
                 // Refresh the path and notify changes.
                 RefreshInstanceFocusPath();
-                PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+                PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
             }
         }
     }
@@ -586,6 +587,8 @@ namespace AzToolsFramework::Prefab
             }
             break;
         }
+
+        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabEditScopeChanged);
     }
 
     InstanceOptionalReference PrefabFocusHandler::GetInstanceReference(RootAliasPath rootAliasPath) const

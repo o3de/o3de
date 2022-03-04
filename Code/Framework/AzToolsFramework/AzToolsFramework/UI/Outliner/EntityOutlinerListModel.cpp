@@ -92,6 +92,7 @@ namespace AzToolsFramework
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
+        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -115,6 +116,7 @@ namespace AzToolsFramework
             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
         ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
+        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
@@ -1415,8 +1417,17 @@ namespace AzToolsFramework
             emit dataChanged(index(0, 0, changedIndex), index(numChildren - 1, ColumnCount - 1, changedIndex));
         }
 
+        /*
         // Always expand containers
         QueueEntityToExpand(entityId, true);
+        */
+    }
+
+    void EntityOutlinerListModel::OnPrefabFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
+    {
+        QueueEntityToExpand(previousContainerEntityId, false);
+        QueueEntityToExpand(newContainerEntityId, true);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)

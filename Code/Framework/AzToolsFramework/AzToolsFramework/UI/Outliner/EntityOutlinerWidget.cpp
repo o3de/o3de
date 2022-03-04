@@ -240,14 +240,6 @@ namespace AzToolsFramework
 
         m_gui->m_searchWidget->AddWidgetToSearchWidget(display_options);
 
-        // TODO - Ideally this shouldn't be here?
-        /*
-        QCheckBox* prefabEditScopeToggle = new QCheckBox(this);
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(prefabEditScopeToggle);
-        connect(prefabEditScopeToggle, &QCheckBox::toggled, this, &EntityOutlinerWidget::OnPrefabEditScopeChanged);
-        m_gui->m_searchWidget->AddWidgetToSearchWidget(prefabEditScopeToggle);
-        */
-
         // Set the display options menu
         display_options->setMenu(m_displayOptionsMenu);
         connect(m_displayOptionsMenu, &EntityOutliner::DisplayOptionsMenu::OnSortModeChanged, this, &EntityOutlinerWidget::OnSortModeChanged);
@@ -318,6 +310,7 @@ namespace AzToolsFramework
         EditorEntityContextNotificationBus::Handler::BusConnect();
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(GetEntityContextId());
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
     }
@@ -326,6 +319,7 @@ namespace AzToolsFramework
     {
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorPickModeNotificationBus::Handler::BusDisconnect();
@@ -338,9 +332,9 @@ namespace AzToolsFramework
         delete m_gui;
     }
 
-    void EntityOutlinerWidget::OnPrefabEditScopeChanged(bool /* checked*/)
+    void EntityOutlinerWidget::OnPrefabEditScopeChanged()
     {
-
+        update();
     }
 
     // Users should be able to drag an entity in the outliner without selecting it.

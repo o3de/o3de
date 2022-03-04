@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
@@ -55,6 +56,7 @@ namespace AzToolsFramework
         , private ToolsApplicationEvents::Bus::Handler
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
+        , private Prefab::PrefabFocusNotificationBus::Handler
         , private AZ::EntitySystemBus::Handler
         , private ContainerEntityNotificationBus::Handler
     {
@@ -146,6 +148,9 @@ namespace AzToolsFramework
         bool FilterEntity(const AZ::EntityId& entityId);
 
         void EnableAutoExpand(bool enable);
+
+        // PrefabFocusNotificationBus overrides ...
+        void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
 
         AZStd::string GetFilterString() const
         {
