@@ -19,7 +19,6 @@ struct VSOutput
     float4 m_position : SV_Position;
     float3 m_worldPosition : TEXCOORD0;
     float3 m_worldNormal : NORMAL;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : TEXCOORD1;
 };
 
 struct PSOutput
@@ -50,12 +49,7 @@ VSOutput ShadowCatcherVS(VSInput IN)
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
     OUT.m_worldNormal = normalize(mul(ObjectSrg::GetWorldMatrixInverseTranspose(), IN.m_normal));
     
-    // [GFX TODO][ATOM-2012] Add support for multiple directional light shadows
-    DirectionalLightShadow::GetShadowCoords(
-        ViewSrg::m_shadowIndexDirectionalLight,
-        worldPosition,
-        OUT.m_worldNormal,
-        OUT.m_shadowCoords);
+
     
     return OUT;
 }
@@ -68,7 +62,6 @@ PSOutput ShadowCatcherPS(VSOutput IN)
     
     float litRatio = DirectionalLightShadow::GetVisibility(
             ViewSrg::m_shadowIndexDirectionalLight,
-            IN.m_shadowCoords,
             IN.m_worldNormal,
             0,
         debugInfo);

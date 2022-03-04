@@ -67,7 +67,6 @@ struct VSOutput
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
 
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
@@ -124,15 +123,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
-        // Adjust directional light shadow coordinates for parallax correction
-        if(o_parallax_enablePixelDepthOffset)
-        {
-            const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-            if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-            {
-                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, vertexNormal, IN.m_shadowCoords);
-            }
-        }
     }
 
     Surface surface;
@@ -189,8 +179,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
-    // Directional light shadow coordinates
-    lightingData.shadowCoords = IN.m_shadowCoords;
 
     // ------- Emissive -------
 

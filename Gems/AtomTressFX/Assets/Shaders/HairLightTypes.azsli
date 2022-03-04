@@ -362,7 +362,6 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     {
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
-            lightingData.shadowCoords,
             surface.vertexNormal,
             screenUv,
             debugInfo);
@@ -464,10 +463,7 @@ void ApplyLighting(inout Surface surface, inout LightingData lightingData)
 {
     // Shadow coordinates generation for the directional light
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(shadowIndex, surface.position, surface.vertexNormal, lightingData.shadowCoords);
-    }
+
 
     // Light loops application.
     // If culling is used, the order of the calls must match the light types list order 
