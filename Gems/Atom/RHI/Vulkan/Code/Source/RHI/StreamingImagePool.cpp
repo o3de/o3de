@@ -187,6 +187,12 @@ namespace AZ
             image.Invalidate();
         }
 
+        void StreamingImagePool::ComputeFragmentation() const
+        {
+            const RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+            memoryUsage.m_fragmentation = m_memoryAllocator.ComputeFragmentation();
+        }
+
         void StreamingImagePool::OnFrameEnd()
         {
             m_memoryAllocator.GarbageCollect();

@@ -52,5 +52,4 @@ class TestComponentAssetListAutomation(object):
             "ComponentUpdateListProperty_test_case.py",
             expected_lines=expected_lines,
             cfg_args=[level],
-            enable_prefab_system=False,
         )
