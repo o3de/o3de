@@ -58,10 +58,7 @@ namespace AutomatedTesting
         ////////////////////////////////////////////////////////////////////////
         // Multiplayer::IMultiplayerSpawner interface implementation
         Multiplayer::NetworkEntityHandle OnPlayerJoin(uint64_t userId, const Multiplayer::MultiplayerAgentDatum& agentDatum) override;
-        void OnPlayerLeave(
-            Multiplayer::ConstNetworkEntityHandle entityHandle,
-            const Multiplayer::ReplicationSet& replicationSet,
-            AzNetworking::DisconnectReason reason) override;
+        void OnPlayerLeave(Multiplayer::ConstNetworkEntityHandle entityHandle, const Multiplayer::ReplicationSet& replicationSet, AzNetworking::DisconnectReason reason) override;
         ////////////////////////////////////////////////////////////////////////
         
         AZStd::unique_ptr<AutomatedTesting::IPlayerSpawner> m_playerSpawner;
