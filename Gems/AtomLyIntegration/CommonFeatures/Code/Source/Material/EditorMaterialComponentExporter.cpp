@@ -42,10 +42,11 @@ namespace AZ
                 AZStd::string exportPath;
                 if (assetId.IsValid())
                 {
+
                     exportPath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
                     AZ::StringFunc::Path::StripExtension(exportPath);
                     exportPath += "_";
-                    exportPath += materialSlotName;
+                    exportPath += AZ::RPI::AssetUtils::SanitizeFileName(materialSlotName);
                     exportPath += ".";
                     exportPath += AZ::RPI::MaterialSourceData::Extension;
                     AZ::StringFunc::Path::Normalize(exportPath);
