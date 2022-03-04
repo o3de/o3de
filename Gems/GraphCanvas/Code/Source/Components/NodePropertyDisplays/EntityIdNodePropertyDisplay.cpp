@@ -99,16 +99,18 @@ namespace GraphCanvas
             m_propertyEntityIdCtrl->SetCurrentEntityId(valueEntityId, false, name);
         }
 
-        const AZStd::string entityName = AzToolsFramework::GetEntityName(valueEntityId, name);
-        if (entityName.empty())
-        {
-            const QString notFoundMessage = QObject::tr("(Entity not found)");
-            m_displayLabel->SetLabel(notFoundMessage.toUtf8().data());
-        }
-        else
-        {
-            m_displayLabel->SetLabel(entityName);
-        }
+        m_displayLabel->SetLabel(name);
+
+//         const AZStd::string entityName = AzToolsFramework::GetEntityName(valueEntityId, name);
+//         if (entityName.empty())
+//         {
+//             const QString notFoundMessage = QObject::tr("(Entity not found)");
+//             m_displayLabel->SetLabel(notFoundMessage.toUtf8().data());
+//         }
+//         else
+//         {
+//             m_displayLabel->SetLabel(entityName);
+//         }
 
         if (m_proxyWidget)
         {
@@ -186,7 +188,14 @@ namespace GraphCanvas
             m_propertyEntityIdCtrl->setContextMenuPolicy(Qt::CustomContextMenu);
             QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::customContextMenuRequested, [this](const QPoint& pos) { this->ShowContextMenu(pos); });
 
-            QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnPickStart, [this]() { this->EditStart(); });
+            QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnPickStart, [this]()
+            {
+                this->EditStart();
+                this->EditFinished();
+                // emit OnEntityIdChanged
+            });
+
+
             QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnPickComplete, [this]() { this->EditFinished(); });
             QObject::connect(m_propertyEntityIdCtrl, &AzToolsFramework::PropertyEntityIdCtrl::OnEntityIdChanged, [this]() { this->SubmitValue(); });
 
