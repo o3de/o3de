@@ -29,11 +29,11 @@ namespace UnitTest
     {
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> createdPrefab =
             prefabSystemComponent->CreatePrefab(entitiesToUseForCreation, {}, "test/path");
-        EXPECT_TRUE(createdPrefab != nullptr);
+        EXPECT_NE(nullptr, createdPrefab);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> instantiatedPrefab =
             prefabSystemComponent->InstantiatePrefab(createdPrefab->GetTemplateId());
-        EXPECT_TRUE(instantiatedPrefab != nullptr);
+        EXPECT_NE(nullptr, instantiatedPrefab);
 
         instantiatedPrefab->GetEntities(
             [](const AZStd::unique_ptr<AZ::Entity>& entity)
@@ -44,7 +44,7 @@ namespace UnitTest
                 return true;
             });
 
-        return AZStd::make_pair<InstanceUniquePointer, InstanceUniquePointer>(AZStd::move(createdPrefab), AZStd::move(instantiatedPrefab));
+        return { AZStd::move(createdPrefab), AZStd::move(instantiatedPrefab) };
     }
 
     TEST_F(InstanceDeserializationTest, ReloadInstanceUponComponentUpdate)
@@ -91,10 +91,10 @@ namespace UnitTest
                     // Validate that the entity is in 'constructed' state, which indicates that it got reloaded.
                     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Constructed);
                     AZStd::vector<AZ::Component*> entity1Components = entity->GetComponents();
-                    EXPECT_TRUE(entity1Components.size() == 1);
+                    EXPECT_EQ(1, entity1Components.size());
                     AzToolsFramework::Components::TransformComponent* transformComponentInInstantiatedPrefab =
                         reinterpret_cast<AzToolsFramework::Components::TransformComponent*>(entity1Components.front());
-                    EXPECT_TRUE(transformComponentInInstantiatedPrefab != nullptr);
+                    EXPECT_NE(nullptr, transformComponentInInstantiatedPrefab);
 
                     // Validate that the transform component is correctly updated after reloading.
                     EXPECT_EQ(transformComponentInInstantiatedPrefab->GetWorldX(), 20.0f);
@@ -140,7 +140,7 @@ namespace UnitTest
                     // Validate that the entity is in 'constructed' state, which indicates that it got reloaded.
                     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Constructed);
                     AZStd::vector<AZ::Component*> entity1Components = entity->GetComponents();
-                    EXPECT_TRUE(entity1Components.size() == 1);
+                    EXPECT_EQ(1, entity1Components.size());
                     AzToolsFramework::Components::TransformComponent* transformComponentInInstantiatedPrefab =
                         reinterpret_cast<AzToolsFramework::Components::TransformComponent*>(entity1Components.front());
 
@@ -172,7 +172,7 @@ namespace UnitTest
                 {
                     // Remove the transform component from entity1 of createdPrefab;
                     AZ::Component* transformComponent = entity->GetComponents().front();
-                    EXPECT_TRUE(transformComponent != nullptr);
+                    EXPECT_NE(nullptr, transformComponent);
                     entity->RemoveComponent(transformComponent);
                     delete transformComponent;
                     transformComponent = nullptr;
@@ -197,7 +197,7 @@ namespace UnitTest
                     AZStd::vector<AZ::Component*> entity1Components = entity->GetComponents();
 
                     // Validate that the transform component can't be found in entity1 of instantiatedPrefab.
-                    EXPECT_TRUE(entity1Components.size() == 0);
+                    EXPECT_TRUE(entity1Components.empty());
                 }
                 return true;
             });
