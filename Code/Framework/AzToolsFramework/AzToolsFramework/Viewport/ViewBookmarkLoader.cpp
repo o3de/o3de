@@ -73,7 +73,7 @@ namespace AzToolsFramework
         // Once written to the desired file remove the key from the settings registry
         registry->Remove(bookmarkKey + "/");
         AZ_Warning(
-            "ViewBookmarkLoader", saved, R"(Unable to save Editor Preferences registry file to path "%s"\n)", editorBookmarkFilePath.c_str());
+            "ViewBookmarkLoader", saved, R"(Unable to save Local View Bookmark file to path "%s"\n)", editorBookmarkFilePath.c_str());
     }
 
     bool ViewBookmarkLoader::SaveBookmark(ViewBookmark bookmark, const StorageMode mode)

@@ -84,7 +84,6 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SharedViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
             }
