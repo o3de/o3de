@@ -11,6 +11,7 @@
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/ranges/ranges_functional.h>
 #include <AzCore/std/ranges/subrange.h>
+#include <AzCore/std/reference_wrapper.h>
 
 namespace AZStd::ranges
 {
@@ -992,5 +993,69 @@ namespace AZStd::ranges
     {
         constexpr Internal::find_end_fn find_end{};
     }
-} // namespace AZStd::ranges
 
+    namespace Internal
+    {
+        struct all_of_fn
+        {
+            template<class I, class S, class Proj = identity, class Pred,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<I, Proj>>>>
+            >>
+            constexpr bool operator()(I first, S last, Pred pred, Proj proj = {}) const
+            {
+                return ranges::find_if_not(first, last, AZStd::ref(pred), AZStd::ref(proj)) == last;
+            }
+
+            template<class R, class Proj = identity, class Pred,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<ranges::iterator_t<R>, Proj>>>>
+            >>
+            constexpr bool operator()(R&& r, Pred pred, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(r), ranges::end(r), AZStd::ref(pred), AZStd::ref(proj));
+            }
+        };
+    } // namespace Internal
+    inline namespace customization_point_object
+    {
+        constexpr Internal::all_of_fn all_of;
+    } // namespace customization_point_object
+
+
+    namespace Internal
+    {
+        struct any_of_fn
+        {
+            template<class I, class S, class Proj = identity, class Pred,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<I, Proj>>>>
+            >>
+            constexpr bool operator()(I first, S last, Pred pred, Proj proj = {}) const
+            {
+                return ranges::find_if(first, last, AZStd::ref(pred), AZStd::ref(proj)) != last;
+            }
+
+            template<class R, class Proj = identity, class Pred,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<ranges::iterator_t<R>, Proj>>>>
+            >>
+            constexpr bool operator()(R&& r, Pred pred, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(r), ranges::end(r), AZStd::ref(pred), AZStd::ref(proj));
+            }
+        };
+
+    } // namespace Internal
+
+    inline namespace customization_point_object
+    {
+        inline constexpr Internal::any_of_fn any_of;
+    } // namespace customization_point_object
+} // namespace AZStd::ranges
