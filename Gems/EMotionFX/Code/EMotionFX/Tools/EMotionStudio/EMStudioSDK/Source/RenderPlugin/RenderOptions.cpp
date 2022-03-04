@@ -1137,6 +1137,7 @@ namespace EMStudio
         settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
         settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
         settings.m_jointNameColor = m_nodeNameColor;
+        settings.m_trajectoryPathColor = m_trajectoryArrowInnerColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const
