@@ -466,15 +466,6 @@ QTabBar::tab:focus {
     max-height:24px;
 }
 
-QMenu::icon,
-QMenu::right-arrow
-{
-    width: 16px;
-    height: 16px;
-
-    subcontrol-position: right center;
-}
-
 #labelButton #projectActionCancelButton{
     qproperty-flat: true;
     border-radius: 3px;
