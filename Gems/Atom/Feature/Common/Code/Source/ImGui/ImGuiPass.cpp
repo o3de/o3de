@@ -634,6 +634,10 @@ namespace AZ
                                 index = aznumeric_cast<uint32_t>(m_userTextures.size() + 1);
                                 m_userTextures[img.get()] = index;
                             }
+                            else
+                            {
+                                AZ_Warning("ImGuiPass", false, "The maximum number of textures ImGui can render per frame is %d", MaxUserTextures);
+                            }
                         }
 
                         m_draws.push_back(
