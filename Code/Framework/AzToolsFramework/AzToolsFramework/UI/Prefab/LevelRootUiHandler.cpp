@@ -23,7 +23,7 @@ namespace AzToolsFramework
 
     const QColor LevelRootUiHandler::s_levelRootBorderColor = QColor("#656565");
     const QColor LevelRootUiHandler::s_levelRootEditColor = QColor("#4A90E2");
-    const QColor LevelRootUiHandler::s_levelRootOverrideColor = QColor("#FFA500");
+    const QColor LevelRootUiHandler::s_levelRootOverrideColor = QColor("#FF8000");
     const QString LevelRootUiHandler::s_levelRootIconPath = QString(":/Level/level.svg");
 
     LevelRootUiHandler::LevelRootUiHandler()
@@ -101,11 +101,11 @@ namespace AzToolsFramework
         QRect rect = option.rect;
 
         QColor backgroundColor = s_levelRootEditColor;
-        QString prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/checked.svg";
+        QString prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/unchecked.svg";
         if (m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
         {
             backgroundColor = s_levelRootOverrideColor;
-            prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/unchecked.svg";
+            prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/checked.svg";
         }
 
         painter->save();

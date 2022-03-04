@@ -311,10 +311,10 @@ namespace AzToolsFramework
         bool isPrefabEditModeNestedTemplates =
             m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_TEMPLATES;
 
-        QString prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/checked.svg";
+        QString prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/unchecked.svg";
         if (!isPrefabEditModeNestedTemplates)
         {
-            prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/unchecked.svg";
+            prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/checked.svg";
         }
 
         painter->save();
@@ -354,10 +354,10 @@ namespace AzToolsFramework
             if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle ||
                 index.column() == EntityOutlinerListModel::ColumnLockToggle)
             {
-                QPoint toggleOffset = QPoint(5, 5);
+                QPoint toggleOffset = QPoint(5, 4);
                 if (index.column() == EntityOutlinerListModel::ColumnLockToggle)
                 {
-                    toggleOffset = QPoint(-15, 5);
+                    toggleOffset = QPoint(-15, 4);
                 }
 
                 const QSize toggleIconSize = QSize(32, 16);
