@@ -12,34 +12,25 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import pytest
 import os
 import sys
-
+from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
+import ly_test_tools.environment.process_utils as process_utils
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
-
-from base import TestAutomationBase
 
 @pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-class TestAutomation(TestAutomationBase):
-    def _run_prefab_test(self, request, workspace, editor, test_module, batch_mode=True, autotest_mode=True):
-        self._run_test(request, workspace, editor, test_module, 
-            batch_mode=batch_mode,
-            autotest_mode=autotest_mode)
-
+class TestAutomation(EditorTestSuite):
     ## Seems to be flaky, need to investigate
-    def test_Multiplayer_AutoComponent_NetworkInput(self, request, workspace, editor, launcher_platform):
+    class test_Multiplayer_AutoComponent_NetworkInput(EditorSingleTest):
         from .tests import Multiplayer_AutoComponent_NetworkInput as test_module
-        self._run_prefab_test(request, workspace, editor, test_module)
-        
-    def test_Multiplayer_AutoComponent_RPC(self, request, workspace, editor, launcher_platform):
+
+    class test_Multiplayer_AutoComponent_RPC(EditorSingleTest):
         from .tests import Multiplayer_AutoComponent_RPC as test_module
-        self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_Multiplayer_BasicConnectivity_Connects(self, request, workspace, editor, launcher_platform):
+    class test_Multiplayer_BasicConnectivity_Connects(EditorSingleTest):
         from .tests import Multiplayer_BasicConnectivity_Connects as test_module
-        self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_Multiplayer_SimpleNetworkLevelEntity(self, request, workspace, editor, launcher_platform):
+    class test_Multiplayer_SimpleNetworkLevelEntity(EditorSingleTest):
         from .tests import Multiplayer_SimpleNetworkLevelEntity as test_module
-        self._run_prefab_test(request, workspace, editor, test_module)
+
