@@ -181,7 +181,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Deleting assets from Cache will make them re-processed in AP (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessAndDeleteCache_APBatchShouldReprocess")
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working Prefab"))
 
         # Calling AP first time and checking whether desired assets were processed
         result, _ = asset_processor.batch_process()
@@ -224,7 +224,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # AP Batch Processing changed files (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessAndChangeSource_APBatchShouldReprocess")
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working Prefab"))
 
         # Calling AP first time and checking whether desired assets were processed
         batch_success, output = asset_processor.batch_process(capture_output=True)
@@ -285,7 +285,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Copying test assets once again
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessByBothApAndBatch_Md5ShouldMatch")
 
-        result, _ = asset_processor.gui_process(quitonidle=True)
+        result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
         checksum_assetprocessor = utils.get_files_hashsum(asset_processor.project_test_cache_folder())
@@ -424,7 +424,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Prepare test assets and start Asset Processor Batch
-        asset_processor.prepare_test_environment(env["tests_dir"], "C1571774")
+        asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working Prefab"))
         result, output_list = asset_processor.batch_process(capture_output=True)
         assert result, f"AP Batch failed with output: {output_list}"
 
@@ -435,7 +435,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         if missing_assets:
             logger.info(f"Missing asset Failure log was {output_list}")
-        assert not missing_assets, f"Following assets were not found in cache: {missing_assets} found was {found_assets}"
+        assert not missing_assets, f"Following assets were not found in cache: {missing_assets}, found was: {found_assets}"
 
     @pytest.mark.test_case_id("C1568831")
     @pytest.mark.BAT
@@ -519,7 +519,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Add assets to test asset directory
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C1591338")
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working Prefab"))
 
         # Run batch to ensure everything is processed
         assert asset_processor.batch_process(), "First AP Batch failed"

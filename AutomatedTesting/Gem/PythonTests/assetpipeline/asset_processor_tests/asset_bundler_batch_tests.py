@@ -1130,7 +1130,6 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         assets_in_list = []
         for rel_path in bundler_batch_helper.get_asset_relative_paths(bundler_batch_helper["asset_info_file_result"]):
             assets_in_list.append(rel_path)
-        print(assets_in_list)
         assert sorted(assets_in_list) == sorted(expected_assets)
 
     @pytest.mark.BAT
