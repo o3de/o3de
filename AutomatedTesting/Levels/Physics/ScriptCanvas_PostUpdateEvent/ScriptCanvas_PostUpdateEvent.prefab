@@ -1,0 +1,240 @@
+{
+    "ContainerEntity": {
+        "Id": "Entity_[1146574390643]",
+        "Name": "Level",
+        "Components": {
+            "Component_[10641544592923449938]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 10641544592923449938
+            },
+            "Component_[12039882709170782873]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 12039882709170782873
+            },
+            "Component_[12265484671603697631]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 12265484671603697631
+            },
+            "Component_[14126657869720434043]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 14126657869720434043,
+                "Child Entity Order": [
+                    "Entity_[969297965450]",
+                    "Entity_[973592932746]"
+                ]
+            },
+            "Component_[15230859088967841193]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 15230859088967841193,
+                "Parent Entity": ""
+            },
+            "Component_[16239496886950819870]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 16239496886950819870
+            },
+            "Component_[5688118765544765547]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 5688118765544765547
+            },
+            "Component_[6545738857812235305]": {
+                "$type": "SelectionComponent",
+                "Id": 6545738857812235305
+            },
+            "Component_[7247035804068349658]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 7247035804068349658
+            },
+            "Component_[9307224322037797205]": {
+                "$type": "EditorLockComponent",
+                "Id": 9307224322037797205
+            },
+            "Component_[9562516168917670048]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 9562516168917670048
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[969297965450]": {
+            "Id": "Entity_[969297965450]",
+            "Name": "Lead_Sphere",
+            "Components": {
+                "Component_[12712793014287220392]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 12712793014287220392
+                },
+                "Component_[13231168833432235782]": {
+                    "$type": "EditorRigidBodyComponent",
+                    "Id": 13231168833432235782,
+                    "Configuration": {
+                        "entityId": "",
+                        "Linear damping": 0.0,
+                        "Gravity Enabled": false,
+                        "Compute Mass": false
+                    }
+                },
+                "Component_[13252193963584068783]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 13252193963584068783
+                },
+                "Component_[14814573360207435792]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 14814573360207435792
+                },
+                "Component_[16997249421938993362]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 16997249421938993362
+                },
+                "Component_[18401341483983526770]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 18401341483983526770
+                },
+                "Component_[4897616874725719806]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 4897616874725719806
+                },
+                "Component_[6620600305357938420]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 6620600305357938420
+                },
+                "Component_[6647541631061438635]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 6647541631061438635,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            529.0,
+                            460.0,
+                            42.0
+                        ]
+                    }
+                },
+                "Component_[7126349824805243966]": {
+                    "$type": "EditorSphereShapeComponent",
+                    "Id": 7126349824805243966,
+                    "GameView": true
+                },
+                "Component_[7704879150226989773]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 7704879150226989773
+                },
+                "Component_[9071669203854533498]": {
+                    "$type": "SelectionComponent",
+                    "Id": 9071669203854533498
+                }
+            }
+        },
+        "Entity_[973592932746]": {
+            "Id": "Entity_[973592932746]",
+            "Name": "Follow_Sphere",
+            "Components": {
+                "Component_[1129481991506289922]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 1129481991506289922,
+                    "m_name": "ScriptCanvas_PostUpdateEvent.scriptcanvas",
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "id": "{A84C14B8-00DA-5994-B308-C3E948EA846B}",
+                            "path": "D:/ly/o3de/o3de/AutomatedTesting/ScriptCanvas/ScriptCanvas_PostUpdateEvent.scriptcanvas"
+                        },
+                        "entityId": [
+                            [
+                                {
+                                    "m_id": "{4CEA838B-EE90-4F05-9CE2-C54EA6C54FA8}"
+                                },
+                                ""
+                            ]
+                        ],
+                        "overrides": [
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[969297965450]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{4CEA838B-EE90-4F05-9CE2-C54EA6C54FA8}"
+                                },
+                                "VariableName": "Lead Sphere",
+                                "InitialValueSource": 1
+                            }
+                        ]
+                    },
+                    "sourceHandle": {
+                        "id": "{A84C14B8-00DA-5994-B308-C3E948EA846B}",
+                        "path": "D:/ly/o3de/o3de/AutomatedTesting/ScriptCanvas/ScriptCanvas_PostUpdateEvent.scriptcanvas"
+                    }
+                },
+                "Component_[12282476815327995373]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 12282476815327995373,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            528.0,
+                            460.0,
+                            42.0
+                        ]
+                    }
+                },
+                "Component_[12906906859149425887]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 12906906859149425887
+                },
+                "Component_[15361150477821403458]": {
+                    "$type": "EditorRigidBodyComponent",
+                    "Id": 15361150477821403458,
+                    "Configuration": {
+                        "entityId": "",
+                        "Gravity Enabled": false,
+                        "Kinematic": true,
+                        "Compute Mass": false
+                    }
+                },
+                "Component_[16388917638416433886]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 16388917638416433886
+                },
+                "Component_[17824703237167591012]": {
+                    "$type": "EditorSphereShapeComponent",
+                    "Id": 17824703237167591012,
+                    "GameView": true
+                },
+                "Component_[3246019315218433048]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 3246019315218433048
+                },
+                "Component_[4390648539804949728]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 4390648539804949728
+                },
+                "Component_[4670916952415585010]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 4670916952415585010
+                },
+                "Component_[5061958235770555232]": {
+                    "$type": "SelectionComponent",
+                    "Id": 5061958235770555232
+                },
+                "Component_[656536248461967112]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 656536248461967112
+                },
+                "Component_[7510308375602977118]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 7510308375602977118
+                },
+                "Component_[8387384911416634895]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 8387384911416634895
+                }
+            }
+        }
+    }
+}
