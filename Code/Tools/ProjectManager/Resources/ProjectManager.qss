@@ -459,30 +459,60 @@ QTabBar::tab:focus {
     qproperty-indent: 0;
 }
 
-#labelButton QLabel {
-    background-color: rgba(0,0,0,0.70);
-    border-radius: 5px;
-}
-
 #labelButton QPushButton {
     min-width:140px;
     max-width:140px;
-    min-height:26px;
-    max-height:26px;
-}
-
-#projectWarningOverlay {
-    min-width:120px;
-    max-width:120px;
-    min-height:48px;
-    max-height:48px;
-}
-
-#projectWarningIconOverlay {
-    min-width:24px;
-    max-width:24px;
     min-height:24px;
     max-height:24px;
+}
+
+#labelButton QPushButton {
+    qproperty-flat: true;
+    border-radius: 3px;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+}
+#labelButton QPushButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+#labelButton QPushButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#labelButton #openEditorButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0095f2, stop: 1.0 #1e70eb);
+}
+#labelButton #openEditorButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #10A5f2, stop: 1.0 #2e80eb);
+}
+#labelButton #openEditorButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0085e2, stop: 1.0 #0e60db);
+}
+
+#labelButton #projectActionCancelButton{
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #E32C27, stop: 1.0 #951D21);
+}
+#labelButton #projectActionCancelButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+}
+#labelButton #projectActionCancelButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #951D1F, stop: 1.0 #C92724);
+}
+
+#labelButtonOverlay {
+    background-color: rgba(0,0,0,0.7);
+    min-width:208px;
+    max-width:208px;;
+    min-height:278px;
+    max-height:278px;
 }
 
 #projectMessageOverlay, #projectSubMessageOverlay {

@@ -38,17 +38,27 @@ namespace O3DE::ProjectManager
     {
         // Space for content excluding borders
         constexpr int contentSpaceWidth = ProjectPreviewImageWidth - 2;
+
         // The height of a third of the button split into 3 sections, top, middle and bottom
         constexpr int threeWaySplitHeight = (ProjectPreviewImageHeight - 2) / 3;
 
         setObjectName("labelButton");
 
+        // Use GridLayout so widgets can be overlapped
+        QGridLayout* overlayLayout = new QGridLayout();
+        overlayLayout->setContentsMargins(0, 0, 0, 0);
+        overlayLayout->setSpacing(0);
+        setLayout(overlayLayout);
+
+        m_darkenOverlay = new QLabel(this);
+        m_darkenOverlay->setObjectName("labelButtonOverlay");
+        m_darkenOverlay->setVisible(true);
+        overlayLayout->addWidget(m_darkenOverlay, 0, 0);
+
         m_projectOverlayLayout = new QVBoxLayout();
         m_projectOverlayLayout->setContentsMargins(0, 0, 0, 0);
         m_projectOverlayLayout->setSpacing(0);
         m_projectOverlayLayout->setAlignment(Qt::AlignCenter);
-
-        setLayout(m_projectOverlayLayout);
 
         // Split the button into 3 fixed size sections so content alignment is easier to manage
         // If widgets in other sections are shown or hidden it will not offset alignment in other sections
@@ -65,27 +75,20 @@ namespace O3DE::ProjectManager
         QHBoxLayout* horizontalWarningMessageLayout = new QHBoxLayout();
         horizontalWarningMessageLayout->setContentsMargins(0, 0, 0, 0);
         horizontalWarningMessageLayout->setSpacing(0);
-        horizontalWarningMessageLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+        horizontalWarningMessageLayout->setAlignment(Qt::AlignRight | Qt::AlignTop);
+
+        m_warningSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        horizontalWarningMessageLayout->addSpacerItem(m_warningSpacer);
 
         horizontalWarningMessageLayout->addSpacing(10);
         m_warningIcon = new QLabel(this);
         m_warningIcon->setObjectName("projectWarningIconOverlay");
-        m_warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(20, 20));
+        m_warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(32, 32));
         m_warningIcon->setAlignment(Qt::AlignCenter);
         m_warningIcon->setVisible(false);
         horizontalWarningMessageLayout->addWidget(m_warningIcon);
 
-        horizontalWarningMessageLayout->addSpacing(10);
-
-        m_warningText = new QLabel("", this);
-        m_warningText->setObjectName("projectWarningOverlay");
-        m_warningText->setWordWrap(true);
-        m_warningText->setAlignment(Qt::AlignCenter);
-        m_warningText->setVisible(false);
-        horizontalWarningMessageLayout->addWidget(m_warningText);
-
-        m_warningSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
-        horizontalWarningMessageLayout->addSpacerItem(m_warningSpacer);
+        horizontalWarningMessageLayout->addSpacing(15);
 
         verticalMessageLayout->addLayout(horizontalWarningMessageLayout);
 
@@ -128,7 +131,7 @@ namespace O3DE::ProjectManager
 
         QVBoxLayout* verticalButtonLayout = new QVBoxLayout();
         verticalButtonLayout->setContentsMargins(0, 0, 0, 0);
-        verticalButtonLayout->setSpacing(0);
+        verticalButtonLayout->setSpacing(5);
         verticalButtonLayout->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
         bottomWidget->setLayout(verticalButtonLayout);
 
@@ -143,6 +146,13 @@ namespace O3DE::ProjectManager
         m_actionButton->setVisible(false);
         verticalButtonLayout->addWidget(m_actionButton);
 
+        // This button has seperate styling with a red button instead of a blue button as for m_actionButton
+        // Seperate buttons are used to avoid stutter from reloading style after changing object name
+        m_actionCancelButton = new QPushButton(tr("Cancel Project Action"), this);
+        m_actionCancelButton->setObjectName("projectActionCancelButton");
+        m_actionCancelButton->setVisible(false);
+        verticalButtonLayout->addWidget(m_actionCancelButton);
+
         m_showLogsButton = new QPushButton(tr("Show logs"), this);
         m_showLogsButton->setObjectName("projectShowLogsButton");
         m_showLogsButton->setVisible(false);
@@ -151,6 +161,8 @@ namespace O3DE::ProjectManager
         verticalButtonLayout->addSpacing(20);
 
         m_projectOverlayLayout->addWidget(bottomWidget);
+
+        overlayLayout->addLayout(m_projectOverlayLayout, 0, 0);
     }
 
     void LabelButton::mousePressEvent(QMouseEvent* event)
@@ -166,11 +178,6 @@ namespace O3DE::ProjectManager
     QLabel* LabelButton::GetSubMessageLabel()
     {
         return m_subMessageLabel;
-    }
-
-    QLabel* LabelButton::GetWarningLabel()
-    {
-        return m_warningText;
     }
 
     QLabel* LabelButton::GetWarningIcon()
@@ -198,9 +205,19 @@ namespace O3DE::ProjectManager
         return m_actionButton;
     }
 
+    QPushButton* LabelButton::GetActionCancelButton()
+    {
+        return m_actionCancelButton;
+    }
+
     QPushButton* LabelButton::GetShowLogsButton()
-    {;
+    {
         return m_showLogsButton;
+    }
+
+    QLabel* LabelButton::GetDarkenOverlay()
+    {
+        return m_darkenOverlay;
     }
 
 
@@ -400,15 +417,28 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
     {
-        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
-        if (!m_actionButtonConnection)
+        QPushButton* projectActionButton;
+        QPushButton* projectOtherActionButton;
+
+        if (text.contains("Cancel", Qt::CaseInsensitive))
         {
-            projectActionButton->setVisible(true);
+            // Use red button is action involves cancelling
+            projectActionButton = m_projectImageLabel->GetActionCancelButton();
+            projectOtherActionButton = m_projectImageLabel->GetActionButton();
         }
         else
         {
+            projectActionButton = m_projectImageLabel->GetActionButton();
+            projectOtherActionButton = m_projectImageLabel->GetActionCancelButton();
+        }
+
+        if (m_actionButtonConnection)
+        {
             disconnect(m_actionButtonConnection);
         }
+
+        projectActionButton->setVisible(true);
+        projectOtherActionButton->setVisible(false);
 
         projectActionButton->setText(text);
         projectActionButton->setMenu(nullptr);
@@ -477,6 +507,9 @@ namespace O3DE::ProjectManager
 
         submessageLabel->setText(submessage);
 
+        // Darken background if there is a message to make it easier to read
+        m_projectImageLabel->GetDarkenOverlay()->setVisible(showMessage || showSubmessage);
+
         messageLabel->setVisible(showMessage || showSubmessage);
         submessageLabel->setVisible(showSubmessage);
     }
@@ -484,14 +517,13 @@ namespace O3DE::ProjectManager
     void ProjectButton::ShowWarning(const QString& warning)
     {
         bool show = !warning.isEmpty();
-        QLabel* warningLabel = m_projectImageLabel->GetWarningLabel();
+        QLabel* warningIcon = m_projectImageLabel->GetWarningIcon();
 
         if (show)
         {
             // Hide any message text, we cannot show the warning and a message at the same time
             ShowMessage();
 
-            warningLabel->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
             m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
         }
         else
@@ -499,10 +531,8 @@ namespace O3DE::ProjectManager
             m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
 
-        warningLabel->setText(warning);
-
-        warningLabel->setVisible(show);
-        m_projectImageLabel->GetWarningIcon()->setVisible(show);
+        warningIcon->setToolTip(warning);
+        warningIcon->setVisible(show);
     }
 
     void ProjectButton::SetLaunchingEnabled(bool enabled)
@@ -533,6 +563,7 @@ namespace O3DE::ProjectManager
         ShowWarning();
 
         m_projectImageLabel->GetActionButton()->hide();
+        m_projectImageLabel->GetActionCancelButton()->hide();
         m_projectImageLabel->GetShowLogsButton()->hide();
     }
 

@@ -39,14 +39,14 @@ namespace O3DE::ProjectManager
 
         QLabel* GetMessageLabel();
         QLabel* GetSubMessageLabel();
-        QLabel* GetWarningLabel();
         QLabel* GetWarningIcon();
         QSpacerItem* GetWarningSpacer();
         QLabel* GetBuildingAnimationLabel();
         QPushButton* GetOpenEditorButton();
         QPushButton* GetActionButton();
+        QPushButton* GetActionCancelButton();
         QPushButton* GetShowLogsButton();
-        QLayout* GetBuildOverlayLayout();
+        QLabel* GetDarkenOverlay();
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
@@ -57,10 +57,11 @@ namespace O3DE::ProjectManager
     private:
         QVBoxLayout* m_projectOverlayLayout = nullptr;
 
+        QLabel* m_darkenOverlay = nullptr;
+
         QLabel* m_messageLabel = nullptr;
         QLabel* m_subMessageLabel = nullptr;
 
-        QLabel* m_warningText = nullptr;
         QLabel* m_warningIcon = nullptr;
         QSpacerItem* m_warningSpacer = nullptr;
 
@@ -68,6 +69,7 @@ namespace O3DE::ProjectManager
 
         QPushButton* m_openEditorButton = nullptr;
         QPushButton* m_actionButton = nullptr;
+        QPushButton* m_actionCancelButton = nullptr;
         QPushButton* m_showLogsButton = nullptr;
     };
 
