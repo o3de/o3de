@@ -389,7 +389,7 @@ namespace O3DE::ProjectManager
 
         SetProjectBuilding(false);
 
-        ShowWarning(tr("Building project required"));
+        ShowWarning(tr("Project Build required."));
     }
 
     void ProjectButton::ShowBuildingState()
@@ -400,7 +400,6 @@ namespace O3DE::ProjectManager
         SetProjectBuilding(true);
 
         ShowMessage(tr("Building Project..."));
-        m_projectImageLabel->GetActionButton()->setObjectName("projectBuildCancelButton");
     }
 
     void ProjectButton::ShowBuildFailedState()
