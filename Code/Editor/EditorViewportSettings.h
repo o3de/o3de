@@ -51,6 +51,9 @@ namespace SandboxEditor
     SANDBOX_API bool ShowingGrid();
     SANDBOX_API void SetShowingGrid(bool showing);
 
+    SANDBOX_API bool ManipulatorMouseWrap();
+    SANDBOX_API void SetManipulatorMouseWrap(bool enabled);
+
     SANDBOX_API bool StickySelectEnabled();
     SANDBOX_API void SetStickySelectEnabled(bool enabled);
 
