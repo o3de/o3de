@@ -11,6 +11,7 @@
 #include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
 
 namespace PhysX
 {
@@ -18,6 +19,7 @@ namespace PhysX
     class ColliderCapsuleMode
         : public PhysXSubComponentModeBase
         , private AzFramework::EntityDebugDisplayEventBus::Handler
+        , private AzToolsFramework::CapsuleViewportEdit
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -28,28 +30,21 @@ namespace PhysX
         void Teardown(const AZ::EntityComponentIdPair& idPair) override;
         void ResetValues(const AZ::EntityComponentIdPair& idPair) override;
 
+        // CapsuleViewportEdit ...
+        const AZ::Transform GetCapsuleWorldTransform() const override;
+        const AZ::Transform GetCapsuleLocalTransform() const override;
+        const AZ::Vector3 GetCapsuleNonUniformScale() const override;
+        const float GetCapsuleRadius() const override;
+        const float GetCapsuleHeight() const override;
+        const void SetCapsuleRadius(float radius) override;
+        const void SetCapsuleHeight(float height) override;
+
     private:
         // AzFramework::EntityDebugDisplayEventBus ...
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        void SetupRadiusManipulator(
-            const AZ::EntityComponentIdPair& idPair,
-            const AZ::Transform& worldTransform,
-            const AZ::Transform& localTransform,
-            const AZ::Vector3& nonUniformScale);
-        void SetupHeightManipulator(
-            const AZ::EntityComponentIdPair& idPair,
-            const AZ::Transform& worldTransform,
-            const AZ::Transform& localTransform,
-            const AZ::Vector3& nonUniformScale);
-        void OnRadiusManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
-        void OnHeightManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
-        void AdjustRadiusManipulator(const AZ::EntityComponentIdPair& idPair, const float capsuleHeight);
-        void AdjustHeightManipulator(const AZ::EntityComponentIdPair& idPair, const float capsuleRadius);
-
-        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_radiusManipulator;
-        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_heightManipulator;
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
     };
 } //namespace PhysX
