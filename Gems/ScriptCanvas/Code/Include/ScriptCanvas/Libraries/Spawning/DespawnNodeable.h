@@ -14,20 +14,20 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h>
-#include <Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.generated.h>
+#include <Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
-    //! Node for spawning entities
-    class SpawnNodeable
+    //! Node for despawning entities
+    class DespawnNodeable
         : public ScriptCanvas::Nodeable
         , public AZ::TickBus::Handler
     {
-        SCRIPTCANVAS_NODE(SpawnNodeable);
+        SCRIPTCANVAS_NODE(DespawnNodeable);
     public:
-        SpawnNodeable() = default;
-        SpawnNodeable(const SpawnNodeable&) = delete;
-        SpawnNodeable& operator=(const SpawnNodeable&) = delete;
+        DespawnNodeable() = default;
+        DespawnNodeable(const DespawnNodeable&) = delete;
+        DespawnNodeable& operator=(const DespawnNodeable&) = delete;
 
         // ScriptCanvas::Nodeable  overrides ...
         void OnInitializeExecutionState() override;
@@ -37,13 +37,7 @@ namespace ScriptCanvas::Nodeables::Spawning
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
         
     private:
-        struct SpawnableResult
-        {
-            AZStd::vector<Data::EntityIDType> m_entityList;
-            SpawnTicketInstance m_spawnTicket;
-        };
-        
-        AZStd::vector<SpawnableResult> m_completionResults;
+        AZStd::vector<SpawnTicketInstance> m_despawnedTicketList;
         AZStd::recursive_mutex m_mutex;
     };
 }
