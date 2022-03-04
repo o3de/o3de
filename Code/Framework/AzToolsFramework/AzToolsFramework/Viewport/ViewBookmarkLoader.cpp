@@ -11,12 +11,16 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
+#include <Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <Prefab/PrefabSystemComponentInterface.h>
 #include <Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/ViewBookmarkLoader.h>
 
 namespace AzToolsFramework
 {
     static constexpr const char* s_viewBookmarksRegistryPath = "/O3DE/ViewBookmarks/";
+    static constexpr const char* s_localBookmarksKey = "LocalBookmarks";
+    static constexpr const char* s_lastKnownLocationKey = "LastKnownLocation";
 
     void ViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
     {
@@ -135,7 +139,7 @@ namespace AzToolsFramework
                 AZStd::optional<AZStd::string_view> dataType = AZ::StringFunc::TokenizeLast(path, "/");
                 AZStd::optional<AZStd::string_view> bookmarkIndexStr = AZ::StringFunc::TokenizeLast(path, "/");
                 AZStd::optional<AZStd::string_view> bookmarkType;
-                if (bookmarkIndexStr == "LastKnownLocation")
+                if (bookmarkIndexStr == s_lastKnownLocationKey)
                 {
                     bookmarkType = bookmarkIndexStr;
                 }
@@ -164,7 +168,7 @@ namespace AzToolsFramework
                         }
                     };
 
-                    if (bookmarkType == "LastKnownLocation")
+                    if (bookmarkType == s_lastKnownLocationKey)
                     {
                         int currentIndex = stoi(AZStd::string(valueIndex));
                         if (dataType == "Position")
@@ -176,7 +180,7 @@ namespace AzToolsFramework
                             setVec3(m_lastKnownLocation.m_rotation, currentIndex);
                         }
                     }
-                    else if (bookmarkType == "LocalBookmarks")
+                    else if (bookmarkType == s_localBookmarksKey)
                     {
                         auto existingBookmarkEntry = m_bookmarkMap.find(localBookmarksID.value());
                         if (existingBookmarkEntry != m_bookmarkMap.end())
@@ -223,7 +227,8 @@ namespace AzToolsFramework
                 auto registry = AZ::SettingsRegistry::Get();
                 if (registry == nullptr)
                 {
-                    AZ_Warning("ViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
+                    AZ_Warning(
+                        "ViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
                     return false;
                 }
 
@@ -300,27 +305,30 @@ namespace AzToolsFramework
 
     AZStd::string ViewBookmarkLoader::GenerateBookmarkFileName() const
     {
-        AZ::EntityId levelEntityId;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            levelEntityId, &AzToolsFramework::ToolsApplicationRequests::GetCurrentLevelEntityId);
+        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
+        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
 
-        if (levelEntityId.IsValid())
+        if (rootPrefabTemplateId != AzToolsFramework::Prefab::InvalidTemplateId)
         {
-            AZ::Entity* levelEntity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(levelEntity, &AZ::ComponentApplicationBus::Events::FindEntity, levelEntityId);
-            if (levelEntity)
-            {
-                // To generate the file name in which we will store the view Bookmarks we use the name of the level + the timestamp
-                // e.g. LevelName1639763579377.setreg
-                AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-                AZStd::string sTime = AZStd::string::format("%llu", now.time_since_epoch().count());
+            auto* prefabSystemComponent = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+            AZ_Assert(
+                prefabSystemComponent != nullptr,
+                "Prefab System Component Interface could not be found. "
+                "It is a requirement for the ViewBookmarkLoader class. "
+                "Check that it is being correctly initialized.");
+            auto prefabTemplate = prefabSystemComponent->FindTemplate(rootPrefabTemplateId);
+            AZStd::string prefabTemplateName = prefabTemplate->get().GetFilePath().Filename().Stem().Native();
+            // To generate the file name in which we will store the view Bookmarks we use the name of the prefab + the timestamp
+            // e.g. LevelName1639763579377.setreg
+            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+            AZStd::string sTime = AZStd::string::format("%llu", now.time_since_epoch().count());
 
-                return levelEntity->GetName() + sTime + ".setreg";
-            }
+            return prefabTemplateName.data() + sTime + ".setreg";
         }
-
         return AZStd::string();
     }
+
     bool ViewBookmarkLoader::SaveSharedBookmark(ViewBookmark& bookmark)
     {
         if (SharedViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<SharedViewBookmarkComponent>())

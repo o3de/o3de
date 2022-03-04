@@ -29,7 +29,7 @@ namespace AzToolsFramework
         };
 
         virtual bool SaveBookmark(ViewBookmark bookmark, const StorageMode mode) = 0;
-        virtual bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) = 0;
+        virtual bool SaveLastKnownLocationInLevel(ViewBookmark bookmark) = 0;
         virtual bool LoadViewBookmarks() = 0;
         virtual ViewBookmark GetBookmarkAtIndex(int index) const = 0;
         virtual ViewBookmark GetLastKnownLocationInLevel() const = 0;
