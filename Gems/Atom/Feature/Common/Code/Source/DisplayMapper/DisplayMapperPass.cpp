@@ -82,9 +82,9 @@ namespace AZ
         {
             // [GFX TODO] [ATOM-2450] Logic determine the type of display attached and use it to drive the
             // display mapper parameters.
-            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->m_attachment)
+            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->GetAttachment())
             {
-                m_displayBufferFormat = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+                m_displayBufferFormat = m_swapChainAttachmentBinding->GetAttachment()->GetTransientImageDescriptor().m_imageDescriptor.m_format;
             }
 
             if (m_displayBufferFormat != RHI::Format::Unknown)

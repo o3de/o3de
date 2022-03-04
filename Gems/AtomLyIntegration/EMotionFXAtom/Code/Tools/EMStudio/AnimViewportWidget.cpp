@@ -241,7 +241,6 @@ namespace EMStudio
         CalculateCameraProjection();
         RenderCustomPluginData();
         FollowCharacter();
-        m_renderer->UpdateGroundplane();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
@@ -278,6 +277,8 @@ namespace EMStudio
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
                 m_renderer->GetCharacterCenter());
+
+            m_renderer->UpdateGroundplane();
         }
     }
 
@@ -366,12 +367,15 @@ namespace EMStudio
                 });
         }
 
-        QAction* resetAction = menu->addAction("Reset Character");
-        connect(resetAction, &QAction::triggered, this, [this]()
-            {
-                m_renderer->Reinit();
-                UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
-            });
+        if (m_renderer && m_renderer->GetEntityId() != AZ::EntityId())
+        {
+            QAction* resetAction = menu->addAction("Move Character to Origin");
+            connect(resetAction, &QAction::triggered, this, [this]()
+                {
+                    m_renderer->MoveActorEntitiesToOrigin();
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
+                });
+        }
 
         if (!menu->isEmpty())
         {

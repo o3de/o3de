@@ -117,6 +117,19 @@ namespace AZ
                     ->Constructor<const EditorMaterialComponentSlot&>()
                     ->Property("id", BehaviorValueProperty(&EditorMaterialComponentSlot::m_id))
                     ->Property("materialAsset", BehaviorValueProperty(&EditorMaterialComponentSlot::m_materialAsset))
+                    ->Method("GetPreviewPixmapData", &EditorMaterialComponentSlot::GetPreviewPixmapData)
+                    ->Method("GetActiveAssetId", &EditorMaterialComponentSlot::GetActiveAssetId)
+                    ->Method("GetDefaultAssetId", &EditorMaterialComponentSlot::GetDefaultAssetId)
+                    ->Method("GetLabel", &EditorMaterialComponentSlot::GetLabel)
+                    ->Method("HasSourceData", &EditorMaterialComponentSlot::HasSourceData)
+                    ->Method("SetAssetId", static_cast<void (EditorMaterialComponentSlot::*)(const Data::AssetId&)>(&EditorMaterialComponentSlot::SetAsset))
+                    ->Method("SetAsset", static_cast<void (EditorMaterialComponentSlot::*)(const Data::Asset<RPI::MaterialAsset>&)>(&EditorMaterialComponentSlot::SetAsset))
+                    ->Method("Clear", &EditorMaterialComponentSlot::Clear)
+                    ->Method("ClearOverrides", &EditorMaterialComponentSlot::ClearOverrides)
+                    ->Method("OpenMaterialExporter", &EditorMaterialComponentSlot::OpenMaterialExporter)
+                    ->Method("OpenMaterialEditor", &EditorMaterialComponentSlot::OpenMaterialEditor)
+                    ->Method("OpenMaterialInspector", &EditorMaterialComponentSlot::OpenMaterialInspector)
+                    ->Method("OpenUvNameMapInspector", &EditorMaterialComponentSlot::OpenUvNameMapInspector)
                     ;
             }
         };
