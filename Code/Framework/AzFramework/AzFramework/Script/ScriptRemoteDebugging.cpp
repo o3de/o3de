@@ -695,12 +695,12 @@ namespace AzFramework
         // Check if our debugger is still around
         if (m_executionState != SDA_STATE_DETACHED)
         {
-            //bool debuggerOnline = false;
-            //EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline, m_debugger.GetNetworkId());
-            //if (!debuggerOnline)
-            //{
-            //    m_executionState = SDA_STATE_DETACHING;
-            //}
+            bool debuggerOnline = false;
+            EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline);
+            if (!debuggerOnline)
+            {
+                m_executionState = SDA_STATE_DETACHING;
+            }
         }
     }
     //-------------------------------------------------------------------------
