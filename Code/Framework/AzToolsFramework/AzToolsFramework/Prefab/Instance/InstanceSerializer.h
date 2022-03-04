@@ -45,10 +45,6 @@ namespace AzToolsFramework
                 Instance* instance,
                 PrefabDom patches,
                 AZ::JsonSerializationResult::ResultCode& result);
-
-            //! Adds the entities of an instance to a InstanceEntityScrubber object in the metadata of JsonDeserializerContext
-            //! so that they can be scrubbed later.
-            void AddEntitiesToScrub(AZStd::vector<AZ::Entity*> entitiesModified, AZ::JsonDeserializerContext& jsonDeserializercontext);
         };
     }
 }

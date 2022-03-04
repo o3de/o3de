@@ -67,6 +67,16 @@ namespace AzToolsFramework
                     }
                 }
             }
+
+            static void AddEntitiesToScrub(
+                const AZStd::span<AZ::Entity*>& entitiesModified, AZ::JsonDeserializerContext& jsonDeserializerContext)
+            {
+                InstanceEntityScrubber* instanceEntityScrubber = jsonDeserializerContext.GetMetadata().Find<InstanceEntityScrubber>();
+                if (instanceEntityScrubber)
+                {
+                    instanceEntityScrubber->AddEntitiesToScrub(entitiesModified);
+                }
+            }
         }
 
         AZ::JsonSerializationResult::Result JsonInstanceSerializer::Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
@@ -245,7 +255,8 @@ namespace AzToolsFramework
 
                     if (instance->m_containerEntity && instance->m_containerEntity->GetId().IsValid())
                     {
-                        AddEntitiesToScrub(EntityList{ instance->m_containerEntity.get() }, context);
+                        EntityList containerEntity{ instance->m_containerEntity.get() };
+                        Internal::AddEntitiesToScrub(containerEntity, context);
                     }
                 }
 
@@ -264,7 +275,7 @@ namespace AzToolsFramework
                     }
                     
                     result.Combine(entitiesResult);
-                    AddEntitiesToScrub(AZStd::move(entitiesLoaded), context);
+                    Internal::AddEntitiesToScrub(entitiesLoaded, context);
                 }
             }
             else
@@ -323,7 +334,8 @@ namespace AzToolsFramework
                         context);
 
                     result.Combine(containerEntityResult);
-                    AddEntitiesToScrub(EntityList{ instance->m_containerEntity.get() }, context);
+                    EntityList containerEntity{ instance->m_containerEntity.get() };
+                    Internal::AddEntitiesToScrub(containerEntity, context);
                 }
             }
 
@@ -350,19 +362,9 @@ namespace AzToolsFramework
                         instance->m_entities.emplace(entityAlias, AZStd::move(entity));
                     }
 
-                    AddEntitiesToScrub(AZStd::move(entitiesLoaded), context);
+                    Internal::AddEntitiesToScrub(entitiesLoaded, context);
                 }
             }
         }
-
-        void JsonInstanceSerializer::AddEntitiesToScrub(EntityList entitiesModified, AZ::JsonDeserializerContext& jsonDeserializerContext)
-        {
-            InstanceEntityScrubber* instanceEntityScrubber = jsonDeserializerContext.GetMetadata().Find<InstanceEntityScrubber>();
-            if (instanceEntityScrubber)
-            {
-                instanceEntityScrubber->AddEntitiesToScrub(entitiesModified);
-            }
-        }
-
     } // namespace Prefab
 } // namespace AzToolsFramework
