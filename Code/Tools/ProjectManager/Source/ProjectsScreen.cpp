@@ -283,7 +283,7 @@ namespace O3DE::ProjectManager
                     if (projectButtonIter != m_projectButtons.end())
                     {
                         currentButton = projectButtonIter.value();
-                        currentButton->SetState(ProjectButton::ProjectState::ReadyToLaunch);
+                        currentButton->SetState(ProjectButtonState::ReadyToLaunch);
                     }
                 }
 
@@ -297,7 +297,7 @@ namespace O3DE::ProjectManager
 
                     if (!projectBuiltSuccessfully)
                     {
-                        currentButton->SetState(ProjectButton::ProjectState::NeedsToBuild);
+                        currentButton->SetState(ProjectButtonState::NeedsToBuild);
                     }
                 }
             }
@@ -332,11 +332,11 @@ namespace O3DE::ProjectManager
                     if (project.m_buildFailed)
                     {
                         projectIter.value()->SetBuildLogsLink(project.m_logUrl);
-                        projectIter.value()->SetState(ProjectButton::ProjectState::BuildFailed);
+                        projectIter.value()->SetState(ProjectButtonState::BuildFailed);
                     }
                     else
                     {
-                        projectIter.value()->SetState(ProjectButton::ProjectState::NeedsToBuild);
+                        projectIter.value()->SetState(ProjectButtonState::NeedsToBuild);
                     }
                 }
             }
@@ -442,7 +442,7 @@ namespace O3DE::ProjectManager
                     ProjectButton* button = qobject_cast<ProjectButton*>(sender());
                     if (button)
                     {
-                        button->SetState(ProjectButton::ProjectState::Launching);
+                        button->SetState(ProjectButtonState::Launching);
                     }
 
                     // enable the button after 3 seconds
@@ -453,7 +453,7 @@ namespace O3DE::ProjectManager
                         {
                             if (button)
                             {
-                                button->SetState(ProjectButton::ProjectState::ReadyToLaunch);
+                                button->SetState(ProjectButtonState::ReadyToLaunch);
                             }
                         });
                 }

@@ -56,7 +56,7 @@ namespace O3DE::ProjectManager
         {
             projectButton->SetProjectButtonAction(tr("Cancel"), [this] { HandleCancel(); });
             projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
-            projectButton->SetState(ProjectButton::ProjectState::Building);
+            projectButton->SetState(ProjectButtonState::Building);
 
             if (!m_lastLine.isEmpty())
             {

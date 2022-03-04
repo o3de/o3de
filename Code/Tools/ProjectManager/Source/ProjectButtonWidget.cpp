@@ -275,7 +275,7 @@ namespace O3DE::ProjectManager
         });
         connect(m_projectImageLabel->GetShowLogsButton(), &QPushButton::pressed, this, &ProjectButton::ShowLogs);
 
-        SetState(ProjectState::ReadyToLaunch);
+        SetState(ProjectButtonState::ReadyToLaunch);
     }
 
     QMenu* ProjectButton::CreateProjectMenu()
@@ -327,29 +327,29 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ShowLogs()
     {
-        QDesktopServices::openUrl(m_logUrl);
+        QDesktopServices::openUrl(m_projectInfo.m_logUrl);
     }
 
-    void ProjectButton::SetState(enum ProjectState state)
+    void ProjectButton::SetState(enum ProjectButtonState state)
     {
         m_currentState = state;
 
         switch (state)
         {
         default:
-        case ProjectState::ReadyToLaunch:
+        case ProjectButtonState::ReadyToLaunch:
             ShowReadyState();
             break;
-        case ProjectState::Launching:
+        case ProjectButtonState::Launching:
             ShowLaunchingState();
             break;
-        case ProjectState::NeedsToBuild:
+        case ProjectButtonState::NeedsToBuild:
             ShowBuildRequiredState();
             break;
-        case ProjectState::Building:
+        case ProjectButtonState::Building:
             ShowBuildingState();
             break;
-        case ProjectState::BuildFailed:
+        case ProjectButtonState::BuildFailed:
             ShowBuildFailedState();
             break;
         }
@@ -409,7 +409,7 @@ namespace O3DE::ProjectManager
         SetProjectBuilding(false);
 
         // Show, show logs button if avaliable
-        m_projectImageLabel->GetShowLogsButton()->setVisible(!m_logUrl.isEmpty());
+        m_projectImageLabel->GetShowLogsButton()->setVisible(!m_projectInfo.m_logUrl.isEmpty());
 
         ShowWarning(tr("Failed to build"));
     }
@@ -446,12 +446,12 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::SetBuildLogsLink(const QUrl& logUrl)
     {
-        m_logUrl = logUrl;
+        m_projectInfo.m_logUrl = logUrl;
     }
 
     void ProjectButton::SetContextualText(const QString& text)
     {
-        if (m_currentState == ProjectState::Building)
+        if (m_currentState == ProjectButtonState::Building)
         {
             // Don't update for empty build progress messages
             if (!text.isEmpty())
@@ -469,7 +469,6 @@ namespace O3DE::ProjectManager
     void ProjectButton::ShowBuildButton()
     {
         QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
-        projectActionButton->setObjectName("projectBuildButton");
         projectActionButton->setVisible(true);
         projectActionButton->setText(tr("Build Project"));
         disconnect(m_actionButtonConnection);

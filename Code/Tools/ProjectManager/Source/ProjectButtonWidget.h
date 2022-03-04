@@ -73,27 +73,27 @@ namespace O3DE::ProjectManager
         QPushButton* m_showLogsButton = nullptr;
     };
 
+    enum class ProjectButtonState
+    {
+        ReadyToLaunch = 0,
+        Launching,
+        NeedsToBuild,
+        Building,
+        BuildFailed
+    };
+
     class ProjectButton
         : public QFrame
     {
         Q_OBJECT
 
     public:
-        enum class ProjectState
-        {
-            ReadyToLaunch = 0,
-            Launching,
-            NeedsToBuild,
-            Building,
-            BuildFailed
-        };
-
         explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
         ~ProjectButton() = default;
 
         const ProjectInfo& GetProjectInfo() const;
 
-        void SetState(enum ProjectState state);
+        void SetState(enum ProjectButtonState state);
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
         void SetBuildLogsLink(const QUrl& logUrl);
@@ -134,7 +134,6 @@ namespace O3DE::ProjectManager
         QMenu* CreateProjectMenu();
 
         ProjectInfo m_projectInfo;
-        QUrl m_logUrl;
 
         LabelButton* m_projectImageLabel = nullptr;
         QPushButton* m_projectMenuButton = nullptr;
@@ -145,6 +144,6 @@ namespace O3DE::ProjectManager
         bool m_isProjectBuilding = false;
         bool m_canLaunch = true;
 
-        ProjectState m_currentState = ProjectState::ReadyToLaunch;
+        ProjectButtonState m_currentState = ProjectButtonState::ReadyToLaunch;
     };
 } // namespace O3DE::ProjectManager
