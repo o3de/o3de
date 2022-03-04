@@ -41,11 +41,10 @@ namespace AzToolsFramework
                         if (patchPath.starts_with(PathStartingWithEntities))
                         {
                             patchPath.remove_prefix(PathStartingWithEntities.size());
-                            AZStd::size_t pathSepartorIndex = patchPath.find('/');
-                            if (pathSepartorIndex != AZStd::string::npos)
+                            AZStd::size_t pathSeparatorIndex = patchPath.find('/');
+                            if (pathSeparatorIndex != AZStd::string::npos)
                             {
-                                AZStd::string entityAlias = patchPath.substr(0, pathSepartorIndex);
-                                entitiesToReload.emplace(AZStd::move(entityAlias));
+                                entitiesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
                             }
                             else
                             {
