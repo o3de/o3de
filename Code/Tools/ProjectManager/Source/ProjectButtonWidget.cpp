@@ -389,7 +389,7 @@ namespace O3DE::ProjectManager
 
         SetProjectBuilding(false);
 
-        ShowWarning(tr("Project Build required."));
+        ShowWarning(tr("Project build required."));
     }
 
     void ProjectButton::ShowBuildingState()
