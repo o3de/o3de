@@ -21,7 +21,7 @@
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 namespace Terrain
 {
@@ -138,15 +138,23 @@ namespace Terrain
         return false;
     }
 
-    void TerrainPhysicsColliderComponent::NotifyListenersOfHeightfieldDataChange()
+    void TerrainPhysicsColliderComponent::NotifyListenersOfHeightfieldDataChange(const AZ::Aabb* dirtyRegion,
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* heightfieldChangeMask)
     {
         AZ::Aabb worldSize = AZ::Aabb::CreateNull();
 
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+        if (dirtyRegion)
+        {
+            worldSize = *dirtyRegion;
+        }
+        else
+        {
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+        }
 
         Physics::HeightfieldProviderNotificationBus::Broadcast(
-            &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, worldSize);
+            &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, worldSize, heightfieldChangeMask);
     }
 
     void TerrainPhysicsColliderComponent::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
@@ -172,9 +180,11 @@ namespace Terrain
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataChanged(
-        [[maybe_unused]] const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
+        const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
-        NotifyListenersOfHeightfieldDataChange();
+        [[maybe_unused]] Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask;
+
+        NotifyListenersOfHeightfieldDataChange(&dirtyRegion, &physicsMask);
     }
 
     AZ::Aabb TerrainPhysicsColliderComponent::GetHeightfieldAabb() const
@@ -184,6 +194,11 @@ namespace Terrain
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             worldSize, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
+        return GetRegionClampedToGrid(worldSize);
+    }
+
+    AZ::Aabb TerrainPhysicsColliderComponent::GetRegionClampedToGrid(const AZ::Aabb& region) const
+    {
         auto vector2Floor = [](const AZ::Vector2& in)
         {
             return AZ::Vector2(floor(in.GetX()), floor(in.GetY()));
@@ -194,8 +209,8 @@ namespace Terrain
         };
 
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
-        const AZ::Vector3 boundsMin = worldSize.GetMin();
-        const AZ::Vector3 boundsMax = worldSize.GetMax();
+        const AZ::Vector3 boundsMin = region.GetMin();
+        const AZ::Vector3 boundsMax = region.GetMax();
 
         const AZ::Vector2 gridMinBoundLower = vector2Floor(AZ::Vector2(boundsMin) / gridResolution) * gridResolution;
         const AZ::Vector2 gridMaxBoundUpper = vector2Ceil(AZ::Vector2(boundsMax) / gridResolution) * gridResolution;
@@ -295,14 +310,41 @@ namespace Terrain
         return m_configuration.m_defaultMaterialSelection.GetMaterialId();
     }
 
-    void TerrainPhysicsColliderComponent::GenerateHeightsAndMaterialsInBounds(
-        AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const
+    void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
+        AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials, const AZ::Aabb& regionIn) const
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        AZ::Aabb region = regionIn;
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
+        if (!region.IsValid())
+        {
+            region = worldSize;
+        }
+
+        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+
+        // Clamp region to world grid
+        region = GetRegionClampedToGrid(region);
+
+        size_t xOffset = 0, yOffset = 0;
+        AZ::Aabb offsetRegion = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
+
+        if (region != worldSize)
+        {
+            const AZ::Vector3& worldSizeMin = worldSize.GetMin();
+            const float worldMaxZ = worldSize.GetMax().GetZ();
+            const AZ::Vector3& regionMin = region.GetMin();
+
+            offsetRegion = AZ::Aabb::CreateFromMinMaxValues(worldSizeMin.GetX(),worldSizeMin.GetY(),worldSizeMin.GetZ(),regionMin.GetX(), regionMin.GetY(), worldMaxZ);
+
+            AZStd::pair<size_t, size_t> numSamples;
+            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion, offsetRegion, gridResolution);
+
+            xOffset = numSamples.first;
+            yOffset = numSamples.second;
+        }
 
         const float worldCenterZ = worldSize.GetCenter().GetZ();
         const float worldHeightBoundsMin = worldSize.GetMin().GetZ();
@@ -311,13 +353,10 @@ namespace Terrain
         int32_t gridWidth, gridHeight;
         GetHeightfieldGridSize(gridWidth, gridHeight);
 
-        heightMaterials.clear();
-        heightMaterials.reserve(gridWidth * gridHeight);
-
         AZStd::vector<Physics::MaterialId> materialList = GetMaterialList();
 
-        auto perPositionCallback = [&heightMaterials, &materialList, this, worldCenterZ, worldHeightBoundsMin, worldHeightBoundsMax]
-            ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+        auto perPositionCallback = [xOffset, yOffset, &positionUpdateCounter, &heightMaterials, &materialList, this, worldCenterZ, worldHeightBoundsMin, worldHeightBoundsMax, gridWidth]
+            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             float height = surfacePoint.m_position.GetZ();
 
@@ -342,11 +381,18 @@ namespace Terrain
             point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
             Physics::MaterialId materialId = FindMaterialIdForSurfaceTag(surfaceWeight.m_surfaceType);
             point.m_materialIndex = GetMaterialIdIndex(materialId, materialList);
-            heightMaterials.emplace_back(point);
+
+            size_t lookUpIndexInVector = xOffset + xIndex + (yOffset + yIndex) * gridWidth;
+
+            AZ_Assert(lookUpIndexInVector < heightMaterials.size(), "Heightmaterial index is out of range!");
+            if (lookUpIndexInVector < heightMaterials.size())
+            {
+                heightMaterials[lookUpIndexInVector] = point;
+            }
         };
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion,
-            worldSize, gridResolution, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+            region, gridResolution, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
     }
 
     AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
@@ -414,9 +460,13 @@ namespace Terrain
 
     AZStd::vector<Physics::HeightMaterialPoint> TerrainPhysicsColliderComponent::GetHeightsAndMaterials() const
     {
-        AZStd::vector<Physics::HeightMaterialPoint> heightMaterials;
-        GenerateHeightsAndMaterialsInBounds(heightMaterials);
+        int32_t gridWidth = 0, gridHeight = 0;
+        GetHeightfieldGridSize(gridWidth, gridHeight);
+        AZ_Assert(gridWidth * gridHeight != 0, "GetHeightsAndMaterials: Invalid grid size. Size cannot be zero.");
 
-        return heightMaterials;
+        AZStd::vector<Physics::HeightMaterialPoint> heightMaterials(gridWidth * gridHeight);
+        UpdateHeightsAndMaterials(heightMaterials);
+
+        return AZStd::move(heightMaterials);
     }
 }

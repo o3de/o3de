@@ -77,7 +77,8 @@ namespace PhysX
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // Physics::HeightfieldProviderNotificationBus
-        void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion) override;
+        void OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
+            const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* changeMask) override;
 
     private:
         AZ::u32 OnConfigurationChanged();
@@ -85,7 +86,8 @@ namespace PhysX
         void ClearHeightfield();
         void InitHeightfieldShapeConfiguration();
         void InitStaticRigidBody();
-        void RefreshHeightfield();
+        void RefreshHeightfield(const AZ::Aabb& dirtyRegion = AZ::Aabb::CreateNull(), 
+            const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* changeMask = nullptr);
 
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider
         AzPhysics::SceneInterface* m_sceneInterface{ nullptr };

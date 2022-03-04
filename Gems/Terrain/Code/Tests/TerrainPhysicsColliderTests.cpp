@@ -132,7 +132,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderTransformChang
     m_entity->Activate();
 
     NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener> heightfieldListener(m_entity->GetId());
-    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_)).Times(1);
+    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_,_)).Times(1);
 
     // The component gets transform change notifications via the shape bus.
     LmbrCentral::ShapeComponentNotificationsBus::Event(
@@ -148,7 +148,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderShapeChangedNo
     m_entity->Activate();
 
     NiceMock<UnitTest::MockHeightfieldProviderNotificationBusListener> heightfieldListener(m_entity->GetId());
-    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_)).Times(1);
+    EXPECT_CALL(heightfieldListener, OnHeightfieldDataChanged(_,_)).Times(1);
 
     LmbrCentral::ShapeComponentNotificationsBus::Event(
         m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,

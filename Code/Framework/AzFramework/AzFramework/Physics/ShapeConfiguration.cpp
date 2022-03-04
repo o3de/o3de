@@ -413,6 +413,11 @@ namespace Physics
         return m_samples;
     }
 
+    AZStd::vector<Physics::HeightMaterialPoint>& HeightfieldShapeConfiguration::GetSamples()
+    {
+        return m_samples;
+    }
+
     void HeightfieldShapeConfiguration::SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples)
     {
         m_samples = samples;

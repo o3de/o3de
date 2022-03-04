@@ -104,6 +104,9 @@ namespace Physics
         //! Returns the list of heights and materials used by the height field.
         //! @return the rows*columns vector of the heights and materials.
         virtual AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const = 0;
+
+        //! Updates the list of heights and materials within the region. Pass Null region to update the entire list.
+        virtual void UpdateHeightsAndMaterials(AZStd::vector<Physics::HeightMaterialPoint>& heightsMaterials, const AZ::Aabb& region) const = 0;
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;
@@ -115,9 +118,19 @@ namespace Physics
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
+        enum class HeightfieldChangeMask
+        {
+            None = 0b00000000,
+            Settings = 0b00000001,
+            HeightData = 0b00000010,
+            MaterialData = 0b00000100,
+            SurfaceData = 0b00001000
+        };
+
         //! Called whenever the heightfield data changes.
         //! @param the AABB of the area of data that changed.
-        virtual void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
+        virtual void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, 
+            [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* changeMask)
         {
         }
 
