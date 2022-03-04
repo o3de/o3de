@@ -329,7 +329,7 @@ class TestAutomation(TestAutomationBase):
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_PostUpdateEvent as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
