@@ -518,14 +518,14 @@ namespace AZ
 
             // Get shader resource group
             {
-                auto perObjectSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
-                if (!perObjectSrgLayout)
+                auto perPassSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
+                if (!perPassSrgLayout)
                 {
                     AZ_Error(PassName, false, "Failed to get shader resource group layout");
                     return;
                 }
 
-                m_resourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), perObjectSrgLayout->GetName());
+                m_resourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), perPassSrgLayout->GetName());
                 if (!m_resourceGroup)
                 {
                     AZ_Error(PassName, false, "Failed to create shader resource group");
@@ -627,10 +627,13 @@ namespace AZ
                         uint32_t index = 0;
                         if (drawCmd.TextureId != ImGui::GetIO().Fonts->TexID)
                         {
-                            Data::Instance<RPI::StreamingImage> img = reinterpret_cast<RPI::StreamingImage*>(drawCmd.TextureId);
-                            // Texture index 0 is reserved for the font atlas, so we start from 1 to 15 for user textures.
-                            index = aznumeric_cast<uint32_t>(m_userTextures.size() + 1);
-                            m_userTextures[img.get()] = index;
+                            if (m_userTextures.size() < MaxUserTextures)
+                            {
+                                Data::Instance<RPI::StreamingImage> img = reinterpret_cast<RPI::StreamingImage*>(drawCmd.TextureId);
+                                // Texture index 0 is reserved for the font atlas, so we start from 1 to 15 for user textures.
+                                index = aznumeric_cast<uint32_t>(m_userTextures.size() + 1);
+                                m_userTextures[img.get()] = index;
+                            }
                         }
 
                         m_draws.push_back(
@@ -669,8 +672,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: BuildCommandListInternal");
 
             context.GetCommandList()->SetViewport(m_viewportState);
-
-            const RHI::ShaderResourceGroup* shaderResourceGroups[] = { m_resourceGroup->GetRHIShaderResourceGroup() };
+            context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup());
 
             uint32_t numDraws = aznumeric_cast<uint32_t>(m_draws.size());
             uint32_t firstIndex = (context.GetCommandListIndex() * numDraws) / context.GetCommandListCount();
@@ -682,8 +684,6 @@ namespace AZ
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
                 drawItem.m_indexBufferView = &m_indexBufferView;
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = shaderResourceGroups;
                 drawItem.m_streamBufferViewCount = 2;
                 drawItem.m_streamBufferViews = m_vertexBufferView.data();
                 drawItem.m_scissorsCount = 1;
