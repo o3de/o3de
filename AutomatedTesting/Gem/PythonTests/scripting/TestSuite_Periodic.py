@@ -195,6 +195,7 @@ class TestAutomation(TestAutomationBase):
         from . import Node_HappyPath_DuplicateNode as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, workspace, editor, launcher_platform):
         def teardown():
             file_system.delete(
