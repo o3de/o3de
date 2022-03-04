@@ -12,7 +12,7 @@
 
 #include <AzFramework/Entity/EntityContextBus.h>
 
- #pragma once
+#pragma once
 
 namespace ContainerTypeReflection
 {

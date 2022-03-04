@@ -20,8 +20,8 @@ namespace ScriptCanvas::Nodeables::Spawning
         {
             serializeContext->Class<SpawnTicketInstance>();
 
-            CreateTypeAsMapValueHelper<AZStd::string, SpawnTicketInstance>::ReflectClassInfo(serializeContext);
-            CreateTypeAsMapValueHelper<float, SpawnTicketInstance>::ReflectClassInfo(serializeContext);
+            CreateTypeAsMapValueHelper<Data::StringType, SpawnTicketInstance>::ReflectClassInfo(serializeContext);
+            CreateTypeAsMapValueHelper<Data::NumberType, SpawnTicketInstance>::ReflectClassInfo(serializeContext);
 
             serializeContext->RegisterGenericType<AZStd::vector<SpawnTicketInstance>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<Data::StringType, SpawnTicketInstance>>();
@@ -42,15 +42,7 @@ namespace ScriptCanvas::Nodeables::Spawning
                            ->Attribute(AZ::Script::Attributes::Module, "Spawning")
                            ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true);
 
-            AZ::BehaviorClass* behaviorClass =
-                AZ::BehaviorContextHelper::GetClass(behaviorContext, azrtti_typeid<BehaviorClassReflection<SpawnTicketInstance>>());
-            AZ::BehaviorContext::ClassBuilder<BehaviorClassReflection<SpawnTicketInstance>> classBuilder(behaviorContext, behaviorClass);
-            CreateTypeAsMapValueHelper<float, SpawnTicketInstance>::AddMethod(&classBuilder);
-            CreateTypeAsMapValueHelper<AZStd::string, SpawnTicketInstance>::AddMethod(&classBuilder);
-
-            behaviorContext
-                ->Class<BehaviorClassReflection<SpawnTicketInstance>>(
-                    AZStd::string::format("ReflectOnDemandTargets_%s", Data::Traits<SpawnTicketInstance>::GetName().data()).data())
+            behaviorContext->Class<BehaviorClassReflection<SpawnTicketInstance>>("ReflectOnDemandTargets_SpawnTicketInstance")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Ignore, true)
                 // required to support Array<SpawnTicketInstance> variable type in Script Canvas

@@ -51,9 +51,7 @@ namespace ScriptCanvas::Nodeables::Spawning
                 ->Attribute(AZ::Script::Attributes::Module, "Spawning")
                 ->Property("m_asset", BehaviorValueProperty(&SpawnableAsset::m_asset));
 
-            behaviorContext
-                ->Class<ContainerTypeReflection::BehaviorClassReflection<SpawnableAsset>>(
-                    AZStd::string::format("ReflectOnDemandTargets_%s", Data::Traits<SpawnableAsset>::GetName().data()).data())
+            behaviorContext->Class<ContainerTypeReflection::BehaviorClassReflection<SpawnableAsset>>("ReflectOnDemandTargets_SpawnableAsset")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Ignore, true)
                 // required to support Array<SpawnableAsset> variable type in Script Canvas
