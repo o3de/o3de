@@ -25,8 +25,8 @@ namespace AzToolsFramework
 
         namespace Internal
         {
-            inline static const char* PathStartingWithEntities = "/Entities/";
-            inline static const char* PathMatchingContainerEntity = "/ContainerEntity";
+            static constexpr AZStd::string_view PathStartingWithEntities = "/Entities/";
+            static constexpr AZStd::string_view PathMatchingContainerEntity = "/ContainerEntity";
 
             //! Identifies the instance members to reload by parsing through the patches provided.
             static void IdentifyInstanceMembersToReload(
@@ -37,10 +37,10 @@ namespace AzToolsFramework
                     PrefabDomValue::ConstMemberIterator patchEntryIterator = patchEntry.FindMember("path");
                     if (patchEntryIterator != patchEntry.MemberEnd())
                     {
-                        AZStd::string patchPath = patchEntryIterator->value.GetString();
+                        AZStd::string_view patchPath = patchEntryIterator->value.GetString();
                         if (patchPath.starts_with(PathStartingWithEntities))
                         {
-                            patchPath.erase(0, strlen(PathStartingWithEntities));
+                            patchPath.remove_prefix(PathStartingWithEntities.size());
                             AZStd::size_t pathSepartorIndex = patchPath.find('/');
                             if (pathSepartorIndex != AZStd::string::npos)
                             {
