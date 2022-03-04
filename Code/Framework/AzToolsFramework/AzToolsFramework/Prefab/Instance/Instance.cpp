@@ -353,7 +353,7 @@ namespace AzToolsFramework
             }
             AZ_Warning(
                 "Prefab", false,
-                "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
+                "Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
                 "This happens when the entity cannot be found in the relevant prefab system entity maps.",
                 entityId.ToString().c_str(), m_templateSourcePath.c_str());
             return false;
@@ -843,7 +843,7 @@ namespace AzToolsFramework
             if (m_containerEntity)
             {
                 UnregisterEntity(m_containerEntity->GetId());
-            };
+            }
             return AZStd::move(m_containerEntity);
         }
 
