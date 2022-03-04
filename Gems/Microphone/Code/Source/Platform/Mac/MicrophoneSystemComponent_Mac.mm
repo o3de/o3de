@@ -84,7 +84,11 @@ public:
         AudioObjectPropertyAddress theAddress = {
             kAudioHardwarePropertyDefaultInputDevice,
             kAudioObjectPropertyScopeGlobal,
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_12_0
             kAudioObjectPropertyElementMain
+#else
+            kAudioObjectPropertyElementMaster
+#endif
         };
         
         status = AudioObjectGetPropertyData(kAudioObjectSystemObject,

@@ -1,4 +1,8 @@
-    {
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
         "Name": "LyShinePass",
         "TemplateName": "LyShineParentTemplate",
         "Connections": [
@@ -18,3 +22,4 @@
             }
         ]
     }
+}

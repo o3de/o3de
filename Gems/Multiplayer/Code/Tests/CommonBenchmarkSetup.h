@@ -280,6 +280,10 @@ namespace Multiplayer
         void HandleLocalRpcMessage([[maybe_unused]] NetworkEntityRpcMessage& message) override {}
         void HandleEntitiesExitDomain([[maybe_unused]] const NetEntityIdSet& entitiesNotInDomain) override {}
         void ForceAssumeAuthority([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override {}
+        void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle&, bool) override {}
+        void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle&, bool) override {}
+        const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override { static NetEntityHandleSet value; return value; }
+        const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override { static NetEntityHandleSet value; return value; }
         void SetMigrateTimeoutTimeMs([[maybe_unused]] AZ::TimeMs timeoutTimeMs) override {}
         void DebugDraw() const override {}
 
