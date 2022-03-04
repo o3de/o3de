@@ -74,11 +74,12 @@ def ImageGradient_ProcessedImageAssignedSuccessfully():
 
     # First, check for the base image in the workspace
     base_image = "image_grad_test_gsi.png"
-    base_image_path = os.path.join("AutomatedTesting", "Assets", "ImageGradients", base_image)
+    base_image_path = os.path.join(azlmbr.paths.projectroot, "Assets", "ImageGradients", base_image)
+    Report.info(base_image_path)
     Report.critical_result(Tests.image_gradient_asset_found, os.path.isfile(base_image_path))
 
     # Next, assign the processed image to the Image Gradient's Image Asset property
-    processed_image_path = os.path.join("Assets", "ImageGradients", "image_grad_test_gsi.gradimage")
+    processed_image_path = os.path.join("Assets", "ImageGradients", "image_grad_test_gsi.png.streamingimage")
     asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", processed_image_path, math.Uuid(),
                                             False)
     hydra.get_set_test(image_gradient_entity, 0, "Configuration|Image Asset", asset_id)
