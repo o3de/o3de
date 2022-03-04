@@ -39,7 +39,7 @@ namespace EMotionFX::MotionMatching
             MODE_AUTOMATIC = 1
         };
 
-        void Update(const ActorInstance* actorInstance,
+        void Update(const ActorInstance& actorInstance,
             const FeatureTrajectory* trajectoryFeature,
             const TrajectoryHistory& trajectoryHistory,
             EMode mode,
@@ -59,7 +59,7 @@ namespace EMotionFX::MotionMatching
             const AZStd::vector<ControlPoint>& controlPoints,
             const AZ::Color& color);
 
-        void PredictFutureTrajectory(const ActorInstance* actorInstance,
+        void PredictFutureTrajectory(const ActorInstance& actorInstance,
             const FeatureTrajectory* trajectoryFeature,
             const AZ::Vector3& targetPos,
             const AZ::Vector3& targetFacingDir);
