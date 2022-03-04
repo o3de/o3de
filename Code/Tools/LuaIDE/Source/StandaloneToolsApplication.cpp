@@ -95,7 +95,15 @@ namespace StandaloneTools
         {
             if (networkInterface.first == AZ::Name("TargetManagement"))
             {
-                networkInterface.second->Listen(6777);
+                const auto console = AZ::Interface<AZ::IConsole>::Get();
+                uint16_t target_port = AzFramework::DefaultTargetPort;
+
+                if (console->GetCvarValue("target_port", target_port) != AZ::GetValueResult::Success)
+                {
+                    AZ_Assert(false, "TargetManagement port could not be found");
+                }
+
+                networkInterface.second->Listen(target_port);
                 return true;
             }
         }

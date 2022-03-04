@@ -28,6 +28,9 @@
 
 namespace AzFramework
 {
+    AZ_CVAR(uint16_t, target_port, DefaultTargetPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that target management will bind to for traffic.");
+    AZ_CVAR(AZ::CVarFixedString, target_serveraddr, AZ::CVarFixedString("127.0.0.1"), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the remote target host to connect to");
+
     namespace Platform
     {
         AZStd::string GetPersistentName();
@@ -519,8 +522,11 @@ namespace AzFramework
         {
             if (networkInterface.first == AZ::Name("TargetManagement"))
             {
+                const AZ::CVarFixedString serverAddr = target_serveraddr;
+                const uint16_t serverPort = target_port;
+
                 AzNetworking::ConnectionId connId =
-                    networkInterface.second->Connect(AzNetworking::IpAddress("localhost", 6777, AzNetworking::ProtocolType::Tcp));
+                    networkInterface.second->Connect(AzNetworking::IpAddress(serverAddr.c_str(), serverPort, AzNetworking::ProtocolType::Tcp));
                 AzFrameworkPackets::Neighbor initPacket;
                 initPacket.SetPersistentId(AZ::Crc32(Platform::GetPersistentName()));
                 initPacket.SetCapabilities(Neighborhood::NEIGHBOR_CAP_LUA_VM | Neighborhood::NEIGHBOR_CAP_LUA_DEBUGGER);

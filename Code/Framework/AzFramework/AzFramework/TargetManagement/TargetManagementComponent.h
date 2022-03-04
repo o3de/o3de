@@ -35,6 +35,8 @@ namespace AzNetworking
 
 namespace AzFramework
 {
+    constexpr uint16_t DefaultTargetPort = 6777;
+
     class TargetManagementNetworkImpl;
 
     class TargetManagementComponent
