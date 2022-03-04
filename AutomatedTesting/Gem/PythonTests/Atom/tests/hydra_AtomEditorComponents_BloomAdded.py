@@ -249,72 +249,45 @@ def AtomEditorComponents_Bloom_AddedToEntity():
     5) Verify Bloom component not enabled.
     6) Add PostFX Layer component since it is required by the Bloom component.
     7) Verify Bloom component is enabled.
-    8) Enable the "Enable Bloom" parameter.
-    9) Disable the "Enable Bloom" parameter (re-enable after test for game mode verification).
-    10) Disable the Enabled Override parameter.
-    11) Enable the Enabled Override parameter.
-    12) Update the Threshold Override parameter to minimum value.
-    13) Update the Threshold Override parameter to maximum value.
-    14) Update the Knee Override parameter to minimum value.
-    15) Update the Knee Override parameter to maximum value.
-    16) Update the Intensity Override parameter to minimum value.
-    17) Update the Intensity Override parameter to maximum value.
-    18) Disable the BicubicEnabled Override parameter.
-    19) Enable the BicubicEnabled Override parameter.
-    20) Update the KernelSizeScale Override parameter to minimum value.
-    21) Update the KernelSizeScale Override parameter to maximum value.
-    22) Update the KernelSizeStage0 Override parameter to minimum value.
-    23) Update the KernelSizeStage0 Override parameter to maximum value.
-    24) Update the KernelSizeStage1 Override parameter to minimum value.
-    25) Update the KernelSizeStage1 Override parameter to maximum value.
-    26) Update the KernelSizeStage2 Override parameter to minimum value.
-    27) Update the KernelSizeStage2 Override parameter to maximum value.
-    28) Update the KernelSizeStage3 Override parameter to minimum value.
-    29) Update the KernelSizeStage3 Override parameter to maximum value.
-    30) Update the KernelSizeStage4 Override parameter to minimum value.
-    31) Update the KernelSizeStage4 Override parameter to maximum value.
-    32) Update the TintStage0 Override parameter to minimum value.
-    33) Update the TintStage0 Override parameter to maximum value.
-    34) Update the TintStage1 Override parameter to minimum value.
-    35) Update the TintStage1 Override parameter to maximum value.
-    36) Update the TintStage2 Override parameter to minimum value.
-    37) Update the TintStage2 Override parameter to maximum value.
-    38) Update the TintStage3 Override parameter to minimum value.
-    39) Update the TintStage3 Override parameter to maximum value.
-    40) Update the TintStage4 Override parameter to minimum value.
-    41) Update the TintStage4 Override parameter to maximum value.
-    42) Update the Threshold parameter to minimum value.
-    43) Update the Threshold parameter to a large value.
-    44) Update the Knee parameter to minimum value.
-    45) Update the Knee parameter to maximum value.
-    46) Update the Intensity parameter to minimum value.
-    47) Update the Intensity parameter to maximum value.
-    48) Enable the "Enable Bicubic" parameter.
-    49) Disable the "Enable Bicubic" parameter (re-enable after test for game mode verification).
-    50) Update the Kernel Size Scale parameter to minimum value.
-    51) Update the Kernel Size Scale parameter to maximum value.
-    52) Update the Kernel Size 0 parameter to minimum value.
-    53) Update the Kernel Size 0 parameter to maximum value.
-    54) Update the Kernel Size 1 parameter to minimum value.
-    55) Update the Kernel Size 1 parameter to maximum value.
-    56) Update the Kernel Size 2 parameter to minimum value.
-    57) Update the Kernel Size 2 parameter to maximum value.
-    58) Update the Kernel Size 3 parameter to minimum value.
-    59) Update the Kernel Size 3 parameter to maximum value.
-    60) Update the Kernel Size 4 parameter to minimum value.
-    61) Update the Kernel Size 4 parameter to maximum value.
-    62) Edit the Tint 0 parameter.
-    63) Edit the Tint 1 parameter.
-    64) Edit the Tint 2 parameter.
-    65) Edit the Tint 3 parameter.
-    66) Edit the Tint 4 parameter.
-    67) Enter/Exit game mode.
-    68) Test IsHidden.
-    69) Test IsVisible.
-    70) Delete Bloom entity.
-    71) UNDO deletion.
-    72) REDO deletion.
-    73) Look for errors.
+    8) Enable/Disable the "Enable Bloom" parameter.
+    9) Enable/Disable the Enabled Override parameter.
+    10) Update the Threshold Override parameter to min/max values.
+    11) Update the Knee Override parameter to min/max values.
+    12) Update the Intensity Override parameter to min/max values.
+    13) Enable/Disable the BicubicEnabled Override parameter.
+    14) Update the KernelSizeScale Override parameter to min/max values.
+    15) Update the KernelSizeStage0 Override parameter to min/max values.
+    16) Update the KernelSizeStage1 Override parameter to min/max values.
+    17) Update the KernelSizeStage2 Override parameter to min/max values.
+    18) Update the KernelSizeStage3 Override parameter to min/max values.
+    19) Update the KernelSizeStage4 Override parameter to min/max values.
+    20) Update the TintStage0 Override parameter to min/max values.
+    21) Update the TintStage1 Override parameter to min/max values.
+    22) Update the TintStage2 Override parameter to min/max values.
+    23) Update the TintStage3 Override parameter to min/max values.
+    24) Update the TintStage4 Override parameter to min/max values.
+    25) Update the Threshold parameter to min/large values.
+    26) Update the Knee parameter to min/max values.
+    27) Update the Intensity parameter to min/max values.
+    28) Enable/Disable the "Enable Bicubic" parameter.
+    29) Update the Kernel Size Scale parameter to min/max values.
+    30) Update the Kernel Size 0 parameter to min/max values.
+    31) Update the Kernel Size 1 parameter to min/max values.
+    32) Update the Kernel Size 2 parameter to min/max values.
+    33) Update the Kernel Size 3 parameter to min/max values.
+    34) Update the Kernel Size 4 parameter to min/max values.
+    35) Edit the Tint 0 parameter.
+    36) Edit the Tint 1 parameter.
+    37) Edit the Tint 2 parameter.
+    38) Edit the Tint 3 parameter.
+    39) Edit the Tint 4 parameter.
+    40) Enter/Exit game mode.
+    41) Test IsHidden.
+    42) Test IsVisible.
+    43) Delete Bloom entity.
+    44) UNDO deletion.
+    45) REDO deletion.
+    46) Look for errors.
 
     :return: None
     """
@@ -365,570 +338,546 @@ def AtomEditorComponents_Bloom_AddedToEntity():
         # 7. Verify Bloom component is enabled.
         Report.result(Tests.bloom_enabled, bloom_component.is_enabled())
 
-        # 8. Enable the "Enable Bloom" parameter.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Enable Bloom'), True)
-        general.idle_wait_frames(1)
+        # 8. Enable/Disable the "Enable Bloom" parameter.
+        # Enable the "Enable Bloom" parameter.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Enable Bloom'), True)
         Report.result(
             Tests.enable_bloom_parameter_enabled,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Enable Bloom')) is True)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Enable Bloom')) is True)
 
-        # 9. Disable the "Enable Bloom" parameter (re-enable after test for game mode verification).
+        # Disable the "Enable Bloom" parameter.
         bloom_component.set_component_property_value(AtomComponentProperties.bloom(
             'Enable Bloom'), False)
-        general.idle_wait_frames(1)
         Report.result(
             Tests.enable_bloom_parameter_disabled,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Enable Bloom')) is False)
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Enable Bloom'), True)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Enable Bloom')) is False)
 
-        # 10. Disable the Enabled Override parameter.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Enabled Override'), False)
+        # Re-enable the "Enable Bloom" parameter for game mode verification.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Enable Bloom'), True)
         general.idle_wait_frames(1)
+
+        # 9. Enable/Disable the Enabled Override parameter.
+        # Disable the Enabled Override parameter.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Enabled Override'), False)
         Report.result(
             Tests.enabled_override_parameter_disabled,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Enabled Override')) is False)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Enabled Override')) is False)
 
-        # 11. Enable the Enabled Override parameter.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Enabled Override'), True)
-        general.idle_wait_frames(1)
+        # Enable the Enabled Override parameter.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Enabled Override'), True)
         Report.result(
             Tests.enabled_override_parameter_enabled,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Enabled Override')) is True)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Enabled Override')) is True)
 
-        # 12. Update the Threshold Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Threshold Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 10. Update the Threshold Override parameter to min/max values.
+        # Update the Threshold Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Threshold Override'), 0.0)
         Report.result(
             Tests.threshold_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Threshold Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Threshold Override')) == 0.0)
 
-        # 13. Update the Threshold Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Threshold Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Threshold Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Threshold Override'), 1.0)
         Report.result(
             Tests.threshold_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Threshold Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Threshold Override')) == 1.0)
 
-        # 14. Update the Knee Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Knee Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 11. Update the Knee Override parameter to min/max values.
+        # Update the Knee Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Knee Override'), 0.0)
         Report.result(
             Tests.knee_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Knee Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Knee Override')) == 0.0)
 
-        # 15. Update the Knee Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Knee Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Knee Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Knee Override'), 1.0)
         Report.result(
             Tests.knee_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Knee Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Knee Override')) == 1.0)
 
-        # 16. Update the Intensity Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Intensity Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 12 Update the Intensity Override parameter to min/max values.
+        # Update the Intensity Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Intensity Override'), 0.0)
         Report.result(
             Tests.intensity_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Intensity Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Intensity Override')) == 0.0)
 
-        # 17. Update the Intensity Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Intensity Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Intensity Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Intensity Override'), 1.0)
         Report.result(
             Tests.intensity_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Intensity Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Intensity Override')) == 1.0)
 
-        # 18. Disable the BicubicEnabled Override parameter.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'BicubicEnabled Override'), False)
-        general.idle_wait_frames(1)
+        # 13. Enable/Disable the BicubicEnabled Override parameter.
+        # Disable the BicubicEnabled Override parameter.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('BicubicEnabled Override'), False)
         Report.result(
             Tests.bicubicenabled_parameter_disabled,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'BicubicEnabled Override')) is False)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('BicubicEnabled Override')) is False)
 
-        # 19. Enable the BicubicEnabled Override parameter.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'BicubicEnabled Override'), True)
-        general.idle_wait_frames(1)
+        # Enable the BicubicEnabled Override parameter.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('BicubicEnabled Override'), True)
         Report.result(
             Tests.bicubicenabled_parameter_enabled,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'BicubicEnabled Override')) is True)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('BicubicEnabled Override')) is True)
 
-        # 20. Update the KernelSizeScale Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeScale Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 14. Update the KernelSizeScale Override parameter to min/max values.
+        # Update the KernelSizeScale Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeScale Override'), 0.0)
         Report.result(
             Tests.kernelsizescale_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeScale Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeScale Override')) == 0.0)
 
-        # 21. Update the KernelSizeScale Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeScale Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the KernelSizeScale Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeScale Override'), 1.0)
         Report.result(
             Tests.kernelsizescale_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeScale Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeScale Override')) == 1.0)
 
-        # 22. Update the KernelSizeStage0 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage0 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 15. Update the KernelSizeStage0 Override parameter to min/max values.
+        # Update the KernelSizeStage0 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage0 Override'), 0.0)
         Report.result(
             Tests.kernelsizestage0_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage0 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage0 Override')) == 0.0)
 
-        # 23. Update the KernelSizeStage0 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage0 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the KernelSizeStage0 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage0 Override'), 1.0)
         Report.result(
             Tests.kernelsizestage0_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage0 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage0 Override')) == 1.0)
 
-        # 24. Update the KernelSizeStage1 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage1 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 16. Update the KernelSizeStage1 Override parameter to min/max values.
+        # Update the KernelSizeStage1 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage1 Override'), 0.0)
         Report.result(
             Tests.kernelsizestage1_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage1 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage1 Override')) == 0.0)
 
-        # 25. Update the KernelSizeStage1 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage1 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the KernelSizeStage1 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage1 Override'), 1.0)
         Report.result(
             Tests.kernelsizestage1_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage1 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage1 Override')) == 1.0)
 
-        # 26. Update the KernelSizeStage2 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage2 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 17. Update the KernelSizeStage2 Override parameter to min/max values.
+        # Update the KernelSizeStage2 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage2 Override'), 0.0)
         Report.result(
             Tests.kernelsizestage2_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage2 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage2 Override')) == 0.0)
 
-        # 27. Update the KernelSizeStage2 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage2 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the KernelSizeStage2 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage2 Override'), 1.0)
         Report.result(
             Tests.kernelsizestage2_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage2 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage2 Override')) == 1.0)
 
-        # 28. Update the KernelSizeStage3 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage3 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 18. Update the KernelSizeStage3 Override parameter to min/max values.
+        # Update the KernelSizeStage3 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage3 Override'), 0.0)
         Report.result(
             Tests.kernelsizestage3_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage3 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage3 Override')) == 0.0)
 
-        # 29. Update the KernelSizeStage3 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage3 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the KernelSizeStage3 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage3 Override'), 1.0)
         Report.result(
             Tests.kernelsizestage3_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage3 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage3 Override')) == 1.0)
 
-        # 30. Update the KernelSizeStage4 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage4 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 19. Update the KernelSizeStage4 Override parameter to min/max values.
+        # Update the KernelSizeStage4 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage4 Override'), 0.0)
         Report.result(
             Tests.kernelsizestage4_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage4 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage4 Override')) == 0.0)
 
-        # 31. Update the KernelSizeStage4 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'KernelSizeStage4 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the KernelSizeStage4 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('KernelSizeStage4 Override'), 1.0)
         Report.result(
             Tests.kernelsizestage4_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'KernelSizeStage4 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('KernelSizeStage4 Override')) == 1.0)
 
-        # 32. Update the TintStage0 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage0 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 20. Update the TintStage0 Override parameter to min/max values.
+        # Update the TintStage0 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage0 Override'), 0.0)
         Report.result(
             Tests.tintstage0_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage0 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage0 Override')) == 0.0)
 
-        # 33. Update the TintStage0 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage0 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the TintStage0 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage0 Override'), 1.0)
         Report.result(
             Tests.tintstage0_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage0 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage0 Override')) == 1.0)
 
-        # 34. Update the TintStage1 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage1 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 21. Update the TintStage1 Override parameter to min/max values.
+        # Update the TintStage1 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage1 Override'), 0.0)
         Report.result(
             Tests.tintstage1_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage1 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage1 Override')) == 0.0)
 
-        # 35. Update the TintStage1 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage1 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the TintStage1 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage1 Override'), 1.0)
         Report.result(
             Tests.tintstage1_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage1 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage1 Override')) == 1.0)
 
-        # 36. Update the TintStage2 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage2 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 22. Update the TintStage2 Override parameter to min/max values.
+        # Update the TintStage2 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage2 Override'), 0.0)
         Report.result(
             Tests.tintstage2_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage2 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage2 Override')) == 0.0)
 
-        # 37. Update the TintStage2 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage2 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the TintStage2 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage2 Override'), 1.0)
         Report.result(
             Tests.tintstage2_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage2 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage2 Override')) == 1.0)
 
-        # 38. Update the TintStage3 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage3 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 23. Update the TintStage3 Override parameter to min/max values.
+        # Update the TintStage3 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage3 Override'), 0.0)
         Report.result(
             Tests.tintstage3_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage3 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage3 Override')) == 0.0)
 
-        # 39. Update the TintStage3 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage3 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the TintStage3 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage3 Override'), 1.0)
         Report.result(
             Tests.tintstage3_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage3 Override')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage3 Override')) == 1.0)
 
-        # 40. Update the TintStage4 Override parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage4 Override'), 0.0)
-        general.idle_wait_frames(1)
+        # 24. Update the TintStage4 Override parameter to min/max values.
+        # Update the TintStage4 Override parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage4 Override'), 0.0)
         Report.result(
             Tests.tintstage4_override_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage4 Override')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage4 Override')) == 0.0)
 
-        # 41. Update the TintStage4 Override parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'TintStage4 Override'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the TintStage4 Override parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('TintStage4 Override'), 1.0)
         Report.result(
             Tests.tintstage4_override_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'TintStage4 Override')) == 1.0)
-
-        # 42. Update the Threshold parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Threshold'), 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('TintStage4 Override')) == 1.0)
         general.idle_wait_frames(1)
+
+        # 25. Update the Threshold parameter to min/large values.
+        # Update the Threshold parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Threshold'), 0.0)
         Report.result(
             Tests.threshold_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Threshold')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Threshold')) == 0.0)
 
-        # 43. Update the Threshold parameter to a large value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Threshold'), 1000.0)
-        general.idle_wait_frames(1)
+        # Update the Threshold parameter to a large value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Threshold'), 1000.0)
         Report.result(
             Tests.threshold_high,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Threshold')) == 1000.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Threshold')) == 1000.0)
 
-        # 44. Update the Knee parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Knee'), 0.0)
-        general.idle_wait_frames(1)
+        # 26. Update the Knee parameter to min/max value.
+        # Update the Knee parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Knee'), 0.0)
         Report.result(
             Tests.knee_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Knee')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Knee')) == 0.0)
 
-        # 45. Update the Knee parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Knee'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Knee parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Knee'), 1.0)
         Report.result(
             Tests.knee_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Knee')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Knee')) == 1.0)
 
-        # 46. Update the Intensity parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Intensity'), 0.0)
-        general.idle_wait_frames(1)
+        # 27. Update the Intensity parameter to min/max value.
+        # Update the Intensity parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Intensity'), 0.0)
         Report.result(
             Tests.intensity_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Intensity')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Intensity')) == 0.0)
 
-        # 47. Update the Intensity parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Intensity'), 10000.0)
-        general.idle_wait_frames(1)
+        # Update the Intensity parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Intensity'), 10000.0)
         Report.result(
             Tests.intensity_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Intensity')) == 10000.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Intensity')) == 10000.0)
 
-        # 48. Enable the "Enable Bicubic" parameter.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Enable Bicubic'), True)
-        general.idle_wait_frames(1)
+        # 28. Enable/Disable the "Enable Bicubic" parameter.
+        # Enable the "Enable Bicubic" parameter.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Enable Bicubic'), True)
         Report.result(
             Tests.enable_bicubic_parameter_enabled,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Enable Bicubic')) is True)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Enable Bicubic')) is True)
 
-        # 49. Disable the "Enable Bicubic" parameter (re-enable after test for game mode verification).
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Enable Bicubic'), False)
-        general.idle_wait_frames(1)
+        # Disable the "Enable Bicubic" parameter.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Enable Bicubic'), False)
         Report.result(
             Tests.enable_bicubic_parameter_disabled,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Enable Bicubic')) is False)
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Enable Bicubic'), True)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Enable Bicubic')) is False)
 
-        # 50. Update the Kernel Size Scale parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size Scale'), 0.0)
+        # Re-enable the "Enable Bicubic" parameter for game mode verification.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Enable Bicubic'), True)
         general.idle_wait_frames(1)
+
+        # 29. Update the Kernel Size Scale parameter to min/max values.
+        # Update the Kernel Size Scale parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size Scale'), 0.0)
         Report.result(
             Tests.kernel_size_scale_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size Scale')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size Scale')) == 0.0)
 
-        # 51. Update the Kernel Size Scale parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size Scale'), 2.0)
-        general.idle_wait_frames(1)
+        # Update the Kernel Size Scale parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size Scale'), 2.0)
         Report.result(
             Tests.kernel_size_scale_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size Scale')) == 2.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size Scale')) == 2.0)
 
-        # 52. Update the Kernel Size 0 parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 0'), 0.0)
-        general.idle_wait_frames(1)
+        # 30. Update the Kernel Size 0 parameter to min/max values.
+        # Update the Kernel Size 0 parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 0'), 0.0)
         Report.result(
             Tests.kernel_size_0_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 0')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 0')) == 0.0)
 
-        # 53. Update the Kernel Size 0 parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 0'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Kernel Size 0 parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 0'), 1.0)
         Report.result(
             Tests.kernel_size_0_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 0')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 0')) == 1.0)
 
-        # 54. Update the Kernel Size 1 parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 1'), 0.0)
-        general.idle_wait_frames(1)
+        # 31. Update the Kernel Size 1 parameter to min/max values.
+        # Update the Kernel Size 1 parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 1'), 0.0)
         Report.result(
             Tests.kernel_size_1_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 1')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 1')) == 0.0)
 
-        # 55. Update the Kernel Size 1 parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 1'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Kernel Size 1 parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 1'), 1.0)
         Report.result(
             Tests.kernel_size_1_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 1')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 1')) == 1.0)
 
-        # 56. Update the Kernel Size 2 parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 2'), 0.0)
-        general.idle_wait_frames(1)
+        # 32. Update the Kernel Size 2 parameter to min/max values.
+        # Update the Kernel Size 2 parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 2'), 0.0)
         Report.result(
             Tests.kernel_size_2_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 2')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 2')) == 0.0)
 
-        # 57. Update the Kernel Size 2 parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 2'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Kernel Size 2 parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 2'), 1.0)
         Report.result(
             Tests.kernel_size_2_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 2')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 2')) == 1.0)
 
-        # 58. Update the Kernel Size 3 parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 3'), 0.0)
-        general.idle_wait_frames(1)
+        # 33. Update the Kernel Size 3 parameter to min/max values.
+        # Update the Kernel Size 3 parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 3'), 0.0)
         Report.result(
             Tests.kernel_size_3_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 3')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 3')) == 0.0)
 
-        # 59. Update the Kernel Size 3 parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 3'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Kernel Size 3 parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 3'), 1.0)
         Report.result(
             Tests.kernel_size_3_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 3')) == 1.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 3')) == 1.0)
 
-        # 60. Update the Kernel Size 4 parameter to minimum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 4'), 0.0)
-        general.idle_wait_frames(1)
+        # 34. Update the Kernel Size 4 parameter to min/max values.
+        # Update the Kernel Size 4 parameter to minimum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 4'), 0.0)
         Report.result(
             Tests.kernel_size_4_min,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 4')) == 0.0)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 4')) == 0.0)
 
-        # 61. Update the Kernel Size 4 parameter to maximum value.
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Kernel Size 4'), 1.0)
-        general.idle_wait_frames(1)
+        # Update the Kernel Size 4 parameter to maximum value.
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Kernel Size 4'), 1.0)
         Report.result(
             Tests.kernel_size_4_max,
-            bloom_component.get_component_property_value(AtomComponentProperties.bloom(
-                'Kernel Size 4')) == 1.0)
-
-        # 62. Edit the Tint 0 parameter.
-        red_color_value = math.Vector3(1.0, 0.0, 0.0)
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Tint 0'), red_color_value)
+            bloom_component.get_component_property_value(
+                AtomComponentProperties.bloom('Kernel Size 4')) == 1.0)
         general.idle_wait_frames(1)
+
+        # 35. Edit the Tint 0 parameter.
+        red_color_value = math.Vector3(1.0, 0.0, 0.0)
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Tint 0'), red_color_value)
         tint_color_0 = bloom_component.get_component_property_value(
             AtomComponentProperties.bloom('Tint 0'))
         Report.result(Tests.edit_tint_0, tint_color_0.IsClose(red_color_value))
 
-        # 63. Edit the Tint 1 parameter.
+        # 36. Edit the Tint 1 parameter.
         green_color_value = math.Vector3(0.0, 1.0, 0.0)
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Tint 1'), green_color_value)
-        general.idle_wait_frames(1)
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Tint 1'), green_color_value)
         tint_color_1 = bloom_component.get_component_property_value(
             AtomComponentProperties.bloom('Tint 1'))
         Report.result(Tests.edit_tint_1, tint_color_1.IsClose(green_color_value))
 
-        # 64. Edit the Tint 2 parameter.
+        # 37. Edit the Tint 2 parameter.
         blue_color_value = math.Vector3(0.0, 0.0, 1.0)
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Tint 2'), blue_color_value)
-        general.idle_wait_frames(1)
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Tint 2'), blue_color_value)
         tint_color_2 = bloom_component.get_component_property_value(
             AtomComponentProperties.bloom('Tint 2'))
         Report.result(Tests.edit_tint_2, tint_color_2.IsClose(blue_color_value))
 
-        # 65. Edit the Tint 3 parameter.
+        # 38. Edit the Tint 3 parameter.
         yellow_color_value = math.Vector3(1.0, 1.0, 0.0)
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Tint 3'), yellow_color_value)
-        general.idle_wait_frames(1)
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Tint 3'), yellow_color_value)
         tint_color_3 = bloom_component.get_component_property_value(
             AtomComponentProperties.bloom('Tint 3'))
         Report.result(Tests.edit_tint_3, tint_color_3.IsClose(yellow_color_value))
 
-        # 66. Edit the Tint 4 parameter.
+        # 39. Edit the Tint 4 parameter.
         violet_color_value = math.Vector3(0.498, 0.0, 1.0)
-        bloom_component.set_component_property_value(AtomComponentProperties.bloom(
-            'Tint 4'), violet_color_value)
-        general.idle_wait_frames(1)
+        bloom_component.set_component_property_value(
+            AtomComponentProperties.bloom('Tint 4'), violet_color_value)
         tint_color_4 = bloom_component.get_component_property_value(
             AtomComponentProperties.bloom('Tint 4'))
         Report.result(Tests.edit_tint_4, tint_color_4.IsClose(violet_color_value))
 
-        # 67. Enter/Exit game mode.
+        # 40. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 68. Test IsHidden.
+        # 41. Test IsHidden.
         bloom_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, bloom_entity.is_hidden() is True)
 
-        # 69. Test IsVisible.
+        # 42. Test IsVisible.
         bloom_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, bloom_entity.is_visible() is True)
 
-        # 70. Delete Bloom entity.
+        # 43. Delete Bloom entity.
         bloom_entity.delete()
         Report.result(Tests.entity_deleted, not bloom_entity.exists())
 
-        # 71. UNDO deletion.
+        # 44. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, bloom_entity.exists())
 
-        # 72. REDO deletion.
+        # 45. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not bloom_entity.exists())
 
-        # 73. Look for errors and asserts.
+        # 46. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
