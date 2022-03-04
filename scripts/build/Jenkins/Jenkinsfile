@@ -6,9 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-import hudson.console.HyperlinkNote
 import groovy.json.JsonOutput
-import java.net.URLEncoder
 PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
 EBS_SNAPSHOT_SCRIPT_PATH = 'scripts/build/tools/ebs_snapshot.py'
