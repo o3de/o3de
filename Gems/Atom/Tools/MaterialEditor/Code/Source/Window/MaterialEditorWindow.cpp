@@ -8,6 +8,7 @@
 
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/MaterialEditorWindow.h>
 #include <Window/SettingsDialog/SettingsDialog.h>

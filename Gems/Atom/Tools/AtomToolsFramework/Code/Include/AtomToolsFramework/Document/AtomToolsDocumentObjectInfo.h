@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/math/Uuid.h>
+#include <AzCore/Math/Uuid.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
