@@ -76,7 +76,7 @@ namespace ScriptCanvasEditor
         m_model->SetFilter(selection.GetDisplayFilter());
     }
 
-    void SourceHandlePropertyAssetCtrl::SetSourceAssetFilterPattern(const QString& filterPattern)
+    void SourceHandlePropertyAssetCtrl::SetSourceAssetFilterPattern(const QRegExp& filterPattern)
     {
         m_sourceAssetFilterPattern = filterPattern;
     }
@@ -128,7 +128,7 @@ namespace ScriptCanvasEditor
             AZStd::string filterPattern;
             if (attrValue->Read<AZStd::string>(filterPattern))
             {
-                GUI->SetSourceAssetFilterPattern(filterPattern.c_str());
+                GUI->SetSourceAssetFilterPattern(QRegExp(filterPattern.c_str(), Qt::CaseInsensitive, QRegExp::Wildcard));
             }
         }
     }

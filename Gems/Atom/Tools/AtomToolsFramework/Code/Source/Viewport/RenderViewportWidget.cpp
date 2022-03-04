@@ -355,6 +355,11 @@ namespace AtomToolsFramework
         m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeNone);
     }
 
+    void RenderViewportWidget::SetCursorMode(AzToolsFramework::CursorInputMode mode) 
+    {
+        m_inputChannelMapper->SetCursorMode(mode);
+    }
+
     void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
     {
         m_inputChannelMapper->SetOverrideCursor(cursorStyleOverride);

@@ -77,6 +77,7 @@ namespace AZ::Render
     void AtomActorInstance::OnTick([[maybe_unused]] float timeDelta)
     {
         UpdateBounds();
+        m_atomActorDebugDraw->UpdateActorInstance(m_actorInstance, timeDelta);
     }
 
     void AtomActorInstance::DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags)

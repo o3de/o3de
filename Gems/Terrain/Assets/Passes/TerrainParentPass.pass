@@ -1,0 +1,25 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "TerrainParentPassTemplate",
+            "PassClass": "ParentPass",
+            "PassRequests": [			
+                {
+                    "Name": "TerrainDetailTextureComputePass",
+                    "TemplateName": "TerrainDetailTextureComputePassTemplate",
+                    "Enabled": false
+                },
+                {
+                    "Name": "TerrainMacroTextureComputePass",
+                    "TemplateName": "TerrainMacroTextureComputePassTemplate",
+                    "Enabled": false
+                }
+            ]
+        }
+    }
+}
+ 
+
