@@ -350,19 +350,22 @@ namespace AzToolsFramework
                 }
             }
 
-            // Paint toggle icon
-            if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle ||
-                index.column() == EntityOutlinerListModel::ColumnLockToggle)
+            if (m_prefabFocusPublicInterface->GetOpenInstanceMode() == 1)
             {
-                QPoint toggleOffset = QPoint(5, 4);
-                if (index.column() == EntityOutlinerListModel::ColumnLockToggle)
+                // Paint toggle icon
+                if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle ||
+                    index.column() == EntityOutlinerListModel::ColumnLockToggle)
                 {
-                    toggleOffset = QPoint(-15, 4);
-                }
+                    QPoint toggleOffset = QPoint(5, 4);
+                    if (index.column() == EntityOutlinerListModel::ColumnLockToggle)
+                    {
+                        toggleOffset = QPoint(-15, 4);
+                    }
 
-                const QSize toggleIconSize = QSize(32, 16);
-                QIcon scopeToggleIcon = QIcon(prefabEditScopeIconPath);
-                painter->drawPixmap(option.rect.topLeft() + toggleOffset, scopeToggleIcon.pixmap(toggleIconSize));
+                    const QSize toggleIconSize = QSize(32, 16);
+                    QIcon scopeToggleIcon = QIcon(prefabEditScopeIconPath);
+                    painter->drawPixmap(option.rect.topLeft() + toggleOffset, scopeToggleIcon.pixmap(toggleIconSize));
+                }
             }
         }
         else
@@ -429,7 +432,7 @@ namespace AzToolsFramework
         bool isPrefabEditModeNestedTemplates =
             m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_TEMPLATES;
 
-        if (isFocusedPrefab)
+        if (isFocusedPrefab && m_prefabFocusPublicInterface->GetOpenInstanceMode() == 1)
         {
             if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle ||
                 index.column() == EntityOutlinerListModel::ColumnLockToggle)

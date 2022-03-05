@@ -68,6 +68,9 @@ namespace AzToolsFramework::Prefab
 
         //! Sets the current focus mode.
         virtual void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) = 0;
+
+        // TEMP - Just exposing this toggle this way to work around issues with changing externed CVAR values at runtime.
+        virtual int GetOpenInstanceMode() = 0;
     };
 
     /**

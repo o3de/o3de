@@ -112,7 +112,7 @@ namespace AzToolsFramework
         painter->setRenderHint(QPainter::Antialiasing, true);
 
         // Draw background if the root is focused.
-        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        if (m_prefabFocusPublicInterface->GetOpenInstanceMode() == 1 && m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             painter->fillRect(rect, backgroundColor);
 

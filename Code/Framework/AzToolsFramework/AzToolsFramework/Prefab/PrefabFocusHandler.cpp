@@ -8,6 +8,8 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 
+#include <AzCore/Console/IConsole.h>
+
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -18,6 +20,18 @@
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+
+namespace AzToolsFramework
+{
+    AZ_CVAR(
+        int,
+        prefab_openInstanceMode,
+        0,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Determine whether it should be possible to expand nested instances (0 = No, 1 = Toggle, 2 = Yes)"
+    );
+}
 
 namespace AzToolsFramework::Prefab
 {
@@ -370,17 +384,36 @@ namespace AzToolsFramework::Prefab
 
     PrefabEditScope PrefabFocusHandler::GetPrefabEditScope([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        return m_prefabEditScope;
+        switch (prefab_openInstanceMode)
+        {
+        case 1:
+            {
+                return m_prefabEditScope;
+                break;
+            }
+        case 2:
+            {
+                return PrefabEditScope::NESTED_INSTANCES;
+                break;
+            }
+        case 0:
+        default:
+            {
+                return PrefabEditScope::NESTED_TEMPLATES;
+                break;
+            }
+        }
     }
 
-    void PrefabFocusHandler::SetPrefabEditScope([[maybe_unused]] AzFramework::EntityContextId entityContextId, PrefabEditScope mode)
+    void PrefabFocusHandler::SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode)
     {
-        if (m_prefabEditScope != mode)
-        {
-            SwitchToEditScope(mode);
-        }
-
         m_prefabEditScope = mode;
+        SwitchToEditScope(GetPrefabEditScope(entityContextId));
+    }
+
+    int PrefabFocusHandler::GetOpenInstanceMode()
+    {
+        return prefab_openInstanceMode;
     }
 
     void PrefabFocusHandler::OnContextReset()
