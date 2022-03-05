@@ -12,6 +12,9 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
+// TEMP - this doesn't make sense here, refactoring needed
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+
 namespace AzToolsFramework
 {
     void ContainerEntitySystemComponent::Activate()
@@ -109,6 +112,66 @@ namespace AzToolsFramework
         if (!entityId.IsValid())
         {
             return entityId;
+        }
+
+        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+        if (prefabFocusPublicInterface && prefabFocusPublicInterface->GetContainerStepByStepSelection() &&
+            prefabFocusPublicInterface->GetPrefabEditScope(editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
+        {
+            // Get currently selected entities
+            EntityIdList selectedEntities;
+            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+
+            // Return the highest closed container, or the entity if none is found.
+            AZ::EntityId highestSelectableEntityId = entityId;
+            AZ::EntityId secondLastOpenContainerBeforeSelection = entityId;
+            AZ::EntityId lastOpenContainerBeforeSelection = entityId;
+            bool hitClosedContainer = false;
+            bool hitSelectedOpenContainer = false;
+
+            // Skip the queried entity, as we only want to check its ancestors.
+            AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+            // Go up the hierarchy until you hit the root
+            while (entityId.IsValid())
+            {
+                if (!IsContainerOpen(entityId))
+                {
+                    // If one of the ancestors is a container and it's closed, keep track of its id.
+                    // We only return of the higher closed container in the hierarchy.
+                    highestSelectableEntityId = entityId;
+                    hitClosedContainer = true;
+                }
+                else
+                {
+                    if (!hitSelectedOpenContainer)
+                    {
+                        if (IsContainer(entityId) &&
+                            AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
+                        {
+                            hitSelectedOpenContainer = true;
+                        }
+                        else
+                        {
+                            secondLastOpenContainerBeforeSelection = lastOpenContainerBeforeSelection;
+                            lastOpenContainerBeforeSelection = entityId;
+                        }
+                    }
+                }
+
+                AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+            }
+
+            if (hitClosedContainer)
+            {
+                return highestSelectableEntityId;
+            }
+
+            // We will always hit the root, so exclude it for our purposes
+            return secondLastOpenContainerBeforeSelection;
         }
 
         // Return the highest closed container, or the entity if none is found.
