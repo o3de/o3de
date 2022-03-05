@@ -51,8 +51,8 @@ namespace MaterialCanvas
         AtomToolsFramework::DocumentTypeInfo documentType = AtomToolsDocument::BuildDocumentTypeInfo();
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId) { return aznew MaterialCanvasDocument(toolId); };
-        documentType.m_supportedExtensionsForOpen.push_back({ "Material Canvas", "materialcanvas" });
-        documentType.m_supportedExtensionsForSave.push_back({ "Material Canvas", "materialcanvas" });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas", "materialcanvas" });
+        documentType.m_supportedExtensionsToSave.push_back({ "Material Canvas", "materialcanvas" });
         return documentType;
     }
 
