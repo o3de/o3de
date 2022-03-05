@@ -13,4 +13,3 @@ def pytest_addoption(parser):
     parser.addoption("--installer-path", action="store", default=pathlib.Path().resolve())
     parser.addoption("--install-root", action="store", default=pathlib.PurePath('C:/O3DE/0.0.0.0'))
     parser.addoption("--project-path", action="store", default=pathlib.PurePath('C:/Workspace/TestProject'))
-    parser.addoption("--log-path", action="store", default=pathlib.PurePath('C:/Workspace/test_installer.log'))
