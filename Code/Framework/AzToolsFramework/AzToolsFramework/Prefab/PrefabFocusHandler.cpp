@@ -9,6 +9,7 @@
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -21,20 +22,13 @@
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
-namespace AzToolsFramework
-{
-    AZ_CVAR(
-        int,
-        prefab_openInstanceMode,
-        0,
-        nullptr,
-        AZ::ConsoleFunctorFlags::Null,
-        "Determine whether it should be possible to expand nested instances (0 = No, 1 = Toggle, 2 = Yes)"
-    );
-}
-
 namespace AzToolsFramework::Prefab
 {
+    static constexpr const char s_openInstanceModeRegistryKey[] = "/O3DE/Preferences/Prefabs/OpenInstanceMode";
+    static constexpr const char s_allowContextMenuInstanceExpandingRegistryKey[] =
+        "/O3DE/Preferences/Prefabs/AllowContextMenuInstanceExpanding";
+    static constexpr const char s_containerStepByStepSelectionRegistryKey[] = "/O3DE/Preferences/Prefabs/ContainerStepByStepSelection";
+
     PrefabFocusHandler::PrefabFocusHandler()
     {
         m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
@@ -103,6 +97,13 @@ namespace AzToolsFramework::Prefab
             "Prefab - PrefabFocusHandler - "
             "ReadOnly Entity Query Interface could not be found. "
             "Check that it is being correctly initialized.");
+
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->GetObject(m_openInstanceMode, s_openInstanceModeRegistryKey);
+            registry->GetObject(m_allowContextMenuInstanceExpanding, s_allowContextMenuInstanceExpandingRegistryKey);
+            registry->GetObject(m_containerStepByStepSelection, s_containerStepByStepSelectionRegistryKey);
+        }
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
@@ -206,6 +207,24 @@ namespace AzToolsFramework::Prefab
         }
 
         return FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState)
+    {
+        if (InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); instance.has_value())
+        {
+            m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), openState);
+
+            if (openState == true)
+            {
+                PrefabFocusNotificationBus::Broadcast(
+                    &PrefabFocusNotifications::OnInstanceOpened, instance->get().GetContainerEntityId());
+            }
+
+            return AZ::Success();
+        }
+
+        return AZ::Failure(AZStd::string::format("Prefab Focus Handler: Could not find owning instance of entity"));
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
@@ -384,7 +403,7 @@ namespace AzToolsFramework::Prefab
 
     PrefabEditScope PrefabFocusHandler::GetPrefabEditScope([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        switch (prefab_openInstanceMode)
+        switch (m_openInstanceMode)
         {
         case 1:
             {
@@ -413,7 +432,17 @@ namespace AzToolsFramework::Prefab
 
     int PrefabFocusHandler::GetOpenInstanceMode()
     {
-        return prefab_openInstanceMode;
+        return m_openInstanceMode;
+    }
+
+    bool PrefabFocusHandler::GetAllowContextMenuInstanceExpanding()
+    {
+        return m_allowContextMenuInstanceExpanding;
+    }
+
+    bool PrefabFocusHandler::GetContainerStepByStepSelection()
+    {
+        return m_containerStepByStepSelection;
     }
 
     void PrefabFocusHandler::OnContextReset()

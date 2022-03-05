@@ -10,6 +10,7 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
@@ -25,6 +26,13 @@ namespace AzToolsFramework
 
     PrefabUiHandler::PrefabUiHandler()
     {
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        if (m_containerEntityInterface == nullptr)
+        {
+            AZ_Assert(false, "PrefabUiHandler - could not get ContainerEntityInterface on PrefabUiHandler construction.");
+            return;
+        }
+
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         if (m_prefabPublicInterface == nullptr)
         {
@@ -310,6 +318,7 @@ namespace AzToolsFramework
             firstColumnIndex.model()->hasChildren(firstColumnIndex);
         bool isPrefabEditModeNestedTemplates =
             m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_TEMPLATES;
+        bool isContainerOpen = m_containerEntityInterface->IsContainerOpen(entityId);
 
         QString prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/unchecked.svg";
         if (!isPrefabEditModeNestedTemplates)
@@ -371,7 +380,7 @@ namespace AzToolsFramework
         else
         {
             // Only show the edit icon on hover.
-            if (isFirstColumn && isHovered && isPrefabEditModeNestedTemplates)
+            if (isFirstColumn && isHovered && isPrefabEditModeNestedTemplates && !isContainerOpen)
             {
                 QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
                 painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));

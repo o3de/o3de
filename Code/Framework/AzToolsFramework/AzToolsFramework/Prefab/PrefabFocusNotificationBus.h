@@ -34,6 +34,9 @@ namespace AzToolsFramework::Prefab
         //! Triggered when the edit scope is changed.
         virtual void OnPrefabEditScopeChanged() {}
 
+        // TEMP
+        virtual void OnInstanceOpened([[maybe_unused]] AZ::EntityId containerEntityId) {}
+
     protected:
         ~PrefabFocusNotifications() = default;
     };

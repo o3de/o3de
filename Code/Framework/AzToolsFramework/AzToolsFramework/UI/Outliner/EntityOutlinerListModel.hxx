@@ -151,6 +151,7 @@ namespace AzToolsFramework
 
         // PrefabFocusNotificationBus overrides ...
         void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
+        void OnInstanceOpened(AZ::EntityId containerEntityId) override;
 
         AZStd::string GetFilterString() const
         {

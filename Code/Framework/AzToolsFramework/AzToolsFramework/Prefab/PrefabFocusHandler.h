@@ -58,6 +58,7 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
         PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) override;
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
+        PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
@@ -65,7 +66,10 @@ namespace AzToolsFramework::Prefab
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
         PrefabEditScope GetPrefabEditScope(AzFramework::EntityContextId entityContextId) const override;
         void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) override;
+
         int GetOpenInstanceMode() override;
+        bool GetAllowContextMenuInstanceExpanding() override;
+        bool GetContainerStepByStepSelection() override;
 
         // EditorEntityContextNotificationBus overrides ...
         void OnContextReset() override;
@@ -96,6 +100,10 @@ namespace AzToolsFramework::Prefab
         int m_rootAliasFocusPathLength = 0;
         //! The current focus mode.
         PrefabEditScope m_prefabEditScope = PrefabEditScope::NESTED_TEMPLATES;
+
+        int m_openInstanceMode = 0;
+        bool m_allowContextMenuInstanceExpanding = false;
+        bool m_containerStepByStepSelection = false;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;

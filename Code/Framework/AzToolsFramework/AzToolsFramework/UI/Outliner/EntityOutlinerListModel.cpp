@@ -1416,11 +1416,11 @@ namespace AzToolsFramework
         {
             emit dataChanged(index(0, 0, changedIndex), index(numChildren - 1, ColumnCount - 1, changedIndex));
         }
+    }
 
-        /*
-        // Always expand containers
-        QueueEntityToExpand(entityId, true);
-        */
+    void EntityOutlinerListModel::OnInstanceOpened(AZ::EntityId containerEntityId)
+    {
+        QueueEntityToExpand(containerEntityId, true);
     }
 
     void EntityOutlinerListModel::OnPrefabFocusChanged(

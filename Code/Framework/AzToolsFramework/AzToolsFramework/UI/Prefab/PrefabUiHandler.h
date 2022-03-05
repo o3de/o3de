@@ -14,6 +14,7 @@
 
 namespace AzToolsFramework
 {
+    class ContainerEntityInterface;
 
     namespace Prefab
     {
@@ -48,6 +49,7 @@ namespace AzToolsFramework
         void OnOutlinerItemCollapse(const QModelIndex& index) const override;
 
     protected:
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
