@@ -85,8 +85,8 @@ namespace AZ
             //! Returns the preferred alpha compositing modes if they are supported.
             //! If not, error will be reported.
             VkCompositeAlphaFlagBitsKHR GetSupportedCompositeAlpha() const;
-            //! Returns the current surface capabilities.
-            VkSurfaceCapabilitiesKHR GetSurfaceCapabilities();
+            //! Sets m_surfaceCapabilities
+            VkResult QuerySurfaceCapabilities();
             //! Create the swapchain when initializing, or
             //! swapchain is no longer compatible or is sub-optimal with the surface.
             RHI::ResultCode CreateSwapchain();

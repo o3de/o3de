@@ -6,6 +6,8 @@
  *
  */
 
+#pragma optimize("", off)
+
 #include "Atom_RHI_Vulkan_Platform.h"
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
@@ -131,6 +133,11 @@ namespace AZ
 
         RHI::ResultCode SwapChain::InitImageInternal(const RHI::SwapChain::InitImageRequest& request)
         {
+            if (!m_surface)
+            {
+                return RHI::ResultCode::Fail;
+            }
+
             auto& device = static_cast<Device&>(GetDevice());
             Image* image = static_cast<Image*>(request.m_image);
             RHI::ImageDescriptor imageDesc = request.m_descriptor;
@@ -350,19 +357,18 @@ namespace AZ
             return supportedModes[0];
         }
 
-        VkSurfaceCapabilitiesKHR SwapChain::GetSurfaceCapabilities()
+        VkResult SwapChain::QuerySurfaceCapabilities()
         {
             AZ_Assert(m_surface, "Surface has not been initialized.");
 
             auto& device = static_cast<Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
-            VkSurfaceCapabilitiesKHR surfaceCapabilities;
-            VkResult vkResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceCapabilities);
+            VkResult vkResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR( // MKR-problem here: ASSERT: Vulkan API method failed: Surface lost
+                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &m_surfaceCapabilities);
             AssertSuccess(vkResult);
 
-            return surfaceCapabilities;
+            return vkResult;
         }
 
         VkCompositeAlphaFlagBitsKHR SwapChain::GetSupportedCompositeAlpha() const
@@ -500,8 +506,13 @@ namespace AZ
         RHI::ResultCode SwapChain::CreateSwapchain()
         {
             auto& device = static_cast<Device&>(GetDevice());
+            VkResult querySurfResult = QuerySurfaceCapabilities();
+            if (querySurfResult != VK_SUCCESS)
+            {
+                InvalidateSurface();
+                return RHI::ResultCode::Fail;
+            }
 
-            m_surfaceCapabilities = GetSurfaceCapabilities();
             m_surfaceFormat = GetSupportedSurfaceFormat(m_dimensions.m_imageFormat);
             m_presentMode = GetSupportedPresentMode(GetDescriptor().m_verticalSyncInterval);
             m_compositeAlphaFlagBits = GetSupportedCompositeAlpha(); 
