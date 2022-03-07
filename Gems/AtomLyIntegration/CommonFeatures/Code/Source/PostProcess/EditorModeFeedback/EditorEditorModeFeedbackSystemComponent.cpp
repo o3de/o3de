@@ -54,7 +54,7 @@ namespace AZ
             const MeshFeatureProcessorInterface* featureProcessor,
             const MeshFeatureProcessorInterface::MeshHandle& meshHandle,
             Data::Instance<RPI::Material> maskMaterial,
-            const AZ::u8 maskId)
+            const AZ::u32 maskId)
         {
             const auto& shaderAsset = maskMaterial->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
             const auto& objectSrgLayout = maskMaterial->GetAsset()->GetObjectSrgLayout();
