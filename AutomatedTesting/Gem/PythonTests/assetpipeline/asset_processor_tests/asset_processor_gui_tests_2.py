@@ -177,7 +177,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
                                                                         asset_processor):
         # fmt:on
         """
-        Deleting prefabs and uicanvases while AP is running
+        Deleting files while AP is running
 
         Test Steps:
         1. Create temporary testing environment with test assets
@@ -190,7 +190,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists in project folder
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C1591337")
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
         assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
 
         # Launch Asset Processor and wait for it to go idle

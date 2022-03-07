@@ -181,7 +181,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Deleting assets from Cache will make them re-processed in AP (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working Prefab"))
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
 
         # Calling AP first time and checking whether desired assets were processed
         result, _ = asset_processor.batch_process()
@@ -224,7 +224,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # AP Batch Processing changed files (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working Prefab"))
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
 
         # Calling AP first time and checking whether desired assets were processed
         batch_success, output = asset_processor.batch_process(capture_output=True)
@@ -310,7 +310,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Feed two similar prefabs with different names - should process without any issues
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_AddSameAssetsDifferentNames_ShouldProcess")
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
 
         # Launching AP, capturing output and asserting on number of processed assets
         result, output = asset_processor.batch_process(capture_output=True)
@@ -424,7 +424,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Prepare test assets and start Asset Processor Batch
-        asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working Prefab"))
+        asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
         result, output_list = asset_processor.batch_process(capture_output=True)
         assert result, f"AP Batch failed with output: {output_list}"
 
@@ -519,7 +519,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Add assets to test asset directory
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working Prefab"))
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
 
         # Run batch to ensure everything is processed
         assert asset_processor.batch_process(), "First AP Batch failed"
@@ -656,18 +656,18 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         AP logs the failure to process the corrupted file.
 
         Test Steps:
-        1. Create test environment with corrupted prefab
+        1. Create test environment with corrupted_prefab
         2. Launch Asset Processor
-        3. Verify that asset processor fails to process corrupted prefab
+        3. Verify that asset processor fails to process corrupted_prefab
         """
         env = ap_setup_fixture
         error_line_found = False
 
         # Import pre-corrupted test assets
-        asset_processor.prepare_test_environment(env["tests_dir"], "C1564073")
+        asset_processor.prepare_test_environment(env["tests_dir"], "TestAssets/Corrupted_Prefab")
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=True)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Createjobs Failed", "test_prefab.prefab"]):
+        for _ in log.get_lines(-1, ["Createjobs Failed", "Corrupted_Prefab.prefab"]):
             error_line_found = True
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."

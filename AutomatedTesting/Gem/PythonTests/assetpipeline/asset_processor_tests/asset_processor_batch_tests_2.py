@@ -136,47 +136,31 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         env = ap_setup_fixture
         error_search_terms = ["JSON parse error at line 1: Invalid value."]
 
-        # # Setup Start # #
+        # Setup Start #
         # Add the working asset to the project folder
-        asset_processor.prepare_test_environment(env["tests_dir"], "C4874121")
-
+        asset_processor.prepare_test_environment(env["tests_dir"], "TestAssets")
         # Ensure that the project is built in cache
         asset_processor.batch_process()
-
-        # Find any WORKING .prefab asset in the projects folders (not the cache)
-        # Make a new folder there and copy the WORKING prefab to that new folder
-        test_dir = os.path.join(workspace.project, "Prefab", "Test_C4874121")
-
-        test_dir = asset_processor.add_scan_folder(test_dir)
-
-        test_source_folder = os.path.join(asset_processor.temp_asset_root(), workspace.project, "C4874121")
-        copied_asset = os.path.join(test_source_folder, "working_prefab.prefab")
-        asset_processor.copy_assets_to_project(["working_prefab.prefab"], test_source_folder, test_dir)
-
-        # Ensure that the test file did not fail to process
-        asset_processor.run_and_check_output(False, error_search_terms)
-        # Open the prefab file and make an intentional error in it to test reprocessing steps
-        original_prefab = ""
-        corrupted_prefab = ""
-
-        with open(copied_asset, "r") as file:
-            original_prefab = file.read()
-            # This creates an intentional error in the prefab file which corrupts it and makes the asset fail
-            corrupted_prefab = original_prefab.replace("{}", "WWWWWWWWWWWW", 1)
-
-        with open(copied_asset, "w") as file:
-            file.write(corrupted_prefab)
-
-        print(corrupted_prefab)
-        asset_processor.run_and_check_output(True, error_search_terms)
+        test_dir = asset_processor.add_scan_folder(os.path.join(workspace.project, "TestAssets", "Corrupted_Prefab"))
         # Setup End #
+
+        # Ensure that the test file failed to process
+        asset_processor.run_and_check_output(True, error_search_terms)
+
+        # Setup for fixing the intentional error during the reprocessing steps
+        fixed_prefab = "{}"
+        asset_fix1 = os.path.join(test_dir, "Corrupted_Prefab.prefab")
+        asset_fix2 = os.path.join(test_dir, "Corrupted_Prefab - Copy.prefab")
+        assets_to_fix = [asset_fix1, asset_fix2]
 
         # Reprocessing Test Step Variations
         if clear_type == "rewrite":
-            with open(copied_asset, "w") as file:
-                file.write(original_prefab)
+            for each_asset in assets_to_fix:
+                with open(each_asset, "w") as file:
+                    file.write(fixed_prefab)
         elif clear_type == "delete_asset":
-            fs.delete([copied_asset], True, False)
+            for each_asset in assets_to_fix:
+                fs.delete([each_asset], True, False)
         elif clear_type == "delete_dir":
             fs.delete([test_dir], False, True)
 
