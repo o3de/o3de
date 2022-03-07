@@ -279,6 +279,8 @@ private:
 
     AZ::Vector2 m_contextMenuViewPoint;
 
+    bool m_enableNewActionManager = false;
+
     short m_startedUndoRecordingNestingLevel;   // used in OnBegin/EndUndo to ensure we only accept undo's we started recording
 
     AzToolsFramework::SliceOverridesNotificationWindowManager* m_notificationWindowManager;

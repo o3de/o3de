@@ -112,7 +112,6 @@ protected:
 
     double m_fieldWidthMultiplier = 1.8;
 
-
     void OnMenuFOVCustom();
 
     void CreateFOVMenu();
@@ -149,6 +148,8 @@ protected:
     void OnAngleSpinBoxChanged(double value);
 
     void UpdateOverFlowMenuState();
+
+    bool m_enableNewActionManager = false;
 
     QMenu* m_fovMenu = nullptr;
     QMenu* m_aspectMenu = nullptr;

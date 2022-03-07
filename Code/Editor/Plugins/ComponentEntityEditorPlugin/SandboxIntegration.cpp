@@ -168,8 +168,16 @@ SandboxIntegrationManager::~SandboxIntegrationManager()
     m_prefabIntegrationManager = nullptr;
 }
 
+static constexpr const char s_actionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
+
 void SandboxIntegrationManager::Setup()
 {
+    // Retrieve new action manager setting
+    if (auto* registry = AZ::SettingsRegistry::Get())
+    {
+        registry->GetObject(m_enableNewActionManager, s_actionManagerToggleKey);
+    }
+
     AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
@@ -180,12 +188,21 @@ void SandboxIntegrationManager::Setup()
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
 
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
-        SaveSlice(false);
-    });
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SELECTED_SLICE, [this]() {
-        SaveSlice(true);
-    });
+    if (!m_enableNewActionManager)
+    {
+        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
+            ID_FILE_SAVE_SLICE_TO_ROOT,
+            [this]()
+            {
+                SaveSlice(false);
+            });
+        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
+            ID_FILE_SAVE_SELECTED_SLICE,
+            [this]()
+            {
+                SaveSlice(true);
+            });
+    }
 
     // Keep a reference to the interface EditorEntityUiInterface.
     // This is used to register layer entities to their UI handler when the layer component is activated.

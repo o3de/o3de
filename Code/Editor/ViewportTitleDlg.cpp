@@ -83,10 +83,18 @@ namespace
     };
 } // end anonymous namespace
 
+static constexpr const char s_actionManagerToggleKey[] = "/O3DE/ActionManager/EnableNewActionManager";
+
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
     , m_ui(new Ui::ViewportTitleDlg)
 {
+    // Retrieve new action manager setting
+    if (auto* registry = AZ::SettingsRegistry::Get())
+    {
+        registry->GetObject(m_enableNewActionManager, s_actionManagerToggleKey);
+    }
+
     auto container = new QWidget(this);
     m_ui->setupUi(container);
     auto layout = new QVBoxLayout(this);
@@ -107,7 +115,12 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
-    SetupHelpersButton();
+
+    if (!m_enableNewActionManager)
+    {
+        SetupHelpersButton();
+    }
+
     SetupOverflowMenu();
 
     if (gSettings.bMuteAudio)

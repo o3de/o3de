@@ -238,15 +238,15 @@ private:
     QtViewPaneManager* m_viewPaneManager;
     ShortcutDispatcher* m_shortcutDispatcher = nullptr;
     ActionManager* m_actionManager = nullptr;
+    ToolbarManager* m_toolbarManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
     KeyboardCustomizationSettings* m_keyboardCustomization;
     CLayoutViewPane* m_activeView;
     QSettings m_settings;
-    ToolbarManager* const m_toolbarManager;
 
     AssetImporterManager* m_assetImporterManager;
-    LevelEditorMenuHandler* m_levelEditorMenuHandler;
+    LevelEditorMenuHandler* m_levelEditorMenuHandler = nullptr;
 
     CLayoutWnd* m_pLayoutWnd;
 
@@ -270,6 +270,8 @@ private:
     bool m_connectedToAssetProcessor = false;
     bool m_showAPDisconnectDialog = false;
     bool m_selectedEntityHasRoot = false;
+
+    bool m_enableNewActionManager = false;
 
     friend class ToolbarManager;
     friend class WidgetAction;

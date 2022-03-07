@@ -52,7 +52,14 @@ QVector<QAction*> GetAllActionsForMenu(const QMenu* menu)
 
 void ProcessAllActions(const QWidget* parent, const std::function<bool(QAction*)>& processor)
 {
+
     QMenuBar* menuBar = parent->findChild<QMenuBar*>();
+
+    if (!menuBar)
+    {
+        return;
+    }
+
     QList<QAction*> menuBarActions = menuBar->actions();
 
     for(QAction* menuAction : menuBarActions)
