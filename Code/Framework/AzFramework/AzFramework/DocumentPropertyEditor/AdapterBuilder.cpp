@@ -11,11 +11,6 @@
 
 namespace AZ::DocumentPropertyEditor
 {
-    AdapterBuilder::AdapterBuilder(RoutingAdapter* routingAdapter)
-        : m_routingAdapter(routingAdapter)
-    {
-    }
-
     void AdapterBuilder::Value(Dom::Value value)
     {
         CurrentNode().SetNodeValue(value);

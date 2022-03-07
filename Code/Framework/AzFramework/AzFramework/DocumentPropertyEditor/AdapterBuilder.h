@@ -20,11 +20,7 @@ namespace AZ::DocumentPropertyEditor
     class AdapterBuilder
     {
     public:
-        //! Creates an AdapterBuilder.
-        //! A routing adapter may optionally be specified to enable routing via calls to
-        //! NestedAdapter.
-        //! Constructing an AdapterBuilder immediately opens an Adapter tag.
-        AdapterBuilder(RoutingAdapter* routingAdapter = nullptr);
+        AdapterBuilder() = default;
 
         //! Begins a new Node, pushing its value to the entry stack.
         //! Nodes may have child nodes, values, and attributes, as dictated by their node definiton.
@@ -107,7 +103,6 @@ namespace AZ::DocumentPropertyEditor
         void Error(AZStd::string_view message);
         Dom::Value& CurrentNode();
 
-        RoutingAdapter* m_routingAdapter = nullptr;
         Dom::Value m_value;
         Dom::Path m_currentPath;
         AZStd::stack<Dom::Value> m_entries;
