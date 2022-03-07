@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Despawn",
-                "category": "Spawning",
+                "category": "Prefab/Spawning",
                 "tooltip": "Despawns a selected prefab"
             },
             "slots": [
@@ -36,9 +36,9 @@
                     }
                 },
                 {
-                    "base": "DataOutput_TicketId_0",
+                    "base": "DataOutput_SpawnTicket_0",
                     "details": {
-                        "name": "TicketId"
+                        "name": "SpawnTicket"
                     }
                 }
             ]

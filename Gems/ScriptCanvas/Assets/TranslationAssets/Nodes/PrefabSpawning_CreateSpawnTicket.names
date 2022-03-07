@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Create Spawn Ticket",
-                "category": "Spawning",
+                "category": "Prefab/Spawning",
                 "tooltip": "Creates a spawn ticket using provided prefab"
             },
             "slots": [
@@ -29,9 +29,9 @@
                     }
                 },
                 {
-                    "base": "DataOutput_SpawnTicketInstance_0",
+                    "base": "DataOutput_SpawnTicket_0",
                     "details": {
-                        "name": "SpawnTicketInstance"
+                        "name": "SpawnTicket"
                     }
                 }
             ]
