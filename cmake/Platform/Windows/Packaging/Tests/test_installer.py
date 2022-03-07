@@ -16,56 +16,10 @@ pytest cmake/Platform/Windows/Packaging/Tests -s \
 
 """
 import pytest
-from pathlib import Path
-from subprocess import run, TimeoutExpired
-from time import sleep
 import json
 import os
-import shutil
-from tempfile import NamedTemporaryFile
-
-class SessionContext:
-    def __init__(self, request):
-        self.installer_path = Path(request.config.getoption("--installer-path")).resolve()
-        self.install_root = Path(request.config.getoption("--install-root")).resolve()
-        self.project_path = Path(request.config.getoption("--project-path")).resolve()
-        self.engine_bin_path = self.install_root / 'bin' / 'Windows' / 'profile' / 'Default'
-        self.project_build_path = self.project_path / 'build' / 'Windows'
-        self.project_bin_path = self.project_build_path / 'bin' / 'profile'
-
-        cmake_runtime_path = self.install_root / 'cmake' / 'runtime'
-        self.cmake_path = next(cmake_runtime_path.glob('**/cmake.exe'))
-
-        self.log_file = request.config.getoption("--log-file")
-        self.temp_file = NamedTemporaryFile(mode='w+t', delete=False)
-
-    def run(self, command, timeout=None, cwd=None):
-        self.temp_file.write(' '.join(command) + '\n')
-        self.temp_file.flush()
-        return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True)
-
-    def cleanup(self):
-        if self.project_path.is_dir():
-            # wait a few seconds for processes to stop using the project folder 
-            sleep(5)
-
-            o3de_path = self.install_root / 'scripts' / 'o3de.bat'
-            if o3de_path.is_file():
-                self.run([str(o3de_path),'register','--project-path', str(self.project_path), '--remove'])
-
-            shutil.rmtree(self.project_path)
-
-        self.temp_file.close()
-        if self.log_file:
-            shutil.copy(self.temp_file.name, Path(self.log_file).resolve())
-        os.remove(self.temp_file.name)
-
-@pytest.fixture(scope="session")
-def context(request):
-    session_context = SessionContext(request)
-    yield session_context
-    session_context.cleanup()
-
+from pathlib import Path
+from subprocess import TimeoutExpired
 
 @pytest.fixture(scope="session")
 def test_installer_fixture(context):
@@ -229,9 +183,6 @@ def test_uninstall(test_run_launcher_fixture, test_run_editor_fixture, context):
 
     # the installer succeeds
     assert result.returncode == 0, f"Installer failed with exit code {result.returncode}"
-
-    # the install root is created
-    assert context.install_root.is_dir(), f"Invalid install root {context.install_root}"
 
     manifest_path = Path(os.path.expanduser("~")).resolve() / '.o3de' / 'o3de_manifest.json'
     with manifest_path.open('r') as f:
