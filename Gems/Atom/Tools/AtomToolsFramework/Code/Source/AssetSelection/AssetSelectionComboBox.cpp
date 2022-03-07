@@ -129,7 +129,7 @@ namespace AtomToolsFramework
         if (m_filterCallback && m_filterCallback(assetInfo))
         {
             addItem(
-                GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId).c_str()),
+                GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId)).c_str(),
                 QVariant(QString(assetInfo.m_assetId.ToString<AZStd::string>().c_str())));
 
             RegisterThumbnail(assetInfo.m_assetId);
