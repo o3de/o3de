@@ -44,8 +44,6 @@ namespace MaterialEditor
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
-        bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath) override;
-        bool GetOpenDocumentParams(AZStd::string& openPath) override;
         void OpenSettings() override;
         void OpenHelp() override;
 
