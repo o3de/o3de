@@ -194,6 +194,7 @@ namespace AzToolsFramework
             , m_suppressTransformChangedEvent(false)
             , m_interpolatePosition(AZ::InterpolationMode::NoInterpolation)
             , m_interpolateRotation(AZ::InterpolationMode::NoInterpolation)
+            , m_focusModeInterface(AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
         {
         }
 
@@ -952,6 +953,13 @@ namespace AzToolsFramework
                 !containerEntityInterface->IsContainerOpen(actualValue))
             {
                 return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a closed container!"));
+            }
+
+            // Don't allow entities to be parented outside their container.
+            AzToolsFramework::EntityIdList entities = m_focusModeInterface->GetFocusedEntities(GetEntityContextId());
+            if (std::find(entities.begin(), entities.end(), actualValue) == entities.end())
+            {
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a different container!"));
             }
 
             return AZ::Success();
