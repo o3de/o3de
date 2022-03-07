@@ -6,7 +6,7 @@
          PreferredClassName="Despawn"
          Base="ScriptCanvas::Nodeable"
          Icon="Icons/ScriptCanvas/Placeholder.png"
-         Category="Spawning"
+         Category="Prefab/Spawning"
          Version="0"
          GeneratePropertyFriend="True"
          Namespace="ScriptCanvas"

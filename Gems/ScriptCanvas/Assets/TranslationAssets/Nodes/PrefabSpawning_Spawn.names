@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Spawn",
-                "category": "Spawning",
+                "category": "Prefab/Spawning",
                 "tooltip": "Spawns a selected prefab"
             },
             "slots": [
