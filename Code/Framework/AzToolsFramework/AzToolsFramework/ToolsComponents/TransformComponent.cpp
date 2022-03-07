@@ -956,10 +956,12 @@ namespace AzToolsFramework
             }
 
             // Don't allow entities to be parented outside their container.
-            AzToolsFramework::EntityIdList entities = m_focusModeInterface->GetFocusedEntities(GetEntityContextId());
-            if (std::find(entities.begin(), entities.end(), actualValue) == entities.end())
+            if (m_focusModeInterface)
             {
-                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a different container!"));
+                if (!m_focusModeInterface->IsInFocusSubTree(actualValue))
+                {
+                    return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a different container!"));
+                }
             }
 
             return AZ::Success();
