@@ -960,7 +960,7 @@ namespace AzToolsFramework
             {
                 if (!m_focusModeInterface->IsInFocusSubTree(actualValue))
                 {
-                    return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a different container!"));
+                    return AZ::Failure(AZStd::string("You can only set a parent as one of the entities belonging to the focused prefab!"));
                 }
             }
 
