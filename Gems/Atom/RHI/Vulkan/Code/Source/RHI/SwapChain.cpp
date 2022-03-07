@@ -6,8 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
-
 #include "Atom_RHI_Vulkan_Platform.h"
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
