@@ -35,24 +35,23 @@ namespace AtomToolsFramework
         m_documentSystem.reset(aznew AtomToolsDocumentSystem(m_toolId));
 
         m_assetBrowserInteractions->RegisterContextMenuActions(
-            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            [](const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
             {
                 return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
             },
-            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
             {
                 bool handledOpen = false;
-                AtomToolsFramework::DocumentTypeInfoVector documentTypes;
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
-                    documentTypes, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+                DocumentTypeInfoVector documentTypes;
+                AtomToolsDocumentSystemRequestBus::EventResult(
+                    documentTypes, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
                 for (const auto& documentType : documentTypes)
                 {
                     if (documentType.IsSupportedExtensionToOpen(entries.front()->GetFullPath()))
                     {
                         menu->addAction(QObject::tr("Open"), [entries, this]() {
-                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument,
-                                entries.front()->GetFullPath());
+                            AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entries.front()->GetFullPath());
                         });
                         handledOpen = true;
                         break;
@@ -75,49 +74,41 @@ namespace AtomToolsFramework
                             : QObject::tr("Create %1...").arg(documentType.m_documentTypeName.c_str());
 
                         menu->addAction(createActionName, [entries, documentType, this]() {
-                            const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                                QString(AZ::Utils::GetProjectPath().c_str()) +
-                                AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets" +
-                                AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
-                                documentType.GetDefaultExtensionToSave().c_str()).absoluteFilePath();
+                            const AZStd::string defaultPath = GetUniqueFilePath(AZStd::string::format(
+                                "%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(),
+                                documentType.GetDefaultExtensionToSave().c_str()));
 
-                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFilePath,
-                                entries.front()->GetFullPath(),
-                                AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
+                            AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFilePath,
+                                entries.front()->GetFullPath(), GetSaveFilePath(defaultPath));
                         });
                     }
                 }
             });
 
         m_assetBrowserInteractions->RegisterContextMenuActions(
-            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            [](const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
             {
                 return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder;
             },
-            [this](QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            [this](QWidget* caller, QMenu* menu, const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
             {
-                AtomToolsFramework::DocumentTypeInfoVector documentTypes;
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
-                    documentTypes, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+                DocumentTypeInfoVector documentTypes;
+                AtomToolsDocumentSystemRequestBus::EventResult(
+                    documentTypes, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
                 for (const auto& documentType : documentTypes)
                 {
-                    menu->addAction(
-                        QObject::tr("Create %1...").arg(documentType.m_documentTypeName.c_str()),
-                        [caller, documentType, entries, this]()
-                        {
-                            AtomToolsFramework::CreateDocumentDialog createDialog(
-                                documentType, entries.front()->GetFullPath().c_str(), caller);
-                            createDialog.adjustSize();
+                    menu->addAction(QObject::tr("Create %1...").arg(documentType.m_documentTypeName.c_str()), [caller, documentType, entries, this]() {
+                        CreateDocumentDialog dialog(documentType, entries.front()->GetFullPath().c_str(), caller);
+                        dialog.adjustSize();
 
-                            if (createDialog.exec() == QDialog::Accepted && !createDialog.m_sourcePath.isEmpty() &&
-                                !createDialog.m_targetPath.isEmpty())
-                            {
-                                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                                    m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFilePath,
-                                    createDialog.m_sourcePath.toUtf8().constData(), createDialog.m_targetPath.toUtf8().constData());
-                            }
-                        });
+                        if (dialog.exec() == QDialog::Accepted && !dialog.m_sourcePath.isEmpty() && !dialog.m_targetPath.isEmpty())
+                        {
+                            AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFilePath,
+                                dialog.m_sourcePath.toUtf8().constData(), dialog.m_targetPath.toUtf8().constData());
+                        }
+                    });
                 }
             });
     }

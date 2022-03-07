@@ -37,15 +37,15 @@ namespace AtomToolsFramework
         AddDocumentTabBar();
 
         m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
-            AtomToolsFramework::DocumentTypeInfoVector documentTypes;
-            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
-                documentTypes, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+            DocumentTypeInfoVector documentTypes;
+            AtomToolsDocumentSystemRequestBus::EventResult(
+                documentTypes, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
             for (const auto& documentType : documentTypes)
             {
                 if (documentType.IsSupportedExtensionToOpen(absolutePath))
                 {
-                    AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                        m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                    AtomToolsDocumentSystemRequestBus::Event(
+                        m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
                     return;
                 }
             }
@@ -105,10 +105,10 @@ namespace AtomToolsFramework
             bool result = false;
             AtomToolsDocumentSystemRequestBus::EventResult(
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId,
-                GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
+                GetSaveFilePath(documentPath.toUtf8().constData()));
             if (!result)
             {
-                SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
+                SetStatusError(tr("Document save failed: %1").arg(documentPath));
             }
         }, QKeySequence::SaveAs);
         m_menuFile->insertAction(insertPostion, m_actionSaveAsCopy);
@@ -120,10 +120,10 @@ namespace AtomToolsFramework
             bool result = false;
             AtomToolsDocumentSystemRequestBus::EventResult(
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild, documentId,
-                GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
+                GetSaveFilePath(documentPath.toUtf8().constData()));
             if (!result)
             {
-                SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
+                SetStatusError(tr("Document save failed: %1").arg(documentPath));
             }
         });
         m_menuFile->insertAction(insertPostion, m_actionSaveAsChild);
@@ -387,9 +387,9 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentMainWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
     {
-        AtomToolsFramework::DocumentTypeInfoVector documentTypes;
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
-            documentTypes, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+        DocumentTypeInfoVector documentTypes;
+        AtomToolsDocumentSystemRequestBus::EventResult(
+            documentTypes, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
 
         if (documentTypes.empty())
         {
@@ -416,14 +416,14 @@ namespace AtomToolsFramework
         }
 
         const auto& documentType = documentTypes[documentTypeIndex];
-        AtomToolsFramework::CreateDocumentDialog createDialog(
+        CreateDocumentDialog dialog(
             documentType, QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets", this);
-        createDialog.adjustSize();
+        dialog.adjustSize();
 
-        if (createDialog.exec() == QDialog::Accepted && !createDialog.m_sourcePath.isEmpty() && !createDialog.m_targetPath.isEmpty())
+        if (dialog.exec() == QDialog::Accepted && !dialog.m_sourcePath.isEmpty() && !dialog.m_targetPath.isEmpty())
         {
-            savePath = createDialog.m_targetPath.toUtf8().constData();
-            openPath = createDialog.m_sourcePath.toUtf8().constData();
+            savePath = dialog.m_targetPath.toUtf8().constData();
+            openPath = dialog.m_sourcePath.toUtf8().constData();
             return true;
         }
         return false;
@@ -431,9 +431,9 @@ namespace AtomToolsFramework
 
     AZStd::vector<AZStd::string> AtomToolsDocumentMainWindow::GetOpenDocumentParams()
     {
-        AtomToolsFramework::DocumentTypeInfoVector documentTypes;
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
-            documentTypes, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+        DocumentTypeInfoVector documentTypes;
+        AtomToolsDocumentSystemRequestBus::EventResult(
+            documentTypes, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
 
         QStringList extensionList;
         for (const auto& documentType : documentTypes)
@@ -448,7 +448,7 @@ namespace AtomToolsFramework
         {
             // Generate a regular expression that combines all of the supported extensions to use as a filter for the asset picker
             QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
-            return AtomToolsFramework::GetOpenFileInfo(QRegExp(expression, Qt::CaseInsensitive));
+            return GetOpenFilePaths(QRegExp(expression, Qt::CaseInsensitive));
         }
 
         return {};

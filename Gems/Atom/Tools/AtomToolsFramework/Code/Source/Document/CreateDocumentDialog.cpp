@@ -50,11 +50,11 @@ namespace AtomToolsFramework
         targetSelectionBrowserLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
         targetSelectionBrowserLabel->setText(targetLabel);
 
-        m_sourceSelectionComboBox = new AtomToolsFramework::AssetSelectionComboBox(filterCallback, this);
+        m_sourceSelectionComboBox = new AssetSelectionComboBox(filterCallback, this);
         m_sourceSelectionComboBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
         m_sourceSelectionComboBox->SelectAsset(defaultSourceAssetId);
         m_sourcePath = m_sourceSelectionComboBox->GetSelectedAssetSourcePath().c_str();
-        QObject::connect(m_sourceSelectionComboBox, &AtomToolsFramework::AssetSelectionComboBox::AssetSelected, this, [this]() {
+        QObject::connect(m_sourceSelectionComboBox, &AssetSelectionComboBox::AssetSelected, this, [this]() {
             m_sourcePath = m_sourceSelectionComboBox->GetSelectedAssetSourcePath().c_str();
         });
 
@@ -63,8 +63,8 @@ namespace AtomToolsFramework
         m_targetSelectionBrowser->setLineEditReadOnly(true);
 
         // Select a default location and unique name for the new document
-        UpdateTargetPath(AtomToolsFramework::GetUniqueFileInfo(
-            m_initialPath + AZ_CORRECT_FILESYSTEM_SEPARATOR + QString("untitled.%1").arg(supportedExtensions.front())));
+        UpdateTargetPath(QFileInfo(GetUniqueFilePath(
+            AZStd::string::format("%s/Assets/untitled.%s", m_initialPath.toUtf8().constData(), supportedExtensions.front().toUtf8().constData())).c_str()));
 
         // When the file selection button is pressed, open a file dialog to select where the document will be saved
         QObject::connect(m_targetSelectionBrowser, &AzQtComponents::BrowseEdit::attachedButtonTriggered, m_targetSelectionBrowser, [this, supportedExtensions]() {

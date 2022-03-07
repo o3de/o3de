@@ -30,11 +30,12 @@ namespace AtomToolsFramework
     using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;
     void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback);
 
-    QString GetDisplayNameFromPath(const QString& path);
-    QFileInfo GetSaveFileInfo(const QString& initialPath, const QString& title = "Document");
-    AZStd::vector<AZStd::string> GetOpenFileInfo(const QRegExp& filter, const QString& title = "Document");
-    QFileInfo GetUniqueFileInfo(const QString& initialPath);
-    QFileInfo GetDuplicationFileInfo(const QString& initialPath);
+    AZStd::string GetDisplayNameFromPath(const AZStd::string& path);
+    AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title = "Document");
+    AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title = "Document");
+    AZStd::string GetUniqueFilePath(const AZStd::string& initialPath);
+    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& baseName);
+    AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath);
     bool LaunchTool(const QString& baseName, const QStringList& arguments);
 
     //! Generate a file path that is relative to either the source asset root or the export path

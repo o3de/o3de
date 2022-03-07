@@ -62,55 +62,52 @@ namespace AtomToolsFramework
         job->Start();
     }
 
-    QString GetDisplayNameFromPath(const QString& path)
+    AZStd::string GetDisplayNameFromPath(const AZStd::string& path)
     {
-        QFileInfo fileInfo(path);
+        QFileInfo fileInfo(path.c_str());
         QString fileName = fileInfo.baseName();
-        fileName.replace(QRegExp("[^a-zA-Z\\d\\s]"), " ");
+        fileName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
         QStringList fileNameParts = fileName.split(' ', Qt::SkipEmptyParts);
         for (QString& part : fileNameParts)
         {
             part.replace(0, 1, part[0].toUpper());
         }
-        return fileNameParts.join(" ");
+        return fileNameParts.join(" ").toUtf8().constData();
     }
 
-    QFileInfo GetSaveFileInfo(const QString& initialPath, const QString& title)
+    AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title)
     {
-        const QFileInfo initialFileInfo(initialPath);
+        const QFileInfo initialFileInfo(initialPath.c_str());
         const QString initialExt(initialFileInfo.completeSuffix());
 
-        // Instead of just passing in the absolute file path, we pass in the absolute folder path and the base name to prevent the file
-        // dialog from displaying multiple extensions when the extension contains a "."
         const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
             QApplication::activeWindow(),
-            QObject::tr("Save %1").arg(title),
-            initialFileInfo.absolutePath() +
-            AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING +
-            initialFileInfo.baseName(),
+            QObject::tr("Save %1").arg(title.c_str()),
+            initialFileInfo.absoluteFilePath(),
             QString("Files (*.%1)").arg(initialExt)));
 
         if (selectedFileInfo.absoluteFilePath().isEmpty())
         {
             // Cancelled operation
-            return QFileInfo();
+            return AZStd::string();
         }
 
         if (!selectedFileInfo.absoluteFilePath().endsWith(initialExt))
         {
             QMessageBox::critical(QApplication::activeWindow(), "Error", QString("File name must have .%1 extension.").arg(initialExt));
-            return QFileInfo();
+            return AZStd::string();
         }
 
         // Reconstructing the file info from the absolute path and expected extension to compensate for an issue with the save file
         // dialog adding the extension multiple times if it contains "." like *.lightingpreset.azasset
-        return QFileInfo(selectedFileInfo.absolutePath() + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + selectedFileInfo.baseName() + "." + initialExt);
+        return QFileInfo(QString("%1/%2.%3").arg(selectedFileInfo.absolutePath()).arg(selectedFileInfo.baseName()).arg(initialExt))
+            .absoluteFilePath().toUtf8().constData();
     }
 
-    AZStd::vector<AZStd::string> GetOpenFileInfo(const QRegExp& filter, const QString& title)
+    AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title)
     {
         auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::SourceAssetTypeSelection(filter);
-        selection.SetTitle(title);
+        selection.SetTitle(title.c_str());
         selection.SetMultiselect(true);
 
         AzToolsFramework::AssetBrowser::AssetBrowserComponentRequestBus::Broadcast(
@@ -125,49 +122,27 @@ namespace AtomToolsFramework
         return results;
     }
 
-    QFileInfo GetUniqueFileInfo(const QString& initialPath)
+    AZStd::string GetUniqueFilePath(const AZStd::string& initialPath)
     {
         int counter = 0;
-        QFileInfo fileInfo = initialPath;
+        QFileInfo fileInfo(initialPath.c_str());
         const QString extension = "." + fileInfo.completeSuffix();
         const QString basePathAndName = fileInfo.absoluteFilePath().left(fileInfo.absoluteFilePath().size() - extension.size());
         while (fileInfo.exists())
         {
             fileInfo = QString("%1_%2%3").arg(basePathAndName).arg(++counter).arg(extension);
         }
-        return fileInfo;
+        return fileInfo.absoluteFilePath().toUtf8().constData();
     }
 
-    QFileInfo GetDuplicationFileInfo(const QString& initialPath)
+    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& baseName)
     {
-        const QFileInfo initialFileInfo(initialPath);
-        const QString initialExt(initialFileInfo.completeSuffix());
+        return GetUniqueFilePath(AZStd::string::format("%s/Assets/%s", AZ::Utils::GetProjectPath().c_str(), baseName.c_str()));
+    }
 
-        const QFileInfo duplicateFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
-            QApplication::activeWindow(),
-            "Duplicate File",
-            GetUniqueFileInfo(initialPath).absoluteFilePath(),
-            QString("Files (*.%1)").arg(initialExt)));
-
-        if (duplicateFileInfo == initialFileInfo)
-        {
-            // Cancelled operation or selected same path
-            return QFileInfo();
-        }
-
-        if (duplicateFileInfo.absoluteFilePath().isEmpty())
-        {
-            // Cancelled operation or selected same path
-            return QFileInfo();
-        }
-
-        if (!duplicateFileInfo.absoluteFilePath().endsWith(initialExt))
-        {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("File name must have .%1 extension.").arg(initialExt));
-            return QFileInfo();
-        }
-
-        return duplicateFileInfo;
+    AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath)
+    {
+        return GetSaveFilePath(GetUniqueFilePath(initialPath), "Duplicate File");
     }
 
     bool LaunchTool(const QString& baseName, const QStringList& arguments)
