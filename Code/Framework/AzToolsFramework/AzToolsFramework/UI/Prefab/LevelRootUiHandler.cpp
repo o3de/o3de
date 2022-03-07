@@ -23,7 +23,7 @@ namespace AzToolsFramework
 
     const QColor LevelRootUiHandler::s_levelRootBorderColor = QColor("#656565");
     const QColor LevelRootUiHandler::s_levelRootEditColor = QColor("#4A90E2");
-    const QColor LevelRootUiHandler::s_levelRootOverrideColor = QColor("#FF8000");
+    const QColor LevelRootUiHandler::s_levelRootOverrideColor = QColor("#C76D0E");
     const QString LevelRootUiHandler::s_levelRootIconPath = QString(":/Level/level.svg");
 
     LevelRootUiHandler::LevelRootUiHandler()
@@ -114,8 +114,6 @@ namespace AzToolsFramework
         // Draw background if the root is focused.
         if (m_prefabFocusPublicInterface->GetOpenInstanceMode() == 1 && m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            painter->fillRect(rect, backgroundColor);
-
             // Paint toggle icon
             if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle || index.column() == EntityOutlinerListModel::ColumnLockToggle)
             {
@@ -129,12 +127,10 @@ namespace AzToolsFramework
                 painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
             }
         }
-        else
-        {
-            // Draw border at the bottom.
-            painter->setPen(borderLinePen);
-            painter->drawLine(rect.bottomLeft(), rect.bottomRight());
-        }
+
+        // Draw border at the bottom.
+        painter->setPen(borderLinePen);
+        painter->drawLine(rect.bottomLeft(), rect.bottomRight());
 
         painter->restore();
     }

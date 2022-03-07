@@ -96,6 +96,12 @@ namespace AzToolsFramework
             return QIcon(m_prefabEditIconPath);
         }
 
+        if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId) &&
+            m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
+        {
+            return QIcon(m_prefabEditIconPath);
+        }
+
         return QIcon(m_prefabIconPath);
     }
 
@@ -124,11 +130,11 @@ namespace AzToolsFramework
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             backgroundColor = m_prefabCapsuleEditColor;
-
-            if (m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
-            {
-                backgroundColor = m_prefabCapsuleOverrideColor;
-            }
+        }
+        else if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId) && 
+            m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
+        {
+            backgroundColor = m_prefabCapsuleOverrideColor;
         }
         else if (!(option.state & QStyle::State_Enabled))
         {
@@ -214,11 +220,12 @@ namespace AzToolsFramework
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
-
-            if (m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
-            {
-                borderColor = m_prefabCapsuleOverrideColor;
-            }
+        }
+        else if (
+            m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId) &&
+            m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
+        {
+            borderColor = m_prefabCapsuleOverrideColor;
         }
 
         QPen borderLinePen(borderColor, m_prefabBorderThickness);
