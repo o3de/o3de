@@ -27,8 +27,8 @@ namespace ScriptCanvas::Nodeables::Spawning
     public:
         SpawnNodeable() = default;
         // these methods are required by Script Canvas
-        SpawnNodeable(const SpawnNodeable&) {}
-        SpawnNodeable& operator=(const SpawnNodeable&) {}
+        SpawnNodeable(const SpawnNodeable& rhs);
+        SpawnNodeable& operator=(const SpawnNodeable& rhs);
 
         // ScriptCanvas::Nodeable  overrides ...
         void OnInitializeExecutionState() override;
