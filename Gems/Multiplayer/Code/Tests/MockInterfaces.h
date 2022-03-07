@@ -88,6 +88,10 @@ namespace UnitTest
         MOCK_METHOD1(HandleLocalRpcMessage, void(Multiplayer::NetworkEntityRpcMessage&));
         MOCK_METHOD1(HandleEntitiesExitDomain, void(const Multiplayer::NetEntityIdSet&));
         MOCK_METHOD1(ForceAssumeAuthority, void(const Multiplayer::ConstNetworkEntityHandle&));
+        MOCK_METHOD2(MarkAlwaysRelevantToClients, void(const Multiplayer::ConstNetworkEntityHandle&, bool));
+        MOCK_METHOD2(MarkAlwaysRelevantToServers, void(const Multiplayer::ConstNetworkEntityHandle&, bool));
+        const Multiplayer::NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override { static Multiplayer::NetEntityHandleSet value; return value; }
+        const Multiplayer::NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override { static Multiplayer::NetEntityHandleSet value; return value; }
         MOCK_METHOD1(SetMigrateTimeoutTimeMs, void(AZ::TimeMs));
         MOCK_CONST_METHOD0(DebugDraw, void());
     };

@@ -55,6 +55,7 @@ namespace AZ
             size_t GetAllocationCount() const override;
             size_t GetAllocatedByteCount() const override;
             const Descriptor& GetDescriptor() const override;
+            float ComputeFragmentation() const override;
             void Clone(RHI::Allocator* newAllocator)  override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -113,7 +114,8 @@ namespace AZ
                 size_t requestedAlignment,
                 size_t addressOffset);
 
-            NodeHandle GetFirstFreeHandle();
+            NodeHandle GetFirstFreeHandle() const;
+            const Node& GetNode(NodeHandle handle) const;
             Node& GetNode(NodeHandle handle);
 
             struct Allocation

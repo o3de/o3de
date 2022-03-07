@@ -59,7 +59,7 @@ namespace AZ
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
 
-                if (!binding.m_attachment)
+                if (!binding.GetAttachment())
                 {
                     continue;
                 }
@@ -67,7 +67,7 @@ namespace AZ
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
-                    pass->DepthStencilAttachment(binding.m_attachment->m_descriptor.m_image.m_format);
+                    pass->DepthStencilAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
                     continue;
                 }
 
@@ -79,7 +79,7 @@ namespace AZ
 
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
                 {
-                    RHI::Format format = binding.m_attachment->m_descriptor.m_image.m_format;
+                    RHI::Format format = binding.GetAttachment()->m_descriptor.m_image.m_format;
                     pass->RenderTargetAttachment(format);
                 }
             }
@@ -101,7 +101,7 @@ namespace AZ
                 {
                     continue;
                 }
-                if (!binding.m_attachment)
+                if (!binding.GetAttachment())
                 {
                     continue;
                 }
@@ -112,13 +112,13 @@ namespace AZ
                     if (!wasSet)
                     {
                         // save multi-sample state found in the first output color attachment
-                        outputMultiSampleState = binding.m_attachment->m_descriptor.m_image.m_multisampleState;
+                        outputMultiSampleState = binding.GetAttachment()->m_descriptor.m_image.m_multisampleState;
                         wasSet = true;
                     }
                     else if (PassValidation::IsEnabled())
                     {
                         // return false directly if the current output color attachment has different multi-sample state then previous ones
-                        if (outputMultiSampleState != binding.m_attachment->m_descriptor.m_image.m_multisampleState)
+                        if (outputMultiSampleState != binding.GetAttachment()->m_descriptor.m_image.m_multisampleState)
                         {
                             AZ_Error("RPI", false, "Pass %s has different multi-sample states within its color attachments", GetPathName().GetCStr());
                             break;
@@ -145,7 +145,7 @@ namespace AZ
                 for (PassAttachmentBinding& binding : m_attachmentBindings)
                 {
                     const Name& shaderName = binding.m_shaderInputName;
-                    PassAttachment* attachment = binding.m_attachment.get();
+                    PassAttachment* attachment = binding.GetAttachment().get();
 
                     if (shaderName == autoBind)
                     {
@@ -220,8 +220,8 @@ namespace AZ
         {
             for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
             {
-                if (attachmentBinding.m_attachment != nullptr &&
-                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.m_attachment->GetAttachmentId()))
+                if (attachmentBinding.GetAttachment() != nullptr &&
+                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
                 {
                     switch (attachmentBinding.m_unifiedScopeDesc.GetType())
                     {
@@ -265,7 +265,7 @@ namespace AZ
 
         void RenderPass::BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex)
         {
-            PassAttachment* attachment = binding.m_attachment.get();
+            PassAttachment* attachment = binding.GetAttachment().get();
             if (attachment)
             {
                 int16_t inputIndex = binding.m_shaderInputIndex;

@@ -14,7 +14,7 @@
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Application/Application.h>
-#include <Viewport/MaterialViewportRequestBus.h>
+#include <Viewport/MaterialViewportSettingsRequestBus.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
 #include <QAction>
@@ -26,19 +26,20 @@
 
 namespace MaterialEditor
 {
-    ViewportSettingsInspector::ViewportSettingsInspector(QWidget* parent)
+    ViewportSettingsInspector::ViewportSettingsInspector(const AZ::Crc32& toolId, QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
+        , m_toolId(toolId)
     {
         SetGroupSettingsPrefix("/O3DE/Atom/MaterialEditor/ViewportSettingsInspector");
         Populate();
-        MaterialViewportNotificationBus::Handler::BusConnect();
+        MaterialViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 
     ViewportSettingsInspector::~ViewportSettingsInspector()
     {
         m_lightingPreset = {};
         m_modelPreset = {};
-        MaterialViewportNotificationBus::Handler::BusDisconnect();
+        MaterialViewportSettingsNotificationBus::Handler::BusDisconnect();
     }
 
     void ViewportSettingsInspector::Populate()
@@ -101,8 +102,9 @@ namespace MaterialEditor
 
         if (!savePath.empty())
         {
-            MaterialViewportRequestBus::Broadcast(
-                [&savePath](MaterialViewportRequestBus::Events* viewportRequests)
+            MaterialViewportSettingsRequestBus::Event(
+                m_toolId,
+                [&savePath](MaterialViewportSettingsRequestBus::Events* viewportRequests)
                 {
                     viewportRequests->SetModelPreset(AZ::Render::ModelPreset());
                     viewportRequests->SaveModelPreset(savePath);
@@ -120,15 +122,18 @@ namespace MaterialEditor
         }, QSize(itemSize, itemSize), QApplication::activeWindow());
 
         AZ::Data::AssetId assetId;
-        MaterialViewportRequestBus::BroadcastResult(assetId, &MaterialViewportRequestBus::Events::GetLastModelPresetAssetId);
+        MaterialViewportSettingsRequestBus::EventResult(
+            assetId, m_toolId, &MaterialViewportSettingsRequestBus::Events::GetLastModelPresetAssetId);
         dialog.SelectAsset(assetId);
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetRejected, this, [assetId]() {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadModelPresetByAssetId, assetId);
+        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
+            MaterialViewportSettingsRequestBus::Event(
+                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
         });
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadModelPresetByAssetId, assetId);
+        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+            MaterialViewportSettingsRequestBus::Event(
+                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
         });
 
         dialog.setFixedSize(800, 400);
@@ -143,7 +148,8 @@ namespace MaterialEditor
     void ViewportSettingsInspector::SaveModelPreset()
     {
         AZStd::string defaultPath;
-        MaterialViewportRequestBus::BroadcastResult(defaultPath, &MaterialViewportRequestBus::Events::GetLastModelPresetPath);
+        MaterialViewportSettingsRequestBus::EventResult(
+            defaultPath, m_toolId, &MaterialViewportSettingsRequestBus::Events::GetLastModelPresetPath);
 
         if (defaultPath.empty())
         {
@@ -154,8 +160,8 @@ namespace MaterialEditor
 
         if (!savePath.empty())
         {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetModelPreset, m_modelPreset);
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SaveModelPreset, savePath);
+            MaterialViewportSettingsRequestBus::Event(m_toolId, &MaterialViewportSettingsRequestBus::Events::SetModelPreset, m_modelPreset);
+            MaterialViewportSettingsRequestBus::Event(m_toolId, &MaterialViewportSettingsRequestBus::Events::SaveModelPreset, savePath);
         }
     }
 
@@ -198,8 +204,9 @@ namespace MaterialEditor
 
         if (!savePath.empty())
         {
-            MaterialViewportRequestBus::Broadcast(
-                [&savePath](MaterialViewportRequestBus::Events* viewportRequests)
+            MaterialViewportSettingsRequestBus::Event(
+                m_toolId,
+                [&savePath](MaterialViewportSettingsRequestBus::Events* viewportRequests)
                 {
                     viewportRequests->SetLightingPreset(AZ::Render::LightingPreset());
                     viewportRequests->SaveLightingPreset(savePath);
@@ -217,15 +224,18 @@ namespace MaterialEditor
         }, QSize(itemSize, itemSize), QApplication::activeWindow());
 
         AZ::Data::AssetId assetId;
-        MaterialViewportRequestBus::BroadcastResult(assetId, &MaterialViewportRequestBus::Events::GetLastLightingPresetAssetId);
+        MaterialViewportSettingsRequestBus::EventResult(
+            assetId, m_toolId, &MaterialViewportSettingsRequestBus::Events::GetLastLightingPresetAssetId);
         dialog.SelectAsset(assetId);
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetRejected, this, [assetId]() {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
+            MaterialViewportSettingsRequestBus::Event(
+                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
         });
 
-        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [](const AZ::Data::AssetId& assetId) {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::LoadLightingPresetByAssetId, assetId);
+        connect(&dialog, &AtomToolsFramework::AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
+            MaterialViewportSettingsRequestBus::Event(
+                m_toolId, &MaterialViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
         });
 
         dialog.setFixedSize(800, 400);
@@ -240,7 +250,8 @@ namespace MaterialEditor
     void ViewportSettingsInspector::SaveLightingPreset()
     {
         AZStd::string defaultPath;
-        MaterialViewportRequestBus::BroadcastResult(defaultPath, &MaterialViewportRequestBus::Events::GetLastLightingPresetPath);
+        MaterialViewportSettingsRequestBus::EventResult(
+            defaultPath, m_toolId, &MaterialViewportSettingsRequestBus::Events::GetLastLightingPresetPath);
 
         if (defaultPath.empty())
         {
@@ -251,15 +262,16 @@ namespace MaterialEditor
 
         if (!savePath.empty())
         {
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetLightingPreset, m_lightingPreset);
-            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SaveLightingPreset, savePath);
+            MaterialViewportSettingsRequestBus::Event(m_toolId, &MaterialViewportSettingsRequestBus::Events::SetLightingPreset, m_lightingPreset);
+            MaterialViewportSettingsRequestBus::Event(m_toolId, &MaterialViewportSettingsRequestBus::Events::SaveLightingPreset, savePath);
         }
     }
 
     void ViewportSettingsInspector::SaveSettings()
     {
-        MaterialViewportRequestBus::Broadcast(
-            [this](MaterialViewportRequestBus::Events* viewportRequests)
+        MaterialViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](MaterialViewportSettingsRequestBus::Events* viewportRequests)
             {
                 viewportRequests->SetModelPreset(m_modelPreset);
                 viewportRequests->SetLightingPreset(m_lightingPreset);
@@ -273,8 +285,9 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::LoadSettings()
     {
-        MaterialViewportRequestBus::Broadcast(
-            [this](MaterialViewportRequestBus::Events* viewportRequests)
+        MaterialViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](MaterialViewportSettingsRequestBus::Events* viewportRequests)
             {
                 m_modelPreset = viewportRequests->GetModelPreset();
                 m_lightingPreset = viewportRequests->GetLightingPreset();
