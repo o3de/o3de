@@ -17,7 +17,7 @@
 
 namespace AtomToolsFramework
 {
-    //! This is a specialized inspector widget that populates itself by inspecting document reflected object info.
+    //! This is a specialized inspector widget that populates itself by inspecting reflected document object info.
     //! Each element of an AtomToolsDocument object info vector will be displayed in a collapsible RPE group in the inspector.
     //! Property changes emitted from each RPE will be tracked and used to signal undo/redo events in the document.
     class AtomToolsDocumentInspector

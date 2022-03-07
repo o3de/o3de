@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentTypeInfo.h>
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
 
 #include <QDialog>
@@ -17,7 +18,8 @@
 
 namespace AtomToolsFramework
 {
-    //! Dialogue to select parameters for creating a new document from an input document or template file
+    //! CreateDocumentDialog allows the user to select from a filtered set of template documents to create a derived/child document at the
+    //! path selected in the file picker.
     class CreateDocumentDialog : public QDialog
     {
         Q_OBJECT
@@ -31,6 +33,9 @@ namespace AtomToolsFramework
             const AZ::Data::AssetId& defaultSourceAssetId,
             const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback,
             QWidget* parent = nullptr);
+
+        CreateDocumentDialog(const DocumentTypeInfo& documentType, const QString& initialPath, QWidget* parent = nullptr);
+
         ~CreateDocumentDialog() = default;
 
         void UpdateTargetPath(const QFileInfo& fileInfo);
