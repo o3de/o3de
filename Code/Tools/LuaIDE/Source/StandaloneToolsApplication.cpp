@@ -113,7 +113,7 @@ namespace StandaloneTools
     void BaseApplication::OnApplicationEntityActivated()
     {
         [[maybe_unused]] bool launched = StartDebugService();
-        AZ_Warning("EditorApplication", launched, "Could not launch GridHub; Only replay is available.");
+        AZ_Warning("EditorApplication", launched, "Could not start hosting; Only replay is available.");
     }
 
     void BaseApplication::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
