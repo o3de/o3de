@@ -20,7 +20,7 @@ namespace AZ::DocumentPropertyEditor
         handler.Connect(m_changedEvent);
     }
 
-    void DocumentAdapter::ResetDocument()
+    void DocumentAdapter::NotifyResetDocument()
     {
         m_resetEvent.Signal();
     }

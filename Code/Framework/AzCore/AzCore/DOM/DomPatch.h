@@ -15,7 +15,7 @@
 namespace AZ::Dom
 {
     using PatchOutcome = AZ::Outcome<void, AZStd::string>;
-    void CombinePatchOutcomes(PatchOutcome& lhs, const PatchOutcome& rhs);
+    void CombinePatchOutcomes(PatchOutcome& lhs, PatchOutcome&& rhs);
 
     //! A patch operation that represents an atomic operation for mutating or validating a Value.
     //! PatchOperations can be created with helper methods in Patch. /see Patch

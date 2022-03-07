@@ -28,7 +28,7 @@ namespace AZ::DocumentPropertyEditor::Tests
         builder.EndRow();
         builder.EndAdapter();
 
-        Dom::Value result = builder.FinishAndTakeResult();
+        Dom::Value domFromBuilder = builder.FinishAndTakeResult();
 
         /**
         Expect the following structure:
@@ -39,45 +39,45 @@ namespace AZ::DocumentPropertyEditor::Tests
             </Row>
         </Adapter>
         */
-        Dom::Value expectedValue = Dom::Value::CreateNode("Adapter");
-        Dom::Value row = Dom::Value::CreateNode("Row");
-        Dom::Value label = Dom::Value::CreateNode("Label");
+        Dom::Value expectedDom = Dom::Value::CreateNode(Nodes::Adapter::Name);
+        Dom::Value row = Dom::Value::CreateNode(Nodes::Row::Name);
+        Dom::Value label = Dom::Value::CreateNode(Nodes::Label::Name);
         label.SetNodeValue(Dom::Value("label", true));
         row.ArrayPushBack(label);
-        Dom::Value editor = Dom::Value::CreateNode("PropertyEditor");
-        editor["type"] = Dom::Value("TextEditor", true);
+        Dom::Value editor = Dom::Value::CreateNode(Nodes::PropertyEditor::Name);
+        editor[Nodes::PropertyEditor::Type.GetName()] = Dom::Value("TextEditor", true);
         editor["attr"] = 2;
         editor.SetNodeValue(Dom::Value("lorem ipsum", true));
         row.ArrayPushBack(editor);
-        expectedValue.ArrayPushBack(row);
+        expectedDom.ArrayPushBack(row);
 
-        EXPECT_TRUE(Dom::Utils::DeepCompareIsEqual(expectedValue, result));
+        EXPECT_TRUE(Dom::Utils::DeepCompareIsEqual(expectedDom, domFromBuilder));
     }
 
     TEST_F(AdapterBuilderTests, VisitNestedRows)
     {
         AdapterBuilder builder;
         builder.BeginAdapter();
-        Dom::Value expectedValue = Dom::Value::CreateNode("Adapter");
+        Dom::Value expectedDom = Dom::Value::CreateNode(Nodes::Adapter::Name);
         for (int i = 0; i < 2; ++i)
         {
             builder.BeginRow();
-            Dom::Value ri = Dom::Value::CreateNode("Row");
+            Dom::Value ri = Dom::Value::CreateNode(Nodes::Row::Name);
             for (int j = 0; j < 2; ++j)
             {
                 builder.BeginRow();
-                Dom::Value rj = Dom::Value::CreateNode("Row");
+                Dom::Value rj = Dom::Value::CreateNode(Nodes::Row::Name);
                 for (int k = 0; k < 3; ++k)
                 {
                     builder.BeginRow();
-                    Dom::Value rk = Dom::Value::CreateNode("Row");
+                    Dom::Value rk = Dom::Value::CreateNode(Nodes::Row::Name);
                     rj.ArrayPushBack(rk);
                     builder.EndRow();
                 }
                 ri.ArrayPushBack(rj);
                 builder.EndRow();
             }
-            expectedValue.ArrayPushBack(ri);
+            expectedDom.ArrayPushBack(ri);
             builder.EndRow();
         }
         builder.EndAdapter();
@@ -111,7 +111,7 @@ namespace AZ::DocumentPropertyEditor::Tests
             </Row>
         </Adapter>
         */
-        Dom::Value result = builder.FinishAndTakeResult();
-        EXPECT_TRUE(Dom::Utils::DeepCompareIsEqual(expectedValue, result));
+        Dom::Value domFromBuilder = builder.FinishAndTakeResult();
+        EXPECT_TRUE(Dom::Utils::DeepCompareIsEqual(expectedDom, domFromBuilder));
     }
 }

@@ -585,7 +585,7 @@ namespace AZ::Dom
         return AZ::Success();
     }
 
-    void CombinePatchOutcomes(PatchOutcome& lhs, const PatchOutcome& rhs)
+    void CombinePatchOutcomes(PatchOutcome& lhs, PatchOutcome&& rhs)
     {
         if (!rhs.IsSuccess())
         {
@@ -595,12 +595,9 @@ namespace AZ::Dom
             }
             else
             {
-                AZStd::string newError;
-                newError.reserve(lhs.GetError().length() + rhs.GetError().length() + 1);
-                newError.append(lhs.TakeError());
-                newError.append("\n");
-                newError.append(rhs.GetError());
-                lhs = AZ::Failure<AZStd::string>(AZStd::move(newError));
+                lhs.GetError().reserve(lhs.GetError().length() + rhs.GetError().length() + 1);
+                lhs.GetError().append("\n");
+                lhs.GetError().append(rhs.GetError());
             }
         }
     }

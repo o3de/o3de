@@ -14,7 +14,7 @@ namespace AZ::DocumentPropertyEditor
     void BasicAdapter::SetContents(Dom::Value contents)
     {
         m_value = contents;
-        ResetDocument();
+        NotifyResetDocument();
     }
 
     Dom::Value BasicAdapter::GetContents() const

@@ -35,7 +35,7 @@ namespace AZ::DocumentPropertyEditor
     //! - Label elements displayed as textual labels within a Row. Labels may have attributes, but no children.
     //! - PropertyEditor elements that display a property editor of an arbitrary type, specified by the mandatory
     //!   "type" attribute. The Document Property View will scan for a registered property editor of this type, and provide
-    //!   this node to the property editor for rendering. The contents of a PropertyEditor are dicated by its type.
+    //!   this node to the property editor for rendering. The contents of a PropertyEditor are dictated by its type.
     class DocumentAdapter
     {
     public:
@@ -63,7 +63,7 @@ namespace AZ::DocumentPropertyEditor
     protected:
         //! Subclasses may call this to trigger a ResetEvent and let the view know that GetContents should be requeried.
         //! Where possible, prefer to use NotifyContentsChanged instead.
-        void ResetDocument();
+        void NotifyResetDocument();
         //! Subclasses may call this to trigger a ChangedEvent to notify the view that this adapter's contents have changed.
         //! This patch should apply cleanly on the last result GetContents would have returned after any preceding changed
         //! or reset events.

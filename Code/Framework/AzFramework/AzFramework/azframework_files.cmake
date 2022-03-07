@@ -135,8 +135,6 @@ set(FILES
     Components/AzFrameworkConfigurationSystemComponent.cpp
     Components/NonUniformScaleComponent.h
     Components/NonUniformScaleComponent.cpp
-    DocumentPropertyEditor/DocumentAdapter.cpp
-    DocumentPropertyEditor/DocumentAdapter.h
     DocumentPropertyEditor/AdapterBuilder.cpp
     DocumentPropertyEditor/AdapterBuilder.h
     DocumentPropertyEditor/BasicAdapter.cpp
