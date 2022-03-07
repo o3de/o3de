@@ -304,19 +304,22 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioProxy::Release()
     {
-        // If it has ID, push a Release request and reset info
-        // No Queueing of this type of call/request, it should be considered an immediate reset/recycle
+        // If it has ID, push a Release request.  Then reset info.
+        // Queueing this type of request isn't currently allowed
+        // but if needed, ExecuteQueuedRequests needs to look for
+        // a Release request and handle it differently (by calling
+        // this function and ignoring the remaining enqueued requests).
         if (HasId())
         {
             Audio::ObjectRequest::Release releaseObject;
             releaseObject.m_audioObjectId = m_nAudioObjectID;
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(releaseObject));
-
-            m_nAudioObjectID = INVALID_AUDIO_OBJECT_ID;
-            m_oPosition = {};
-            m_ownerOverride = nullptr;
-            m_queuedAudioRequests.clear();
         }
+
+        m_nAudioObjectID = INVALID_AUDIO_OBJECT_ID;
+        m_oPosition = {};
+        m_ownerOverride = nullptr;
+        m_queuedAudioRequests.clear();
 
         AZ::Interface<IAudioSystem>::Get()->RecycleAudioProxy(this);
     }
