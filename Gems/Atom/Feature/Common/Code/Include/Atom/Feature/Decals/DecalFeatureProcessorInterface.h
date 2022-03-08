@@ -28,7 +28,6 @@ namespace AZ
                 { 0.0f, 0.0f, 0.0f }
             };
             float m_opacity = 1.0f;
-            
             AZStd::array<float, 4> m_quaternion = {
                 { 0, 0, 0, 1 }
             };
