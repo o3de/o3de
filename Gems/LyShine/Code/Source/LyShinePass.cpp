@@ -40,14 +40,26 @@ namespace LyShine
         Base::ResetInternal();
     }
 
-    void LyShinePass::CreateChildPassesInternal()
+    void LyShinePass::BuildInternal()
     {
         AZ::RPI::Scene* scene = GetScene();
         if (scene)
         {
             // Listen for rebuild requests
             LyShinePassRequestBus::Handler::BusConnect(scene->GetId());
+        }
 
+        // Always recreate children when rebuild the pass
+        m_flags.m_createChildren = true;
+
+        Base::BuildInternal();
+    }
+
+    void LyShinePass::CreateChildPassesInternal()
+    {
+        AZ::RPI::Scene* scene = GetScene();
+        if (scene)
+        {
             // Get the current list of render targets being used across all loaded UI Canvases
             LyShine::AttachmentImagesAndDependencies attachmentImagesAndDependencies;
             LyShinePassDataRequestBus::EventResult(
@@ -95,7 +107,8 @@ namespace LyShine
     {
         // Add a pass that renders to the specified texture
         AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
-        AZ::RPI::Ptr<RttChildPass> rttChildPass = azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), AZ::Name("RttChildPass")).get());
+        auto passName = attachmentImage->GetRHIImage()->GetName(); // Use attachment name (but not attachment id) as pass name so the pass can be found by GetRttPass() function
+        AZ::RPI::Ptr<RttChildPass> rttChildPass = azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), passName).get());
         AZ_Assert(rttChildPass, "[LyShinePass] Unable to create a RttChildPass.");
 
         // Store the info needed to attach to slots and set up frame graph dependencies
