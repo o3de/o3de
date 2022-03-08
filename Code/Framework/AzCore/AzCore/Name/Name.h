@@ -34,10 +34,12 @@ namespace AZ
         friend Name;
 
     public:
-        NameRef();
-        NameRef(const NameRef& nameRef);
-        NameRef(NameRef&& nameRef);
+        NameRef() = default;
+        NameRef(const NameRef&) = default;
+        NameRef(NameRef&&) = default;
 
+        NameRef& operator=(NameRef&&) = default;
+        NameRef& operator=(const NameRef&) = default;
         NameRef(Name name);
         NameRef& operator=(Name name);
 

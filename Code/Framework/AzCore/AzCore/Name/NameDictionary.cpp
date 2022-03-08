@@ -67,7 +67,7 @@ namespace AZ
     {
         using namespace NameDictionaryInternal;
 
-        if (!AZ::AllocatorStorage::EnvironmentStoragePolicy<SystemAllocator>::IsReady())
+        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
         {
             return false;
         }

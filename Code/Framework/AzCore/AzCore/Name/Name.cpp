@@ -21,20 +21,6 @@ namespace AZ
     AZStd::thread::id Name::s_staticNameListThread = 0;
     Name* Name::s_staticNameBegin = nullptr;
 
-    NameRef::NameRef()
-    {
-    }
-
-    NameRef::NameRef(const NameRef& nameRef)
-        : m_data(nameRef.m_data)
-    {
-    }
-
-    NameRef::NameRef(NameRef&& nameRef)
-        : m_data(AZStd::move(nameRef.m_data))
-    {
-    }
-
     NameRef::NameRef(Name name)
         : m_data(AZStd::move(name.m_data))
     {
@@ -209,7 +195,7 @@ namespace AZ
 
     void Name::SetNameLiteral(AZStd::string_view name)
     {
-        if (name[0] != '\0')
+        if (!name.empty())
         {
             if (s_staticNameListThread == 0)
             {
