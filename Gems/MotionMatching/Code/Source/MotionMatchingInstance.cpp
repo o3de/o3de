@@ -289,7 +289,7 @@ namespace EMotionFX::MotionMatching
         m_trajectoryHistory.Update(timePassedInSeconds);
 
         // Update the trajectory query control points.
-        m_trajectoryQuery.Update(m_actorInstance,
+        m_trajectoryQuery.Update(*m_actorInstance,
             m_cachedTrajectoryFeature,
             m_trajectoryHistory,
             mode,

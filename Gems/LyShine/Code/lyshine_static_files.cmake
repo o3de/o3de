@@ -95,6 +95,8 @@ set(FILES
     Source/LyShinePassDataBus.h
     Source/LyShineDebug.cpp
     Source/LyShineDebug.h
+    Source/LyShineFeatureProcessor.cpp
+    Source/LyShineFeatureProcessor.h
     Source/LyShinePass.cpp
     Source/LyShinePass.h
     Source/StringUtfUtils.h
