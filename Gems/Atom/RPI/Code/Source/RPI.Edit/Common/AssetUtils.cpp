@@ -12,6 +12,7 @@
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/regex.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 namespace AZ
 {
@@ -147,13 +148,14 @@ namespace AZ
             
             AZStd::string SanitizeFileName(AZStd::string filename)
             {
-                // Note these rules should be compatible with those in FileDialog::GetSaveFileName: QRegularExpression validFileNameRegex("^[a-zA-Z0-9_\\-./]*$")
-                // (though the replacement rules here may be a bit more strict than the FileDialog validation)
-
                 filename = AZStd::regex_replace(filename, AZStd::regex{R"([^a-zA-Z0-9_\-\.]+)"}, "_"); // Replace unsupported characters
                 filename = AZStd::regex_replace(filename, AZStd::regex{"\\.\\.+"}, "_"); // Don't allow multiple dots, that could mess up extensions
                 filename = AZStd::regex_replace(filename, AZStd::regex{"__+"}, "_"); // Prevent multiple underscores being introduced by the above rules
                 filename = AZStd::regex_replace(filename, AZStd::regex{"\\.+$"}, ""); // Don't allow dots at the end, that could mess up extensions
+                
+                // These rules should be compatible with those in FileDialog::GetSaveFileName, though the replacement rules here may be a bit more strict than the FileDialog validation.
+                AZ_Assert(AzQtComponents::FileDialog::IsValidFileName(filename.c_str()), "The rules of AssetUtils::SanitizeFileName() must be compatible with AzQtComponents::FileDialog.");
+
                 return filename;
             }
 
