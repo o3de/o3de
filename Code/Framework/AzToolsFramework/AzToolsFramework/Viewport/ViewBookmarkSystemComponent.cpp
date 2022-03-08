@@ -10,10 +10,6 @@
 
 namespace AzToolsFramework
 {
-    void ViewBookmarkSystemComponent::Init()
-    {
-    }
-
     void ViewBookmarkSystemComponent::Activate()
     {
         m_viewBookmarkLoader.RegisterViewBookmarkLoaderInterface();
@@ -35,14 +31,6 @@ namespace AzToolsFramework
     void ViewBookmarkSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("ViewBookmarkSystem"));
-    }
-
-    void ViewBookmarkSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-    }
-
-    void ViewBookmarkSystemComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
     }
 
 } // namespace AzToolsFramework

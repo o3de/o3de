@@ -21,6 +21,9 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(ViewBookmarkLoaderInterface, "{71E7E178-4107-4975-A6E6-1C4B005C981A}")
 
+        //! Choose storage mode for ViewBookmarks
+        //! Shared are stored in the prefab.
+        //! Local are stored in the Settings Registry.
         enum class StorageMode : int
         {
             Shared = 0,

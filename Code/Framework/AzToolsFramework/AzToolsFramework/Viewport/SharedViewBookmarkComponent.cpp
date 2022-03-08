@@ -70,8 +70,6 @@ namespace AzToolsFramework
             serializeContext->Class<SharedViewBookmarkComponent, EditorComponentBase>()->Version(0)->Field(
                 "ViewBookmarks", &SharedViewBookmarkComponent::m_viewBookmark);
 
-            serializeContext->RegisterGenericType<AZStd::vector<AZ::Uuid>>();
-
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext
@@ -90,13 +88,13 @@ namespace AzToolsFramework
         }
     }
 
-    ViewBookmark SharedViewBookmarkComponent::GetBookmarkAtIndex(int index) const
+    AZStd::optional<ViewBookmark> SharedViewBookmarkComponent::GetBookmarkAtIndex(int index) const
     {
         if (index >= 0 && index < m_viewBookmark.m_viewBookmarks.size())
         {
-            return m_viewBookmark.m_viewBookmarks[index];
+            return AZStd::optional<ViewBookmark>(m_viewBookmark.m_viewBookmarks[index]);
         }
-        return ViewBookmark();
+        return AZStd::optional<ViewBookmark>();
     }
 
     void SharedViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)

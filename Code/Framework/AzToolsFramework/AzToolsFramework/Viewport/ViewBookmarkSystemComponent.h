@@ -7,6 +7,7 @@
  */
 
 #pragma once
+
 #include <AzCore/Component/Component.h>
 #include <Viewport/ViewBookmarkLoader.h>
 
@@ -22,14 +23,11 @@ namespace AzToolsFramework
         virtual ~ViewBookmarkSystemComponent() = default;
 
         // AZ::Component overrides ...
-        void Init() override;
         void Activate() override;
         void Deactivate() override;
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
         //! Used for loading/saving Prefab View Bookmarks.

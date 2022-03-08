@@ -269,9 +269,9 @@ namespace AzToolsFramework
     {
         if (SharedViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<SharedViewBookmarkComponent>())
         {
-            return bookmarkComponent->GetBookmarkAtIndex(index);
+            return bookmarkComponent->GetBookmarkAtIndex(index).value();
         }
-
+        AZ_Assert(false, "ViewBookmarkLoader: No SharedBookmarkComponent found at Root")
         return ViewBookmark();
     }
 
