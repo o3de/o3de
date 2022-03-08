@@ -30,7 +30,10 @@ namespace GraphToLuaCpp
 {
     AZStd::string ToDependencyTableName(AZStd::string_view fileName)
     {
-        return AZStd::string::format("%s%s", ScriptCanvas::Grammar::ToSafeName(fileName).c_str(), ScriptCanvas::Grammar::k_DependencySuffix);
+        AZStd::string tableName = AZStd::string::format("%s%s", ScriptCanvas::Grammar::ToSafeName(fileName).c_str()
+            , ScriptCanvas::Grammar::k_DependencySuffix);
+        AZStd::to_lower(tableName.begin(), tableName.end());
+        return  tableName;
     }
 
     AZStd::string FileNameToTableName(AZStd::string_view fileName)
