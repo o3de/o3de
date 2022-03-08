@@ -13,7 +13,7 @@ namespace AZ::DocumentPropertyEditor
 {
     void AdapterBuilder::Value(Dom::Value value)
     {
-        CurrentNode().SetNodeValue(value);
+        CurrentNode().SetNodeValue(AZStd::move(value));
     }
 
     void AdapterBuilder::Attribute(Name attribute, Dom::Value value)
@@ -40,7 +40,7 @@ namespace AZ::DocumentPropertyEditor
     void AdapterBuilder::Error(AZStd::string_view message)
     {
         m_error.append(message);
-        m_error.append("\n");
+        m_error.append(1, '\n');
     }
 
     Dom::Value& AdapterBuilder::CurrentNode()

@@ -112,7 +112,7 @@ namespace AZ::Dom
     struct PatchApplicationState
     {
         //! The outcome of the last operation, may be overridden to produce a different failure outcome.
-        PatchOutcome m_outcome;
+        PatchOutcome m_outcome = AZ::Success();
         //! The patch being applied.
         const Patch* m_patch = nullptr;
         //! The last operation attempted.

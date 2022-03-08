@@ -16,7 +16,7 @@ namespace AZ::DocumentPropertyEditor
 {
     //! Defines a schema definition for a DocumentAdapter node.
     //! Nodes have a name and metadata for validating their contents.
-    //! To register a Node you may inheirt from NodeDefinition and define traits:
+    //! To register a Node you may inherit from NodeDefinition and define traits:
     //! struct MyNode : NodeDefinition
     //! {
     //!     static constexpr AZStd::string_view Name = "MyNode";
@@ -45,10 +45,10 @@ namespace AZ::DocumentPropertyEditor
 
     //! Retrieves a node's name from a node definition.
     //! \see NodeDefinition
-    template <typename TNodeDefinition>
+    template <typename NodeDefinition>
     Name GetNodeName()
     {
-        return AZ::Name(TNodeDefinition::Name);
+        return AZ::Name(NodeDefinition::Name);
     }
 
     //! Defines an attribute applicable to a Node.

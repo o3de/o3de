@@ -596,7 +596,7 @@ namespace AZ::Dom
             else
             {
                 lhs.GetError().reserve(lhs.GetError().length() + rhs.GetError().length() + 1);
-                lhs.GetError().append("\n");
+                lhs.GetError().append(1, '\n');
                 lhs.GetError().append(rhs.GetError());
             }
         }
