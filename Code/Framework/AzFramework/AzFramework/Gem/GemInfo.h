@@ -26,7 +26,7 @@ namespace AzFramework
         GemInfo(AZStd::string name);
         GemInfo() = default;
         AZStd::string m_gemName; //!< The name of the gem as seen in the gem.json
-        AZStd::vector<AZStd::string> m_gemTargetNames; //!< The target namde of loaded modules from the gem
+        AZStd::vector<AZStd::string> m_gemTargetNames; //!< The target name of loaded modules from the gem
         AZStd::vector<AZ::IO::Path> m_absoluteSourcePaths; //!< Where the gem's source path folder are located(as an absolute path)
 
         static constexpr const char* GetGemAssetFolder() { return "Assets"; }
