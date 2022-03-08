@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
