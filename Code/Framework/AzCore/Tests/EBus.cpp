@@ -4182,7 +4182,7 @@ namespace UnitTest
     }
 
 
-    struct ReentrantEbusUseTestRequests : public AZ::EBusTraits
+    struct ReentrantEBusUseTestRequests : public AZ::EBusTraits
     {
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
@@ -4200,7 +4200,7 @@ namespace UnitTest
         virtual bool EventCalledByOtherEventOnDifferentEBusId() = 0;
     };
 
-    using ReentrantEBusUseTestRequestBus = AZ::EBus<ReentrantEbusUseTestRequests>;
+    using ReentrantEBusUseTestRequestBus = AZ::EBus<ReentrantEBusUseTestRequests>;
 
     struct ReentrantEBusUseTestImpl : public ReentrantEBusUseTestRequestBus::Handler
     {
@@ -4271,7 +4271,7 @@ namespace UnitTest
     TEST_F(EBus, ReentrantEBusUsageDetectedFromNestedDirectCalls)
     {
         constexpr int32_t busId = 4;
-        ReentrantEBusUseTestImpl reentrantEbusUseTestRequest(busId);
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
 
         constexpr bool expectedReentrantResult = false;
         ReentrantEBusUseTestRequestBus::Event(
@@ -4281,7 +4281,7 @@ namespace UnitTest
     TEST_F(EBus, ReentrantEBusUsageDetectedFromTwoSeparateCallsOnSameBus)
     {
         constexpr int32_t busId = 4;
-        ReentrantEBusUseTestImpl reentrantEbusUseTestRequest(busId);
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
 
         ReentrantEBusUseTestRequestBus::Event(busId, &ReentrantEBusUseTestRequestBus::Events::EventCallsOtherEventOnSameEBus);
     }
@@ -4289,10 +4289,10 @@ namespace UnitTest
     TEST_F(EBus, ReentrantEBusUsageNotDetectedFromTwoSeparateCallsOnSameBusWithDifferentIds)
     {
         constexpr int32_t busId = 4;
-        ReentrantEBusUseTestImpl reentrantEbusUseTestRequest(busId);
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
 
         constexpr int32_t secondBusId = 8;
-        ReentrantEBusUseTestImpl secondReentrantEbusUseTestRequest(secondBusId);
+        ReentrantEBusUseTestImpl secondReentrantEBusUseTestRequest(secondBusId);
 
         ReentrantEBusUseTestRequestBus::Event(busId,
             &ReentrantEBusUseTestRequestBus::Events::EventCallsOtherEventOnDifferentEBusId, secondBusId);
