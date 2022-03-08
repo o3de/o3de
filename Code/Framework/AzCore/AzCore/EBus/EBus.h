@@ -1149,7 +1149,7 @@ AZ_POP_DISABLE_WARNING
     const typename EBus<Interface, Traits>::BusIdType * EBus<Interface, Traits>::GetCurrentBusId()
     {
         Context* context = GetContext();
-        if (IsInDispatch(context))
+        if (IsInDispatchThisThread(context))
         {
             return context->s_callstack->m_prev->m_busId;
         }
