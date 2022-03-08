@@ -275,6 +275,12 @@ namespace AZ
                 return false;
             }
             
+            if(!pipelineState->GetPipelineLayout())
+            {
+                AZ_Assert(pipelineState->GetPipelineLayout(), "Pipeline layout is null.");
+                return false;
+            }
+            
             bool updatePipelineState = m_state.m_pipelineState != pipelineState;
             // The pipeline state gets set first.
             if (updatePipelineState)

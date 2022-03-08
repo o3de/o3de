@@ -93,17 +93,23 @@ namespace AZ
             int colorAttachmentIndex = 0;
             AZStd::unordered_map<RHI::AttachmentId, ResolveAttachmentData> attachmentsIndex;
             
-            for (const RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
+            for (RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
                 m_isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
                 if(m_isWritingToSwapChainScope)
                 {
-                    //Check if the scope attachment for the next scope is going to capture the frame.
+                    //Check if the swapchain scope attachment will be copied to be read in the upcoming passes
                     //We can use this information to cache the swapchain texture for reading purposes.
-                    const RHI::ScopeAttachment* frameCaptureScopeAttachment = scopeAttachment->GetNext();
-                    if(frameCaptureScopeAttachment)
+                    RHI::ScopeAttachment* frameCaptureScopeAttachment = scopeAttachment;
+                    while(frameCaptureScopeAttachment)
                     {
-                        m_isSwapChainAndFrameCaptureEnabled = frameCaptureScopeAttachment->HasAccessAndUsage(RHI::ScopeAttachmentUsage::Copy, RHI::ScopeAttachmentAccess::Read);
+                        frameCaptureScopeAttachment = frameCaptureScopeAttachment->GetNext();
+                        if(frameCaptureScopeAttachment &&
+                           frameCaptureScopeAttachment->HasAccessAndUsage(RHI::ScopeAttachmentUsage::Copy, RHI::ScopeAttachmentAccess::Read))
+                        {
+                            m_isSwapChainAndFrameCaptureEnabled = true;
+                            break;
+                        }
                     }
                     
                     //Cache this as we will use this to request the drawable from the driver in the Execute phase (i.e Scope::Begin)
