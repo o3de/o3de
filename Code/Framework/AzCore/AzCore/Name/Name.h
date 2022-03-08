@@ -91,7 +91,7 @@ namespace AZ
         //! Creates a Name from a string literal.
         //! FromStringLiteral is suitable for creating Names that live at a global or static
         //! scope.
-        //! 
+        //!
         //! Names created from string literals may exist without a NameDictionary, and may
         //! continue to persist after the NameDictionary is destroyed (even if it is destroyed
         //! multiple times, as in some text fixtures).
@@ -233,7 +233,7 @@ namespace AZ
     (                                                                                                                                      \
         []() -> AZ::Name                                                                                                                   \
         {                                                                                                                                  \
-            static AZ::Name nameLiteral(AZ::Name::FromStringLiteral(str));                                                                 \
+            static const AZ::Name nameLiteral(AZ::Name::FromStringLiteral(str));                                                           \
             return nameLiteral;                                                                                                            \
         })()
 
