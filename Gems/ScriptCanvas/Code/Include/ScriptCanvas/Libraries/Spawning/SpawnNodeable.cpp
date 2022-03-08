@@ -11,6 +11,17 @@
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
+    SpawnNodeable::SpawnNodeable([[maybe_unused]] const SpawnNodeable& rhs)
+    {
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_completionResults
+    }
+
+    SpawnNodeable& SpawnNodeable::operator=([[maybe_unused]] const SpawnNodeable& rhs)
+    {
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_completionResults
+        return *this;
+    }
+
     void SpawnNodeable::OnInitializeExecutionState()
     {
         if (!AZ::TickBus::Handler::BusIsConnected())

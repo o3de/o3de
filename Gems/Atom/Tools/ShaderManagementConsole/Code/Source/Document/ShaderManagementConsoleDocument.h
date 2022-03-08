@@ -36,14 +36,15 @@ namespace ShaderManagementConsole
         ~ShaderManagementConsoleDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
-        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> GetObjectInfo() const override;
-        bool Open(AZStd::string_view loadPath) override;
+        static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
+        AtomToolsFramework::DocumentTypeInfo GetDocumentTypeInfo() const override;
+        AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
+        bool Open(const AZStd::string& loadPath) override;
         bool Save() override;
-        bool SaveAsCopy(AZStd::string_view savePath) override;
-        bool SaveAsChild(AZStd::string_view savePath) override;
+        bool SaveAsCopy(const AZStd::string& savePath) override;
+        bool SaveAsChild(const AZStd::string& savePath) override;
         bool IsOpen() const override;
         bool IsModified() const override;
-        bool IsSavable() const override;
 
         // ShaderManagementConsoleDocumentRequestBus::Handler overridfes...
         void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;
