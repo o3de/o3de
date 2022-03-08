@@ -551,7 +551,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
                 fov = std::max(1.0f, f);
                 fov = std::min(120.0f, f);
                 QAction* action = menu->addAction(customPreset);
-                connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov); });
+                connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov);});
             }
         }
     }
@@ -566,7 +566,7 @@ void CViewportTitleDlg::OnMenuFOVCustom()
     if (ok)
     {
         m_pViewPane->SetViewportFOV(static_cast<float>(fov));
-
+        OnViewportFOVChanged(DEG2RAD(fov));
         // Update the custom presets.
         const QString text = QString::number(fov);
         UpdateCustomPresets(text, m_customFOVPresets);
@@ -584,7 +584,14 @@ void CViewportTitleDlg::CreateFOVMenu()
 
     m_fovMenu->clear();
 
-    AddFOVMenus(m_fovMenu, [this](float f) { m_pViewPane->SetViewportFOV(f); }, m_customFOVPresets);
+    AddFOVMenus(
+        m_fovMenu,
+        [this](float f)
+        {
+            m_pViewPane->SetViewportFOV(f);
+            OnViewportFOVChanged(DEG2RAD(f));
+        },
+        m_customFOVPresets);
     if (!m_fovMenu->isEmpty())
     {
         m_fovMenu->addSeparator();
