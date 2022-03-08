@@ -651,7 +651,7 @@ namespace AssetBuilderSDK
         , m_productSubID(productSubID)
     {
         //////////////////////////////////////////////////////////////////////////
-        // Builders should output product asset types directly.  
+        // Builders should output product asset types directly.
         // This should only be used for exceptions, mostly legacy and generic data.
         if (m_productAssetType.IsNull())
         {
@@ -670,7 +670,7 @@ namespace AssetBuilderSDK
         , m_productSubID(productSubID)
     {
         //////////////////////////////////////////////////////////////////////////
-        // Builders should output product asset types directly.  
+        // Builders should output product asset types directly.
         // This should only be used for exceptions, mostly legacy.
         if (m_productAssetType.IsNull())
         {
@@ -1221,6 +1221,13 @@ namespace AssetBuilderSDK
         return m_cancelled;
     }
 
+    bool SourceFileDependency::operator==(const SourceFileDependency& other) const
+    {
+        return m_sourceDependencyType == other.m_sourceDependencyType
+            && m_sourceFileDependencyPath == other.m_sourceFileDependencyPath
+            && m_sourceFileDependencyUUID == other.m_sourceFileDependencyUUID;
+    }
+
     AZStd::string SourceFileDependency::ToString() const
     {
         return AZStd::string::format("SourceFileDependency UUID: %s NAME: %s", m_sourceFileDependencyUUID.ToString<AZStd::string>().c_str(), m_sourceFileDependencyPath.c_str());
@@ -1322,6 +1329,14 @@ namespace AssetBuilderSDK
         , m_type(type)
         , m_sourceFile(sourceFile)
     {
+    }
+
+    bool JobDependency::operator==(const JobDependency& other) const
+    {
+        return m_sourceFile == other.m_sourceFile
+            && m_jobKey == other.m_jobKey
+            && m_platformIdentifier == other.m_platformIdentifier
+            && m_type == other.m_type;
     }
 
     void JobDependency::Reflect(AZ::ReflectContext* context)
@@ -1435,7 +1450,7 @@ namespace AssetBuilderSDK
     }
 
     AZ::u64 GetHashFromIOStream(AZ::IO::GenericStream& readStream, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
-    {        
+    {
         constexpr AZ::u64 HashBufferSize = 1024 * 64;
         char buffer[HashBufferSize];
 
