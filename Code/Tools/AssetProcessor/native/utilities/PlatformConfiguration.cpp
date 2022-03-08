@@ -1104,7 +1104,7 @@ namespace AssetProcessor
                         }
                         if (AZ::IO::SystemFile::Exists(gemAbsPath.c_str()))
                         {
-                            gemNameToPathMap.try_emplace(AZStd::string::format("@GEMROOT:%.*s@", AZ_STRING_ARG(gemName)), gemAbsPath.String());
+                            gemNameToPathMap.try_emplace(AZStd::string::format("@GEMROOT:%.*s@", AZ_STRING_ARG(gemName)), gemAbsPath.AsPosix());
                         }
                     };
                     AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, MakeGemNameToPathMap);
