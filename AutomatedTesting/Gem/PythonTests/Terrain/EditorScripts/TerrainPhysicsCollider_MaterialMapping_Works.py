@@ -59,7 +59,7 @@ def TerrainPhysicsCollider_MaterialMapping_Works():
         f"PhysicsCube_Glass traveled {glass_distance:.3f}m, to PhysicsCube_Rubber's {rubber_distance:.3f}m",
         f"PhysicsCube_Rubber traveled {rubber_distance:.3f}m, greater than PhysicsCube_Glass's {glass_distance:.3f}m"
     )
-    Report.result(material_interaction, glass_distance > rubber_distance)
+    Report.result(material_interaction, glass_distance > 8.0 and rubber_distance < 2.0)
 
     # Exit Game Mode
     helper.exit_game_mode(Tests.exit_game_mode)
