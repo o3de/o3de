@@ -176,7 +176,7 @@ namespace AzToolsFramework
                 const LinkId linkId, InstanceOptionalReference parentInstance = AZStd::nullopt);
             static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-                PrefabDom& afterState, InstanceOptionalReference instance = AZStd::nullopt);
+                PrefabDom& afterState);
             void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void UpdateLinkPatchesWithNewEntityAliases(

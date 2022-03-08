@@ -156,6 +156,11 @@ namespace AzToolsFramework
                     settings.m_metadata.Add(&entityIdMapper);
                     settings.m_metadata.Add(tracker);
 
+                    if ((flags & LoadFlags::UseSelectiveDeserialization) == LoadFlags::UseSelectiveDeserialization)
+                    {
+                        settings.m_metadata.Create<InstanceDomMetadata>();
+                    }
+
                     AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
 
                     AZ::Data::AssetManager::Instance().ResumeAssetRelease();

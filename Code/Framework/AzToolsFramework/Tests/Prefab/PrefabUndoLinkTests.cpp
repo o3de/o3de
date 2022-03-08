@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <Prefab/PrefabTestDomUtils.h>
 #include <Prefab/PrefabTestUndoFixture.h>
 
@@ -186,7 +185,6 @@ namespace UnitTest
         m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
 
         rootInstance->AddInstance(AZStd::move(nestedInstance));
-        nestedTestComponent->m_entityIdProperty = rootContainerEntityId;
 
         m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
 

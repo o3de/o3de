@@ -32,9 +32,19 @@ namespace AzToolsFramework
                 AZ::JsonDeserializerContext& context) override;
 
         private:
-            //! Adds the entities of an instance to a InstanceEntityScrubber object in the metadata of JsonDeserializerContext
-            //! so that they can be scrubbed later.
-            void AddEntitiesToScrub(const Instance* instance, AZ::JsonDeserializerContext& jsonDeserializercontext);
+
+            //! Identifies the entities to reload from the patches provided and reloads them from the Dom provided.
+            //! @param inputValue The Dom that contains the instance information.
+            //! @param context The context that could contain additional metadata needed for the deserialization.
+            //! @instance The instance in which the entities need to be reloaded.
+            //! @patches The patches to use to identify entities that need reloading.
+            //! @result The result code that could be modified during the process of reloading.
+            void Reload(
+                const rapidjson::Value& inputValue,
+                AZ::JsonDeserializerContext& context,
+                Instance* instance,
+                PrefabDom patches,
+                AZ::JsonSerializationResult::ResultCode& result);
         };
     }
 }
