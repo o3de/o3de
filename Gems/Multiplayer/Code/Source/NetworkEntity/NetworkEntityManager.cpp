@@ -268,6 +268,40 @@ namespace Multiplayer
         }
     }
 
+    void NetworkEntityManager::MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant)
+    {
+        if (alwaysRelevant)
+        {
+            m_alwaysRelevantToClients.emplace(entityHandle);
+        }
+        else
+        {
+            m_alwaysRelevantToClients.erase(entityHandle);
+        }
+    }
+
+    void NetworkEntityManager::MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant)
+    {
+        if (alwaysRelevant)
+        {
+            m_alwaysRelevantToServers.emplace(entityHandle);
+        }
+        else
+        {
+            m_alwaysRelevantToServers.erase(entityHandle);
+        }
+    }
+
+    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevantToClientsSet() const
+    {
+        return m_alwaysRelevantToClients;
+    }
+
+    const NetEntityHandleSet& NetworkEntityManager::GetAlwaysRelevantToServersSet() const
+    {
+        return m_alwaysRelevantToServers;
+    }
+
     void NetworkEntityManager::SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs)
     {
         m_networkEntityAuthorityTracker.SetTimeoutTimeMs(timeoutTimeMs);

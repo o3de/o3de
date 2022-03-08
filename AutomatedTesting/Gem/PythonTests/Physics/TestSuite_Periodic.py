@@ -505,7 +505,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_Joints_BallBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallBreakable as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Joints_HingeNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_HingeNoLimitsConstrained as test_module
@@ -527,7 +527,7 @@ class TestAutomation(TestAutomationBase):
                           search_subdirs=True)
         def levels_before(self, request, workspace, editor, launcher_platform):
             from .tests.material import Material_DefaultLibraryUpdatedAcrossLevels_before as test_module_0
-            self._run_test(request, workspace, editor, test_module_0, enable_prefab_system=False)
+            self._run_test(request, workspace, editor, test_module_0)
 
         # File override replaces the previous physxconfiguration file with another where the only difference is the default material library
         @fm.file_override("physxsystemconfiguration.setreg",
@@ -536,7 +536,7 @@ class TestAutomation(TestAutomationBase):
                           search_subdirs=True)
         def levels_after(self, request, workspace, editor, launcher_platform):
             from .tests.material import Material_DefaultLibraryUpdatedAcrossLevels_after as test_module_1
-            self._run_test(request, workspace, editor, test_module_1, enable_prefab_system=False)
+            self._run_test(request, workspace, editor, test_module_1)
 
         levels_before(self, request, workspace, editor, launcher_platform)
         levels_after(self, request, workspace, editor, launcher_platform)

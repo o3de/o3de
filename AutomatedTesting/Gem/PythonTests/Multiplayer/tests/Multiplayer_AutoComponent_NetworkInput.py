@@ -69,9 +69,6 @@ def Multiplayer_AutoComponent_NetworkInput():
     ]
 
     level_name = "AutoComponent_NetworkInput"
-    player_prefab_name = "Player"
-    player_prefab_path = f"levels/multiplayer/{level_name}/{player_prefab_name}.network.spawnable"
-
     helper.init_idle()
 
 
@@ -80,10 +77,10 @@ def Multiplayer_AutoComponent_NetworkInput():
 
     with Tracer() as section_tracer:
         # 2) Enter game mode
-        helper.multiplayer_enter_game_mode(Tests.enter_game_mode, player_prefab_path.lower())
+        helper.multiplayer_enter_game_mode(Tests.enter_game_mode)
 
         # 3) Make sure the network player was spawned
-        player_id = general.find_game_entity(player_prefab_name)
+        player_id = general.find_game_entity("Player")
         Report.critical_result(Tests.find_network_player, player_id.IsValid())
 
         # 4) Check the editor logs for expected and unexpected log output
