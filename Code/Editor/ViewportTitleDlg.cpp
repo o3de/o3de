@@ -551,7 +551,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
                 fov = std::max(1.0f, f);
                 fov = std::min(120.0f, f);
                 QAction* action = menu->addAction(customPreset);
-                connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov);});
+                connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov); });
             }
         }
     }
