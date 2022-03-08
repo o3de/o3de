@@ -272,7 +272,7 @@ namespace AZ::SettingsRegistryMergeUtils
 
     //! Parse a CommandLine and transform certain options into formal "regset" options
     void ParseCommandLine(AZ::CommandLine& commandLine);
-    
+
     //! Structure for configuring how values should be dumped from the Settings Registry
     struct DumperSettings
     {
@@ -355,7 +355,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //! The paths are are unmodified from the SettingsRegistry
     //! i.e They can be relative paths if they are relative with the registry
     //! @param registry SettingsRegistry instance to search for the ActiveGemsRootKey entries
-    //! @param callback Callback to invoke when a gem is visited that contains a non-empty path entry
+    //! @param activeGemCallback Callback to invoke when a gem is visited that contains a non-empty path entry
     void VisitActiveGems(SettingsRegistryInterface& registry, const GemCallback& activeGemCallback);
 
     //! Callback signature which is invoked for each manifest json with the specified manifest object key
@@ -367,7 +367,7 @@ namespace AZ::SettingsRegistryMergeUtils
 
     //! Looks up all "external_subdirectories" fields registered in a manifest json file at the supplied path
     //! This will recurse through "gem.json" files as well
-    //! @param callback Invoked for each manifest json file by visiting each through the "external_subdirectories" path
+    //! @param gemManifestCallback Invoked for each manifest json file by visiting each through the "external_subdirectories" path
     //! @param manifestPath absolute path to the manifest json file to open
     //! @param manifestNameKey the key within the manifest json file that uniquely identifies the manifest
     //! @return true if manifest is a valid json file with the specified manifestNameKey field
@@ -376,26 +376,30 @@ namespace AZ::SettingsRegistryMergeUtils
 
     //! Looks up all "external_subdirectories" fields registered in the "~/.o3de/o3de_manifest.json"
     //! This will recurse through "gem.json" files for the "external_subdirectories" fields
+    //! @param registry SettingsRegistry instance to locate the o3de manifest folder via the FilePathKey_O3deManifestRootFolder
     //! @param callback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
     //! @return true if all visited paths contained a valid manifest
     bool VisitO3deManifestGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
 
     //! Looks up all "external_subdirectories" fields registered in the "<engine-root>/engine.json"
     //! This will recurse through "gem.json" files as well
-    //! @param callback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
+    //! @param registry SettingsRegistry instance to locate the engine root via the FilePathKey_EngineRootFolder
+    //! @param gemManifestCallback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
     //! @return true if all visited paths contained a valid manifest
     bool VisitEngineGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
 
     //! Looks up all "external_subdirectories" fields registered in the "<project-root>/project.json"
     //! This will recurse through "gem.json" files as well
-    //! @param callback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
+    //! @param registry SettingsRegistry instance which will be used to locate the project root via the FilePathKey_ProjectPath
+    //! @param gemManifestCallback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
     //! @return true if all visited paths contained a valid manifest
     bool VisitProjectGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
 
     //! Looks up all "external_subdirectories" fields registered in the "~/.o3de/o3de_manifest.json"
     //! "<engine-root>/engine.json", "<project-root>/project.json" files
     //! This will recurse through "gem.json" files for the "external_subdirectories" fields
-    //! @param callback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
+    //! @param registry SettingsRegistry instance which will be used to locate the o3de_manifest, project and engine roots
+    //! @param gemManifestCallback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
     //! @return true if all visited paths contained a valid manifest
     bool VisitAllManifestGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
 }
