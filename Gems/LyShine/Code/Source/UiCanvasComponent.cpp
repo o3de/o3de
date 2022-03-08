@@ -969,7 +969,6 @@ void UiCanvasComponent::SetRenderTargetName(const AZStd::string& name)
     {
         DestroyRenderTarget();
         m_renderTargetName = name;
-        CreateRenderTarget();
     }
 }
 
@@ -1115,7 +1114,7 @@ bool UiCanvasComponent::HandleInputEvent(const AzFramework::InputChannel::Snapsh
         }
     }
 
-    return m_isConsumingAllInputEvents;
+    return !m_renderToTexture && m_isConsumingAllInputEvents;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1572,12 +1571,6 @@ void UiCanvasComponent::ActiveChanged(AZ::EntityId m_newActiveInteractable, bool
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::OnPreRender()
-{
-    RenderCanvasToTexture();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence)
 {
     // Queue the event to prevent deletions during the canvas update
@@ -1939,7 +1932,40 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
     if (m_renderGraph.GetDirtyFlag())
     {
         m_renderGraph.ResetGraph();
+
+        bool renderToTexture = !m_renderInEditor && GetIsRenderToTexture();
+        if (renderToTexture)
+        {
+            if (m_attachmentImageId.IsEmpty())
+            {
+                CreateRenderTarget();
+            }
+
+            // we always clear to transparent black - the accumulation of alpha in the render target requires it
+            AZ::Color clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+            // Start building the render to texture node in the render graph
+            AZ::Vector2 viewportTopLeft = AZ::Vector2::CreateZero();
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage;
+            EBUS_EVENT_ID_RESULT(attachmentImage, GetEntityId(), LyShine::RenderToTextureRequestBus, GetRenderTarget, m_attachmentImageId);
+            m_renderGraph.BeginRenderToTexture(attachmentImage, viewportTopLeft, viewportSize, clearColor);
+        }
+        else
+        {
+            if (!m_attachmentImageId.IsEmpty())
+            {
+                DestroyRenderTarget();
+            }
+        }
+
         EBUS_EVENT_ID(m_rootElement, UiElementBus, RenderElement, &m_renderGraph, isInGame);
+
+        if (renderToTexture)
+        {
+            // finish building the render to texture node in the render graph
+            m_renderGraph.EndRenderToTexture();
+        }
+
         m_renderGraph.SetDirtyFlag(false);
         m_renderGraph.FinalizeGraph();
     }
@@ -2431,14 +2457,6 @@ void UiCanvasComponent::Activate()
     if (m_activeInteractable.IsValid())
     {
         UiInteractableActiveNotificationBus::Handler::BusConnect(m_activeInteractable);
-    }
-
-    // Note: this will create a render target even when the canvas is being used in the editor which is
-    // unnecessary but harmless. It will not actually be used as a render target unless we are running in game.
-    // An alternative would be to create in on first use.
-    if (m_renderToTexture)
-    {
-        CreateRenderTarget();
     }
 
     LoadAtlases();
@@ -3605,81 +3623,23 @@ void UiCanvasComponent::CreateRenderTarget()
         return;
     }
 
-#ifdef LYSHINE_ATOM_TODO // [GHI #6269] Support RTT using Atom
-    // Create a render target that this canvas will be rendered to.
-    // The render target size is the canvas size.
-    m_renderTargetHandle = gEnv->pRenderer->CreateRenderTarget(m_renderTargetName.c_str(),
-            static_cast<int>(m_canvasSize.GetX()), static_cast<int>(m_canvasSize.GetY()), Clr_Empty, eTF_R8G8B8A8);
-
-    if (m_renderTargetHandle <= 0)
+    // Create a render target for the canvas
+    AZ::RHI::Size imageSize(static_cast<uint32_t>(m_canvasSize.GetX()), static_cast<uint32_t>(m_canvasSize.GetY()), 1);
+    EBUS_EVENT_ID_RESULT(m_attachmentImageId, GetEntityId(), LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    if (m_attachmentImageId.IsEmpty())
     {
-        gEnv->pSystem->Warning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,
-            m_pathname.c_str(),
-            "Failed to create render target for UI canvas: %s",
-            m_pathname.c_str());
+        AZ_Warning("UI", false, "Failed to create render target for UI canvas: %s", m_pathname.c_str());
     }
-    else
-    {
-        // Also create a depth surface to render the canvas to, we need depth for masking
-        // since that uses the stencil buffer
-        m_renderTargetDepthSurface = gEnv->pRenderer->CreateDepthSurface(
-                static_cast<int>(m_canvasSize.GetX()), static_cast<int>(m_canvasSize.GetY()));
-
-        ISystem::CrySystemNotificationBus::Handler::BusConnect();
-    }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::DestroyRenderTarget()
 {
-    if (m_renderTargetHandle > 0)
+    if (!m_attachmentImageId.IsEmpty())
     {
-        ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
-#ifdef LYSHINE_ATOM_TODO // [GHI #6269] Support RTT using Atom
-        gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
-#endif
-        m_renderTargetDepthSurface = nullptr;
-#ifdef LYSHINE_ATOM_TODO // [GHI #6269] Support RTT using Atom
-        gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
-#endif
-        m_renderTargetHandle = -1;
+        EBUS_EVENT_ID(GetEntityId(), LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_attachmentImageId);
+        m_attachmentImageId = AZ::RHI::AttachmentId{};
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::RenderCanvasToTexture()
-{
-#ifdef LYSHINE_ATOM_TODO // [GHI #6269] Support RTT using Atom
-    if (m_renderTargetHandle <= 0)
-    {
-        return;
-    }
-
-    ISystem* system = gEnv->pSystem;
-    if (system && !gEnv->IsDedicated())
-    {
-        GetUiRenderer()->BeginUiFrameRender();
-
-        gEnv->pRenderer->SetRenderTarget(m_renderTargetHandle, m_renderTargetDepthSurface);
-
-        // clear the render target before rendering to it
-        // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will have already set the render target
-        // In theory we could call this before setting the render target without the immediate flag
-        // but that doesn't work. Perhaps because FX_Commit is not called.
-        ColorF viewportBackgroundColor(0, 0, 0, 0); // if clearing color we want to set alpha to zero also
-        gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
-
-        // we are writing to a linear texture
-        gEnv->pRenderer->SetSrgbWrite(false);
-
-        RenderCanvas(true, m_canvasSize);
-
-        gEnv->pRenderer->SetRenderTarget(0); // restore render target
-
-        GetUiRenderer()->EndUiFrameRender();
-    }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
