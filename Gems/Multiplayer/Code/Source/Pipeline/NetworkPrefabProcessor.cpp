@@ -136,9 +136,11 @@ namespace Multiplayer
         using namespace AzToolsFramework::Prefab;
 
         AZStd::string uniqueName = prefab.GetName();
+        AZStd::string prefabName = prefab.GetName();
         uniqueName += NetworkSpawnableFileExtension;
+        prefabName += NetworkFileExtension;
 
-        PrefabConversionUtils::PrefabDocument networkPrefab(uniqueName, prefab.GetInstance().GetInstanceAlias());
+        PrefabConversionUtils::PrefabDocument networkPrefab(prefabName, prefab.GetInstance().GetInstanceAlias());
 
         auto serializer = [serializationFormat](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool {
             AZ::IO::ByteContainerStream stream(&output);
@@ -158,7 +160,7 @@ namespace Multiplayer
             &sourceInstance,
             &networkInstance,
             prefab.GetName(),
-            uniqueName,
+            prefabName,
             context,
             networkSpawnable);
 
