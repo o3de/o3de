@@ -956,12 +956,9 @@ namespace AzToolsFramework
             }
 
             // Don't allow entities to be parented outside their container.
-            if (m_focusModeInterface)
+            if (m_focusModeInterface && !m_focusModeInterface->IsInFocusSubTree(actualValue))
             {
-                if (!m_focusModeInterface->IsInFocusSubTree(actualValue))
-                {
-                    return AZ::Failure(AZStd::string("You can only set a parent as one of the entities belonging to the focused prefab."));
-                }
+                return AZ::Failure(AZStd::string("You can only set a parent as one of the entities belonging to the focused prefab."));
             }
 
             return AZ::Success();
