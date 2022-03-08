@@ -221,11 +221,21 @@ namespace Multiplayer
             server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
         }
         
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        uint16_t editorsv_port = DefaultServerEditorPort;
+        if (console->GetCvarValue("editorsv_port", editorsv_port) != AZ::GetValueResult::Success)
+        {
+            AZ_Assert(false,
+                "MultiplayerEditorSystemComponent::LaunchEditorServer failed! Could not find the editorsv_port cvar; the editor won't be able to connect to editor-server! Please update this code to use a valid cvar!")
+        }
+
+
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --rhi "%s")",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
-            server_rhi.GetCStr()
+            server_rhi.GetCStr(),
+            editorsv_port
         );
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
