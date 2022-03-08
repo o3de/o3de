@@ -15,8 +15,18 @@
 
 #ifndef AZ_ARRAY_SIZE
 /// Return an array size for static arrays.
-#   define  AZ_ARRAY_SIZE(__a)  (sizeof(__a)/sizeof(__a[0]))
+namespace AZ::Internal
+{
+        template<class T>
+        struct StaticArraySize
+        {
+            static_assert(std::is_array_v<T>, "AZ_ARRAY_SIZE can only be used with a C-style array");
+            static constexpr size_t value = sizeof(T) / sizeof(std::remove_extent_t<T>);
+        };
+}
+#    define AZ_ARRAY_SIZE(__a)  AZ::Internal::StaticArraySize<std::remove_reference_t<decltype(__a)>>::value
 #endif
+
 
 #ifndef AZ_SIZE_ALIGN_UP
 /// Aign to the next bigger/up size
