@@ -19,6 +19,7 @@
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/RagdollInstance.h>
 #include <EMotionFX/Source/SubMesh.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/Mesh.h>
@@ -33,7 +34,81 @@ namespace AZ::Render
         m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(entityId);
     }
 
-    void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags, EMotionFX::ActorInstance* instance)
+    // Function for providing data required for debug drawing colliders
+    Physics::CharacterPhysicsDebugDraw::NodeDebugDrawData GetNodeDebugDrawData(
+        const Physics::CharacterColliderNodeConfiguration& colliderNodeConfig,
+        const EMotionFX::ActorInstance* instance,
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices)
+    {
+        Physics::CharacterPhysicsDebugDraw::NodeDebugDrawData nodeDebugDrawData;
+        const EMotionFX::Actor* actor = instance->GetActor();
+        const EMotionFX::Node* joint = actor->GetSkeleton()->FindNodeByName(colliderNodeConfig.m_name.c_str());
+        if (!joint)
+        {
+            nodeDebugDrawData.m_valid = false;
+            return nodeDebugDrawData;
+        }
+
+        const size_t nodeIndex = joint->GetNodeIndex();
+        nodeDebugDrawData.m_selected = cachedSelectedJointIndices &&
+            (cachedSelectedJointIndices->empty() || cachedSelectedJointIndices->find(nodeIndex) != cachedSelectedJointIndices->end());
+
+        const EMotionFX::Transform& actorInstanceGlobalTransform = instance->GetWorldSpaceTransform();
+        const EMotionFX::Transform& emfxNodeGlobalTransform =
+            instance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex);
+        nodeDebugDrawData.m_worldTransform = (emfxNodeGlobalTransform * actorInstanceGlobalTransform).ToAZTransform();
+        nodeDebugDrawData.m_valid = true;
+        return nodeDebugDrawData;
+    };
+
+    // Function for proviuding data required for debug drawing joint limits
+    Physics::CharacterPhysicsDebugDraw::JointDebugDrawData GetJointDebugDrawData(
+        const Physics::RagdollNodeConfiguration& ragdollNodeConfig,
+        const EMotionFX::ActorInstance* instance,
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices)
+    {
+        Physics::CharacterPhysicsDebugDraw::JointDebugDrawData jointDebugDrawData;
+        const EMotionFX::Actor* actor = instance->GetActor();
+        const EMotionFX::Node* joint = actor->GetSkeleton()->FindNodeByName(ragdollNodeConfig.m_debugName.c_str());
+        if (!joint)
+        {
+            jointDebugDrawData.m_valid = false;
+            return jointDebugDrawData;
+        }
+
+        jointDebugDrawData.m_valid = true;
+        const size_t nodeIndex = joint->GetNodeIndex();
+        const bool jointSelected = cachedSelectedJointIndices &&
+            (cachedSelectedJointIndices->empty() || cachedSelectedJointIndices->find(nodeIndex) != cachedSelectedJointIndices->end());
+
+        if (!jointSelected)
+        {
+            jointDebugDrawData.m_visible = false;
+            return jointDebugDrawData;
+        }
+
+        const EMotionFX::Node* ragdollParentNode = instance->GetActor()->GetPhysicsSetup()->FindRagdollParentNode(joint);
+        if (!ragdollParentNode)
+        {
+            jointDebugDrawData.m_valid = false;
+            return jointDebugDrawData;
+        }
+
+        const size_t ragdollParentNodeIndex = ragdollParentNode->GetNodeIndex();
+        const EMotionFX::Pose* currentPose = instance->GetTransformData()->GetCurrentPose();
+        const EMotionFX::Transform& childModelSpaceTransform = currentPose->GetModelSpaceTransform(nodeIndex);
+        jointDebugDrawData.m_childModelSpaceOrientation = childModelSpaceTransform.m_rotation;
+        jointDebugDrawData.m_parentModelSpaceOrientation = currentPose->GetModelSpaceTransform(ragdollParentNodeIndex).m_rotation;
+        EMotionFX::Transform parentModelSpaceTransform = currentPose->GetModelSpaceTransform(ragdollParentNodeIndex);
+        parentModelSpaceTransform.m_position = currentPose->GetModelSpaceTransform(nodeIndex).m_position;
+        jointDebugDrawData.m_parentWorldTransform = (parentModelSpaceTransform * instance->GetWorldSpaceTransform()).ToAZTransform();
+        jointDebugDrawData.m_childWorldTransform = (childModelSpaceTransform * instance->GetWorldSpaceTransform()).ToAZTransform();
+        jointDebugDrawData.m_visible = true;
+        jointDebugDrawData.m_selected = true;
+        return jointDebugDrawData;
+    }
+
+    void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags, EMotionFX::ActorInstance* instance)
     {
         if (!m_auxGeomFeatureProcessor || !instance)
         {
@@ -46,10 +121,12 @@ namespace AZ::Render
             return;
         }
 
+        using AZ::RHI::CheckBitsAny;
+
         // Update the mesh deformers (perform cpu skinning and morphing) when needed.
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB] || renderFlags[EMotionFX::ActorRenderFlag::RENDER_FACENORMALS] ||
-            renderFlags[EMotionFX::ActorRenderFlag::RENDER_TANGENTS] || renderFlags[EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS] ||
-            renderFlags[EMotionFX::ActorRenderFlag::RENDER_WIREFRAME])
+        if (CheckBitsAny(renderFlags,
+                EMotionFX::ActorRenderFlags::AABB | EMotionFX::ActorRenderFlags::FaceNormals | EMotionFX::ActorRenderFlags::Tangents |
+                EMotionFX::ActorRenderFlags::VertexNormals | EMotionFX::ActorRenderFlags::Wireframe))
         {
             instance->UpdateMeshDeformers(0.0f, true);
         }
@@ -61,45 +138,52 @@ namespace AZ::Render
         const float scaleMultiplier = CalculateScaleMultiplier(instance);
 
         // Render aabb
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::AABB))
         {
-            RenderAABB(instance, renderActorSettings.m_staticAABBColor);
+            RenderAABB(instance,
+                renderActorSettings.m_enabledNodeBasedAabb, renderActorSettings.m_nodeAABBColor,
+                renderActorSettings.m_enabledMeshBasedAabb, renderActorSettings.m_meshAABBColor,
+                renderActorSettings.m_enabledStaticBasedAabb, renderActorSettings.m_staticAABBColor);
         }
 
         // Render simple line skeleton
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_LINESKELETON])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::LineSkeleton))
         {
-            RenderLineSkeleton(instance, renderActorSettings.m_lineSkeletonColor);
+            RenderLineSkeleton(debugDisplay, instance, renderActorSettings.m_lineSkeletonColor);
         }
 
         // Render advanced skeleton
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_SKELETON])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Skeleton))
         {
-            RenderSkeleton(instance, renderActorSettings.m_skeletonColor);
+            RenderSkeleton(debugDisplay, instance, renderActorSettings.m_skeletonColor);
         }
 
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODENAMES])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeNames))
         {
             RenderJointNames(instance, viewport, renderActorSettings.m_jointNameColor);
         }
 
         // Render internal EMFX debug lines.
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_EMFX_DEBUG])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::EmfxDebug))
         {
             RenderEMFXDebugDraw(instance);
         }
 
-        // Render
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION])
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeOrientation))
         {
             RenderNodeOrientations(instance, debugDisplay, renderActorSettings.m_nodeOrientationScale * scaleMultiplier);
         }
 
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::MotionExtraction))
+        {
+            RenderTrajectoryPath(debugDisplay, instance, renderActorSettings.m_trajectoryHeadColor, renderActorSettings.m_trajectoryPathColor);
+        }
+
         // Render vertex normal, face normal, tagent and wireframe.
-        const bool renderVertexNormals = renderFlags[EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS];
-        const bool renderFaceNormals = renderFlags[EMotionFX::ActorRenderFlag::RENDER_FACENORMALS];
-        const bool renderTangents = renderFlags[EMotionFX::ActorRenderFlag::RENDER_TANGENTS];
-        const bool renderWireframe = renderFlags[EMotionFX::ActorRenderFlag::RENDER_WIREFRAME];
+        const bool renderVertexNormals = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::VertexNormals);
+        const bool renderFaceNormals = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::FaceNormals);
+        const bool renderTangents = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Tangents);
+        const bool renderWireframe = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::Wireframe);
 
         if (renderVertexNormals || renderFaceNormals || renderTangents || renderWireframe)
         {
@@ -129,9 +213,71 @@ namespace AZ::Render
                 }
                 if (renderWireframe)
                 {
-                    RenderWireframe(mesh, globalTM, renderActorSettings.m_wireframeScale, scaleMultiplier, renderActorSettings.m_wireframeColor);
+                    RenderWireframe(mesh, globalTM, renderActorSettings.m_wireframeScale * scaleMultiplier, renderActorSettings.m_wireframeColor);
                 }
             }
+        }
+
+        // Data required for debug drawing colliders and ragdolls
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
+
+        Physics::CharacterPhysicsDebugDraw::NodeDebugDrawDataFunction nodeDebugDrawDataFunction =
+            [instance, cachedSelectedJointIndices](const Physics::CharacterColliderNodeConfiguration& colliderNodeConfig)
+        {
+            return GetNodeDebugDrawData(colliderNodeConfig, instance, cachedSelectedJointIndices);
+        };
+
+        Physics::CharacterPhysicsDebugDraw::JointDebugDrawDataFunction jointDebugDrawDataFunction =
+            [instance, cachedSelectedJointIndices](const Physics::RagdollNodeConfiguration& ragdollNodeConfig)
+        {
+            return GetJointDebugDrawData(ragdollNodeConfig, instance, cachedSelectedJointIndices);
+        };
+
+        // Hit detection colliders
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::HitDetectionColliders))
+        {
+            m_characterPhysicsDebugDraw.RenderColliders(
+                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::HitDetection),
+                nodeDebugDrawDataFunction,
+                { renderActorSettings.m_hitDetectionColliderColor, renderActorSettings.m_selectedHitDetectionColliderColor });
+        }
+
+        // Cloth colliders
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::ClothColliders))
+        {
+            m_characterPhysicsDebugDraw.RenderColliders(
+                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Cloth),
+                nodeDebugDrawDataFunction,
+                { renderActorSettings.m_clothColliderColor, renderActorSettings.m_selectedClothColliderColor });
+        }
+
+        // Simulated object colliders
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::SimulatedObjectColliders))
+        {
+            m_characterPhysicsDebugDraw.RenderColliders(
+                debugDisplay,
+                instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::SimulatedObjectCollider),
+                nodeDebugDrawDataFunction,
+                { renderActorSettings.m_simulatedObjectColliderColor, renderActorSettings.m_selectedSimulatedObjectColliderColor });
+        }
+
+        // Ragdoll
+        if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollColliders))
+        {
+            m_characterPhysicsDebugDraw.RenderColliders(
+                debugDisplay,
+                instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Ragdoll),
+                nodeDebugDrawDataFunction,
+                { renderActorSettings.m_ragdollColliderColor, renderActorSettings.m_selectedRagdollColliderColor });
+        }
+        if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollJointLimits))
+        {
+            m_characterPhysicsDebugDraw.RenderJointLimits(
+                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetRagdollConfig(), jointDebugDrawDataFunction,
+                { renderActorSettings.m_ragdollColliderColor, renderActorSettings.m_selectedRagdollColliderColor,
+                  renderActorSettings.m_violatedJointLimitColor });
         }
     }
 
@@ -201,34 +347,64 @@ namespace AZ::Render
         return AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
     }
 
-    void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor)
+    void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance,
+            bool enableNodeAabb,
+            const AZ::Color& nodeAabbColor,
+            bool enableMeshAabb,
+            const AZ::Color& meshAabbColor,
+            bool enableStaticAabb,
+            const AZ::Color& staticAabbColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
-        const AZ::Aabb& aabb = instance->GetAabb();
-        auxGeom->DrawAabb(aabb, aabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+
+        if (enableNodeAabb)
+        {
+            AZ::Aabb aabb;
+            instance->CalcNodeBasedAabb(&aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, nodeAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
+
+        if (enableMeshAabb)
+        {
+            AZ::Aabb aabb;
+            const size_t lodLevel = instance->GetLODLevel();
+            instance->CalcMeshBasedAabb(lodLevel, &aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, meshAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
+
+        if (enableStaticAabb)
+        {
+            AZ::Aabb aabb;
+            instance->CalcStaticBasedAabb(&aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, staticAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
     }
 
-    void AtomActorDebugDraw::RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    void AtomActorDebugDraw::RenderLineSkeleton(AzFramework::DebugDisplayRequests* debugDisplay, EMotionFX::ActorInstance* instance, const AZ::Color& color) const
     {
-        RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
-
         const EMotionFX::TransformData* transformData = instance->GetTransformData();
         const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
-
         const size_t lodLevel = instance->GetLODLevel();
         const size_t numJoints = skeleton->GetNumNodes();
-
-        m_auxVertices.clear();
-        m_auxVertices.reserve(numJoints * 2);
-        m_auxColors.clear();
-        m_auxColors.reserve(numJoints * 2);
-        AZ::Color renderColor;
 
         const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
+        const AZ::u32 oldState = debugDisplay->GetState();
+        debugDisplay->DepthTestOff();
+
+        AZ::Color renderColor;
         for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
         {
             const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
@@ -249,41 +425,34 @@ namespace AZ::Render
             }
             else
             {
-                renderColor = skeletonColor;
+                renderColor = color;
             }
 
             const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
-            m_auxVertices.emplace_back(parentPos);
-            m_auxColors.emplace_back(renderColor);
-
             const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
-            m_auxVertices.emplace_back(bonePos);
-            m_auxColors.emplace_back(renderColor);
+
+            debugDisplay->SetColor(renderColor);
+            debugDisplay->DrawLine(parentPos, bonePos);
         }
 
-        RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-        lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-        lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = lineArgs.m_vertCount;
-        lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-        auxGeom->DrawLines(lineArgs);
+        debugDisplay->SetState(oldState);
     }
 
-    void AtomActorDebugDraw::RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    void AtomActorDebugDraw::RenderSkeleton(AzFramework::DebugDisplayRequests* debugDisplay, EMotionFX::ActorInstance* instance, const AZ::Color& color)
     {
-        RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
-
         const EMotionFX::TransformData* transformData = instance->GetTransformData();
         const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
         const size_t numEnabled = instance->GetNumEnabledNodes();
 
-        AZ::Color renderColor = skeletonColor;
         const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
+        const AZ::u32 oldState = debugDisplay->GetState();
+        debugDisplay->DepthTestOff();
+
+        AZ::Color renderColor;
         for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(instance->GetEnabledNode(i));
@@ -312,12 +481,17 @@ namespace AZ::Render
             }
             else
             {
-                renderColor = skeletonColor;
+                renderColor = color;
             }
+            renderColor.SetA(0.75f);
+            debugDisplay->SetColor(renderColor);
+
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
-            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, renderColor);
-            auxGeom->DrawSphere(nodeWorldPos, boneScale, renderColor);
+            debugDisplay->DrawSolidCylinder(centerWorldPos, boneDirection, boneScale * 0.75f, cylinderSize);
+            debugDisplay->DrawBall(nodeWorldPos, boneScale);
         }
+
+        debugDisplay->SetState(oldState);
     }
 
     void AtomActorDebugDraw::RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance)
@@ -355,9 +529,9 @@ namespace AZ::Render
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+        lineArgs.m_colorCount = aznumeric_cast<uint32_t>(m_auxColors.size());
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
     }
@@ -426,15 +600,15 @@ namespace AZ::Render
                     m_auxVertices.emplace_back(normalPos);
                     m_auxVertices.emplace_back(normalPos + (normalDir * faceNormalsScale * scaleMultiplier));
                 }
-            }
 
-            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-            lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &faceNormalsColor;
-            lineArgs.m_colorCount = 1;
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-            auxGeom->DrawLines(lineArgs);
+                RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+                lineArgs.m_verts = m_auxVertices.data();
+                lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
+                lineArgs.m_colors = &faceNormalsColor;
+                lineArgs.m_colorCount = 1;
+                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
+                auxGeom->DrawLines(lineArgs);
+            }
         }
 
         // render vertex normals
@@ -463,10 +637,10 @@ namespace AZ::Render
 
                 RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
                 lineArgs.m_verts = m_auxVertices.data();
-                lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+                lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
                 lineArgs.m_colors = &vertexNormalsColor;
                 lineArgs.m_colorCount = 1;
-                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
                 auxGeom->DrawLines(lineArgs);
             }
         }
@@ -551,15 +725,15 @@ namespace AZ::Render
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
-        lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+        lineArgs.m_colorCount = aznumeric_cast<uint32_t>(m_auxColors.size());
+        lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
         auxGeom->DrawLines(lineArgs);
     }
 
-    void AtomActorDebugDraw::RenderWireframe(
-        EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier, const AZ::Color& wireframeColor)
+    void AtomActorDebugDraw::RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM,
+        float scale, const AZ::Color& color)
     {
         // Check if the mesh is valid and skip the node in case it's not
         if (!mesh)
@@ -574,7 +748,6 @@ namespace AZ::Render
         }
 
         PrepareForMesh(mesh, worldTM);
-
         const AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
 
         const size_t numSubMeshes = mesh->GetNumSubMeshes();
@@ -595,9 +768,9 @@ namespace AZ::Render
                 const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
                 const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
 
-                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * wireframeScale * scaleMultiplier;
-                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * wireframeScale * scaleMultiplier;
-                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * wireframeScale * scaleMultiplier;
+                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * scale;
+                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * scale;
+                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * scale;
 
                 m_auxVertices.emplace_back(posA);
                 m_auxVertices.emplace_back(posB);
@@ -611,10 +784,10 @@ namespace AZ::Render
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &wireframeColor;
+            lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
+            lineArgs.m_colors = &color;
             lineArgs.m_colorCount = 1;
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::On;
             auxGeom->DrawLines(lineArgs);
         }
     }
@@ -650,7 +823,7 @@ namespace AZ::Render
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
         AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
+        m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
             TopRightBorderPadding * viewportContext->GetDpiScalingFactor();
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
@@ -696,6 +869,9 @@ namespace AZ::Render
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
 
+        const int oldState = debugDisplay->GetState();
+        debugDisplay->DepthTestOff();
+
         const size_t numEnabled = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numEnabled; ++i)
         {
@@ -711,6 +887,71 @@ namespace AZ::Render
                 selected = true;
             }
             RenderLineAxis(debugDisplay, worldTM, size, selected);
+        }
+
+        debugDisplay->SetState(oldState);
+    }
+
+    void AtomActorDebugDraw::UpdateActorInstance(EMotionFX::ActorInstance* actorInstance, float deltaTime)
+    {
+        // Find the corresponding trajectory trace path for the given actor instance
+        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        if (!trajectoryPath)
+        {
+            return;
+        }
+
+        const EMotionFX::Actor* actor = actorInstance->GetActor();
+        const EMotionFX::Node* motionExtractionNode = actor->GetMotionExtractionNode();
+        const uint32 particleSampleRate = 30;
+        const float minLengthEstimate = 0.0001f;
+        const float maxdeltaRot = 0.99;
+        const uint32 maxNumberParticles = 50;
+        if (motionExtractionNode)
+        {
+            const EMotionFX::Transform& worldTM = actorInstance->GetWorldSpaceTransform();
+
+            // Add a particle to the trajectory path once we travel certain distance.
+            bool distanceTravelledEnough = false;
+            if (trajectoryPath->m_traceParticles.empty())
+            {
+                distanceTravelledEnough = true;
+            }
+            else
+            {
+                const size_t numParticles = trajectoryPath->m_traceParticles.size();
+                const EMotionFX::Transform& oldWorldTM = trajectoryPath->m_traceParticles[numParticles - 1].m_worldTm;
+
+                const AZ::Vector3& oldPos = oldWorldTM.m_position;
+                const AZ::Quaternion oldRot = oldWorldTM.m_rotation.GetNormalized();
+                const AZ::Quaternion rotation = worldTM.m_rotation.GetNormalized();
+
+                const AZ::Vector3 deltaPos = worldTM.m_position - oldPos;
+                const float deltaRot = AZStd::abs(rotation.Dot(oldRot));
+                if (deltaPos.GetLengthEstimate() > minLengthEstimate || deltaRot < maxdeltaRot)
+                {
+                    distanceTravelledEnough = true;
+                }
+            }
+
+            // Add the time delta to the time passed since the last add
+            trajectoryPath->m_timePassed += deltaTime;
+            if (trajectoryPath->m_timePassed >= (1.0f / particleSampleRate) && distanceTravelledEnough)
+            {
+                // Create the particle, fill its data and add it to the trajectory trace path
+                TrajectoryPathParticle trajectoryParticle;
+                trajectoryParticle.m_worldTm = worldTM;
+                trajectoryPath->m_traceParticles.emplace_back(trajectoryParticle);
+
+                // Reset the time passed as we just added a new particle
+                trajectoryPath->m_timePassed = 0.0f;
+            }
+        }
+
+        // Make sure we don't have too many items in our array
+        if (trajectoryPath->m_traceParticles.size() > maxNumberParticles)
+        {
+            trajectoryPath->m_traceParticles.erase(begin(trajectoryPath->m_traceParticles));
         }
     }
 
@@ -771,6 +1012,181 @@ namespace AZ::Render
                 const AZ::Vector3 zNamePos = position + zAxisDir * (size * 1.15f);
                 debugDisplay->DrawTextLabel(zNamePos, frontSize, "Z");
             }
+        }
+    }
+
+    // Find the trajectory path for a given actor instance
+    AtomActorDebugDraw::TrajectoryTracePath* AtomActorDebugDraw::FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance)
+    {
+        for (TrajectoryTracePath* trajectoryPath : m_trajectoryTracePaths)
+        {
+            if (trajectoryPath->m_actorInstance == actorInstance)
+            {
+                return trajectoryPath;
+            }
+        }
+
+        // We haven't created a path for the given actor instance yet, do so
+        TrajectoryTracePath* tracePath = new TrajectoryTracePath();
+
+        tracePath->m_actorInstance = actorInstance;
+        tracePath->m_traceParticles.reserve(512);
+
+        m_trajectoryTracePaths.emplace_back(tracePath);
+        return tracePath;
+    }
+
+    void AtomActorDebugDraw::RenderTrajectoryPath(AzFramework::DebugDisplayRequests* debugDisplay,
+        const EMotionFX::ActorInstance* actorInstance,
+        const AZ::Color& headColor,
+        const AZ::Color& pathColor)
+    {
+        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        if (!trajectoryPath)
+        {
+            return;
+        }
+
+        EMotionFX::Actor* actor = actorInstance->GetActor();
+        EMotionFX::Node* extractionNode = actor->GetMotionExtractionNode();
+        if (!extractionNode)
+        {
+            return;
+        }
+
+        // Fast access to the trajectory trace particles
+        const AZStd::vector<TrajectoryPathParticle>& traceParticles = trajectoryPath->m_traceParticles;
+        if (traceParticles.empty())
+        {
+            return;
+        }
+
+        const size_t numTraceParticles = traceParticles.size();
+        const float trailWidthHalf = 0.25f;
+        const float trailLength = 2.0f;
+        const float arrowWidthHalf = 0.75f;
+        const float arrowLength = 1.5f;
+        const AZ::Vector3 liftFromGround(0.0f, 0.0f, 0.0001f);
+
+        const AZ::Transform trajectoryWorldTM = actorInstance->GetWorldSpaceTransform().ToAZTransform();
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Render arrow head
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Get the position and some direction vectors of the trajectory node matrix
+        EMotionFX::Transform worldTM = traceParticles[numTraceParticles - 1].m_worldTm;
+        const AZ::Vector3 right = trajectoryWorldTM.GetBasisX().GetNormalized();
+        const AZ::Vector3 center = trajectoryWorldTM.GetTranslation();
+        const AZ::Vector3 forward = trajectoryWorldTM.GetBasisY().GetNormalized();
+        const AZ::Vector3 up(0.0f, 0.0f, 1.0f);
+
+        AZ::Vector3 vertices[7];
+        AZ::Vector3 oldLeft, oldRight;
+
+        /*
+                            4
+                           / \
+                          /   \
+                        /       \
+                      /           \
+                    /               \
+                  5-----6       2-----3
+                        |       |
+                        |       |
+                        |       |
+                        |       |
+                        |       |
+                        0-------1
+        */
+        // Construct the arrow vertices
+        float scale = 0.2f;
+        vertices[0] = center + (-right * trailWidthHalf - forward * trailLength) * scale;
+        vertices[1] = center + (right * trailWidthHalf - forward * trailLength) * scale;
+        vertices[2] = center + (right * trailWidthHalf) * scale;
+        vertices[3] = center + (right * arrowWidthHalf) * scale;
+        vertices[4] = center + (forward * arrowLength) * scale;
+        vertices[5] = center + (-right * arrowWidthHalf) * scale;
+        vertices[6] = center + (-right * trailWidthHalf) * scale;
+
+        oldLeft = vertices[6];
+        oldRight = vertices[2];
+
+        AZ::Vector3 arrowOldLeft = oldLeft;
+        AZ::Vector3 arrowOldRight = oldRight;
+
+        // Render the solid arrow
+        debugDisplay->SetColor(headColor);
+        debugDisplay->DrawTri(vertices[3] + liftFromGround, vertices[4] + liftFromGround, vertices[2] + liftFromGround);
+        debugDisplay->DrawTri(vertices[2] + liftFromGround, vertices[4] + liftFromGround, vertices[6] + liftFromGround);
+        debugDisplay->DrawTri(vertices[6] + liftFromGround, vertices[4] + liftFromGround, vertices[5] + liftFromGround);
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Render arrow tail (actual path)
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        AZ::Vector3 a, b;
+        AZ::Color color = pathColor;
+
+        // Render the path from the arrow head towards the tail
+        for (size_t i = numTraceParticles - 1; i > 0; i--)
+        {
+            // Calculate the normalized distance to the head, this value also represents the alpha value as it fades away while getting
+            // closer to the end
+            float normalizedDistance = (float)i / numTraceParticles;
+
+            // Get the start and end point of the line segment and calculate the delta between them
+            worldTM = traceParticles[i].m_worldTm;
+            a = worldTM.m_position;
+            b = traceParticles[i - 1].m_worldTm.m_position;
+            AZ::Vector3 particleRight = worldTM.ToAZTransform().GetBasisX().GetNormalized();
+
+            if (i > 1 && i < numTraceParticles - 3)
+            {
+                const AZ::Vector3 deltaA = traceParticles[i - 2].m_worldTm.m_position - traceParticles[i - 1].m_worldTm.m_position;
+                const AZ::Vector3 deltaB = traceParticles[i - 1].m_worldTm.m_position - traceParticles[i].m_worldTm.m_position;
+                const AZ::Vector3 deltaC = traceParticles[i].m_worldTm.m_position - traceParticles[i + 1].m_worldTm.m_position;
+                const AZ::Vector3 deltaD = traceParticles[i + 1].m_worldTm.m_position - traceParticles[i + 2].m_worldTm.m_position;
+                AZ::Vector3 delta = deltaA + deltaB + deltaC + deltaD;
+                delta = delta.GetNormalizedSafe();
+
+                particleRight = up.Cross(delta);
+            }
+
+            /*
+                    //              .
+                    //              .
+                    //              .
+                    //(oldLeft) 0   a   1 (oldRight)
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          2---b---3
+            */
+
+            // Construct the arrow vertices
+            vertices[0] = oldLeft;
+            vertices[1] = oldRight;
+            vertices[2] = b + AZ::Vector3(-particleRight * trailWidthHalf) * scale;
+            vertices[3] = b + AZ::Vector3(particleRight * trailWidthHalf) * scale;
+
+            // Make sure we perfectly align with the arrow head
+            if (i == numTraceParticles - 1)
+            {
+                normalizedDistance = 1.0f;
+                vertices[0] = arrowOldLeft;
+                vertices[1] = arrowOldRight;
+            }
+
+            // Render the solid arrow
+            color.SetA(normalizedDistance);
+            debugDisplay->SetColor(color);
+            debugDisplay->DrawTri(vertices[0] + liftFromGround, vertices[2] + liftFromGround, vertices[1] + liftFromGround);
+            debugDisplay->DrawTri(vertices[1] + liftFromGround, vertices[2] + liftFromGround, vertices[3] + liftFromGround);
+
+            // Overwrite the old left and right values so that they can be used for the next trace particle
+            oldLeft = vertices[2];
+            oldRight = vertices[3];
         }
     }
 } // namespace AZ::Render

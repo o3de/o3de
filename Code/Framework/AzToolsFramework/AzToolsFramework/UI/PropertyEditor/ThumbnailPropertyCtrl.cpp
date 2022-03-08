@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzToolsFramework/Debug/TraceContext.h>
+#include <AzCore/PlatformDef.h>
 
 // 4251: 'QRawFont::d': class 'QExplicitlySharedDataPointer<QRawFontPrivate>' needs to have dll-interface to be used by clients of class
 // 'QRawFont' 4800: 'QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
@@ -65,11 +65,11 @@ namespace AzToolsFramework
         UpdateVisibility();
     }
 
-    void ThumbnailPropertyCtrl::SetThumbnailKey(Thumbnailer::SharedThumbnailKey key, const char* contextName)
+    void ThumbnailPropertyCtrl::SetThumbnailKey(Thumbnailer::SharedThumbnailKey key)
     {
         m_key = key;
-        m_thumbnail->SetThumbnailKey(m_key, contextName);
-        m_thumbnailEnlarged->SetThumbnailKey(m_key, contextName);
+        m_thumbnail->SetThumbnailKey(m_key);
+        m_thumbnailEnlarged->SetThumbnailKey(m_key);
         UpdateVisibility();
     }
 

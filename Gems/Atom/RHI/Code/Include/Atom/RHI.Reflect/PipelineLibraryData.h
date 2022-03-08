@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
@@ -47,7 +47,7 @@ namespace AZ
             static ConstPtr<PipelineLibraryData> Create(AZStd::vector<uint8_t>&& data);
 
             /// Returns the data payload which describes the platform-specific pipeline library data.
-            AZStd::array_view<uint8_t> GetData() const;
+            AZStd::span<const uint8_t> GetData() const;
 
         private:
             PipelineLibraryData(AZStd::vector<uint8_t>&& data);

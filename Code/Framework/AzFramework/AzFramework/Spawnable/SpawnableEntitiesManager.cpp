@@ -46,6 +46,11 @@ namespace AzFramework
         }
     }
 
+    SpawnableEntitiesManager::~SpawnableEntitiesManager()
+    {
+        AZ_Assert(m_totalTickets == 0, "Shutting down the Spawnable Entities Manager while there are still active Spawnable Tickets.");
+    }
+
     void SpawnableEntitiesManager::SpawnAllEntities(EntitySpawnTicket& ticket, SpawnAllEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnAllEntities hasn't been initialized.");
@@ -96,22 +101,24 @@ namespace AzFramework
         QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::RetrieveEntitySpawnTicket(EntitySpawnTicket::Id entitySpawnTicketId, RetrieveEntitySpawnTicketCallback callback)
+    void SpawnableEntitiesManager::RetrieveTicket(
+        EntitySpawnTicket::Id ticketId, RetrieveEntitySpawnTicketCallback callback, RetrieveTicketOptionalArgs optionalArgs)
     {
-        if (entitySpawnTicketId == 0)
+        if (ticketId == 0)
         {
             AZ_Assert(false, "Ticket id provided to RetrieveEntitySpawnTicket is invalid.");
             return;
         }
 
-        AZStd::scoped_lock lock(m_entitySpawnTicketMapMutex);
-        auto entitySpawnTicketIterator = m_entitySpawnTicketMap.find(entitySpawnTicketId);
-        if (entitySpawnTicketIterator == m_entitySpawnTicketMap.end())
+        RetrieveTicketCommand queueEntry;
+        queueEntry.m_ticketId = ticketId;
+        queueEntry.m_callback = AZStd::move(callback);
+
+        Queue& queue = optionalArgs.m_priority <= m_highPriorityThreshold ? m_highPriorityQueue : m_regularPriorityQueue;
         {
-            AZ_Assert(false, "The EntitySpawnTicket corresponding to id '%lu' cannot be found", entitySpawnTicketId);
-            return;
+            AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
+            queue.m_pendingRequest.push(AZStd::move(queueEntry));
         }
-        callback(entitySpawnTicketIterator->second);
     }
 
     void SpawnableEntitiesManager::ReloadSpawnable(
@@ -279,25 +286,59 @@ namespace AzFramework
         return queue.m_delayed.empty() ? CommandQueueStatus::NoCommandsLeft : CommandQueueStatus::HasCommandsLeft;
     }
 
-    AZStd::pair<EntitySpawnTicket::Id, void*> SpawnableEntitiesManager::CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable)
+    void* SpawnableEntitiesManager::CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable)
     {
         static AZStd::atomic_uint32_t idCounter { 1 };
 
         auto result = aznew Ticket();
         result->m_spawnable = AZStd::move(spawnable);
+        result->m_ticketId = idCounter++;
+
+        m_totalTickets++;
+        m_ticketsPendingRegistration++;
+        AZ_Assert(
+            m_ticketsPendingRegistration <= m_totalTickets,
+            "There are less total entity spawn tickets than there are tickets pending registration in the SpawnableEntitiesManager.");
+
+        RegisterTicketCommand queueEntry;
+        queueEntry.m_ticket = result;
+        {
+            AZStd::scoped_lock queueLock(m_highPriorityQueue.m_pendingRequestMutex);
+            queueEntry.m_requestId = result->m_nextRequestId++;
+            m_highPriorityQueue.m_pendingRequest.push(AZStd::move(queueEntry));
+        }
         
-        return AZStd::make_pair<EntitySpawnTicket::Id, void*>(idCounter++, result);
+        return result;
     }
 
-    void SpawnableEntitiesManager::DestroyTicket(void* ticket)
+    void SpawnableEntitiesManager::IncrementTicketReference(void* ticket)
     {
-        DestroyTicketCommand queueEntry;
-        queueEntry.m_ticket = reinterpret_cast<Ticket*>(ticket);
+        reinterpret_cast<Ticket*>(ticket)->m_referenceCount++;
+    }
+
+    void SpawnableEntitiesManager::DecrementTicketReference(void* ticket)
+    {
+        auto ticketInstance = reinterpret_cast<Ticket*>(ticket);
+        if (ticketInstance->m_referenceCount-- == 1)
         {
-            AZStd::scoped_lock queueLock(m_regularPriorityQueue.m_pendingRequestMutex);
-            queueEntry.m_requestId = reinterpret_cast<Ticket*>(ticket)->m_nextRequestId++;
-            m_regularPriorityQueue.m_pendingRequest.push(AZStd::move(queueEntry));
+            DestroyTicketCommand queueEntry;
+            queueEntry.m_ticket = ticketInstance;
+            {
+                AZStd::scoped_lock queueLock(m_regularPriorityQueue.m_pendingRequestMutex);
+                queueEntry.m_requestId = ticketInstance->m_nextRequestId++;
+                m_regularPriorityQueue.m_pendingRequest.push(AZStd::move(queueEntry));
+            }
         }
+    }
+
+    EntitySpawnTicket::Id SpawnableEntitiesManager::GetTicketId(void* ticket)
+    {
+        return reinterpret_cast<Ticket*>(ticket)->m_ticketId;
+    }
+
+    const AZ::Data::Asset<Spawnable>& SpawnableEntitiesManager::GetSpawnableOnTicket(void* ticket)
+    {
+        return reinterpret_cast<Ticket*>(ticket)->m_spawnable;
     }
 
     AZ::Entity* SpawnableEntitiesManager::CloneSingleEntity(const AZ::Entity& entityPrototype,
@@ -499,12 +540,8 @@ namespace AzFramework
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
                 {
                     AZ::Entity* clone = (*it);
-                    // The entity component framework doesn't handle entities without TransformComponent safely.
-                    if (!clone->GetComponents().empty())
-                    {
-                        clone->SetSpawnTicketId(request.m_ticketId);
-                        GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
-                    }
+                    clone->SetEntitySpawnTicketId(request.m_ticketId);
+                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
                 }
 
                 // Let other systems know about newly spawned entities for any post-processing after adding to the scene/game context.
@@ -636,12 +673,8 @@ namespace AzFramework
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
                 {
                     AZ::Entity* clone = (*it);
-                    // The entity component framework doesn't handle entities without TransformComponent safely.
-                    if (!clone->GetComponents().empty())
-                    {
-                        clone->SetSpawnTicketId(request.m_ticketId);
-                        GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
-                    }
+                    clone->SetEntitySpawnTicketId(request.m_ticketId);
+                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
                 }
 
                 if (request.m_completionCallback)
@@ -668,8 +701,8 @@ namespace AzFramework
             {
                 if (entity != nullptr)
                 {
-                    // Setting it to 0 is needed to avoid the infite loop between GameEntityContext and SpawnableEntitiesManager.
-                    entity->SetSpawnTicketId(0);
+                    // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
+                    entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
@@ -702,8 +735,8 @@ namespace AzFramework
             {
                 if (*entityIterator != nullptr && (*entityIterator)->GetId() == request.m_entityId)
                 {
-                    // Setting it to 0 is needed to avoid the infite loop between GameEntityContext and SpawnableEntitiesManager.
-                    (*entityIterator)->SetSpawnTicketId(0);
+                    // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
+                    (*entityIterator)->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, (*entityIterator)->GetId());
                     AZStd::iter_swap(entityIterator, spawnedEntities.rbegin());
@@ -740,7 +773,7 @@ namespace AzFramework
                 if (entity != nullptr)
                 {
                     // Setting it to 0 is needed to avoid the infite loop between GameEntityContext and SpawnableEntitiesManager.
-                    entity->SetSpawnTicketId(0);
+                    entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
@@ -936,6 +969,49 @@ namespace AzFramework
         }
     }
 
+    auto SpawnableEntitiesManager::ProcessRequest(RetrieveTicketCommand& request) -> CommandResult
+    {
+        auto entitySpawnTicketIterator = m_entitySpawnTicketMap.find(request.m_ticketId);
+        if (entitySpawnTicketIterator == m_entitySpawnTicketMap.end())
+        {
+            if (m_ticketsPendingRegistration > 0)
+            {
+                // There are still tickets pending registration, which may hold the reference, so delay this request
+                // until all tickets are registered and it's known for sure if the ticket doesn't exist anymore.
+                return CommandResult::Requeue;
+            }
+            else
+            {
+                AZ_Assert(false, "The EntitySpawnTicket corresponding to id '%lu' cannot be found", request.m_ticketId);
+                return CommandResult::Executed;
+            }
+        }
+
+        // About to make a copy so increase the reference count.
+        entitySpawnTicketIterator->second->m_referenceCount++;
+        request.m_callback(InternalToExternalTicket(entitySpawnTicketIterator->second, this));
+        return CommandResult::Executed;
+    }
+
+    auto SpawnableEntitiesManager::ProcessRequest(RegisterTicketCommand& request) -> CommandResult
+    {
+        if (request.m_requestId == request.m_ticket->m_currentRequestId)
+        {
+            m_entitySpawnTicketMap.insert_or_assign(request.m_ticket->m_ticketId, request.m_ticket);
+            request.m_ticket->m_currentRequestId++;
+            AZ_Assert(
+                m_ticketsPendingRegistration > 0,
+                "Attempting to decrement the number of entity spawn tickets pending registration while there are no registrations pending "
+                "in the SpawnableEntitiesManager.");
+            m_ticketsPendingRegistration--;
+            return CommandResult::Executed;
+        }
+        else
+        {
+            return CommandResult::Requeue;
+        }
+    }
+
     auto SpawnableEntitiesManager::ProcessRequest(DestroyTicketCommand& request) -> CommandResult
     {
         if (request.m_requestId == request.m_ticket->m_currentRequestId)
@@ -945,17 +1021,19 @@ namespace AzFramework
                 if (entity != nullptr)
                 {
                     // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
-                    entity->SetSpawnTicketId(0);
+                    entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
                 }
-                else
-                {
-                    // Entities without components wouldn't have been send to the GameEntityContext.
-                    delete entity;
-                }
             }
+
+            m_entitySpawnTicketMap.erase(request.m_ticket->m_ticketId);
+
             delete request.m_ticket;
+            AZ_Assert(
+                m_totalTickets > 0,
+                "Attempting to decrement the total number of entity spawn tickets while are zero tickets in the SpawnableEntitiesManager.");
+            m_totalTickets--;
 
             return CommandResult::Executed;
         }

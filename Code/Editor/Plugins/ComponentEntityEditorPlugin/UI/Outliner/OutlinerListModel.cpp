@@ -53,6 +53,7 @@
 #include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include  <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include "OutlinerDisplayOptionsMenu.h"
 #include "OutlinerSortFilterProxyModel.hxx"
@@ -252,17 +253,7 @@ QVariant OutlinerListModel::dataForName(const QModelIndex& index, int role) cons
         if (s_paintingName && !m_filterString.empty())
         {
             // highlight characters in filter
-            int highlightTextIndex = 0;
-            do
-            {
-                highlightTextIndex = label.lastIndexOf(QString(m_filterString.c_str()), highlightTextIndex - 1, Qt::CaseInsensitive);
-                if (highlightTextIndex >= 0)
-                {
-                    const QString BACKGROUND_COLOR{ "#707070" };
-                    label.insert(static_cast<int>(highlightTextIndex + m_filterString.length()), "</span>");
-                    label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
-                }
-            } while(highlightTextIndex > 0);
+            label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
         }
         return label;
     }
@@ -874,6 +865,8 @@ bool OutlinerListModel::CanDropMimeDataAssets(const QMimeData* data, Qt::DropAct
     return false;
 }
 
+// There are two paths for generating entities by dragging and dropping from the asset browser.
+// This logic handles dropping them into the outliner. Dropping them in the viewport is handled by AzAssetBrowserRequestHandler::Drop.
 bool OutlinerListModel::DropMimeDataAssets(const QMimeData* data, [[maybe_unused]] Qt::DropAction action, int row, [[maybe_unused]] int column, const QModelIndex& parent)
 {
     using namespace AzToolsFramework;
@@ -2608,17 +2601,13 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         optionV4.text.clear();
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
-        // Now we setup a Text Document so it can draw the rich text
-        QTextDocument textDoc;
-        textDoc.setDefaultFont(optionV4.font);
-        textDoc.setDefaultStyleSheet("body {color: white}");
-        textDoc.setHtml("<body>" + entityNameRichText + "</body>");
         int verticalOffset = GetEntityNameVerticalOffset(entityId);
-        painter->translate(textRect.topLeft() + QPoint(0, verticalOffset));
-        textDoc.setTextWidth(textRect.width());
-        textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
+
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(
+            entityNameRichText, painter, optionV4, textRect, QPoint(0, verticalOffset));
 
         painter->restore();
+
         OutlinerListModel::s_paintingName = false;
     }
     else

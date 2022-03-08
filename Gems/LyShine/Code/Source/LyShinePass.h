@@ -8,7 +8,7 @@
 
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include "LyShinePassDataBus.h"
@@ -35,7 +35,7 @@ namespace LyShine
     protected:
         // Pass behavior overrides
         void ResetInternal() override;
-        void BuildInternal() override;
+        void CreateChildPassesInternal() override;
 
         // LyShinePassRequestBus overrides
         void RebuildRttChildren() override;

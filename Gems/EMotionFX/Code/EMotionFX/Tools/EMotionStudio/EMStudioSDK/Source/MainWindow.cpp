@@ -19,13 +19,13 @@
 #include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
-#include <EMotionStudio/EMStudioSDK/Source/UnitScaleWindow.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
 
 #include <Editor/ActorEditorBus.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/FancyDocking.h>
@@ -532,7 +532,7 @@ namespace EMStudio
         QAction* characterLayoutAction = new QAction(
             "Character",
             this);
-        characterLayoutAction->setShortcut(Qt::Key_1 | Qt::AltModifier);
+        characterLayoutAction->setShortcut(Qt::Key_3 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(characterLayoutAction, layoutGroupName, false);
         connect(characterLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(2); });
         addAction(characterLayoutAction);
@@ -1340,8 +1340,15 @@ namespace EMStudio
 
         // add the load and the create instance commands
         commandGroup.AddCommandString(loadActorCommand.c_str());
-        commandGroup.AddCommandString("CreateActorInstance -actorID %LASTRESULT%");
 
+        // Temp solution after we refactor / remove the actor manager.
+        // We only need to create the actor instance by ourselves when openGLRenderPlugin is present.
+        // Atom render viewport will create actor instance along with the actor component.
+        PluginManager* pluginManager = GetPluginManager();
+        if (pluginManager->FindActivePlugin(static_cast<uint32>(OpenGLRenderPlugin::CLASS_ID)))
+        {
+            commandGroup.AddCommandString("CreateActorInstance -actorID %LASTRESULT%");
+        }
 
         // execute the group command
         if (GetCommandManager()->ExecuteCommandGroup(commandGroup, outResult) == false)

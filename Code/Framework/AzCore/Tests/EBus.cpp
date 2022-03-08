@@ -373,8 +373,8 @@ namespace UnitTest
         : public AllocatorsFixture
     {
     public:
-        using Handler = Handler<Bus>;
-        using MultiHandlerById = MultiHandlerById<Bus>;
+        using BusHandler = Handler<Bus>;
+        using BusMultiHandlerById = MultiHandlerById<Bus>;
 
         EBusTestAll()
         {
@@ -402,7 +402,7 @@ namespace UnitTest
             {
                 for (int handler = 0; handler < numHandlersPerAddress; ++handler)
                 {
-                    m_handlers[address].emplace_back(aznew Handler(address, connectOnConstruct));
+                    m_handlers[address].emplace_back(aznew BusHandler(address, connectOnConstruct));
                     ++m_numHandlers;
                 }
             }
@@ -429,7 +429,7 @@ namespace UnitTest
         {
             for (const auto& handlerPair : m_handlers)
             {
-                for (Handler* handler : handlerPair.second)
+                for (BusHandler* handler : handlerPair.second)
                 {
                     delete handler;
                 }
@@ -452,7 +452,7 @@ namespace UnitTest
             if (AddressesAreOrdered())
             {
                 // Collect the first handler from each address
-                using PairType = AZStd::pair<int, Handler*>;
+                using PairType = AZStd::pair<int, BusHandler*>;
                 AZStd::vector<PairType> sortedHandlers;
                 for (const auto& handlerPair : m_handlers)
                 {
@@ -495,7 +495,7 @@ namespace UnitTest
         {
             auto& handlers = m_handlers[id];
 
-            for (Handler* handler : handlers)
+            for (BusHandler* handler : handlers)
             {
                 EXPECT_EQ(expected, handler->m_eventCalls);
             }
@@ -505,11 +505,11 @@ namespace UnitTest
             {
                 // Sort the handlers the same way we expect the bus to sort them
                 auto sortedHandlers = handlers;
-                AZStd::sort(sortedHandlers.begin(), sortedHandlers.end(), AZStd::bind(&Handler::Compare, AZStd::placeholders::_1, AZStd::placeholders::_2));
+                AZStd::sort(sortedHandlers.begin(), sortedHandlers.end(), AZStd::bind(&BusHandler::Compare, AZStd::placeholders::_1, AZStd::placeholders::_2));
 
                 // Iterate over the list, and validate that they were called in the correct order
                 unsigned int lastExecuted = 0;
-                for (const Handler* handler : sortedHandlers)
+                for (const BusHandler* handler : sortedHandlers)
                 {
                     if (lastExecuted > 0)
                     {
@@ -550,7 +550,7 @@ namespace UnitTest
         }
 
     protected:
-        AZStd::unordered_map<int, AZStd::vector<Handler*>> m_handlers;
+        AZStd::unordered_map<int, AZStd::vector<BusHandler*>> m_handlers;
         int m_numHandlers = 0;
     };
     TYPED_TEST_CASE(EBusTestAll, BusTypesAll);
@@ -578,7 +578,7 @@ namespace UnitTest
     TYPED_TEST(EBusTestAll, ConnectDisconnect)
     {
         using Bus = TypeParam;
-        using Handler = typename EBusTestAll<Bus>::Handler;
+        using Handler = typename EBusTestAll<Bus>::BusHandler;
 
         constexpr bool connectOnConstruct{ true };
         Handler meh(0, connectOnConstruct);
@@ -602,13 +602,13 @@ namespace UnitTest
     TYPED_TEST(EBusTestIdMultiHandlers, EnumerateHandlers_MultiHandler)
     {
         using Bus = TypeParam;
-        using MultiHandlerById = typename EBusTestAll<Bus>::MultiHandlerById;
+        using BusMultiHandlerById = typename EBusTestAll<Bus>::BusMultiHandlerById;
 
-        MultiHandlerById sourceMultiHandler{ 0, 1, 2 };
-        MultiHandlerById multiHandlerWithOverlappingIds{ 1, 3, 5 };
+        BusMultiHandlerById sourceMultiHandler{ 0, 1, 2 };
+        BusMultiHandlerById multiHandlerWithOverlappingIds{ 1, 3, 5 };
 
         // Test handlers' enumeration functionality
-        Bus::EnumerateHandlers([](typename MultiHandlerById::Interface* interfaceInst) -> bool
+        Bus::EnumerateHandlers([](typename BusMultiHandlerById::Interface* interfaceInst) -> bool
         {
             interfaceInst->OnEvent();
             return true;
@@ -618,7 +618,7 @@ namespace UnitTest
     TYPED_TEST(EBusTestId, FindFirstHandler)
     {
         using Bus = TypeParam;
-        using Handler = typename EBusTestAll<Bus>::Handler;
+        using Handler = typename EBusTestAll<Bus>::BusHandler;
         constexpr bool connectOnConstruct{ true };
         Handler meh0(0, connectOnConstruct);  /// <-- Bind to bus 0
         Handler meh1(1, connectOnConstruct);  /// <-- Bind to bus 1

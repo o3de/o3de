@@ -23,8 +23,11 @@ namespace AZ
         class ParentPass
             : public Pass
         {
-            AZ_RPI_PASS(ParentPass);
-
+            friend class PassFactory;
+            friend class PassLibrary;
+            friend class PassSystem;
+            friend class RenderPipeline;
+            friend class UnitTest::PassTests;
             friend class Pass;
 
         public:
@@ -59,6 +62,11 @@ namespace AZ
             //! Adds pass to list of children
             void AddChild(const Ptr<Pass>& child);
 
+            //! Inserts a pass at specified position
+            //! If the position is invalid, the child pass won't be added, and the function returns false
+            bool InsertChild(const Ptr<Pass>& child, ChildPassIndex position);
+            bool InsertChild(const Ptr<Pass>& child, uint32_t index);
+
             //! Searches for a child pass with the given name. Returns the child's index if found, null index otherwise
             ChildPassIndex FindChildPassIndex(const Name& passName) const;
 
@@ -69,7 +77,7 @@ namespace AZ
             Ptr<PassType> FindChildPass() const;
 
             //! Gets the list of children. Useful for validating hierarchies
-            AZStd::array_view<Ptr<Pass>> GetChildren() const;
+            AZStd::span<const Ptr<Pass>> GetChildren() const;
 
             //! Searches the tree for the first pass that uses the given DrawListTag.
             const Pass* FindPass(RHI::DrawListTag drawListTag) const;
@@ -131,6 +139,19 @@ namespace AZ
 
             // Generates child passes from source PassTemplate
             void CreatePassesFromTemplate();
+
+            // Generates child clear passes to clear input and input/output attachments
+            // TODO: These two functions are a workaround for a complicated edge case:
+            // Let Parent Pass P1 have two children, C1 and C2. C1 writes to an attachment that C2 reads,
+            // but C1 can be disabled, in which case we just want C2 to read the cleared texture.
+            // Because of this, the attachment is owned by the parent pass, that way it is always available for C2
+            // to read even when C1 is disabled. However we still want to clear the attachment before C2 reads it.
+            // We tried overriding the LoadStoreAction to clear on C2's slot when C1 is disabled, but the RHI 
+            // doesn't allow for clears on Input only slots. Changing the slot to InputOutput was in conflict with
+            // the texture definition in the SRG, and it couldn't be changed to RW because it was an MSAA texture.
+            // So now we detect clear actions on parent slots and generate a clear pass for them.
+            void CreateClearPassFromBinding(PassAttachmentBinding& binding, PassRequest& clearRequest);
+            void CreateClearPassesFromBindings();
         };
 
         template<typename PassType>

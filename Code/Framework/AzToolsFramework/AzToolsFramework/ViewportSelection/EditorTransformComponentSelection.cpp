@@ -381,7 +381,7 @@ namespace AzToolsFramework
         EntityIdContainer& selectedEntityIdsBeforeBoxSelect,
         EntityIdContainer& potentialSelectedEntityIds,
         EntityIdContainer& potentialDeselectedEntityIds,
-        const EditorVisibleEntityDataCache& entityDataCache,
+        const EditorVisibleEntityDataCacheInterface& entityDataCache,
         const int viewportId,
         const ViewportInteraction::KeyboardModifiers currentKeyboardModifiers,
         const ViewportInteraction::KeyboardModifiers& previousKeyboardModifiers)
@@ -958,7 +958,7 @@ namespace AzToolsFramework
     // (useful in the context of drawing when we only care about entities we can see)
     // note: return the index if it is selectable, nullopt otherwise
     static AZStd::optional<size_t> SelectableInVisibleViewportCache(
-        const EditorVisibleEntityDataCache& entityDataCache, const AZ::EntityId entityId)
+        const EditorVisibleEntityDataCacheInterface& entityDataCache, const AZ::EntityId entityId)
     {
         if (auto entityIndex = entityDataCache.GetVisibleEntityIndexFromId(entityId))
         {
@@ -1002,7 +1002,7 @@ namespace AzToolsFramework
         }
     }
 
-    EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCacheInterface* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
         const AzFramework::EntityContextId entityContextId = GetEntityContextId();
@@ -1358,6 +1358,19 @@ namespace AzToolsFramework
                     manipulatorEntityIds->m_entityIds);
 
                 EndRecordManipulatorCommand();
+            });
+
+        translationManipulators->InstallSurfaceManipulatorEntityIdsToIgnoreFn(
+            [this](const ViewportInteraction::MouseInteraction& interaction)
+            {
+                if (interaction.m_keyboardModifiers.Ctrl())
+                {
+                    return AZStd::unordered_set<AZ::EntityId>();
+                }
+                else
+                {
+                    return m_selectedEntityIds;
+                }
             });
 
         // transfer ownership
@@ -3608,9 +3621,10 @@ namespace AzToolsFramework
         debugDisplay.SetLineWidth(1.0f);
 
         const float labelOffset = ed_viewportGizmoAxisLabelOffset;
-        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize;
-        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize;
-        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto viewportSize = AzFramework::Vector2FromScreenSize(editorCameraState.m_viewportSize);
+        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * viewportSize;
+        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * viewportSize;
+        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * viewportSize;
 
         // draw the label of of each axis for the gizmo
         const float labelSize = ed_viewportGizmoAxisLabelSize;

@@ -15,7 +15,7 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/RPI.Reflect/System/AssetAliases.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -74,7 +74,9 @@ namespace AZ
             bool HasPassesForTemplate(const Name& templateName) const;
 
             //! Retrieves a PassTemplate from the library
-            const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const;
+            const AZStd::shared_ptr<const PassTemplate> GetPassTemplate(const Name& name) const;
+
+            //! Returns a list of passes using the template with the name passed as argument
             const AZStd::vector<Pass*>& GetPassesForTemplate(const Name& templateName) const;
 
             //! Removes a PassTemplate by name, only if the following two conditions are met:

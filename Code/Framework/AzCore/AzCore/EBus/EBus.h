@@ -23,6 +23,11 @@
 #include <AzCore/EBus/Results.h>
 #include <AzCore/EBus/Internal/Debug.h>
 
+ // Included for backwards compatibility purposes
+#include <AzCore/std/typetraits/typetraits.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/containers/unordered_set.h>
+
 #include <AzCore/std/typetraits/is_same.h>
 
 #include <AzCore/std/utils.h>
@@ -515,7 +520,7 @@ namespace AZ
         * This is not EBus Context Mutex when LocklessDispatch is set
         */
         template <typename DispatchMutex>
-        using DispatchLockGuard = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
+        using DispatchLockGuardTemplate = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
 
         //////////////////////////////////////////////////////////////////////////
         // Check to help identify common mistakes
@@ -645,7 +650,7 @@ namespace AZ
              * during broadcast/event dispatch.
              * @see EBusTraits::LocklessDispatch
              */
-            using DispatchLockGuard = DispatchLockGuard<ContextMutexType>;
+            using DispatchLockGuard = DispatchLockGuardTemplate<ContextMutexType>;
 
             /**
             * The scoped lock guard to use during connection.  Some specialized policies execute handler methods which

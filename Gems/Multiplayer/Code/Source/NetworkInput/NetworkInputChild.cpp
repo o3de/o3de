@@ -25,6 +25,16 @@ namespace Multiplayer
         return *this;
     }
 
+    bool NetworkInputChild::operator== (const NetworkInputChild& rhs) const
+    {
+        return m_owner == rhs.m_owner && m_networkInput.m_inputId == rhs.m_networkInput.m_inputId;
+    }
+
+    bool NetworkInputChild::operator!= (const NetworkInputChild& rhs) const
+    {
+        return !(m_owner == rhs.m_owner);
+    }
+
     void NetworkInputChild::Attach(const ConstNetworkEntityHandle& entityHandle)
     {
         m_owner = entityHandle;

@@ -229,34 +229,19 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         break;
     case ePropertyFloat:
     case ePropertyAngle:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal float editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarFloatAdapter;
+        m_reflectedVarAdapter = new ReflectedVarFloatAdapter;
         break;
     case ePropertyInt:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal int editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarIntAdapter;
+        m_reflectedVarAdapter = new ReflectedVarIntAdapter;
         break;
     case ePropertyBool:
         m_reflectedVarAdapter = new ReflectedVarBoolAdapter;
         break;
     case ePropertyString:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal string editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarStringAdapter;
+        m_reflectedVarAdapter = new ReflectedVarStringAdapter;
         break;
     case ePropertySelection:
         m_reflectedVarAdapter = new ReflectedVarEnumAdapter;
-        break;
-    case ePropertyColor:
-        m_reflectedVarAdapter = new ReflectedVarColorAdapter;
         break;
     case ePropertyUser:
         m_reflectedVarAdapter = new ReflectedVarUserAdapter;

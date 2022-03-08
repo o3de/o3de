@@ -1,9 +1,10 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Hold constants used across both hydra and non-hydra scripts.
+Holds constants used across both hydra and non-hydra scripts.
 """
 
 # Light type options for the Light component.
@@ -18,11 +19,34 @@ LIGHT_TYPES = {
     'simple_spot': 7,
 }
 
+# Intensity mode options for the Light component.
+INTENSITY_MODE = {
+    'Candela': 0,
+    'Lumen': 1,
+    'Ev100': 3,
+    'Nit': 5,
+}
 
 # Attenuation Radius Mode options for the Light component.
 ATTENUATION_RADIUS_MODE = {
-    'automatic': 1,
     'explicit': 0,
+    'automatic': 1,
+}
+
+# Shadow Map Size options for the Light component.
+SHADOWMAP_SIZE = {
+    'Size256': 256,
+    'Size512': 512,
+    'Size1024': 1024,
+    'Size2048': 2048,
+}
+
+# Shadow filter method options for the Light component.
+SHADOW_FILTER_METHOD = {
+    'PCF': 1,
+    'ESM': 2,
+    'PCF+ESM': 3,
+    'None': 0,
 }
 
 # Qualiity Level settings for Diffuse Global Illumination level component
@@ -31,6 +55,17 @@ GLOBAL_ILLUMINATION_QUALITY = {
     'Medium': 1,
     'High': 2,
 }
+
+# Mesh LOD type
+MESH_LOD_TYPE = {
+    'default': 0,
+    'screen coverage': 1,
+    'specific lod': 2,
+}
+
+# Level list used in Editor Level Load Test
+# WARNING: "Sponza" level is sandboxed due to an intermittent failure.
+LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
 
 
 class AtomComponentProperties:
@@ -57,6 +92,37 @@ class AtomComponentProperties:
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
           - 'Enable Bloom' Toggle active state of the component True/False
+          - 'Enabled Override' Toggle use of overrides on the bloom component
+          - 'Threshold Override' Override factor for Threshold (0-1)
+          - 'Knee Override' Override factor for Knee (0-1)
+          - 'Intensity Override' Override factor for Intensity (0-1)
+          - 'BicubicEnabled Override' Override toggle for Bicubic Enabled
+          - 'KernelSizeScale Override' Override factor for Kernel Size Scale (0-1)
+          - 'KernelSizeStage0 Override' Override factor for Kernel Size stage 0 (0-1)
+          - 'KernelSizeStage1 Override' Override factor for Kernel Size stage 1 (0-1)
+          - 'KernelSizeStage2 Override' Override factor for Kernel Size stage 2 (0-1)
+          - 'KernelSizeStage3 Override' Override factor for Kernel Size stage 3 (0-1)
+          - 'KernelSizeStage4 Override' Override factor for Kernel Size stage 4 (0-1)
+          - 'TintStage0 Override' Override factor for Tint stage 0 (0-1)
+          - 'TintStage1 Override' Override factor for Tint stage 1 (0-1)
+          - 'TintStage2 Override' Override factor for Tint stage 2 (0-1)
+          - 'TintStage3 Override' Override factor for Tint stage 3 (0-1)
+          - 'TintStage4 Override' Override factor for Tint stage 4 (0-1)
+          - 'Threshold' Brighness of the light source to which bloom is applied (0-INF)
+          - 'Knee' Soft knee to smoothen edges of threshold (0-1)
+          - 'Intensity' Brightness of bloom (0-10000)
+          - 'Enable Bicubic' Toggle to enable Bicubic Filtering for upsampling
+          - 'Kernel Size Scale' Global scaling factor for Kernel size (0-2)
+          - 'Kernel Size 0' Kernel Size for blur stage 0 in percent of screen width (0-1)
+          - 'Kernel Size 1' Kernel Size for blur stage 1 in percent of screen width (0-1)
+          - 'Kernel Size 2' Kernel Size for blur stage 2 in percent of screen width (0-1)
+          - 'Kernel Size 3' Kernel Size for blur stage 3 in percent of screen width (0-1)
+          - 'Kernel Size 4' Kernel Size for blur stage 4 in percent of screen width (0-1)
+          - 'Tint 0' Tint for blur stage 0. RGB value set using azlmbr.math.Vector3 tuple
+          - 'Tint 1' Tint for blur stage 1. RGB value set using azlmbr.math.Vector3 tuple
+          - 'Tint 2' Tint for blur stage 2. RGB value set using azlmbr.math.Vector3 tuple
+          - 'Tint 3' Tint for blur stage 3. RGB value set using azlmbr.math.Vector3 tuple
+          - 'Tint 4' Tint for blur stage 4. RGB value set using azlmbr.math.Vector3 tuple
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -64,6 +130,37 @@ class AtomComponentProperties:
             'name': 'Bloom',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable Bloom': 'Controller|Configuration|Enable Bloom',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Threshold Override': 'Controller|Configuration|Overrides|Threshold Override',
+            'Knee Override': 'Controller|Configuration|Overrides|Knee Override',
+            'Intensity Override': 'Controller|Configuration|Overrides|Intensity Override',
+            'BicubicEnabled Override': 'Controller|Configuration|Overrides|BicubicEnabled Override',
+            'KernelSizeScale Override': 'Controller|Configuration|Overrides|KernelSizeScale Override',
+            'KernelSizeStage0 Override': 'Controller|Configuration|Overrides|KernelSizeStage0 Override',
+            'KernelSizeStage1 Override': 'Controller|Configuration|Overrides|KernelSizeStage1 Override',
+            'KernelSizeStage2 Override': 'Controller|Configuration|Overrides|KernelSizeStage2 Override',
+            'KernelSizeStage3 Override': 'Controller|Configuration|Overrides|KernelSizeStage3 Override',
+            'KernelSizeStage4 Override': 'Controller|Configuration|Overrides|KernelSizeStage4 Override',
+            'TintStage0 Override': 'Controller|Configuration|Overrides|TintStage0 Override',
+            'TintStage1 Override': 'Controller|Configuration|Overrides|TintStage1 Override',
+            'TintStage2 Override': 'Controller|Configuration|Overrides|TintStage2 Override',
+            'TintStage3 Override': 'Controller|Configuration|Overrides|TintStage3 Override',
+            'TintStage4 Override': 'Controller|Configuration|Overrides|TintStage4 Override',
+            'Threshold': 'Controller|Configuration|Threshold',
+            'Knee': 'Controller|Configuration|Knee',
+            'Intensity': 'Controller|Configuration|Intensity',
+            'Enable Bicubic': 'Controller|Configuration|Enable Bicubic',
+            'Kernel Size Scale': 'Controller|Configuration|Kernel Size|Kernel Size Scale',
+            'Kernel Size 0': 'Controller|Configuration|Kernel Size|Kernel Size 0',
+            'Kernel Size 1': 'Controller|Configuration|Kernel Size|Kernel Size 1',
+            'Kernel Size 2': 'Controller|Configuration|Kernel Size|Kernel Size 2',
+            'Kernel Size 3': 'Controller|Configuration|Kernel Size|Kernel Size 3',
+            'Kernel Size 4': 'Controller|Configuration|Kernel Size|Kernel Size 4',
+            'Tint 0': 'Controller|Configuration|Tint|Tint 0',
+            'Tint 1': 'Controller|Configuration|Tint|Tint 1',
+            'Tint 2': 'Controller|Configuration|Tint|Tint 2',
+            'Tint 3': 'Controller|Configuration|Tint|Tint 3',
+            'Tint 4': 'Controller|Configuration|Tint|Tint 4',
         }
         return properties[property]
 
@@ -85,12 +182,18 @@ class AtomComponentProperties:
     def decal(property: str = 'name') -> str:
         """
         Decal component properties.
+          - 'Attenuation Angle' controls how much the angle between geometry and decal impacts opacity. 0-1 Radians
+          - 'Opacity' where one is opaque and zero is transparent
+          - 'Sort Key' 0-255 stacking z-sort like key to define which decal is on top of another
           - 'Material' the material Asset.id of the decal.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Decal',
+            'Attenuation Angle': 'Controller|Configuration|Attenuation Angle',
+            'Opacity': 'Controller|Configuration|Opacity',
+            'Sort Key': 'Controller|Configuration|Sort Key',
             'Material': 'Controller|Configuration|Material',
         }
         return properties[property]
@@ -195,11 +298,13 @@ class AtomComponentProperties:
     def entity_reference(property: str = 'name') -> str:
         """
         Entity Reference component properties.
+          - 'EntityIdReferences' component container of entityId references. Initially empty.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Entity Reference',
+            'EntityIdReferences': 'Controller|Configuration|EntityIdReferences',
         }
         return properties[property]
 
@@ -224,6 +329,7 @@ class AtomComponentProperties:
         Global Skylight (IBL) component properties.
           - 'Diffuse Image' Asset.id for the cubemap image for determining diffuse lighting.
           - 'Specular Image' Asset.id for the cubemap image for determining specular lighting.
+          - 'Exposure' Exposure setting for Global Skylight, value range is -5 to 5
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -231,6 +337,7 @@ class AtomComponentProperties:
             'name': 'Global Skylight (IBL)',
             'Diffuse Image': 'Controller|Configuration|Diffuse Image',
             'Specular Image': 'Controller|Configuration|Specular Image',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -238,12 +345,14 @@ class AtomComponentProperties:
     def grid(property: str = 'name') -> str:
         """
         Grid component properties.
+          - 'Grid Size': The size of the grid, default value is 32
           - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
+            'Grid Size': 'Controller|Configuration|Grid Size',
             'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
         }
         return properties[property]
@@ -283,27 +392,48 @@ class AtomComponentProperties:
     def light(property: str = 'name') -> str:
         """
         Light component properties.
-          - 'Attenuation Radius Mode' controls whether the attenuation radius is calculated automatically or explicitly.
-          - 'Color' the RGB value to set for the color of the light.
-          - 'Enable shadow' toggle for enabling shadows for the light.
-          - 'Enable shutters' toggle for enabling shutters for the light.
-          - 'Inner angle' inner angle value for the shutters (in degrees)
-          - 'Intensity' the intensity of the light in the set photometric unit (float with no ceiling).
           - 'Light type' from atom_constants.py LIGHT_TYPES
-          - 'Outer angle' outer angle value for the shutters (in degrees)
+          - 'Color' the RGBA value to set for the color of the light using azlmbr.math.Color tuple.
+          - 'Intensity mode' from atom_constants.py INTENSITY_MODE
+          - 'Intensity' the intensity of the light in the set photometric unit (float with no ceiling).
+          - 'Attenuation radius Mode' from atom_constants.py ATTENUATION_RADIUS_MODE
+          - 'Attenuation radius Radius' sets the distance at which the light no longer has effect.
+          - 'Enable shadow' toggle for enabling shadows for the light.
+          - 'Shadows Bias' how deep in shadow a surface must be before being affected by it (Range 0-100).
+          - 'Normal Shadow Bias' reduces shadow acne (Range 0-10).
+          - 'Shadowmap size' from atom_constants.py SHADOWMAP_SIZE
+          - 'Shadow filter method' from atom_constants.py SHADOW_FILTER_METHOD
+          - 'Filtering sample count' smooths/hardens shadow edges - specific to PCF & ESM+PCF (Range 4-64).
+          - 'ESM exponent' smooths/hardens shadow edges - specific to ESM & ESM+PCF (Range 50-5000).
+          - 'Enable shutters' toggle for enabling shutters for the light.
+          - 'Inner angle' inner angle value for the shutters (in degrees) (Range 0.5-90).
+          - 'Outer angle' outer angle value for the shutters (in degrees) (Range 0.5-90).
+          - 'Both directions' Enables/Disables light emitting from both sides of a surface.
+          - 'Fast approximation' Enables/Disables fast approximation of linear transformed cosines.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Light',
-            'Attenuation Radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
+            'Light type': 'Controller|Configuration|Light type',
             'Color': 'Controller|Configuration|Color',
+            'Intensity mode': 'Controller|Configuration|Intensity mode',
+            'Intensity': 'Controller|Configuration|Intensity',
+            'Attenuation radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
+            'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
+            'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias\n',
+            'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
+            'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
+            'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',
+            'ESM exponent': 'Controller|Configuration|Shadows|ESM exponent',
             'Enable shutters': 'Controller|Configuration|Shutters|Enable shutters',
             'Inner angle': 'Controller|Configuration|Shutters|Inner angle',
-            'Intensity': 'Controller|Configuration|Intensity',
-            'Light type': 'Controller|Configuration|Light type',
             'Outer angle': 'Controller|Configuration|Shutters|Outer angle',
+            'Both directions': 'Controller|Configuration|Both directions',
+            'Fast approximation': 'Controller|Configuration|Fast approximation',
+
         }
         return properties[property]
 
@@ -348,6 +478,15 @@ class AtomComponentProperties:
         """
         Mesh component properties.
           - 'Mesh Asset' Asset.id of the mesh model.
+          - 'Sort Key' dis-ambiguates which mesh renders in front of others (signed int 64)
+          - 'Use ray tracing' Toggles interaction with ray tracing (bool)
+          - 'Lod Type' options: default, screen coverage, specific lod
+          - 'Exclude from reflection cubemaps' Toggles inclusion in generated cubemaps (bool)
+          - 'Use Forward Pass IBL Specular' Toggles Forward Pass IBL Specular (bool)
+          - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
+          - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
+          - 'Lod Override' which specific LOD to always use; default or other named LOD
+          - 'Add Material Component' the button to add a material; set True to add a material component
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -355,6 +494,15 @@ class AtomComponentProperties:
         properties = {
             'name': 'Mesh',
             'Mesh Asset': 'Controller|Configuration|Mesh Asset',
+            'Sort Key': 'Controller|Configuration|Sort Key',
+            'Use ray tracing': 'Controller|Configuration|Use ray tracing',
+            'Lod Type': 'Controller|Configuration|Lod Type',
+            'Exclude from reflection cubemaps': 'Controller|Configuration|Exclude from reflection cubemaps',
+            'Use Forward Pass IBL Specular': 'Controller|Configuration|Use Forward Pass IBL Specular',
+            'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
+            'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
+            'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
+            'Add Material Component': 'Add Material Component',
         }
         return properties[property]
 
@@ -374,11 +522,13 @@ class AtomComponentProperties:
     def physical_sky(property: str = 'name') -> str:
         """
         Physical Sky component properties.
+        - 'Sky Intensity' float that determines sky intensity value, default value is 4.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Physical Sky',
+            'Sky Intensity': 'Controller|Configuration|Sky Intensity',
         }
         return properties[property]
 

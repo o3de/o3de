@@ -47,17 +47,92 @@ void AssetImporterManager::Exec()
 {
     // tell the AssetImporterDragAndDropHandler that the Asset Importer now is running
     Q_EMIT StartAssetImporter();
-    bool success = OnBrowseFiles();
+    m_fileDialog = new QFileDialog;
+    m_fileDialog->setFileMode(QFileDialog::ExistingFiles);
+    m_fileDialog->setWindowModality(Qt::WindowModality::ApplicationModal);
+    m_fileDialog->setViewMode(QFileDialog::Detail);
+    m_fileDialog->setWindowTitle(tr("Select files to import"));
+    m_fileDialog->setLabelText(QFileDialog::Accept, "Select");
+    m_fileDialog->setAttribute(Qt::WA_DeleteOnClose);
+    QSettings settings;
+    m_currentAbsolutePath = settings.value(AssetImporterManagerPrivate::g_selectFilesPath).toString();
 
-    // prevent users from selecting crate files from the File Explorer and open the Asset Importer.
-    if (!success)
+    QDir gameRoot(Path::GetEditingGameDataFolder().c_str());
+    m_gameRootAbsPath = gameRoot.absolutePath();
+    // Case 1: if currentAbsolutePath is empty at this point, that means this is the first time
+    //         users using the Asset Importer, set the default directory to be users' PC's desktop.
+    // Case 2: if the current folder directory stored in the registry doesn't exist anymore,
+    //         that means users have removed the directory already (deleted or use the Move feature).
+    // Case 3: if it's a directory under the game root folder, then in general,
+    //         users have modified the folder directory in the registry. It should not be happening.
+    if (m_currentAbsolutePath.isEmpty() || !QFile(m_currentAbsolutePath).exists() ||
+        m_currentAbsolutePath.startsWith(m_gameRootAbsPath, Qt::CaseInsensitive))
     {
-        reject();
+        m_currentAbsolutePath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     }
-    else
-    {
-        OnOpenSelectDestinationDialog();
-    }
+    m_fileDialog->setDirectory(m_currentAbsolutePath);
+
+    connect(m_fileDialog, &QFileDialog::rejected, [this]()
+        {
+            reject();
+        });
+    connect(m_fileDialog, &QDialog::accepted, [this]()
+        {
+            bool encounteredCrate = false;
+            QStringList invalidFiles;
+
+            for (const QString& path : m_fileDialog->selectedFiles())
+            {
+                QString fileName = GetFileName(path);
+                QFileInfo info(path);
+                QString extension = info.completeSuffix(); // extension without '.'
+
+                if (QString(AssetImporterManagerPrivate::s_crateFileExtension).compare(extension, Qt::CaseInsensitive) != 0)
+                {
+                    // prevent users from importing files under the game root directory
+                    if (path.startsWith(m_gameRootAbsPath, Qt::CaseInsensitive))
+                    {
+                        invalidFiles << fileName;
+                    }
+                    else
+                    {
+                        // store paths into the map.
+                        m_pathMap[path] = fileName;
+                    }
+                }
+                else
+                {
+                    encounteredCrate = true;
+                }
+            }
+
+            if (invalidFiles.size() > 0)
+            {
+                QString fileWarning =
+                    QString("Files cannot be imported into their own project. The following files will not be moved or copied:\n");
+                fileWarning.append(invalidFiles.join(", "));
+                fileWarning.append('.');
+                QMessageBox::warning(AzToolsFramework::GetActiveWindow(), AssetImporterManagerPrivate::g_errorMessageBoxTitle, fileWarning);
+            }
+            if (encounteredCrate)
+            {
+                QMessageBox::warning(
+                    AzToolsFramework::GetActiveWindow(), AssetImporterManagerPrivate::g_errorMessageBoxTitle,
+                    AssetImporterManagerPrivate::g_crateError);
+            }
+
+            m_currentAbsolutePath = m_fileDialog->directory().absolutePath();
+            QSettings settings;
+            settings.setValue(AssetImporterManagerPrivate::g_selectFilesPath, m_currentAbsolutePath);
+
+            // prevent users from selecting crate files from the File Explorer and open the Asset Importer.
+            if (m_pathMap.size() > 0)
+            {
+                OnOpenSelectDestinationDialog();
+            }
+        });
+
+    m_fileDialog->open();
 }
 
 void AssetImporterManager::Exec(const QStringList& dragAndDropFileList)
@@ -104,86 +179,6 @@ void AssetImporterManager::OnDragAndDropFiles(const QStringList* fileList)
     }
 }
 
-bool AssetImporterManager::OnBrowseFiles()
-{
-    QFileDialog fileDialog;
-    fileDialog.setFileMode(QFileDialog::ExistingFiles);
-    fileDialog.setWindowModality(Qt::WindowModality::ApplicationModal);
-    fileDialog.setViewMode(QFileDialog::Detail);
-    fileDialog.setWindowTitle(tr("Select files to import"));
-    fileDialog.setLabelText(QFileDialog::Accept, "Select");
-
-    QSettings settings;
-    QString currentAbsolutePath = settings.value(AssetImporterManagerPrivate::g_selectFilesPath).toString();
-
-    QDir gameRoot(Path::GetEditingGameDataFolder().c_str());
-    QString gameRootAbsPath = gameRoot.absolutePath();
-
-    // Case 1: if currentAbsolutePath is empty at this point, that means this is the first time
-    //         users using the Asset Importer, set the default directory to be users' PC's desktop.
-    // Case 2: if the current folder directory stored in the registry doesn't exist anymore,
-    //         that means users have removed the directory already (deleted or use the Move feature).
-    // Case 3: if it's a directory under the game root folder, then in general,
-    //         users have modified the folder directory in the registry. It should not be happening.
-    if (currentAbsolutePath.isEmpty() || !QFile(currentAbsolutePath).exists() || currentAbsolutePath.startsWith(gameRootAbsPath, Qt::CaseInsensitive))
-    {
-        currentAbsolutePath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    }
-
-    fileDialog.setDirectory(currentAbsolutePath);
-
-    if (!fileDialog.exec())
-    {
-        return false;
-    }
-
-    bool encounteredCrate = false;
-    QStringList invalidFiles;
-
-    for (const QString& path : fileDialog.selectedFiles())
-    {
-        QString fileName = GetFileName(path);
-        QFileInfo info(path);
-        QString extension = info.completeSuffix(); // extension without '.'
-
-        if (QString(AssetImporterManagerPrivate::s_crateFileExtension).compare(extension, Qt::CaseInsensitive) != 0)
-        {
-            // prevent users from importing files under the game root directory
-            if (path.startsWith(gameRootAbsPath, Qt::CaseInsensitive))
-            {
-                invalidFiles << fileName;
-            }
-            else
-            {
-                // store paths into the map.
-                m_pathMap[path] = fileName;
-            }
-        }
-        else
-        {
-            encounteredCrate = true;
-        }
-    }
-
-    if (invalidFiles.size() > 0)
-    {
-        QString fileWarning = QString("Files cannot be imported into their own project. The following files will not be moved or copied:\n");
-        fileWarning.append(invalidFiles.join(", "));
-        fileWarning.append('.');
-        QMessageBox::warning(AzToolsFramework::GetActiveWindow(), AssetImporterManagerPrivate::g_errorMessageBoxTitle, fileWarning);
-    }
-    if (encounteredCrate)
-    {
-        QMessageBox::warning(AzToolsFramework::GetActiveWindow(), AssetImporterManagerPrivate::g_errorMessageBoxTitle, AssetImporterManagerPrivate::g_crateError);
-    }
-
-    currentAbsolutePath = fileDialog.directory().absolutePath();
-    settings.setValue(AssetImporterManagerPrivate::g_selectFilesPath, currentAbsolutePath);
-
-    // prevent users from selecting crate files from the File Explorer and open the Asset Importer.
-    return (m_pathMap.size() > 0);
-}
-
 void AssetImporterManager::OnBrowseDestinationFilePath(QLineEdit* destinationLineEdit)
 {
     QFileDialog fileDialog;
@@ -191,6 +186,7 @@ void AssetImporterManager::OnBrowseDestinationFilePath(QLineEdit* destinationLin
     fileDialog.setViewMode(QFileDialog::List);
     fileDialog.setWindowModality(Qt::WindowModality::ApplicationModal);
     fileDialog.setWindowTitle(tr("Select import destination"));
+    fileDialog.setFileMode(QFileDialog::Directory);
 
     QSettings settings;
     QString currentDestination = settings.value(AssetImporterManagerPrivate::g_selectDestinationFilesPath).toString();

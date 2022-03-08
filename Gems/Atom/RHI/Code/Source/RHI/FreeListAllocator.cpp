@@ -32,12 +32,17 @@ namespace AZ
             return m_descriptor;
         }
 
+        const FreeListAllocator::Node& FreeListAllocator::GetNode(NodeHandle handle) const
+        {
+            return m_nodes[handle.GetIndex()];
+        }
+
         FreeListAllocator::Node& FreeListAllocator::GetNode(NodeHandle handle)
         {
             return m_nodes[handle.GetIndex()];
         }
 
-        FreeListAllocator::NodeHandle FreeListAllocator::GetFirstFreeHandle()
+        FreeListAllocator::NodeHandle FreeListAllocator::GetFirstFreeHandle() const
         {
             return GetNode(m_headHandle).m_nextFree;
         }
@@ -343,6 +348,29 @@ namespace AZ
                 handlePrevious = handle;
                 handle = node.m_nextFree;
             }
+        }
+
+        float FreeListAllocator::ComputeFragmentation() const
+        {
+            if (m_byteCountTotal == 0 || m_byteCountTotal == m_descriptor.m_capacityInBytes ||
+                m_descriptor.m_capacityInBytes == static_cast<size_t>(-1))
+            {
+                return 0.f;
+            }
+
+            size_t maxFreeBlockSize = 0;
+            NodeHandle handle = GetFirstFreeHandle();
+            while (handle.IsValid())
+            {
+                const Node& node = GetNode(handle);
+                if (node.m_size > maxFreeBlockSize)
+                {
+                    maxFreeBlockSize = node.m_size;
+                }
+                handle = node.m_nextFree;
+            }
+
+            return 1.f - static_cast<float>(maxFreeBlockSize) / (m_descriptor.m_capacityInBytes - m_byteCountTotal);
         }
 
         void FreeListAllocator::Clone(RHI::Allocator* newAllocator)

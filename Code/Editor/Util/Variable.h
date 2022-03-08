@@ -151,7 +151,7 @@ struct IVariable
         DT_SEQUENCE,    // Movie Sequence (DEPRECATED, use DT_SEQUENCE_ID, instead.)
         DT_MISSIONOBJ,  // Mission Objective
         DT_USERITEMCB,  // Use a callback GetItemsCallback in user data of variable
-        DT_UIENUM,          // Edit as enum, uses CUIEnumsDatabase to lookup the enum to value pairs and combobox in GUI.
+        DT_UIENUM,          // DEPRECATED
         DT_SEQUENCE_ID, // Movie Sequence
         DT_LIGHT_ANIMATION, // Light Animation Node in the global Light Animation Set
         DT_PARTICLE_EFFECT,
@@ -1450,32 +1450,6 @@ protected:
     virtual ~CVarEnumListBase() {};
     friend class _smart_ptr<CVarEnumListBase<T> >;
 };
-
-struct CUIEnumsDatabase_SEnum;
-
-//////////////////////////////////////////////////////////////////////////
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-class EDITOR_CORE_API CVarGlobalEnumList
-    : public CVarEnumListBase<QString>
-{
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-public:
-    CVarGlobalEnumList(CUIEnumsDatabase_SEnum* pEnum);
-    CVarGlobalEnumList(const QString& enumName);
-
-    //! Get the name of specified value in enumeration.
-    virtual QString GetItemName(uint index);
-
-    virtual QString NameToValue(const QString& name);
-    virtual QString ValueToName(const QString& value);
-
-    //! Don't add anything to a global enum database
-    virtual void AddItem([[maybe_unused]] const QString& name, [[maybe_unused]] const QString& value) {}
-
-private:
-    CUIEnumsDatabase_SEnum* m_pEnum;
-};
-
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////

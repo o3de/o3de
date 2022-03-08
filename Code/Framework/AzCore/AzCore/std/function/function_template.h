@@ -291,7 +291,7 @@ namespace AZStd
                 assign_functor(FunctionObj&& f, function_buffer& functor, AZStd::true_type)
                 {
                     using RawFunctorObjType = AZStd::decay_t<FunctionObj>;
-                    new ((void*)&functor.data)RawFunctorObjType(AZStd::forward<FunctionObj>(f));
+                    AZStd::construct_at(reinterpret_cast<RawFunctorObjType*>(&functor), RawFunctorObjType(AZStd::forward<FunctionObj>(f)));
                 }
                 template<typename FunctionObj, typename Allocator>
                 void

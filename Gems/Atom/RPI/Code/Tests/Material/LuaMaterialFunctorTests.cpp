@@ -35,11 +35,14 @@ namespace UnitTest
             LuaMaterialFunctorSourceData functorSourceData;
             functorSourceData.m_luaScript = script;
 
+            MaterialNameContext nameContext;
+
             MaterialFunctorSourceData::RuntimeContext createFunctorContext{
                 "Dummy.materialtype",
                 materialTypeCreator.GetMaterialPropertiesLayout(),
                 materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                materialTypeCreator.GetShaderCollection()
+                materialTypeCreator.GetShaderCollection(),
+                &nameContext
             };
 
             MaterialFunctorSourceData::FunctorResult result = functorSourceData.CreateFunctor(createFunctorContext);
@@ -70,18 +73,9 @@ namespace UnitTest
 
         AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> CreateCommonTestShaderOptionsLayout()
         {
-            AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
-            boolOptionValues.push_back({Name("False"),  RPI::ShaderOptionValue(0)});
-            boolOptionValues.push_back({Name("True"), RPI::ShaderOptionValue(1)});
-
-            AZStd::vector<RPI::ShaderOptionValuePair> intRangeOptionValues;
-            intRangeOptionValues.push_back({Name("0"),  RPI::ShaderOptionValue(0)});
-            intRangeOptionValues.push_back({Name("15"), RPI::ShaderOptionValue(15)});
-
-            AZStd::vector<RPI::ShaderOptionValuePair> qualityOptionValues;
-            qualityOptionValues.push_back({Name("Quality::Low"),    RPI::ShaderOptionValue(0)});
-            qualityOptionValues.push_back({Name("Quality::Medium"), RPI::ShaderOptionValue(1)});
-            qualityOptionValues.push_back({Name("Quality::High"),   RPI::ShaderOptionValue(2)});
+            AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
+            AZStd::vector<RPI::ShaderOptionValuePair> intRangeOptionValues = CreateIntRangeShaderOptionValues(0, 15);
+            AZStd::vector<RPI::ShaderOptionValuePair> qualityOptionValues = CreateEnumShaderOptionValues({"Quality::Low", "Quality::Medium", "Quality::High"});
 
             AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> shaderOptions = RPI::ShaderOptionGroupLayout::Create();
             shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_bool"}, ShaderOptionType::Boolean, 0, 0, boolOptionValues, Name{"False"}});
@@ -112,7 +106,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -138,7 +132,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(),m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -165,7 +159,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -194,7 +188,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);

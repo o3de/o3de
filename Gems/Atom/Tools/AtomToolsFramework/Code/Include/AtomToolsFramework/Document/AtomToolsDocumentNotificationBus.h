@@ -5,22 +5,21 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
+#include <AtomToolsFramework/Document/AtomToolsDocumentObjectInfo.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/any.h>
 
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
-
 namespace AtomToolsFramework
 {
-    class AtomToolsDocumentNotifications
-        : public AZ::EBusTraits
+    class AtomToolsDocumentNotifications : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::Crc32 BusIdType;
 
         //! Signal that a document was created
         //! @param documentId unique id of document for which the notification is sent
@@ -62,21 +61,14 @@ namespace AtomToolsFramework
         //! @param documentId unique id of document for which the notification is sent
         virtual void OnDocumentUndoStateChanged([[maybe_unused]] const AZ::Uuid& documentId) {}
 
-        //! Signal that a property changed
+        //! Signal that the group has been changed.
         //! @param documentId unique id of document for which the notification is sent
-        //! @param property object containing the property value and configuration that was modified
-        virtual void OnDocumentPropertyValueModified([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AtomToolsFramework::DynamicProperty& property) {}
-
-        //! Signal that the property configuration has been changed.
-        //! @param documentId unique id of document for which the notification is sent
-        //! @param property object containing the property value and configuration that was modified
-        virtual void OnDocumentPropertyConfigModified([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AtomToolsFramework::DynamicProperty& property) {}
-        
-        //! Signal that the property group visibility has been changed.
-        //! @param documentId unique id of document for which the notification is sent
-        //! @param groupId id of the group that changed
-        //! @param visible whether the property group is visible
-        virtual void OnDocumentPropertyGroupVisibilityChanged([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AZ::Name& groupId, [[maybe_unused]] bool visible) {}
+        //! @param objectInfo description of the reflected object that's been modified
+        //! @param rebuilt signifies if it was a structural change that might require ui to be rebuilt
+        virtual void OnDocumentObjectInfoChanged(
+            [[maybe_unused]] const AZ::Uuid& documentId,
+            [[maybe_unused]] const DocumentObjectInfo& objectInfo,
+            [[maybe_unused]] bool rebuilt) {}
     };
 
     using AtomToolsDocumentNotificationBus = AZ::EBus<AtomToolsDocumentNotifications>;

@@ -12,7 +12,6 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 
 #include <AzCore/Asset/AssetManager.h>
@@ -491,6 +490,14 @@ namespace AZ
                 else if (platformIdentifier == "ios")
                 {
                     platformId = AzFramework::PlatformId::IOS;
+                }
+                else if (platformIdentifier == "salem")
+                {
+                    platformId = AzFramework::PlatformId::SALEM;
+                }
+                else if (platformIdentifier == "jasper")
+                {
+                    platformId = AzFramework::PlatformId::JASPER;
                 }
                 else if (platformIdentifier == "server")
                 {

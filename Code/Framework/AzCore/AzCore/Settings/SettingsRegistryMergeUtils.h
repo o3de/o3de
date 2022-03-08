@@ -89,15 +89,14 @@ namespace AZ::SettingsRegistryMergeUtils
     //! The algorithm that is used to find the project root is as follows
     //! 1. The first time this function runs it performs an upward scan for a "project.json" file from
     //! the executable directory and stores that path into an internal key.
-    //! In the same step it injects the path into the back of the command line parameters
+    //! In the same step it injects the path into the front of the command line parameters
     //! using the --regset="{BootstrapSettingsRootKey}/project_path=<path>" value
     //! 2. Next the "{BootstrapSettingsRootKey}/project_path" is checked to see if it has a project path set
     //!
     //! The order in which the project path settings are overridden proceeds in the following order
-    //! 1. project_path set in the <engine-root>/bootstrap.cfg file
-    //! 2. project_path set in a *.setreg/*.setregpatch file
-    //! 3. project_path found by scanning upwards from the executable directory to the project.json path
-    //! 4. project_path set on the Command line via either --regset="{BootstrapSettingsRootKey}/project_path=<path>"
+    //! 1. project_path set in a *.setreg/*.setregpatch file
+    //! 2. project_path found by scanning upwards from the executable directory to the project.json path
+    //! 3. project_path set on the Command line via either --regset="{BootstrapSettingsRootKey}/project_path=<path>"
     //!    or --project_path=<path>
     AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry);
 
@@ -213,9 +212,15 @@ namespace AZ::SettingsRegistryMergeUtils
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
 
     //! Adds the settings set through the command line to the Settings Registry. This will also execute any Settings
-    //! Registry related arguments. Note that --regset and -regremove will run in the order in which they are parsed
+    //! Registry related arguments. Note that --regset, --regset-file and -regremove will run in the order in which they are parsed
     //! --regset <arg> Sets a value in the registry. See MergeCommandLineArgument for options for <arg>
     //!     example: --regset "/My/String/Value=String value set"
+    //! --regset-file <path>[::anchor] Merges the specified file into the Settings registry
+    //!     If the extension is .setregpatch, then JSON Patch  will be used to merge the file otherwise JSON Merge Patch will be used
+    //!     `anchor` is a JSON path used to optionally select where to merge the settings underneath, otherwise settings are merged
+    //!     under the root.
+    //!     example: --regset-file="C:/Users/testuser/custom.setreg"
+    //!     example: --regset-file="relative/path/other.setregpatch::/O3DE/settings"
     //! --regremove <arg> Removes a value in the registry
     //!    example: --regremove "/My/String/Value"
     //! only when executeCommands is true are the following options supported:

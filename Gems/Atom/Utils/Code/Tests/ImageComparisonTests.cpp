@@ -32,11 +32,12 @@ namespace UnitTest
             return buffer;
         }
 
-        void SetPixel(AZStd::vector<uint8_t>& image, size_t pixelIndex, uint8_t r, uint8_t g, uint8_t b)
+        void SetPixel(AZStd::vector<uint8_t>& image, size_t pixelIndex, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
         {
             image[pixelIndex * BytesPerPixel + 0] = r;
             image[pixelIndex * BytesPerPixel + 1] = g;
             image[pixelIndex * BytesPerPixel + 2] = b;
+            image[pixelIndex * BytesPerPixel + 3] = a;
         };
 
     };
@@ -127,6 +128,43 @@ namespace UnitTest
         EXPECT_EQ(0.0f, diffScore);
     }
 
+    
+    TEST_F(ImageComparisonTests, CheckMaxChannelDifference_R)
+    {
+        const AZStd::vector<uint8_t> imageA = { 255, 255, 255, 255 };
+        const AZStd::vector<uint8_t> imageB = { 0, 125, 255, 255 };
+        const int16_t maxChannelDiff = 255;
+        const int16_t res = CalcMaxChannelDifference(imageA, imageB, 0);
+        EXPECT_EQ(res, maxChannelDiff);
+    }
+    
+    TEST_F(ImageComparisonTests, CheckMaxChannelDifference_G)
+    {
+        const AZStd::vector<uint8_t> imageA = { 255, 255, 255, 255 };
+        const AZStd::vector<uint8_t> imageB = { 250, 125, 255, 255 };
+        const int16_t maxChannelDiff = 130;
+        const int16_t res = CalcMaxChannelDifference(imageA, imageB, 0);
+        EXPECT_EQ(res, maxChannelDiff);
+    }
+    
+    TEST_F(ImageComparisonTests, CheckMaxChannelDifference_B)
+    {
+        const AZStd::vector<uint8_t> imageA = { 255, 255, 255, 255 };
+        const AZStd::vector<uint8_t> imageB = { 250, 125, 100, 255 };
+        const int16_t maxChannelDiff = 155;
+        const int16_t res = CalcMaxChannelDifference(imageA, imageB, 0);
+        EXPECT_EQ(res, maxChannelDiff);
+    }
+    
+    TEST_F(ImageComparisonTests, CheckMaxChannelDifference_A)
+    {
+        const AZStd::vector<uint8_t> imageA = { 0, 0, 0, 255 };
+        const AZStd::vector<uint8_t> imageB = { 0, 1, 2, 0 };
+        const int16_t maxChannelDiff = 255;
+        const int16_t res = CalcMaxChannelDifference(imageA, imageB, 0);
+        EXPECT_EQ(res, maxChannelDiff);
+    }
+
     TEST_F(ImageComparisonTests, CheckThreshold_SmallImagesWithDifferences)
     {
         AZ::RHI::Size size{2, 2, 1};
@@ -149,6 +187,41 @@ namespace UnitTest
         // Difference of 100 (RGB all different)
         SetPixel(imageA, 3, 100, 100, 100);
         SetPixel(imageB, 3, 101, 102, 0);
+
+        float diffScore = -1.0f;
+        auto result = CalcImageDiffRms(
+            imageA, size, DefaultFormat,
+            imageB, size, DefaultFormat,
+            &diffScore);
+        EXPECT_EQ(result, ImageDiffResultCode::Success);
+
+        // Result should be:
+        // sqrt( (1^2 + 2^2 + 5^2 + 100^2) / (255.0^2) / 4 )
+        EXPECT_FLOAT_EQ(0.19637232876f, diffScore);
+    }
+    
+    TEST_F(ImageComparisonTests, CheckThreshold_SmallImagesWithAlphaDifference)
+    {
+        AZ::RHI::Size size{2, 2, 1};
+
+        AZStd::vector<uint8_t> imageA = CreateTestRGBAImageData(size);
+        AZStd::vector<uint8_t> imageB = CreateTestRGBAImageData(size);
+
+        // Difference of 1 (R)
+        SetPixel(imageA, 0, 100, 200, 5);
+        SetPixel(imageB, 0, 101, 200, 5);
+
+        // Difference of 2 (G)
+        SetPixel(imageA, 1, 255, 255, 255);
+        SetPixel(imageB, 1, 255, 253, 255);
+
+        // Difference of 5 (B)
+        SetPixel(imageA, 2, 0, 0, 0);
+        SetPixel(imageB, 2, 0, 0, 5);
+
+        // Difference of 100 in the alpha channel
+        SetPixel(imageA, 3, 0, 0, 0, 100);
+        SetPixel(imageB, 3, 0, 0, 0, 0);
 
         float diffScore = -1.0f;
         auto result = CalcImageDiffRms(

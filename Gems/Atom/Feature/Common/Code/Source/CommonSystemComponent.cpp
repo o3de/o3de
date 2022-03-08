@@ -23,7 +23,7 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/LookupTable/LookupTableAsset.h>
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
+#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
@@ -74,11 +74,6 @@
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-#include <Atom/Feature/LuxCore/RenderTexturePass.h>
-#include <Atom/Feature/LuxCore/LuxCoreTexturePass.h>
-#endif
-
 #include <Checkerboard/CheckerboardPass.h>
 #include <Checkerboard/CheckerboardColorResolvePass.h>
 
@@ -91,13 +86,20 @@
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
 #include <RayTracing/RayTracingPass.h>
 #include <RayTracing/RayTracingPassData.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
@@ -220,11 +222,6 @@ namespace AZ
             passSystem->AddPassCreator(Name("DisplayMapperFullScreenPass"), &DisplayMapperFullScreenPass::Create);
             passSystem->AddPassCreator(Name("OutputTransformPass"), &OutputTransformPass::Create);
             passSystem->AddPassCreator(Name("EyeAdaptationPass"), &EyeAdaptationPass::Create);
-            // Add RenderTexture and LuxCoreTexture pass
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-            passSystem->AddPassCreator(Name("RenderTexturePass"), &RenderTexturePass::Create);
-            passSystem->AddPassCreator(Name("LuxCoreTexturePass"), &LuxCoreTexturePass::Create);
-#endif
             passSystem->AddPassCreator(Name("ImGuiPass"), &ImGuiPass::Create);
             passSystem->AddPassCreator(Name("LightCullingPass"), &LightCullingPass::Create);
             passSystem->AddPassCreator(Name("LightCullingRemapPass"), &LightCullingRemap::Create);
@@ -279,13 +276,20 @@ namespace AZ
 
             // Add Diffuse Global Illumination passes
             passSystem->AddPassCreator(Name("RayTracingAccelerationStructurePass"), &Render::RayTracingAccelerationStructurePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridPreparePass"), &Render::DiffuseProbeGridPreparePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRayTracingPass"), &Render::DiffuseProbeGridRayTracingPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridBlendIrradiancePass"), &Render::DiffuseProbeGridBlendIrradiancePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridBlendDistancePass"), &Render::DiffuseProbeGridBlendDistancePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridBorderUpdatePass"), &Render::DiffuseProbeGridBorderUpdatePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRelocationPass"), &Render::DiffuseProbeGridRelocationPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridClassificationPass"), &Render::DiffuseProbeGridClassificationPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridDownsamplePass"), &Render::DiffuseProbeGridDownsamplePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRenderPass"), &Render::DiffuseProbeGridRenderPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationPreparePass"), &Render::DiffuseProbeGridVisualizationPreparePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationAccelerationStructurePass"), &Render::DiffuseProbeGridVisualizationAccelerationStructurePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationRayTracingPass"), &Render::DiffuseProbeGridVisualizationRayTracingPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationCompositePass"), &Render::DiffuseProbeGridVisualizationCompositePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridQueryPass"), &Render::DiffuseProbeGridQueryPass::Create);
 
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
 

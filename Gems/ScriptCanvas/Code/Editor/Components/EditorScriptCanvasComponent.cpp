@@ -20,13 +20,12 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Core/ScriptCanvasBus.h>
-#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 #include <LyViewPaneNames.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Components/EditorDeprecationData.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
@@ -41,6 +40,8 @@ namespace EditorScriptCanvasComponentCpp
         PrefabIntegration = 10,
         InternalDev,
         AddSourceHandle,
+        RefactorAssets,
+        RemoveRuntimeData,
         // add description above
         Current
     };
@@ -59,15 +60,15 @@ namespace ScriptCanvasEditor
             }
 
             auto assetElement = rootElement.GetSubElement(assetElementIndex);
-            AZ::Data::Asset<ScriptCanvasAsset> scriptCanvasAsset;
+            AZ::Data::Asset<Deprecated::ScriptCanvasAsset> scriptCanvasAsset;
             if (!assetElement.GetData(scriptCanvasAsset))
             {
                 AZ_Error("Script Canvas", false, "Unable to find Script Canvas Asset on a Version %u Editor ScriptCanvas Component", rootElement.GetVersion());
                 return false;
             }
 
-            ScriptCanvasAssetHolder assetHolder;
-            assetHolder.SetAsset(scriptCanvasAsset.GetId());
+            Deprecated::ScriptCanvasAssetHolder assetHolder;
+            assetHolder.m_scriptCanvasAsset = scriptCanvasAsset;
 
             if (!rootElement.AddElementWithData(serializeContext, "m_assetHolder", assetHolder))
             {
@@ -115,7 +116,7 @@ namespace ScriptCanvasEditor
 
             auto& scriptCanvasAssetHolderElement = rootElement.GetSubElement(scriptCanvasAssetHolderElementIndex);
 
-            ScriptCanvasAssetHolder assetHolder;
+            Deprecated::ScriptCanvasAssetHolder assetHolder;
             if (!scriptCanvasAssetHolderElement.GetData(assetHolder))
             {
                 AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: could not retrieve old 'm_assetHolder'");
@@ -131,7 +132,7 @@ namespace ScriptCanvasEditor
             }
 
             ScriptCanvasBuilder::BuildVariableOverrides overrides;
-            overrides.m_source = SourceHandle(nullptr, assetHolder.GetAssetId().m_guid, {});
+            overrides.m_source = SourceHandle(nullptr, assetHolder.m_scriptCanvasAsset.GetId().m_guid, {});
 
             for (auto& variable : editableData.GetVariables())
             {
@@ -145,19 +146,22 @@ namespace ScriptCanvasEditor
             }
         }
 
-        if (rootElement.GetVersion() < EditorScriptCanvasComponentCpp::Version::AddSourceHandle)
+        auto scriptCanvasAssetHolderElementIndex = rootElement.FindElement(AZ_CRC_CE("m_assetHolder"));
+        if (scriptCanvasAssetHolderElementIndex != -1)
         {
-            ScriptCanvasAssetHolder assetHolder;
-            if (!rootElement.FindSubElementAndGetData(AZ_CRC_CE("m_assetHolder"), assetHolder))
+            auto& scriptCanvasAssetHolderElement = rootElement.GetSubElement(scriptCanvasAssetHolderElementIndex);
+            Deprecated::ScriptCanvasAssetHolder assetHolder;
+
+            if (!scriptCanvasAssetHolderElement.GetData(assetHolder))
             {
                 AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: could not retrieve old 'm_assetHolder'");
                 return false;
             }
 
-            auto assetId = assetHolder.GetAssetId();
-            auto path = assetHolder.GetAssetHint();
+            auto assetId = assetHolder.m_scriptCanvasAsset.GetId();
+            auto path = assetHolder.m_scriptCanvasAsset.GetHint();
 
-            if (!rootElement.AddElementWithData(serializeContext, "runtimeDataOverrides", SourceHandle(nullptr, assetId.m_guid, path)))
+            if (!rootElement.AddElementWithData(serializeContext, "sourceHandle", SourceHandle(nullptr, assetId.m_guid, path)))
             {
                 AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'sourceHandle'");
                 return false;
@@ -175,7 +179,6 @@ namespace ScriptCanvasEditor
             serializeContext->Class<EditorScriptCanvasComponent, EditorComponentBase>()
                 ->Version(EditorScriptCanvasComponentCpp::Version::Current, &EditorScriptCanvasComponentVersionConverter)
                 ->Field("m_name", &EditorScriptCanvasComponent::m_name)
-                ->Field("runtimeDataIsValid", &EditorScriptCanvasComponent::m_runtimeDataIsValid)
                 ->Field("runtimeDataOverrides", &EditorScriptCanvasComponent::m_variableOverrides)
                 ->Field("sourceHandle", &EditorScriptCanvasComponent::m_sourceHandle)
                 ;
@@ -188,7 +191,6 @@ namespace ScriptCanvasEditor
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, ScriptCanvasAssetHandler::GetAssetTypeStatic())
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
@@ -239,16 +241,16 @@ namespace ScriptCanvasEditor
         SetName(m_sourceHandle.Path().Filename().Native());
     }
 
-    void EditorScriptCanvasComponent::OpenEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&)
+    void EditorScriptCanvasComponent::OpenEditor([[maybe_unused]] const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
     {
         AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-         
+
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-         
+
         if (m_sourceHandle.IsDescriptionValid())
         {
             GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, m_sourceHandle, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
-         
+
             if (!openOutcome)
             {
                 AZ_Warning("Script Canvas", openOutcome, "%s", openOutcome.GetError().data());
@@ -258,7 +260,7 @@ namespace ScriptCanvasEditor
         {
             AzToolsFramework::EntityIdList selectedEntityIds;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-         
+
             // Going to bypass the multiple selected entities flow for right now.
             if (selectedEntityIds.size() == 1)
             {
@@ -276,15 +278,25 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::InitializeSource(const SourceHandle& sourceHandle)
     {
-        m_sourceHandle = sourceHandle;
+        ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusDisconnect();
+        m_sourceHandle = sourceHandle.Describe();
+        CompleteDescriptionInPlace(m_sourceHandle);
+
+        if (!m_sourceHandle.Id().IsNull())
+        {
+            ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
+        }
+        else
+        {
+            AZ_Warning("ScriptCanvas", m_sourceHandle.Path().empty()
+                , "EditorScriptCanvasComponent had no valid ID for %s and won't properly expose variables.", m_sourceHandle.Path().c_str())
+        }
     }
 
     //=========================================================================
     void EditorScriptCanvasComponent::Activate()
     {
         EditorComponentBase::Activate();
-
-        AzToolsFramework::AssetSystemBus::Handler::BusConnect();
 
         AZ::EntityId entityId = GetEntityId();
 
@@ -293,8 +305,26 @@ namespace ScriptCanvasEditor
 
         EditorScriptCanvasComponentLoggingBus::Handler::BusConnect(entityId);
         EditorLoggingComponentNotificationBus::Broadcast(&EditorLoggingComponentNotifications::OnEditorScriptCanvasComponentActivated, GetNamedEntityId(), GetGraphIdentifier());
+        InitializeSource(m_sourceHandle);
 
-        CompleteDescriptionInPlace(m_sourceHandle);
+        if (!(m_sourceHandle.Id().IsNull() && m_sourceHandle.Path().empty()))
+        {
+            ScriptCanvasBuilder::BuildResult result;
+            ScriptCanvasBuilder::DataSystemRequestsBus::BroadcastResult
+                ( result
+                , &ScriptCanvasBuilder::DataSystemRequests::CompileBuilderData
+                , m_sourceHandle);
+
+            if (result.status == ScriptCanvasBuilder::BuilderDataStatus::Good)
+            {
+                ApplyGameEntityData(result.data);
+            }
+            else
+            {
+                AZ_Error("ScriptCanvasBuilder", false, "Runtime information did not build for ScriptCanvas Component using source: %s"
+                    , m_sourceHandle.ToString().c_str());
+            }
+        }
 
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
@@ -302,7 +332,7 @@ namespace ScriptCanvasEditor
     //=========================================================================
     void EditorScriptCanvasComponent::Deactivate()
     {
-        AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+        ScriptCanvasBuilder::DataSystemNotificationsBus::Handler::BusDisconnect();
 
         EditorScriptCanvasComponentLoggingBus::Handler::BusDisconnect();
         EditorLoggingComponentNotificationBus::Broadcast(&EditorLoggingComponentNotifications::OnEditorScriptCanvasComponentDeactivated, GetNamedEntityId(), GetGraphIdentifier());
@@ -313,73 +343,53 @@ namespace ScriptCanvasEditor
         EditorContextMenuRequestBus::Handler::BusDisconnect();
     }
 
-    void EditorScriptCanvasComponent::BuildGameEntityData()
+    void EditorScriptCanvasComponent::ApplyGameEntityData(const ScriptCanvasBuilder::BuildVariableOverrides& buildData)
     {
-        using namespace ScriptCanvasBuilder;
-        CompleteDescriptionInPlace(m_sourceHandle);
-
-        m_runtimeDataIsValid = false;
-
-        auto assetTreeOutcome = LoadEditorAssetTree(m_sourceHandle);
-        if (!assetTreeOutcome.IsSuccess())
-        {
-            AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", assetTreeOutcome.GetError().c_str());
-            return;
-        }
-
-        EditorAssetTree& editorAssetTree = assetTreeOutcome.GetValue();
-
-        auto parseOutcome = ParseEditorAssetTree(editorAssetTree);
-        if (!parseOutcome.IsSuccess())
-        {
-            AZ_Warning("ScriptCanvas", false, "EditorScriptCanvasComponent::BuildGameEntityData failed: %s", parseOutcome.GetError().c_str());
-            return;
-        }
+        ScriptCanvasBuilder::BuildVariableOverrides source(buildData);
 
         if (!m_variableOverrides.IsEmpty())
         {
-            parseOutcome.GetValue().CopyPreviousOverriddenValues(m_variableOverrides);
+            source.CopyPreviousOverriddenValues(m_variableOverrides);
         }
 
-        m_variableOverrides = parseOutcome.TakeValue();
-        m_runtimeDataIsValid = true;
+        m_variableOverrides = AZStd::move(source);
+        m_variableOverrides.SetHandlesToDescription();
     }
 
     void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        if (!m_runtimeDataIsValid)
+        if (m_sourceHandle.Id().IsNull() && m_sourceHandle.Path().empty())
         {
-            // this is fine, there could have been no graph set, or set to a graph that failed to compile
             return;
         }
 
-        // build everything again as a sanity check against dependencies. All of the variable overrides that were valid will be copied over
-        BuildGameEntityData();
+        ScriptCanvasBuilder::BuildResult result;
+        ScriptCanvasBuilder::DataSystemRequestsBus::BroadcastResult
+            ( result
+            , &ScriptCanvasBuilder::DataSystemRequests::CompileBuilderData
+            , m_sourceHandle);
 
-        if (!m_runtimeDataIsValid)
+        if (result.status == ScriptCanvasBuilder::BuilderDataStatus::Good)
         {
-            AZ_Error("ScriptCanvasBuilder", false, "Runtime information did not build for ScriptCanvas Component using asset: %s"
+            ApplyGameEntityData(result.data);
+            auto runtimeComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>();
+            runtimeComponent->TakeRuntimeDataOverrides(ConvertToRuntime(m_variableOverrides));
+        }
+        else
+        {
+            AZ_Error("ScriptCanvasBuilder", false, "Runtime information did not build for ScriptCanvas Component using source: %s"
                 , m_sourceHandle.ToString().c_str());
-            return;
         }
-
-        auto runtimeComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>();
-        runtimeComponent->TakeRuntimeDataOverrides(ConvertToRuntime(m_variableOverrides));
     }
 
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
-        m_sourceHandle = SourceHandle(nullptr, assetId.m_guid, {});
-
-        auto completeAsset = CompleteDescription(m_sourceHandle);
-        if (completeAsset)
-        {
-            m_sourceHandle = *completeAsset;
-        }
-
+        InitializeSource(SourceHandle(nullptr, assetId.m_guid, {}));
+        CompleteDescriptionInPlace(m_sourceHandle);
         OnScriptCanvasAssetChanged(SourceChangeDescription::SelectionChanged);
         SetName(m_sourceHandle.Path().Filename().Native());
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast
+            ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     AZ::Data::AssetId EditorScriptCanvasComponent::GetAssetId() const
@@ -389,14 +399,26 @@ namespace ScriptCanvasEditor
 
     AZ::u32 EditorScriptCanvasComponent::OnFileSelectionChanged()
     {
-        m_sourceHandle = SourceHandle(nullptr, m_sourceHandle.Path());
+        InitializeSource(SourceHandle(nullptr, m_sourceHandle.Path()));
         CompleteDescriptionInPlace(m_sourceHandle);
         m_previousHandle = {};
         m_removedHandle = {};
         OnScriptCanvasAssetChanged(SourceChangeDescription::SelectionChanged);
+
+        ScriptCanvasBuilder::BuildResult result;
+        ScriptCanvasBuilder::DataSystemRequestsBus::BroadcastResult
+            ( result
+            , &ScriptCanvasBuilder::DataSystemRequests::CompileBuilderData
+            , m_sourceHandle);
+
+        if (result.status == ScriptCanvasBuilder::BuilderDataStatus::Good)
+        {
+            ApplyGameEntityData(result.data);
+        }
+
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
-    
+
     void EditorScriptCanvasComponent::OnScriptCanvasAssetChanged(SourceChangeDescription changeDescription)
     {
         ScriptCanvas::GraphIdentifier newIdentifier = GetGraphIdentifier();
@@ -405,7 +427,9 @@ namespace ScriptCanvasEditor
         ScriptCanvas::GraphIdentifier oldIdentifier = GetGraphIdentifier();
         oldIdentifier.m_assetId = m_previousHandle.Id();
 
-        EditorLoggingComponentNotificationBus::Broadcast(&EditorLoggingComponentNotifications::OnAssetSwitched, GetNamedEntityId(), newIdentifier, oldIdentifier);
+        EditorLoggingComponentNotificationBus::Broadcast
+            ( &EditorLoggingComponentNotifications::OnAssetSwitched
+            , GetNamedEntityId(), newIdentifier, oldIdentifier);
 
         m_previousHandle = m_sourceHandle.Describe();
 
@@ -414,67 +438,51 @@ namespace ScriptCanvasEditor
             ClearVariables();
         }
 
+        InitializeSource(m_previousHandle);
+
         if (m_sourceHandle.IsDescriptionValid())
         {
-            if (!m_sourceHandle.Get())
-            {
-                if (auto loaded = LoadFromFile(m_sourceHandle.Path().c_str()); loaded.IsSuccess())
-                {
-                    m_sourceHandle = SourceHandle(loaded.TakeValue(), m_sourceHandle.Id(), m_sourceHandle.Path().c_str());
-                }
-            }
-
-            if (m_sourceHandle.Get())
-            {
-                UpdatePropertyDisplay(m_sourceHandle);
-            }
+            UpdatePropertyDisplay();
         }
 
-        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
+            ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
+            , AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
     void EditorScriptCanvasComponent::SetAssetId(const SourceHandle& assetId)
     {
         if (m_sourceHandle.Describe() != assetId.Describe())
         {
-            // Invalidate the previously removed catalog id if we are setting a new asset id
             m_removedHandle = {};
             SetPrimaryAsset(assetId.Id());
         }
     }
 
-    void EditorScriptCanvasComponent::SourceFileChanged([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    void EditorScriptCanvasComponent::SourceFileChanged
+        ( const ScriptCanvasBuilder::BuildResult& result
+        , [[maybe_unused]] AZStd::string_view relativePath
+        , [[maybe_unused]] AZStd::string_view scanFolder)
     {
-        if (fileAssetId == m_sourceHandle.Id())
+        if (result.status == ScriptCanvasBuilder::BuilderDataStatus::Good)
         {
-            if (auto handle = CompleteDescription(SourceHandle(nullptr, fileAssetId, {})))
-            {
-                m_sourceHandle = *handle;
-                // consider queueing on tick bus
-                OnScriptCanvasAssetChanged(SourceChangeDescription::Modified);
-            }
+            ApplyGameEntityData(result.data);
+            OnScriptCanvasAssetChanged(SourceChangeDescription::Modified);
         }
     }
 
-    void EditorScriptCanvasComponent::SourceFileRemoved([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    void EditorScriptCanvasComponent::SourceFileRemoved([[maybe_unused]] AZStd::string_view relativePath
+        , [[maybe_unused]] AZStd::string_view scanFolder)
     {
-        if (fileAssetId == m_sourceHandle.Id())
-        {
-            m_removedHandle = m_sourceHandle;
-            OnScriptCanvasAssetChanged(SourceChangeDescription::Removed);
-        }
+        m_removedHandle = m_sourceHandle;
+        OnScriptCanvasAssetChanged(SourceChangeDescription::Removed);
     }
 
-    void EditorScriptCanvasComponent::SourceFileFailed([[maybe_unused]] AZStd::string relativePath
-        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    void EditorScriptCanvasComponent::SourceFileFailed([[maybe_unused]] AZStd::string_view relativePath
+        , [[maybe_unused]] AZStd::string_view scanFolder)
     {
-        if (fileAssetId == m_sourceHandle.Id())
-        {
-            m_removedHandle = m_sourceHandle;
-            OnScriptCanvasAssetChanged(SourceChangeDescription::Error);
-        }
+        m_removedHandle = m_sourceHandle;
+        OnScriptCanvasAssetChanged(SourceChangeDescription::Error);
     }
 
     bool EditorScriptCanvasComponent::HasAssetId() const
@@ -489,14 +497,10 @@ namespace ScriptCanvasEditor
         return ScriptCanvas::GraphIdentifier(m_sourceHandle.Id(), 0);
     }
 
-    void EditorScriptCanvasComponent::UpdatePropertyDisplay(const SourceHandle& sourceHandle)
+    void EditorScriptCanvasComponent::UpdatePropertyDisplay()
     {
-        if (sourceHandle.IsGraphValid())
-        {
-            BuildGameEntityData();
-            UpdateName();
-            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
-        }
+        UpdateName();
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
     void EditorScriptCanvasComponent::ClearVariables()

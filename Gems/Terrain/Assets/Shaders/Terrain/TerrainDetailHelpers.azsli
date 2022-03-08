@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Feature/BlendUtility.azsli>
 
 enum DetailTextureFlags
 {
@@ -22,11 +23,11 @@ enum DetailTextureFlags
     FlipNormalX =          0x00010000, //0b0000'0000'0000'0001'0000'0000'0000'0000
     FlipNormalY =          0x00020000, //0b0000'0000'0000'0010'0000'0000'0000'0000
 
-    BlendModeMask =        0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
-    BlendModeLerp =        0x00000000, //0b0000'0000'0000'0000'0000'0000'0000'0000
-    BlendModeLinearLight = 0x00040000, //0b0000'0000'0000'0100'0000'0000'0000'0000
-    BlendModeMultiply =    0x00080000, //0b0000'0000'0000'1000'0000'0000'0000'0000
-    BlendModeOverlay =     0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
+    BlendModeMask =        0x001C0000, //0b0000'0000'0001'1100'0000'0000'0000'0000
+    BlendModeLerp =        0x00040000, //0b0000'0000'0000'0100'0000'0000'0000'0000
+    BlendModeLinearLight = 0x00080000, //0b0000'0000'0000'1000'0000'0000'0000'0000
+    BlendModeMultiply =    0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
+    BlendModeOverlay =     0x00100000, //0b0000'0000'0001'0000'0000'0000'0000'0000
 };
 
 struct DetailSurface
@@ -118,14 +119,37 @@ uint GetDetailHeightIndex(TerrainSrg::DetailMaterialData materialData)
 
 // Detail material value getters
 
-float3 GetDetailColor(TerrainSrg::DetailMaterialData materialData, float2 uv, float2 ddx, float2 ddy)
+float3 GetDetailColor(TerrainSrg::DetailMaterialData materialData, float2 uv, float2 ddx, float2 ddy, float3 macroColor)
 {
     float3 color = materialData.m_baseColor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureBaseColor) > 0)
     {
-        color = TerrainSrg::m_detailTextures[GetDetailColorIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rgb;
+        color = TerrainSrg::m_textures[GetDetailColorIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rgb;
+        color = TransformColor(color, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        color = sqrt(color); // Put in a more perceptual space for blending. This will be undone later.
     }
-    return color * materialData.m_baseColorFactor;
+    uint blendMode = materialData.m_flags & DetailTextureFlags::BlendModeMask;
+    switch (blendMode)
+    {
+        case DetailTextureFlags::BlendModeLerp:
+            color = lerp(color, macroColor, materialData.m_baseColorFactor);
+            break;
+        case DetailTextureFlags::BlendModeLinearLight:
+            color = lerp(color, TextureBlend_LinearLight(macroColor, color), materialData.m_baseColorFactor);
+            break;
+        case DetailTextureFlags::BlendModeMultiply:
+            color = lerp(color, color * macroColor, materialData.m_baseColorFactor);
+            break;
+        case DetailTextureFlags::BlendModeOverlay:
+            color = lerp(color, TextureBlend_Overlay(color, macroColor), materialData.m_baseColorFactor);
+            break;
+        case 0:
+            color *= materialData.m_baseColorFactor;
+            break;
+        default:
+            color = float3(1.0, 0.0, 1.0); // Unknown blend mode.
+    }
+    return color;
 }
 
 float3 GetDetailNormal(TerrainSrg::DetailMaterialData materialData, float2 uv, float2 ddx, float2 ddy)
@@ -133,7 +157,7 @@ float3 GetDetailNormal(TerrainSrg::DetailMaterialData materialData, float2 uv, f
     float2 normal = float2(0.0, 0.0);
     if ((materialData.m_flags & DetailTextureFlags::UseTextureNormal) > 0)
     {
-        normal = TerrainSrg::m_detailTextures[GetDetailNormalIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rg;
+        normal = TerrainSrg::m_textures[GetDetailNormalIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rg;
     }
     
     // X and Y are inverted here to be consistent with SampleNormalXY in NormalInput.azsli.
@@ -153,7 +177,7 @@ float GetDetailRoughness(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float roughness = materialData.m_roughnessScale;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureRoughness) > 0)
     {
-        roughness = TerrainSrg::m_detailTextures[GetDetailRoughnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        roughness = TerrainSrg::m_textures[GetDetailRoughnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
         roughness = materialData.m_roughnessBias + roughness * materialData.m_roughnessScale;
     }
     return roughness;
@@ -164,7 +188,7 @@ float GetDetailMetalness(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float metalness = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureMetallic) > 0)
     {
-        metalness = TerrainSrg::m_detailTextures[GetDetailMetalnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        metalness = TerrainSrg::m_textures[GetDetailMetalnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return metalness * materialData.m_metalFactor;
 }
@@ -174,7 +198,7 @@ float GetDetailSpecularF0(TerrainSrg::DetailMaterialData materialData, float2 uv
     float specularF0 = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureSpecularF0) > 0)
     {
-        specularF0 = TerrainSrg::m_detailTextures[GetDetailSpecularF0Index(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        specularF0 = TerrainSrg::m_textures[GetDetailSpecularF0Index(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return specularF0 * materialData.m_specularF0Factor;
 }
@@ -184,7 +208,7 @@ float GetDetailOcclusion(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float occlusion = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureOcclusion) > 0)
     {
-        occlusion = TerrainSrg::m_detailTextures[GetDetailOcclusionIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        occlusion = TerrainSrg::m_textures[GetDetailOcclusionIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return occlusion * materialData.m_occlusionFactor;
 }
@@ -194,26 +218,43 @@ float GetDetailHeight(TerrainSrg::DetailMaterialData materialData, float2 uv, fl
     float height = materialData.m_heightFactor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureHeight) > 0)
     {
-        height = TerrainSrg::m_detailTextures[GetDetailHeightIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        height = TerrainSrg::m_textures[GetDetailHeightIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
         height = materialData.m_heightOffset + height * materialData.m_heightFactor;
     }
     return height;
 }
 
-void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, float2 uv)
+void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, float2 uv, float3 macroColor)
 {
     TerrainSrg::DetailMaterialData detailMaterialData = TerrainSrg::m_detailMaterialData[materialId];
+
+    float3x3 uvTransform = (float3x3)detailMaterialData.m_uvTransform;
+    float2 transformedUv = mul(uvTransform, float3(uv, 1.0)).xy;
+
+    // With different materials in the quad, we can't rely on ddx/ddy of the transformed uv because
+    // the materials may have different uv transforms. This would create visible seams where the wrong
+    // mip was being used. Instead, manually calculate the transformed ddx/ddy using the ddx/ddy of the
+    // original uv.
 
     float2 uvDdx = ddx(uv);
     float2 uvDdy = ddy(uv);
 
-    surface.m_color = GetDetailColor(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_normal = GetDetailNormal(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_roughness = GetDetailRoughness(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_specularF0 = GetDetailSpecularF0(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_metalness = GetDetailMetalness(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_occlusion = GetDetailOcclusion(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_height = GetDetailHeight(detailMaterialData, uv, uvDdx, uvDdy);
+    float2 uvX = uv + uvDdx;
+    float2 uvY = uv + uvDdy;
+
+    float2 transformedUvX = mul(uvTransform, float3(uvX, 1.0)).xy;
+    float2 transformedUvY = mul(uvTransform, float3(uvY, 1.0)).xy;
+
+    float2 transformedUvDdx = transformedUvX - transformedUv;
+    float2 transformedUvDdy = transformedUvY - transformedUv;
+
+    surface.m_color = GetDetailColor(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy, macroColor);
+    surface.m_normal = GetDetailNormal(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_roughness = GetDetailRoughness(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_specularF0 = GetDetailSpecularF0(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_metalness = GetDetailMetalness(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_occlusion = GetDetailOcclusion(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_height = GetDetailHeight(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
 }
 
 // Debugs the detail material by choosing a random color per material ID and rendering it without blending.
@@ -253,15 +294,15 @@ void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint mat
 }
 
 //Blend a single detail material sample (with two possible material ids) onto a DetailSurface.
-void BlendDetailMaterial(inout DetailSurface surface, uint material1, uint material2, float blend, float2 detailUv, float weight)
+void BlendDetailMaterial(inout DetailSurface surface, uint material1, uint material2, float blend, float2 detailUv, float weight, float3 macroColor)
 {
     DetailSurface tempSurface;
-    GetDetailSurfaceForMaterial(tempSurface, material1, detailUv);
+    GetDetailSurfaceForMaterial(tempSurface, material1, detailUv, macroColor);
     WeightDetailSurface(tempSurface, weight * (1.0 - blend));
     AddDetailSurface(surface, tempSurface);
     if (material2 != 0xFF)
     {
-        GetDetailSurfaceForMaterial(tempSurface, material2, detailUv);
+        GetDetailSurfaceForMaterial(tempSurface, material2, detailUv, macroColor);
         WeightDetailSurface(tempSurface, weight * blend);
         AddDetailSurface(surface, tempSurface);
     }
@@ -274,25 +315,24 @@ instance, if detailMaterialIdUv falls perfectly in-between all 4 samples, then e
 Each sample can have two different detail materials defined with a blend value to determine their relative contribution.
 The detailUv is used for sampling the textures of each detail material.
 */
-bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, float2 detailUv)
+bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord, float2 detailUv, float3 macroColor)
 {
     float2 textureSize;
     TerrainSrg::m_detailMaterialIdImage.GetDimensions(textureSize.x, textureSize.y);
+    int2 intTextureSize = textureSize;
 
-    float2 detailMaterialIdCoord = detailMaterialIdUv * textureSize; // uv -> pixel coordinate
+    macroColor = sqrt(macroColor); // Put macro color into an approximate perceptual space.
 
-    // detailMaterialIdCoord could be negative, so add textureSize to ensure it is positive
-    detailMaterialIdCoord += textureSize; 
-
-    // The detail material id texture wraps since the "center" point can be anywhere in the texture, so mod by texturesize
-    int2 detailMaterailIdTopLeft = int2(detailMaterialIdCoord) % textureSize;
-    int2 detailMaterailIdBottomRight = (int2(detailMaterialIdCoord) + 1) % textureSize;
+    // The detail material id texture wraps since the "center" point can be anywhere in the texture, so mod by intTextureSize
+    int2 detailMaterialIdTopLeft = int2(floor(detailMaterialIdCoord)) % intTextureSize;
+    detailMaterialIdTopLeft = (detailMaterialIdTopLeft + intTextureSize) % intTextureSize; // Make a negative result from modulus positive.
+    int2 detailMaterialIdBottomRight = (detailMaterialIdTopLeft + 1) % intTextureSize;
 
     // Using Load() to gather the nearest 4 samples (Gather4() isn't used because of precision issues with uvs).
-    uint4 s1 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdTopLeft.x, detailMaterailIdBottomRight.y, 0));
-    uint4 s2 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdBottomRight, 0));
-    uint4 s3 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdBottomRight.x, detailMaterailIdTopLeft.y, 0));
-    uint4 s4 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdTopLeft, 0));
+    uint4 s1 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdTopLeft.x, detailMaterialIdBottomRight.y, 0));
+    uint4 s2 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdBottomRight, 0));
+    uint4 s3 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdBottomRight.x, detailMaterialIdTopLeft.y, 0));
+    uint4 s4 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdTopLeft, 0));
 
     uint4 material1 = uint4(s1.x, s2.x, s3.x, s4.x);
     uint4 material2 = uint4(s1.y, s2.y, s3.y, s4.y);
@@ -322,7 +362,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
     if (all(material1.x == material1.yzw) && all(material2.x == material2.yzw))
     {
         // Fast path for same material ids
-        GetDetailSurfaceForMaterial(surface, material1.x, detailUv);
+        GetDetailSurfaceForMaterial(surface, material1.x, detailUv, macroColor);
         if (material2.x != 0xFF)
         {
             float4 material2Blends = 1.0 - blends;
@@ -333,7 +373,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
                 (gatherWeight.x * (1.0 - gatherWeight.y) * material2Blends.z) + 
                 ((1.0 - gatherWeight.x) * (1.0 - gatherWeight.y) * material2Blends.w);
             WeightDetailSurface(surface, weight);
-            GetDetailSurfaceForMaterial(tempSurface, material2.x, detailUv);
+            GetDetailSurfaceForMaterial(tempSurface, material2.x, detailUv, macroColor);
             WeightDetailSurface(tempSurface, 1.0 - weight);
             AddDetailSurface(surface, tempSurface);
         }
@@ -344,22 +384,22 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
 
         // X
         float weight = (1.0 - gatherWeight.x) * gatherWeight.y;
-        BlendDetailMaterial(surface, material1.x, material2.x, blends.x, detailUv, weight);
+        BlendDetailMaterial(surface, material1.x, material2.x, blends.x, detailUv, weight, macroColor);
 
         // Y
         weight = gatherWeight.x * gatherWeight.y;
-        BlendDetailMaterial(surface, material1.y, material2.y, blends.y, detailUv, weight);
+        BlendDetailMaterial(surface, material1.y, material2.y, blends.y, detailUv, weight, macroColor);
         
         // Z
         weight = gatherWeight.x * (1.0 - gatherWeight.y);
-        BlendDetailMaterial(surface, material1.z, material2.z, blends.z, detailUv, weight);
+        BlendDetailMaterial(surface, material1.z, material2.z, blends.z, detailUv, weight, macroColor);
 
         // W
         weight = (1.0 - gatherWeight.x) * (1.0 - gatherWeight.y);
-        BlendDetailMaterial(surface, material1.w, material2.w, blends.w, detailUv, weight);
+        BlendDetailMaterial(surface, material1.w, material2.w, blends.w, detailUv, weight, macroColor);
     }
 
     surface.m_normal = normalize(surface.m_normal);
-    
+    surface.m_color = surface.m_color * surface.m_color; // Put back in linear space.
     return true;
 }

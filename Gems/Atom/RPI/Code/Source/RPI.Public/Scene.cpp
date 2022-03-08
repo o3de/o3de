@@ -178,6 +178,18 @@ namespace AZ
             m_dynamicDrawSystem = nullptr;
         }
 
+        void Scene::CheckRecreateRenderPipeline()
+        {
+            // need to recreate render pipeline passes if the pipeline can be modified by FPs
+            for (auto& renderPipeline : m_pipelines)
+            {
+                if (renderPipeline->m_descriptor.m_allowModification)
+                {
+                    renderPipeline->SetPassNeedsRecreate();
+                }
+            }
+        }
+
         FeatureProcessor* Scene::EnableFeatureProcessor(const FeatureProcessorId& featureProcessorId)
         {
             FeatureProcessor* foundFeatureProcessor = GetFeatureProcessor(featureProcessorId);
@@ -226,6 +238,7 @@ namespace AZ
             if (m_activated)
             {
                 fp->Activate();
+                CheckRecreateRenderPipeline();
             }
 
             m_featureProcessors.emplace_back(AZStd::move(fp));
@@ -249,6 +262,7 @@ namespace AZ
                 if (m_activated)
                 {
                     (*foundFeatureProcessor)->Deactivate();
+                    CheckRecreateRenderPipeline();
                 }
 
                 m_featureProcessors.erase(foundFeatureProcessor);
@@ -285,6 +299,22 @@ namespace AZ
             return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
         }
 
+        void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)
+        {
+            // return directly if the pipeline doesn't allow modification or it was already modifed by scene
+            if (!pipeline->m_descriptor.m_allowModification || pipeline->m_wasModifiedByScene)
+            {
+                return;
+            }
+
+            pipeline->m_wasModifiedByScene = true;
+            for (auto& fp : m_featureProcessors)
+            {
+                fp->ApplyRenderPipelineChange(pipeline);
+            }
+            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
+        }
+
         void Scene::AddRenderPipeline(RenderPipelinePtr pipeline)
         {
             if (pipeline->m_scene != nullptr)
@@ -311,6 +341,9 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+
+            TryApplyRenderPipelineChanges(pipeline.get());
+
             PassSystemInterface::Get()->ProcessQueuedChanges();
             pipeline->BuildPipelineViews();
 
@@ -322,7 +355,7 @@ namespace AZ
         
         void Scene::RemoveRenderPipeline(const RenderPipelineId& pipelineId)
         {
-            bool removed = false;
+            [[maybe_unused]] bool removed = false;
             for (auto it = m_pipelines.begin(); it != m_pipelines.end(); ++it)
             {
                 if (pipelineId == (*it)->GetId())
@@ -501,64 +534,64 @@ namespace AZ
 
         void Scene::CollectDrawPacketsTaskGraph()
         {
-                AZ_PROFILE_SCOPE(RPI, "CollectDrawPacketsTaskGraph");
-                AZ::TaskGraphEvent collectDrawPacketsTGEvent;
-                static const AZ::TaskDescriptor collectDrawPacketsTGDesc{"RPI_Scene_PrepareRender_CollectDrawPackets", "Graphics"};
-                AZ::TaskGraph collectDrawPacketsTG;
+            AZ_PROFILE_SCOPE(RPI, "CollectDrawPacketsTaskGraph");
+            AZ::TaskGraphEvent collectDrawPacketsTGEvent;
+            static const AZ::TaskDescriptor collectDrawPacketsTGDesc{"RPI_Scene_PrepareRender_CollectDrawPackets", "Graphics"};
+            AZ::TaskGraph collectDrawPacketsTG;
 
-                // Launch FeatureProcessor::Render() taskgraphs
-                for (auto& fp : m_featureProcessors)
+            // Launch FeatureProcessor::Render() taskgraphs
+            for (auto& fp : m_featureProcessors)
+            {
+                collectDrawPacketsTG.AddTask( 
+                    collectDrawPacketsTGDesc,
+                    [this, &fp]()
+                    {
+                        fp->Render(m_renderPacket);
+                    });
+
+            }
+            collectDrawPacketsTG.Submit(&collectDrawPacketsTGEvent);
+
+            // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs if m_parallelOctreeTraversal)
+            const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
+            m_cullingScene->BeginCulling(m_renderPacket.m_views);
+            static const AZ::TaskDescriptor processCullablesDescriptor{"AZ::RPI::Scene::ProcessCullables", "Graphics"};
+            AZ::TaskGraphEvent processCullablesTGEvent;
+            AZ::TaskGraph processCullablesTG;
+            if (parallelOctreeTraversal)
+            {
+                for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
-                    collectDrawPacketsTG.AddTask( 
-                        collectDrawPacketsTGDesc,
-                        [this, &fp]()
+                    processCullablesTG.AddTask(processCullablesDescriptor, [this, &viewPtr, &processCullablesTGEvent]()
                         {
-                            fp->Render(m_renderPacket);
-                        });
-
-                }
-                collectDrawPacketsTG.Submit(&collectDrawPacketsTGEvent);
-
-                // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs if m_parallelOctreeTraversal)
-                const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
-                m_cullingScene->BeginCulling(m_renderPacket.m_views);
-                static const AZ::TaskDescriptor processCullablesDescriptor{"AZ::RPI::Scene::ProcessCullables", "Graphics"};
-                AZ::TaskGraphEvent processCullablesTGEvent;
-                AZ::TaskGraph processCullablesTG;
-                if (parallelOctreeTraversal)
-                {
-                    for (ViewPtr& viewPtr : m_renderPacket.m_views)
-                    {
-                        processCullablesTG.AddTask(processCullablesDescriptor, [this, &viewPtr, &processCullablesTGEvent]()
+                            AZ::TaskGraph subTaskGraph;
+                            m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph);
+                            if (!subTaskGraph.IsEmpty())
                             {
-                                AZ::TaskGraph subTaskGraph;
-                                m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph);
-                                if (!subTaskGraph.IsEmpty())
-                                {
-                                    subTaskGraph.Detach();
-                                    subTaskGraph.Submit(&processCullablesTGEvent);
-                                }
-                            });
-                    }
+                                subTaskGraph.Detach();
+                                subTaskGraph.Submit(&processCullablesTGEvent);
+                            }
+                        });
                 }
-                else
+            }
+            else
+            {
+                for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
-                    for (ViewPtr& viewPtr : m_renderPacket.m_views)
-                    {
-                        m_cullingScene->ProcessCullablesTG(*this, *viewPtr, processCullablesTG);
-                    }
+                    m_cullingScene->ProcessCullablesTG(*this, *viewPtr, processCullablesTG);
                 }
-                bool processCullablesHasWork = !processCullablesTG.IsEmpty();
-                if (processCullablesHasWork)
-                {
-                    processCullablesTG.Submit(&processCullablesTGEvent);
-                }
+            }
+            bool processCullablesHasWork = !processCullablesTG.IsEmpty();
+            if (processCullablesHasWork)
+            {
+                processCullablesTG.Submit(&processCullablesTGEvent);
+            }
 
-                collectDrawPacketsTGEvent.Wait();
-                if (processCullablesHasWork) // skip the wait if there is no work to do
-                {
-                    processCullablesTGEvent.Wait();
-                }
+            collectDrawPacketsTGEvent.Wait();
+            if (processCullablesHasWork) // skip the wait if there is no work to do
+            {
+                processCullablesTGEvent.Wait();
+            }
         }
 
         void Scene::CollectDrawPacketsJobs()

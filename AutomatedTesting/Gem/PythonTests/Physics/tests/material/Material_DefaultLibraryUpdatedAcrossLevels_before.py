@@ -98,6 +98,7 @@ def Material_DefaultLibraryUpdatedAcrossLevels_before():
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.math as math
+    import ly_test_tools._internal.managers.abstract_resource_locator as arl
 
     # Constants
     TIMEOUT = 2.0
@@ -169,7 +170,7 @@ def Material_DefaultLibraryUpdatedAcrossLevels_before():
         try:
             with open(
                 os.path.join(
-                    os.getcwd(), "AutomatedTesting", "Levels", "Physics", "Material_DefaultLibraryUpdatedAcrossLevels", "_last_run_before_change_data.txt"
+                    arl._find_engine_root(os.getcwd()), "AutomatedTesting", "Levels", "Physics", "Material_DefaultLibraryUpdatedAcrossLevels", "_last_run_before_change_data.txt"
                 ),"w") as data_file:
                 for data_point in data:
                     data_file.write(str(data_point))
@@ -189,7 +190,7 @@ def Material_DefaultLibraryUpdatedAcrossLevels_before():
         # 1) Open the correct level is open
         helper.open_level(
             "Physics",
-            f"Material_DefaultLibraryUpdatedAcrossLevels\\{test.level}"
+            os.path.join("Material_DefaultLibraryUpdatedAcrossLevels", str(test.level))
         )
 
         # 2) Enter Game Mode

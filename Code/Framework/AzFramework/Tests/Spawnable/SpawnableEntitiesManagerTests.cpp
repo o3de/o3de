@@ -77,6 +77,12 @@ namespace UnitTest
     public:
         AZ_COMPONENT(TargetSpawnableComponent, "{B4041561-63A7-4E1E-80F1-78C08D497960}");
 
+        TargetSpawnableComponent() = default;
+        explicit TargetSpawnableComponent(AZ::EntityId parent)
+            : m_parent(parent)
+        {
+        }
+
         void Activate() override {}
         void Deactivate() override {}
 
@@ -84,14 +90,19 @@ namespace UnitTest
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
             {
-                serializeContext->Class<TargetSpawnableComponent, AZ::Component>();
+                serializeContext->Class<TargetSpawnableComponent, AZ::Component>()
+                    ->Field("Parent", &TargetSpawnableComponent::m_parent);
             }
         }
+
+        AZ::EntityId m_parent;
     };
 
     class SpawnableEntitiesManagerTest : public AllocatorsFixture
     {
     public:
+        constexpr static AZ::u64 EntityIdStartId = 40;
+
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
@@ -111,7 +122,7 @@ namespace UnitTest
             m_spawnable = aznew AzFramework::Spawnable(
                 AZ::Data::AssetId::CreateString("{EB2E8A2B-F253-4A90-BBF4-55F2EED786B8}:0"), AZ::Data::AssetData::AssetStatus::Ready);
             m_spawnableAsset = new AZ::Data::Asset<AzFramework::Spawnable>(m_spawnable, AZ::Data::AssetLoadBehavior::Default);
-            m_ticket = new AzFramework::EntitySpawnTicket(*m_spawnableAsset);
+            m_ticket = aznew AzFramework::EntitySpawnTicket(*m_spawnableAsset);
 
             auto managerInterface = AzFramework::SpawnableEntitiesInterface::Get();
             m_manager = azrtti_cast<AzFramework::SpawnableEntitiesManager*>(managerInterface);
@@ -138,6 +149,20 @@ namespace UnitTest
             AllocatorsFixture::TearDown();
         }
 
+        void ProcessQueueTillEmtpy()
+        {
+            for (size_t i=0; i<1000; ++i) // Don't do this indefinitely to avoid deadlocking on a failing test.
+            {
+                if (m_manager->ProcessQueue(
+                        AzFramework::SpawnableEntitiesManager::CommandQueuePriority::High |
+                        AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular) ==
+                    AzFramework::SpawnableEntitiesManager::CommandQueueStatus::NoCommandsLeft)
+                {
+                    break;
+                }
+            }
+        }
+
         void FillSpawnable(size_t numElements)
         {
             AzFramework::Spawnable::EntityList& entities = m_spawnable->GetEntities();
@@ -147,22 +172,43 @@ namespace UnitTest
             {
                 auto entry = AZStd::make_unique<AZ::Entity>();
                 entry->AddComponent(aznew SourceSpawnableComponent());
+                entry->SetId(AZ::EntityId(EntityIdStartId + i));
                 entities.push_back(AZStd::move(entry));
             }
         }
 
-        AZ::Data::Asset<AzFramework::Spawnable> CreateTargetSpawnable(size_t numElements)
+        AZ::Data::Asset<AzFramework::Spawnable> CreateTargetSpawnable(size_t numElements, bool requiresMatchingEntityIds)
         {
             auto target = aznew AzFramework::Spawnable(
                 AZ::Data::AssetId(AZ::Uuid("{716CD8C3-0BA8-4F32-B579-0EC7C967796F}")), AZ::Data::AssetData::AssetStatus::Ready);
 
             AzFramework::Spawnable::EntityList& entities = target->GetEntities();
             entities.reserve(numElements);
-            for (size_t i = 0; i < numElements; ++i)
+            if (requiresMatchingEntityIds)
             {
-                auto entry = AZStd::make_unique<AZ::Entity>();
-                entry->AddComponent(aznew TargetSpawnableComponent());
-                entities.push_back(AZStd::move(entry));
+                for (size_t i = 0; i < numElements; ++i)
+                {
+                    auto entry = AZStd::make_unique<AZ::Entity>();
+                    if (i != 0)
+                    {
+                        entry->AddComponent(aznew TargetSpawnableComponent(AZ::EntityId(EntityIdStartId + i - 1)));
+                    }
+                    else
+                    {
+                        entry->AddComponent(aznew TargetSpawnableComponent());
+                    }
+                    entry->SetId(AZ::EntityId(EntityIdStartId + i));
+                    entities.push_back(AZStd::move(entry));
+                }
+            }
+            else
+            {
+                for (size_t i = 0; i < numElements; ++i)
+                {
+                    auto entry = AZStd::make_unique<AZ::Entity>();
+                    entry->AddComponent(aznew TargetSpawnableComponent());
+                    entities.push_back(AZStd::move(entry));
+                }
             }
 
             return AZ::Data::Asset<AzFramework::Spawnable>(target, AZ::Data::AssetLoadBehavior::NoLoad);
@@ -202,6 +248,38 @@ namespace UnitTest
                         entity->FindComponent<TargetSpawnableComponent>() == nullptr)
                     {
                         return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        static bool DoParentEntityIdsMatch(AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            if (entities.empty())
+            {
+                return false;
+            }
+
+            const AZ::Entity* previous = nullptr;
+            for (const AZ::Entity* entity : entities)
+            {
+                if (entity)
+                {
+                    if (previous)
+                    {
+                        if (TargetSpawnableComponent* link = entity->FindComponent<TargetSpawnableComponent>(); link != nullptr)
+                        {
+                            if (link->m_parent != previous->GetId())
+                            {
+                                return false;
+                            }
+                        }
+                        previous = entity;
                     }
                 }
                 else
@@ -439,7 +517,7 @@ namespace UnitTest
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(NumEntities, spawnedEntitiesCount);
     }
@@ -472,7 +550,7 @@ namespace UnitTest
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllEntitiesReferenceOtherEntities_EntityIdsAreMappedCorrectly)
@@ -497,7 +575,7 @@ namespace UnitTest
             AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
             optionalArgs.m_completionCallback = AZStd::move(callback);
             m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
-            m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+            ProcessQueueTillEmtpy();
         }
     }
 
@@ -516,7 +594,7 @@ namespace UnitTest
             // Make sure we start with a fresh ticket each time, or else each iteration through this loop would continue to build up
             // more and more entities.
             delete m_ticket;
-            m_ticket = new AzFramework::EntitySpawnTicket(*m_spawnableAsset);
+            m_ticket = aznew AzFramework::EntitySpawnTicket(*m_spawnableAsset);
 
             constexpr size_t NumEntities = 4;
             FillSpawnable(NumEntities);
@@ -538,7 +616,7 @@ namespace UnitTest
             }
 
             m_manager->ListEntities(*m_ticket, callback);
-            m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+            ProcessQueueTillEmtpy();
         }
     }
 
@@ -548,7 +626,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
             m_manager->SpawnAllEntities(ticket);
         }
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllAliasesWithDisabled_NoEntitiesSpawned)
@@ -569,7 +647,7 @@ namespace UnitTest
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(0, spawnedEntitiesCount);
     }
@@ -589,7 +667,7 @@ namespace UnitTest
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(6, spawnedEntitiesCount);
     }
@@ -599,7 +677,8 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
+        constexpr bool requiresMatchingEntityIds = true;
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
@@ -608,19 +687,22 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allReplaced = false;
-        auto callback = [&spawnedEntitiesCount, &allReplaced](
+        bool allEntityIdsPatched = false;
+        auto callback = [&spawnedEntitiesCount, &allReplaced, &allEntityIdsPatched](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allReplaced = AreAllEntitiesReplaced(entities);
+            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(4, spawnedEntitiesCount);
         EXPECT_TRUE(allReplaced);
+        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllAliasesWithAdditional_SourceAndTargetComponentsMerged)
@@ -628,7 +710,8 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
+        constexpr bool requiresMatchingEntityIds = false;
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional,
@@ -637,19 +720,22 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allAdded = false;
-        auto callback = [&spawnedEntitiesCount, &allAdded](
+        bool allEntityIdsPatched = false;
+        auto callback = [&spawnedEntitiesCount, &allAdded, &allEntityIdsPatched](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allAdded = IsEveryOtherEntityAReplacement(entities);
+            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(8, spawnedEntitiesCount);
         EXPECT_TRUE(allAdded);
+        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllAliasesWithMerge_SourceAndTargetComponentsMerged)
@@ -657,7 +743,8 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
+        constexpr bool requiresMatchingEntityIds = true;
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Merge,
@@ -666,19 +753,22 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allMerged = false;
-        auto callback = [&spawnedEntitiesCount, &allMerged](
+        bool allEntityIdsPatched = false;
+        auto callback = [&spawnedEntitiesCount, &allMerged, &allEntityIdsPatched](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allMerged = AreAllMerged(entities);
+            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(4, spawnedEntitiesCount);
         EXPECT_TRUE(allMerged);
+        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     //
@@ -700,7 +790,7 @@ namespace UnitTest
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(NumEntities, spawnedEntitiesCount);
     }
@@ -721,7 +811,7 @@ namespace UnitTest
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(NumEntities * 2, spawnedEntitiesCount);
     }
@@ -743,7 +833,7 @@ namespace UnitTest
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnEntities(*m_ticket, indices, optionalArgs);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(NumEntities * 2, spawnedEntitiesCount);
     }
@@ -775,7 +865,7 @@ namespace UnitTest
         optionalArgs.m_referencePreviouslySpawnedEntities = false;
         m_manager->SpawnEntities(*m_ticket, indices, optionalArgs);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_NE(parents[0], parents[1]);
     }
@@ -808,7 +898,7 @@ namespace UnitTest
         optionalArgs.m_referencePreviouslySpawnedEntities = true;
         m_manager->SpawnEntities(*m_ticket, indices, optionalArgs);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_NE(parents[0], parents[1]);
     }
@@ -846,7 +936,7 @@ namespace UnitTest
         optionalArgsSecondBatch.m_referencePreviouslySpawnedEntities = true;
         m_manager->SpawnEntities(*m_ticket, {1, 2, 3}, AZStd::move(optionalArgsSecondBatch));
 
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_ForwardReferencesWorkInSingleCall)
@@ -869,7 +959,7 @@ namespace UnitTest
         // when the spawning all occurs in the same call
         m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 });
         m_manager->ListEntities(*m_ticket, callback);
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_ForwardReferencesWorkAcrossCalls)
@@ -895,7 +985,7 @@ namespace UnitTest
         m_manager->SpawnEntities(*m_ticket, { 2 });
         m_manager->SpawnEntities(*m_ticket, { 3 });
         m_manager->ListEntities(*m_ticket, callback);
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_ReferencesPointToFirstOrLatest)
@@ -944,7 +1034,7 @@ namespace UnitTest
         m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 });
         m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 });
         m_manager->ListEntities(*m_ticket, callback);
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_MultipleSpawnsInSameCallReferenceCorrectly)
@@ -999,7 +1089,7 @@ namespace UnitTest
         // Create the 3 batches of entities 0, 1, 2, 3.  The entity references should work as described at the top of the test.
         m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3 });
         m_manager->ListEntities(*m_ticket, callback);
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_OptionalFlagClearsReferenceMap)
@@ -1029,7 +1119,7 @@ namespace UnitTest
         m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 }, optionalArgsSecondBatch);
         m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3 }, AZStd::move(optionalArgsSecondBatch));
         m_manager->ListEntities(*m_ticket, callback);
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_DeleteTicketBeforeCall_NoCrash)
@@ -1038,7 +1128,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
             m_manager->SpawnEntities(ticket, {/* Deliberate empty list of indices. */});
         }
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllAliasesWithDisabled_NoEntitiesSpawned)
@@ -1062,7 +1152,7 @@ namespace UnitTest
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(0, spawnedEntitiesCount);
     }
@@ -1085,7 +1175,7 @@ namespace UnitTest
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(9, spawnedEntitiesCount);
     }
@@ -1095,7 +1185,8 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
+        constexpr bool requiresMatchingEntityIds = true;
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
@@ -1106,19 +1197,22 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allReplaced = false;
-        auto callback = [&spawnedEntitiesCount, &allReplaced](
+        bool allEntityIdsPatched = false;
+        auto callback = [&spawnedEntitiesCount, &allReplaced, &allEntityIdsPatched](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allReplaced = AreAllEntitiesReplaced(entities);
+            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(4, spawnedEntitiesCount);
         EXPECT_TRUE(allReplaced);
+        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllAliasesWithAdditional_SourceAndTargetComponentsMerged)
@@ -1126,7 +1220,8 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
+        constexpr bool requiresMatchingEntityIds = false;
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional,
@@ -1137,20 +1232,23 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allAdded = false;
+        bool allEntityIdsPatched = false;
         auto callback =
-            [&spawnedEntitiesCount, &allAdded](
+            [&spawnedEntitiesCount, &allAdded, &allEntityIdsPatched](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allAdded = IsEveryOtherEntityAReplacement(entities);
+            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(8, spawnedEntitiesCount);
         EXPECT_TRUE(allAdded);
+        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllAliasesWithMerge_SourceAndTargetComponentsMerged)
@@ -1158,7 +1256,8 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
+        constexpr bool requiresMatchingEntityIds = true;
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Merge,
@@ -1169,19 +1268,22 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allMerged = false;
-        auto callback = [&spawnedEntitiesCount, &allMerged](
+        bool allEntityIdsPatched = false;
+        auto callback = [&spawnedEntitiesCount, &allMerged, &allEntityIdsPatched](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allMerged = AreAllMerged(entities);
+            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
         m_manager->SpawnEntities(*m_ticket, AZStd::move(indices), AZStd::move(optionalArgs));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_EQ(4, spawnedEntitiesCount);
         EXPECT_TRUE(allMerged);
+        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     //
@@ -1194,7 +1296,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
             m_manager->DespawnAllEntities(ticket);
         }
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
 
@@ -1208,7 +1310,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
             m_manager->ReloadSpawnable(ticket, *m_spawnableAsset);
         }
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
 
@@ -1235,7 +1337,7 @@ namespace UnitTest
 
         m_manager->SpawnAllEntities(*m_ticket);
         m_manager->ListEntities(*m_ticket, AZStd::move(callback));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_TRUE(allValidEntityIds);
         EXPECT_EQ(NumEntities, spawnedEntitiesCount);
@@ -1249,7 +1351,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
             m_manager->ListEntities(ticket, AZStd::move(callback));
         }
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
 
@@ -1280,7 +1382,7 @@ namespace UnitTest
 
         m_manager->SpawnAllEntities(*m_ticket);
         m_manager->ListIndicesAndEntities(*m_ticket, AZStd::move(callback));
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_TRUE(allValidEntityIds);
         EXPECT_EQ(NumEntities, spawnedEntitiesCount);
@@ -1294,13 +1396,43 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
             m_manager->ListIndicesAndEntities(ticket, AZStd::move(callback));
         }
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
 
     //
     // ClaimEntities
     //
+
+    TEST_F(SpawnableEntitiesManagerTest, ClaimEntities_Call_AllEntitiesWereClaimedAndNotDeleted)
+    {
+        static constexpr size_t NumEntities = 4;
+        FillSpawnable(NumEntities);
+
+        AZStd::vector<AZ::Entity*> claimedEntities;
+        auto callback = [&claimedEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView container)
+        {
+            for (AZ::Entity* entity : container)
+            {
+                claimedEntities.push_back(entity);
+            }
+        };
+
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->SpawnAllEntities(ticket);
+            m_manager->ClaimEntities(ticket, AZStd::move(callback));
+            ProcessQueueTillEmtpy();
+        }
+
+        EXPECT_EQ(NumEntities, claimedEntities.size());
+
+        // If these calls fail it means that the ticket has still deleted the entities, so they weren't properly claimed.
+        for (AZ::Entity* entity : claimedEntities)
+        {
+            delete entity;
+        }
+    }
 
     TEST_F(SpawnableEntitiesManagerTest, ClaimEntities_DeleteTicketBeforeCall_NoCrash)
     {
@@ -1310,7 +1442,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
             m_manager->ClaimEntities(ticket, AZStd::move(callback));
         }
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
 
@@ -1326,7 +1458,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
             m_manager->Barrier(ticket, AZStd::move(callback));
         }
-        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
     }
 
 
@@ -1365,9 +1497,7 @@ namespace UnitTest
         highPriortyOptionalArgs.m_priority = AzFramework::SpawnablePriority_High;
         m_manager->SpawnAllEntities(highPriorityTicket, AZStd::move(highPriortyOptionalArgs));
 
-        m_manager->ProcessQueue(
-            AzFramework::SpawnableEntitiesManager::CommandQueuePriority::High |
-            AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessQueueTillEmtpy();
 
         EXPECT_LT(highPriorityCallId, defaultPriorityCallId);
     }

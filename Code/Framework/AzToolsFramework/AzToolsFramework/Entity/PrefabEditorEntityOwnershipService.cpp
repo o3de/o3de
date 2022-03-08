@@ -349,8 +349,12 @@ namespace AzToolsFramework
             instanceToParentUnder = *m_rootInstance;
         }
 
-        AZStd::unique_ptr<Prefab::Instance> instantiatedPrefabInstance =
-            m_prefabSystemComponent->InstantiatePrefab(filePath, instanceToParentUnder);
+        AZStd::unique_ptr<Prefab::Instance> instantiatedPrefabInstance = m_prefabSystemComponent->InstantiatePrefab(
+            filePath, instanceToParentUnder,
+            [this](const EntityList& entities)
+            {
+                HandleEntitiesAdded(entities);
+            });
 
         if (instantiatedPrefabInstance)
         {
@@ -415,8 +419,8 @@ namespace AzToolsFramework
         {
             // Construct the runtime entities and products
             bool readyToCreateRootSpawnable = m_playInEditorData.m_assetsCache.IsActivated();
-            if (!readyToCreateRootSpawnable &&
-                !m_playInEditorData.m_assetsCache.Activate(Prefab::PrefabConversionUtils::PlayInEditor))
+            if (!readyToCreateRootSpawnable && !m_playInEditorData.m_assetsCache.Activate(Prefab::PrefabConversionUtils::PlayInEditor))
+
             {
                 AZ_Error("Prefab", false, "Failed to create a prefab processing stack from key '%.*s'.", AZ_STRING_ARG(Prefab::PrefabConversionUtils::PlayInEditor));
                 return;
@@ -504,6 +508,70 @@ namespace AzToolsFramework
         }
 
         m_playInEditorData.m_isEnabled = false;
+    }
+
+    bool PrefabEditorEntityOwnershipService::IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const
+    {
+        return GetInstanceReferenceFromRootAliasPath(rootAliasPath) != AZStd::nullopt;
+    }
+
+    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetInstanceReferenceFromRootAliasPath(
+        Prefab::RootAliasPath rootAliasPath) const
+    {
+        Prefab::InstanceOptionalReference instance = *m_rootInstance;
+
+        for (const auto& pathElement : rootAliasPath)
+        {
+            if (pathElement.Native() == rootAliasPath.begin()->Native())
+            {
+                // If the root is not the root Instance, the rootAliasPath is invalid.
+                if (pathElement.Native() != instance->get().GetInstanceAlias())
+                {
+                    return Prefab::InstanceOptionalReference();
+                }
+            }
+            else
+            {
+                // If the instance alias can't be found, the rootAliasPath is invalid.
+                instance = instance->get().FindNestedInstance(pathElement.Native());
+                if (!instance.has_value())
+                {
+                    return Prefab::InstanceOptionalReference();
+                }
+            }
+        }
+
+        return instance;
+    }
+
+    bool PrefabEditorEntityOwnershipService::GetInstancesInRootAliasPath(
+        Prefab::RootAliasPath rootAliasPath, const AZStd::function<bool(const Prefab::InstanceOptionalReference)>& callback) const
+    {
+        if (!IsValidRootAliasPath(rootAliasPath))
+        {
+            return false;
+        }
+
+        Prefab::InstanceOptionalReference instance;
+
+        for (const auto& pathElement : rootAliasPath)
+        {
+            if (!instance.has_value())
+            {
+                instance = *m_rootInstance;
+            }
+            else
+            {
+                instance = instance->get().FindNestedInstance(pathElement.Native());
+            }
+
+            if(callback(instance))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //////////////////////////////////////////////////////////////////////////

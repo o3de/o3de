@@ -14,7 +14,6 @@
 // forward declarations.
 class CParticleItem;
 class CBaseObject;
-class CBaseLibraryItem;
 class CErrorRecord;
 class QString;
 
@@ -51,9 +50,6 @@ struct IErrorReport
 
     //! Assign current Object to which new reported warnings are assigned.
     virtual void SetCurrentValidatorObject(CBaseObject* pObject) = 0;
-
-    //! Assign current Item to which new reported warnings are assigned.
-    virtual void SetCurrentValidatorItem(CBaseLibraryItem* pItem) = 0;
 
     //! Assign current filename.
     virtual void SetCurrentFile(const QString& file) = 0;

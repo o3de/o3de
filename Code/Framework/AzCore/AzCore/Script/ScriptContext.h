@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_CONTEXT_H
-#define AZCORE_SCRIPT_CONTEXT_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/function/function_fwd.h>
@@ -212,6 +211,10 @@ namespace AZ
         {}        
 
         ~ScriptDataContext() { Reset(); }
+
+        //! Retrieve a string representing the current version of the interpreter.
+        //! Example of use: To signal incompatibility with previously emitted bytecode, to invalidate
+        static const char* GetInterpreterVersion();
 
         ScriptContext* GetScriptContext() const;
         lua_State* GetNativeContext() const { return m_nativeContext; }
@@ -797,7 +800,7 @@ namespace AZ
         // Note: Always use l over context->NativeContext(), as require may be called from a thread.
         using RequireHook = AZStd::function<int(lua_State* lua, ScriptContext* context, const char* module)>;
 
-        using StackVariableAllocator = StackVariableAllocator;
+        using StackVariableAllocator = AZ::StackVariableAllocator;
         /// Stack temporary memory
         
         /**
@@ -822,7 +825,7 @@ namespace AZ
             CustomFromLua m_fromLua;
         };
 
-        ScriptContext(ScriptContextId id = ScriptContextIds::DefaultScriptContextId, IAllocatorAllocate* allocator = nullptr, lua_State* nativeContext = nullptr);
+        ScriptContext(ScriptContextId id = ScriptContextIds::DefaultScriptContextId, IAllocator* allocator = nullptr, lua_State* nativeContext = nullptr);
         ~ScriptContext();
 
         /// Bind LUA context (VM) a specific behaviorContext
@@ -1032,4 +1035,3 @@ namespace AZ
     }
 
 } // namespace AZ
-#endif // AZCORE_SCRIPT_CONTEXT_H

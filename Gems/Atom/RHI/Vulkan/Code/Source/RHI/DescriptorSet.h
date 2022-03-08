@@ -13,7 +13,7 @@
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/Buffer.h>
 
@@ -57,10 +57,10 @@ namespace AZ
 
             void CommitUpdates();
 
-            void UpdateBufferViews(uint32_t index, const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufViews);
-            void UpdateImageViews(uint32_t index, const AZStd::array_view<RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType);
-            void UpdateSamplers(uint32_t index, const AZStd::array_view<RHI::SamplerState>& samplers);
-            void UpdateConstantData(AZStd::array_view<uint8_t> data);
+            void UpdateBufferViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufViews);
+            void UpdateImageViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType);
+            void UpdateSamplers(uint32_t index, const AZStd::span<const RHI::SamplerState>& samplers);
+            void UpdateConstantData(AZStd::span<const uint8_t> data);
 
             RHI::Ptr<BufferView> GetConstantDataBufferView() const;
 

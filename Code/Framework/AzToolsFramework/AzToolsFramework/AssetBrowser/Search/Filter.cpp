@@ -229,6 +229,11 @@ namespace AzToolsFramework
             Q_EMIT updatedSignal();
         }
 
+        QString StringFilter::GetFilterString() const
+        {
+            return m_filterString;
+        }
+
         QString StringFilter::GetNameInternal() const
         {
             return m_filterString;
@@ -255,11 +260,10 @@ namespace AzToolsFramework
         // RegExpFilter
         //////////////////////////////////////////////////////////////////////////
         RegExpFilter::RegExpFilter()
-            : m_filterPattern("")
         {
         }
 
-        void RegExpFilter::SetFilterPattern(const QString& filterPattern)
+        void RegExpFilter::SetFilterPattern(const QRegExp& filterPattern)
         {
             m_filterPattern = filterPattern;
             Q_EMIT updatedSignal();
@@ -267,22 +271,13 @@ namespace AzToolsFramework
 
         QString RegExpFilter::GetNameInternal() const
         {
-            return m_filterPattern;
+            return m_filterPattern.pattern();
         }
 
         bool RegExpFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            // no filter pattern matches any asset
-            if (m_filterPattern.isEmpty())
-            {
-                return true;
-            }
-
-            // entry's name matches regular expression pattern
-            QRegExp regExp(m_filterPattern);
-            regExp.setPatternSyntax(QRegExp::Wildcard);
-
-            return regExp.exactMatch(entry->GetDisplayName());
+            // entry's name matches regular expression pattern if specified
+            return m_filterPattern.isEmpty() || m_filterPattern.exactMatch(entry->GetDisplayName());
         }
 
         //////////////////////////////////////////////////////////////////////////

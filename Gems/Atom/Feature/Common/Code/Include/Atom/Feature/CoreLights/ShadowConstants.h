@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/TypeInfo.h>
 
 namespace AZ
 {
@@ -47,5 +48,5 @@ namespace AZ
     } // namespace Render
 
     AZ_TYPE_INFO_SPECIALIZE(Render::ShadowmapSize, "{3EC1CE83-483D-41FD-9909-D22B03E56F4E}");
-    
+
 } // namespace AZ

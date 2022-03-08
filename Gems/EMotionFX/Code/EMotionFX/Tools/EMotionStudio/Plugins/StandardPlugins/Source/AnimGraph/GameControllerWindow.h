@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_GAMECONTROLLERWINDOW_H
-#define __EMSTUDIO_GAMECONTROLLERWINDOW_H
+#pragma once
 
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
@@ -190,5 +189,3 @@ namespace EMStudio
         void AutoSelectGameController();
     };
 } // namespace EMStudio
-
-#endif

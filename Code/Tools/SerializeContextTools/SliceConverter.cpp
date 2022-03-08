@@ -79,10 +79,6 @@ namespace AZ
                 return false;
             }
 
-            // Load the asset catalog so that we can find any nested assets successfully.  We also need to tick the tick bus
-            // so that the OnCatalogLoaded event gets processed now, instead of during application shutdown.
-            application.Tick();
-
             AZStd::string logggingScratchBuffer;
             SetupLogging(logggingScratchBuffer, convertSettings.m_reporting, *commandLine);
 
@@ -557,7 +553,7 @@ namespace AZ
 
             // Create a new unmodified prefab Instance for the nested slice instance.
             auto nestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AZStd::move(instanceAlias));
-            AzToolsFramework::Prefab::Instance::EntityList newEntities;
+            AzToolsFramework::EntityList newEntities;
             if (!AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(
                     *nestedInstance, newEntities, nestedTemplate->get().GetPrefabDom()))
             {

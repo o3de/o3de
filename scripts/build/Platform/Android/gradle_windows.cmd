@@ -29,14 +29,36 @@ IF NOT "%ANDROID_GRADLE_PLUGIN%" == "" (
 
 IF NOT EXIST %OUTPUT_DIRECTORY% (
     mkdir %OUTPUT_DIRECTORY%
+) ELSE (
+    ECHO Clearing and reseting existing build folder
+    DEL /S /F /Q %OUTPUT_DIRECTORY%
+    RMDIR /S /Q %OUTPUT_DIRECTORY%
+    mkdir %OUTPUT_DIRECTORY%
 )
 
-REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
-SET TMP=%cd%/temp
-SET TEMP=%cd%/temp
-IF NOT EXIST %TMP% (
-    mkdir %TMP%
+REM Jenkins does not defined TMP
+IF "%TMP%"=="" (
+    IF "%WORKSPACE%"=="" (
+        SET TMP=%APPDATA%\Local\Temp
+        SET TEMP=%APPDATA%\Local\Temp
+    ) ELSE (
+        SET TMP=%WORKSPACE%\Temp
+        SET TEMP=%WORKSPACE%\Temp
+        REM This folder may not be created in the workspace
+        IF NOT EXIST "!TMP!" (
+            MKDIR "!TMP!"
+        )
+    )
 )
+
+REM Create a minimal project for the native build process
+IF EXIST "%TMP%\o3de_gradle_ar" (
+    DEL /S /F /Q "%TMP%\o3de_gradle_ar"
+    RMDIR /S /Q "%TMP%\o3de_gradle_ar"
+)
+ECHO Creating a minimal project for the native build process
+ECHO %PYTHON% scripts\o3de.py create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
+CALL %PYTHON% scripts\o3de.py create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
 
 REM Optionally sign the APK if we are generating an APK 
 SET GENERATE_SIGNED_APK=false
@@ -115,12 +137,14 @@ IF "%GENERATE_SIGNED_APK%"=="true" (
         ECHO Using keystore file at %CI_ANDROID_KEYSTORE_FILE_ABS%
     )
 
-    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build --android-sdk-path=%ANDROID_HOME% %ANDROID_GRADLE_PLUGIN_OPTION% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
-    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build --android-sdk-path=%ANDROID_HOME% %ANDROID_GRADLE_PLUGIN_OPTION% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
+    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build --android-sdk-path=%ANDROID_HOME% %ANDROID_GRADLE_PLUGIN_OPTION% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
+    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build --android-sdk-path=%ANDROID_HOME% %ANDROID_GRADLE_PLUGIN_OPTION% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
 ) ELSE (
-    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% %GRADLE_OVERRIDE_OPTION% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%ANDROID_HOME% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
-    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%ANDROID_HOME% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
+    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" %GRADLE_OVERRIDE_OPTION% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%ANDROID_HOME% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
+    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%ANDROID_HOME% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
 )
+
+SET CMAKE_BUILD_PARALLEL_LEVEL=!NUMBER_OF_PROCESSORS!
 
 REM Validate the android project generation
 IF %ERRORLEVEL%==0 GOTO generate_project_success
@@ -136,8 +160,8 @@ REM Stop any running or orphaned gradle daemon
 ECHO [ci_build] gradlew --stop
 CALL gradlew --stop
 
-ECHO [ci_build] gradlew --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION%
-CALL gradlew --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION%
+ECHO [ci_build] gradlew --info --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION% 
+CALL gradlew --info --no-daemon %GRADLE_BUILD_CMD%%CONFIGURATION%
 
 IF %ERRORLEVEL%==0 GOTO gradle_build_success
 

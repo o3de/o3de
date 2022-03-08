@@ -105,6 +105,7 @@ def Material_DefaultLibraryUpdatedAcrossLevels_after():
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.math as math
+    import ly_test_tools._internal.managers.abstract_resource_locator as arl
 
     # Constants
     FLOAT_THRESHOLD = 0.0001
@@ -205,7 +206,7 @@ def Material_DefaultLibraryUpdatedAcrossLevels_after():
         try:
             with open(
                 os.path.join(
-                    os.getcwd(), "AutomatedTesting", "Levels", "Physics", "Material_DefaultLibraryUpdatedAcrossLevels", "_last_run_before_change_data.txt"
+                    arl._find_engine_root(os.getcwd()), "AutomatedTesting", "Levels", "Physics", "Material_DefaultLibraryUpdatedAcrossLevels", "_last_run_before_change_data.txt"
                 )) as data_file:
                 lines = data_file.readlines()
                 for i, line in enumerate(lines):
@@ -229,8 +230,8 @@ def Material_DefaultLibraryUpdatedAcrossLevels_after():
     for test in test_list:
         # 1) Open the correct level is open
         helper.open_level(
-            "physics",
-            f"Material_DefaultLibraryUpdatedAcrossLevels\\{test.level}"
+            "Physics",
+            os.path.join("Material_DefaultLibraryUpdatedAcrossLevels", str(test.level))
         )
 
         # 2) Enter Game Mode
