@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <imgui/imgui.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/array.h>
@@ -266,16 +268,29 @@ namespace AZ
             // Update the saved pointers in m_tableRows according to new data/filters
             void UpdateTableRows();
 
-            void DrawTable();
+            void DrawTables();
 
             // Sort the table according to the appropriate column.
-            void SortTable(ImGuiTableSortSpecs* sortSpecs);
+            void SortPoolTable(ImGuiTableSortSpecs* sortSpecs);
+            void SortResourceTable(ImGuiTableSortSpecs* sortSpecs);
 
-            struct TableRow
+            struct PoolTableRow
+            {
+                Name m_poolName;
+
+                bool m_deviceHeap = false;
+                size_t m_budgetBytes = 0;
+                size_t m_reservedBytes = 0;
+                size_t m_residentBytes = 0;
+                float m_fragmentation = 0.f;
+            };
+
+            struct ResourceTableRow
             {
                 Name m_parentPoolName;
                 Name m_bufImgName;
                 size_t m_sizeInBytes = 0;
+                float m_fragmentation = 0.f;
                 AZStd::string m_bindFlags;
             };
 
@@ -286,7 +301,8 @@ namespace AZ
 
             ImGuiTextFilter m_nameFilter;
 
-            AZStd::vector<TableRow> m_tableRows;
+            AZStd::vector<PoolTableRow> m_poolTableRows;
+            AZStd::vector<ResourceTableRow> m_resourceTableRows;
             AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;
             AZStd::vector<AZ::RHI::MemoryStatistics::Heap> m_savedHeaps;
         };
@@ -325,4 +341,3 @@ namespace AZ
     } //namespace Render
 } // namespace AZ
 
-#include "ImGuiGpuProfiler.inl"

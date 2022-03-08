@@ -87,6 +87,10 @@ namespace Multiplayer
         void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) override;
         void HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain) override;
         void ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle) override;
+        void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
+        void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
+        const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override;
+        const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override;
         void SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs) override;
         void DebugDraw() const override;
         //! @}
@@ -110,6 +114,9 @@ namespace Multiplayer
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
         MultiplayerComponentRegistry m_multiplayerComponentRegistry;
+
+        AZStd::unordered_set<ConstNetworkEntityHandle> m_alwaysRelevantToClients;
+        AZStd::unordered_set<ConstNetworkEntityHandle> m_alwaysRelevantToServers;
 
         AZ::ScheduledEvent m_removeEntitiesEvent;
         AZStd::vector<NetEntityId> m_removeList;

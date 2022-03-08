@@ -39,7 +39,7 @@ namespace AtomToolsFramework
                 ->Event("SaveAsCopy", &AtomToolsDocumentRequestBus::Events::SaveAsCopy)
                 ->Event("IsOpen", &AtomToolsDocumentRequestBus::Events::IsOpen)
                 ->Event("IsModified", &AtomToolsDocumentRequestBus::Events::IsModified)
-                ->Event("IsSavable", &AtomToolsDocumentRequestBus::Events::IsSavable)
+                ->Event("CanSave", &AtomToolsDocumentRequestBus::Events::CanSave)
                 ->Event("CanUndo", &AtomToolsDocumentRequestBus::Events::CanUndo)
                 ->Event("CanRedo", &AtomToolsDocumentRequestBus::Events::CanRedo)
                 ->Event("Undo", &AtomToolsDocumentRequestBus::Events::Undo)
@@ -64,23 +64,32 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
     }
 
+    DocumentTypeInfo AtomToolsDocument::BuildDocumentTypeInfo()
+    {
+        return AtomToolsDocumentRequestBus::Handler::BuildDocumentTypeInfo();
+    }
+
+    DocumentTypeInfo AtomToolsDocument::GetDocumentTypeInfo() const
+    {
+        return BuildDocumentTypeInfo();
+    }
+
+    DocumentObjectInfoVector AtomToolsDocument::GetObjectInfo() const
+    {
+        return DocumentObjectInfoVector();
+    }
+
     const AZ::Uuid& AtomToolsDocument::GetId() const
     {
         return m_id;
     }
 
-    AZStd::string_view AtomToolsDocument::GetAbsolutePath() const
+    const AZStd::string& AtomToolsDocument::GetAbsolutePath() const
     {
         return m_absolutePath;
     }
 
-    AZStd::vector<DocumentObjectInfo> AtomToolsDocument::GetObjectInfo() const
-    {
-        AZ_Warning("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return AZStd::vector<DocumentObjectInfo>();
-    }
-
-    bool AtomToolsDocument::Open(AZStd::string_view loadPath)
+    bool AtomToolsDocument::Open(const AZStd::string& loadPath)
     {
         Clear();
 
@@ -94,6 +103,12 @@ namespace AtomToolsFramework
         if (AzFramework::StringFunc::Path::IsRelative(m_absolutePath.c_str()))
         {
             AZ_Error("AtomToolsDocument", false, "Document path must be absolute: '%s'.", m_absolutePath.c_str());
+            return OpenFailed();
+        }
+
+        if (!GetDocumentTypeInfo().IsSupportedExtensionToOpen(m_absolutePath))
+        {
+            AZ_Error("AtomToolsDocument", false, "Document path extension is not supported: '%s'.", m_absolutePath.c_str());
             return OpenFailed();
         }
 
@@ -127,6 +142,18 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::Save()
     {
+        if (!IsOpen())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
+        if (!CanSave())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
         m_savePathNormalized = m_absolutePath;
         if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
         {
@@ -134,23 +161,35 @@ namespace AtomToolsFramework
             return SaveFailed();
         }
 
-        if (!IsOpen())
+        if (AzFramework::StringFunc::Path::IsRelative(m_savePathNormalized.c_str()))
         {
-            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document save path must be absolute: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
-        if (!IsSavable())
+        if (!GetDocumentTypeInfo().IsSupportedExtensionToSave(m_savePathNormalized))
         {
-            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document save path extension is not supported: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
         return true;
     }
 
-    bool AtomToolsDocument::SaveAsCopy(AZStd::string_view savePath)
+    bool AtomToolsDocument::SaveAsCopy(const AZStd::string& savePath)
     {
+        if (!IsOpen())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
+        if (!CanSave())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
         m_savePathNormalized = savePath;
         if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
         {
@@ -158,23 +197,29 @@ namespace AtomToolsFramework
             return SaveFailed();
         }
 
-        if (!IsOpen())
+        if (AzFramework::StringFunc::Path::IsRelative(m_savePathNormalized.c_str()))
         {
-            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document save path must be absolute: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
-        if (!IsSavable())
+        if (!GetDocumentTypeInfo().IsSupportedExtensionToSave(m_savePathNormalized))
         {
-            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document save path extension is not supported: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
         return true;
     }
 
-    bool AtomToolsDocument::SaveAsChild(AZStd::string_view savePath)
+    bool AtomToolsDocument::SaveAsChild(const AZStd::string& savePath)
     {
+        if (!IsOpen())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
         m_savePathNormalized = savePath;
         if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
         {
@@ -182,9 +227,15 @@ namespace AtomToolsFramework
             return SaveFailed();
         }
 
-        if (!IsOpen())
+        if (AzFramework::StringFunc::Path::IsRelative(m_savePathNormalized.c_str()))
         {
-            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document save path must be absolute: '%s'.", m_savePathNormalized.c_str());
+            return SaveFailed();
+        }
+
+        if (!GetDocumentTypeInfo().IsSupportedExtensionToSave(m_savePathNormalized))
+        {
+            AZ_Error("AtomToolsDocument", false, "Document save path extension is not supported: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
@@ -225,9 +276,9 @@ namespace AtomToolsFramework
         return false;
     }
 
-    bool AtomToolsDocument::IsSavable() const
+    bool AtomToolsDocument::CanSave() const
     {
-        return false;
+        return IsOpen() && GetDocumentTypeInfo().IsSupportedExtensionToSave(m_absolutePath);
     }
 
     bool AtomToolsDocument::CanUndo() const

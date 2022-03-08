@@ -6,32 +6,17 @@
  *
  */
 
-#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <AtomToolsFramework/CreateDocumentDialog/CreateDocumentDialog.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AzCore/Utils/Utils.h>
-#include <Document/MaterialDocumentRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/MaterialEditorWindow.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
-#include <QByteArray>
-#include <QCloseEvent>
-#include <QDesktopServices>
-#include <QFileDialog>
 #include <QMessageBox>
-#include <QStatusBar>
-#include <QUrl>
 #include <QWindow>
-AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
 {
@@ -51,21 +36,6 @@ namespace MaterialEditor
 
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
-        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
-            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
-            {
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                    m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
-                return;
-            }
-
-            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
-            {
-                return;
-            }
-
-            QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
-        });
 
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/MaterialInspector");
@@ -122,40 +92,6 @@ namespace MaterialEditor
     void MaterialEditorWindow::UnlockViewportRenderTargetSize()
     {
         m_materialViewport->UnlockRenderTargetSize();
-    }
-
-    bool MaterialEditorWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
-    {
-        AtomToolsFramework::CreateDocumentDialog createDialog(
-            tr("Create Material"),
-            tr("Select Material Type"),
-            tr("Select Material Path"),
-            QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets",
-            { AZ::RPI::MaterialSourceData::Extension },
-            AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
-                "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
-                AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype")),
-            [](const AZ::Data::AssetInfo& assetInfo) {
-                return AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".azmaterialtype"); },
-            this);
-        createDialog.adjustSize();
-
-        if (createDialog.exec() == QDialog::Accepted &&
-            !createDialog.m_targetPath.isEmpty() &&
-            !createDialog.m_sourcePath.isEmpty())
-        {
-            savePath = createDialog.m_targetPath.toUtf8().constData();
-            openPath = createDialog.m_sourcePath.toUtf8().constData();
-            return true;
-        }
-        return false;
-    }
-
-    bool MaterialEditorWindow::GetOpenDocumentParams(AZStd::string& openPath)
-    {
-        const AZStd::vector<AZ::Data::AssetType> assetTypes = { azrtti_typeid<AZ::RPI::MaterialAsset>() };
-        openPath = AtomToolsFramework::GetOpenFileInfo(assetTypes).absoluteFilePath().toUtf8().constData();
-        return !openPath.empty();
     }
 
     void MaterialEditorWindow::OpenSettings()
