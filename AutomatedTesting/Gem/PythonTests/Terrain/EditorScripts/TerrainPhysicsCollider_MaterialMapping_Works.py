@@ -55,7 +55,7 @@ def TerrainPhysicsCollider_MaterialMapping_Works():
     rubber_distance = rubber_finish.GetDistance(rubber_start)
 
     # Report results on distance traveled and validate that the Cube on the glass surface travels further
-    expected_glass_distance = 7.0
+    expected_glass_distance = 5.0
     expected_rubber_distance = 2.0
     material_interaction = (
         f"PhysicsCube_Glass moved {glass_distance:.3f}m, to PhysicsCube_Rubber's {rubber_distance:.3f}m",
