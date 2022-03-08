@@ -557,7 +557,7 @@ namespace AZ::Render
                         EMotionFX::MorphSetupInstance::MorphTarget* morphTargetSetupInstance = m_actorInstance->GetMorphSetupInstance()->FindMorphTargetByID(morphTargetStandard->GetID());
 
                         // Each morph target is split into several deform datas, all of which share the same weight but have unique min/max delta values
-                        // and thus correspond with unique dispatches in the morph target pass
+                        // and impact a unique mesh and thus correspond with unique dispatches in the morph target pass
                         for (size_t deformDataIndex = 0; deformDataIndex < morphTargetStandard->GetNumDeformDatas(); ++deformDataIndex)
                         {
                             // Morph targets that don't deform any vertices (e.g. joint-based morph targets) are not registered in the render proxy. Skip adding their weights.

@@ -45,7 +45,7 @@ namespace AZ
 
             //! Offsets into the output stream buffer to a location that contains accumulated morph target deltas from the morph pass. One offset per-lod.
             //! Set to MorphTargetConstants::s_invalidDeltaOffset if there are no morph targets for the lod
-            AZStd::vector<MorphTargetInstanceMetaData> m_morphTargetInstanceMetaData;
+            AZStd::vector<AZStd::vector<MorphTargetInstanceMetaData>> m_morphTargetInstanceMetaData;
 
             //! Typically, when a SkinnedMeshInstance goes out of scope and the memory is freed, the SkinnedMeshOutputStreamManager will signal an event indicating more memory is available
             //! If the creation of a SkinnedMeshInstance fails part way through after some memory has already been allocated,

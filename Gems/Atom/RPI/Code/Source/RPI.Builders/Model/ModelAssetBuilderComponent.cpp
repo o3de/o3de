@@ -104,7 +104,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(31);  // [ATOM-14975]
+                    ->Version(32);  // Updating morph targets to be per-mesh instead of per-lod
             }
         }
 
@@ -639,7 +639,16 @@ namespace AZ
                 m_skinWeightThreshold = skinRule->GetWeightThreshold();
             }
 
-            uint32_t totalVertexCount = 0;
+            
+            // Keep track of the order of sub-meshes for morph targets.
+            // We cannot re-order sub-meshes after this unless we also update the morph target data
+            // This is because one morph target may impact multiple sub-meshes, and there may be
+            // multiple product sub-meshes for each source mesh, so a given morph target may be
+            // split into multiple dispatches, and we use this index to track which mesh is associated
+            // with which dispatch
+            uint32_t productMeshIndex = 0;
+            
+            // Once per source-mesh, since productList is 1-1 with source mesh
             for (size_t i = 0; i < productList.size(); ++i)
             {
                 const FacesByMaterialUid& productsByMaterialUid = productList[i];
@@ -654,9 +663,9 @@ namespace AZ
                 const size_t uvSetCount = uvContentCollection.size();
                 const auto& colorContentCollection = sourceMesh.m_meshColorData;
                 const size_t colorSetCount = colorContentCollection.size();
-                bool processedMorphTargets = false;
                 bool warnedExcessOfSkinInfluences = false;
 
+                uint32_t totalVertexCountForThisSourceMesh = 0;
                 for (const auto& it : productsByMaterialUid)
                 {
                     ProductMeshContent productMesh;
@@ -868,19 +877,24 @@ namespace AZ
                             // Warn about excess of skin influences once per-source mesh.
                             GatherVertexSkinningInfluences(sourceMesh, productMesh, jointNameToIndexMap, oldIndex, warnedExcessOfSkinInfluences);
                         }
-                    }
+                    }// for each vertex in old to new indices
 
-                    if(!processedMorphTargets)
-                    {
-                        // Gather morph targets once per-source mesh.
-                        morphTargetExporter.ProduceMorphTargets(context.m_scene, totalVertexCount, sourceMesh, productMesh, morphTargetMetaCreator, context.m_coordSysConverter);
-                        processedMorphTargets = true;
-                    }
+                    // A morph target that only influenced one source mesh might be split over multiple product meshes
+                    // if the source mesh had multiple materials and was split up.
+                    // So here, we need to know the start and end indices of the current product mesh within the original source
+                    // mesh, so that when we process a morph target on the source mesh, we can ignore it if it doesn't impact the
+                    // current product mesh and we can include it if it does. Furthermore, this leads to a 1:N relationship between
+                    // morph target animations and actual morph target dispatches
+                    morphTargetExporter.ProduceMorphTargets(
+                        productMeshIndex, totalVertexCountForThisSourceMesh, oldToNewIndices, context.m_scene, sourceMesh, productMesh,
+                        morphTargetMetaCreator, context.m_coordSysConverter);
+                    productMeshIndex++;
+                    totalVertexCountForThisSourceMesh += static_cast<uint32_t>(vertexCount);
 
-                    totalVertexCount += static_cast<uint32_t>(vertexCount);
                     productMeshList.emplace_back(productMesh);
-                }
-            }
+
+                }// for each product mesh in productsByMaterialUid
+            }// for each product in productList (for each source mesh)
 
             return productMeshList;
         }

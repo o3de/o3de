@@ -130,11 +130,17 @@ namespace AZ
             }
         }
         
-        static void ProcessMorphsForLod(const EMotionFX::Actor* actor, [[maybe_unused]]const Data::Asset<RPI::BufferAsset>& morphBufferAsset, uint32_t lodIndex, const AZStd::string& fullFileName, [[maybe_unused]]const SkinnedMeshInputLod& skinnedMeshLod)
+        static void ProcessMorphsForLod(
+            uint32_t lodIndex,
+            const EMotionFX::Actor* actor,
+            const AZStd::string& fullFileName,
+            AZStd::intrusive_ptr<SkinnedMeshInputBuffers> skinnedMeshInputBuffers)
         {
             EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodIndex);
             if (morphSetup)
             {
+                const auto& modelLodAsset = skinnedMeshInputBuffers->GetLod(lodIndex).GetModelLodAsset();
+
                 AZ_Assert(actor->GetMorphTargetMetaAsset().IsReady(), "Trying to create morph targets from actor '%s', but the MorphTargetMetaAsset isn't loaded.", actor->GetName());
                 const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = actor->GetMorphTargetMetaAsset()->GetMorphTargets();
 
@@ -145,7 +151,8 @@ namespace AZ
                     EMotionFX::MorphTargetStandard* morphTarget = static_cast<EMotionFX::MorphTargetStandard*>(morphSetup->GetMorphTarget(morphTargetIndex));
                     for (const auto& metaData : metaDatas)
                     {
-                        // Loop through the metadatas to find the one that corresponds with the current morph target
+                        // Loop through the metadatas to find any that correspond with the current morph target.
+                        // There may be more than one, since a single morph target may be distributed across multiple meshes.
                         // This ensures the order stays in sync with the order in the MorphSetup,
                         // so that the correct weights are applied to the correct morphs later
                         // Skip any that don't modify any vertices
@@ -154,10 +161,16 @@ namespace AZ
                             // The skinned mesh lod gets a unique morph for each meta, since each one has unique min/max delta values to use for decompression
                             const AZStd::string morphString = AZStd::string::format("%s_Lod%zu_Morph_%s", fullFileName.c_str(), lodIndex, metaData.m_meshNodeName.c_str());
 
-                            [[maybe_unused]]float minWeight = morphTarget->GetRangeMin();
-                            [[maybe_unused]]float maxWeight = morphTarget->GetRangeMax();
+                            float minWeight = morphTarget->GetRangeMin();
+                            float maxWeight = morphTarget->GetRangeMax();
 
-                            //skinnedMeshLod.AddMorphTarget(metaData, morphBufferAsset, morphString, minWeight, maxWeight);
+                            const auto& modelLodMesh = modelLodAsset->GetMeshes()[metaData.m_meshIndex];
+
+                            const RPI::BufferAssetView* morphBufferAssetView =
+                                modelLodMesh.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
+
+                            skinnedMeshInputBuffers->AddMorphTarget(
+                                lodIndex, metaData, morphBufferAssetView, morphString, minWeight, maxWeight);
                         }
                     }
                 }
@@ -247,7 +260,6 @@ namespace AZ
 
                 const RPI::BufferAssetView* jointIndicesBufferView = nullptr;
                 const RPI::BufferAssetView* skinWeightsBufferView = nullptr;
-                const RPI::BufferAssetView* morphBufferAssetView = nullptr;
 
                 for (const auto& modelLodMesh : modelLodAsset->GetMeshes())
                 {
@@ -263,12 +275,6 @@ namespace AZ
                             AZ_Error("CreateSkinnedMeshInputFromActor", skinWeightsBufferView, "Mesh '%s' on actor '%s' has joint indices but no joint weights", modelLodMesh.GetName().GetCStr(), fullFileName.c_str());
                             break;
                         }
-                    }
-
-                    // If the morph target buffer hasn't been found on a mesh yet, keep looking
-                    if (!morphBufferAssetView)
-                    {
-                        morphBufferAssetView = modelLodMesh.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
                     }
                 }
 
@@ -299,12 +305,10 @@ namespace AZ
                     }
                 }
 
-                if (morphBufferAssetView)
-                {
-                    ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), static_cast<uint32_t>(lodIndex), fullFileName, skinnedMeshLod);
-                }
+                ProcessMorphsForLod(lodIndex, actor, fullFileName, skinnedMeshInputBuffers);
             } // for all lods
 
+            skinnedMeshInputBuffers->Finalize();
             return skinnedMeshInputBuffers;
         }
 
