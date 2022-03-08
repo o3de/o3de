@@ -462,7 +462,10 @@ class AtomComponentProperties:
         Material component properties. Requires one of Actor OR Mesh component.
           - 'requires' a list of component names as strings required by this component.
             Only one of these is required at a time for this component.\n
-          - 'Material Asset': the material Asset.id of the material.
+          - 'Material Asset': the default material Asset.id. Overrides all Model and LOD materials.
+          - 'Enable LOD Materials' toggles the use of LOD Materials.
+          - 'Lod Materials' container property for specified LOD materials. (list of EditorMaterialComponentSlot)
+          - 'Model Materials' container property of materials included with model. (EditorMaterialComponentSlot)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -470,6 +473,9 @@ class AtomComponentProperties:
             'name': 'Material',
             'requires': [AtomComponentProperties.actor(), AtomComponentProperties.mesh()],
             'Material Asset': 'Default Material|Material Asset',
+            'Enable LOD Materials': 'Enable LOD Materials',
+            'LOD Materials': 'LOD Materials',
+            'Model Materials': 'Model Materials',
         }
         return properties[property]
 
