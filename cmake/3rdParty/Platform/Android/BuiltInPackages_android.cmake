@@ -17,7 +17,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS gla
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev4-android         TARGETS TIFF            PACKAGE_HASH 2c62cdf34a8ee6c7eb091d05d98f60b4da7634c74054d4dbb8736886182f4589)
-ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-android         TARGETS freetype        PACKAGE_HASH df9e4d559ea0f03b0666b48c79813b1cd4d9624429148a249865de9f5c2c11cd)
+ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-android       TARGETS Freetype        PACKAGE_HASH 31cd0411425f3d69064849190c3cafb09fc3cdd64507f40bf49342630d76f861)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev1-android   TARGETS AWSNativeSDK    PACKAGE_HASH 33771499f9080cbaab613459927e52911e68f94fa356397885e85005efbd1490)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-android             TARGETS Lua             PACKAGE_HASH 2adda1831577336454090f249baf09519f41bb73160cd1d5b5b33564729af4a2)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-android  TARGETS PhysX           PACKAGE_HASH b346e8f9bc55f367a97d781d94c8a5c3bff8059478b8a7007e5fd17708dc1d07)
