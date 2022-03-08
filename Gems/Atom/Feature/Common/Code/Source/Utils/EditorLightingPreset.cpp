@@ -107,7 +107,6 @@ namespace AZ
                         "LightingPreset", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_displayName, "Display Name", "Identifier used for display and selection")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_iblDiffuseImageAsset, "IBL Diffuse Image Asset", "IBL diffuse image asset reference")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_iblSpecularImageAsset, "IBL Specular Image Asset", "IBL specular image asset reference")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &LightingPreset::m_iblExposure, "IBL exposure", "IBL exposure")

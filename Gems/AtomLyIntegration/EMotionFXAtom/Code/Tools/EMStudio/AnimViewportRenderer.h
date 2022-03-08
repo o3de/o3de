@@ -59,6 +59,12 @@ namespace EMStudio
         AZ::EntityId GetEntityId() const;
         AzFramework::EntityContextId GetEntityContextId() const;
 
+        //! Moves the groundplane along with the character.
+        void UpdateGroundplane();
+
+        //! Apply the identity transform to the actor entities.
+        void MoveActorEntitiesToOrigin();
+
     private:
 
         // This function resets the light, camera and other environment settings.
@@ -91,6 +97,7 @@ namespace EMStudio
         const RenderOptions* m_renderOptions;
 
         const float DefaultFrustumDimension = 128.0f;
+        const float TileSize = 1.0f;
         AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> m_lightHandles;
     };
 }

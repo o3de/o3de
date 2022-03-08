@@ -17,12 +17,9 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#include <Viewport/MaterialViewportNotificationBus.h>
-
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QWidget>
-AZ_POP_DISABLE_WARNING
+#include <Viewport/MaterialViewportSettingsNotificationBus.h>
 #endif
 
 namespace AZ
@@ -42,18 +39,15 @@ namespace AZ
     } // namespace RPI
 } // namespace AZ
 
-namespace Ui
-{
-    class MaterialViewportWidget;
-}
-
 namespace MaterialEditor
 {
+    class MaterialViewportRequests;
+
     class MaterialViewportWidget
         : public AtomToolsFramework::RenderViewportWidget
         , public AZ::Data::AssetBus::Handler
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
-        , public MaterialViewportNotificationBus::Handler
+        , public MaterialViewportSettingsNotificationBus::Handler
         , public AZ::TransformNotificationBus::MultiHandler
     {
     public:
@@ -65,37 +59,37 @@ namespace MaterialEditor
         void DestroyEntity(AZ::Entity*& entity);
         void SetupInputController();
 
-        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler interface overrides...
+        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
-        // MaterialViewportNotificationBus::Handler interface overrides...
-        void OnLightingPresetSelected(AZ::Render::LightingPresetPtr preset) override;
-        void OnLightingPresetChanged(AZ::Render::LightingPresetPtr preset) override;
-        void OnModelPresetSelected(AZ::Render::ModelPresetPtr preset) override;
-        void OnModelPresetChanged(AZ::Render::ModelPresetPtr preset) override;
-        void OnShadowCatcherEnabledChanged(bool enable) override;
-        void OnGridEnabledChanged(bool enable) override;
-        void OnAlternateSkyboxEnabledChanged(bool enable) override;
-        void OnFieldOfViewChanged(float fieldOfView) override;
-        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
+        // MaterialViewportSettingsNotificationBus::Handler overrides...
+        void OnViewportSettingsChanged() override;
 
-        // AZ::Data::AssetBus::Handler interface overrides...
+        // AZ::Data::AssetBus::Handler overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
-        // AZ::TickBus::Handler interface overrides...
+        // AZ::TickBus::Handler overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // AZ::TransformNotificationBus::MultiHandler overrides...
         void OnTransformChanged(const AZ::Transform&, const AZ::Transform&) override;
 
+        void UpdateLighting(MaterialViewportRequests* viewportRequests);
+        void UpdateModel(MaterialViewportRequests* viewportRequests);
+        void UpdateGrid(MaterialViewportRequests* viewportRequests);
+
         const AZ::Crc32 m_toolId = {};
 
         using DirectionalLightHandle = AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle;
 
-        AZ::Data::Instance<AZ::RPI::SwapChainPass> m_swapChainPass;
-        AZStd::string m_defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
-        AZ::RPI::RenderPipelinePtr m_renderPipeline;
+        AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
+
         AZ::RPI::ScenePtr m_scene;
+        AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
+        AZ::RPI::RenderPipelinePtr m_renderPipeline;
+        AZ::Data::Instance<AZ::RPI::SwapChainPass> m_swapChainPass;
+        AZStd::string m_mainPipelineAssetPath = "passes/MainRenderPipeline.azasset";
+
         AZ::Render::DirectionalLightFeatureProcessorInterface* m_directionalLightFeatureProcessor = {};
         AZ::Render::DisplayMapperFeatureProcessorInterface* m_displayMapperFeatureProcessor = {};
 
@@ -103,7 +97,7 @@ namespace MaterialEditor
         AZ::Entity* m_postProcessEntity = {};
 
         AZ::Entity* m_modelEntity = {};
-        AZ::Data::AssetId m_modelAssetId;
+        AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
 
         AZ::Entity* m_gridEntity = {};
 
@@ -117,7 +111,5 @@ namespace MaterialEditor
         AZ::Render::SkyBoxFeatureProcessorInterface* m_skyboxFeatureProcessor = {};
 
         AZStd::shared_ptr<AtomToolsFramework::ViewportInputBehaviorController> m_viewportController;
-
-        QScopedPointer<Ui::MaterialViewportWidget> m_ui;
     };
 } // namespace MaterialEditor

@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Color.h>
 #include <AzFramework/Font/FontInterface.h>
+#include <AzFramework/Physics/DebugDraw/CharacterPhysicsDebugDraw.h>
 #include <Integration/Rendering/RenderFlag.h>
 #include <Integration/Rendering/RenderActorInstance.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -55,8 +56,12 @@ namespace AZ::Render
             const AZ::Color& meshAabbColor,
             bool enableStaticAabb,
             const AZ::Color& staticAabbColor);
-        void RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
-        void RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
+        void RenderLineSkeleton(AzFramework::DebugDisplayRequests* debugDisplay,
+            EMotionFX::ActorInstance* instance,
+            const AZ::Color& skeletonColor) const;
+        void RenderSkeleton(AzFramework::DebugDisplayRequests* debugDisplay,
+            EMotionFX::ActorInstance* instance,
+            const AZ::Color& color);
         void RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance);
         void RenderNormals(
             EMotionFX::Mesh* mesh,
@@ -71,8 +76,8 @@ namespace AZ::Render
         void RenderTangents(
             EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float tangentsScale, float scaleMultiplier,
             const AZ::Color& tangentsColor, const AZ::Color& mirroredBitangentsColor, const AZ::Color& bitangentsColor);
-        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier,
-            const AZ::Color& wireframeColor);
+        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM,
+            float scale, const AZ::Color& color);
         void RenderJointNames(EMotionFX::ActorInstance* actorInstance, RPI::ViewportContextPtr viewportContext, const AZ::Color& jointNameColor);
         void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, AzFramework::DebugDisplayRequests* debugDisplay, float scale = 1.0f);
         void RenderLineAxis(
@@ -81,37 +86,6 @@ namespace AZ::Render
             float size,                 //!< The size value in units is used to control the scaling of the axis. */
             bool selected,              //!< Set to true if you want to render the axis using the selection color. */
             bool renderAxisName = false);
-
-        void RenderColliders(AzFramework::DebugDisplayRequests* debugDisplay,
-            const AzPhysics::ShapeColliderPairList& colliders,
-            const EMotionFX::ActorInstance* actorInstance,
-            const EMotionFX::Node* node,
-            const AZ::Color& colliderColor) const;
-
-        void RenderColliders(AzFramework::DebugDisplayRequests* debugDisplay,
-            EMotionFX::PhysicsSetup::ColliderConfigType colliderConfigType,
-            EMotionFX::ActorInstance* actorInstance,
-            const AZ::Color& defaultColor,
-            const AZ::Color& selectedColor) const;
-
-        void RenderJointFrame(AzFramework::DebugDisplayRequests* debugDisplay,
-            const AzPhysics::JointConfiguration& configuration,
-            const EMotionFX::ActorInstance* actorInstance,
-            const EMotionFX::Node* node,
-            const AZ::Color& color) const;
-
-        // Ragdoll
-        void RenderJointLimit(AzFramework::DebugDisplayRequests* debugDisplay,
-            const AzPhysics::JointConfiguration& configuration,
-            const EMotionFX::ActorInstance* actorInstance,
-            const EMotionFX::Node* node,
-            const EMotionFX::Node* parentNode,
-            const AZ::Color& regularColor,
-            const AZ::Color& violatedColor);
-        void RenderRagdoll(AzFramework::DebugDisplayRequests* debugDisplay,
-            EMotionFX::ActorInstance* actorInstance,
-            bool renderColliders,
-            bool renderJointLimits);
 
         EMotionFX::Mesh* m_currentMesh = nullptr; //!< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                                   //!< NULL in case we haven't pre-calculated any positions yet.
@@ -127,21 +101,7 @@ namespace AZ::Render
         AZStd::vector<AZ::Color> m_auxColors;
         EntityId m_entityId;
 
-        // Joint limits
-        static constexpr float s_scale = 0.1f;
-        static constexpr AZ::u32 s_angularSubdivisions = 32;
-        static constexpr AZ::u32 s_radialSubdivisions = 2;
-
-        struct JointLimitRenderData
-        {
-            AZStd::vector<AZ::Vector3>  m_vertexBuffer;
-            AZStd::vector<AZ::u32>      m_indexBuffer;
-            AZStd::vector<AZ::Vector3>  m_lineBuffer;
-            AZStd::vector<bool>         m_lineValidityBuffer;
-
-            void Clear();
-        };
-        JointLimitRenderData m_jointLimitRenderData;
+        Physics::CharacterPhysicsDebugDraw m_characterPhysicsDebugDraw;
 
         AzFramework::TextDrawParameters m_drawParams;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;

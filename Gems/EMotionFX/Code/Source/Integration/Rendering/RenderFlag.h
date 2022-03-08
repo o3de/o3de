@@ -75,6 +75,14 @@ namespace EMotionFX
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ActorRenderFlags);
 
+    static constexpr ActorRenderFlags s_requireUpdateTransforms = 
+        ActorRenderFlags::Solid | ActorRenderFlags::Wireframe | ActorRenderFlags::AABB |
+        ActorRenderFlags::FaceNormals |ActorRenderFlags::VertexNormals | ActorRenderFlags::Tangents |
+        ActorRenderFlags::Skeleton | ActorRenderFlags::LineSkeleton | ActorRenderFlags::NodeOrientation | ActorRenderFlags::NodeNames |
+        ActorRenderFlags::RagdollColliders | ActorRenderFlags::RagdollJointLimits | ActorRenderFlags::HitDetectionColliders |
+        ActorRenderFlags::ClothColliders | ActorRenderFlags::SimulatedObjectColliders | ActorRenderFlags::SimulatedJoints |
+        ActorRenderFlags::EmfxDebug;
+
     class ActorRenderFlagUtil
     {
     public:

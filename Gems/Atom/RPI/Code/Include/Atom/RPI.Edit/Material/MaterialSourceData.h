@@ -16,6 +16,7 @@
 #include <AzCore/JSON/document.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 
 namespace AZ
@@ -48,6 +49,9 @@ namespace AZ
             static constexpr const char Extension[] = "material";
 
             static void Reflect(ReflectContext* context);
+            
+            //! Creates a MaterialSourceData object that includes the default values for every possible property in the material type.
+            static MaterialSourceData CreateAllPropertyDefaultsMaterial(const Data::Asset<MaterialTypeAsset>& materialType, const AZStd::string& materialTypeSourcePath);
 
             MaterialSourceData() = default;
             
@@ -57,7 +61,7 @@ namespace AZ
             
             AZStd::string m_parentMaterial; //!< The immediate parent of this material
 
-            uint32_t m_materialTypeVersion = 0; //!< The version of the material type that was used to configure this material
+            uint32_t m_materialTypeVersion = MaterialAsset::UnspecifiedMaterialTypeVersion; //!< The version of the material type that was used to configure this material
 
             enum class ApplyVersionUpdatesResult
             {

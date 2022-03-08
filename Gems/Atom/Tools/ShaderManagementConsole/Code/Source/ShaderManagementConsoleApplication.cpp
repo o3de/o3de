@@ -50,6 +50,7 @@ namespace ShaderManagementConsole
     {
         InitShaderManagementConsoleResources();
 
+        QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Shader Management Console");
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -64,21 +65,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleApplication::Reflect(AZ::ReflectContext* context)
     {
         Base::Reflect(context);
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<ShaderManagementConsoleDocumentRequestBus>("ShaderManagementConsoleDocumentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "shadermanagementconsole")
-                ->Event("SetShaderVariantListSourceData", &ShaderManagementConsoleDocumentRequestBus::Events::SetShaderVariantListSourceData)
-                ->Event("GetShaderVariantListSourceData", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData)
-                ->Event("GetShaderOptionCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionCount)
-                ->Event("GetShaderOptionDescriptor", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor)
-                ->Event("GetShaderVariantCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantCount)
-                ->Event("GetShaderVariantInfo", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantInfo)
-                ;
-        }
+        ShaderManagementConsoleDocument::Reflect(context);
     }
 
     const char* ShaderManagementConsoleApplication::GetCurrentConfigurationName() const
@@ -101,6 +88,7 @@ namespace ShaderManagementConsole
             [](const AZ::Crc32& toolId) { return aznew ShaderManagementConsoleDocument(toolId); });
 
         m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
+        m_window->show();
 
         m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
 

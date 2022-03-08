@@ -93,7 +93,6 @@ namespace LmbrCentral
 
         m_cachedUniformScaleTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(m_cachedUniformScaleTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
-        m_cachedUniformScaleTransform = AzToolsFramework::TransformUniformScale(m_cachedUniformScaleTransform);
 
         // placeholder - create initial spline if empty
         AZ::VertexContainer<AZ::Vector3>& vertexContainer = m_splineCommon.m_spline->m_vertexContainer;
@@ -374,7 +373,7 @@ namespace LmbrCentral
 
     void EditorSplineComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_cachedUniformScaleTransform = AzToolsFramework::TransformUniformScale(world);
+        m_cachedUniformScaleTransform = world;
     }
 
     void EditorSplineComponent::OnChangeSplineType()

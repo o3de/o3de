@@ -28,7 +28,6 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ModelPreset, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            AZStd::string m_displayName;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
         };
 

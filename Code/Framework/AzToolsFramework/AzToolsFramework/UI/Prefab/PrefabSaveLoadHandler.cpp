@@ -153,7 +153,18 @@ namespace AzToolsFramework
 
         void PrefabSaveHandler::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
         {
+            if (templateId == Prefab::InvalidTemplateId)
+            {
+                return;
+            }
+
             auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
+
+            if (!prefabTemplate.has_value())
+            {
+                return;
+            }
+
             AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
 
             if (s_prefabSystemComponentInterface->IsTemplateDirty(templateId))
@@ -613,10 +624,10 @@ namespace AzToolsFramework
                 contentLayout->addWidget(footerSeparatorLine);
 
                 QLabel* prefabSavePreferenceHint = new QLabel(
-                    "<u>You can prevent this window from showing in the future by updating your global save preferences.</u>",
+                    "You can prevent this from showing in the future by updating your preferences.",
                     savePrefabDialog.get());
                 prefabSavePreferenceHint->setToolTip(
-                    "Go to 'Edit > Editor Settings > Global Preferences... > Global save preferences' to update your preference");
+                    "Go to 'Edit > Editor Settings > Global Preferences... > Prefab Save Settings' to update your preference");
                 prefabSavePreferenceHint->setObjectName(PrefabSavePreferenceHint);
                 footerLayout->addWidget(prefabSavePreferenceHint);
             }

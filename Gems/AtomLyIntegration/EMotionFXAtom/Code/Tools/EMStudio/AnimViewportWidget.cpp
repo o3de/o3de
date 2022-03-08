@@ -6,17 +6,17 @@
  *
  */
 
-#include <AzCore/Math/MatrixUtils.h>
-#include <AzFramework/Viewport/ViewportControllerList.h>
-#include <AzFramework/Viewport/CameraInput.h>
-#include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/ViewportContext.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
+#include <AzCore/Math/MatrixUtils.h>
+#include <AzFramework/Viewport/CameraInput.h>
+#include <AzFramework/Viewport/ViewportControllerList.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
-#include <EMStudio/AnimViewportWidget.h>
 #include <EMStudio/AnimViewportRenderer.h>
 #include <EMStudio/AnimViewportSettings.h>
+#include <EMStudio/AnimViewportWidget.h>
 #include <EMStudio/AtomRenderPlugin.h>
 
 namespace EMStudio
@@ -64,31 +64,44 @@ namespace EMStudio
 
     void AnimViewportWidget::SetupCameras()
     {
-        m_rotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::RotateCameraInputChannelId());
-
         const auto translateCameraInputChannelIds = EMStudio::ViewportUtil::TranslateCameraInputChannelIds();
-        m_translateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
+
+        m_lookRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::RotateCameraInputChannelId());
+        m_lookTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
             translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivotLook);
-        m_translateCamera.get()->m_translateSpeedFn = []
+        m_lookTranslateCamera->m_translateSpeedFn = []
         {
             return 3.0f;
         };
-        m_lookScrollCamera = AZStd::make_shared<AzFramework::LookScrollTranslationCameraInput>();
+        m_lookScrollTranslationCamera = AZStd::make_shared<AzFramework::LookScrollTranslationCameraInput>();
+        m_lookPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
+            EMStudio::ViewportUtil::PanCameraInputChannelId(), AzFramework::LookPan, AzFramework::TranslatePivotLook);
 
         m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(EMStudio::ViewportUtil::OrbitCameraInputChannelId());
         m_orbitCamera->SetPivotFn(
-            [this](const AZ::Vector3& position, const AZ::Vector3& direction)
+            [this]([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
             {
-                if (m_orbitCamera->Beginning())
-                {
-                    m_defaultOrbitPoint = position + direction * EMStudio::ViewportUtil::CameraDefaultOrbitDistance();
-                }
-                return m_defaultOrbitPoint;
+                return m_renderer->GetCharacterCenter();
             });
+
+        m_orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
+            translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivotLook);
         m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::OrbitLookCameraInputChannelId());
-        m_orbitDollyScrollCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
+        m_orbitScrollDollyCamera = AZStd::make_shared<AzFramework::OrbitScrollDollyCameraInput>();
+        m_orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
+            EMStudio::ViewportUtil::PanCameraInputChannelId(), AzFramework::LookPan, AzFramework::TranslateOffsetOrbit);
+        m_orbitMotionDollyCamera =
+            AZStd::make_shared<AzFramework::OrbitMotionDollyCameraInput>(EMStudio::ViewportUtil::OrbitDollyCameraInputChannelId());
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitRotateCamera);
-        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitDollyScrollCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitScrollDollyCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitTranslateCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitMotionDollyCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitPanCamera);
+
+        m_followRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(EMStudio::ViewportUtil::OrbitLookCameraInputChannelId());
+        m_followScrollDollyCamera = AZStd::make_shared<AzFramework::OrbitScrollDollyCameraInput>();
+        m_followScrollMotionCamera =
+            AZStd::make_shared<AzFramework::OrbitMotionDollyCameraInput>(EMStudio::ViewportUtil::OrbitDollyCameraInputChannelId());
     }
 
     void AnimViewportWidget::SetupCameraController()
@@ -134,11 +147,13 @@ namespace EMStudio
         controller->SetCameraListBuilderCallback(
             [this](AzFramework::Cameras& cameras)
             {
-                cameras.AddCamera(m_rotateCamera);
-                cameras.AddCamera(m_translateCamera);
-                cameras.AddCamera(m_lookScrollCamera);
+                cameras.AddCamera(m_lookRotateCamera);
+                cameras.AddCamera(m_lookTranslateCamera);
+                cameras.AddCamera(m_lookScrollTranslationCamera);
+                cameras.AddCamera(m_lookPanCamera);
                 cameras.AddCamera(m_orbitCamera);
             });
+
         GetControllerList()->Add(controller);
     }
 
@@ -183,14 +198,34 @@ namespace EMStudio
 
     void AnimViewportWidget::UpdateCameraFollowUp(bool followUp)
     {
+        const auto lookAndOrbitCameras =
+            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_lookRotateCamera, m_lookTranslateCamera,
+                                                                        m_lookScrollTranslationCamera, m_lookPanCamera, m_orbitCamera };
+
+        const auto followCameras =
+            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_followRotateCamera, m_followScrollDollyCamera,
+                                                                        m_followScrollMotionCamera };
         if (followUp)
         {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCameras,
+                lookAndOrbitCameras);
+
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCameras, followCameras);
+
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
                 AZ::Vector3::CreateAxisY(-CameraDistance));
         }
         else
         {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::RemoveCameras, followCameras);
+
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::AddCameras, lookAndOrbitCameras);
+
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
                 AZ::Vector3::CreateZero());
@@ -218,8 +253,9 @@ namespace EMStudio
 
         const RenderOptions* renderOptions = m_plugin->GetRenderOptions();
         AZ::Matrix4x4 viewToClipMatrix;
-        AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::DegToRad(renderOptions->GetFOV()), aspectRatio,
-            renderOptions->GetNearClipPlaneDistance(), renderOptions->GetFarClipPlaneDistance(), true);
+        AZ::MakePerspectiveFovMatrixRH(
+            viewToClipMatrix, AZ::DegToRad(renderOptions->GetFOV()), aspectRatio, renderOptions->GetNearClipPlaneDistance(),
+            renderOptions->GetFarClipPlaneDistance(), true);
 
         viewportContext->GetDefaultView()->SetViewToClipMatrix(viewToClipMatrix);
     }
@@ -241,6 +277,8 @@ namespace EMStudio
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
                 m_renderer->GetCharacterCenter());
+
+            m_renderer->UpdateGroundplane();
         }
     }
 
@@ -252,5 +290,96 @@ namespace EMStudio
     AZ::s32 AnimViewportWidget::GetViewportId() const
     {
         return GetViewportContext()->GetId();
+    }
+
+    void AnimViewportWidget::mousePressEvent(QMouseEvent* event)
+    {
+        m_pixelsSinceClick = 0;
+        m_prevMousePoint = event->globalPos();
+    }
+
+    void AnimViewportWidget::mouseMoveEvent(QMouseEvent* event)
+    {
+        int deltaX = event->globalX() - m_prevMousePoint.x();
+        int deltaY = event->globalY() - m_prevMousePoint.y();
+
+        m_pixelsSinceClick += AZStd::abs(deltaX) + AZStd::abs(deltaY);
+    }
+
+    void AnimViewportWidget::mouseReleaseEvent(QMouseEvent* event)
+    {
+        if (event->button() == Qt::RightButton && m_pixelsSinceClick < MinMouseMovePixes)
+        {
+            OnContextMenuEvent(event);
+        }
+    }
+
+    void AnimViewportWidget::OnContextMenuEvent(QMouseEvent* event)
+    {
+        QMenu* menu = new QMenu(this);
+
+        {
+            QMenu* cameraMenu = menu->addMenu("Camera Options");
+            QAction* frontAction = cameraMenu->addAction("Front");
+            QAction* backAction = cameraMenu->addAction("Back");
+            QAction* topAction = cameraMenu->addAction("Top");
+            QAction* bottomAction = cameraMenu->addAction("Bottom");
+            QAction* leftAction = cameraMenu->addAction("Left");
+            QAction* rightAction = cameraMenu->addAction("Right");
+            cameraMenu->addSeparator();
+            QAction* resetCamAction = cameraMenu->addAction("Reset Camera");
+            cameraMenu->addSeparator();
+            QAction* followAction = cameraMenu->addAction("Follow Character");
+            followAction->setCheckable(true);
+            followAction->setChecked(m_plugin->GetRenderOptions()->GetCameraFollowUp());
+            connect(frontAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::FRONT);
+                });
+            connect(backAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::BACK);
+                });
+            connect(topAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::TOP);
+                });
+            connect(bottomAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::BOTTOM);
+                });
+            connect(leftAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::LEFT);
+                });
+            connect(rightAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::RIGHT);
+                });
+            connect(resetCamAction, &QAction::triggered, this, [this]()
+                {
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
+                });
+            connect(followAction, &QAction::triggered, this, [this, followAction]()
+                {
+                    m_plugin->GetRenderOptions()->SetCameraFollowUp(followAction->isChecked());
+                    AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::UpdateCameraFollowUp, followAction->isChecked());
+                });
+        }
+
+        if (m_renderer && m_renderer->GetEntityId() != AZ::EntityId())
+        {
+            QAction* resetAction = menu->addAction("Move Character to Origin");
+            connect(resetAction, &QAction::triggered, this, [this]()
+                {
+                    m_renderer->MoveActorEntitiesToOrigin();
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
+                });
+        }
+
+        if (!menu->isEmpty())
+        {
+            menu->popup(event->globalPos());
+        }
     }
 } // namespace EMStudio

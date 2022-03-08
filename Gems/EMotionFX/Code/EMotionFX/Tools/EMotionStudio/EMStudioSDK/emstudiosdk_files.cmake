@@ -64,8 +64,6 @@ set(FILES
     Source/NodeSelectionWindow.h
     Source/MotionSetSelectionWindow.cpp
     Source/MotionSetSelectionWindow.h
-    Source/UnitScaleWindow.cpp
-    Source/UnitScaleWindow.h
     Source/RenderPlugin/CommandCallbacks.cpp
     Source/RenderPlugin/ManipulatorCallbacks.cpp
     Source/RenderPlugin/ManipulatorCallbacks.h

@@ -279,7 +279,7 @@ namespace Terrain
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
         bool InWorldBounds(float x, float y) const;
 
-        AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
+        AZ::EntityId FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const;
         void GetOrderedSurfaceWeights(
             const float x,
             const float y,
@@ -321,6 +321,8 @@ namespace Terrain
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromRegion(
             const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize) const;
+        AZStd::vector<AZ::Vector3> GenerateInputPositionsFromListOfVector2(
+            const AZStd::span<const AZ::Vector2> inPositionsVec2) const;
 
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
