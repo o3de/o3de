@@ -1160,7 +1160,7 @@ namespace ScriptCanvas
                     }
                     else
                     {
-                        // self.leaf = Lef.new(executionState)
+                        // self.leaf = Leaf.new(executionState)
                         m_dotLua.WriteLineIndented("%s%s = %s.new(%s)"
                             , leftValue.data()
                             , variable->m_name.data()

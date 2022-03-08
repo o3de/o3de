@@ -46,6 +46,73 @@ namespace ExecutionInterpretedAPICpp
 
     [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
 
+
+    constexpr const char* k_UserObjectInheritance =
+        R"LUA(
+local UserClass_SCVM = {}
+
+function UserClass_SCVM:GetExecutionOut(index)
+    assert(type(self.executionsOut) == 'table', 'GetExecutionOut in '..tostring(self.className_SCVM)..' executionsOut was not initialized to a table')
+    assert(type(self.executionsOut[index]) == 'function', tostring(self.className_SCVM)..' executionsOut['..tostring(index)..'] was not initialized to a function')
+    return self.executionsOut[index]
+end
+
+function UserClass_SCVM:InitializeExecutionOuts(count)
+    assert(type(self.executionsOut) == 'nil', 'InitializeExecutionOuts in '..tostring(self.className_SCVM)..' executionsOut was not initialized to nil')
+    assert(count > 0, 'InitializeExecutionOuts in '..tostring(self.className_SCVM)..' count < 1')
+    self.executionsOut = {}
+
+    for i=1,count do
+        table.insert(self.executionsOut, UserClass_SCVM.ExecutionFunctionInitializer)
+    end
+end
+
+function UserClass_SCVM:SetExecutionOut(index, executionOut)
+	assert(type(self.executionsOut) == 'table', 'SetExecutionOut in '..tostring(self.className_SCVM)..' executionsOut was not initialized to a table')
+    assert(type(executionOut == 'function', 'SetExecutionOut in '..tostring(self.className_SCVM)..' received an argument that was not a function: '..type(executionOut)))
+    self.executionsOut[index] = executionOut
+end
+
+function UserClass_SCVM.ExecutionFunctionInitializer()
+    -- empty, this is just to reserve space in the out table
+end
+
+_G.UserClass_SCVM = UserClass_SCVM
+return UserClass_SCVM
+)LUA";
+
+    /* example useage in auto generated code:
+
+    Begin Lua:
+    local ExampleClass_VM = {}
+    ExampleClass_VM.className_SCVM = 'ExampleClass'
+    local ParentClass = UserClass_SCVM -- or otherise specified at compile time
+    setmetatable(ExampleClass_VM, { __index = ParentClass })
+    local ExampleClass_VM_Instance_MT = { __index = ExampleClass_VM }
+
+    function ExampleClass_VM.new(executionState) -- don't forget the crazy argument crap that goes in here for dependencies
+        -- create the instance and connect inheritance
+        local self = setmetatable({}, ExampleClass_VM_Instance_MT)
+        -- store a reference to the host execution state
+        self.executionState = executionState
+        -- (optional) initialize ExecutionOut function table as array
+        self:InitializeExecutionOuts(2)
+        -- if required (has variables, or parent)
+        self:Construct()
+        return self
+    end
+
+    -- if any variables, or construction required...
+    function ExampleClass_VM:Construct()
+        ParentClass.Construct(self)
+        -- add my variables
+    end
+
+    return ExampleClass_VM
+    :End Lua
+
+    */
+
     template<typename T>
     T* GetAs(AZ::BehaviorValueParameter& argument)
     {
@@ -483,8 +550,19 @@ namespace ScriptCanvas
             RegisterCloningAPI(lua);
             RegisterDebugAPI(lua);
             RegisterEBusHandlerAPI(lua);
+            RegisterUserObjectAPI(lua);
             lua_gc(lua, LUA_GCCOLLECT, 0);
         }
+
+        void RegisterUserObjectAPI(lua_State* /*lua*/)
+        {
+            AZ::ScriptContext* scriptContext{};
+            AZ::ScriptSystemRequestBus::BroadcastResult(scriptContext, &AZ::ScriptSystemRequests::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+            AZ_Verify(scriptContext, "Must have a default script context");
+            AZ_Verify(scriptContext->Execute(ExecutionInterpretedAPICpp::k_UserObjectInheritance)
+                , "Failed to add ScriptCanvas user object inheritance to ScriptContext!");
+        }
+
 
         int CallExecutionOut(lua_State* lua)
         {

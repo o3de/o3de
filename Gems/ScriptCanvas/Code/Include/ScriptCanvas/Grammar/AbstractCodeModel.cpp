@@ -1065,6 +1065,11 @@ namespace ScriptCanvas
             else if (auto functionCallNode = azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
             {
                 auto subgraphInterface = functionCallNode->GetSubgraphInterface();
+                if (!subgraphInterface)
+                {
+                    AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
+                }
+
                 auto requiresCtorParamsForDependencies = subgraphInterface && subgraphInterface->RequiresConstructionParametersForDependencies();
                 auto requiresCtorParams = subgraphInterface && subgraphInterface->RequiresConstructionParameters();
 
@@ -2956,6 +2961,10 @@ namespace ScriptCanvas
                 {
                     m_activeDefaultObject.insert(&node);
                 }
+            }
+            else if (auto functionCallNode = azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
+            {
+                AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
             }
         }
 

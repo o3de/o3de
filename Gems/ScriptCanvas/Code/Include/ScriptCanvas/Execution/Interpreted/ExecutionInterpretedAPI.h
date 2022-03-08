@@ -53,6 +53,8 @@ namespace ScriptCanvas
 
         void RegisterAPI(lua_State* lua);
 
+        void RegisterUserObjectAPI(lua_State* lua);
+
         // Lua: (ebus handler) userdata, (out name) string, (out implementation) function
         int SetExecutionOut(lua_State* lua);
 

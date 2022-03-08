@@ -777,7 +777,12 @@ namespace ScriptCanvas
 
             const Grammar::SubgraphInterface* FunctionCallNode::GetSubgraphInterface() const
             {
-                return &m_slotExecutionMapSourceInterface;
+                if (m_asset && m_asset.Get())
+                {
+                    return &m_asset.Get()->m_interfaceData.m_interface;
+                }
+
+                return nullptr;
             }
 
             AZStd::string FunctionCallNode::GetUpdateString() const
