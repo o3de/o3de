@@ -20,6 +20,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 
 #include "EditorComponentBase.h"
 #include "TransformComponentBus.h"
@@ -244,6 +245,8 @@ namespace AzToolsFramework
 
             // Used to check whether entity was just created vs manually reactivated. Set true after OnEntityActivated is called the first time.
             bool m_initialized = false;
+
+            FocusModeInterface* m_focusModeInterface = nullptr;
 
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;
