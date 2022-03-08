@@ -1852,7 +1852,7 @@ AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderT
 
     createImageRequest.m_imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool().get();
     createImageRequest.m_imageName = renderTargetName;
-    createImageRequest.m_isUniqueName = true;
+    createImageRequest.m_isUniqueName = false;  // Can't use an unique name since the previous render target's release is delayed
 
     auto attachmentImage = AZ::RPI::AttachmentImage::Create(createImageRequest);
     if (!attachmentImage)
