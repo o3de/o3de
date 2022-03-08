@@ -239,14 +239,37 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // there's only one target manager right now
         virtual ~TargetManager() { }
 
+        // call this function to retrieve the list of currently known targets - this is mainly used for GUIs
+        // when they come online and attempt to enum (they won't have been listening for target coming and going)
+        // you will only be shown targets that have been seen in a reasonable amount of time.
+        virtual void EnumTargetInfos(TargetContainer& infos) = 0;
+
+        // set the desired target, which we'll specifically keep track of.
+        // the target controls who gets lua commands, tweak stuff, that kind of thing
+        virtual void SetDesiredTarget(AZ::u32 desiredTargetID) = 0;
+
+        virtual void SetDesiredTargetInfo(const TargetInfo& targetInfo) = 0;
+
+        // retrieve what it was set to.
+        virtual TargetInfo GetDesiredTarget() = 0;
+
+        // given id, get info.
+        virtual TargetInfo GetTargetInfo(AZ::u32 desiredTargetID) = 0;
+
+        // check if target is online
+        virtual bool IsTargetOnline(AZ::u32 desiredTargetID) = 0;
+
+        virtual bool IsDesiredTargetOnline() = 0;
+
         // set/get the name that is going to identify the local node in the neighborhood
         virtual void SetMyPersistentName(const char* name) = 0;
         virtual const char* GetMyPersistentName() = 0;
 
-        virtual TargetInfo GetTargetInfo() const = 0;
+        virtual TargetInfo GetMyTargetInfo() const = 0;
 
-        // check if target is online
-        virtual bool IsTargetOnline() const = 0;
+        // set/get the name of the neighborhood we want to connect to
+        virtual void SetNeighborhood(const char* name) = 0;
+        virtual const char* GetNeighborhood() = 0;
 
         // send a message to a remote target
         virtual void SendTmMessage(const TargetInfo& target, const TmMsg& msg) = 0;

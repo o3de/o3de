@@ -33,7 +33,7 @@ namespace LUADebugger
     {
         // discover what target the user is currently connected to, if any?
         AzFramework::TargetInfo info;
-        EBUS_EVENT_RESULT(info, AzFramework::TargetManager::Bus, GetTargetInfo);
+        EBUS_EVENT_RESULT(info, AzFramework::TargetManager::Bus, GetDesiredTarget);
         if (!info.GetPersistentId())
         {
             AZ_TracePrintf("Debug", "The user has not chosen a target to connect to.\n");

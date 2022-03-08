@@ -76,6 +76,11 @@ namespace StandaloneTools
             {
                 userSettingsAdded[userSettings->GetProviderId()] = true;
             }
+
+            if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
+            {
+                targetManagement->SetTargetAsHost(true);
+            }
         }
 
         // For each provider not already added, add it.

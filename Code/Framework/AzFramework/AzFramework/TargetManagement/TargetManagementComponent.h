@@ -16,6 +16,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+#include <AzNetworking/Utilities/TimedThread.h>
 
 namespace AZ
 {
@@ -38,6 +39,21 @@ namespace AzFramework
     constexpr uint16_t DefaultTargetPort = 6777;
 
     class TargetManagementNetworkImpl;
+    struct TargetManagementSettings;
+
+    //! @class TargetJoinThread
+    //! @brief A class for polling a connection to the host target
+    class TargetJoinThread final : public AzNetworking::TimedThread
+    {
+    public:
+        TargetJoinThread(int updateRate);
+    private:
+        AZ_DISABLE_COPY_MOVE(TargetJoinThread);
+
+        void OnStart() override {};
+        void OnStop() override {};
+        void OnUpdate(AZ::TimeMs updateRateMs) override;
+    };
 
     class TargetManagementComponent
         : public AZ::Component
@@ -72,13 +88,23 @@ namespace AzFramework
             const AzNetworking::IPacketHeader& packetHeader,
             const AzFrameworkPackets::TargetManagementMessage& packet);
 
+        void SetTargetAsHost(bool isHost);
+
     protected:
         //////////////////////////////////////////////////////////////////////////
         // target management api
+        void EnumTargetInfos(TargetContainer& infos) override;
+        void SetDesiredTarget(AZ::u32 desiredTargetID) override;
+        void SetDesiredTargetInfo(const TargetInfo& targetInfo) override;
+        TargetInfo GetDesiredTarget() override;
+        TargetInfo GetTargetInfo(AZ::u32 desiredTargetID) override;
+        bool IsTargetOnline(AZ::u32 desiredTargetID) override;
+        bool IsDesiredTargetOnline() override;
         void SetMyPersistentName(const char* name) override;
         const char* GetMyPersistentName() override;
-        TargetInfo GetTargetInfo() const override;
-        bool IsTargetOnline() const override;
+        TargetInfo GetMyTargetInfo() const override;
+        void SetNeighborhood(const char* name) override;
+        const char* GetNeighborhood() override;
         void SendTmMessage(const TargetInfo& target, const TmMsg& msg) override;
         void DispatchMessages(MsgSlotId id) override;
         //////////////////////////////////////////////////////////////////////////
@@ -115,7 +141,10 @@ namespace AzFramework
         void TickThread();
 
         TargetInfo                                      m_targetInfo;
-        AZStd::chrono::system_clock::time_point         m_reconnectionTime; // time of next connection attempt
+        AZStd::intrusive_ptr<TargetManagementSettings>  m_settings;
+        TargetContainer                                 m_availableTargets;
+        AZStd::unique_ptr<TargetJoinThread>             m_targetJoinThread;
+        bool m_isTargetHost = false;
 
         AZStd::vector<char, AZ::OSStdAllocator> m_tmpInboundBuffer;
         uint32_t m_tmpInboundBufferPos;
