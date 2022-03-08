@@ -1107,7 +1107,7 @@ namespace AssetProcessor
                             gemNameToPathMap.try_emplace(AZStd::string::format("@GEMROOT:%.*s@", AZ_STRING_ARG(gemName)), gemAbsPath.String());
                         }
                     };
-                    AZ::SettingsRegistryMergeUtils::VisitGems(*settingsRegistry, MakeGemNameToPathMap);
+                    AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, MakeGemNameToPathMap);
 
                     for (const auto& [gemAlias, gemPath] : gemNameToPathMap)
                     {
