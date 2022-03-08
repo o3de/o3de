@@ -133,7 +133,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     {
         float3 m_position;
         float m_opacity;
-        
         float4 m_quaternion;
         float3 m_halfSize;
         float m_angleAttenuation;
