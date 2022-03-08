@@ -25,24 +25,17 @@ struct PSOutput
 
 PSOutput MainPS(VSOutput IN)
 {
-    int width = 0;
-    int height = 0;
-    int numberOfSamples = 0;
+    uint width = 0;
+    uint height = 0;
+    uint numberOfSamples = 0;
     PassSrg::m_depthTexture.GetDimensions(width, height, numberOfSamples);
 
     int2 coord = int2(width * IN.m_texCoord.x, height * IN.m_texCoord.y);
 
     PSOutput OUT;
   
-    float result = 1.0f;
-    float avg = 0;
-    for(int sampleIndex = 0 ; sampleIndex < numberOfSamples ; ++sampleIndex)
-    {
-        const float currDepth = PassSrg::m_depthTexture.Load(coord, sampleIndex);
-        avg += currDepth;
-        result = max(result, currDepth);
-    }
-    OUT.m_depth = avg / (float)numberOfSamples;//result;
+    int sampleIndex = 0;
+    OUT.m_depth = PassSrg::m_depthTexture.Load(coord, sampleIndex);
 
     return OUT;
 }
