@@ -151,6 +151,10 @@ namespace EMotionFX
 
             bool IsAtomDisabled() const;
 
+            AZ::Crc32 AddEditorMaterialComponent();
+            bool HasEditorMaterialComponent() const;
+            AZ::u32 GetEditorMaterialComponentVisibility() const;
+
             AZ::Data::Asset<ActorAsset>         m_actorAsset;               ///< Assigned actor asset.
             AZStd::vector<AZ::EntityId>         m_attachments;              ///< A list of entities that are attached to this entity.
             bool                                m_renderSkeleton;           ///< Toggles rendering of character skeleton.
@@ -165,7 +169,8 @@ namespace EMotionFX
             size_t                              m_lodLevel;
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
-            ActorRenderFlags                    m_renderFlags;         ///< Actor render flag
+            ActorRenderFlags                    m_renderFlags;              ///< Actor render flag               
+            bool m_addMaterialComponentFlag = false;                        ///< Flag used for button placement
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.
