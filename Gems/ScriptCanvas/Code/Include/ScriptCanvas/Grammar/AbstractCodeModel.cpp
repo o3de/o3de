@@ -1070,6 +1070,14 @@ namespace ScriptCanvas
                     AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
                 }
 
+                auto interfaceNameOutcome = functionCallNode->GetInterfaceNameFromAssetOrLastSave();
+                if (!interfaceNameOutcome.IsSuccess())
+                {
+                    AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return a useable name");
+                }
+
+                auto interfaceName = interfaceNameOutcome.GetValue();
+
                 auto requiresCtorParamsForDependencies = subgraphInterface && subgraphInterface->RequiresConstructionParametersForDependencies();
                 auto requiresCtorParams = subgraphInterface && subgraphInterface->RequiresConstructionParameters();
 
@@ -1083,12 +1091,12 @@ namespace ScriptCanvas
                 {
                     Datum nodeableDatum(Data::Type::BehaviorContextObject(azrtti_typeid<Nodeable>()), Datum::eOriginality::Copy);
 
-                    auto nodeableVariable = AddMemberVariable(nodeableDatum, functionCallNode->GetInterfaceName(), node.GetEntityId());
+                    auto nodeableVariable = AddMemberVariable(nodeableDatum, interfaceName, node.GetEntityId());
 
                     auto nodeableParse = AZStd::make_shared<NodeableParse>();
                     nodeableVariable->m_isExposedToConstruction = false;
                     nodeableParse->m_nodeable = nodeableVariable;
-                    nodeableParse->m_simpleName = subgraphInterface->GetName();
+                    nodeableParse->m_simpleName = interfaceName;
 
                     m_nodeablesByNode.emplace(&node, nodeableParse);
                     m_userNodeables.insert(nodeableVariable);

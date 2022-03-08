@@ -326,10 +326,16 @@ namespace ScriptCanvas
             return GetLexicalScope(in.isPure);
         }
 
-        AZStd::string SubgraphInterface::GetName() const
+        AZ::Outcome<AZStd::string, AZStd::string> SubgraphInterface::GetName() const
         {
-            AZ_Error("ScriptCanvas", !m_namespacePath.empty(), "Interface must have at least one name");
-            return !m_namespacePath.empty() ? m_namespacePath.back() : "error, empty interface name";
+            if (m_namespacePath.empty())
+            {
+                return AZ::Failure(AZStd::string("Interface namespace path was empty"));
+            }
+            else
+            {
+                return AZ::Success(m_namespacePath.back());
+            }
         }
 
         const NamespacePath& SubgraphInterface::GetNamespacePath() const
@@ -930,8 +936,10 @@ namespace ScriptCanvas
 
         AZStd::string ToString(const SubgraphInterface& subgraphInterface)
         {
+            auto nameOutcome = subgraphInterface.GetName();
+
             AZStd::string result("\n");
-            result += subgraphInterface.GetName();
+            result += nameOutcome.IsSuccess() ? nameOutcome.TakeValue() : "<un-named>";
             result += "\n";
             result += AZStd::string::format("Is Active By Default: %s\n", YorN(subgraphInterface.IsActiveDefaultObject()));
             result += AZStd::string::format("Is Latent: %s\n", YorN(subgraphInterface.IsLatent()));

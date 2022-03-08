@@ -160,7 +160,7 @@ namespace ScriptCanvas
 
             LexicalScope GetLexicalScope(const In& in) const;
 
-            AZStd::string GetName() const;
+            AZ::Outcome<AZStd::string, AZStd::string> GetName() const;
 
             const NamespacePath& GetNamespacePath() const;
 
