@@ -68,7 +68,7 @@ function UserClass_SCVM:InitializeExecutionOuts(count)
 end
 
 function UserClass_SCVM:SetExecutionOut(index, executionOut)
-	assert(type(self.executionsOut) == 'table', 'SetExecutionOut in '..tostring(self.className_SCVM)..' executionsOut was not initialized to a table')
+    assert(type(self.executionsOut) == 'table', 'SetExecutionOut in '..tostring(self.className_SCVM)..' executionsOut was not initialized to a table')
     assert(type(executionOut == 'function', 'SetExecutionOut in '..tostring(self.className_SCVM)..' received an argument that was not a function: '..type(executionOut)))
     self.executionsOut[index] = executionOut
 end
@@ -81,37 +81,35 @@ _G.UserClass_SCVM = UserClass_SCVM
 return UserClass_SCVM
 )LUA";
 
-    /* example useage in auto generated code:
+/* example useage in auto generated code:
+Begin Lua:
+local ExampleClass_VM = {}
+ExampleClass_VM.className_SCVM = 'ExampleClass'
+local ParentClass = UserClass_SCVM -- or otherise specified at compile time
+setmetatable(ExampleClass_VM, { __index = ParentClass })
+local ExampleClass_VM_Instance_MT = { __index = ExampleClass_VM }
 
-    Begin Lua:
-    local ExampleClass_VM = {}
-    ExampleClass_VM.className_SCVM = 'ExampleClass'
-    local ParentClass = UserClass_SCVM -- or otherise specified at compile time
-    setmetatable(ExampleClass_VM, { __index = ParentClass })
-    local ExampleClass_VM_Instance_MT = { __index = ExampleClass_VM }
+function ExampleClass_VM.new(executionState) -- don't forget the crazy argument crap that goes in here for dependencies
+    -- create the instance and connect inheritance
+    local self = setmetatable({}, ExampleClass_VM_Instance_MT)
+    -- store a reference to the host execution state
+    self.executionState = executionState
+    -- (optional) initialize ExecutionOut function table as array
+    self:InitializeExecutionOuts(2)
+    -- if required (has variables, or parent)
+    self:Construct()
+    return self
+end
 
-    function ExampleClass_VM.new(executionState) -- don't forget the crazy argument crap that goes in here for dependencies
-        -- create the instance and connect inheritance
-        local self = setmetatable({}, ExampleClass_VM_Instance_MT)
-        -- store a reference to the host execution state
-        self.executionState = executionState
-        -- (optional) initialize ExecutionOut function table as array
-        self:InitializeExecutionOuts(2)
-        -- if required (has variables, or parent)
-        self:Construct()
-        return self
-    end
+-- if any variables, or construction required...
+function ExampleClass_VM:Construct()
+    ParentClass.Construct(self)
+    -- add my variables
+end
 
-    -- if any variables, or construction required...
-    function ExampleClass_VM:Construct()
-        ParentClass.Construct(self)
-        -- add my variables
-    end
-
-    return ExampleClass_VM
-    :End Lua
-
-    */
+return ExampleClass_VM
+:End Lua
+*/
 
     template<typename T>
     T* GetAs(AZ::BehaviorValueParameter& argument)
