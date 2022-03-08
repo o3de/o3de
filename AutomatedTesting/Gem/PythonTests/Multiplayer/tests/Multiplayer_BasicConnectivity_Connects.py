@@ -55,7 +55,6 @@ def Multiplayer_BasicConnectivity_Connects():
         player_id = general.find_game_entity("Player")
         Report.critical_result(TestConstants.find_network_player, player_id.IsValid())
 
-
     # Exit game mode
     helper.exit_game_mode(TestConstants.exit_game_mode)
 
