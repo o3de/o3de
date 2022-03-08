@@ -630,7 +630,7 @@ namespace Benchmark
 
             for (auto _ : state)
             {
-                typename TimedScopeType timedScope(UnitTest::ProfilerProxyGroup, statId);
+                TimedScopeType timedScope(UnitTest::ProfilerProxyGroup, statId);
                 benchmark::DoNotOptimize(m_proxy);
             }
 
