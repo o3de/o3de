@@ -96,6 +96,18 @@ namespace AZ
             const RHI::Ptr<RHI::RayTracingBlas>& GetVisualizationBlas() const { return m_visualizationBlas; }
             RHI::Ptr<RHI::RayTracingBlas>& GetVisualizationBlas() { return m_visualizationBlas; }
 
+            // adds a worldspace position and direction for an irradiance query, returns the index of the query result in the output buffer
+            uint32_t AddIrradianceQuery(const AZ::Vector3& position, const AZ::Vector3& direction);
+
+            // clears the irradiance queries, called by DiffuseProbeGridQueryPass at the end of the frame
+            void ClearIrradianceQueries();
+
+            // irradiance query accessors
+            uint32_t GetIrradianceQueryCount() const { return aznumeric_cast<uint32_t>(m_irradianceQueries.size()); }
+            const Data::Instance<RPI::Buffer>& GetQueryBuffer() const { return m_queryBuffer[m_currentBufferIndex]; }
+            const RHI::AttachmentId GetQueryBufferAttachmentId() const { return m_queryBufferAttachmentId; }
+            const RHI::BufferViewDescriptor& GetQueryBufferViewDescriptor() const { return m_queryBufferViewDescriptor; }
+
         private:
             AZ_DISABLE_COPY_MOVE(DiffuseProbeGridFeatureProcessor);
 
@@ -188,6 +200,21 @@ namespace AZ
             Data::Instance<RPI::Model> m_visualizationModel;
             RHI::StreamBufferView m_visualizationVB;
             RHI::IndexBufferView m_visualizationIB;
+
+            // irradiance queries
+            struct IrradianceQuery
+            {
+                AZ::Vector3 m_position;
+                AZ::Vector3 m_direction;
+            };
+            using IrradianceQueryVector = AZStd::vector<IrradianceQuery>;
+
+            IrradianceQueryVector m_irradianceQueries;
+            RHI::BufferViewDescriptor m_queryBufferViewDescriptor;
+            RHI::AttachmentId m_queryBufferAttachmentId;
+            static const uint32_t BufferFrameCount = 3;
+            Data::Instance<RPI::Buffer> m_queryBuffer[BufferFrameCount];
+            uint32_t m_currentBufferIndex = 0;
         };
     } // namespace Render
 } // namespace AZ

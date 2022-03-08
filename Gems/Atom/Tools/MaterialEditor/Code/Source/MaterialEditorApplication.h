@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <Viewport/MaterialViewportSettingsSystem.h>
@@ -40,8 +39,8 @@ namespace MaterialEditor
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
 
+    private:
         AZStd::unique_ptr<MaterialEditorWindow> m_window;
         AZStd::unique_ptr<MaterialViewportSettingsSystem> m_viewportSettingsSystem;
-        AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
     };
 } // namespace MaterialEditor
