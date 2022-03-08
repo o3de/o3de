@@ -79,6 +79,10 @@ namespace AZ
 
         NameDictionary() = default;
 
+        //! Loads a list of names, starting at a given list head, and ensures they're all created and linked
+        //! into our list of deferred load names.
+        void LoadDeferredNames(Name* deferredHead);
+
     private:
         ~NameDictionary();
 
@@ -102,9 +106,6 @@ namespace AZ
         //! Loads a name that was potentially created before this dictionary, ensuring its name data
         //! is loaded and that it is linked into our list of deferred load names to be released later.
         void LoadDeferredName(Name& deferredName);
-        //! Loads a list of names, starting at a given list head, and ensures they're all created and linked
-        //! into our list of deferred load names.
-        void LoadDeferredNames(Name* deferredHead);
         //! Called when a deferred name is destroyed, unregisters the name if it happens to be our m_deferredHead.
         void UnregisterDeferredHead(Name& name);
         //! Unloads the data with all deferred names registered using LoadDeferredName.
