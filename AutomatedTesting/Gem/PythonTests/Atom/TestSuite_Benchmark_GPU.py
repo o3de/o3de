@@ -52,7 +52,6 @@ class TestPerformanceBenchmarkSuite(object):
             halt_on_unexpected=True,
             cfg_args=[level],
             null_renderer=False,
-            enable_prefab_system=True,
         )
 
         aggregator = BenchmarkDataAggregator(workspace, logger, 'periodic')
