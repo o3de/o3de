@@ -464,7 +464,7 @@ class AtomComponentProperties:
             Only one of these is required at a time for this component.\n
           - 'Material Asset': the default material Asset.id. Overrides all Model and LOD materials.
           - 'Enable LOD Materials' toggles the use of LOD Materials.
-          - 'Lod Materials' container property for specified LOD materials. (list of EditorMaterialComponentSlot)
+          - 'LOD Materials' container property for specified LOD materials. (list of EditorMaterialComponentSlot)
           - 'Model Materials' container property of materials included with model. (EditorMaterialComponentSlot)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.

@@ -14,7 +14,7 @@ class Tests:
         "P0: REDO Entity creation failed")
     material_creation = (
         "Material Entity successfully created",
-        "Material Entity failed to be created")
+        "P0: Material Entity failed to be created")
     material_component = (
         "Entity has a Material component",
         "P0: Entity failed to find Material component")
