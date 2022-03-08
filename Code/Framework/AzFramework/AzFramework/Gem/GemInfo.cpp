@@ -40,7 +40,7 @@ namespace AzFramework
             GemInfo& gemInfo = gemInfoFoundIter != gemInfoList.end() ? *gemInfoFoundIter : gemInfoList.emplace_back(gemName);
 
             // Read the Gem Target Name into target Name field
-            auto VisitGemTargets = [&settingsRegistry, &gemInfo](AZStd::string_view, AZStd::string_view fieldName, Type)
+            auto VisitGemTargets = [&gemInfo](AZStd::string_view, AZStd::string_view fieldName, Type)
             {
                 // Assume the fieldName is the name of the target in this case
                 gemInfo.m_gemTargetNames.emplace_back(fieldName);
