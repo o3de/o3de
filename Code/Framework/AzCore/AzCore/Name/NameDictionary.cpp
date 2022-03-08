@@ -106,10 +106,6 @@ namespace AZ
         return *s_instance;
     }
     
-    NameDictionary::NameDictionary()
-    {
-    }
-
     NameDictionary::~NameDictionary()
     {
         Name::s_staticNameBegin = m_deferredHead;

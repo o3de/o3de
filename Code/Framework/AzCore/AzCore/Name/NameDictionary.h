@@ -77,7 +77,8 @@ namespace AZ
         //! @return A Name instance. If the hash was not found, the Name will be empty.
         Name FindName(Name::Hash hash) const;
 
-        NameDictionary();
+        NameDictionary() = default;
+
     private:
         ~NameDictionary();
 
