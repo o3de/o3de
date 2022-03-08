@@ -29,119 +29,170 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QMovie>
 
 namespace O3DE::ProjectManager
 {
     LabelButton::LabelButton(QWidget* parent)
         : QLabel(parent)
     {
+        // Space for content excluding borders
+        constexpr int contentSpaceWidth = ProjectPreviewImageWidth - 2;
+
+        // The height of a third of the button split into 3 sections, top, middle and bottom
+        constexpr int threeWaySplitHeight = (ProjectPreviewImageHeight - 2) / 3;
+
         setObjectName("labelButton");
 
-        QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setContentsMargins(0, 0, 0, 0);
-        vLayout->setSpacing(5);
+        // Use GridLayout so widgets can be overlapped
+        QGridLayout* overlayLayout = new QGridLayout();
+        overlayLayout->setContentsMargins(0, 0, 0, 0);
+        overlayLayout->setSpacing(0);
+        setLayout(overlayLayout);
 
-        setLayout(vLayout);
-        m_overlayLabel = new QLabel("", this);
-        m_overlayLabel->setObjectName("labelButtonOverlay");
-        m_overlayLabel->setWordWrap(true);
-        m_overlayLabel->setAlignment(Qt::AlignCenter);
-        m_overlayLabel->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-        m_overlayLabel->setVisible(false);
-        connect(m_overlayLabel, &QLabel::linkActivated, this, &LabelButton::OnLinkActivated);
-        vLayout->addWidget(m_overlayLabel);
+        m_darkenOverlay = new QLabel(this);
+        m_darkenOverlay->setObjectName("labelButtonOverlay");
+        m_darkenOverlay->setVisible(true);
+        overlayLayout->addWidget(m_darkenOverlay, 0, 0);
 
-        m_buildOverlayLayout = new QVBoxLayout();
-        m_buildOverlayLayout->addSpacing(10);
+        m_projectOverlayLayout = new QVBoxLayout();
+        m_projectOverlayLayout->setContentsMargins(0, 0, 0, 0);
+        m_projectOverlayLayout->setSpacing(0);
+        m_projectOverlayLayout->setAlignment(Qt::AlignCenter);
 
-        QHBoxLayout* horizontalMessageLayout = new QHBoxLayout();
+        // Split the button into 3 fixed size sections so content alignment is easier to manage
+        // If widgets in other sections are shown or hidden it will not offset alignment in other sections
+        QWidget* topWidget = new QWidget();
+        topWidget->setFixedSize(contentSpaceWidth, threeWaySplitHeight);
+        QVBoxLayout* verticalMessageLayout = new QVBoxLayout();
+        verticalMessageLayout->setContentsMargins(0, 0, 0, 0);
+        verticalMessageLayout->setSpacing(4);
+        verticalMessageLayout->setAlignment(Qt::AlignCenter);
+        topWidget->setLayout(verticalMessageLayout);
 
-        horizontalMessageLayout->addSpacing(10);
+        verticalMessageLayout->addSpacing(10);
+
+        QHBoxLayout* horizontalWarningMessageLayout = new QHBoxLayout();
+        horizontalWarningMessageLayout->setContentsMargins(0, 0, 0, 0);
+        horizontalWarningMessageLayout->setSpacing(0);
+        horizontalWarningMessageLayout->setAlignment(Qt::AlignRight | Qt::AlignTop);
+
+        m_warningSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        horizontalWarningMessageLayout->addSpacerItem(m_warningSpacer);
+
+        horizontalWarningMessageLayout->addSpacing(10);
         m_warningIcon = new QLabel(this);
-        m_warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(20, 20));
-        m_warningIcon->setAlignment(Qt::AlignTop);
+        m_warningIcon->setObjectName("projectWarningIconOverlay");
+        m_warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(32, 32));
+        m_warningIcon->setAlignment(Qt::AlignCenter);
         m_warningIcon->setVisible(false);
-        horizontalMessageLayout->addWidget(m_warningIcon);
+        horizontalWarningMessageLayout->addWidget(m_warningIcon);
 
-        horizontalMessageLayout->addSpacing(10);
+        horizontalWarningMessageLayout->addSpacing(15);
 
-        m_warningText = new QLabel("", this);
-        m_warningText->setObjectName("projectWarningOverlay");
-        m_warningText->setWordWrap(true);
-        m_warningText->setAlignment(Qt::AlignLeft);
-        m_warningText->setVisible(false);
-        connect(m_warningText, &QLabel::linkActivated, this, &LabelButton::OnLinkActivated);
-        horizontalMessageLayout->addWidget(m_warningText);
+        verticalMessageLayout->addLayout(horizontalWarningMessageLayout);
 
-        QSpacerItem* textSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
-        horizontalMessageLayout->addSpacerItem(textSpacer);
+        m_messageLabel = new QLabel("", this);
+        m_messageLabel->setObjectName("projectMessageOverlay");
+        m_messageLabel->setAlignment(Qt::AlignCenter);
+        m_messageLabel->setVisible(true);
+        verticalMessageLayout->addWidget(m_messageLabel);
 
-        m_buildOverlayLayout->addLayout(horizontalMessageLayout);
+        m_subMessageLabel = new QLabel("", this);
+        m_subMessageLabel->setObjectName("projectSubMessageOverlay");
+        m_subMessageLabel->setAlignment(Qt::AlignCenter);
+        m_subMessageLabel->setVisible(true);
+        verticalMessageLayout->addWidget(m_subMessageLabel);
 
-        QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
-        m_buildOverlayLayout->addSpacerItem(buttonSpacer);
+        verticalMessageLayout->addStretch();
 
-        QHBoxLayout* horizontalOpenEditorButtonLayout = new QHBoxLayout();
-        horizontalOpenEditorButtonLayout->addSpacing(34);
+        m_projectOverlayLayout->addWidget(topWidget);
+
+        QWidget* middleWidget = new QWidget();
+        middleWidget->setFixedSize(contentSpaceWidth, threeWaySplitHeight);
+        QVBoxLayout* verticalCenterLayout = new QVBoxLayout();
+        verticalCenterLayout->setContentsMargins(0, 0, 0, 0);
+        verticalCenterLayout->setSpacing(0);
+        verticalCenterLayout->setAlignment(Qt::AlignCenter);
+        middleWidget->setLayout(verticalCenterLayout);
+
+        m_buildingAnimation = new QLabel("", this);
+        m_buildingAnimation->setObjectName("buildingAnimationOverlay");
+        m_buildingAnimation->setAlignment(Qt::AlignCenter);
+        m_buildingAnimation->setVisible(false);
+        m_buildingAnimation->setMovie(new QMovie(":/SpinningGears.webp"));
+        m_buildingAnimation->movie()->start();
+        verticalCenterLayout->addWidget(m_buildingAnimation);
+
+        m_projectOverlayLayout->addWidget(middleWidget);
+
+        QWidget* bottomWidget = new QWidget();
+        bottomWidget->setFixedSize(contentSpaceWidth, threeWaySplitHeight);
+
+        QVBoxLayout* verticalButtonLayout = new QVBoxLayout();
+        verticalButtonLayout->setContentsMargins(0, 0, 0, 0);
+        verticalButtonLayout->setSpacing(5);
+        verticalButtonLayout->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+        bottomWidget->setLayout(verticalButtonLayout);
+
         m_openEditorButton = new QPushButton(tr("Open Editor"), this);
         m_openEditorButton->setObjectName("openEditorButton");
         m_openEditorButton->setDefault(true);
         m_openEditorButton->setVisible(false);
-        horizontalOpenEditorButtonLayout->addWidget(m_openEditorButton);
-        horizontalOpenEditorButtonLayout->addSpacing(34);
-        m_buildOverlayLayout->addLayout(horizontalOpenEditorButtonLayout);
+        verticalButtonLayout->addWidget(m_openEditorButton);
 
-        QHBoxLayout* horizontalButtonLayout = new QHBoxLayout();
-        horizontalButtonLayout->addSpacing(34);
         m_actionButton = new QPushButton(tr("Project Action"), this);
         m_actionButton->setObjectName("projectActionButton");
         m_actionButton->setVisible(false);
-        horizontalButtonLayout->addWidget(m_actionButton);
-        horizontalButtonLayout->addSpacing(34);
+        verticalButtonLayout->addWidget(m_actionButton);
 
-        m_buildOverlayLayout->addLayout(horizontalButtonLayout);
-        m_buildOverlayLayout->addSpacing(16);
+        // This button has seperate styling with a red button instead of a blue button as for m_actionButton
+        // Seperate buttons are used to avoid stutter from reloading style after changing object name
+        m_actionCancelButton = new QPushButton(tr("Cancel Project Action"), this);
+        m_actionCancelButton->setObjectName("projectActionCancelButton");
+        m_actionCancelButton->setVisible(false);
+        verticalButtonLayout->addWidget(m_actionCancelButton);
 
-        vLayout->addItem(m_buildOverlayLayout);
+        m_showLogsButton = new QPushButton(tr("Show logs"), this);
+        m_showLogsButton->setObjectName("projectShowLogsButton");
+        m_showLogsButton->setVisible(false);
+        verticalButtonLayout->addWidget(m_showLogsButton);
 
-        m_progressBar = new QProgressBar(this);
-        m_progressBar->setObjectName("labelButtonProgressBar");
-        m_progressBar->setVisible(false);
-        vLayout->addWidget(m_progressBar);
+        verticalButtonLayout->addSpacing(20);
+
+        m_projectOverlayLayout->addWidget(bottomWidget);
+
+        overlayLayout->addLayout(m_projectOverlayLayout, 0, 0);
     }
 
     void LabelButton::mousePressEvent(QMouseEvent* event)
     {
-        if(m_enabled)
-        {
-            emit triggered(event);
-        }
+        emit triggered(event);
     }
 
-    void LabelButton::SetEnabled(bool enabled)
+    QLabel* LabelButton::GetMessageLabel()
     {
-        m_enabled = enabled;
-        m_overlayLabel->setVisible(!enabled);
+        return m_messageLabel;
     }
 
-    void LabelButton::SetOverlayText(const QString& text)
+    QLabel* LabelButton::GetSubMessageLabel()
     {
-        m_overlayLabel->setText(text);
+        return m_subMessageLabel;
     }
 
-    QLabel* LabelButton::GetOverlayLabel()
+    QLabel* LabelButton::GetWarningIcon()
     {
-        return m_overlayLabel;
+        return m_warningIcon;
     }
 
-    void LabelButton::SetLogUrl(const QUrl& url)
+    QSpacerItem* LabelButton::GetWarningSpacer()
     {
-        m_logUrl = url;
+        return m_warningSpacer;
     }
 
-    QProgressBar* LabelButton::GetProgressBar()
+    QLabel* LabelButton::GetBuildingAnimationLabel()
     {
-        return m_progressBar;
+        return m_buildingAnimation;
     }
 
     QPushButton* LabelButton::GetOpenEditorButton()
@@ -154,24 +205,26 @@ namespace O3DE::ProjectManager
         return m_actionButton;
     }
 
-    QLabel* LabelButton::GetWarningLabel()
+    QPushButton* LabelButton::GetActionCancelButton()
     {
-        return m_warningText;
+        return m_actionCancelButton;
     }
 
-    QLabel* LabelButton::GetWarningIcon()
+    QPushButton* LabelButton::GetShowLogsButton()
     {
-        return m_warningIcon;
+        return m_showLogsButton;
     }
 
-    void LabelButton::OnLinkActivated(const QString& /*link*/)
+    QLabel* LabelButton::GetDarkenOverlay()
     {
-        QDesktopServices::openUrl(m_logUrl);
+        return m_darkenOverlay;
     }
+
 
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
         : QFrame(parent)
         , m_projectInfo(projectInfo)
+        , m_isProjectBuilding(false)
     {
         setObjectName("projectButton");
 
@@ -182,7 +235,7 @@ namespace O3DE::ProjectManager
 
         m_projectImageLabel = new LabelButton(this);
         m_projectImageLabel->setFixedSize(ProjectPreviewImageWidth, ProjectPreviewImageHeight);
-        m_projectImageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        m_projectImageLabel->setAlignment(Qt::AlignCenter);
         vLayout->addWidget(m_projectImageLabel);
 
         QString projectPreviewPath = QDir(m_projectInfo.m_path).filePath(m_projectInfo.m_iconPath);
@@ -210,14 +263,19 @@ namespace O3DE::ProjectManager
 
         vLayout->addWidget(projectFooter);
 
-        connect(m_projectImageLabel->GetOpenEditorButton(), &QPushButton::clicked, [this](){ emit OpenProject(m_projectInfo.m_path); });
+        connect(m_projectImageLabel->GetOpenEditorButton(), &QPushButton::clicked, [this]() {
+            emit OpenProject(m_projectInfo.m_path);
+        });
         connect(m_projectImageLabel, &LabelButton::triggered, [this](QMouseEvent* event) {
-            if (event->button() == Qt::RightButton)
+            if (!m_isProjectBuilding && event->button() == Qt::RightButton)
             {
                 m_projectMenuButton->menu()->move(event->globalPos());
                 m_projectMenuButton->menu()->show();
             }
         });
+        connect(m_projectImageLabel->GetShowLogsButton(), &QPushButton::pressed, this, &ProjectButton::ShowLogs);
+
+        SetState(ProjectButtonState::ReadyToLaunch);
     }
 
     QMenu* ProjectButton::CreateProjectMenu()
@@ -267,45 +325,148 @@ namespace O3DE::ProjectManager
         return m_projectInfo;
     }
 
-    void ProjectButton::RestoreDefaultState()
+    void ProjectButton::ShowLogs()
     {
-        m_projectImageLabel->SetEnabled(true);
-        m_projectImageLabel->SetOverlayText("");
-        m_projectMenuButton->setVisible(true);
+        QDesktopServices::openUrl(m_projectInfo.m_logUrl);
+    }
 
-        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
-        progressBar->setVisible(false);
-        progressBar->setValue(0);
+    void ProjectButton::SetState(enum ProjectButtonState state)
+    {
+        m_currentState = state;
 
-        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
-        projectActionButton->setVisible(false);
+        switch (state)
+        {
+        default:
+        case ProjectButtonState::ReadyToLaunch:
+            ShowReadyState();
+            break;
+        case ProjectButtonState::Launching:
+            ShowLaunchingState();
+            break;
+        case ProjectButtonState::NeedsToBuild:
+            ShowBuildRequiredState();
+            break;
+        case ProjectButtonState::Building:
+            ShowBuildingState();
+            break;
+        case ProjectButtonState::BuildFailed:
+            ShowBuildFailedState();
+            break;
+        }
+    }
+
+    void ProjectButton::ShowReadyState()
+    {
+        HideContextualLabelButtonWidgets();
+
         if (m_actionButtonConnection)
         {
             disconnect(m_actionButtonConnection);
         }
 
-        m_projectImageLabel->GetWarningIcon()->setVisible(false);
-        m_projectImageLabel->GetWarningLabel()->setVisible(false);
+        m_projectMenuButton->setVisible(true);
+
+        SetLaunchingEnabled(true);
+        SetProjectBuilding(false);
+    }
+
+    void ProjectButton::ShowLaunchingState()
+    {
+        HideContextualLabelButtonWidgets();
+
+        SetLaunchingEnabled(false);
+        SetProjectBuilding(false);
+
+        // Hide button in-case it is still showing
+        m_projectImageLabel->GetOpenEditorButton()->hide();
+
+        ShowMessage(tr("Opening Editor..."));
+    }
+
+    void ProjectButton::ShowBuildRequiredState()
+    {
+        ShowBuildButton();
+
+        SetProjectBuilding(false);
+
+        ShowWarning(tr("Project build required."));
+    }
+
+    void ProjectButton::ShowBuildingState()
+    {
+        m_projectImageLabel->GetShowLogsButton()->show();
+
+        // Setting project to building also disables launching
+        SetProjectBuilding(true);
+
+        ShowMessage(tr("Building Project..."));
+    }
+
+    void ProjectButton::ShowBuildFailedState()
+    {
+        ShowBuildButton();
+
+        SetProjectBuilding(false);
+
+        // Show, show logs button if avaliable
+        m_projectImageLabel->GetShowLogsButton()->setVisible(!m_projectInfo.m_logUrl.isEmpty());
+
+        ShowWarning(tr("Failed to build"));
     }
 
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
     {
-        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
-        if (!m_actionButtonConnection)
+        QPushButton* projectActionButton;
+        QPushButton* projectOtherActionButton;
+
+        if (text.contains("Cancel", Qt::CaseInsensitive))
         {
-            projectActionButton->setVisible(true);
+            // Use red button is action involves cancelling
+            projectActionButton = m_projectImageLabel->GetActionCancelButton();
+            projectOtherActionButton = m_projectImageLabel->GetActionButton();
         }
         else
         {
+            projectActionButton = m_projectImageLabel->GetActionButton();
+            projectOtherActionButton = m_projectImageLabel->GetActionCancelButton();
+        }
+
+        if (m_actionButtonConnection)
+        {
             disconnect(m_actionButtonConnection);
         }
+
+        projectActionButton->setVisible(true);
+        projectOtherActionButton->setVisible(false);
 
         projectActionButton->setText(text);
         projectActionButton->setMenu(nullptr);
         m_actionButtonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
     }
 
-    void ProjectButton::ShowDefaultBuildButton()
+    void ProjectButton::SetBuildLogsLink(const QUrl& logUrl)
+    {
+        m_projectInfo.m_logUrl = logUrl;
+    }
+
+    void ProjectButton::SetContextualText(const QString& text)
+    {
+        if (m_currentState == ProjectButtonState::Building)
+        {
+            // Don't update for empty build progress messages
+            if (!text.isEmpty())
+            {
+                // Show info about what's currently building
+                ShowMessage({}, text);
+            }
+        }
+        else
+        {
+            ShowMessage(text);
+        }
+    }
+
+    void ProjectButton::ShowBuildButton()
     {
         QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
         projectActionButton->setVisible(true);
@@ -322,77 +483,94 @@ namespace O3DE::ProjectManager
         projectActionButton->setMenu(menu);
     }
 
-    void ProjectButton::ShowBuildRequired()
+    // Only setting message without setting submessage will hide submessage
+    void ProjectButton::ShowMessage(const QString& message, const QString& submessage)
     {
-        ShowWarning(true, tr("Building project required"));
-        ShowDefaultBuildButton();
+        bool showMessage = !message.isEmpty();
+        bool showSubmessage = !submessage.isEmpty();
+        QLabel* messageLabel = m_projectImageLabel->GetMessageLabel();
+        QLabel* submessageLabel = m_projectImageLabel->GetSubMessageLabel();
+
+        if (showMessage || showSubmessage)
+        {
+            // Hide any warning text, we cannot show the warning and a message at the same time
+            ShowWarning();
+        }
+
+        // Keep main message if only submessage is set
+        if (showMessage || showMessage == showSubmessage)
+        {
+            messageLabel->setText(message);
+        }
+
+        submessageLabel->setText(submessage);
+
+        // Darken background if there is a message to make it easier to read
+        m_projectImageLabel->GetDarkenOverlay()->setVisible(showMessage || showSubmessage);
+
+        messageLabel->setVisible(showMessage || showSubmessage);
+        submessageLabel->setVisible(showSubmessage);
     }
 
-    void ProjectButton::ShowWarning(bool show, const QString& warning)
+    void ProjectButton::ShowWarning(const QString& warning)
     {
+        bool show = !warning.isEmpty();
+        QLabel* warningIcon = m_projectImageLabel->GetWarningIcon();
+
         if (show)
         {
-            // hide any overlay text, we cannot show the warning and an overlay at the same time 
-            m_projectImageLabel->GetOverlayLabel()->setVisible(false);
-        }
-        m_projectImageLabel->GetWarningLabel()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-        m_projectImageLabel->GetWarningLabel()->setText(warning);
-        m_projectImageLabel->GetWarningLabel()->setVisible(show);
-        m_projectImageLabel->GetWarningIcon()->setVisible(show);
-    }
+            // Hide any message text, we cannot show the warning and a message at the same time
+            ShowMessage();
 
-    void ProjectButton::SetBuildLogsLink(const QUrl& logUrl)
-    {
-        m_projectImageLabel->SetLogUrl(logUrl);
-    }
-
-    void ProjectButton::ShowBuildFailed(bool show, const QUrl& logUrl)
-    {
-        if (!logUrl.isEmpty())
-        {
-            ShowWarning(show, tr("Failed to build. Click to <a href=\"logs\">view logs</a>."));
+            m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
         }
         else
         {
-            ShowWarning(show, tr("Project failed to build."));
+            m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
 
-        SetBuildLogsLink(logUrl);
-        ShowDefaultBuildButton();
+        warningIcon->setToolTip(warning);
+        warningIcon->setVisible(show);
     }
 
-    void ProjectButton::SetProjectBuilding()
+    void ProjectButton::SetLaunchingEnabled(bool enabled)
     {
-        m_projectImageLabel->SetEnabled(false);
-        m_projectImageLabel->SetOverlayText(tr("Building...\n\n"));
-        m_projectMenuButton->setVisible(false);
-
-        // hide the warning label about this project needing to be built while building 
-        ShowWarning(false, "");
-
-        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
-        progressBar->setVisible(true);
-        progressBar->setValue(0);
+        m_canLaunch = enabled;
     }
 
-    void ProjectButton::SetLaunchButtonEnabled(bool enabled)
+    void ProjectButton::SetProjectBuilding(bool isBuilding)
     {
-        m_projectImageLabel->SetEnabled(enabled);
+        m_isProjectBuilding = isBuilding;
+
+        QLabel* buildingAnimation = m_projectImageLabel->GetBuildingAnimationLabel();
+
+        if (isBuilding)
+        {
+            SetLaunchingEnabled(false);
+        }
+
+        buildingAnimation->movie()->setPaused(!isBuilding);
+        buildingAnimation->setVisible(isBuilding);
+
+        m_projectMenuButton->setVisible(!isBuilding);
     }
 
-    void ProjectButton::SetButtonOverlayText(const QString& text)
+    void ProjectButton::HideContextualLabelButtonWidgets()
     {
-        m_projectImageLabel->SetOverlayText(text);
-    }
+        ShowMessage();
+        ShowWarning();
 
-    void ProjectButton::SetProgressBarValue(int progress)
-    {
-        m_projectImageLabel->GetProgressBar()->setValue(progress);
+        m_projectImageLabel->GetActionButton()->hide();
+        m_projectImageLabel->GetActionCancelButton()->hide();
+        m_projectImageLabel->GetShowLogsButton()->hide();
     }
 
     void ProjectButton::enterEvent(QEvent* /*event*/)
     {
-        m_projectImageLabel->GetOpenEditorButton()->setVisible(true);
+        if (m_canLaunch)
+        {
+            m_projectImageLabel->GetOpenEditorButton()->setVisible(true);
+        }
     }
 
     void ProjectButton::leaveEvent(QEvent* /*event*/)
