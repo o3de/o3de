@@ -596,6 +596,65 @@ namespace AZ
             return nameContext;
         }
 
+        MaterialPropertyValue MaterialTypeSourceData::ResolveSourceValue(
+            const Name& propertyId,
+            const MaterialPropertyValue& sourceValue,
+            const AZStd::string& materialTypeSourceFilePath,
+            const MaterialPropertiesLayout* materialPropertiesLayout,
+            AZStd::function<void(const char*)> onError)
+        {
+            MaterialPropertyIndex propertyIndex = materialPropertiesLayout->FindPropertyIndex(propertyId);
+            if (!propertyIndex.IsValid())
+            {
+                onError(AZStd::string::format("Could not resolve '%s': unknown property", propertyId.GetCStr()).data());
+                return sourceValue;
+            }
+            const MaterialPropertyDescriptor* descriptor = materialPropertiesLayout->GetPropertyDescriptor(propertyIndex);
+
+            switch (descriptor->GetDataType())
+            {
+            case MaterialPropertyDataType::Image:
+            {
+                Data::Asset<ImageAsset> imageAsset;
+
+                MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
+                    imageAsset, materialTypeSourceFilePath, sourceValue.GetValue<AZStd::string>());
+
+                if (result == MaterialUtils::GetImageAssetResult::Missing)
+                {
+                    onError(AZStd::string::format(
+                                "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
+                                sourceValue.GetValue<AZStd::string>().data())
+                                .data());
+                }
+                else
+                {
+                    return imageAsset;
+                }
+            }
+            break;
+            case MaterialPropertyDataType::Enum:
+            {
+                AZ::Name enumName = AZ::Name(sourceValue.GetValue<AZStd::string>());
+                uint32_t enumValue = descriptor->GetEnumValue(enumName);
+                if (enumValue == MaterialPropertyDescriptor::InvalidEnumValue)
+                {
+                    onError(AZStd::string::format(
+                                "Material property '%s': Enum value '%s' couldn't be found",
+                                propertyId.GetCStr(), enumName.GetCStr())
+                                .data());
+                }
+                else
+                {
+                    return enumValue;
+                }
+            }
+            break;
+            }
+
+            return sourceValue;
+        }
+
         bool MaterialTypeSourceData::BuildPropertyList(
             const AZStd::string& materialTypeSourceFilePath,
             MaterialTypeAssetCreator& materialTypeAssetCreator,
@@ -684,48 +743,12 @@ namespace AZ
                 }
                 else
                 {
-                    switch (property->m_dataType)
-                    {
-                    case MaterialPropertyDataType::Image:
-                    {
-                        Data::Asset<ImageAsset> imageAsset;
-
-                        MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
-                            imageAsset, materialTypeSourceFilePath, property->m_value.GetValue<AZStd::string>());
-
-                        if (result == MaterialUtils::GetImageAssetResult::Missing)
-                        {
-                            materialTypeAssetCreator.ReportError(
-                                "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
-                                property->m_value.GetValue<AZStd::string>().data());
-                        }
-                        else
-                        {
-                            materialTypeAssetCreator.SetPropertyValue(propertyId, imageAsset);
-                        }
-                    }
-                    break;
-                    case MaterialPropertyDataType::Enum:
-                    {
-                        MaterialPropertyIndex propertyIndex = materialTypeAssetCreator.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
-                        const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAssetCreator.GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
-
-                        AZ::Name enumName = AZ::Name(property->m_value.GetValue<AZStd::string>());
-                        uint32_t enumValue = propertyDescriptor->GetEnumValue(enumName);
-                        if (enumValue == MaterialPropertyDescriptor::InvalidEnumValue)
-                        {
-                            materialTypeAssetCreator.ReportError("Enum value '%s' couldn't be found in the 'enumValues' list", enumName.GetCStr());
-                        }
-                        else
-                        {
-                            materialTypeAssetCreator.SetPropertyValue(propertyId, enumValue);
-                        }
-                    }
-                    break;
-                    default:
-                        materialTypeAssetCreator.SetPropertyValue(propertyId, property->m_value);
-                        break;
-                    }
+                    // Resolve value if needed
+                    MaterialPropertyValue resolvedValue = ResolveSourceValue(
+                        propertyId, property->m_value, materialTypeSourceFilePath,
+                        materialTypeAssetCreator.GetMaterialPropertiesLayout(),
+                        [&](const char* message){ materialTypeAssetCreator.ReportError("%s", message); });
+                    materialTypeAssetCreator.SetPropertyValue(propertyId, resolvedValue);
                 }
             }
             
@@ -796,20 +819,6 @@ namespace AZ
                     "Please edit this material type source file and move the '\"version\": %u' setting up one level.",
                     m_propertyLayout.m_versionOld);
                 return Failure();
-            }
-
-            // Set materialtype version and add each version update object into MaterialTypeAsset.
-            materialTypeAssetCreator.SetVersion(m_version);
-            {
-                for (const auto& versionUpdate : m_versionUpdates)
-                {
-                    MaterialVersionUpdate materialVersionUpdate{versionUpdate.m_toVersion};
-                    for (const auto& action : versionUpdate.m_actions)
-                    {
-                        materialVersionUpdate.AddAction(action);
-                    }
-                    materialTypeAssetCreator.AddVersionUpdate(materialVersionUpdate);
-                }
             }
 
             // Used to gather all the UV streams used in this material type from its shaders in alphabetical order.
@@ -920,6 +929,28 @@ namespace AZ
                 {
                     materialTypeAssetCreator.AddUvName(uvInput, Name(uvInput.ToString()));
                 }
+            }
+
+            // Set materialtype version and add each version update object. We do this at the end so
+            // that the MaterialPropertiesLayout is known in order to resolve values within the
+            // version updates (e.g. in setValue update actions).
+            const MaterialPropertiesLayout* materialPropertiesLayout = materialTypeAssetCreator.GetMaterialPropertiesLayout();
+            auto sourceDataResolver = [&](const Name& propertyId, const MaterialPropertyValue& sourceValue)
+            {
+                return ResolveSourceValue(
+                    propertyId, sourceValue, materialTypeSourceFilePath, materialPropertiesLayout,
+                    [&](const char* message){ materialTypeAssetCreator.ReportError("%s", message); });
+            };
+            // Set the version and add the version updates
+            materialTypeAssetCreator.SetVersion(m_version);
+            for (const auto& versionUpdate : m_versionUpdates)
+            {
+                MaterialVersionUpdate materialVersionUpdate{versionUpdate.m_toVersion};
+                for (const auto& action : versionUpdate.m_actions)
+                {
+                    materialVersionUpdate.AddAction(action, sourceDataResolver);
+                }
+                materialTypeAssetCreator.AddVersionUpdate(materialVersionUpdate);
             }
 
             Data::Asset<MaterialTypeAsset> materialTypeAsset;

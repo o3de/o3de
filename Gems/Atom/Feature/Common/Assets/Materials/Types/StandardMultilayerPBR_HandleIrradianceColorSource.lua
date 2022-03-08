@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"irradianceColorSource", "manualColor"}
+    return {"irradiance.irradianceColorSource", "irradiance.manualColor"}
 end
 
 IrradianceColorSource_BaseColor = 0
@@ -18,7 +18,7 @@ IrradianceColorSource_BaseColorTint = 1
 IrradianceColorSource_ManualColor = 2
 
 function ProcessEditor(context)
-    local irradianceColorSource = context:GetMaterialPropertyValue_enum("irradianceColorSource")
+    local irradianceColorSource = context:GetMaterialPropertyValue_enum("irradiance.irradianceColorSource")
 
     if ( irradianceColorSource == IrradianceColorSource_BaseColor
       or irradianceColorSource == IrradianceColorSource_BaseColorTint ) then

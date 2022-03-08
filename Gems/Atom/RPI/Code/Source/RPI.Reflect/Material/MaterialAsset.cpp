@@ -137,15 +137,11 @@ namespace AZ
                 };
             }
 
-            const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
-            if (m_materialTypeVersion < materialTypeVersion || m_materialTypeVersion == UnspecifiedMaterialTypeVersion)
-            {
-                // It is possible that the material type has had some properties renamed or otherwise updated. If that's the case,
-                // and this material is still referencing the old property layout, we need to apply any auto updates to rename those
-                // properties before using them to realign the property values.
-                ApplyVersionUpdates(reportError);
-            }
-            
+            // It is possible that the material type has had some properties renamed or otherwise updated. If that's the case,
+            // and this material is still referencing the old property layout, we need to apply any auto updates to rename those
+            // properties before using them to realign the property values.
+            ApplyVersionUpdates(reportError);
+
             const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
 
             AZStd::vector<MaterialPropertyValue> finalizedPropertyValues(m_materialTypeAsset->GetDefaultPropertyValues().begin(), m_materialTypeAsset->GetDefaultPropertyValues().end());
@@ -275,28 +271,21 @@ namespace AZ
                 return;
             }
 
-            [[maybe_unused]] const uint32_t originalVersion = m_materialTypeVersion;
             [[maybe_unused]] bool changesWereApplied = false;
-
             for (const MaterialVersionUpdate& versionUpdate : m_materialTypeAsset->GetMaterialVersionUpdateList())
             {
-                if (m_materialTypeVersion < versionUpdate.GetVersion() || m_materialTypeVersion == UnspecifiedMaterialTypeVersion)
-                {
-                    if (versionUpdate.ApplyVersionUpdates(*this, reportError))
-                    {
-                        changesWereApplied = true;
-                        m_materialTypeVersion = versionUpdate.GetVersion();
-                    }
-                }
+                changesWereApplied |= versionUpdate.ApplyVersionUpdates(*this, reportError);
             }
-            
+
 #if AZ_ENABLE_TRACING
             if (changesWereApplied)
             {
-                const AZStd::string versionString = (originalVersion == UnspecifiedMaterialTypeVersion) ? "<Unspecified>" : AZStd::string::format("'%u'", originalVersion);
-                
+                const uint32_t originalVersion = m_materialTypeVersion;
+                const AZStd::string versionString = (originalVersion == UnspecifiedMaterialTypeVersion) ?
+                    "<Unspecified>" : AZStd::string::format("'%u'", originalVersion);
+
                 AZStd::string assetString = GetId().ToString<AZStd::string>().c_str();
-                
+
                 AZ::Data::AssetInfo assetInfo;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo,
                     &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, GetId());
@@ -309,7 +298,8 @@ namespace AZ
                     "MaterialAsset", false,
                     "This material is based on version %s of %s, and the material type is now at version '%u'. "
                     "Automatic updates have been applied. Consider updating the .material source file for %s.",
-                    versionString.c_str(), m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion(), assetString.c_str());
+                    versionString.c_str(), m_materialTypeAsset.ToString<AZStd::string>().c_str(),
+                    m_materialTypeAsset->GetVersion(), assetString.c_str());
             }
 #endif
 

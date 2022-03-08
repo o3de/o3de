@@ -266,8 +266,9 @@ namespace UnitTest
     TEST_F(MaterialAssetTests, UpgradeMaterialAsset)
     {
         // Here we test the main way that a material asset upgrade would be applied at runtime: A material type is updated to
-        // both rename a property *and* change the order in which properties appear in the layout. In this case, the new name
-        // must be identified and then that new name is used to find the appropriate index in the property layout.
+        // both rename a property, set a new default value *and* change the order in which properties appear in the layout.
+        // In this case, the new name must be identified and then that new name is used to find the appropriate index in
+        // the property layout.
 
         auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
 
@@ -295,49 +296,75 @@ namespace UnitTest
         Data::Asset<MaterialAsset> materialAsset;
         EXPECT_TRUE(creator.End(materialAsset));
 
-        // Prepare material type asset version 2 with the update actions
-        MaterialVersionUpdate versionUpdate(2);
-        versionUpdate.AddAction(MaterialVersionUpdate::Action(
-            AZ::Name{ "rename" },
-            {
-                { Name{ "from" }, AZStd::string("MyInt")        },
-                { Name{ "to"   }, AZStd::string("MyIntRenamed") }
-            } ));
 
-        Data::Asset<MaterialTypeAsset> testMaterialTypeAssetV2;
+        Data::Asset<MaterialTypeAsset> testMaterialTypeAssetV3;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
-        materialTypeCreator.AddVersionUpdate(versionUpdate);
+        // Prepare material type asset version 3 with update actions
+        materialTypeCreator.SetVersion(3);
+        {
+            MaterialVersionUpdate versionUpdate(2);
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "rename" },
+                {
+                    { Name{ "from" }, AZStd::string("MyInt") },
+                    { Name{ "to"   }, AZStd::string("MyIntIntermediateRename") }
+                } ));
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "setValue" },
+                {
+                    { Name("name"),  AZStd::string("MyFloat") },
+                    { Name("value"), 3.14f }
+                } ));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        {
+            MaterialVersionUpdate versionUpdate(3);
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "rename" },
+                {
+                    { Name{ "from" }, AZStd::string("MyIntIntermediateRename") },
+                    { Name{ "to"   }, AZStd::string("MyIntFinalRename") }
+                } ));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
         materialTypeCreator.AddShader(shaderAsset);
         // Now we add the properties in a different order from before, and use the new name for MyInt.
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyUInt" }, MaterialPropertyDataType::UInt, Name{ "m_uint" });
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyFloat" }, MaterialPropertyDataType::Float, Name{ "m_float" });
-        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyIntRenamed" }, MaterialPropertyDataType::Int, Name{ "m_int" });
-        EXPECT_TRUE(materialTypeCreator.End(testMaterialTypeAssetV2));
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyIntFinalRename" }, MaterialPropertyDataType::Int, Name{ "m_int" });
+        EXPECT_TRUE(materialTypeCreator.End(testMaterialTypeAssetV3));
 
         // This is our way of faking the idea that an old version of the MaterialAsset could be loaded with a new version of the MaterialTypeAsset.
-        ReplaceMaterialType(materialAsset, testMaterialTypeAssetV2);
+        ReplaceMaterialType(materialAsset, testMaterialTypeAssetV3);
 
         // This can find errors and warnings, we are looking for a warning when the version update is applied
         ErrorMessageFinder warningFinder; 
         warningFinder.AddExpectedErrorMessage("Automatic updates have been applied. Consider updating the .material source file");
         warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
-        warningFinder.AddExpectedErrorMessage("material type is now at version '2'");
+        warningFinder.AddExpectedErrorMessage("material type is now at version '3'");
+        warningFinder.AddExpectedErrorMessage("SetValue version update has detected (and overwritten) a previous value for property MyFloat.");
         
         // Even though this material was created using the old version of the material type, it's property values should get automatically
         // updated to align with the new property layout in the latest MaterialTypeAsset.
-        MaterialPropertyIndex myIntIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntRenamed"});
+        EXPECT_FALSE(materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyInt"}).IsValid());
+        EXPECT_FALSE(materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntIntermediateRename"}).IsValid());
+        MaterialPropertyIndex myIntIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntFinalRename"});
         EXPECT_EQ(2, myIntIndex.GetIndex());
         EXPECT_EQ(7, materialAsset->GetPropertyValues()[myIntIndex.GetIndex()].GetValue<int32_t>());
-        
+
         warningFinder.CheckExpectedErrorsFound();
 
         // Since the MaterialAsset has already been updated, and the warning reported once, we should not see the "consider updating"
         // warning reported again on subsequent property accesses.
         warningFinder.Reset();
-        myIntIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntRenamed"});
+        myIntIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntFinalRename"});
         EXPECT_EQ(2, myIntIndex.GetIndex());
         EXPECT_EQ(7, materialAsset->GetPropertyValues()[myIntIndex.GetIndex()].GetValue<int32_t>());
+
+        // Check that the setValue update has worked
+        MaterialPropertyIndex myFloatIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyFloat"});
+        EXPECT_EQ(1, myFloatIndex.GetIndex());
+        EXPECT_EQ(3.14f, materialAsset->GetPropertyValues()[myFloatIndex.GetIndex()].GetValue<float>());
     }
 
     TEST_F(MaterialAssetTests, Error_NoBegin)

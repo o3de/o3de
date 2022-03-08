@@ -321,6 +321,15 @@ namespace AZ
             
             static void ExtendNameContext(MaterialNameContext& nameContext, const MaterialTypeSourceData::PropertyGroup& propertyGroup);
 
+            //! Resolve source values (e.g. image filename, Enum string) to their asset version
+            //! (ImageAsset, uint32_t).
+            static MaterialPropertyValue ResolveSourceValue(
+                const Name& propertyId,
+                const MaterialPropertyValue& sourceValue,
+                const AZStd::string& materialTypeSourceFilePath,
+                const MaterialPropertiesLayout* materialPropertiesLayout,
+                AZStd::function<void(const char*)> onError);
+
             //! Recursively populates a material type asset with properties from the tree of material property groups.
             //! @param materialTypeSourceFilePath path to the material type file that is being processed, used to look up relative paths
             //! @param materialTypeAssetCreator properties will be added to this creator

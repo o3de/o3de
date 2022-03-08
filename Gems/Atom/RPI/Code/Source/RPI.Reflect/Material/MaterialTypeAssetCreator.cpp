@@ -89,77 +89,9 @@ namespace AZ
 
         bool MaterialTypeAssetCreator::ValidateMaterialVersion()
         {
-            if (m_asset->m_materialVersionUpdates.empty())
-            {
-                return true;
-            }
-
-            uint32_t prevVersion = 0;
-            for (const MaterialVersionUpdate& versionUpdate : m_asset->m_materialVersionUpdates)
-            {
-                // Validate internal consistency
-                if (!versionUpdate.ValidateActions(m_asset->GetMaterialPropertiesLayout(), [this](const char* message){ReportError("%s", message);}))
-                {
-                    return false;
-                }
-
-                if (versionUpdate.GetVersion() <= prevVersion)
-                {
-                    ReportError("Version updates are not sequential. See version update '%u'.", versionUpdate.GetVersion());
-                    return false;
-                }
-
-                if (versionUpdate.GetVersion() > m_asset->m_version)
-                {
-                    ReportError("Version updates go beyond the current material type version. See version update '%u'.", versionUpdate.GetVersion());
-                    return false;
-                }
-
-                // We don't allow previously renamed property names to be reused for new properties. This would just complicate too many things,
-                // as every use of every property name (like in Material Component, or in scripts, for example) would have to have a version number
-                // associated with it, in order to know whether or which rename to apply.
-                for (size_t propertyIndex = 0; propertyIndex < m_asset->m_materialPropertiesLayout->GetPropertyCount(); ++propertyIndex)
-                {
-                    Name originalPropertyName = m_asset->m_materialPropertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex{propertyIndex})->GetName();
-                    Name newPropertyName = originalPropertyName;
-                    if (versionUpdate.ApplyPropertyRenames(newPropertyName))
-                    {
-                        ReportError("There was a material property named '%s' at material type version %d. This name cannot be reused for another property.",
-                            originalPropertyName.GetCStr(), versionUpdate.GetVersion());
-                        return false;
-                    }
-                }
-
-                prevVersion = versionUpdate.GetVersion();
-            }
-
-            // Collect new names of renamed properties...
-            const auto& lastMaterialVersionUpdate = m_asset->m_materialVersionUpdates.back();
-            AZStd::vector<AZ::Name> renamedPropertyNewNames;
-            for (const auto& action : lastMaterialVersionUpdate.GetActions())
-            {
-                if (action.m_operation != AZ::Name("rename"))
-                {
-                    continue;
-                }
-
-                AZStd::string toStr = action.GetArg(AZ::Name{ "to" }).GetValue<AZStd::string>();
-                renamedPropertyNewNames.push_back(AZ::Name(toStr));
-            }
-
-            // ... and verify that we indeed have them.
-            for (const auto& propertyName : renamedPropertyNewNames)
-            {
-                const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ propertyName });
-                if (!propertyIndex.IsValid())
-                {
-                    ReportError("Renamed property '%s' not found in material property layout. "
-                            "Check that the property name has been upgraded to the correct version",
-                            propertyName.GetCStr());
-                    return false;
-                }
-            }
-            return true;
+            return MaterialVersionUpdate::ValidateUpdates(
+                m_asset->m_materialVersionUpdates, m_asset->m_version, m_asset->GetMaterialPropertiesLayout(),
+                [this](const char* message){ ReportError("%s", message); });
         }
 
         void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVaraintId, const AZ::Name& shaderTag)

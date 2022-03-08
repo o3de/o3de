@@ -135,8 +135,8 @@ namespace AZ
             //! MaterialTypeAsset must be valid before this is called.
             void Finalize(AZStd::function<void(const char*)> reportWarning = nullptr, AZStd::function<void(const char*)> reportError = nullptr);
 
-            //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
-            //! based on the MaterialTypeAsset's version update procedure.
+            //! Checks the material type version and potentially applies a series of property
+            //! changes based on the MaterialTypeAsset's version update procedure.
             void ApplyVersionUpdates(AZStd::function<void(const char*)> reportError);
 
             //! Called by asset creators to assign the asset to a ready state.
@@ -181,10 +181,7 @@ namespace AZ
             bool m_wasPreFinalized = false;
             
             //! The materialTypeVersion this materialAsset was based off. If the versions do not match at runtime when a
-            //! materialTypeAsset is loaded, automatic updates will be attempted at runtime. Note this is not needed to
-            //! determine which updates to apply, but simply as an optimization to ignore the update procedure when the
-            //! version numbers match. (We determine which updates to apply by simply checking the property name, and not
-            //! allowing the same name to ever be used for two different properties, see MaterialTypeAssetCreator::ValidateMaterialVersion)
+            //! materialTypeAsset is loaded, automatic updates will be attempted.
             uint32_t m_materialTypeVersion = UnspecifiedMaterialTypeVersion;
         };
        
