@@ -993,8 +993,6 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
-        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-
         auto MergeGemRootRegistryFolder = [&registry, &platform, &specializations, &scratchBuffer]
         (AZStd::string_view, AZ::IO::FixedMaxPath gemPath)
         {
