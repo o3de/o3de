@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <AzCore/PlatformDef.h>
-
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
 #define PLATFORM_H_SECTION_3 3
@@ -32,6 +30,8 @@
 #if (defined(LINUX) && !defined(ANDROID)) || defined(APPLE)
     #define _FILE_OFFSET_BITS 64 // define large file support > 2GB
 #endif
+
+#include <AzCore/PlatformIncl.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_3
@@ -132,6 +132,8 @@
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
     #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #endif
+
+#include <AzCore/PlatformDef.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Define BIT macro for use in enums and bit masks.
