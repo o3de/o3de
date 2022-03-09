@@ -43,7 +43,7 @@ float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapL
     distance.y -= 1.0 * step(0.5, distance.y);
     distance.y += 1.0 * step(distance.y, -0.5);
 
-    float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
+    float clipmapScale = 1.0 / float(1 << (CLIPMAP_STACK_SIZE - clipmapLevel));
     float2 maxRenderSize = PassSrg::m_clipmapData.m_maxRenderSize.xy;
     float2 viewRelativePosition = distance * (maxRenderSize * clipmapScale);
     return PassSrg::m_clipmapData.m_currentViewPosition.xy + viewRelativePosition;
@@ -68,7 +68,7 @@ bool NeedsUpdate(uint2 pixelPosition, uint clipmapLevel)
     float2 currentViewPosition = PassSrg::m_clipmapData.m_currentViewPosition.xy;
     float2 distance = abs(worldPosition - currentViewPosition);
     
-    float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
+    float clipmapScale = 1.0 / float(1 << (CLIPMAP_STACK_SIZE - clipmapLevel));
     float2 maxRenderSize = PassSrg::m_clipmapData.maxRenderSize.xy;
     
     float2 clipmapMaxDistance = maxRenderSize * (clipmapScale / 2.0);

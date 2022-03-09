@@ -14,8 +14,6 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
-#pragma optimize("", off)
-
 namespace Terrain
 {
     AZ::RPI::Ptr<TerrainMacroTextureClipmapGenerationPass> TerrainMacroTextureClipmapGenerationPass::Create(
@@ -221,5 +219,3 @@ namespace Terrain
         memcpy(&m_maxRenderSize, &maxRenderSize, sizeof(m_maxRenderSize));
     }
 } // namespace Terrain
-
-#pragma optimize("", on)
