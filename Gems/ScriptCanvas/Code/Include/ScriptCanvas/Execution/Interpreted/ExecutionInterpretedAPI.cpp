@@ -55,15 +55,6 @@ namespace ExecutionInterpretedAPICpp
             : nullptr;
     }
 
-    int DeleteNodeable(lua_State* lua)
-    {
-        AZ::LuaUserData* userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -1));
-        AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
-        delete reinterpret_cast<ScriptCanvas::Nodeable*>(userData->value);
-        userData->value = nullptr;
-        return 0;
-    }
-
     int ErrorHandler(lua_State* lua)
     {
         if (lua_isstring(lua, -1))
@@ -76,22 +67,6 @@ namespace ExecutionInterpretedAPICpp
         }
 
         lua_pop(lua, 1);
-        return 0;
-    }
-
-    int ProxyNewIndexMethod(lua_State* lua)
-    {
-        // Lua: ud, k, v 
-        lua_pushvalue(lua, lua_upvalueindex(1));
-        // Lua: ud, k, v, ?
-        AZ_Assert(lua_istable(lua, -1), "the first upvalue must be a table");
-        // Lua: ud, k, v, proxy
-        lua_replace(lua, -4);
-        // Lua: proxy k, v
-        lua_rawset(lua, -3);
-        // Lua: proxy
-        lua_pop(lua, 1);
-        // Lua: 
         return 0;
     }
 
