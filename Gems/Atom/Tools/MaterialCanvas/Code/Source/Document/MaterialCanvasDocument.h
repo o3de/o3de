@@ -29,12 +29,11 @@ namespace MaterialCanvas
         static void Reflect(AZ::ReflectContext* context);
 
         MaterialCanvasDocument() = default;
-        MaterialCanvasDocument(const AZ::Crc32& toolId);
+        MaterialCanvasDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo);
         virtual ~MaterialCanvasDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
         static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
-        AtomToolsFramework::DocumentTypeInfo GetDocumentTypeInfo() const override;
         AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
         bool Open(const AZStd::string& loadPath) override;
         bool Save() override;
