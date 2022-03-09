@@ -78,7 +78,7 @@ namespace
     private:
         void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
         {
-            emit ViewportInfoStatusUpdated(static_cast<int>(state));
+            emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
         }
     };
 } // end anonymous namespace
@@ -376,7 +376,7 @@ void CViewportTitleDlg::OnInitDialog()
     UpdateDisplayInfo();
 
     QFontMetrics metrics({});
-    int width = static_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
+    int width = aznumeric_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
 
     m_cameraSpeed->setFixedWidth(width);
 
@@ -565,8 +565,8 @@ void CViewportTitleDlg::OnMenuFOVCustom()
 
     if (ok)
     {
-        m_pViewPane->SetViewportFOV(static_cast<float>(fov));
-        OnViewportFOVChanged(DEG2RAD(fov));
+        m_pViewPane->SetViewportFOV(aznumeric_cast<float>(fov));
+        OnViewportFOVChanged(AZ::DegToRad(fov));
         // Update the custom presets.
         const QString text = QString::number(fov);
         UpdateCustomPresets(text, m_customFOVPresets);
@@ -589,7 +589,7 @@ void CViewportTitleDlg::CreateFOVMenu()
         [this](float f)
         {
             m_pViewPane->SetViewportFOV(f);
-            OnViewportFOVChanged(DEG2RAD(f));
+            OnViewportFOVChanged(AZ::DegToRad(f));
         },
         m_customFOVPresets);
     if (!m_fovMenu->isEmpty())
@@ -858,7 +858,7 @@ void CViewportTitleDlg::OnViewportSizeChanged(int width, int height)
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnViewportFOVChanged(float fov)
 {
-    const float degFOV = RAD2DEG(fov);
+    const float degFOV = AZ::RadToDeg(fov);
     if (m_fovMenu)
     {
         m_fovMenu->setTitle(QString::fromLatin1("FOV:  %1%2").arg(qRound(degFOV)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
@@ -883,8 +883,8 @@ void CViewportTitleDlg::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_
     {
         if (m_pViewPane)
         {
-            const int eventWidth = static_cast<int>(wparam);
-            const int eventHeight = static_cast<int>(lparam);
+            const int eventWidth = aznumeric_cast<int>(wparam);
+            const int eventHeight = aznumeric_cast<int>(lparam);
             const QWidget* viewport = m_pViewPane->GetViewport();
 
             // This should eventually be converted to an EBus to make it easy to connect to the correct viewport
