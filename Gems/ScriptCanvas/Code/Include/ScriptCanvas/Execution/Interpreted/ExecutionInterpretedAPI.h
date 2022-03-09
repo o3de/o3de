@@ -61,9 +61,6 @@ namespace ScriptCanvas
         // Lua: (ebus handler) userdata, (out name) string, (out implementation) function
         int SetExecutionOutResult(lua_State* lua);
 
-        // Lua: executionState, outKey, function
-        int SetExecutionOutUserSubgraph(lua_State* lua);
-            
         void SetInterpretedExecutionMode(BuildConfiguration configuration);
 
         void SetInterpretedExecutionModeDebug();

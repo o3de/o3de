@@ -1096,6 +1096,7 @@ namespace ScriptCanvas
                     auto nodeableParse = AZStd::make_shared<NodeableParse>();
                     nodeableVariable->m_isExposedToConstruction = false;
                     nodeableParse->m_nodeable = nodeableVariable;
+                    nodeableParse->m_isInterpreted = true;
                     nodeableParse->m_simpleName = interfaceName;
 
                     m_nodeablesByNode.emplace(&node, nodeableParse);
@@ -2152,7 +2153,7 @@ namespace ScriptCanvas
             return false;
         }
 
-        bool AbstractCodeModel::IsPerEntityDataRequired() const
+        bool AbstractCodeModel::IsClass() const
         {
             return !IsPureLibrary();
         }
@@ -2187,8 +2188,8 @@ namespace ScriptCanvas
 
         bool AbstractCodeModel::IsUserNodeable() const
         {
-            // #functions2 check the subgraph interface for IsUserNodeable vs User variable
-            return !IsPureLibrary();
+            // #functions2 check the subgraph interface for IsUserNodeable vs IsClass
+            return IsClass();
         }
 
         bool AbstractCodeModel::IsUserNodeable(VariableConstPtr variable) const
@@ -3102,6 +3103,7 @@ namespace ScriptCanvas
             else
             {
                 m_subgraphInterface.MarkExecutionCharacteristics(ExecutionCharacteristics::Object);
+                m_subgraphInterface.MarkBaseClass();
             }
 
             if (m_subgraphInterface.GetExecutionCharacteristics() == ExecutionCharacteristics::Object)

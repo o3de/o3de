@@ -456,11 +456,9 @@ namespace ScriptCanvas
             using namespace ScriptCanvas::Grammar;
             using namespace ExecutionInterpretedAPICpp;
 
-            lua_register(lua, k_InitializeNodeableOutKeys, &InitializeNodeableOutKeys);
-            lua_register(lua, k_NodeableCallInterpretedOut, &CallExecutionOut);
-            lua_register(lua, k_NodeableSetExecutionOutName, &SetExecutionOut);
-            lua_register(lua, k_NodeableSetExecutionOutResultName, &SetExecutionOutResult);
-            lua_register(lua, k_NodeableSetExecutionOutUserSubgraphName, &SetExecutionOutUserSubgraph);
+            lua_register(lua, k_InitializeExecutionOutsName, &InitializeNodeableOutKeys);
+            lua_register(lua, k_SetExecutionOutNameNodeable, &SetExecutionOut);
+            lua_register(lua, k_SetExecutionOutResultNameNodeable, &SetExecutionOutResult);
             lua_register(lua, k_OverrideNodeableMetatableName, &OverrideNodeableMetatable);
             lua_register(lua, k_UnpackDependencyConstructionArgsFunctionName, &UnpackDependencyConstructionArgs);
             lua_register(lua, k_UnpackDependencyConstructionArgsLeafFunctionName, &UnpackDependencyConstructionArgsLeaf);
@@ -494,21 +492,6 @@ namespace ScriptCanvas
             AZ::ScriptSystemRequestBus::BroadcastResult(scriptContext, &AZ::ScriptSystemRequests::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
             AZ_Verify(scriptContext && scriptContext->Execute(ExecutionInterpretedAPICpp::k_LuaClassInheritanceChunk)
                 , "Failed to add ScriptCanvas user object inheritance to ScriptContext!");
-        }
-
-
-        int CallExecutionOut(lua_State* lua)
-        {
-            // Lua: executionState, outKey, args...
-            const int argsCount = lua_gettop(lua);
-            AZ_Assert(argsCount >= 2, "CallExecutionOut: Error in compiled Lua file, not enough arguments");
-            AZ_Assert(lua_isuserdata(lua, 1), "CallExecutionOut: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
-            AZ_Assert(lua_isnumber(lua, 2), "CallExecutionOut: Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
-            Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1);
-            size_t index = aznumeric_caster(lua_tointeger(lua, 2));
-            nodeable->CallOut(index, nullptr, nullptr, argsCount - 2);
-            // Lua: results...
-            return lua_gettop(lua);
         }
 
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
@@ -627,26 +610,6 @@ namespace ScriptCanvas
             // Lua: nodeable, index, lambda, lambda
 
             nodeable->SetExecutionOut(index, OutInterpretedResult(lua));
-            // Lua: nodeable, index, lambda
-
-            // \todo clear these immediately after they are not needed with an explicit call written by the translator
-            return 0;
-        }
-
-        int SetExecutionOutUserSubgraph(lua_State* lua)
-        {
-            AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutUserSubgraph is not userdata (Nodeable)");
-            AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutUserSubgraph is not a number");
-            AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOutUserSubgraph is not a function (lambda need to get around atypically routed arguments)");
-            Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, -3);
-            AZ_Assert(nodeable, "Failed to read nodeable");
-            size_t index = aznumeric_caster(lua_tointeger(lua, -2));
-            // Lua: nodeable, index, lambda
-
-            lua_pushvalue(lua, -1);
-            // Lua: nodeable, index, lambda, lambda
-
-            nodeable->SetExecutionOut(index, OutInterpretedUserSubgraph(lua));
             // Lua: nodeable, index, lambda
 
             // \todo clear these immediately after they are not needed with an explicit call written by the translator
