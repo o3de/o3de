@@ -35,8 +35,8 @@ namespace MaterialCanvas
         }
     }
 
-    MaterialCanvasDocument::MaterialCanvasDocument(const AZ::Crc32& toolId)
-        : AtomToolsFramework::AtomToolsDocument(toolId)
+    MaterialCanvasDocument::MaterialCanvasDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
     {
         MaterialCanvasDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -48,17 +48,13 @@ namespace MaterialCanvas
 
     AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::BuildDocumentTypeInfo()
     {
-        AtomToolsFramework::DocumentTypeInfo documentType = AtomToolsDocument::BuildDocumentTypeInfo();
+        AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Material Canvas";
-        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId) { return aznew MaterialCanvasDocument(toolId); };
+        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
+            return aznew MaterialCanvasDocument(toolId, documentTypeInfo); };
         documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas", "materialcanvas" });
         documentType.m_supportedExtensionsToSave.push_back({ "Material Canvas", "materialcanvas" });
         return documentType;
-    }
-
-    AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::GetDocumentTypeInfo() const
-    {
-        return BuildDocumentTypeInfo();
     }
 
     AtomToolsFramework::DocumentObjectInfoVector MaterialCanvasDocument::GetObjectInfo() const

@@ -7,7 +7,6 @@
  */
 
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <Viewport/MaterialCanvasViewportWidget.h>
 #include <Window/MaterialCanvasMainWindow.h>
@@ -40,19 +39,9 @@ namespace MaterialCanvas
 
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/MaterialInspector");
-        m_materialInspector->SetIndicatorFunction(
-            [](const AzToolsFramework::InstanceDataNode* node)
-            {
-                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
-                if (property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue))
-                {
-                    return ":/Icons/changed_property.svg";
-                }
-                return ":/Icons/blank.png";
-            });
 
         AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId), Qt::LeftDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea, Qt::Vertical);
         SetDockWidgetVisible("Viewport Settings", false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());

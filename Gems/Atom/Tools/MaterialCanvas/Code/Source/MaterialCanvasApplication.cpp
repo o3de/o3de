@@ -71,9 +71,16 @@ namespace MaterialCanvas
     {
         Base::StartCommon(systemEntity);
 
+        // Overriding default document type info to provide a custom view
+        auto documentTypeInfo = MaterialCanvasDocument::BuildDocumentTypeInfo();
+        documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            auto emptyWidget = new QWidget(m_window.get());
+            emptyWidget->setContentsMargins(0, 0, 0, 0);
+            emptyWidget->setFixedSize(0, 0);
+            return m_window->AddDocumentTab(documentId, emptyWidget);
+        };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
-            MaterialCanvasDocument::BuildDocumentTypeInfo());
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
         m_viewportSettingsSystem.reset(aznew MaterialCanvasViewportSettingsSystem(m_toolId));
 

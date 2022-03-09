@@ -122,7 +122,7 @@ namespace MaterialCanvas
         AtomToolsFramework::AssetSelectionGrid dialog("Model Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
             return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
                 AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension);
-        }, QSize(itemSize, itemSize), QApplication::activeWindow());
+        }, QSize(itemSize, itemSize), AtomToolsFramework::GetToolMainWindow());
 
         AZ::Data::AssetId assetId;
         MaterialCanvasViewportSettingsRequestBus::EventResult(
@@ -226,7 +226,7 @@ namespace MaterialCanvas
         AtomToolsFramework::AssetSelectionGrid dialog("Lighting Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
             return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
                 AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension);
-        }, QSize(itemSize, itemSize), QApplication::activeWindow());
+        }, QSize(itemSize, itemSize), AtomToolsFramework::GetToolMainWindow());
 
         AZ::Data::AssetId assetId;
         MaterialCanvasViewportSettingsRequestBus::EventResult(
