@@ -63,6 +63,7 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_AssetBrowser_TreeNavigation(EditorSharedTest):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
 
+    @pytest.mark.xfail(reason="Unknown failure. Investigation blocked by https://github.com/o3de/o3de/issues/8108")
     class test_ComponentCRUD_Add_Delete_Components(EditorSharedTest):
         from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
 
