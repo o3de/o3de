@@ -8,7 +8,6 @@
 		<Member Type="bool" Name="isJoin" Init="0" />
 		<Member Type="uint32_t" Name="capabilities" Init="0" />
 		<Member Type="uint32_t" Name="persistentId" Init="0" />
-		<Member Type="AZStd::string" Name="persistentName" />
 		<Member Type="AZStd::string" Name="displayName" />
 	</Packet>
 

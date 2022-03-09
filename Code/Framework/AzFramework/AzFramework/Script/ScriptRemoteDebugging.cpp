@@ -445,7 +445,7 @@ namespace AzFramework
             EBUS_EVENT_RESULT(sender, TargetManager::Bus, GetTargetInfo, msg->GetSenderTargetId());
 
             // The only message we accept without a target match is AttachDebugger
-            if (m_debugger.GetNetworkId() != sender.GetNetworkId())
+            if (!m_debugger.IsIdentityEqualTo(sender))
             {
                 ScriptDebugRequest* request = azdynamic_cast<ScriptDebugRequest*>(msg.get());
                 if (!request ||
@@ -698,7 +698,7 @@ namespace AzFramework
         if (m_executionState != SDA_STATE_DETACHED)
         {
             bool debuggerOnline = false;
-            EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline, m_debugger.GetNetworkId());
+            EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline, m_debugger.GetPersistentId());
             if (!debuggerOnline)
             {
                 m_executionState = SDA_STATE_DETACHING;

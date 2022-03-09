@@ -41,7 +41,7 @@ namespace AzFramework
 
     bool TargetInfo::IsSelf() const
     {
-        return m_flags & TF_SELF && m_networkId == k_selfNetworkId;
+        return m_flags & TF_SELF && m_persistentId == k_selfNetworkId;
     }
 
     bool TargetInfo::IsValid() const
@@ -59,7 +59,7 @@ namespace AzFramework
         return m_persistentId;
     }
 
-    int TargetInfo::GetNetworkId() const
+    AZ::u32 TargetInfo::GetNetworkId() const
     {
         return m_networkId;
     }
@@ -110,20 +110,19 @@ namespace AzFramework
         }
 
         // neighborhood bus
-        void OnNodeJoined(const AzFrameworkPackets::Neighbor& node) override
+        void OnNodeJoined(const AzFrameworkPackets::Neighbor& node, AZ::u32 networkId) override
         {
             const AZ::u32 capabilities = node.GetCapabilities();
-            const AZ::u32 memberId = node.GetPersistentId();
-            const AZ::u32 persistentId = AZ::Crc32(node.GetPersistentName());
-            AZ_TracePrintf("Neighborhood", "Discovered node with 0x%x from member %d.\n", capabilities, static_cast<int>(memberId));
+            const AZ::u32 persistentId = node.GetPersistentId();
+            AZ_TracePrintf("Neighborhood", "Discovered node with 0x%x from member %d.\n", capabilities, static_cast<int>(persistentId));
 
-            TargetContainer::pair_iter_bool ret = m_component->m_availableTargets.insert_key(static_cast<AZ::u32>(memberId));
+            TargetContainer::pair_iter_bool ret = m_component->m_availableTargets.insert_key(static_cast<AZ::u32>(persistentId));
             TargetInfo& ti = ret.first->second;
 
             ti.m_lastSeen = time(nullptr);
             ti.m_displayName = node.GetDisplayName();
             ti.m_persistentId = persistentId;
-            ti.m_networkId = memberId;
+            ti.m_networkId = networkId;
             ti.m_flags |= TF_ONLINE;
             if (capabilities & Neighborhood::NEIGHBOR_CAP_LUA_VM)
             {
@@ -140,7 +139,7 @@ namespace AzFramework
                 (m_component->m_settings->m_lastTarget.m_flags & TF_ONLINE) == 0)
             {
                 m_component->m_settings->m_lastTarget.m_flags |= TF_ONLINE;
-                m_component->m_settings->m_lastTarget.m_networkId = memberId;
+                m_component->m_settings->m_lastTarget.m_networkId = networkId;
                 m_component->m_settings->m_lastTarget.m_lastSeen = ti.m_lastSeen;
                 EBUS_QUEUE_EVENT(TargetManagerClient::Bus, DesiredTargetConnected, true);
             }
@@ -151,7 +150,7 @@ namespace AzFramework
             AZ_TracePrintf("Neighborhood", "Lost contact with node from member %d.\n", static_cast<int>(node.GetPersistentId()));
 
             // If our desired target has left the network, flag it and notify listeners
-            if (node.GetPersistentId() == m_component->m_settings->m_lastTarget.m_networkId)
+            if (node.GetPersistentId() == m_component->m_settings->m_lastTarget.m_persistentId)
             {
                 m_component->m_settings->m_lastTarget.m_flags &= ~TF_ONLINE;
                 EBUS_QUEUE_EVENT(TargetManagerClient::Bus, DesiredTargetConnected, false);
@@ -349,7 +348,7 @@ namespace AzFramework
     {
         if (packet.GetIsJoin())
         {
-            EBUS_EVENT(Neighborhood::NeighborhoodBus, OnNodeJoined, packet);
+            EBUS_EVENT(Neighborhood::NeighborhoodBus, OnNodeJoined, packet, static_cast<uint32_t>(connection->GetConnectionId()));
         }
         else
         {
@@ -366,7 +365,7 @@ namespace AzFramework
         // Receive
         TargetInfo ti = GetDesiredTarget();
         if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor &&
-            ti.GetPersistentId() != m_settings->m_lastTarget.m_persistentId)
+            static_cast<uint32_t>(connection->GetConnectionId()) != m_settings->m_lastTarget.m_networkId)
         {
             // Listener should route traffic based on selected target
             return true;
@@ -460,10 +459,10 @@ namespace AzFramework
     {
         AZ_TracePrintf("TargetManagementComponent", "Set Target - %u", desiredTargetID);
 
-        if (desiredTargetID != static_cast<AZ::u32>(m_settings->m_lastTarget.m_networkId))
+        if (desiredTargetID != static_cast<AZ::u32>(m_settings->m_lastTarget.m_persistentId))
         {
             TargetInfo ti = GetTargetInfo(desiredTargetID);
-            AZ::u32 oldTargetID = m_settings->m_lastTarget.m_networkId;
+            AZ::u32 oldTargetID = m_settings->m_lastTarget.m_persistentId;
             m_settings->m_lastTarget = ti;
             m_tmpInboundBuffer.clear();
             m_tmpInboundBufferPos = 0;
@@ -497,7 +496,7 @@ namespace AzFramework
 
     void TargetManagementComponent::SetDesiredTargetInfo(const TargetInfo& targetInfo)
     {
-        SetDesiredTarget(targetInfo.GetNetworkId());
+        SetDesiredTarget(targetInfo.GetPersistentId());
     }
 
     // retrieve what it was set to.
@@ -533,7 +532,7 @@ namespace AzFramework
     bool TargetManagementComponent::IsDesiredTargetOnline()
     {
         TargetInfo desiredTarget = GetDesiredTarget();
-        return IsTargetOnline(desiredTarget.GetNetworkId());
+        return IsTargetOnline(desiredTarget.GetPersistentId());
     }
 
     void TargetManagementComponent::SetMyPersistentName(const char* name)
@@ -575,7 +574,7 @@ namespace AzFramework
         {
             TmMsg* inboxMessage = static_cast<TmMsg*>(m_serializeContext->CloneObject(static_cast<const void*>(&msg), msg.RTTI_GetType()));
             AZ_Assert(inboxMessage, "Failed to clone local loopback message.");
-            inboxMessage->m_senderTargetId = target.GetNetworkId();
+            inboxMessage->m_senderTargetId = target.GetPersistentId();
 
             if (msg.GetCustomBlobSize() > 0)
             {
@@ -618,7 +617,7 @@ namespace AzFramework
 
         m_outboxMutex.lock();
         m_outbox.push_back();
-        m_outbox.back().first = target.m_networkId;
+        m_outbox.back().first = target.m_persistentId;
         m_outbox.back().second.swap(msgBuffer);
         m_outboxMutex.unlock();
     }
@@ -663,6 +662,10 @@ namespace AzFramework
             for (size_t iSend = 0; iSend < maxMsgsToSend; ++iSend)
             {
                 // Send outbound data
+
+                // Lock outbox to prevent a read/write race
+                m_outboxMutex.lock();
+
                 uint8_t* outBuffer = (uint8_t*)m_outbox.front().second.data();
                 const size_t totalSize = m_outbox.front().second.size();
                 size_t outSize = m_outbox.front().second.size();
@@ -678,12 +681,14 @@ namespace AzFramework
 
                     auto visitor = [this, tmPacket](AzNetworking::IConnection& connection)
                     {
-                        m_networkInterface->SendReliablePacket(connection.GetConnectionId(), tmPacket);
+                        if (m_settings->m_lastTarget.GetNetworkId() == static_cast<uint32_t>(connection.GetConnectionId()))
+                        {
+                            m_networkInterface->SendReliablePacket(connection.GetConnectionId(), tmPacket);
+                        }
                     };
                     m_networkInterface->GetConnectionSet().VisitConnections(visitor);               
                 }
 
-                m_outboxMutex.lock();
                 m_outbox.pop_front();
                 m_outboxMutex.unlock();
             }
@@ -707,7 +712,6 @@ namespace AzFramework
                     AzFrameworkPackets::Neighbor initPacket;
                     initPacket.SetPersistentId(AZ::Crc32(Platform::GetPersistentName()));
                     initPacket.SetCapabilities(Neighborhood::NEIGHBOR_CAP_LUA_VM | Neighborhood::NEIGHBOR_CAP_LUA_DEBUGGER);
-                    initPacket.SetPersistentName(Platform::GetPersistentName());
                     initPacket.SetDisplayName(Platform::GetPersistentName());
                     initPacket.SetIsJoin(true);
                     networkInterface.second->SendReliablePacket(connId, initPacket);

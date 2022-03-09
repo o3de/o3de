@@ -46,7 +46,7 @@ namespace Neighborhood {
         virtual ~NeighborhoodEvents() {}
 
         // used to advertise a node and its capabilities
-        virtual void OnNodeJoined([[maybe_unused]] const AzFrameworkPackets::Neighbor& node) {}
+        virtual void OnNodeJoined([[maybe_unused]] const AzFrameworkPackets::Neighbor& node, [[maybe_unused]] AZ::u32 networkId) {}
         // used to notify that a node is no longer available
         virtual void OnNodeLeft([[maybe_unused]] const AzFrameworkPackets::Neighbor& node) {}
     };

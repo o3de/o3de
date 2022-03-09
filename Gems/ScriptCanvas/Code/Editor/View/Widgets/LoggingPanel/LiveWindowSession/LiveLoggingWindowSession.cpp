@@ -418,7 +418,7 @@ namespace ScriptCanvasEditor
 
             if (info.IsValid())
             {
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SetDesiredTarget, info.GetNetworkId());
+                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SetDesiredTarget, info.GetPersistentId());
             }
         }
     }

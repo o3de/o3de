@@ -59,7 +59,7 @@ namespace AzToolsFramework
             ConstructDisplayTargetString(displayTargetString, info);
             
             QAction *targetAction = new QAction(isOnline ? QIcon(":/general/target_connected") : QIcon(":/general/target_disconnected"), displayTargetString, this);
-            targetAction->setProperty("targetID", info.GetNetworkId());
+            targetAction->setProperty("targetID", info.GetPersistentId());
             menu.addAction(targetAction);
         }
         
@@ -144,7 +144,7 @@ namespace AzToolsFramework
 
     void TargetSelectorButton::ConstructDisplayTargetString(QString& outputString, const AzFramework::TargetInfo& info)
     {
-        outputString = QString("%1 (%2)").arg(info.GetDisplayName()).arg(QString::number(static_cast<unsigned int>(info.GetNetworkId()),16));
+        outputString = QString("%1 (%2)").arg(info.GetDisplayName()).arg(QString::number(static_cast<unsigned int>(info.GetPersistentId()),16));
     }
 
     TargetSelectorButtonAction::TargetSelectorButtonAction(QObject *pParent) : QWidgetAction(pParent)

@@ -67,7 +67,7 @@ namespace AzFramework
         bool  IsValid() const;
         const char* GetDisplayName() const;
         AZ::u32 GetPersistentId() const;
-        int GetNetworkId() const;
+        AZ::u32 GetNetworkId() const;
         AZ::u32 GetStatusFlags() const;
         bool IsIdentityEqualTo(const TargetInfo& other) const;
 
