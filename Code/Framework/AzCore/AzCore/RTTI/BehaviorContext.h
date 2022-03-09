@@ -826,7 +826,7 @@ namespace AZ
                 {
                     static constexpr size_t c_functionParameterAndReturnSize = sizeof...(Args) + 2;
                     // deal with OnDemand reflection
-                    AZ::Uuid argumentTypes[c_functionParameterAndReturnSize] = { AzTypeInfo<R>::Uuid(), AZ::Uuid(), (AzTypeInfo<Args>::Uuid())... };
+                    AZ::Uuid argumentTypes[c_functionParameterAndReturnSize] = { AzTypeInfo<R>::Uuid(), AZ::Uuid::CreateNull(), (AzTypeInfo<Args>::Uuid())... };
                     StaticReflectionFunctionPtr reflectHooks[c_functionParameterAndReturnSize] = {
                         OnDemandReflectHook<AZStd::remove_pointer_t<AZStd::decay_t<R>>>::Get(),
                         OnDemandReflectHook<AZStd::remove_pointer_t<AZStd::decay_t<C>>>::Get(),
@@ -1227,7 +1227,7 @@ namespace AZ
     };
 
     template<class Function>
-    inline constexpr size_t FunctionTypeCallCount = AZStd::function_traits<AZStd::function_traits<Function>::function_type>::arity;
+    inline constexpr size_t FunctionTypeCallCount = AZStd::function_traits<typename AZStd::function_traits<Function>::function_type>::arity;
     template<class Function>
     using BehaviorParameterOverridesArray = AZStd::array<BehaviorParameterOverrides, FunctionTypeCallCount<Function>>;
 
