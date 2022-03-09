@@ -19,6 +19,8 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextPickingBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
@@ -61,6 +63,8 @@ namespace AzToolsFramework
         m_pickButton->setIcon(QIcon(":/stylesheet/img/UI20/picker.svg"));
         m_pickButton->setToolTip("Pick an object in the viewport");
         m_pickButton->setMouseTracking(true);
+
+        m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
 
         pLayout->addWidget(m_entityIdLineEdit);
         pLayout->addWidget(m_pickButton);
@@ -331,6 +335,23 @@ namespace AzToolsFramework
 
     void PropertyEntityIdCtrl::SetCurrentEntityId(const AZ::EntityId& newEntityId, bool emitChange, const AZStd::string& nameOverride)
     {
+        if (newEntityId.IsValid())
+        {
+            // First check if Entity has a parent.
+            AZ::EntityId parentId;
+            EditorEntityInfoRequestBus::EventResult(parentId, newEntityId, &EditorEntityInfoRequestBus::Events::GetParent);
+            if (!parentId.IsValid())
+            {
+                // If not then disable the Clear Button.
+                m_entityIdLineEdit->setClearButtonEnabled(false);
+            }
+            else
+            {
+                bool isPrefabEntity = (m_prefabPublicInterface) ? m_prefabPublicInterface->IsInstanceContainerEntity(newEntityId) : false;
+                // if the parent is a prefab container then disable the Clear Button else enable it.
+                m_entityIdLineEdit->setClearButtonEnabled(isPrefabEntity ? false : true);
+            }
+        }
         m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride);
         m_componentsSatisfyingServices.clear();
 

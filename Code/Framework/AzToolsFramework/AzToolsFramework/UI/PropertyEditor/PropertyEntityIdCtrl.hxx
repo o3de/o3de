@@ -32,6 +32,12 @@ namespace AzToolsFramework
     class EntityIdQLineEdit;
     class EditorEntityIdContainer;
 
+    namespace Prefab
+    {
+        class PrefabPublicInterface;
+    };
+
+
     //just a test to see how it would work to pop a dialog
 
     class PropertyEntityIdCtrl
@@ -98,6 +104,8 @@ namespace AzToolsFramework
         AZStd::vector<AZ::ComponentServiceType> m_incompatibleServices;
         AzFramework::EntityContextId m_acceptedEntityContextId;
         AZStd::list<AZStd::string> m_componentsSatisfyingServices;
+
+        Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         QIcon m_pickerIcon;
     };
