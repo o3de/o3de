@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace AzFramework
@@ -349,6 +350,54 @@ namespace AzFramework
             rhs.m_payload = nullptr;
         }
         return *this;
+    }
+
+    void EntitySpawnTicket::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext
+                ->Class<EntitySpawnTicket>();
+            
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<EntitySpawnTicket>("EntitySpawnTicket", "EntitySpawnTicket is an object used for spawning entities.");
+            }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<SpawnTicketInstance>("SpawnTicketInstance")
+                ->Constructor()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Spawning")
+                ->Attribute(AZ::Script::Attributes::Module, "Spawning")
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true);
+
+            behaviorContext->Class<BehaviorClassReflection<SpawnTicketInstance>>("ReflectOnDemandTargets_SpawnTicketInstance")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::Ignore, true)
+                // required to support Array<SpawnTicketInstance> variable type in Script Canvas
+                ->Method(
+                    "ReflectVector",
+                    [](const AZStd::vector<SpawnTicketInstance>&)
+                    {
+                    })
+                // required to support Map<String, SpawnTicketInstance> variable type in Script Canvas
+                ->Method(
+                    "MapStringToSpawnTicketInstance",
+                    [](const AZStd::unordered_map<Data::StringType, SpawnTicketInstance>&)
+                    {
+                    })
+                // required to support Map<Number, SpawnTicketInstance> variable type in Script Canvas
+                ->Method(
+                    "MapNumberToSpawnTicketInstance",
+                    [](const AZStd::unordered_map<Data::NumberType, SpawnTicketInstance>&)
+                    {
+                    });
+        }
+
+        HashContainerReflector<SpawnTicketInstance>::Reflect(context);
     }
 
     auto EntitySpawnTicket::GetId() const -> Id

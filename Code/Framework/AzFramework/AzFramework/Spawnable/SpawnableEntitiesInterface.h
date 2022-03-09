@@ -15,6 +15,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/functional.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 
@@ -169,7 +171,8 @@ namespace AzFramework
         friend class SpawnableEntitiesDefinition;
 
         AZ_CLASS_ALLOCATOR(AzFramework::EntitySpawnTicket, AZ::SystemAllocator, 0);
-
+        AZ_RTTI(EntitySpawnTicket, "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}");
+        
         using Id = uint32_t;
 
         EntitySpawnTicket() = default;
@@ -180,6 +183,8 @@ namespace AzFramework
 
         EntitySpawnTicket& operator=(const EntitySpawnTicket& rhs);
         EntitySpawnTicket& operator=(EntitySpawnTicket&& rhs);
+
+        static void Reflect(AZ::ReflectContext* context);
 
         //! Returns an id that uniquely identifies this ticket or 0 if no spawnable has been assigned.
         Id GetId() const;
