@@ -13,6 +13,9 @@
 
 namespace AtomToolsFramework
 {
+    //! AtomToolsDocumentApplication is a base application class acting as a bridge between the base application class and the document
+    //! system. It instantiates a document system for the provided tool ID and registers asset browser interactions for creating and opening
+    //! supported document types.
     class AtomToolsDocumentApplication
         : public AtomToolsApplication
     {

@@ -811,9 +811,12 @@ class EditorTestSuite:
                     test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
                     # Save the crash log
                     crash_file_name = os.path.basename(workspace.paths.crash_log())
-                    workspace.artifact_manager.save_artifact(
-                        os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
-                    editor_utils.cycle_crash_report(run_id, workspace)
+                    if os.path.exists(crash_file_name):
+                        workspace.artifact_manager.save_artifact(
+                            os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
+                        editor_utils.cycle_crash_report(run_id, workspace)
+                    else:
+                        logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
                     test_result = Result.Fail(test_spec, output, editor_log_content)
         except WaitTimeoutError:
@@ -906,9 +909,12 @@ class EditorTestSuite:
                                                                                  self._TIMEOUT_CRASH_LOG)
                                 # Save the crash log
                                 crash_file_name = os.path.basename(workspace.paths.crash_log())
-                                workspace.artifact_manager.save_artifact(
-                                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
-                                editor_utils.cycle_crash_report(run_id, workspace)
+                                if os.path.exists(crash_file_name):
+                                    workspace.artifact_manager.save_artifact(
+                                        os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
+                                    editor_utils.cycle_crash_report(run_id, workspace)
+                                else:
+                                    logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                                 results[test_spec_name] = Result.Crash(result.test_spec, output, return_code,
                                                                        crash_error, result.editor_log)
                                 crashed_result = result
