@@ -431,9 +431,6 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
         return false;
     }
 
-    const float heightMultiplier = 70.0;
-    const float testBlendFactor = 0.3;
-
     if (all(material1.x == material1.yzw) && all(material2.x == material2.yzw))
     {
         // Fast path for same material ids
@@ -488,8 +485,6 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
                     material2Context.m_weight * heightMultiplier + blends.w         * posWeights[3] + posWeights[3],
                 };
                 */
-                material1Context.m_weight *= 10.0;
-                material2Context.m_weight *= 10.0;
                 float weights[8] = 
                 {
                     posWeights[0] - blends.x + material1Context.m_weight,
@@ -508,8 +503,8 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
                 [unroll] for (i = 0; i < 8; ++i)
                 {
                     maxWeight = max(maxWeight, weights[i]);
-                    //minDepth = max(minDepth, weights[i] - TerrainSrg::m_detailMaterialData[materialContexts[i].m_materialId].m_heightBlendFactor);
-                    minDepth = max(minDepth, weights[i] - testBlendFactor);
+                    uint matId = i % 2 == 0 ? material1Context.m_materialId : material2Context.m_materialId;
+                    minDepth = max(minDepth, weights[i] - TerrainSrg::m_detailMaterialData[matId].m_heightBlendFactor);
                 }
                 
                 [unroll] for (i = 0; i < 8; ++i)
@@ -626,20 +621,20 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
             */
 
             posWeight = min(1.0, 1.0 * (1.0 - gatherWeight.x) * gatherWeight.y);
-            materialContexts[0].m_weight = posWeight - blends.x + materialContexts[0].m_weight * 10.0;
-            materialContexts[1].m_weight = posWeight - 1.0 + blends.x + materialContexts[1].m_weight * 10.0;
+            materialContexts[0].m_weight = posWeight - blends.x + materialContexts[0].m_weight;
+            materialContexts[1].m_weight = posWeight - 1.0 + blends.x + materialContexts[1].m_weight;
 
             posWeight = min(1.0, 1.0 * gatherWeight.x * gatherWeight.y);
-            materialContexts[2].m_weight = posWeight - blends.y + materialContexts[2].m_weight * 10.0;
-            materialContexts[3].m_weight = posWeight - 1.0 + blends.y + materialContexts[3].m_weight * 10.0;
+            materialContexts[2].m_weight = posWeight - blends.y + materialContexts[2].m_weight;
+            materialContexts[3].m_weight = posWeight - 1.0 + blends.y + materialContexts[3].m_weight;
 
             posWeight = min(1.0, 1.0 * gatherWeight.x * (1.0 - gatherWeight.y));
-            materialContexts[4].m_weight = posWeight - blends.z + materialContexts[4].m_weight * 10.0;
-            materialContexts[5].m_weight = posWeight - 1.0 + blends.z + materialContexts[5].m_weight * 10.0;
+            materialContexts[4].m_weight = posWeight - blends.z + materialContexts[4].m_weight;
+            materialContexts[5].m_weight = posWeight - 1.0 + blends.z + materialContexts[5].m_weight;
 
             posWeight = min(1.0, 1.0 * (1.0 - gatherWeight.x) * (1.0 - gatherWeight.y));
-            materialContexts[6].m_weight = posWeight - blends.w + materialContexts[6].m_weight * 10.0;
-            materialContexts[7].m_weight = posWeight - 1.0 + blends.w + materialContexts[7].m_weight * 10.0;
+            materialContexts[6].m_weight = posWeight - blends.w + materialContexts[6].m_weight;
+            materialContexts[7].m_weight = posWeight - 1.0 + blends.w + materialContexts[7].m_weight;
             
             // Top two materials only
             /*
@@ -665,8 +660,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
                 float weight = materialContexts[i].m_weight;
 
                 maxWeight = max(maxWeight, weight);
-                //minDepth = max(minDepth, weight - TerrainSrg::m_detailMaterialData[materialContexts[i].m_materialId].m_heightBlendFactor);
-                minDepth = max(minDepth, weight - testBlendFactor);
+                minDepth = max(minDepth, weight - TerrainSrg::m_detailMaterialData[materialContexts[i].m_materialId].m_heightBlendFactor);
             }
             
             float totalWeight = 0.0;
@@ -736,7 +730,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
 
             if (gatherWeight.x > 0.999 || gatherWeight.x < 0.001 || gatherWeight.y > 0.999 || gatherWeight.y < 0.001)
             {
-                surface.m_color.b = 0.5;
+                //surface.m_color.b = 0.5;
             }
         }
         else

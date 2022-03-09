@@ -30,25 +30,46 @@
                 "description": "Terrain related properties",
                 "properties": [
                     {
+                        "name": "overrideParallaxSettings",
+                        "displayName": "Override Parallax Settings",
+                        "description": "Override the height offset and bias from parallax",
+                        "type": "bool",
+                        "defaultValue": false
+                    },
+                    {
                         "name": "heightOffset",
                         "displayName": "Height Offset",
-                        "description": "How much to offset the heights from 0",
+                        "description": "How much to offset the heights from 0.",
                         "type": "float",
-                        "defaultValue": 0
+                        "defaultValue": 0.0,
+                        "min": -1.0,
+                        "max": 1.0
                     },
                     {
                         "name": "heightScale",
-                        "displayName": "Height Offset",
-                        "description": "How much to offset the heights from 0",
+                        "displayName": "Height Scale",
+                        "description": "How much to scale the height map.",
                         "type": "float",
-                        "defaultValue": 0
+                        "defaultValue": 1.0,
+                        "min": 0.0,
+                        "max": 2.0
                     },
                     {
                         "name": "blendFactor",
-                        "displayName": "Height Offset",
-                        "description": "How much to offset the heights from 0",
+                        "displayName": "Blend Factor",
+                        "description": "Determines how hard the blend is between this material and other mateirals (lower is harder).",
                         "type": "float",
-                        "defaultValue": 0
+                        "defaultValue": 0.5,
+                        "min": 0.0,
+                        "max": 1.0
+                    }
+                ],
+                "functors": [
+                    {
+                        "type": "Lua",
+                        "args": {
+                            "file": "TerrainOverrideParallax.lua"
+                        }
                     }
                 ]
             },

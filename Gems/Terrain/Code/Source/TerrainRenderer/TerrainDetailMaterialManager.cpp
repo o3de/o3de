@@ -55,9 +55,12 @@ namespace Terrain
         static const char* const DiffuseOcclusionFactor("occlusion.diffuseFactor");
         static const char* const HeightMap("parallax.textureMap");
         static const char* const HeightUseTexture("parallax.useTexture");
-        static const char* const HeightFactor("parallax.factor");
-        static const char* const HeightOffset("parallax.offset");
-        static const char* const HeightBlendFactor("parallax.blendFactor");
+        static const char* const ParallaxHeightFactor("parallax.factor");
+        static const char* const ParallaxHeightOffset("parallax.offset");
+        static const char* const TerrainSettingsOverrideParallax("terrain.overrideParallaxSettings");
+        static const char* const TerrainHeightFactor("terrain.heightScale");
+        static const char* const TerrainHeightOffset("terrain.heightOffset");
+        static const char* const HeightBlendFactor("terrain.blendFactor");
         static const char* const UvCenter("uv.center");
         static const char* const UvScale("uv.scale");
         static const char* const UvTileU("uv.tileU");
@@ -690,10 +693,10 @@ namespace Terrain
         applyImage(BaseColorMap, materialData.m_colorImage, BaseColorUseTexture, DetailTextureFlags::UseTextureBaseColor, shaderData.m_colorImageIndex);
         applyProperty(BaseColorFactor, shaderData.m_baseColorFactor);
 
-        const auto index = getIndex(BaseColorColor);
-        if (index.IsValid())
+        const auto baseColorIndex = getIndex(BaseColorColor);
+        if (baseColorIndex.IsValid())
         {
-            AZ::Color baseColor = material->GetPropertyValue(index).GetValue<AZ::Color>();
+            AZ::Color baseColor = material->GetPropertyValue(baseColorIndex).GetValue<AZ::Color>();
             shaderData.m_baseColorRed = baseColor.GetR();
             shaderData.m_baseColorGreen = baseColor.GetG();
             shaderData.m_baseColorBlue = baseColor.GetB();
@@ -749,8 +752,23 @@ namespace Terrain
         applyProperty(DiffuseOcclusionFactor, shaderData.m_occlusionFactor);
             
         applyImage(HeightMap, materialData.m_heightImage, HeightUseTexture, DetailTextureFlags::UseTextureHeight, shaderData.m_heightImageIndex);
-        applyProperty(HeightFactor, shaderData.m_heightFactor);
-        applyProperty(HeightOffset, shaderData.m_heightOffset);
+
+        bool terrainSettingsOverrideParallax = false;
+        applyProperty(TerrainSettingsOverrideParallax, terrainSettingsOverrideParallax);
+
+        if (terrainSettingsOverrideParallax)
+        {
+            applyProperty(TerrainHeightFactor, shaderData.m_heightFactor);
+            applyProperty(TerrainHeightOffset, shaderData.m_heightOffset);
+        }
+        else
+        {
+            // Parallax ranges from 0 to 0.1, so multiply by 10 to be in the 0-1 range.
+            applyProperty(ParallaxHeightFactor, shaderData.m_heightFactor);
+            shaderData.m_heightFactor *= 10.0f;
+            applyProperty(ParallaxHeightOffset, shaderData.m_heightOffset);
+            shaderData.m_heightOffset *= 10.0f;
+        }
         applyProperty(HeightBlendFactor, shaderData.m_heightBlendFactor);
 
         AZ::Render::UvTransformDescriptor transformDescriptor;
