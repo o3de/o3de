@@ -98,8 +98,12 @@ namespace AZ
                 m_isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
                 if(m_isWritingToSwapChainScope)
                 {
-                    //Check if the swapchain scope attachment will be copied to be read in the upcoming passes
-                    //We can use this information to cache the swapchain texture for reading purposes.
+                    //The way Metal works is that we ask the drivers for the swapchain texture right before we write to it.
+                    //And if we have to read from the swapchain texture we need to tell the driver this information when requesting the
+                    //texture. Hence we need to check if we will be reading from the swapchain texture here. We traverse all the
+                    //scopeattachments for the scopes after CopyToSwapchain Scope and see if any of them is trying to read from
+                    //the swapchain texture. If it is we cache this information within m_isSwapChainAndFrameCaptureEnabled which will
+                    //be used when we request the swapchain texture.
                     RHI::ScopeAttachment* frameCaptureScopeAttachment = scopeAttachment;
                     while(frameCaptureScopeAttachment)
                     {

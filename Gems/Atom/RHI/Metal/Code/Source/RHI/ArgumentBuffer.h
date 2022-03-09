@@ -10,6 +10,7 @@
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
+#include <AzCore/Debug/Trace.h>
 #include <Metal/Metal.h>
 #include <RHI/BufferMemoryAllocator.h>
 #include <RHI/Conversions.h>
@@ -38,6 +39,7 @@ struct ResourceBindingData
 
     size_t GetHash() const
     {
+        AZ_Assert(m_resourcPtr, "m_resourcPtr is null");
         return m_resourcPtr.hash;
     }
 };
