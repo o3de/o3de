@@ -418,7 +418,9 @@ namespace AssetProcessor
         AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer existingDependencies;
         if (!m_stateData->GetDirectReverseProductDependenciesBySourceGuidAllPlatforms(sourceEntry.m_sourceGuid, existingDependencies))
         {
-            AZ_Error("PathDependencyManager", false, "Failed to query existing product dependencies for source %s", sourceEntry.m_sourceName.c_str());
+            AZ_Error("PathDependencyManager", false, "Failed to query existing product dependencies for source `%s` (%s)",
+                sourceEntry.m_sourceName.c_str(),
+                sourceEntry.m_sourceGuid.ToString<AZStd::string>().c_str());
         }
         else
         {
