@@ -49,10 +49,10 @@ namespace AzToolsFramework
         void Activate() override{};
         void Deactivate() override{};
 
-        ViewBookmark GetBookmarkAtIndex(int index) const;
+        AZStd::optional<ViewBookmark> GetBookmarkAtIndex(int index) const;
         void AddBookmark(ViewBookmark viewBookmark);
-        void RemoveBookmarkAtIndex(int index);
-        void ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark);
+        bool RemoveBookmarkAtIndex(int index);
+        bool ModifyBookmarkAtIndex(int index, const ViewBookmark& newBookmark);
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);

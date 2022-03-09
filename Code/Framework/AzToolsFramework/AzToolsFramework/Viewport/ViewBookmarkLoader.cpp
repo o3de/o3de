@@ -21,6 +21,7 @@ namespace AzToolsFramework
     static constexpr const char* s_viewBookmarksRegistryPath = "/O3DE/ViewBookmarks/";
     static constexpr const char* s_localBookmarksKey = "LocalBookmarks";
     static constexpr const char* s_lastKnownLocationKey = "LastKnownLocation";
+    static constexpr int s_numOfDefaultLocationsInLevel = 12;
 
     void ViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
     {
@@ -50,6 +51,7 @@ namespace AzToolsFramework
         dumperSettings.m_prettifyOutput = true;
 
         AZStd::string bookmarkKey = "/" + m_bookmarkfileName;
+
         dumperSettings.m_includeFilter = [&bookmarkKey](AZStd::string_view path)
         {
             AZStd::string_view o3dePrefixPath(bookmarkKey);
@@ -95,7 +97,25 @@ namespace AzToolsFramework
         }
     }
 
-    bool ViewBookmarkLoader::SaveLastKnownLocationInLevel(ViewBookmark bookmark)
+    bool ViewBookmarkLoader::ModifyBookmarkAtIndex(ViewBookmark bookmark, int index, const StorageMode mode)
+    {
+        switch (mode)
+        {
+        case StorageMode::Shared:
+            if (SharedViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<SharedViewBookmarkComponent>())
+            {
+                return bookmarkComponent->ModifyBookmarkAtIndex(index, bookmark);
+            }
+        case StorageMode::Local:
+            return SaveLocalBookmarkAtIndex(bookmark, index);
+        case StorageMode::Invalid:
+        default:
+            AZ_Warning("ViewBookmarkLoader", false, "Couldn't find ViewBookmarkComponent")
+            return false;
+        }
+    }
+
+    bool ViewBookmarkLoader::SaveLastKnownLocation(ViewBookmark bookmark)
     {
         return SaveLocalBookmark(bookmark, true);
     }
@@ -265,19 +285,48 @@ namespace AzToolsFramework
         return false;
     }
 
-    ViewBookmark ViewBookmarkLoader::GetBookmarkAtIndex(int index) const
+    AZStd::optional<ViewBookmark> ViewBookmarkLoader::GetBookmarkAtIndex(int index, const StorageMode mode)
     {
-        if (SharedViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<SharedViewBookmarkComponent>())
+        switch (mode)
         {
-            return bookmarkComponent->GetBookmarkAtIndex(index);
+        case StorageMode::Shared:
+            if (SharedViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<SharedViewBookmarkComponent>())
+            {
+                return bookmarkComponent->GetBookmarkAtIndex(index);
+            }
+        case StorageMode::Local:
+            if (LoadViewBookmarks())
+            {
+                return AZStd::optional<ViewBookmark>(m_localBookmarks.at(index));
+            }
+        case StorageMode::Invalid:
+        default:
+            return AZStd::optional<ViewBookmark>();
         }
+    }
 
-        return ViewBookmark();
+    bool ViewBookmarkLoader::RemoveBookmarkAtIndex(int index, const StorageMode mode)
+    {
+        switch (mode)
+        {
+        case StorageMode::Shared:
+            if (SharedViewBookmarkComponent* bookmarkComponent = FindBookmarkComponent<SharedViewBookmarkComponent>())
+            {
+                return bookmarkComponent->RemoveBookmarkAtIndex(index);
+            }
+        case StorageMode::Local:
+            AZ_Assert(false, "Remove Local Bookmark not Implemented.");
+            return false;
+        case StorageMode::Invalid:
+        default:
+            AZ_Warning("ViewBookmarkLoader", false, "Couldn't find ViewBookmarkComponent");
+            return false;
+        }
     }
 
     ViewBookmark ViewBookmarkLoader::GetLastKnownLocationInLevel() const
     {
-        return ViewBookmark();
+        return m_lastKnownLocation;
     }
 
     template<typename BookmarkComponentType>
@@ -339,7 +388,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    bool ViewBookmarkLoader::SaveLocalBookmark(ViewBookmark& bookmark, bool isLastKnownLocation)
+    bool ViewBookmarkLoader::InitializeDefaultLocalViewBookmarks()
     {
         // Write to the settings registry
         if (auto registry = AZ::SettingsRegistry::Get())
@@ -354,32 +403,55 @@ namespace AzToolsFramework
                 {
                     // TODO: check that the file actually exists
                     m_bookmarkfileName = bookmarkComponent->GetLocalBookmarksFileName();
+                    LoadViewBookmarks();
+
+                    for (int i = 0; i < m_localBookmarks.size(); i++)
+                    {
+                        AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(i);
+                        registry->SetObject(finalPath, m_localBookmarks.at(i));
+                    }
+
+                    return false;
                 }
                 else // if the field is empty we don't have a file linked to the prefab, so we create one and we save it in the
                      // component
                 {
                     m_bookmarkfileName = GenerateBookmarkFileName();
+
+                    // Initialize default locations to 0
+                    for (int i = 0; i < s_numOfDefaultLocationsInLevel; i++)
+                    {
+                        AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(m_localBookmarkCount++);
+                        registry->SetObject(finalPath, ViewBookmark());
+                    }
+
+                    //SaveBookmarkSettingsFile();
+                    LoadViewBookmarks();
                     bookmarkComponent->SetLocalBookmarksFileName(m_bookmarkfileName);
+                    return true;
                 }
             }
-            else
-            {
-                return false;
-            }
+        }
+        AZ_Warning("ViewBookmarkLoader", false, "Couldn't find a LocalViewBookmarkComponent");
 
-            AZStd::string finalPath;
-            if (!isLastKnownLocation)
-            {
-                finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(m_localBookmarkCount++);
-            }
-            else
-            {
-                finalPath = "/" + m_bookmarkfileName + "/" + "LastKnownLocation";
-            }
+        return false;
+    }
 
-            bool success = registry->SetObject(finalPath, bookmark);
+    bool ViewBookmarkLoader::SaveLocalBookmarkAtIndex(const ViewBookmark& bookmark, int index)
+    {
+        if (index >= 0 && index <= m_localBookmarkCount)
+        {
+            InitializeDefaultLocalViewBookmarks();
 
+            AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(index);
+
+            bool success = false;
+            if (auto registry = AZ::SettingsRegistry::Get())
+            {
+                success = registry->SetObject(finalPath, bookmark);
+            }
             // If we managed to add the bookmark
+
             if (success)
             {
                 SaveBookmarkSettingsFile();
@@ -388,6 +460,38 @@ namespace AzToolsFramework
 
             return success;
         }
+
         return false;
+    }
+
+    bool ViewBookmarkLoader::SaveLocalBookmark(const ViewBookmark& bookmark, bool isLastKnownLocation)
+    {
+        InitializeDefaultLocalViewBookmarks();
+
+        AZStd::string finalPath;
+        if (!isLastKnownLocation)
+        {
+            finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(m_localBookmarkCount++);
+        }
+        else
+        {
+            finalPath = "/" + m_bookmarkfileName + "/" + "LastKnownLocation";
+        }
+
+        bool success = false;
+        // Write to the settings registry
+        if (auto registry = AZ::SettingsRegistry::Get())
+        {
+            success = registry->SetObject(finalPath, bookmark);
+        }
+        // If we managed to add the bookmark
+
+        if (success)
+        {
+            SaveBookmarkSettingsFile();
+            LoadViewBookmarks();
+        }
+
+        return success;
     }
 } // namespace AzToolsFramework

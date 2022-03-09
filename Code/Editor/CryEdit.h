@@ -253,7 +253,6 @@ private:
 
     CMainFrame* GetMainFrame() const;
     void WriteConfig();
-    void TagLocation(int index);
     void GotoTagLocation(int index);
     void LoadTagLocations();
     bool UserExportToGame(bool bNoMsgBox = true);
@@ -364,20 +363,6 @@ private:
     void OpenProjectManager(const AZStd::string& screen);
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
-
-    // Tag Locations.
-    void OnTagLocation1();
-    void OnTagLocation2();
-    void OnTagLocation3();
-    void OnTagLocation4();
-    void OnTagLocation5();
-    void OnTagLocation6();
-    void OnTagLocation7();
-    void OnTagLocation8();
-    void OnTagLocation9();
-    void OnTagLocation10();
-    void OnTagLocation11();
-    void OnTagLocation12();
 
     void OnGotoLocation1();
     void OnGotoLocation2();

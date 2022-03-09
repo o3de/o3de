@@ -384,19 +384,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
     ON_COMMAND(IDC_SELECTION, OnDummyCommand)
-    //////////////////////////////////////////////////////////////////////////
-    ON_COMMAND(ID_TAG_LOC1, OnTagLocation1)
-    ON_COMMAND(ID_TAG_LOC2, OnTagLocation2)
-    ON_COMMAND(ID_TAG_LOC3, OnTagLocation3)
-    ON_COMMAND(ID_TAG_LOC4, OnTagLocation4)
-    ON_COMMAND(ID_TAG_LOC5, OnTagLocation5)
-    ON_COMMAND(ID_TAG_LOC6, OnTagLocation6)
-    ON_COMMAND(ID_TAG_LOC7, OnTagLocation7)
-    ON_COMMAND(ID_TAG_LOC8, OnTagLocation8)
-    ON_COMMAND(ID_TAG_LOC9, OnTagLocation9)
-    ON_COMMAND(ID_TAG_LOC10, OnTagLocation10)
-    ON_COMMAND(ID_TAG_LOC11, OnTagLocation11)
-    ON_COMMAND(ID_TAG_LOC12, OnTagLocation12)
+
     //////////////////////////////////////////////////////////////////////////
     ON_COMMAND(ID_GOTO_LOC1, OnGotoLocation1)
     ON_COMMAND(ID_GOTO_LOC2, OnGotoLocation2)
@@ -3444,31 +3432,6 @@ void CCryEditApp::OnViewConfigureLayout()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::TagLocation(int index)
-{
-    CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-    if (!pRenderViewport)
-    {
-        return;
-    }
-
-    Vec3 vPosVec = pRenderViewport->GetViewTM().GetTranslation();
-
-    m_tagLocations[index - 1] = vPosVec;
-    m_tagAngles[index - 1] = Ang3::GetAnglesXYZ(Matrix33(pRenderViewport->GetViewTM()));
-
-    QString sTagConsoleText("");
-    sTagConsoleText = tr("Camera Tag Point %1 set to the position: x=%2, y=%3, z=%4 ").arg(index).arg(vPosVec.x, 0, 'f', 2).arg(vPosVec.y, 0, 'f', 2).arg(vPosVec.z, 0, 'f', 2);
-
-    GetIEditor()->WriteToConsole(sTagConsoleText.toUtf8().data());
-
-    if (gSettings.bAutoSaveTagPoints)
-    {
-        SaveTagLocations();
-    }
-}
-
 void CCryEditApp::SaveTagLocations()
 {
     // Save to file.
@@ -3558,21 +3521,6 @@ void CCryEditApp::OnToolsLogMemoryUsage()
 {
     gEnv->pConsole->ExecuteString("SaveLevelStats");
 }
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnTagLocation1() { TagLocation(1); }
-void CCryEditApp::OnTagLocation2() { TagLocation(2); }
-void CCryEditApp::OnTagLocation3() { TagLocation(3); }
-void CCryEditApp::OnTagLocation4() { TagLocation(4); }
-void CCryEditApp::OnTagLocation5() { TagLocation(5); }
-void CCryEditApp::OnTagLocation6() { TagLocation(6); }
-void CCryEditApp::OnTagLocation7() { TagLocation(7); }
-void CCryEditApp::OnTagLocation8() { TagLocation(8); }
-void CCryEditApp::OnTagLocation9() { TagLocation(9); }
-void CCryEditApp::OnTagLocation10() { TagLocation(10); }
-void CCryEditApp::OnTagLocation11() { TagLocation(11); }
-void CCryEditApp::OnTagLocation12() { TagLocation(12); }
-
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnGotoLocation1() { GotoTagLocation(1); }
