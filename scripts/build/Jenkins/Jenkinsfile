@@ -528,8 +528,7 @@ def ReplaceContent() {
                 )
             ],
             fileEncoding: 'UTF-8',
-            // filePath:'$JENKINS_HOME/jobs/$JOB_NAME/builds/${BUILD_NUMBER}/log'
-            filePath:'$JENKINS_HOME/jobs/O3DE-LY-FORK/branches/_LY-FORK_jenkins_replace_content/builds/${BUILD_NUMBER}/log'
+            filePath:'$JENKINS_HOME/mnt/jenkins/jobs/$JOB_BASE_NAME/branches/$BRANCH_NAME/builds/${BUILD_NUMBER}/log'
             ),
             // Replace .h references to github links
             fileContentReplaceConfig(
@@ -542,8 +541,7 @@ def ReplaceContent() {
                 )
             ],
             fileEncoding: 'UTF-8',
-            // filePath:'$JENKINS_HOME/jobs/$JOB_NAME/builds/${BUILD_NUMBER}/log'
-            filePath:'$JENKINS_HOME/jobs/O3DE-LY-FORK/branches/_LY-FORK_jenkins_replace_content/builds/${BUILD_NUMBER}/log'
+            filePath:'$JENKINS_HOME/jobs/$JOB_NAME/builds/${BUILD_NUMBER}/log'
             ),
             // Replace .py references github links
             fileContentReplaceConfig(
@@ -556,8 +554,7 @@ def ReplaceContent() {
                 )
             ],
             fileEncoding: 'UTF-8',
-            // filePath:'$JENKINS_HOME/jobs/$JOB_NAME/builds/${BUILD_NUMBER}/log'
-            filePath:'$JENKINS_HOME/jobs/O3DE-LY-FORK/branches/_LY-FORK_jenkins_replace_content/builds/${BUILD_NUMBER}/log'
+            filePath:'$JENKINS_HOME/jobs/$JOB_NAME/builds/${BUILD_NUMBER}/log'
             )
         ]
     )
