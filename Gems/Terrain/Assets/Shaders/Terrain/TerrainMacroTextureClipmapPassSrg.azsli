@@ -10,42 +10,43 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <TerrainSrg.azsli>
-#include <../Materials/Types/MaterialInputs/BaseColorInput.azsli>
-
-ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
-{
-    Sampler m_sampler
-    {
-        AddressU = Wrap;
-        AddressV = Wrap;
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        MaxAnisotropy = 16;
-    };
-
-    // Base Color
-    float3 m_baseColor;
-
-    // Detail Material Properties
-    float m_detailTextureMultiplier;
-    float m_detailFadeDistance;
-    float m_detailFadeLength;
-}
+#include <TerrainMaterialSrg.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    float3 m_currentViewPosition;
-    float3 m_previousViewPosition;
+    struct ClipmapData
+    {
+        // The view position where the main camera is.
+        float3 m_previousViewPosition;
+        [[pad_to(16)]]
+        float3 m_currentViewPosition;
+        [[pad_to(32)]]
 
-    float3 m_worldBoundsMin;
-    float3 m_worldBoundsMax;
+        // World bounds defined by the terrain.
+        float3 m_worldBoundsMin;
+        [[pad_to(48)]]
+        float3 m_worldBoundsMax;
+        [[pad_to(64)]]
 
-    float4 m_previousClipmapCenters[5];
-    float4 m_currentClipmapCenters[5];
+        // The max range that the clipmap is covering.
+        float3 m_maxRenderSize;
 
-    uint m_fullUpdateFlag;
+        // Each bit indicates the owner clipmap should be fully renewed,
+        // possibly caused by starting up or completely moving out of the previous boundaries.
+        uint m_fullUpdateFlag;
+
+        // Clipmap ceneters in normalized UV coordinates [0, 1].
+        // xy represent previous clipmap centers, zw represent current clipmap centers.
+        // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
+        // They are used for toroidal addressing and may move each frame based on the view point movement.
+        // The move distance is scaled differently in each layer.
+        float4 m_clipmapCenters[5];
+    };
+
+    ClipmapData m_clipmapData;
 
     RWTexture2D<float4> m_macroColorClipmaps[4];
     RWTexture2D<float4> m_macroColorClipmapPyramid;
+    RWTexture2D<float4> m_macroNormalClipmaps[4];
+    RWTexture2D<float4> m_macroNormalClipmapPyramid;
 }

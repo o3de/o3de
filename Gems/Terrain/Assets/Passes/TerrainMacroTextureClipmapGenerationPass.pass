@@ -40,6 +40,40 @@
                     "ShaderInputName": "m_macroColorClipmapPyramid",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "MacroNormalClipmapOutput0",
+                    "ShaderInputName": "m_macroNormalClipmaps",
+                    "ShaderInputArrayIndex": "0",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "MacroNormalClipmapOutput1",
+                    "ShaderInputName": "m_macroNormalClipmaps",
+                    "ShaderInputArrayIndex": "1",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "MacroNormalClipmapOutput2",
+                    "ShaderInputName": "m_macroNormalClipmaps",
+                    "ShaderInputArrayIndex": "2",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "MacroNormalClipmapOutput3",
+                    "ShaderInputName": "m_macroNormalClipmaps",
+                    "ShaderInputArrayIndex": "3",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "MacroNormalClipmapOutput4",
+                    "ShaderInputName": "m_macroNormalClipmapPyramid",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
                 }
             ],
             "ImageAttachments": [
@@ -103,6 +137,67 @@
                         },
                         "MipLevels": 4
                     }
+                },
+                {
+                    "Name": "MacroNormalClipmapStack0",
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "BindFlags": "3",
+                        "SharedQueueMask": "All",
+                        "Size": {
+                            "Width": 1024,
+                            "Height": 1024
+                        }
+                    }
+                },
+                {
+                    "Name": "MacroNormalClipmapStack1",
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "BindFlags": "3",
+                        "SharedQueueMask": "All",
+                        "Size": {
+                            "Width": 1024,
+                            "Height": 1024
+                        }
+                    }
+                },
+                {
+                    "Name": "MacroNormalClipmapStack2",
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "BindFlags": "3",
+                        "SharedQueueMask": "All",
+                        "Size": {
+                            "Width": 1024,
+                            "Height": 1024
+                        }
+                    }
+                },
+                {
+                    "Name": "MacroNormalClipmapStack3",
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "BindFlags": "3",
+                        "SharedQueueMask": "All",
+                        "Size": {
+                            "Width": 1024,
+                            "Height": 1024
+                        }
+                    }
+                },
+                {
+                    "Name": "MacroNormalClipmapPyramid",
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "BindFlags": "3",
+                        "SharedQueueMask": "All",
+                        "Size": {
+                            "Width": 1024,
+                            "Height": 1024
+                        },
+                        "MipLevels": 4
+                    }
                 }
             ],
             "Connections": [
@@ -139,6 +234,41 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "MacroColorClipmapPyramid"
+                    }
+                },
+                {
+                    "LocalSlot": "MacroNormalClipmapOutput0",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MacroNormalClipmapStack0"
+                    }
+                },
+                {
+                    "LocalSlot": "MacroNormalClipmapOutput1",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MacroNormalClipmapStack1"
+                    }
+                },
+                {
+                    "LocalSlot": "MacroNormalClipmapOutput2",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MacroNormalClipmapStack2"
+                    }
+                },
+                {
+                    "LocalSlot": "MacroNormalClipmapOutput3",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MacroNormalClipmapStack3"
+                    }
+                },
+                {
+                    "LocalSlot": "MacroNormalClipmapOutput4",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MacroNormalClipmapPyramid"
                     }
                 }
             ],

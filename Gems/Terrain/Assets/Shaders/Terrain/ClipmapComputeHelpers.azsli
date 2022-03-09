@@ -21,63 +21,57 @@
 
 float2 GetPreviousClipmapCenter(uint clipmapLevel)
 {
-    return float2(PassSrg::m_previousClipmapCenters[clipmapLevel].xy);
+    return PassSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].xy;
 }
 
 float2 GetCurrentClipmapCenter(uint clipmapLevel)
 {
-    return float2(PassSrg::m_currentClipmapCenters[clipmapLevel].xy);
+    return PassSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].zw;
+}
+
+float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel)
+{
+    float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y) / ((float)CLIPMAP_SIZE);
+    
+    float2 distance = normalizedPixelPosition - clipmapCenter;
+
+    // Toroidal addressing:
+    // If distance is out of the normalized range (-0.5, 0.5), meaning we need to start from the other side.
+    // The logic is equivalent to a modulation. Using step function for accelation.
+    distance.x -= 1.0 * step(0.5, distance.x);
+    distance.x += 1.0 * step(distance.x, -0.5);
+    distance.y -= 1.0 * step(0.5, distance.y);
+    distance.y += 1.0 * step(distance.y, -0.5);
+
+    float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
+    float2 maxRenderSize = PassSrg::m_clipmapData.m_maxRenderSize.xy;
+    float2 viewRelativePosition = distance * (maxRenderSize * clipmapScale);
+    return PassSrg::m_clipmapData.m_currentViewPosition.xy + viewRelativePosition;
 }
 
 float2 GetPreviousWorldPosition(uint2 pixelPosition, uint clipmapLevel)
 {
     float2 previousClipmapCenter = GetPreviousClipmapCenter(clipmapLevel);
-
-    float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y) / ((float)CLIPMAP_SIZE);
-    
-    float2 distance = normalizedPixelPosition - previousClipmapCenter;
-
-    distance.x -= 1.0 * step(0.5, distance.x);
-    distance.x += 1.0 * step(distance.x, -0.5);
-    distance.y -= 1.0 * step(0.5, distance.y);
-    distance.y += 1.0 * step(distance.y, -0.5);
-
-    float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
-    float2 worldSize = PassSrg::m_worldBoundsMax.xy - PassSrg::m_worldBoundsMin.xy;
-    float2 viewRelativePosition = distance * (worldSize * clipmapScale / 2.0);
-    return PassSrg::m_previousViewPosition.xy + viewRelativePosition;
+    return GetWorldPosition(previousClipmapCenter, pixelPosition, clipmapLevel);
 }
 
 float2 GetCurrentWorldPosition(uint2 pixelPosition, uint clipmapLevel)
 {
     float2 currentClipmapCenter = GetCurrentClipmapCenter(clipmapLevel);
-
-    float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y) / ((float)CLIPMAP_SIZE);
-    
-    float2 distance = normalizedPixelPosition - currentClipmapCenter;
-
-    distance.x -= 1.0 * step(0.5, distance.x);
-    distance.x += 1.0 * step(distance.x, -0.5);
-    distance.y -= 1.0 * step(0.5, distance.y);
-    distance.y += 1.0 * step(distance.y, -0.5);
-
-    float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
-    float2 worldSize = PassSrg::m_worldBoundsMax.xy - PassSrg::m_worldBoundsMin.xy;
-    float2 viewRelativePosition = distance * (worldSize * clipmapScale);
-    return PassSrg::m_currentViewPosition.xy + viewRelativePosition;
+    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel);
 }
 
 bool NeedsUpdate(uint2 pixelPosition, uint clipmapLevel)
 {
     float2 worldPosition = GetPreviousWorldPosition(pixelPosition, clipmapLevel);
     
-    float2 currentViewPosition = PassSrg::m_currentViewPosition.xy;
+    float2 currentViewPosition = PassSrg::m_clipmapData.m_currentViewPosition.xy;
     float2 distance = abs(worldPosition - currentViewPosition);
     
     float clipmapScale = pow(2.0, float(clipmapLevel) - CLIPMAP_STACK_SIZE);
-    float2 worldSize = PassSrg::m_worldBoundsMax.xy - PassSrg::m_worldBoundsMin.xy;
+    float2 maxRenderSize = PassSrg::m_clipmapData.maxRenderSize.xy;
     
-    float2 clipmapMaxDistance = worldSize * (clipmapScale / 2.0);
+    float2 clipmapMaxDistance = maxRenderSize * (clipmapScale / 2.0);
     
     // If the previous world position of this texel is within the current
     // range of the clipmap, then we can claim this texel is still valid

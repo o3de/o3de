@@ -44,26 +44,40 @@ namespace Terrain
 
         static constexpr uint32_t ClipmapStackSize = 4;
 
-        AZStd::array<AZ::Vector4, ClipmapStackSize + 1> m_previousClipmapCenters; // +1 for the first layer of the pyramid
-        AZStd::array<AZ::Vector4, ClipmapStackSize + 1> m_currentClipmapCenters;
+        struct ClipmapData
+        {
+            AZ::Vector3 m_previousViewPosition;
+            AZ::Vector3 m_currentViewPosition;
 
-        AZStd::array<AZ::Data::Instance<AZ::RPI::AttachmentImage>, ClipmapStackSize> m_clipmapStacks;
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_clipmapPyramid;
+            AZ::Vector3 m_worldBoundsMin;
+            AZ::Vector3 m_worldBoundsMax;
 
-        AZ::Vector3 m_previousViewPosition;
-        AZ::Vector3 m_currentViewPosition;
+            AZStd::array<float, 3> m_maxRenderSize;
 
-        uint32_t m_fullUpdateFlag = 0;
+            uint32_t m_fullUpdateFlag = 0;
+
+            AZ::Vector4 m_clipmapCenters[ClipmapStackSize + 1]; // +1 for the first layer of the pyramid
+
+            void SetPreviousClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel);
+            void SetCurrentClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel);
+
+            void SetMaxRenderSize(const AZ::Vector3& maxRenderSize);
+        };
+
+        ClipmapData m_clipmapData;
+
+        bool m_clearFullUpdateFlag = true;
+
+        AZStd::array<AZ::Data::Instance<AZ::RPI::AttachmentImage>, ClipmapStackSize> m_colorClipmapStacks;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_colorClipmapPyramid;
+        AZStd::array<AZ::Data::Instance<AZ::RPI::AttachmentImage>, ClipmapStackSize> m_normalClipmapStacks;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_normalClipmapPyramid;
 
         AZ::RHI::ShaderInputNameIndex m_colorClipmapStackIndex = "m_macroColorClipmaps";
         AZ::RHI::ShaderInputNameIndex m_colorClipmapPyramidIndex = "m_macroColorPyramid";
+        AZ::RHI::ShaderInputNameIndex m_normalClipmapStackIndex = "m_macroNormalClipmaps";
+        AZ::RHI::ShaderInputNameIndex m_normalClipmapPyramidIndex = "m_macroNormalPyramid";
 
-        AZ::RHI::ShaderInputNameIndex m_currentViewPositionIndex = "m_currentViewPosition";
-        AZ::RHI::ShaderInputNameIndex m_previousViewPositionIndex = "m_previousViewPosition";
-        AZ::RHI::ShaderInputNameIndex m_worldBoundsMinIndex = "m_worldBoundsMin";
-        AZ::RHI::ShaderInputNameIndex m_worldBoundsMaxIndex = "m_worldBoundsMax";
-        AZ::RHI::ShaderInputNameIndex m_currentClipmapCentersIndex = "m_currentClipmapCenters";
-        AZ::RHI::ShaderInputNameIndex m_previousClipmapCentersIndex = "m_previousClipmapCenters";
-        AZ::RHI::ShaderInputNameIndex m_fullUpdateFlagIndex = "m_fullUpdateFlag";
+        AZ::RHI::ShaderInputNameIndex m_clipmapDataIndex = "m_clipmapData";
     };
 } // namespace AZ::Render

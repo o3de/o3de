@@ -7,6 +7,7 @@
  */
 #include "TerrainMacroTextureClipmapPassSrg.azsli"
 #include "ClipmapComputeHelpers.azsli"
+#include <Atom/RPI/TangentSpace.azsli>
 
 void SampleTexture(uint2 pixelPosition, uint clipmapLevel, out float3 macroColor, out float3 macroNormal)
 {
@@ -49,6 +50,29 @@ void SampleTexture(uint2 pixelPosition, uint clipmapLevel, out float3 macroColor
             macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
             macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }
+
+        if (macroMaterialData.m_normalMapId != 0xFFFF)
+        {
+            bool flipX = macroMaterialData.m_flags & 2;
+            bool flipY = macroMaterialData.m_flags & 4;
+            float factor = macroMaterialData.m_normalFactor;
+
+            float2 sampledValue = TerrainSrg::m_textures[macroMaterialData.m_normalMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).xy;
+#if AZ_TRAIT_ASTC_COMPRESSION
+            sampledValue =  (sampledValue * 2) - 1;
+#endif
+            if(flipX)
+            {
+                sampledValue.y = -sampledValue.y;
+            }
+            if(flipY)
+            {
+                sampledValue.x = -sampledValue.x;
+            }
+            macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue, factor));
+        }
+
+        break;
     }
 }
 
@@ -58,12 +82,12 @@ void MainCS(
     uint3 groupID : SV_GroupID, 
     uint groupIndex : SV_GroupIndex)
 {
-    float3 viewPosition = PassSrg::m_currentViewPosition;
+    float3 viewPosition = PassSrg::m_clipmapData.m_currentViewPosition;
     uint2 pixelPosition = dispatchThreadID.xy;
 
     [unroll] for (uint clipmapLevel = 0; clipmapLevel < CLIPMAP_STACK_SIZE; ++clipmapLevel)
     {
-        uint fullUpdate = (PassSrg::m_fullUpdateFlag >> clipmapLevel) & 1;
+        uint fullUpdate = (PassSrg::m_clipmapData.m_fullUpdateFlag >> clipmapLevel) & 1;
         if (!(fullUpdate || NeedsUpdate(pixelPosition, clipmapLevel)))
         {
             continue;
@@ -74,15 +98,16 @@ void MainCS(
         float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
         float3 macroNormal = float3(0.0, 0.0, 1.0);
 
-        if (!(any(worldPosition < PassSrg::m_worldBoundsMin.xy) || any(worldPosition > PassSrg::m_worldBoundsMax.xy)))
+        if (!(any(worldPosition < PassSrg::m_clipmapData.m_worldBoundsMin.xy) || any(worldPosition > PassSrg::m_clipmapData.m_worldBoundsMax.xy)))
         {
             SampleTexture(pixelPosition, clipmapLevel, macroColor, macroNormal);
         }
 
         PassSrg::m_macroColorClipmaps[clipmapLevel][dispatchThreadID.xy].rgba = float4(macroColor, 1.0);
+        PassSrg::m_macroNormalClipmaps[clipmapLevel][dispatchThreadID.xy].rgba = float4(macroNormal, 1.0);
     }
 
-    uint fullUpdate = (PassSrg::m_fullUpdateFlag >> CLIPMAP_STACK_SIZE) & 1;
+    uint fullUpdate = (PassSrg::m_clipmapData.m_fullUpdateFlag >> CLIPMAP_STACK_SIZE) & 1;
     if (fullUpdate || NeedsUpdate(pixelPosition, CLIPMAP_STACK_SIZE))
     {
         float2 worldPosition = GetCurrentWorldPosition(pixelPosition, clipmapLevel);
@@ -90,12 +115,13 @@ void MainCS(
         float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
         float3 macroNormal = float3(0.0, 0.0, 1.0);
 
-        if (!(any(worldPosition < PassSrg::m_worldBoundsMin.xy) || any(worldPosition > PassSrg::m_worldBoundsMax.xy)))
+        if (!(any(worldPosition < PassSrg::m_clipmapData.m_worldBoundsMin.xy) || any(worldPosition > PassSrg::m_clipmapData.m_worldBoundsMax.xy)))
         {
             SampleTexture(pixelPosition, CLIPMAP_STACK_SIZE, macroColor, macroNormal);
         }
 
         PassSrg::m_macroColorClipmapPyramid[dispatchThreadID.xy].rgba = float4(macroColor, 1.0);
+        PassSrg::m_macroNormalClipmapPyramid[dispatchThreadID.xy].rgba = float4(macroNormal, 1.0);
     }
 }
 
