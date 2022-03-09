@@ -656,16 +656,6 @@ namespace UnitTest
         fval = AZStd::stof(wfloatStr);
         AZ_TEST_ASSERT_FLOAT_CLOSE(fval, 2.32f);
 
-        AZStd::to_string(intStr, 20);
-        AZ_TEST_ASSERT(intStr == "20");
-
-        EXPECT_EQ("20", AZStd::to_string(static_cast<int16_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<uint16_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<int32_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<uint32_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<int64_t>(20)));
-        EXPECT_EQ("20", AZStd::to_string(static_cast<uint64_t>(20)));
-
         // wstring to string
         AZStd::string str1;
         AZStd::to_string(str1, wstr);
@@ -974,6 +964,47 @@ namespace UnitTest
         AZ_TEST_ASSERT(*vecIt++ == "Xiph Xlater 2000");
         AZ_TEST_ASSERT(*vecIt++ == "Xiph Xlater 5000");
         AZ_TEST_ASSERT(*vecIt++ == "Xiph Xlater 10000");
+    }
+
+    // Concept to model if AZStd::to_string(<type>) is a valid expression
+    template<class T, class = void>
+    constexpr bool IsToStringInvocable = false;
+
+    template<class T>
+    constexpr bool IsToStringInvocable<T, AZStd::void_t<decltype(AZStd::to_string(AZStd::declval<T>()))>> = true;
+
+    TEST_F(String, String_to_stringOverload_DoesNotImplicitlyConvertToBool)
+    {
+        AZStd::string intStr;
+        AZStd::to_string(intStr, 20);
+        EXPECT_EQ("20", intStr);
+
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int16_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint16_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int32_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint32_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int64_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint64_t>(20)));
+        EXPECT_EQ("false", AZStd::to_string(false));
+        EXPECT_EQ("true", AZStd::to_string(true));
+
+        // AZStd::to_string should not be invocable with a char or wchar_t literal
+        static_assert(!IsToStringInvocable<decltype("NarrowStrLiteral")>);
+        static_assert(!IsToStringInvocable<decltype(L"WideStrLiteral")>);
+
+        // AZStd::to_string should
+        static_assert(IsToStringInvocable<bool>);
+        static_assert(IsToStringInvocable<AZ::s8>);
+        static_assert(IsToStringInvocable<AZ::u8>);
+        static_assert(IsToStringInvocable<AZ::s16>);
+        static_assert(IsToStringInvocable<AZ::u16>);
+        static_assert(IsToStringInvocable<AZ::s32>);
+        static_assert(IsToStringInvocable<AZ::u32>);
+        static_assert(IsToStringInvocable<AZ::s64>);
+        static_assert(IsToStringInvocable<AZ::u64>);
+        static_assert(IsToStringInvocable<float>);
+        static_assert(IsToStringInvocable<double>);
+        static_assert(IsToStringInvocable<long double>);
     }
 
     class Regex
@@ -2537,7 +2568,7 @@ namespace Benchmark
     {
         AZStd::string test1{ "foo bar"};
         AZStd::string test2{ "bar foo" };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             SwapStringViaPointerSizedSwaps(test1, test2);
         }
@@ -2547,7 +2578,7 @@ namespace Benchmark
     {
         AZStd::string test1{ "The brown quick wolf jumped over the hyperactive cat" };
         AZStd::string test2{ "The quick brown fox jumped over the lazy dog" };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             SwapStringViaPointerSizedSwaps(test1, test2);
         }
@@ -2557,7 +2588,7 @@ namespace Benchmark
     {
         AZStd::string test1{ "foo bar" };
         AZStd::string test2{ "bar foo" };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             SwapStringViaMemcpy(test1, test2);
         }
@@ -2567,7 +2598,7 @@ namespace Benchmark
     {
         AZStd::string test1{ "The brown quick wolf jumped over the hyperactive cat" };
         AZStd::string test2{ "The quick brown fox jumped over the lazy dog" };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             SwapStringViaMemcpy(test1, test2);
         }
@@ -2584,7 +2615,7 @@ namespace Benchmark
         AZStd::string sourceString(state.range(0), 'a');
         const char* sourceAddress = sourceString.c_str();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::string assignString;
             assignString.assign(sourceAddress);
@@ -2600,7 +2631,7 @@ namespace Benchmark
         const char* sourceAddress = sourceString.c_str();
         const size_t sourceSize = sourceString.size();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::string assignString;
             assignString.assign(sourceAddress, sourceSize);
@@ -2616,7 +2647,7 @@ namespace Benchmark
         auto sourceBegin = sourceString.begin();
         auto sourceEnd = sourceString.end();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::string assignString;
             assignString.assign(sourceBegin, sourceEnd);
@@ -2631,7 +2662,7 @@ namespace Benchmark
         AZStd::string sourceString(state.range(0), 'a');
         AZStd::string_view sourceView(sourceString);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::string assignString;
             assignString.assign(sourceView);
@@ -2645,7 +2676,7 @@ namespace Benchmark
     {
         AZStd::string sourceString(state.range(0), 'a');
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::string assignString;
             assignString.assign(sourceString);
@@ -2659,7 +2690,7 @@ namespace Benchmark
     {
         AZStd::string sourceString(state.range(0), 'a');
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::string assignString;
             assignString.assign(AZStd::move(sourceString));
@@ -2671,7 +2702,7 @@ namespace Benchmark
 
     BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_StringAssignFromSingleCharacter, AZStd::string)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::string assignString;
             assignString.assign(state.range(0), 'a');
@@ -2689,7 +2720,7 @@ namespace Benchmark
         AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
         const char* sourceAddress = sourceString.c_str();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::fixed_string<1024> assignString;
             assignString.assign(sourceAddress);
@@ -2705,7 +2736,7 @@ namespace Benchmark
         const char* sourceAddress = sourceString.c_str();
         const size_t sourceSize = sourceString.size();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::fixed_string<1024> assignString;
             assignString.assign(sourceAddress, sourceSize);
@@ -2721,7 +2752,7 @@ namespace Benchmark
         auto sourceBegin = sourceString.begin();
         auto sourceEnd = sourceString.end();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::fixed_string<1024> assignString;
             assignString.assign(sourceBegin, sourceEnd);
@@ -2736,7 +2767,7 @@ namespace Benchmark
         AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
         AZStd::string_view sourceView(sourceString);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::fixed_string<1024> assignString;
             assignString.assign(sourceView);
@@ -2750,7 +2781,7 @@ namespace Benchmark
     {
         AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::fixed_string<1024> assignString;
             assignString.assign(sourceString);
@@ -2764,7 +2795,7 @@ namespace Benchmark
     {
         AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::fixed_string<1024> assignString;
             assignString.assign(AZStd::move(sourceString));
@@ -2776,7 +2807,7 @@ namespace Benchmark
 
     BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromSingleCharacter, AZStd::fixed_string<1024>)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::fixed_string<1024> assignString;
             assignString.assign(state.range(0), 'a');

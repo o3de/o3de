@@ -1337,6 +1337,7 @@ namespace AZ
         // EBusInterface settings
         static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::ById;
         typedef BehaviorContext* BusIdType;
+        using MutexType = AZStd::recursive_mutex;
         //////////////////////////////////////////////////////////////////////////
 
         /// Called when a new global method is reflected in behavior context or removed from it

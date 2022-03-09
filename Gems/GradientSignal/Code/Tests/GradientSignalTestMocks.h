@@ -28,53 +28,6 @@
 
 namespace UnitTest
 {
-    // Mock asset handler for GradientSignal::ImageAsset that we can use in unit tests to pretend to load an image asset with.
-    // Also includes utility functions for creating image assets with specific testable patterns.
-    struct ImageAssetMockAssetHandler : public AZ::Data::AssetHandler
-    {
-        //! Creates a deterministically random set of pixel data as an ImageAsset.
-        //! \param width The width of the ImageAsset
-        //! \param height The height of the ImageAsset
-        //! \param seed The random seed to use for generating the random data
-        //! \return The ImageAsset in a loaded ready state
-        static AZ::Data::Asset<GradientSignal::ImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed);
-
-        //! Creates an ImageAsset where all the pixels are 0 except for the one pixel at the given coordinates, which is set to 1.
-        //! \param width The width of the ImageAsset
-        //! \param height The height of the ImageAsset
-        //! \param pixelX The X coordinate of the pixel to set to 1
-        //! \param pixelY The Y coordinate of the pixel to set to 1
-        //! \return The ImageAsset in a loaded ready state
-        static AZ::Data::Asset<GradientSignal::ImageAsset> CreateSpecificPixelImageAsset(
-            AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY);
-
-        AZ::Data::AssetPtr CreateAsset(const AZ::Data::AssetId& id, [[maybe_unused]] const AZ::Data::AssetType& type) override
-        {
-            // For our mock handler, always mark our assets as immediately ready.
-            return aznew GradientSignal::ImageAsset(id, AZ::Data::AssetData::AssetStatus::Ready);
-        }
-
-        void DestroyAsset(AZ::Data::AssetPtr ptr) override
-        {
-            if (ptr)
-            {
-                delete ptr;
-            }
-        }
-
-        void GetHandledAssetTypes([[maybe_unused]] AZStd::vector<AZ::Data::AssetType>& assetTypes) override
-        {
-        }
-
-        AZ::Data::AssetHandler::LoadResult LoadAssetData(
-            [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-            [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
-        {
-            return AZ::Data::AssetHandler::LoadResult::LoadComplete;
-        }
-    };
-
     struct MockGradientRequestsBus
         : public GradientSignal::GradientRequestBus::Handler
     {
@@ -179,6 +132,18 @@ namespace UnitTest
             providerRegistryEntry.m_bounds = m_bounds;
             providerRegistryEntry.m_tags = m_tags;
 
+            // Run through the set of surface points that have been set on this component to find out the maximum number
+            // that we'll return for any given input point.
+            providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
+            for (auto& pointEntry : m_surfacePoints)
+            {
+                for (size_t index = 0; index < pointEntry.second.GetInputPositionSize(); index++)
+                {
+                    providerRegistryEntry.m_maxPointsCreatedPerInput =
+                        AZ::GetMax(providerRegistryEntry.m_maxPointsCreatedPerInput, pointEntry.second.GetSize(index));
+                }
+            }
+
             SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
                 m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
@@ -207,7 +172,15 @@ namespace UnitTest
 
             if (surfacePoints != m_surfacePoints.end())
             {
-                surfacePointList = surfacePoints->second;
+                // If we have an entry for this input position, run through all of its points and add them to the passed-in list.
+                surfacePoints->second.EnumeratePoints(
+                    [inPosition, &surfacePointList](
+                        [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal,
+                        const SurfaceData::SurfaceTagWeights& weights) -> bool
+                    {
+                        surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, position, normal, weights);
+                        return true;
+                    });
             }
         }
 

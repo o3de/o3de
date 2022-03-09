@@ -1011,9 +1011,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"));
-    am->AddAction(ID_VALIDATELEVEL, tr("&Check Level for Errors"))
-        .SetStatusTip(tr("Validate Level"));
-    am->AddAction(ID_TOOLS_VALIDATEOBJECTPOSITIONS, tr("Check Object Positions"));
     QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
                 .SetStatusTip(tr("Logs Editor memory usage."));

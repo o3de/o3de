@@ -22,6 +22,8 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <Atom/RHI.Reflect/Format.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 // for texture splitting
@@ -352,7 +354,8 @@ namespace ImageProcessingAtom
         // output conversion log
         if (m_isSucceed && m_isFinished)
         {
-            [[maybe_unused]] const uint32 sizeTotal = m_image->Get()->GetTextureMemory();
+            [[maybe_unused]] IImageObjectPtr imageObj = m_image->Get();
+            [[maybe_unused]] const uint32 sizeTotal = imageObj->GetTextureMemory();
             if (m_input->m_isPreview)
             {
                 AZ_TracePrintf("Image Processing", "Image (%d bytes) converted in %f seconds\n", sizeTotal, m_processTime);
@@ -363,11 +366,10 @@ namespace ImageProcessingAtom
             }
             else
             {
-                
-                [[maybe_unused]] const PixelFormatInfo* formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(m_image->Get()->GetPixelFormat());
+                [[maybe_unused]] const PixelFormatInfo* formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(imageObj->GetPixelFormat());
+                [[maybe_unused]] const AZ::RHI::Format rhiFormat = Utils::PixelFormatToRHIFormat(imageObj->GetPixelFormat(), imageObj->HasImageFlags(EIF_SRGBRead));
                 AZ_TracePrintf("Image Processing", "Image [%dx%d] [%s] converted with preset [%s] [%s] and saved to [%s] (%d bytes) taking %f seconds\n",
-                    m_image->Get()->GetWidth(0), m_image->Get()->GetHeight(0),
-                    formatInfo->szName,
+                    imageObj->GetWidth(0), imageObj->GetHeight(0), AZ::RHI::ToString(rhiFormat),
                     m_input->m_presetSetting.m_name.GetCStr(),
                     m_input->m_filePath.c_str(),
                     m_input->m_outputFolder.c_str(), sizeTotal, m_processTime);

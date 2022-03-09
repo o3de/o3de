@@ -808,10 +808,6 @@ namespace AZ
             {
                 usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
             }
-            if (RHI::CheckBitsAny(formatFeatureFlags, static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)))
-            {
-                usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
-            }
             if (RHI::CheckBitsAny(formatFeatureFlags, static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)))
             {
                 usageFlags |= (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);

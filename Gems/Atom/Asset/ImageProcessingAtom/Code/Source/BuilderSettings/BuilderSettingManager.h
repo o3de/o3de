@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/BuilderSettings.h>
 #include <AzCore/base.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/set.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 
 #include <QDateTime>
 #include <QFileSystemWatcher>

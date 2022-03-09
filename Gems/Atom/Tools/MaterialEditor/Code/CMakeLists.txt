@@ -22,7 +22,6 @@ ly_add_target(
     NAME MaterialEditor EXECUTABLE
     NAMESPACE Gem
     AUTOMOC
-    AUTOUIC
     AUTORCC
     FILES_CMAKE
         materialeditor_files.cmake

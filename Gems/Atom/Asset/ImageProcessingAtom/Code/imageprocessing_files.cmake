@@ -13,6 +13,7 @@ set(FILES
     Include/Atom/ImageProcessing/ImageProcessingEditorBus.h
     Include/Atom/ImageProcessing/PixelFormats.h
     Include/Atom/ImageProcessing/ImageObject.h
+    Include/Atom/ImageProcessing/ImageProcessingDefines.h
     ../Assets/Editor/Resources.qrc
     ../Assets/Editor/Backward.png
     ../Assets/Editor/Forward.png
@@ -28,7 +29,6 @@ set(FILES
     Source/BuilderSettings/BuilderSettings.h
     Source/BuilderSettings/CubemapSettings.cpp
     Source/BuilderSettings/CubemapSettings.h
-    Source/BuilderSettings/ImageProcessingDefines.h
     Source/BuilderSettings/MipmapSettings.cpp
     Source/BuilderSettings/MipmapSettings.h
     Source/BuilderSettings/PlatformSettings.h

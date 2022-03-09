@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -16,35 +17,38 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <Document/MaterialDocumentRequestBus.h>
 
 namespace MaterialEditor
 {
-    /**
-     * MaterialDocument provides an API for modifying and saving material document properties.
-     */
+    //! MaterialDocument provides an API for modifying and saving material document properties.
     class MaterialDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public MaterialDocumentRequestBus::Handler
-        , private AZ::TickBus::Handler
+        , public AZ::TickBus::Handler
     {
     public:
-        AZ_RTTI(MaterialDocument, "{DBA269AE-892B-415C-8FA1-166B94B0E045}");
+        AZ_RTTI(MaterialDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
         AZ_CLASS_ALLOCATOR(MaterialDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(MaterialDocument);
+        AZ_DISABLE_COPY_MOVE(MaterialDocument);
 
-        MaterialDocument();
+        static void Reflect(AZ::ReflectContext* context);
+
+        MaterialDocument() = default;
+        MaterialDocument(const AZ::Crc32& toolId);
         virtual ~MaterialDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
-        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> GetObjectInfo() const override;
-        bool Open(AZStd::string_view loadPath) override;
+        static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
+        AtomToolsFramework::DocumentTypeInfo GetDocumentTypeInfo() const override;
+        AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
+        bool Open(const AZStd::string& loadPath) override;
         bool Save() override;
-        bool SaveAsCopy(AZStd::string_view savePath) override;
-        bool SaveAsChild(AZStd::string_view savePath) override;
+        bool SaveAsCopy(const AZStd::string& savePath) override;
+        bool SaveAsChild(const AZStd::string& savePath) override;
         bool IsOpen() const override;
         bool IsModified() const override;
-        bool IsSavable() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
 
@@ -82,7 +86,8 @@ namespace MaterialEditor
         void RestorePropertyValues(const PropertyValueMap& propertyValues);
 
         bool AddEditorMaterialFunctors(
-            const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders);
+            const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders,
+            const AZ::RPI::MaterialNameContext& nameContext);
 
         // Run editor material functor to update editor metadata.
         // @param dirtyFlags indicates which properties have changed, and thus which MaterialFunctors need to be run.

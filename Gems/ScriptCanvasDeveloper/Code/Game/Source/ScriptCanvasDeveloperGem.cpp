@@ -42,4 +42,4 @@ namespace ScriptCanvasDeveloper
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasDeveloperGem, ScriptCanvasDeveloper::ScriptCanvasDeveloperModule)
+AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasDeveloper, ScriptCanvasDeveloper::ScriptCanvasDeveloperModule)

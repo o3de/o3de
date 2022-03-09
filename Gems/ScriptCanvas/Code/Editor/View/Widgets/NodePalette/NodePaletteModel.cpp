@@ -1030,7 +1030,7 @@ namespace ScriptCanvasEditor
                 context = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Getter" : "Setter";
             }
             updatedMethodName += methodName;
-            key << "BehaviorClass" << context << methodClass << "methods" << updatedMethodName << "details";
+            key << "BehaviorClass" << methodClass << "methods" << updatedMethodName << context  << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);

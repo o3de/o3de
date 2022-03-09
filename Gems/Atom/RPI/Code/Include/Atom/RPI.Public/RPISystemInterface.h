@@ -90,6 +90,10 @@ namespace AZ
 
             //! Get the index of current render tick
             virtual uint64_t GetCurrentTick() const = 0;
+
+            //! Application multisample state
+            virtual void SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState) = 0;
+            virtual const RHI::MultisampleState& GetApplicationMultisampleState() const = 0;
         };
 
     } // namespace RPI

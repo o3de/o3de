@@ -87,7 +87,7 @@ namespace LmbrCentral
 
             SetupEditorComponent(m_entityId1);
 
-            m_cameraState = AzFramework::CreateDefaultCamera(AZ::Transform::CreateIdentity(), AZ::Vector2(1024.0f, 768.0f));
+            m_cameraState = AzFramework::CreateDefaultCamera(AZ::Transform::CreateIdentity(), AzFramework::ScreenSize(1024, 768));
         }
 
         void VerifySelectionIntersection()
