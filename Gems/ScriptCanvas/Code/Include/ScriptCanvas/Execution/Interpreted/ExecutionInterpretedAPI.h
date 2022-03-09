@@ -37,8 +37,6 @@ namespace ScriptCanvas
 
         AZStd::string CreateStringFastFromId(const AZ::Uuid& uuid);
 
-        int CallExecutionOut(lua_State* lua);
-
         int InterpretedSafeCall(lua_State* lua, int argCount, int returnValueCount);
 
         void InterpretedUnloadData(RuntimeData& runtimeData);
@@ -46,8 +44,6 @@ namespace ScriptCanvas
         void InitializeInterpretedStatics(RuntimeData& runtimeData);
 
         int InitializeNodeableOutKeys(lua_State* lua);
-
-        int OverrideNodeableMetatable(lua_State* lua);
 
         void PushActivationArgs(lua_State* lua, AZ::BehaviorValueParameter* arguments, size_t numArguments);
 

@@ -117,7 +117,6 @@ namespace ScriptCanvas
         constexpr const char* k_TypeSafeEBusMultipleResultsName = "TypeSafeEBusMultipleResults";
 
         constexpr const char* k_OnGraphStartFunctionName = "OnGraphStart";
-        constexpr const char* k_OverrideNodeableMetatableName = "OverrideNodeableMetatable";
 
         constexpr const char* k_stringFormatLexicalScopeName = "string";
         constexpr const char* k_stringFormatName = "format";

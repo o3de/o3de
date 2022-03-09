@@ -362,79 +362,6 @@ namespace ScriptCanvas
             return id;
         }
 
-        int OverrideNodeableMetatable(lua_State* lua)
-        {
-            using namespace ExecutionInterpretedAPICpp;
-
-            /**
-            Here is the function in Lua for easier reading
-            function OverrideNodeableMetatable(userdata, class_mt)
-                local proxy = setmetatable({}, class_mt) -- class_mt from the user graph definition
-                local instance_mt = {
-                    __index = proxy
-                    __newindex = function(t, k, v)
-                        proxy[k] = v
-                    end,
-                }
-                --[[ -- not being done
-                for name, method in pairs(metamethods) do
-                    if name ~= '__index' and name ~= '__newindex' do
-                        instance_mt[name] = method
-                    end
-                end
-                --]]
-                return setmetatable(userdata instance_mt) -- can't be done from Lua
-            end
-            --[[
-            userdata to Nodeable before:
-            getmetatable(userdata).__index == Nodeable
-
-            userdata to Nodeable after:
-            local override_mt = getmetatable(userdata)
-            local proxy = override_mt.__index
-            local SubGraph = getmetatable(proxy).__index
-            getmetatable(SubGraph.__index) == Nodeable)
-            --]]
-            */
-
-            // \note: all other metamethods ignored for now
-            // \note: the the object is being constructed, and is assumed to never leave or re-enter Lua again
-            AZ_Assert(lua_isuserdata(lua, -2) && !lua_islightuserdata(lua, -2), "Error in compiled lua file, 1st argument to OverrideNodeableMetatable is not userdata (Nodeable)");
-            AZ_Assert(lua_istable(lua, -1), "Error in compiled lua file, 2nd argument to OverrideNodeableMetatable is not a Lua table");
-                   
-            [[maybe_unused]] auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
-            AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
-            // Lua: LuaUserData::nodeable, class_mt
-            lua_newtable(lua);
-            // Lua: LuaUserData::nodeable, class_mt, proxy
-            lua_pushvalue(lua, -2);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, class_mt
-            lua_setmetatable(lua, -2);
-            // Lua: LuaUserData::nodeable, class_mt, proxy
-            lua_newtable(lua);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt
-            lua_pushvalue(lua, -2);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt, proxy
-            lua_setfield(lua, -2, "__index");
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt
-            lua_pushvalue(lua, -2);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt, proxy
-            lua_pushcclosure(lua, &ProxyNewIndexMethod, 1);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt, ProxyNewIndexMethod
-            lua_setfield(lua, -2, "__newindex");
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt
-            lua_pushcfunction(lua, &DeleteNodeable);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt, DeleteNodeable
-            lua_setfield(lua, -2, "__gc");
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt
-            lua_setmetatable(lua, -4);
-            // Lua: LuaUserData::nodeable, class_mt, proxy
-            lua_pop(lua, 2);
-            // Lua: LuaUserData::nodeable            
-            AZ_Assert(reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -1)) == userData, "must leave original userdata at the top of the stack");
-            return 1;
-        }
-
         void PushActivationArgs(lua_State* lua, AZ::BehaviorValueParameter* arguments, size_t numArguments)
         {
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext();
@@ -459,7 +386,6 @@ namespace ScriptCanvas
             lua_register(lua, k_InitializeExecutionOutsName, &InitializeNodeableOutKeys);
             lua_register(lua, k_SetExecutionOutNameNodeable, &SetExecutionOut);
             lua_register(lua, k_SetExecutionOutResultNameNodeable, &SetExecutionOutResult);
-            lua_register(lua, k_OverrideNodeableMetatableName, &OverrideNodeableMetatable);
             lua_register(lua, k_UnpackDependencyConstructionArgsFunctionName, &UnpackDependencyConstructionArgs);
             lua_register(lua, k_UnpackDependencyConstructionArgsLeafFunctionName, &UnpackDependencyConstructionArgsLeaf);
 
