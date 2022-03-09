@@ -46,6 +46,8 @@ namespace Physics
         uint16_t m_padding{ 0 }; //!< available for future use.
     };
 
+    using UpdateHeightfieldSampleFunction = AZStd::function<void(int32_t, int32_t, const Physics::HeightMaterialPoint&)>;
+
     //! An interface to provide heightfield values.
     class HeightfieldProviderRequests
         : public AZ::ComponentBus
@@ -106,7 +108,7 @@ namespace Physics
         virtual AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const = 0;
 
         //! Updates the list of heights and materials within the region. Pass Null region to update the entire list.
-        virtual void UpdateHeightsAndMaterials(AZStd::vector<Physics::HeightMaterialPoint>& heightsMaterials, const AZ::Aabb& region) const = 0;
+        virtual void UpdateHeightsAndMaterials(const UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& region) const = 0;
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;

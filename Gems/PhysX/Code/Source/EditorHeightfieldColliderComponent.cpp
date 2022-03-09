@@ -254,22 +254,23 @@ namespace PhysX
             {
                 InitStaticRigidBody();
             }
-            AZ_Printf("TerrainPhysics", "Recreated terrain heightfield from scratch");
         }
         else
         {
-            AZStd::vector<Physics::HeightMaterialPoint>& currentSamples = m_shapeConfig->GetSamples();
-
             // Update m_shapeConfig
             Physics::HeightfieldProviderRequestsBus::Event(GetEntityId(),
-                &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials, currentSamples, requestRegion);
+                &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials,
+                [this](int32_t row, int32_t col, const Physics::HeightMaterialPoint& point)
+                {
+                    m_shapeConfig->ModifySample(row, col, point);
+                },
+                requestRegion);
 
             if (!m_shapeConfig->GetSamples().empty())
             {
                 ClearHeightfield();
                 InitStaticRigidBody();
             }
-            AZ_Printf("TerrainPhysics", "Updated terrain heightfield via dirty region [%s]", AZStd::to_string(requestRegion).c_str());
         }
 
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);

@@ -311,7 +311,7 @@ namespace Terrain
     }
 
     void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
-        AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials, const AZ::Aabb& regionIn) const
+        const UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& regionIn) const
     {
         AZ_PROFILE_FUNCTION(Entity);
 
@@ -355,7 +355,7 @@ namespace Terrain
 
         AZStd::vector<Physics::MaterialId> materialList = GetMaterialList();
 
-        auto perPositionCallback = [xOffset, yOffset, &positionUpdateCounter, &heightMaterials, &materialList, this, worldCenterZ, worldHeightBoundsMin, worldHeightBoundsMax, gridWidth]
+        auto perPositionCallback = [xOffset, yOffset, &updateHeightsMaterialsCallback, &materialList, this, worldCenterZ, worldHeightBoundsMin, worldHeightBoundsMax]
             (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             float height = surfacePoint.m_position.GetZ();
@@ -382,13 +382,9 @@ namespace Terrain
             Physics::MaterialId materialId = FindMaterialIdForSurfaceTag(surfaceWeight.m_surfaceType);
             point.m_materialIndex = GetMaterialIdIndex(materialId, materialList);
 
-            size_t lookUpIndexInVector = xOffset + xIndex + (yOffset + yIndex) * gridWidth;
-
-            AZ_Assert(lookUpIndexInVector < heightMaterials.size(), "Heightmaterial index is out of range!");
-            if (lookUpIndexInVector < heightMaterials.size())
-            {
-                heightMaterials[lookUpIndexInVector] = point;
-            }
+            int32_t column = aznumeric_cast<int32_t>(xOffset + xIndex);
+            int32_t row = aznumeric_cast<int32_t>(yOffset + yIndex);
+            updateHeightsMaterialsCallback(row, column, point);
         };
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion,
@@ -465,8 +461,11 @@ namespace Terrain
         AZ_Assert(gridWidth * gridHeight != 0, "GetHeightsAndMaterials: Invalid grid size. Size cannot be zero.");
 
         AZStd::vector<Physics::HeightMaterialPoint> heightMaterials(gridWidth * gridHeight);
-        UpdateHeightsAndMaterials(heightMaterials);
+        UpdateHeightsAndMaterials([&heightMaterials, gridWidth](size_t row, size_t col, const Physics::HeightMaterialPoint& point)
+        {
+            heightMaterials[row + col * gridWidth] = point;
+        });
 
-        return AZStd::move(heightMaterials);
+        return heightMaterials;
     }
 }
