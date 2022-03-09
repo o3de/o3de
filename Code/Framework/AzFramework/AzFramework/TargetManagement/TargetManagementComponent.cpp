@@ -28,11 +28,11 @@
 
 namespace AzFramework
 {
+    static constexpr const char* TargetServerAddress = "127.0.0.1";
+
     AZ_CVAR(bool, target_autoconnect, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable autoconnecting to target host.");
     AZ_CVAR(uint16_t, target_autoconnect_interval, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to attempt automatic connecitons.");
     AZ_CVAR(uint16_t, target_port, DefaultTargetPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that target management will bind to for traffic.");
-    AZ_CVAR(AZ::CVarFixedString, target_serveraddr, AZ::CVarFixedString("127.0.0.1"), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the remote target host to connect to");
-
     namespace Platform
     {
         AZStd::string GetPersistentName();
@@ -698,11 +698,10 @@ namespace AzFramework
         {
             if (networkInterface.first == AZ::Name("TargetManagement"))
             {
-                const AZ::CVarFixedString serverAddr = target_serveraddr;
                 const uint16_t serverPort = target_port;
 
                 AzNetworking::ConnectionId connId = networkInterface.second->Connect(
-                    AzNetworking::IpAddress(serverAddr.c_str(), serverPort, AzNetworking::ProtocolType::Tcp));
+                    AzNetworking::IpAddress(TargetServerAddress, serverPort, AzNetworking::ProtocolType::Tcp));
                 if (connId != AzNetworking::InvalidConnectionId)
                 {
                     AzFrameworkPackets::Neighbor initPacket;
