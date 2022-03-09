@@ -692,7 +692,7 @@ namespace AzFramework
         }
     }
 
-        void connect_target([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    void connect_target([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         for (auto& networkInterface : AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces())
         {
