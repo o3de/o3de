@@ -1172,7 +1172,7 @@ AZ_POP_DISABLE_WARNING
             // bus ID and look upwards. If we find the given ID more than once in the callstack, we've got a reentrant call.
             for (auto callstackEntry = context->s_callstack->m_prev; callstackEntry != nullptr; callstackEntry = callstackEntry->m_prev)
             {
-                if (busId == callstackEntry->m_busId)
+                if ((*busId) == (*callstackEntry->m_busId))
                 {
                     if (busIdInCallstack)
                     {
