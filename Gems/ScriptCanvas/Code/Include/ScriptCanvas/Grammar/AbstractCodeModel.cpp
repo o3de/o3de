@@ -1067,13 +1067,13 @@ namespace ScriptCanvas
                 auto subgraphInterface = functionCallNode->GetSubgraphInterface();
                 if (!subgraphInterface)
                 {
-                    AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
+                    AddError(node.GetEntityId(), nullptr, ParseErrors::FunctionNodeFailedToReturnInterface);
                 }
 
                 auto interfaceNameOutcome = functionCallNode->GetInterfaceNameFromAssetOrLastSave();
                 if (!interfaceNameOutcome.IsSuccess())
                 {
-                    AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return a useable name");
+                    AddError(node.GetEntityId(), nullptr, ParseErrors::FunctionNodeFailedToReturnUseableName);
                 }
 
                 auto interfaceName = interfaceNameOutcome.GetValue();

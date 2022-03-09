@@ -939,7 +939,7 @@ namespace ScriptCanvas
             auto nameOutcome = subgraphInterface.GetName();
 
             AZStd::string result("\n");
-            result += nameOutcome.IsSuccess() ? nameOutcome.TakeValue() : "<un-named>";
+            result += nameOutcome.IsSuccess() ? nameOutcome.TakeValue() : "Error: Automatic naming based on file path failed.";
             result += "\n";
             result += AZStd::string::format("Is Active By Default: %s\n", YorN(subgraphInterface.IsActiveDefaultObject()));
             result += AZStd::string::format("Is Latent: %s\n", YorN(subgraphInterface.IsLatent()));
