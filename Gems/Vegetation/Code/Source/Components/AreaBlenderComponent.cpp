@@ -224,10 +224,10 @@ namespace Vegetation
 
         bool result = true;
 
-        AZ_WarningOnce("Vegetation", !AreaBlenderRequestBus::HasReentrantEBusUseThisThread(),
+        AZ_WarningOnce("Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
             "Detected cyclic dependencies with vegetation entity references");
 
-        if (!AreaBlenderRequestBus::HasReentrantEBusUseThisThread())
+        if (!AreaRequestBus::HasReentrantEBusUseThisThread())
         {
             //build a "modifier stack" of contributing entity ids considering inherit and propagate flags
             EntityIdStack emptyIds;
@@ -264,10 +264,10 @@ namespace Vegetation
         }
 
         AZ_WarningOnce(
-            "Vegetation", !AreaBlenderRequestBus::HasReentrantEBusUseThisThread(),
+            "Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
             "Detected cyclic dependencies with vegetation entity references");
 
-        if (!AreaBlenderRequestBus::HasReentrantEBusUseThisThread())
+        if (!AreaRequestBus::HasReentrantEBusUseThisThread())
         {
             //build a "modifier stack" of contributing entity ids considering inherit and propagate flags
             EntityIdStack emptyIds;
@@ -295,10 +295,10 @@ namespace Vegetation
         AZ_PROFILE_FUNCTION(Entity);
 
         AZ_WarningOnce(
-            "Vegetation", !AreaBlenderRequestBus::HasReentrantEBusUseThisThread(),
+            "Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
             "Detected cyclic dependencies with vegetation entity references");
 
-        if (!AreaBlenderRequestBus::HasReentrantEBusUseThisThread())
+        if (!AreaRequestBus::HasReentrantEBusUseThisThread())
         {
             for (const auto& entityId : m_configuration.m_vegetationAreaIds)
             {
@@ -321,10 +321,10 @@ namespace Vegetation
         }
 
         AZ_WarningOnce(
-            "Vegetation", !AreaBlenderRequestBus::HasReentrantEBusUseThisThread(),
+            "Vegetation", !AreaInfoBus::HasReentrantEBusUseThisThread(),
             "Detected cyclic dependencies with vegetation entity references");
 
-        if (!AreaBlenderRequestBus::HasReentrantEBusUseThisThread())
+        if (!AreaInfoBus::HasReentrantEBusUseThisThread())
         {
             for (const auto& entityId : m_configuration.m_vegetationAreaIds)
             {
@@ -346,10 +346,10 @@ namespace Vegetation
         AZ::u32 count = 0;
 
         AZ_WarningOnce(
-            "Vegetation", !AreaBlenderRequestBus::HasReentrantEBusUseThisThread(),
+            "Vegetation", !AreaInfoBus::HasReentrantEBusUseThisThread(),
             "Detected cyclic dependencies with vegetation entity references");
 
-        if (!AreaBlenderRequestBus::HasReentrantEBusUseThisThread())
+        if (!AreaInfoBus::HasReentrantEBusUseThisThread())
         {
             for (const auto& entityId : m_configuration.m_vegetationAreaIds)
             {
