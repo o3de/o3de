@@ -328,45 +328,112 @@ namespace UnitTest
         materialTypeCreator.SetPropertyValue(Name{"MyFloat3"}, Vector3{ 3.3f, 4.4f, 5.5f });
         materialTypeCreator.SetPropertyValue(Name{"MyFloat4"}, Vector4{ 6.6f, 7.7f, 8.8f, 9.9f });
         materialTypeCreator.SetPropertyValue(Name{"MyColor"},  Color{ 0.1f, 0.2f, 0.3f, 0.4f });
-        materialTypeCreator.SetPropertyValue(Name{"MyImage"},  m_testImageAsset);
         materialTypeCreator.SetPropertyValue(Name{"MyEnum"}, 1u);
+        materialTypeCreator.SetPropertyValue(Name{"MyImage"},  m_testImageAsset);
 
-        // Set update rules to new values that aren't the original default
-        MaterialVersionUpdate versionUpdate(2);
-        AddSetValueAction(versionUpdate, "MyBool",   false);
-        AddSetValueAction(versionUpdate, "MyFloat",  2.0f);
-        AddSetValueAction(versionUpdate, "MyInt",    3);
-        AddSetValueAction(versionUpdate, "MyUInt",   4u);
-        AddSetValueAction(versionUpdate, "MyFloat2", Vector2{ 5.1f, 5.2f });
-        AddSetValueAction(versionUpdate, "MyFloat3", Vector3{ 6.1f, 6.2f, 6.3f });
-        AddSetValueAction(versionUpdate, "MyFloat4", Vector4{ 7.1f, 7.2f, 7.3f, 7.4f });
-        AddSetValueAction(versionUpdate, "MyColor",  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
-        AddSetValueAction(versionUpdate, "MyImage",  m_testImageAsset2);
-        AddSetValueAction(versionUpdate, "MyEnum",   2u);
+        // Add update rules to new values that aren't the original default
+        {
+            MaterialVersionUpdate versionUpdate(2);
+            AddSetValueAction(versionUpdate, "MyBool",   false);
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        {
+            MaterialVersionUpdate versionUpdate(3);
+            AddSetValueAction(versionUpdate, "MyFloat",  2.0f);
+            AddSetValueAction(versionUpdate, "MyInt",    3);
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        {
+            MaterialVersionUpdate versionUpdate(4);
+            AddSetValueAction(versionUpdate, "MyUInt",   4u);
+            AddSetValueAction(versionUpdate, "MyFloat2", Vector2{ 5.1f, 5.2f });
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        {
+            MaterialVersionUpdate versionUpdate(5);
+            AddSetValueAction(versionUpdate, "MyFloat3", Vector3{ 6.1f, 6.2f, 6.3f });
+            AddSetValueAction(versionUpdate, "MyFloat4", Vector4{ 7.1f, 7.2f, 7.3f, 7.4f });
+            AddSetValueAction(versionUpdate, "MyColor",  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        {
+            MaterialVersionUpdate versionUpdate(7);
+            AddSetValueAction(versionUpdate, "MyEnum",   2u);
+            AddSetValueAction(versionUpdate, "MyImage",  m_testImageAsset2);
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
 
-        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
-        materialTypeCreator.AddVersionUpdate(versionUpdate);
-
+        materialTypeCreator.SetVersion(10);
         EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
 
-        // Add the MaterialTypeAsset to a MaterialAsset to trigger the value updates
-        Data::Asset<MaterialAsset> materialAsset;
+        // Add the MaterialTypeAsset to a MaterialAssets that are based on a range of
+        // materialTypeAsset versions to trigger the value updates
         MaterialAssetCreator materialCreator;
+
+        Data::Asset<MaterialAsset> materialAssetV1;
         materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
         materialCreator.SetMaterialTypeVersion(1);
-        EXPECT_TRUE(materialCreator.End(materialAsset));
+        EXPECT_TRUE(materialCreator.End(materialAssetV1));
 
-        // Check that the defaults have been updated and resolved
-        CheckMaterialPropertyValue<bool>    (materialAsset, Name{"MyBool"},   false);
-        CheckMaterialPropertyValue<float>   (materialAsset, Name{"MyFloat"},  2.0f);
-        CheckMaterialPropertyValue<int32_t> (materialAsset, Name{"MyInt"},    3);
-        CheckMaterialPropertyValue<uint32_t>(materialAsset, Name{"MyUInt"},   4u);
-        CheckMaterialPropertyValue<Vector2> (materialAsset, Name{"MyFloat2"}, Vector2{ 5.1f, 5.2f });
-        CheckMaterialPropertyValue<Vector3> (materialAsset, Name{"MyFloat3"}, Vector3{ 6.1f, 6.2f, 6.3f });
-        CheckMaterialPropertyValue<Vector4> (materialAsset, Name{"MyFloat4"}, Vector4{ 7.1f, 7.2f, 7.3f, 7.4f });
-        CheckMaterialPropertyValue<Color>   (materialAsset, Name{"MyColor"},  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
-        CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAsset, Name{"MyImage"}, m_testImageAsset2);
-        CheckMaterialPropertyValue<uint32_t>(materialAsset, Name{"MyEnum"}, 2u);
+        Data::Asset<MaterialAsset> materialAssetV3;
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.SetMaterialTypeVersion(3);
+        EXPECT_TRUE(materialCreator.End(materialAssetV3));
+
+        Data::Asset<MaterialAsset> materialAssetV6;
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.SetMaterialTypeVersion(6);
+        EXPECT_TRUE(materialCreator.End(materialAssetV6));
+
+        Data::Asset<MaterialAsset> materialAssetV9;
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.SetMaterialTypeVersion(9);
+        EXPECT_TRUE(materialCreator.End(materialAssetV9));
+
+        // Check that the correct values have been updated and resolved
+        CheckMaterialPropertyValue<bool>    (materialAssetV1, Name{"MyBool"},   false);
+        CheckMaterialPropertyValue<float>   (materialAssetV1, Name{"MyFloat"},  2.0f);
+        CheckMaterialPropertyValue<int32_t> (materialAssetV1, Name{"MyInt"},    3);
+        CheckMaterialPropertyValue<uint32_t>(materialAssetV1, Name{"MyUInt"},   4u);
+        CheckMaterialPropertyValue<Vector2> (materialAssetV1, Name{"MyFloat2"}, Vector2{ 5.1f, 5.2f });
+        CheckMaterialPropertyValue<Vector3> (materialAssetV1, Name{"MyFloat3"}, Vector3{ 6.1f, 6.2f, 6.3f });
+        CheckMaterialPropertyValue<Vector4> (materialAssetV1, Name{"MyFloat4"}, Vector4{ 7.1f, 7.2f, 7.3f, 7.4f });
+        CheckMaterialPropertyValue<Color>   (materialAssetV1, Name{"MyColor"},  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
+        CheckMaterialPropertyValue<uint32_t>(materialAssetV1, Name{"MyEnum"}, 2u);
+        CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAssetV1, Name{"MyImage"}, m_testImageAsset2);
+
+        CheckMaterialPropertyValue<bool>    (materialAssetV3, Name{"MyBool"},   true);
+        CheckMaterialPropertyValue<float>   (materialAssetV3, Name{"MyFloat"},  1.2f);
+        CheckMaterialPropertyValue<int32_t> (materialAssetV3, Name{"MyInt"},    -12);
+        CheckMaterialPropertyValue<uint32_t>(materialAssetV3, Name{"MyUInt"},   4u);
+        CheckMaterialPropertyValue<Vector2> (materialAssetV3, Name{"MyFloat2"}, Vector2{ 5.1f, 5.2f });
+        CheckMaterialPropertyValue<Vector3> (materialAssetV3, Name{"MyFloat3"}, Vector3{ 6.1f, 6.2f, 6.3f });
+        CheckMaterialPropertyValue<Vector4> (materialAssetV3, Name{"MyFloat4"}, Vector4{ 7.1f, 7.2f, 7.3f, 7.4f });
+        CheckMaterialPropertyValue<Color>   (materialAssetV3, Name{"MyColor"},  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
+        CheckMaterialPropertyValue<uint32_t>(materialAssetV3, Name{"MyEnum"}, 2u);
+        CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAssetV3, Name{"MyImage"}, m_testImageAsset2);
+
+        CheckMaterialPropertyValue<bool>    (materialAssetV6, Name{"MyBool"},   true);
+        CheckMaterialPropertyValue<float>   (materialAssetV6, Name{"MyFloat"},  1.2f);
+        CheckMaterialPropertyValue<int32_t> (materialAssetV6, Name{"MyInt"},    -12);
+        CheckMaterialPropertyValue<uint32_t>(materialAssetV6, Name{"MyUInt"},   12u);
+        CheckMaterialPropertyValue<Vector2> (materialAssetV6, Name{"MyFloat2"}, Vector2{ 1.1f, 2.2f });
+        CheckMaterialPropertyValue<Vector3> (materialAssetV6, Name{"MyFloat3"}, Vector3{ 3.3f, 4.4f, 5.5f });
+        CheckMaterialPropertyValue<Vector4> (materialAssetV6, Name{"MyFloat4"}, Vector4{ 6.6f, 7.7f, 8.8f, 9.9f });
+        CheckMaterialPropertyValue<Color>   (materialAssetV6, Name{"MyColor"},  Color{ 0.1f, 0.2f, 0.3f, 0.4f });
+        CheckMaterialPropertyValue<uint32_t>(materialAssetV6, Name{"MyEnum"}, 2u);
+        CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAssetV6, Name{"MyImage"}, m_testImageAsset2);
+
+        CheckMaterialPropertyValue<bool>    (materialAssetV9, Name{"MyBool"},   true);
+        CheckMaterialPropertyValue<float>   (materialAssetV9, Name{"MyFloat"},  1.2f);
+        CheckMaterialPropertyValue<int32_t> (materialAssetV9, Name{"MyInt"},    -12);
+        CheckMaterialPropertyValue<uint32_t>(materialAssetV9, Name{"MyUInt"},   12u);
+        CheckMaterialPropertyValue<Vector2> (materialAssetV9, Name{"MyFloat2"}, Vector2{ 1.1f, 2.2f });
+        CheckMaterialPropertyValue<Vector3> (materialAssetV9, Name{"MyFloat3"}, Vector3{ 3.3f, 4.4f, 5.5f });
+        CheckMaterialPropertyValue<Vector4> (materialAssetV9, Name{"MyFloat4"}, Vector4{ 6.6f, 7.7f, 8.8f, 9.9f });
+        CheckMaterialPropertyValue<Color>   (materialAssetV9, Name{"MyColor"},  Color{ 0.1f, 0.2f, 0.3f, 0.4f });
+        CheckMaterialPropertyValue<uint32_t>(materialAssetV9, Name{"MyEnum"}, 1u);
+        CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAssetV9, Name{"MyImage"}, m_testImageAsset);
     }
 
     TEST_F(MaterialTypeAssetTests, ApplySetValues_FuzzyCast)
