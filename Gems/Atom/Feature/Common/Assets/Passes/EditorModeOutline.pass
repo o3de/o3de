@@ -18,7 +18,8 @@
                     "Name": "InputEntityMask",
                     "SlotType": "Input",
                     "ShaderInputName": "m_entityMask",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_maskDimensions"
                 },
                 {
                     "Name": "InputColor",

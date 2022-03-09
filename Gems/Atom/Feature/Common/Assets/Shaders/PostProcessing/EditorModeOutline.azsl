@@ -22,9 +22,7 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 //! @note There are known issues with pimples due to z-fighting of coincident surfaces in the entity mask that will be addressed it LYN-10304.
 float Outliner(const float2 uv, const float lineThickness)
 {
-    const float2 maskSize = GetImageSize(PassSrg::m_entityMask);
-    const float2 unormalizedUv = float2(uv.x * maskSize.x, uv.y * maskSize.y);
-    const float2 maskSizeReciprocal = float2(1., 1.0) / maskSize;
+    const float2 unormalizedUv = float2(uv.x * PassSrg::m_maskDimensions.x, uv.y * PassSrg::m_maskDimensions.y);
     float outline = 0.;
     
     // Outliner kernal
@@ -32,7 +30,7 @@ float Outliner(const float2 uv, const float lineThickness)
     {
         for(float v = -lineThickness; v <= lineThickness; v+=1.)
         {
-            outline += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * maskSizeReciprocal).r;
+            outline += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * PassSrg::m_maskDimensions.zw).r;
         }
     }
     
@@ -57,6 +55,8 @@ PSOutput MainPS(VSOutput IN)
 
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outline);
+
+    //OUT.m_color = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
     return OUT;
 }
