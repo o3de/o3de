@@ -29,6 +29,8 @@ namespace AZ
 
         FullscreenShadowPass::FullscreenShadowPass(const RPI::PassDescriptor& descriptor)
             : RPI::FullscreenTrianglePass(descriptor)
+            , m_outputName("Output")
+            , m_depthInputName("Depth")
         {
         }
 
@@ -42,68 +44,40 @@ namespace AZ
         {
             for (unsigned int i = 0; i < GetInputCount(); ++i)
             {
-                auto b = GetInputBinding(i);
-                if (b.m_name == name)
-                    return b;
+                auto binding = GetInputBinding(i);
+                if (binding.m_name == name)
+                    return binding;
             }
 
             for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
             {
-                auto b = GetInputOutputBinding(i);
-                if (b.m_name == name)
-                    return b;
+                auto binding = GetInputOutputBinding(i);
+                if (binding.m_name == name)
+                    return binding;
             }
 
             for (unsigned int i = 0; i < GetOutputCount(); ++i)
             {
-                auto b = GetOutputBinding(i);
-                if (b.m_name == name)
-                    return b;
+                auto binding = GetOutputBinding(i);
+                if (binding.m_name == name)
+                    return binding;
             }
             return {};
         }
 
         AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
         {
-            auto outputBinding = GetPassAttachmentBinding(AZ::Name("Output"));
+            auto outputBinding = GetPassAttachmentBinding(m_outputName);
             auto outputDim = outputBinding.m_attachment->m_descriptor.m_image.m_size;
             AZ_Assert(outputDim.m_width > 0 && outputDim.m_height > 0, "Height and width are not valid\n");
             return outputDim;
         }
 
-        //void FullscreenShadowPass::ChooseShaderVariant()
-        //{
-        //    const AZ::RPI::ShaderVariant& shaderVariant = CreateShaderVariant();
-        //    CreatePipelineStateFromShaderVariant(shaderVariant);
-        //}
-
-        //AZ::RPI::ShaderOptionGroup FullscreenShadowPass::CreateShaderOptionGroup()
-        //{
-        //    RPI::ShaderOptionGroup shaderOptionGroup = m_shader->CreateShaderOptionGroup();
-        //    shaderOptionGroup.SetUnspecifiedToDefaultValues();
-        //    return shaderOptionGroup;
-        //}
-
-        //void FullscreenShadowPass::CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant)
-        //{
-        //    AZ::RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-        //    shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-        //    m_msaaPipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-        //    AZ_Error("FullscreenShadowPass", m_msaaPipelineState, "Failed to acquire pipeline state for shader");
-        //}
-
-        //const AZ::RPI::ShaderVariant& FullscreenShadowPass::CreateShaderVariant()
-        //{
-        //    RPI::ShaderOptionGroup shaderOptionGroup = CreateShaderOptionGroup();
-        //    const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(shaderOptionGroup.GetShaderVariantId());
-
-        //    //Set the fallbackkey
-        //    //if (m_drawSrg)
-        //    //{
-        //    //    m_drawSrg->SetShaderVariantKeyFallbackValue(shaderOptionGroup.GetShaderVariantKeyFallbackValue());
-        //    //}
-        //    return shaderVariant;
-        //}
+        int FullscreenShadowPass::GetDepthBufferMSAACount()
+        {
+            auto outputBinding = GetPassAttachmentBinding(m_depthInputName);
+            return outputBinding.m_attachment->m_descriptor.m_image.m_multisampleState.m_samples;
+        }       
 
         void FullscreenShadowPass::SetConstantData()
         {
@@ -114,7 +88,8 @@ namespace AZ
                 int m_filterMode;
                 int m_blendBetweenCascadesEnable;
                 int m_receiverShadowPlaneBiasEnable;
-                int m_padding[2];
+                int m_msaaCount;
+                float m_invMsaaCount;
 
             } constantData;
 
@@ -124,40 +99,12 @@ namespace AZ
             constantData.m_filterMode = static_cast<int>(m_filterMethod);
             constantData.m_blendBetweenCascadesEnable = m_blendBetweenCascadesEnable ? 1 : 0;
             constantData.m_receiverShadowPlaneBiasEnable = m_receiverShadowPlaneBiasEnable ? 1 : 0;
+            constantData.m_msaaCount = GetDepthBufferMSAACount();
+            constantData.m_invMsaaCount = 1.0f / constantData.m_msaaCount;
 
             [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
             AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
         }
-
-        //void FullscreenShadowPass::BuildInternal()
-        //{
-        //    FullscreenTrianglePass::BuildInternal();
-        //    m_shader;
-        //}
-
-        //void FullscreenShadowPass::OnShaderReloaded()
-        //{
-        //    //LoadShader();
-        //    //AZ_Assert(GetPassState() != RPI::PassState::Rendering, "FullscreenShadowPass: Trying to reload shader during rendering");
-        //    //if (GetPassState() == RPI::PassState::Idle)
-        //    //{
-        //    //}
-        //}
-
-        //void FullscreenShadowPass::OnShaderReinitialized(const AZ::RPI::Shader&)
-        //{
-        //    OnShaderReloaded();
-        //}
-
-        //void FullscreenShadowPass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
-        //{
-        //    OnShaderReloaded();
-        //}
-
-        //void FullscreenShadowPass::OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant&)
-        //{
-        //    OnShaderReloaded();
-        //}
 
     }   // namespace Render
 }   // namespace AZ

@@ -60,25 +60,42 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         int m_filterMode;
         int m_blendBetweenCascadesEnable;        
         int m_receiverShadowPlaneBiasEnable;
-        int2 m_padding;
+        int m_msaaCount;
+        float m_invMsaaCount;
     };    
     
     Constants m_constantData;
     Texture2DArray<float> m_directionalLightShadowmap;   
     Texture2DArray<float> m_directionalLightExponentialShadowmap;    
-    Texture2D<float> m_depth;
+    Texture2DMS<float> m_depth;
 }
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 
-class DirectionalLightShadow
+class DirectionalLightShadowCalculator
 {
     struct DebugInfo
     {
         uint m_cascadeIndex; // cascade index where lit ratio determined.
         bool m_usePcfFallback;
     };
+
+    void SetBlendBetweenCascadesEnable(const bool enable)
+    {
+        m_blendBetweenCascadesEnable = enable;
+    }
+    
+    void SetShadowmaps(Texture2DArray<float> dirShadowMap, Texture2DArray<float> expShadowmap)
+    {
+        m_directionalLightShadowmap = dirShadowMap;   
+        m_directionalLightExponentialShadowmap = expShadowmap;        
+    }
+
+    void SetReceiverShadowPlaneBiasEnable(const bool enable)
+    {
+        m_receiverShadowPlaneBiasEnable = enable;
+    }
 
     void SetWorldNormal(const float3 n)
     {
@@ -88,6 +105,11 @@ class DirectionalLightShadow
     void SetLightIndex(const int lightIndex)
     {
         m_lightIndex = lightIndex;    
+    }
+    
+    void SetFilterMode(const int filterMode)
+    {
+        m_filterMode = filterMode;
     }
 
     // This outputs the coordinate in shadowmap Texture space of the given point.
@@ -112,7 +134,7 @@ class DirectionalLightShadow
             m_shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
         }
                 
-        if (PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable)
+        if (m_receiverShadowPlaneBiasEnable)
         {
             [unroll]
             for(int i = 0 ; i < ViewSrg::MaxCascadeCount ; ++i)
@@ -132,14 +154,13 @@ class DirectionalLightShadow
         const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
 
         const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-        Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
 
         [branch]
         if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
             shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin)
         {
             const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-            const float depthInShadowmap = shadowmap.Sample(PassSrg::LinearSampler, coord).r;
+            const float depthInShadowmap = m_directionalLightShadowmap.Sample(PassSrg::LinearSampler, coord).r;
             // Test the case where the shadowed pixel is nearer than the maximal depth
             // of the cascade.  Otherwise, escalate the next cascade.
             if (shadowCoord.z < 1. - DepthMargin)
@@ -165,7 +186,7 @@ class DirectionalLightShadow
         }
     
         float lit = 1;
-        switch(PassSrg::m_constantData.m_filterMode)
+        switch(m_filterMode)
         {
             case ShadowFilterMethod_None:
                 lit = GetVisibilityFromLightNoFilter();
@@ -208,10 +229,9 @@ class DirectionalLightShadow
         const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
         
         const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-        Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
 
         SampleShadowMapBicubicParameters param;
-        param.shadowMap = shadowmap;
+        param.shadowMap = m_directionalLightShadowmap;
         param.shadowPos = float3(shadowCoord.xy, indexOfCascade);
         param.shadowMapSize = size;
         param.invShadowMapSize = rcp(size); 
@@ -263,7 +283,7 @@ class DirectionalLightShadow
         {
             float lit = SamplePcfBicubic(m_shadowCoords[currentCascadeIndex], currentCascadeIndex);
             
-            if(PassSrg::m_constantData.m_blendBetweenCascadesEnable) 
+            if(m_blendBetweenCascadesEnable) 
             {  
                 const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[currentCascadeIndex].xyz);
 
@@ -287,8 +307,6 @@ class DirectionalLightShadow
     {
         const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
         const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-        Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
-        Texture2DArray<float> expShadowmap = PassSrg::m_directionalLightExponentialShadowmap;
 
         for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
         {
@@ -302,7 +320,7 @@ class DirectionalLightShadow
             {
                 const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
                 const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-                const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;                        
+                const float occluder = m_directionalLightExponentialShadowmap.Sample(PassSrg::LinearSampler, coord).r;                        
                 const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
                 const float ratio = exp(exponent);
 
@@ -319,8 +337,6 @@ class DirectionalLightShadow
     {
         const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
         const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-        Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
-        Texture2DArray<float> expShadowmap = PassSrg::m_directionalLightExponentialShadowmap;
 
         for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
         {
@@ -334,7 +350,7 @@ class DirectionalLightShadow
             {
                 const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
                 const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-                const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;
+                const float occluder = m_directionalLightExponentialShadowmap.Sample(PassSrg::LinearSampler, coord).r;
                 const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
                 float ratio = exp(exponent);
 
@@ -370,7 +386,12 @@ class DirectionalLightShadow
     float3 m_shadowPosDX[ViewSrg::MaxCascadeCount];
     float3 m_shadowPosDY[ViewSrg::MaxCascadeCount];
     float3 m_worldNormal;
+    bool m_receiverShadowPlaneBiasEnable;
+    bool m_blendBetweenCascadesEnable;
     int m_lightIndex;
+    int m_filterMode;
+    Texture2DArray<float> m_directionalLightShadowmap;   
+    Texture2DArray<float> m_directionalLightExponentialShadowmap;        
     DebugInfo m_debugInfo;    
 };
 
@@ -385,12 +406,10 @@ float3 ComputeWorldNormal(VSOutput IN)
     const float2 uv1 = IN.m_texCoord + float2(offset, 0) * invScreenSize; // right 
     const float2 uv2 = IN.m_texCoord + float2(0, offset) * invScreenSize; // top
 
-
-    const float depth0 = PassSrg::m_depth.Load(int3(texCoord, 0));
-    const float depth1 = PassSrg::m_depth.Load(int3(texCoord + int2(1,0), 0));
-    const float depth2 = PassSrg::m_depth.Load(int3(texCoord + int2(0,1), 0));
-
-
+    const int sampleIndex = 0;
+    const float depth0 = PassSrg::m_depth.Load(texCoord, sampleIndex);
+    const float depth1 = PassSrg::m_depth.Load(texCoord + int2(1,0), sampleIndex);
+    const float depth2 = PassSrg::m_depth.Load(texCoord + int2(0,1), sampleIndex);
 
     const float3 P0 = WorldPositionFromDepthBuffer(uv0, depth0).xyz;
     const float3 P1 = WorldPositionFromDepthBuffer(uv1, depth1).xyz;
@@ -403,12 +422,21 @@ PSOutput MainPS(VSOutput IN)
 {
     const float3 worldNormal = ComputeWorldNormal(IN);    
 
-    DirectionalLightShadow directionalLightShadow;
+    DirectionalLightShadowCalculator directionalLightShadow;
     directionalLightShadow.SetLightIndex(PassSrg::m_constantData.m_lightIndex);
     directionalLightShadow.SetWorldNormal(worldNormal);
-
-    const float zDepth = PassSrg::m_depth.Load(int3(IN.m_position.xy, 0)); 
-
+    directionalLightShadow.SetReceiverShadowPlaneBiasEnable(PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable);
+    directionalLightShadow.SetFilterMode(PassSrg::m_constantData.m_filterMode);
+    directionalLightShadow.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
+    directionalLightShadow.SetShadowmaps(PassSrg::m_directionalLightShadowmap, PassSrg::m_directionalLightExponentialShadowmap);
+        
+    float sumDepth = 0;
+    for(int sampleIndex = 0 ; sampleIndex < PassSrg::m_constantData.m_msaaCount ; ++sampleIndex)
+    {
+        sumDepth += PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex);
+    }
+    const float zDepth = sumDepth * PassSrg::m_constantData.m_invMsaaCount;
+    
     const float3 surfacePosWS = WorldPositionFromDepthBuffer(IN.m_texCoord, zDepth).xyz;     
     const float3 surfacePosVS = ViewPositionFromDepthBuffer(IN.m_texCoord, zDepth).xyz;     
 
@@ -417,8 +445,7 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;   
     float vis = directionalLightShadow.GetVisibility();
     
-    OUT.m_color.r = vis;
-    OUT.m_color.g = abs(surfacePosVS.z);
+    OUT.m_color = vis;
    
     return OUT; 
 }

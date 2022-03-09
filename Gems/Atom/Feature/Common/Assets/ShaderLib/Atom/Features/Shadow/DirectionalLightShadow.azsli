@@ -36,7 +36,9 @@ class DirectionalLightShadow
     //! @param lightIndex directional light index.
     //! @param worldPosition position of the surface in the world space.
     //! @param shadowCoords calculated shadow coordinates.
-    static float ChooseClosest(float2 visDepth[5], float myDepth);
+    static float ChooseClosest(float visDepth[5], float myDepth);
+    static float ChooseDimmest(float visDepth[5], float myDepth);
+    static float ChooseWeighted(float visDepth[5], float myDepth);
 
     //! This calculates visibility ratio of the surface from the light origin.
     //! This should be called from fragment shaders.
@@ -132,8 +134,10 @@ float DirectionalLightShadow::GetThickness(uint lightIndex, float3 shadowCoords[
 }
 
 
-float DirectionalLightShadow::ChooseClosest(float2 visDepth[5], float myDepth)
+float DirectionalLightShadow::ChooseClosest(float visDepth[5], float myDepth)
 {
+    return 1;
+/*
     int best = 0;
     for(int i = 1 ; i < 5 ; ++i)
     {
@@ -144,35 +148,29 @@ float DirectionalLightShadow::ChooseClosest(float2 visDepth[5], float myDepth)
             best = i;
         } 
     }
-    return visDepth[best].r;
+    return visDepth[best].r;*/
 }
-float DirectionalLightShadow::GetVisibility(
-    uint lightIndex,
-    float3 normalVector,
-    float4 screenUv,
-    out DirectionalLightShadow::DebugInfo debugInfo)
-{ 
 
+float DirectionalLightShadow::ChooseDimmest(float visDepth[5], float myDepth)
+{
+    float res = visDepth[0];
+    for(int i = 1 ; i < 5 ; ++i)
+    {
+        if (res > visDepth[i])
+        {
+            res = visDepth[i];
+        }
+    }
+    return res;
+}
 
+float DirectionalLightShadow::ChooseWeighted(float visDepth[5], float viewSpaceDepth)
+{
+    return 1;
+    /*
 
-    debugInfo.m_cascadeIndex = 0;
-    debugInfo.m_usePcfFallback = false;    
-    
-    uint fullScreenShadowWidth, fullScreenShadowHeight;
-    PassSrg::m_fullscreenShadow.GetDimensions(fullScreenShadowWidth, fullScreenShadowHeight);
-    const float2 normScreenUv = screenUv.xy / float2(fullScreenShadowWidth, fullScreenShadowHeight);
-
-    
-    const float viewSpaceDepth = abs(screenUv.w);
-    
-    float2 visDepth[5];
-    visDepth[0] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).xy;
-    visDepth[1] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(1,0), 0)).xy;
-    visDepth[2] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(0,1), 0)).xy;
-    visDepth[3] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(-1,0), 0)).xy;
-    visDepth[4] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(0,-1), 0)).xy;
-    return ChooseClosest(visDepth, viewSpaceDepth);    
     int i;
+    
     float largestDiff = 0;
     for(i = 0 ; i < 5 ; ++i)
     {
@@ -181,7 +179,7 @@ float DirectionalLightShadow::GetVisibility(
     }
     
         
-    float totW = 0;
+    float totW = 0; 
     float res = 0;
     for(i = 0 ; i < 5 ; ++i)
     {
@@ -192,18 +190,38 @@ float DirectionalLightShadow::GetVisibility(
             w += 0.01;
         }
 
-        w = w*w;
-
-
-        //w = rcp(abs(visDepth[i].g - viewSpaceDepth) + constantToAvoidZeroWeight);
+        w = w*w;        
         res += visDepth[i].r * w;
         totW += w;
     }  
     res /= totW;
+    return res;*/
+}
+
+
+float DirectionalLightShadow::GetVisibility(
+    uint lightIndex,
+    float3 normalVector,
+    float4 screenUv,
+    out DirectionalLightShadow::DebugInfo debugInfo)
+{ 
+    debugInfo.m_cascadeIndex = 0;
+    debugInfo.m_usePcfFallback = false;    
     
-    return res;
+    uint fullScreenShadowWidth, fullScreenShadowHeight;
+    PassSrg::m_fullscreenShadow.GetDimensions(fullScreenShadowWidth, fullScreenShadowHeight);
+    const float2 normScreenUv = screenUv.xy / float2(fullScreenShadowWidth, fullScreenShadowHeight);
 
-
+    
+    const float viewSpaceDepth = abs(screenUv.w);
+    
+    float visDepth[5];
+    visDepth[0] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
+    visDepth[1] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(1,0), 0)).x;
+    visDepth[2] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(0,1), 0)).x;
+    visDepth[3] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(-1,0), 0)).x;
+    visDepth[4] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(0,-1), 0)).x;
+    return ChooseDimmest(visDepth, viewSpaceDepth);    
 }
 
 float3 DirectionalLightShadow::AddDebugColoring(

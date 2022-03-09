@@ -48,7 +48,7 @@
                         } 
                     },
                     "ImageDescriptor": {
-                        "Format": "R16G16_FLOAT", 
+                        "Format": "R16_FLOAT", 
                         "SharedQueueMask": "Graphics"                      
                     }                              
                 }

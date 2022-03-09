@@ -63,35 +63,20 @@ namespace AZ
             FullscreenShadowPass(const RPI::PassDescriptor& descriptor);
             AZ::RPI::PassAttachmentBinding GetPassAttachmentBinding(AZ::Name name);
 
-            // Pass behavior overrides...
-        //    void BuildInternal() override;
-
-            ///////////////////////////////////////////////////////////////////
-            // ShaderReloadNotificationBus overrides...
-            //void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
-            //void OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
-            //void OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant& shaderVariant) override;
-
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-     //       void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
-
-         //   AZ::RPI::ShaderOptionGroup CreateShaderOptionGroup();
 
             AZ::RHI::Size GetDepthBufferDimensions();
-         //   void ChooseShaderVariant();
-         //   const AZ::RPI::ShaderVariant& CreateShaderVariant();
-         //   void CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant);
+            int GetDepthBufferMSAACount();
+
             void SetConstantData();
-         ////   void OnShaderReloaded();
 
             AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
-         //   // The shader variant (for choosing the different MSAA version) is sent to the RHI via the PipelineState
-         //   AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_msaaPipelineState;
-
-         //   AZ::Name m_constantDataName;
             int m_lightIndex = 0;
+
+            AZ::Name m_depthInputName;
+            AZ::Name m_outputName;
         };
     }   // namespace Render
 }   // namespace AZ
