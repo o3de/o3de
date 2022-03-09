@@ -104,6 +104,7 @@ public:
     friend struct DuplicateProcessTest;
     friend struct AbsolutePathProductDependencyTest;
     friend struct WildcardSourceDependencyTest;
+    friend struct SourceFileDependenciesTest;
 
     explicit AssetProcessorManager_Test(AssetProcessor::PlatformConfiguration* config, QObject* parent = nullptr);
     ~AssetProcessorManager_Test() override;

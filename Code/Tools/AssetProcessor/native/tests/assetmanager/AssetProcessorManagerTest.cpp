@@ -3093,7 +3093,6 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_UpdateTes
     EXPECT_NE(deps.find(dependsOnFile1_Job.toUtf8().constData()), deps.end());
 }
 
-
 TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid)
 {
     // make sure that if we publish some dependencies, they do not appear if they are missing
@@ -3255,7 +3254,6 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFi
     EXPECT_NE(deps.find(dependsOnFile1_Job.toUtf8().constData()), deps.end());     // c
 }
 
-
 TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid_UpdatesWhenTheyAppear)
 {
     // this test makes sure that when files DO appear that were previously placeholders, the database is updated
@@ -3367,7 +3365,6 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFi
     EXPECT_NE(deps.find(dependsOnFile2_Job.toUtf8().constData()), deps.end());
 }
 
-
 TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByName_UpdatesWhenTheyAppear)
 {
     // this test makes sure that when files DO appear that were previously placeholders, the database is updated
@@ -3476,6 +3473,195 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFi
     EXPECT_NE(deps.find(dependsOnFile2_Source.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(dependsOnFile1_Job.toUtf8().constData()), deps.end());
     EXPECT_NE(deps.find(dependsOnFile2_Job.toUtf8().constData()), deps.end());
+}
+
+struct SourceFileDependenciesTest
+    : AssetProcessorManagerTest
+{
+    void SetupData(const AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies,
+        const AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies, bool createFile1Dummies, bool createFile2Dummies, bool primeMap)
+    {
+        // make sure that if we publish some dependencies, they appear:
+        m_dummyBuilderUuid = AZ::Uuid::CreateRandom();
+        QDir tempPath(m_tempDir.path());
+        QString relFileName("assetProcessorManagerTest.txt");
+        QString absPath(tempPath.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt"));
+        QString watchFolderPath = tempPath.absoluteFilePath("subfolder1");
+        const ScanFolderInfo* scanFolder = m_config->GetScanFolderByPath(watchFolderPath);
+        ASSERT_NE(scanFolder, nullptr);
+
+        // the above file (assetProcessorManagerTest.txt) will depend on these four files:
+        QString dependsOnFile1_Source = tempPath.absoluteFilePath("subfolder1/a.txt");
+        QString dependsOnFile2_Source = tempPath.absoluteFilePath("subfolder1/b.txt");
+        QString dependsOnFile1_Job = tempPath.absoluteFilePath("subfolder1/c.txt");
+        QString dependsOnFile2_Job = tempPath.absoluteFilePath("subfolder1/d.txt");
+
+        if(createFile1Dummies)
+        {
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(dependsOnFile1_Source, QString("tempdata\n")));
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(dependsOnFile2_Source, QString("tempdata\n")));
+        }
+
+        if(createFile2Dummies)
+        {
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(dependsOnFile1_Job, QString("tempdata\n")));
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(dependsOnFile2_Job, QString("tempdata\n")));
+        }
+
+        // construct the dummy job to feed to the database updater function:
+        AssetProcessorManager::JobToProcessEntry job;
+        job.m_sourceFileInfo.m_databasePath = "assetProcessorManagerTest.txt";
+        job.m_sourceFileInfo.m_pathRelativeToScanFolder = "assetProcessorManagerTest.txt";
+        job.m_sourceFileInfo.m_scanFolder = scanFolder;
+        job.m_sourceFileInfo.m_uuid = AssetUtilities::CreateSafeSourceUUIDFromName(job.m_sourceFileInfo.m_databasePath.toUtf8().data());
+
+        if(primeMap)
+        {
+            // note that we have to "prime" the map with the UUIDs to the source info for this to work:
+            //AZ::Uuid uuidOfB = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
+            //AZ::Uuid uuidOfD = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
+            m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = { watchFolderPath, "a.txt", "a.txt" };
+            m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfB] = { watchFolderPath, "b.txt", "b.txt" };
+            m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = { watchFolderPath, "c.txt", "c.txt" };
+            m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfD] = { watchFolderPath, "d.txt", "d.txt" };
+        }
+
+        for (const auto& sourceFileDependency : sourceFileDependencies)
+        {
+            job.m_sourceFileDependencies.emplace_back(m_dummyBuilderUuid, sourceFileDependency);
+        }
+
+        // it is currently assumed that the only fields that we care about in JobDetails is the builder busId and the job dependencies
+        // themselves:
+        JobDetails newDetails;
+        newDetails.m_assetBuilderDesc.m_busId = m_dummyBuilderUuid;
+
+        for (const auto& jobDependency : jobDependencies)
+        {
+            newDetails.m_jobDependencyList.push_back(jobDependency);
+        }
+
+        job.m_jobsToAnalyze.push_back(newDetails);
+
+        // this is the one line that this unit test is really testing:
+        m_assetProcessorManager->UpdateSourceFileDependenciesDatabase(job);
+    }
+
+    auto GetDependencyList()
+    {
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer deps;
+        this->m_assetProcessorManager->m_stateData->GetSourceFileDependenciesByBuilderGUIDAndSource(
+            m_dummyBuilderUuid, "assetProcessorManagerTest.txt",
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any, deps);
+
+        auto containerToList = [](const AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container)
+        {
+            AZStd::vector<AZStd::string> list;
+
+            for (auto&& entry : container)
+            {
+                list.push_back(entry.m_dependsOnSource);
+            }
+
+            return list;
+        };
+
+        return containerToList(deps);
+    }
+
+    auto MakeSourceDependency(const char* file, bool wildcard = false)
+    {
+        return AssetBuilderSDK::SourceFileDependency{ file,
+                                                      AZ::Uuid::CreateNull(),
+                                                      wildcard
+                                                      ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                                                      : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute };
+    }
+
+    auto MakeSourceDependency(AZ::Uuid uuid)
+    {
+        return AssetBuilderSDK::SourceFileDependency{ "", uuid };
+    }
+
+    auto MakeJobDependency(const char* file)
+    {
+        return AssetBuilderSDK::JobDependency("pc build", "pc", AssetBuilderSDK::JobDependencyType::Order, MakeSourceDependency(file));
+    }
+
+    auto MakeJobDependency(AZ::Uuid uuid)
+    {
+        return AssetBuilderSDK::JobDependency("pc build", "pc", AssetBuilderSDK::JobDependencyType::Order, MakeSourceDependency(uuid));
+    }
+
+    AZ::Uuid m_dummyBuilderUuid;
+    AZ::Uuid m_uuidOfA = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
+    AZ::Uuid m_uuidOfB = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
+    AZ::Uuid m_uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
+    AZ::Uuid m_uuidOfD = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
+};
+
+TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_DuplicateSourceDependencies)
+{
+    SetupData({
+        MakeSourceDependency("a.txt"),
+        MakeSourceDependency("a.txt"),
+        MakeSourceDependency(m_uuidOfA),
+        MakeSourceDependency(m_uuidOfB),
+        MakeSourceDependency(m_uuidOfB)
+    }, { }, true, true, true);
+
+    auto actualDependencies = GetDependencyList();
+
+    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre(
+        "a.txt",
+        "b.txt"
+    ));
+}
+
+TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_DuplicateJobDependencies)
+{
+    SetupData({ }, {
+            MakeJobDependency("c.txt"),
+            MakeJobDependency("c.txt"),
+            MakeJobDependency(m_uuidOfC),
+            MakeJobDependency(m_uuidOfD),
+        }, true, true, true);
+
+    auto actualDependencies = GetDependencyList();
+
+    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre("c.txt", "d.txt"));
+}
+
+TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_JobAndSourceDependenciesDuplicated)
+{
+    SetupData(
+        {
+            MakeSourceDependency("a.txt"),
+            MakeSourceDependency(m_uuidOfB)
+        },
+        {
+            MakeJobDependency(m_uuidOfA),
+            MakeJobDependency("b.txt"),
+        },
+        true, true, true);
+
+    auto actualDependencies = GetDependencyList();
+
+    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre("a.txt", "b.txt"));
+}
+
+TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_SourceDependenciesDuplicatedWildcard)
+{
+    SetupData(
+        {
+            MakeSourceDependency("a.txt"),
+            MakeSourceDependency("a.t*t", true),
+            MakeSourceDependency(m_uuidOfB),
+        }, {}, true, true, true);
+
+    auto actualDependencies = GetDependencyList();
+
+    EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre("a.txt", "a.t%t", "b.txt"));
 }
 
 TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
