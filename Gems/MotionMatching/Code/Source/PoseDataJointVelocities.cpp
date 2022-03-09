@@ -7,7 +7,9 @@
  */
 
 #include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/AnimGraphPose.h>
 #include <EMotionFX/Source/MotionInstance.h>
+#include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/Velocity.h>
 #include <Allocators.h>
 #include <Feature.h>
@@ -138,15 +140,69 @@ namespace EMotionFX::MotionMatching
 
     void PoseDataJointVelocities::CalculateVelocity(MotionInstance* motionInstance, size_t relativeToJointIndex)
     {
+        const size_t numJoints = m_velocities.size();
         SetRelativeToJointIndex(relativeToJointIndex);
         ActorInstance* actorInstance = motionInstance->GetActorInstance();
-        m_velocities.resize(actorInstance->GetNumNodes());
-        m_angularVelocities.resize(actorInstance->GetNumNodes());
-        for (size_t i = 0; i < m_velocities.size(); ++i)
+        m_velocities.resize(numJoints);
+        m_angularVelocities.resize(numJoints);
+
+        const float originalTime = motionInstance->GetCurrentTime();
+
+        // Prepare for sampling.
+        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
+        AnimGraphPose* prevPose = posePool.RequestPose(actorInstance);
+        AnimGraphPose* currentPose = posePool.RequestPose(actorInstance);
+        Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
+
+        const size_t numSamples = 3;
+        const float timeRange = 0.05f; // secs
+        const float halfTimeRange = timeRange * 0.5f;
+        const float startTime = originalTime - halfTimeRange;
+        const float frameDelta = timeRange / numSamples;
+        const float motionDuration = motionInstance->GetMotion()->GetDuration();
+
+        // Zero all linear and angular velocities.
+        Reset();
+
+        for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
         {
-            Feature::CalculateVelocity(i, m_relativeToJointIndex, motionInstance, m_velocities[i]);
-            // TODO: Angular velocity not used yet.
+            float sampleTime = startTime + sampleIndex * frameDelta;
+            sampleTime = AZ::GetClamp(sampleTime, 0.0f, motionDuration);
+            motionInstance->SetCurrentTime(sampleTime);
+
+            if (sampleIndex == 0)
+            {
+                motionInstance->GetMotion()->Update(bindPose, &prevPose->GetPose(), motionInstance);
+                continue;
+            }
+
+            motionInstance->GetMotion()->Update(bindPose, &currentPose->GetPose(), motionInstance);
+
+            const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
+
+            for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            {
+                // Calculate the linear velocity.
+                const AZ::Vector3 prevPosition = prevPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
+                const AZ::Vector3 currentPosition = currentPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
+                const AZ::Vector3 velocity = CalculateLinearVelocity(prevPosition, currentPosition, frameDelta);
+                m_velocities[jointIndex] += inverseJointWorldTransform.TransformVector(velocity);
+            }
+
+            *prevPose = *currentPose;
         }
+
+        const float numSamplesFloat = aznumeric_cast<float>(numSamples);
+        for (size_t i = 0; i < numJoints; ++i)
+        {
+            m_velocities[i] /= numSamplesFloat;
+            m_angularVelocities[i] /= numSamplesFloat;
+        }
+
+        motionInstance->SetCurrentTime(originalTime); // Set the current time back to what it was.
+
+        posePool.FreePose(prevPose);
+        posePool.FreePose(currentPose);
     }
 
     void PoseDataJointVelocities::Reflect(AZ::ReflectContext* context)
