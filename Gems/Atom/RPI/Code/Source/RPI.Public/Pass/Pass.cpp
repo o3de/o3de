@@ -1224,11 +1224,11 @@ namespace AZ
             // Bindings, inputs and attachments
             CreateBindingsFromTemplate();
             RegisterPipelineGlobalConnections();
-            SetupInputsFromRequest();
             SetupPassDependencies();
             CreateAttachmentsFromTemplate();
             CreateAttachmentsFromRequest();
             SetupInputsFromTemplate();
+            SetupInputsFromRequest();
 
             // Custom pass behavior
             BuildInternal();

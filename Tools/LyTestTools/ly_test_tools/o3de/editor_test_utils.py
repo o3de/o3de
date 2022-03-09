@@ -180,6 +180,7 @@ def _check_log_errors_warnings(log_path: str) -> bool:
     :param log_path: The full path to the asset log file to read
     :return: True if the regex finds an error or warning, else False
     """
+    regex_match = None
     if not os.path.exists(log_path):
         logger.warning(f"Could not find path {log_path} during asset log collection.")
         return False
