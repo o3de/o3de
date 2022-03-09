@@ -2961,7 +2961,6 @@ void SourceFileDependenciesTest::SetupData(
     }
 
     // construct the dummy job to feed to the database updater function:
-    //AssetProcessorManager::JobToProcessEntry job;
     job.m_sourceFileInfo.m_databasePath = "assetProcessorManagerTest.txt";
     job.m_sourceFileInfo.m_pathRelativeToScanFolder = "assetProcessorManagerTest.txt";
     job.m_sourceFileInfo.m_scanFolder = m_scanFolder;
