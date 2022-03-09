@@ -10,6 +10,17 @@
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
+    DespawnNodeable::DespawnNodeable([[maybe_unused]] const DespawnNodeable& rhs)
+    {
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_despawnedTicketList
+    }
+
+    DespawnNodeable& DespawnNodeable::operator=([[maybe_unused]] const DespawnNodeable& rhs)
+    {
+        // this method is required by Script Canvas, left intentionally blank to avoid copying m_despawnedTicketList
+        return *this;
+    }
+
     void DespawnNodeable::OnInitializeExecutionState()
     {
         if (!AZ::TickBus::Handler::BusIsConnected())

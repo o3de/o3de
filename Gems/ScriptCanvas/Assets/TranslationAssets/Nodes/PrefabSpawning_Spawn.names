@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Spawn",
-                "category": "Spawning",
+                "category": "Prefab/Spawning",
                 "tooltip": "Spawns a selected prefab"
             },
             "slots": [
@@ -17,9 +17,33 @@
                     }
                 },
                 {
-                    "base": "DataInput_SpawnTicketInstance_0",
+                    "base": "DataInput_SpawnTicket_0",
                     "details": {
-                        "name": "SpawnTicketInstance"
+                        "name": "SpawnTicket"
+                    }
+                },
+                {
+                    "base": "DataInput_ParentId_1",
+                    "details": {
+                        "name": "ParentId"
+                    }
+                },
+                {
+                    "base": "DataInput_Local Translation_2",
+                    "details": {
+                        "name": "Local Translation"
+                    }
+                },
+                {
+                    "base": "DataInput_Local Rotation_3",
+                    "details": {
+                        "name": "Local Rotation"
+                    }
+                },
+                {
+                    "base": "DataInput_Local Scale_4",
+                    "details": {
+                        "name": "Local Scale"
                     }
                 },
                 {
@@ -29,39 +53,20 @@
                     }
                 },
                 {
-                    "base": "Output_On Insertion_1",
+                    "base": "Output_On Spawn Completed_1",
                     "details": {
-                        "name": "On Insertion",
-                        "tooltip": "Called after instances of entities have been created, but before they're spawned into the world. gives the opportunity to modify the entities if needed such as injecting additional components or modifying components."
-                    }
-                },
-                {
-                    "base": "DataOutput_InsertedTicketId_0",
-                    "details": {
-                        "name": "InsertedTicketId"
-                    }
-                },
-                {
-                    "base": "DataOutput_InsertedEntitiesList_1",
-                    "details": {
-                        "name": "InsertedEntitiesList"
-                    }
-                },
-                {
-                    "base": "Output_On Completion_2",
-                    "details": {
-                        "name": "On Completion",
+                        "name": "On Spawn Completed",
                         "tooltip": "Called when spawning entities is completed."
                     }
                 },
                 {
-                    "base": "DataOutput_SpawnedTicketId_2",
+                    "base": "DataOutput_SpawnTicket_0",
                     "details": {
-                        "name": "SpawnedTicketId"
+                        "name": "SpawnTicket"
                     }
                 },
                 {
-                    "base": "DataOutput_SpawnedEntitiesList_3",
+                    "base": "DataOutput_SpawnedEntitiesList_1",
                     "details": {
                         "name": "SpawnedEntitiesList"
                     }

@@ -130,6 +130,7 @@ namespace AZ
                     ->Method("OpenMaterialEditor", &EditorMaterialComponentSlot::OpenMaterialEditor)
                     ->Method("OpenMaterialInspector", &EditorMaterialComponentSlot::OpenMaterialInspector)
                     ->Method("OpenUvNameMapInspector", &EditorMaterialComponentSlot::OpenUvNameMapInspector)
+                    ->Method("ExportMaterial", &EditorMaterialComponentSlot::ExportMaterial)
                     ;
             }
         };
@@ -227,8 +228,7 @@ namespace AZ
             // But we still need to allow the user to reconfigure it using the dialog
             EditorMaterialComponentExporter::ExportItemsContainer exportItems;
             {
-                EditorMaterialComponentExporter::ExportItem exportItem{ GetDefaultAssetId(), GetLabel() };
-                exportItems.push_back(exportItem);
+                exportItems.emplace_back(GetDefaultAssetId(), GetLabel());
             }
 
             bool changed = false;
@@ -256,6 +256,22 @@ namespace AZ
             if (changed)
             {
                 OnMaterialChanged();
+            }
+        }
+
+        void EditorMaterialComponentSlot::ExportMaterial(const AZStd::string& exportPath, bool overwrite)
+        {
+            EditorMaterialComponentExporter::ExportItem exportItem(GetDefaultAssetId(), GetLabel(), exportPath);
+            exportItem.SetOverwrite(overwrite);
+
+            if (EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
+            {
+                if (const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0))
+                {
+                    m_materialAsset =
+                        AZ::Data::Asset<AZ::RPI::MaterialAsset>(assetIdOutcome.GetValue(), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
+                    OnMaterialChanged();
+                }
             }
         }
 
