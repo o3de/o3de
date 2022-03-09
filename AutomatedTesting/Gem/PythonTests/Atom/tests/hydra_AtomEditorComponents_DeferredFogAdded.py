@@ -130,8 +130,8 @@ def AtomEditorComponents_DeferredFog_AddedToEntity():
     Test Steps:
     1) Create an Deferred Fog entity with no components.
     2) Add Deferred Fog component to Deferred Fog entity.
-    3) UNDO the entity creation and component addition.
-    4) REDO the entity creation and component addition.
+    3) Remove the Deferred Fog component.
+    4) Undo Bloom component removal.
     5) Verify Deferred Fog component not enabled.
     6) Add PostFX Layer component since it is required by the Deferred Fog component.
     7) Verify Deferred Fog component is enabled.
@@ -338,7 +338,7 @@ def AtomEditorComponents_DeferredFog_AddedToEntity():
         general.idle_wait_frames(1)
 
         # 16. Edit the Noise Texture parameter.
-        # This field cannot currently be edited. It will be fixed in the near future.
+        # This field cannot currently be edited. It will be fixed in a future sprint.
 
         # Store Noise Texture First/Second Scale & Velocity value:
         set_octave = math.Vector2(-100.0, 100.0)
