@@ -101,6 +101,12 @@ The trajectory history stores world space position and facing direction data of 
 
 ![Trajectory Feature](https://user-images.githubusercontent.com/43751992/151819315-beb8d9a1-69ca-49cd-bec0-ba2bae2dc469.png)
 
+## Trajectory prediction
+
+The user controls the character by its future trajectory. The future trajectory contains the path the character is expected to move along, if it should accelerate, move faster, or come to a stop, and if it should be walking forward doing a turn, or strafe sideways. Based on a joystick position, we need to predict the future trajectory and build the path and the facing direction vectors across the control points. The trajectory feature defines the time window of the prediction and the number of samples to be generated. We generate an exponential curve that starts in the direction of the character and then bends towards the given target.
+
+https://user-images.githubusercontent.com/43751992/156741698-d2306bac-cdf5-4a25-96bd-0fc4422b598b.mp4
+
 ## Motion Matching data
 
 Data based on a given skeleton but independent of the instance like the motion capture database, the feature schema or feature matrix is stored here. It is just a wrapper to group the sharable data.

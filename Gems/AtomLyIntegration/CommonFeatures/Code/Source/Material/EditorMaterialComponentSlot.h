@@ -61,6 +61,8 @@ namespace AZ
             void OpenMaterialInspector();
             void OpenUvNameMapInspector();
 
+            void ExportMaterial(const AZStd::string& exportPath, bool overwrite);
+
             AZ::EntityId m_entityId;
             MaterialAssignmentId m_id;
             Data::Asset<RPI::MaterialAsset> m_materialAsset;

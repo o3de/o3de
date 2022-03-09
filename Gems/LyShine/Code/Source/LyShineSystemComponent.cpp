@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-
+#include "LyShineFeatureProcessor.h"
 #include "LyShineSystemComponent.h"
 #include "UiSerialize.h"
 
@@ -99,6 +99,8 @@ namespace LyShine
                 ->Event("GetUiCursorPosition", &UiCursorBus::Events::GetUiCursorPosition)
                 ;
         }
+        
+        LyShineFeatureProcessor::Reflect(context);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,10 +197,15 @@ namespace LyShine
         auto* passSystem = AZ::RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
         passSystem->AddPassCreator(AZ::Name("LyShinePass"), &LyShine::LyShinePass::Create);
+        passSystem->AddPassCreator(AZ::Name("LyShineChildPass"), &LyShine::LyShineChildPass::Create);
+        passSystem->AddPassCreator(AZ::Name("RttChildPass"), &LyShine::RttChildPass::Create);
 
         // Setup handler for load pass template mappings
         m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
         AZ::RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
+        
+        // Register feature processor
+        AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<LyShineFeatureProcessor>();
 #endif
     }
 
@@ -206,7 +213,8 @@ namespace LyShine
     void LyShineSystemComponent::Deactivate()
     {
 #if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
-        m_loadTemplatesHandler.Disconnect();
+        m_loadTemplatesHandler.Disconnect();        
+        AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<LyShineFeatureProcessor>();
 #endif
 
         UiSystemBus::Handler::BusDisconnect();

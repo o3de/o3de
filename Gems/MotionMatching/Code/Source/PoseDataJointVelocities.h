@@ -15,9 +15,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    /**
-     * Extends a given pose with joint-relative linear and angular velocities.
-     **/
+    //! Extends a given pose with joint-relative linear and angular velocities.
     class EMFX_API PoseDataJointVelocities
         : public PoseData
     {
@@ -32,6 +30,8 @@ namespace EMotionFX::MotionMatching
 
         void LinkToActorInstance(const ActorInstance* actorInstance) override;
         void LinkToActor(const Actor* actor) override;
+
+        //! Zero all linear and angular velocities.
         void Reset() override;
 
         void CopyFrom(const PoseData* from) override;
