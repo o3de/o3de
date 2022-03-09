@@ -106,29 +106,22 @@ namespace EMotionFX::MotionMatching
         const float halfTimeRange = timeRange * 0.5f;
         const float startTime = originalTime - halfTimeRange;
         const float frameDelta = timeRange / numSamples;
+        const float motionDuration = motionInstance->GetMotion()->GetDuration();
 
         AZ::Vector3 accumulatedVelocity = AZ::Vector3::CreateZero();
 
         for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
         {
             float sampleTime = startTime + sampleIndex * frameDelta;
-            if (sampleTime < 0.0f)
-            {
-                sampleTime = 0.0f;
-            }
-            if (sampleTime >= motionInstance->GetMotion()->GetDuration())
-            {
-                sampleTime = motionInstance->GetMotion()->GetDuration();
-            }
+            sampleTime = AZ::GetClamp(sampleTime, 0.0f, motionDuration);
+            motionInstance->SetCurrentTime(sampleTime);
 
             if (sampleIndex == 0)
             {
-                motionInstance->SetCurrentTime(sampleTime);
                 motionInstance->GetMotion()->Update(bindPose, &prevPose->GetPose(), motionInstance);
                 continue;
             }
 
-            motionInstance->SetCurrentTime(sampleTime);
             motionInstance->GetMotion()->Update(bindPose, &currentPose->GetPose(), motionInstance);
 
             const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();

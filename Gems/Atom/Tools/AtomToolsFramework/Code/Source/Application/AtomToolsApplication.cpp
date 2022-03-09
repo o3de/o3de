@@ -208,6 +208,8 @@ namespace AtomToolsFramework
 
         LoadSettings();
 
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
         if (editorPythonEventsInterface)
         {
@@ -237,6 +239,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::Destroy()
     {
+        m_assetBrowserInteractions.reset();
         m_styleManager.reset();
 
         // Save application settings to settings registry file

@@ -92,6 +92,37 @@ class AtomComponentProperties:
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
           - 'Enable Bloom' Toggle active state of the component True/False
+          - 'Enabled Override' Toggle use of overrides on the bloom component
+          - 'Threshold Override' Override factor for Threshold (0-1)
+          - 'Knee Override' Override factor for Knee (0-1)
+          - 'Intensity Override' Override factor for Intensity (0-1)
+          - 'BicubicEnabled Override' Override toggle for Bicubic Enabled
+          - 'KernelSizeScale Override' Override factor for Kernel Size Scale (0-1)
+          - 'KernelSizeStage0 Override' Override factor for Kernel Size stage 0 (0-1)
+          - 'KernelSizeStage1 Override' Override factor for Kernel Size stage 1 (0-1)
+          - 'KernelSizeStage2 Override' Override factor for Kernel Size stage 2 (0-1)
+          - 'KernelSizeStage3 Override' Override factor for Kernel Size stage 3 (0-1)
+          - 'KernelSizeStage4 Override' Override factor for Kernel Size stage 4 (0-1)
+          - 'TintStage0 Override' Override factor for Tint stage 0 (0-1)
+          - 'TintStage1 Override' Override factor for Tint stage 1 (0-1)
+          - 'TintStage2 Override' Override factor for Tint stage 2 (0-1)
+          - 'TintStage3 Override' Override factor for Tint stage 3 (0-1)
+          - 'TintStage4 Override' Override factor for Tint stage 4 (0-1)
+          - 'Threshold' Brighness of the light source to which bloom is applied (0-INF)
+          - 'Knee' Soft knee to smoothen edges of threshold (0-1)
+          - 'Intensity' Brightness of bloom (0-10000)
+          - 'Enable Bicubic' Toggle to enable Bicubic Filtering for upsampling
+          - 'Kernel Size Scale' Global scaling factor for Kernel size (0-2)
+          - 'Kernel Size 0' Kernel Size for blur stage 0 in percent of screen width (0-1)
+          - 'Kernel Size 1' Kernel Size for blur stage 1 in percent of screen width (0-1)
+          - 'Kernel Size 2' Kernel Size for blur stage 2 in percent of screen width (0-1)
+          - 'Kernel Size 3' Kernel Size for blur stage 3 in percent of screen width (0-1)
+          - 'Kernel Size 4' Kernel Size for blur stage 4 in percent of screen width (0-1)
+          - 'Tint 0' Tint for blur stage 0. RGB value set using azlmbr.math.Vector3 tuple
+          - 'Tint 1' Tint for blur stage 1. RGB value set using azlmbr.math.Vector3 tuple
+          - 'Tint 2' Tint for blur stage 2. RGB value set using azlmbr.math.Vector3 tuple
+          - 'Tint 3' Tint for blur stage 3. RGB value set using azlmbr.math.Vector3 tuple
+          - 'Tint 4' Tint for blur stage 4. RGB value set using azlmbr.math.Vector3 tuple
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -99,6 +130,37 @@ class AtomComponentProperties:
             'name': 'Bloom',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable Bloom': 'Controller|Configuration|Enable Bloom',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Threshold Override': 'Controller|Configuration|Overrides|Threshold Override',
+            'Knee Override': 'Controller|Configuration|Overrides|Knee Override',
+            'Intensity Override': 'Controller|Configuration|Overrides|Intensity Override',
+            'BicubicEnabled Override': 'Controller|Configuration|Overrides|BicubicEnabled Override',
+            'KernelSizeScale Override': 'Controller|Configuration|Overrides|KernelSizeScale Override',
+            'KernelSizeStage0 Override': 'Controller|Configuration|Overrides|KernelSizeStage0 Override',
+            'KernelSizeStage1 Override': 'Controller|Configuration|Overrides|KernelSizeStage1 Override',
+            'KernelSizeStage2 Override': 'Controller|Configuration|Overrides|KernelSizeStage2 Override',
+            'KernelSizeStage3 Override': 'Controller|Configuration|Overrides|KernelSizeStage3 Override',
+            'KernelSizeStage4 Override': 'Controller|Configuration|Overrides|KernelSizeStage4 Override',
+            'TintStage0 Override': 'Controller|Configuration|Overrides|TintStage0 Override',
+            'TintStage1 Override': 'Controller|Configuration|Overrides|TintStage1 Override',
+            'TintStage2 Override': 'Controller|Configuration|Overrides|TintStage2 Override',
+            'TintStage3 Override': 'Controller|Configuration|Overrides|TintStage3 Override',
+            'TintStage4 Override': 'Controller|Configuration|Overrides|TintStage4 Override',
+            'Threshold': 'Controller|Configuration|Threshold',
+            'Knee': 'Controller|Configuration|Knee',
+            'Intensity': 'Controller|Configuration|Intensity',
+            'Enable Bicubic': 'Controller|Configuration|Enable Bicubic',
+            'Kernel Size Scale': 'Controller|Configuration|Kernel Size|Kernel Size Scale',
+            'Kernel Size 0': 'Controller|Configuration|Kernel Size|Kernel Size 0',
+            'Kernel Size 1': 'Controller|Configuration|Kernel Size|Kernel Size 1',
+            'Kernel Size 2': 'Controller|Configuration|Kernel Size|Kernel Size 2',
+            'Kernel Size 3': 'Controller|Configuration|Kernel Size|Kernel Size 3',
+            'Kernel Size 4': 'Controller|Configuration|Kernel Size|Kernel Size 4',
+            'Tint 0': 'Controller|Configuration|Tint|Tint 0',
+            'Tint 1': 'Controller|Configuration|Tint|Tint 1',
+            'Tint 2': 'Controller|Configuration|Tint|Tint 2',
+            'Tint 3': 'Controller|Configuration|Tint|Tint 3',
+            'Tint 4': 'Controller|Configuration|Tint|Tint 4',
         }
         return properties[property]
 
@@ -267,6 +329,7 @@ class AtomComponentProperties:
         Global Skylight (IBL) component properties.
           - 'Diffuse Image' Asset.id for the cubemap image for determining diffuse lighting.
           - 'Specular Image' Asset.id for the cubemap image for determining specular lighting.
+          - 'Exposure' Exposure setting for Global Skylight, value range is -5 to 5
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -274,6 +337,7 @@ class AtomComponentProperties:
             'name': 'Global Skylight (IBL)',
             'Diffuse Image': 'Controller|Configuration|Diffuse Image',
             'Specular Image': 'Controller|Configuration|Specular Image',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -398,7 +462,10 @@ class AtomComponentProperties:
         Material component properties. Requires one of Actor OR Mesh component.
           - 'requires' a list of component names as strings required by this component.
             Only one of these is required at a time for this component.\n
-          - 'Material Asset': the material Asset.id of the material.
+          - 'Material Asset': the default material Asset.id. Overrides all Model and LOD materials.
+          - 'Enable LOD Materials' toggles the use of LOD Materials.
+          - 'LOD Materials' container property for specified LOD materials. (list of EditorMaterialComponentSlot)
+          - 'Model Materials' container property of materials included with model. (EditorMaterialComponentSlot)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -406,6 +473,9 @@ class AtomComponentProperties:
             'name': 'Material',
             'requires': [AtomComponentProperties.actor(), AtomComponentProperties.mesh()],
             'Material Asset': 'Default Material|Material Asset',
+            'Enable LOD Materials': 'Enable LOD Materials',
+            'LOD Materials': 'LOD Materials',
+            'Model Materials': 'Model Materials',
         }
         return properties[property]
 
