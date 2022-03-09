@@ -17,11 +17,11 @@
 
 namespace UnitTests
 {
-    class DatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
+    class JobDependencyDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
     {
     public:
-        DatabaseLocationListener() { BusConnect(); }
-        ~DatabaseLocationListener() override { BusDisconnect(); }
+        JobDependencyDatabaseLocationListener() { BusConnect(); }
+        ~JobDependencyDatabaseLocationListener() override { BusDisconnect(); }
 
         bool GetAssetDatabaseLocation(AZStd::string& location) override;
 
@@ -30,11 +30,11 @@ namespace UnitTests
 
     struct JobDependencySubIdTest;
 
-    struct MockAssetProcessorManager : AssetProcessor::AssetProcessorManager
+    struct JobDependencyAssetProcessorManager : AssetProcessor::AssetProcessorManager
     {
         friend struct JobDependencySubIdTest;
 
-        MockAssetProcessorManager(AssetProcessor::PlatformConfiguration* config, QObject* parent = nullptr)
+        JobDependencyAssetProcessorManager(AssetProcessor::PlatformConfiguration* config, QObject* parent = nullptr)
             : AssetProcessorManager(config, parent) {}
 
         void CheckActiveFiles(int count);
@@ -55,12 +55,12 @@ namespace UnitTests
         AssetProcessor::FileStatePassthrough m_fileStateCache;
 
         AZStd::unique_ptr<QCoreApplication> m_qApp;
-        AZStd::unique_ptr<MockAssetProcessorManager> m_assetProcessorManager;
+        AZStd::unique_ptr<JobDependencyAssetProcessorManager> m_assetProcessorManager;
         AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
         AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> m_stateData;
         AZ::Test::ScopedAutoTempDirectory m_tempDir;
-        DatabaseLocationListener m_databaseLocationListener;
+        JobDependencyDatabaseLocationListener m_databaseLocationListener;
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanfolder;
         AZ::IO::Path m_parentFile, m_childFile;
         MockBuilderInfoHandler m_builderInfoHandler;

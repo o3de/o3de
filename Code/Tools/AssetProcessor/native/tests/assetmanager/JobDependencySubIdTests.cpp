@@ -13,23 +13,23 @@
 
 namespace UnitTests
 {
-    bool DatabaseLocationListener::GetAssetDatabaseLocation(AZStd::string& location)
+    bool JobDependencyDatabaseLocationListener::GetAssetDatabaseLocation(AZStd::string& location)
     {
         location = m_databaseLocation;
         return true;
     }
 
-    void MockAssetProcessorManager::CheckActiveFiles(int count)
+    void JobDependencyAssetProcessorManager::CheckActiveFiles(int count)
     {
         ASSERT_EQ(m_activeFiles.size(), count);
     }
 
-    void MockAssetProcessorManager::CheckFilesToExamine(int count)
+    void JobDependencyAssetProcessorManager::CheckFilesToExamine(int count)
     {
         ASSERT_EQ(m_filesToExamine.size(), count);
     }
 
-    void MockAssetProcessorManager::CheckJobEntries(int count)
+    void JobDependencyAssetProcessorManager::CheckJobEntries(int count)
     {
         ASSERT_EQ(m_jobEntries.size(), count);
     }
@@ -77,7 +77,7 @@ namespace UnitTests
             (tempDir/"folder").c_str(), "folder", "folder", false, true, platforms});
 
         // Create the APM
-        m_assetProcessorManager = AZStd::make_unique<MockAssetProcessorManager>(m_platformConfig.get());
+        m_assetProcessorManager = AZStd::make_unique<JobDependencyAssetProcessorManager>(m_platformConfig.get());
 
         // Cache the db pointer because the TEST_F generates a subclass which can't access this private member
         m_stateData = m_assetProcessorManager->m_stateData;
