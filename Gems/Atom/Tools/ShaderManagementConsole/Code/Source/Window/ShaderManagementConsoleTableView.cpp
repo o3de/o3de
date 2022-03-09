@@ -103,4 +103,3 @@ namespace ShaderManagementConsole
 } // namespace ShaderManagementConsole
 
 #include <Window/moc_ShaderManagementConsoleTableView.cpp>
-#include "ShaderManagementConsoleTableView.h"
