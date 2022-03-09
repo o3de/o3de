@@ -105,11 +105,6 @@ namespace AZ
         {
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
 
-            if (!groupData.IsAnyResourceTypeUpdated())
-            {
-                return RHI::ResultCode::Success;
-            }
-
             group.UpdateCompiledDataIndex(m_currentIteration);
             DescriptorSet& descriptorSet = *group.m_compiledData[group.GetCompileDataIndex()];
 

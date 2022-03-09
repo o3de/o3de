@@ -18,6 +18,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            .
         PUBLIC
             Include
     BUILD_DEPENDENCIES

@@ -270,7 +270,6 @@ set(FILES
     Include/ICommandManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IEventLoopHook.h
     Include/IExportManager.h
     Include/IGizmoManager.h
     Include/IIconManager.h
@@ -281,7 +280,6 @@ set(FILES
     Include/IPreferencesPage.h
     Include/ISourceControl.h
     Include/ITransformManipulator.h
-    Include/IViewPane.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
@@ -315,8 +313,6 @@ set(FILES
     AssetEditor/AssetEditorWindow.ui
     Commands/CommandManager.cpp
     Commands/CommandManager.h
-    Controls/BitmapToolTip.cpp
-    Controls/BitmapToolTip.h
     Controls/ConsoleSCB.cpp
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
@@ -338,8 +334,6 @@ set(FILES
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.h
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.h
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.h
     Controls/ReflectedPropertyControl/PropertyCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyCtrl.h
     MainStatusBar.cpp
@@ -538,8 +532,6 @@ set(FILES
     ErrorReport.h
     IconManager.cpp
     IconManager.h
-    LevelInfo.cpp
-    LevelInfo.h
     ProcessInfo.cpp
     ProcessInfo.h
     TrackView/AtomOutputFrameCapture.cpp

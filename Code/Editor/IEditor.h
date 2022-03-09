@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #ifdef PLUGIN_EXPORTS
-#define PLUGIN_API DLL_EXPORT
+#define PLUGIN_API AZ_DLL_EXPORT
 #else
-#define PLUGIN_API DLL_IMPORT
+#define PLUGIN_API AZ_DLL_IMPORT
 #endif
 
 #include <ISystem.h>
@@ -66,7 +68,6 @@ class IAWSResourceManager;
 struct ISystem;
 struct IRenderer;
 struct AABB;
-struct IEventLoopHook;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
@@ -508,11 +509,6 @@ struct IEditor
     virtual class CViewport* GetActiveView() = 0;
     virtual void SetActiveView(CViewport* viewport) = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
-
-    // These are needed for Qt integration:
-    virtual void RegisterEventLoopHook(IEventLoopHook* pHook) = 0;
-    virtual void UnregisterEventLoopHook(IEventLoopHook* pHook) = 0;
-    // ^^^
 
     //! QMimeData is used by the Qt clipboard.
     //! IMPORTANT: Any QMimeData allocated for the clipboard will be deleted

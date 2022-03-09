@@ -1,36 +1,25 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "TestData/Materials/StandardPbrTestCases/UvTilingBase.material",
     "materialTypeVersion": 3,
-    "properties": {
-        "baseColor": {
-            "textureMap": "TestData/Objects/cube/cube_diff.tif"
-        },
-        "metallic": {
-            "factor": 1.0,
-            "textureMap": "TestData/Textures/checker8x8_512.png"
-        },
-        "parallax": {
-            "algorithm": "POM",
-            "factor": 0.05000000074505806,
-            "quality": "High",
-            "textureMap": "TestData/Objects/cube/cube_diff.tif"
-        },
-        "roughness": {
-            "textureMap": "TestData/Textures/checker8x8_flip_512.png"
-        },
-        "uv": {
-            "center": [
-                0.5,
-                0.25
-            ],
-            "offsetU": 1.0,
-            "offsetV": -1.0,
-            "rotateDegrees": 90.0,
-            "scale": 1.2000000476837159,
-            "tileU": 0.699999988079071,
-            "tileV": 1.7999999523162842
-        }
+    "parentMaterial": "TestData/Materials/StandardPbrTestCases/UvTilingBase.material",
+    "propertyValues": {
+        "baseColor.textureMap": "TestData/Objects/cube/cube_diff.tif",
+        "metallic.factor": 1.0,
+        "metallic.textureMap": "TestData/Textures/checker8x8_512.png",
+        "parallax.algorithm": "POM",
+        "parallax.factor": 0.05000000074505806,
+        "parallax.quality": "High",
+        "parallax.textureMap": "TestData/Objects/cube/cube_diff.tif",
+        "roughness.textureMap": "TestData/Textures/checker8x8_flip_512.png",
+        "uv.center": [
+            0.5,
+            0.25
+        ],
+        "uv.offsetU": 1.0,
+        "uv.offsetV": -1.0,
+        "uv.rotateDegrees": 90.0,
+        "uv.scale": 1.2000000476837158,
+        "uv.tileU": 0.699999988079071,
+        "uv.tileV": 1.7999999523162842
     }
 }

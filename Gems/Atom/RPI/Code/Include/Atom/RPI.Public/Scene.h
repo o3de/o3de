@@ -165,6 +165,14 @@ namespace AZ
             //! User should use this event to update the part scene srg they know of
             void ConnectEvent(PrepareSceneSrgEvent::Handler& handler);
 
+            //! Rebuild pipeline states lookup table.
+            //! This function is called every time scene's render pipelines change.
+            //! User may call this function explicitly if render pipelines were changed
+            void RebuildPipelineStatesLookup();
+                        
+            //! Try apply render pipeline changes from each feature processors if the pipeline allows modification and wasn't modified.
+            void TryApplyRenderPipelineChanges(RenderPipeline* pipeline);
+
         protected:
             // SceneFinder overrides...
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
@@ -187,12 +195,10 @@ namespace AZ
             // This is called after PassSystem's FramePrepare so passes can still modify view srgs in its FramePrepareIntenal function before they are submitted to command list
             void UpdateSrgs();
 
+
         private:
             Scene();
 
-            // Rebuild pipeline states lookup table.
-            // This function is called every time scene's render pipelines change.
-            void RebuildPipelineStatesLookup();
 
             // Helper function to wait for end of TaskGraph and then delete the TaskGraphEvent
             void WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&& completionTGEvent);
@@ -202,6 +208,10 @@ namespace AZ
 
             // Add a created feature processor to this scene
             void AddFeatureProcessor(FeatureProcessorPtr fp);
+
+            // Check each of the added render pipelines and set its recreate flag if it's allowed to be modified by any feature processors
+            // This is usually called when a feature processor was added and removed after scene was activated
+            void CheckRecreateRenderPipeline();
 
             // Send out event to PrepareSceneSrgEvent::Handlers so they can update scene srg as needed
             // This happens in UpdateSrgs()

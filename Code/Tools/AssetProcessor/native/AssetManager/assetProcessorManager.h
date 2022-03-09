@@ -272,9 +272,9 @@ namespace AssetProcessor
 
         void AssessFilesFromScanner(QSet<AssetFileInfo> filePaths);
 
-        void AssessModifiedFile(QString filePath);
-        void AssessAddedFile(QString filePath);
-        void AssessDeletedFile(QString filePath);
+        virtual void AssessModifiedFile(QString filePath);
+        virtual void AssessAddedFile(QString filePath);
+        virtual void AssessDeletedFile(QString filePath);
         void OnAssetScannerStatusChange(AssetProcessor::AssetScanningStatus status);
         void OnJobStatusChanged(JobEntry jobEntry, JobStatus status);
 
@@ -485,6 +485,7 @@ namespace AssetProcessor
         };
 
         void ComputeBuilderDirty();
+        AZStd::string ComputeRecursiveDependenciesFingerprint(const AZStd::string& fileAbsolutePath, const AZStd::string& fileDatabaseName);
         AZStd::unordered_map<AZ::Uuid, BuilderData>  m_builderDataCache;
         bool m_buildersAddedOrRemoved = true; //< true if any new builders exist.  If this happens we actually need to re-analyze everything.
         bool m_anyBuilderChange = true;

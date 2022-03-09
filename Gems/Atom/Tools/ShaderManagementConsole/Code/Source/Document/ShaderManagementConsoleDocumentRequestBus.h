@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
@@ -14,26 +15,30 @@
 
 namespace ShaderManagementConsole
 {
-
-    class ShaderManagementConsoleDocumentRequests
-        : public AZ::EBusTraits
+    class ShaderManagementConsoleDocumentRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Uuid BusIdType;
 
-        //! Get the number of options
-        virtual size_t GetShaderOptionCount() const = 0;
+        //! Set the shader variant list
+        virtual void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) = 0;
 
-        //! Get the descriptor for the shader option at the specified index
-        virtual const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const = 0;
+        //! Get the shader variant list
+        virtual const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const = 0;
 
         //! Get the number of shader variants
         virtual size_t GetShaderVariantCount() const = 0;
 
         //! Get the information for the shader variant at the specified index
         virtual const AZ::RPI::ShaderVariantListSourceData::VariantInfo& GetShaderVariantInfo(size_t index) const = 0;
+
+        //! Get the number of options
+        virtual size_t GetShaderOptionCount() const = 0;
+
+        //! Get the descriptor for the shader option at the specified index
+        virtual const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const = 0;
     };
 
     using ShaderManagementConsoleDocumentRequestBus = AZ::EBus<ShaderManagementConsoleDocumentRequests>;

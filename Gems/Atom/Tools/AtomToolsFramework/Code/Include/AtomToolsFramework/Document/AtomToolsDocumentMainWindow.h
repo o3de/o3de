@@ -17,7 +17,9 @@
 
 namespace AtomToolsFramework
 {
-    //! AtomToolsDocumentMainWindow
+    //! AtomToolsDocumentMainWindow is a bridge between the base main window class and the document system. It has actions and menus for
+    //! operations like creating, opening, saving, and closing documents. Additionally, it automatically manages tabs and views for each
+    //! open document.
     class AtomToolsDocumentMainWindow
         : public AtomToolsMainWindow
         , private AtomToolsDocumentNotificationBus::Handler
@@ -28,34 +30,47 @@ namespace AtomToolsFramework
 
         using Base = AtomToolsMainWindow;
 
-        AtomToolsDocumentMainWindow(QWidget* parent = 0);
+        AtomToolsDocumentMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~AtomToolsDocumentMainWindow();
+
+        //! Helper function to get the absolute path for a document represented by the document ID
+        QString GetDocumentPath(const AZ::Uuid& documentId) const;
+
+        //! Retrieves the document ID from a tab with the given index
+        AZ::Uuid GetDocumentTabId(const int tabIndex) const;
+
+        //! If one does not already exist, this creates a new tab for the specified document ID with the provided label and tooltip
+        void AddDocumentTab(const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip);
+
+        //! Destroys the tab and view associated with the given document ID
+        void RemoveDocumentTab(const AZ::Uuid& documentId);
+
+        //! Updates the displayed text and tooltip for a tab associated with a given document ID
+        void UpdateDocumentTab(const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, bool isModified);
+
+        //! Select the document tab to the left of the current document tab. If the first document is selected then the selection wraps
+        //! around to the last one.
+        void SelectPrevDocumentTab();
+
+        //! Select the document tab to the right of the current documents tab. If the last document is selected then the selection wraps
+        //! around to the first one.
+        void SelectNextDocumentTab();
+
+        //! Creates a widget that will be displayed beneath the tab for the specified document
+        virtual QWidget* CreateDocumentTabView(const AZ::Uuid& documentId);
+
+        //! Forces a context menu to appear above the selected tab, populated with actions for the associated document ID
+        virtual void OpenDocumentTabContextMenu();
+
+        //! Requests a source and target path for creating a new document based on another
+        virtual bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath);
+
+        //! Prompts the user for a selection of documents to open
+        virtual AZStd::vector<AZStd::string> GetOpenDocumentParams();
 
     protected:
         void AddDocumentMenus();
         void AddDocumentTabBar();
-
-        QString GetDocumentPath(const AZ::Uuid& documentId) const;
-
-        AZ::Uuid GetDocumentTabId(const int tabIndex) const;
-
-        void AddDocumentTab(
-            const AZ::Uuid& documentId,
-            const AZStd::string& label,
-            const AZStd::string& toolTip);
-
-        void RemoveDocumentTab(const AZ::Uuid& documentId);
-
-        void UpdateDocumentTab(
-            const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, bool isModified);
-
-        void SelectPrevDocumentTab();
-        void SelectNextDocumentTab();
-
-        virtual QWidget* CreateDocumentTabView(const AZ::Uuid& documentId);
-        virtual void OpenDocumentTabContextMenu();
-        virtual bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath);
-        virtual bool GetOpenDocumentParams(AZStd::string& openPath);
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;

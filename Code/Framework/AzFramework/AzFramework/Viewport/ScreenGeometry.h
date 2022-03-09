@@ -68,9 +68,22 @@ namespace AzFramework
         {
         }
 
+        float Widthf() const;
+        float Heightf() const;
+
         int m_width; //!< Screen size width.
         int m_height; //!< Screen size height.
     };
+
+    inline float ScreenSize::Widthf() const
+    {
+        return aznumeric_cast<float>(m_width);
+    }
+
+    inline float ScreenSize::Heightf() const
+    {
+        return aznumeric_cast<float>(m_height);
+    }
 
     void ScreenGeometryReflect(AZ::ReflectContext* context);
 

@@ -846,7 +846,7 @@ threadID CryGetCurrentThreadId()
 
 #if defined(APPLE) || defined(LINUX)
 // WinAPI debug functions.
-DLL_EXPORT void OutputDebugString(const char* outputString)
+AZ_DLL_EXPORT void OutputDebugString(const char* outputString)
 {
 #if !defined(_RELEASE)
     // Emulates dev tools output in Xcode and cmd line launch with idevicedebug.
@@ -855,19 +855,5 @@ DLL_EXPORT void OutputDebugString(const char* outputString)
 }
 
 #endif
-
-// This code does not have a long life span and will be replaced soon
-#if defined(APPLE) || defined(LINUX) || defined(DEFINE_LEGACY_CRY_FILE_OPERATIONS)
-
-bool CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes)
-{
-    //TODO: implement
-    printf("CrySetFileAttributes not properly implemented yet\n");
-    return false;
-}
-
-
-
-#endif //defined(APPLE) || defined(LINUX)
 
 #endif // AZ_TRAIT_LEGACY_CRYCOMMON_USE_WINDOWS_STUBS

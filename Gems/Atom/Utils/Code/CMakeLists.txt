@@ -20,8 +20,11 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::Atom_RHI.Public
+            AzFramework
         PUBLIC
             Gem::Atom_RHI.Reflect
+            Gem::Atom_RPI.Public
+            Gem::ImGui.imguilib
             3rdParty::libpng
 )
 

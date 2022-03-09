@@ -10,18 +10,13 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <ShaderManagementConsoleRequestBus.h>
-#include <Window/ShaderManagementConsoleBrowserInteractions.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
-        , private ShaderManagementConsoleRequestBus::Handler
-        , private AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler
         , private AzToolsFramework::EditorWindowRequestBus::Handler
     {
     public:
@@ -36,25 +31,15 @@ namespace ShaderManagementConsole
         void Reflect(AZ::ReflectContext* context) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
+        void Destroy() override;
 
         // AtomToolsFramework::AtomToolsApplication overrides...
-        AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
 
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
 
-        // AtomToolsMainWindowFactoryRequestBus::Handler overrides...
-        void CreateMainWindow() override;
-        void DestroyMainWindow() override;
-
-        // ShaderManagementConsoleRequestBus::Handler overrides...
-        AZ::Data::AssetInfo GetSourceAssetInfo(const AZStd::string& sourceAssetFileName) override;
-        AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath) override;
-        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& assetId) override;
-
     private:
         AZStd::unique_ptr<ShaderManagementConsoleWindow> m_window;
-        AZStd::unique_ptr<ShaderManagementConsoleBrowserInteractions> m_assetBrowserInteractions;
     };
 } // namespace ShaderManagementConsole

@@ -29,7 +29,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentSerializer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
@@ -194,6 +194,7 @@ namespace AzToolsFramework
             , m_suppressTransformChangedEvent(false)
             , m_interpolatePosition(AZ::InterpolationMode::NoInterpolation)
             , m_interpolateRotation(AZ::InterpolationMode::NoInterpolation)
+            , m_focusModeInterface(AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
         {
         }
 
@@ -921,7 +922,7 @@ namespace AzToolsFramework
             if (azrtti_typeid<AZ::EntityId>() != valueType)
             {
                 AZ_Assert(false, "Unexpected value type");
-                return AZ::Failure(AZStd::string("Trying to set an entity ID to something that isn't an entity ID!"));
+                return AZ::Failure(AZStd::string("Trying to set an entity ID to something that isn't an entity ID."));
             }
 
             AZ::EntityId actualValue = static_cast<AZ::EntityId>(*((AZ::EntityId*)newValue));
@@ -929,14 +930,14 @@ namespace AzToolsFramework
             // Prevent setting the parent to the entity itself.
             if (actualValue == GetEntityId())
             {
-                return AZ::Failure(AZStd::string("You cannot set an entity's parent to itself!"));
+                return AZ::Failure(AZStd::string("You cannot set an entity's parent to itself."));
             }
 
             // Don't allow the change if it will result in a cycle hierarchy
             auto potentialParentTransformComponent = GetTransformComponent(actualValue);
             if (potentialParentTransformComponent && potentialParentTransformComponent->IsEntityInHierarchy(GetEntityId()))
             {
-                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of one of its own children!"));
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of one of its own children."));
             }
 
             // Don't allow read-only entities to be re-parented at all.
@@ -944,14 +945,20 @@ namespace AzToolsFramework
             if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
                 readOnlyEntityPublicInterface->IsReadOnly(GetEntityId()) || readOnlyEntityPublicInterface->IsReadOnly(actualValue))
             {
-                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a read-only entity!"));
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a read-only entity."));
             }
 
             // Don't allow entities to be parented under closed containers.
             if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
                 !containerEntityInterface->IsContainerOpen(actualValue))
             {
-                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a closed container!"));
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a closed container."));
+            }
+
+            // Don't allow entities to be parented outside their container.
+            if (m_focusModeInterface && !m_focusModeInterface->IsInFocusSubTree(actualValue))
+            {
+                return AZ::Failure(AZStd::string("You can only set a parent as one of the entities belonging to the focused prefab."));
             }
 
             return AZ::Success();
@@ -963,18 +970,22 @@ namespace AzToolsFramework
 
             if (!m_parentEntityId.IsValid())
             {
-                // If Prefabs are enabled, reroute the invalid id to the level root
+                // If Prefabs are enabled, reroute the invalid id to the focused prefab container entity id
                 bool isPrefabSystemEnabled = false;
                 AzFramework::ApplicationRequests::Bus::BroadcastResult(
                     isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
                 if (isPrefabSystemEnabled)
                 {
-                    auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+                    auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
 
-                    if (prefabPublicInterface)
+                    if (prefabFocusPublicInterface)
                     {
-                        m_parentEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
+                        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+                        EditorEntityContextRequestBus::BroadcastResult(
+                            editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+                        m_parentEntityId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
                         refreshLevel = AZ::Edit::PropertyRefreshLevels::ValuesOnly;
                     }
                 }
@@ -1198,6 +1209,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 0)->
                             Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Transform.svg")->
                             Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.svg")->
+                            Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/transform/")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent entity", "")->
                             Attribute(AZ::Edit::Attributes::ChangeValidate, &TransformComponent::ValidatePotentialParent)->

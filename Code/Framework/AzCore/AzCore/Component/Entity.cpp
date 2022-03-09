@@ -649,14 +649,14 @@ namespace AZ
         m_stateEvent.Signal(oldState, m_state);
     }
 
-    void Entity::SetSpawnTicketId(u32 spawnTicketId)
+    void Entity::SetEntitySpawnTicketId(u32 entitySpawnTicketId)
     {
-        m_spawnTicketId = spawnTicketId;
+        m_entitySpawnTicketId = entitySpawnTicketId;
     }
 
-    u32 Entity::GetSpawnTicketId() const
+    u32 Entity::GetEntitySpawnTicketId() const
     {
-        return m_spawnTicketId;
+        return m_entitySpawnTicketId;
     }
 
     void Entity::OnNameChanged() const

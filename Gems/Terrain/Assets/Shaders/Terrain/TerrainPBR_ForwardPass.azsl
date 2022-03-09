@@ -149,7 +149,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // Only sample detail textures if inside where detail materials should be drawn.
     if (detailFactor < 1.0)
     {
-        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv);
+        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, macroColor);
     }
 
     const float macroRoughness = 1.0;
@@ -177,9 +177,8 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
         surface.CalculateRoughnessA();
     }
 
-    // Clear Coat, Transmission (Not used for terrain)
+    // Clear Coat
     surface.clearCoat.InitializeToZero();
-    surface.transmission.InitializeToZero();
 
     // ------- LightingData -------
 
@@ -211,7 +210,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting(surface.transmission.tint);
+    lightingData.FinalizeLighting();
 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 

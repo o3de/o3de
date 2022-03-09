@@ -1,33 +1,18 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "Materials/Presets/PBR/default_grid.material",
     "materialTypeVersion": 3,
-    "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "TestData/Textures/cc0/Rock030_2K_AmbientOcclusion.jpg"
-        },
-        "baseColor": {
-            "textureMap": "TestData/Textures/cc0/Rock030_2K_Color.jpg"
-        },
-        "metallic": {
-            "useTexture": false
-        },
-        "normal": {
-            "textureMap": "TestData/Textures/cc0/Rock030_2K_Normal.jpg"
-        },
-        "parallax": {
-            "algorithm": "POM",
-            "factor": 0.03,
-            "quality": "High",
-            "textureMap": "TestData/Textures/cc0/Rock030_2K_Displacement.jpg",
-            "pdo": true
-        },
-        "roughness": {
-            "textureMap": "TestData/Textures/cc0/Rock030_2K_Roughness.jpg"
-        },
-        "specularF0": {
-            "useTexture": false
-        }
+    "parentMaterial": "Materials/Presets/PBR/default_grid.material",
+    "propertyValues": {
+        "baseColor.textureMap": "TestData/Textures/cc0/Rock030_2K_Color.jpg",
+        "metallic.useTexture": false,
+        "normal.textureMap": "TestData/Textures/cc0/Rock030_2K_Normal.jpg",
+        "occlusion.diffuseTextureMap": "TestData/Textures/cc0/Rock030_2K_AmbientOcclusion.jpg",
+        "parallax.algorithm": "POM",
+        "parallax.factor": 0.029999999329447746,
+        "parallax.pdo": true,
+        "parallax.quality": "High",
+        "parallax.textureMap": "TestData/Textures/cc0/Rock030_2K_Displacement.jpg",
+        "roughness.textureMap": "TestData/Textures/cc0/Rock030_2K_Roughness.jpg",
+        "specularF0.useTexture": false
     }
 }

@@ -1182,6 +1182,7 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Entity.h>
+#include <Multiplayer/MultiplayerDebug.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 {% if ComponentDerived or ControllerDerived %}
@@ -1372,6 +1373,24 @@ namespace {{ Component.attrib['Namespace'] }}
     Multiplayer::NetComponentId {{ ComponentName }}NetworkInput::GetNetComponentId() const
     {
         return {{ ComponentName }}NetworkInput::s_netComponentId;
+    }
+
+    Multiplayer::MultiplayerAuditingElement {{ ComponentName }}NetworkInput::GetInputDeltaLog() const
+    {
+        Multiplayer::MultiplayerAuditingElement output;
+        output.m_name = "{{ ComponentName }}NetworkInput";
+{% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
+        if (m_{{ LowerFirst(Input.attrib['Name']) }} != {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }}))
+        {
+{% if Input.attrib['Init'] != '' %}
+            output.m_elements.emplace_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<{{ Input.attrib['Type'] }}>>("{{ LowerFirst(Input.attrib['Name']) }}", m_{{ LowerFirst(Input.attrib['Name']) }}, m_{{ LowerFirst(Input.attrib['Name']) }}));         
+{% else %}
+            output.m_elements.emplace_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<AZStd::string>>("{{ LowerFirst(Input.attrib['Name']) }}"));
+{% endif %}
+        }
+{% endcall %}
+
+        return output;
     }
 
     bool {{ ComponentName }}NetworkInput::Serialize(AzNetworking::ISerializer& serializer)
