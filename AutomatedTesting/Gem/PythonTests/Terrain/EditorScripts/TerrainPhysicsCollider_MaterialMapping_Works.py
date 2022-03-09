@@ -55,11 +55,15 @@ def TerrainPhysicsCollider_MaterialMapping_Works():
     rubber_distance = rubber_finish.GetDistance(rubber_start)
 
     # Report results on distance traveled and validate that the Cube on the glass surface travels further
+    expected_glass_distance = 5.0
+    expected_rubber_distance = 2.0
     material_interaction = (
-        f"PhysicsCube_Glass traveled {glass_distance:.3f}m, to PhysicsCube_Rubber's {rubber_distance:.3f}m",
-        f"PhysicsCube_Rubber traveled {rubber_distance:.3f}m, greater than PhysicsCube_Glass's {glass_distance:.3f}m"
+        f"PhysicsCube_Glass moved {glass_distance:.3f}m, to PhysicsCube_Rubber's {rubber_distance:.3f}m",
+        f"PhysicsCube_Rubber: Moved {rubber_distance:.3f}m, expected < {expected_rubber_distance}m. "
+        f"PhysicsCube_Glass: Moved {glass_distance:.3f}m, expected > {expected_glass_distance}m"
     )
-    Report.result(material_interaction, glass_distance > 8.0 and rubber_distance < 2.0)
+    Report.result(material_interaction, glass_distance > expected_glass_distance and
+                  rubber_distance < expected_rubber_distance)
 
     # Exit Game Mode
     helper.exit_game_mode(Tests.exit_game_mode)
