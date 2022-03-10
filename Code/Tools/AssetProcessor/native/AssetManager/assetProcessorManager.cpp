@@ -3751,7 +3751,8 @@ namespace AssetProcessor
         QString sourcePath;
         if (entry.m_sourceFileInfo.m_scanFolder)
         {
-            sourcePath = QString("%1/%2").arg(entry.m_sourceFileInfo.m_scanFolder->ScanPath(), entry.m_sourceFileInfo.m_pathRelativeToScanFolder);
+            sourcePath = QString("%1/%2").arg(
+                entry.m_sourceFileInfo.m_scanFolder->ScanPath(), entry.m_sourceFileInfo.m_pathRelativeToScanFolder);
         }
         else
         {
@@ -3795,6 +3796,9 @@ namespace AssetProcessor
         // gather the job dependencies first, since they're more specific and we'll use the dedupe set to check for unnecessary source dependencies
         for (const JobDetails& jobToCheck : entry.m_jobsToAnalyze)
         {
+            // Since we're dealing with job dependencies here, we're going to be saving these SourceDependencies as JobToJob dependencies
+            constexpr SourceFileDependencyEntry::TypeOfDependency JobDependencyType = SourceFileDependencyEntry::DEP_JobToJob;
+
             const AZ::Uuid& builderId = jobToCheck.m_assetBuilderDesc.m_busId;
             for (const AssetProcessor::JobDependencyInternal& jobDependency : jobToCheck.m_jobDependencyList)
             {
@@ -3803,7 +3807,7 @@ namespace AssetProcessor
                 QString resolvedDatabaseName;
 
                 if (!ResolveSourceFileDependencyPath(
-                        jobDependency.m_jobDependency.m_sourceFile, resolvedDatabaseName, resolvedDependencyList))
+                    jobDependency.m_jobDependency.m_sourceFile, resolvedDatabaseName, resolvedDependencyList))
                 {
                     continue;
                 }
@@ -3812,22 +3816,23 @@ namespace AssetProcessor
                 {
                     SourceFileDependencyEntry newDependencyEntry(
                         builderId, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(), thisEntry.toUtf8().constData(),
-                        SourceFileDependencyEntry::DEP_JobToJob, // significant line in this code block
+                        JobDependencyType,
                         false);
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
 
                 // Source dependencies don't have any concept of jobs so if we store an entry for every job, we end up with duplicates.
                 // This isn't an issue with the builder, so no error/warning is needed, just check to avoid duplicates.
-                if (auto result = jobDependenciesDeduplication.emplace(builderId, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
+                if (auto result = jobDependenciesDeduplication.emplace(
+                    builderId, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
                     resolvedDatabaseName.toUtf8().constData()); result.second)
                 {
                     SourceFileDependencyEntry newDependencyEntry(
                         builderId, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(), resolvedDatabaseName.toUtf8().constData(),
                         jobDependency.m_jobDependency.m_sourceFile.m_sourceDependencyType ==
-                                AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
-                            ? SourceFileDependencyEntry::DEP_SourceLikeMatch
-                            : SourceFileDependencyEntry::DEP_JobToJob, // significant line in this code block
+                        AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                        ? SourceFileDependencyEntry::DEP_SourceLikeMatch
+                        : JobDependencyType,
                         !entry.m_sourceFileInfo.m_uuid.IsNull());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
@@ -3848,18 +3853,24 @@ namespace AssetProcessor
                 continue;
             }
 
+            constexpr const char* DuplicateJobSourceDependencyMessageFormat =
+                "Builder `%s` emitted Source Dependency and Job Dependency on file `%s`.  "
+                "This is unnecessary and the builder should be updated to only emit the Job Dependency.";
+
             // Handle multiple resolves (wildcard dependencies)
             for (const auto& thisEntry : resolvedDependencyList)
             {
-                if(jobDependenciesDeduplication.contains(DependencyDeduplication{sourceDependency.first, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
-                    thisEntry.toUtf8().constData()}))
+                if (jobDependenciesDeduplication.contains(
+                    DependencyDeduplication{ sourceDependency.first,
+                                             entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
+                                             thisEntry.toUtf8().constData() }))
                 {
                     for (JobDetails& job : entry.m_jobsToAnalyze)
                     {
-                        job.m_warnings.push_back(AZStd::string::format(
-                            "Builder `%s` emitted Source Dependency and Job Dependency on file `%s`.  "
-                            "This is unecessary and the builder should be updated to only emit the Job Dependency.",
-                            job.m_assetBuilderDesc.m_name.c_str(), thisEntry.toUtf8().constData()));
+                        job.m_warnings.push_back(
+                            AZStd::string::format(
+                                DuplicateJobSourceDependencyMessageFormat,
+                                job.m_assetBuilderDesc.m_name.c_str(), thisEntry.toUtf8().constData()));
                     }
 
                     continue;
@@ -3867,7 +3878,7 @@ namespace AssetProcessor
 
                 // Sometimes multiple source dependencies can resolve to the same file due to the overrides system
                 // Eliminate the duplicates, no warning is needed since the builder can't be expected to handle this
-                if(auto result = resolvedSourceDependenciesDeduplication.insert(thisEntry.toUtf8().constData()); result.second)
+                if (auto result = resolvedSourceDependenciesDeduplication.insert(thisEntry.toUtf8().constData()); result.second)
                 {
                     // add the new dependency:
                     SourceFileDependencyEntry newDependencyEntry(
@@ -3880,16 +3891,20 @@ namespace AssetProcessor
                 }
             }
 
-            if (jobDependenciesDeduplication.contains(DependencyDeduplication{
-                    sourceDependency.first, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(), resolvedDatabaseName.toUtf8().constData() }))
+            if (jobDependenciesDeduplication.contains(
+                DependencyDeduplication{
+                    sourceDependency.first,
+                    entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
+                    resolvedDatabaseName.toUtf8().constData() }))
             {
                 for (JobDetails& job : entry.m_jobsToAnalyze)
                 {
-                    job.m_warnings.push_back(AZStd::string::format("Builder `%s` emitted Source Dependency and Job Dependency on file `%s`.  "
-                        "This is unecessary and the builder should be updated to only emit the Job Dependency.",
-                        job.m_assetBuilderDesc.m_name.c_str(),
-                        resolvedDatabaseName.toUtf8().constData()
-                    ));
+                    job.m_warnings.push_back(
+                        AZStd::string::format(
+                            DuplicateJobSourceDependencyMessageFormat,
+                            job.m_assetBuilderDesc.m_name.c_str(),
+                            resolvedDatabaseName.toUtf8().constData()
+                            ));
                 }
 
                 continue;
@@ -3897,18 +3912,21 @@ namespace AssetProcessor
 
             // Sometimes multiple source dependencies can resolve to the same file due to the overrides system
             // Eliminate the duplicates, no warning is needed since the builder can't be expected to handle this
-            if(auto result = resolvedSourceDependenciesDeduplication.insert(resolvedDatabaseName.toUtf8().constData()); result.second)
+            if (auto result = resolvedSourceDependenciesDeduplication.insert(resolvedDatabaseName.toUtf8().constData()); result.second)
             {
                 SourceFileDependencyEntry newDependencyEntry(
                     sourceDependency.first,
                     entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
                     resolvedDatabaseName.toUtf8().constData(),
-                    sourceDependency.second.m_sourceDependencyType == AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards ? SourceFileDependencyEntry::DEP_SourceLikeMatch : SourceFileDependencyEntry::DEP_SourceToSource,
-                    !sourceDependency.second.m_sourceFileDependencyUUID.IsNull()); // If the UUID is null, then record that this dependency came from a (resolved) path
+                    sourceDependency.second.m_sourceDependencyType ==
+                    AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                    ? SourceFileDependencyEntry::DEP_SourceLikeMatch
+                    : SourceFileDependencyEntry::DEP_SourceToSource,
+                    !sourceDependency.second.m_sourceFileDependencyUUID.IsNull());
+                // If the UUID is null, then record that this dependency came from a (resolved) path
                 newDependencies.push_back(AZStd::move(newDependencyEntry));
             }
         }
-
 
         // get all the old dependencies and remove them. This function is comprehensive on all dependencies
         // for a given source file so we can just eliminate all of them from that same source file and replace
@@ -3917,12 +3935,12 @@ namespace AssetProcessor
         m_stateData->QueryDependsOnSourceBySourceDependency(
             entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(), // find all rows in the database where this is the source column
             nullptr, // no filter
-            SourceFileDependencyEntry::DEP_Any,    // significant line in this code block
+            SourceFileDependencyEntry::DEP_Any, // significant line in this code block
             [&](SourceFileDependencyEntry& existingEntry)
-        {
-            oldDependencies.insert(existingEntry.m_sourceDependencyID);
-            return true; // return true to keep stepping to additional rows
-        });
+            {
+                oldDependencies.insert(existingEntry.m_sourceDependencyID);
+                return true; // return true to keep stepping to additional rows
+            });
 
         m_stateData->RemoveSourceFileDependencies(oldDependencies);
         oldDependencies.clear();
