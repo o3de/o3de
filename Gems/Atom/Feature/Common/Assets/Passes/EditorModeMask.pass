@@ -9,6 +9,13 @@
             "PassClass": "RasterPass",
             "Slots": [
                 {
+                    "Name": "InputDepthLinear",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depthLinear",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_depthLinearDimensions"
+                },
+                {
                     "Name": "InputDepth",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "DepthStencil"
@@ -54,12 +61,22 @@
                         "Pass": "This",
                         "Attachment": "OutputEntityMaskAttachment"
                     }
+                },
+                {
+                    "LocalSlot": "InputDepthLinear",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "Depth"
+                    }
                 }
             ],
             "PassData": {
                 "$type": "RasterPassData",
                 "DrawListTag": "editormodemask",
-                "PipelineViewTag": "MainCamera"
+                "PipelineViewTag": "MainCamera",
+                "PassSrgShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/EditorModeMask.shader"
+                }
             }
         }
     }

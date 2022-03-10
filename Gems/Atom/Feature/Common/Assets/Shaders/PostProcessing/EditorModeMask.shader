@@ -2,7 +2,7 @@
     "Source" : "EditorModeMask.azsl",
  
     "DepthStencilState" : { 
-        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
+        "Depth" : { "Enable" : true, "CompareFunc" : "Always" }
     },
 
     "DrawList" : "editormodemask",
