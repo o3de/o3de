@@ -1042,8 +1042,8 @@ namespace UnitTest
 
         // Setup the per position callback so that we can cancel the entire request when it is first invoked.
         AZStd::atomic_bool asyncRequestCancelled = false;
-        AZStd::semaphore asyncRequestStartedEvent;
-        AZStd::semaphore asyncRequestCancelledEvent;
+        AZStd::binary_semaphore asyncRequestStartedEvent;
+        AZStd::binary_semaphore asyncRequestCancelledEvent;
         auto perPositionCallback = [&asyncRequestCancelled, &asyncRequestStartedEvent, &asyncRequestCancelledEvent]([[maybe_unused]] const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             if (!asyncRequestCancelled)
@@ -1068,6 +1068,9 @@ namespace UnitTest
         // Invoke the async request.
         AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
             = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+        // Only use one job. We're using a lot of handshaking logic to ensure we process the main thread test logic and the callback logic
+        // in the exact order we want for the test, and this logic assumes only one job is running.
+        asyncParams->m_desiredNumberOfJobs = 1;
         asyncParams->m_completionCallback = completionCallback;
         AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> terrainJobContext
             = terrainSystem->ProcessHeightsFromListAsync(inPositions, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, asyncParams);
