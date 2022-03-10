@@ -120,25 +120,28 @@ namespace Physics
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        enum class HeightfieldChangeMask
+        enum class HeightfieldChangeMask : AZ::u8
         {
-            None = 0b00000000,
-            Settings = 0b00000001,
-            HeightData = 0b00000010,
-            MaterialData = 0b00000100,
-            SurfaceData = 0b00001000
+            None = 0,
+            Settings = (1 << 0),
+            HeightData = (1 << 1),
+            MaterialData = (1 << 2),
+            SurfaceData = (1 << 3),
+            Unspecified = 0xff
         };
 
         //! Called whenever the heightfield data changes.
         //! @param the AABB of the area of data that changed.
         virtual void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, 
-            [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* changeMask)
+            [[maybe_unused]] Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
         {
         }
 
     protected:
         ~HeightfieldProviderNotifications() = default;
     };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(HeightfieldProviderNotifications::HeightfieldChangeMask)
 
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
 } // namespace Physics

@@ -155,7 +155,7 @@ namespace PhysX
     }
 
     void EditorHeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
-        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* changeMask)
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
         RefreshHeightfield(dirtyRegion, changeMask);
     }
@@ -210,7 +210,7 @@ namespace PhysX
     }
 
     void EditorHeightfieldColliderComponent::RefreshHeightfield(const AZ::Aabb& dirtyRegion,
-        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* changeMask)
+        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
         AZ::Aabb heightfieldAabb = GetColliderShapeAabb();
         AZ::Aabb requestRegion = dirtyRegion;
@@ -227,7 +227,7 @@ namespace PhysX
         }
 
         // Clamp requested region to the entire heightfield AABB
-        requestRegion = heightfieldAabb.GetClamped(requestRegion);
+        requestRegion.Clamp(heightfieldAabb);
 
         // if dirty region invalid, recreate the entire heightfield, otherwise request samples
         bool shouldRecreateHeightfield = m_shapeConfig == nullptr;

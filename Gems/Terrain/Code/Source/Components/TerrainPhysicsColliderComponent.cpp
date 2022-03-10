@@ -139,7 +139,7 @@ namespace Terrain
     }
 
     void TerrainPhysicsColliderComponent::NotifyListenersOfHeightfieldDataChange(const AZ::Aabb* dirtyRegion,
-        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* heightfieldChangeMask)
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask)
     {
         AZ::Aabb worldSize = AZ::Aabb::CreateNull();
 
@@ -182,9 +182,10 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::OnTerrainDataChanged(
         const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
-        [[maybe_unused]] Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask;
+        Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask
+            = Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified;
 
-        NotifyListenersOfHeightfieldDataChange(&dirtyRegion, &physicsMask);
+        NotifyListenersOfHeightfieldDataChange(&dirtyRegion, physicsMask);
     }
 
     AZ::Aabb TerrainPhysicsColliderComponent::GetHeightfieldAabb() const
@@ -311,7 +312,7 @@ namespace Terrain
     }
 
     void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
-        const UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& regionIn) const
+        const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& regionIn) const
     {
         AZ_PROFILE_FUNCTION(Entity);
 

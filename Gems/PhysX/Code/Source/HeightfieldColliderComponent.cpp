@@ -87,7 +87,7 @@ namespace PhysX
     }
 
     void HeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
-        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* changeMask)
+        const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
         RefreshHeightfield(dirtyRegion, changeMask);
     }
@@ -148,7 +148,7 @@ namespace PhysX
     }
 
     void HeightfieldColliderComponent::RefreshHeightfield([[maybe_unused]] const AZ::Aabb& dirtyRegion, 
-        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask* changeMask)
+        [[maybe_unused]] const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask)
     {
         ClearHeightfield();
         InitHeightfieldShapeConfiguration();
