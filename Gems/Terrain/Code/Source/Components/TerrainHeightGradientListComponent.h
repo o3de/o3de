@@ -95,9 +95,6 @@ namespace Terrain
         float m_cachedHeightQueryResolution{ 1.0f };
         AZ::Aabb m_cachedShapeBounds;
 
-        // prevent recursion in case user attaches cyclic dependences
-        mutable bool m_isRequestInProgress{ false }; 
-
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };
 }
