@@ -208,7 +208,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ScriptCanvas_ShapeCast(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_RigidBody_InitialAngularVelocity(self, request, workspace, editor, launcher_platform):
