@@ -165,7 +165,7 @@ namespace AzFramework
     //! from the spawnable may be tracked by the ticket and so using the same ticket is needed to despawn the exact entities created
     //! by a call to spawn entities. The life cycle of the spawned entities is tied to the ticket and all entities spawned using a
     //! ticket will be despawned when it's deleted.
-    class EntitySpawnTicket
+    class EntitySpawnTicket final
     {
     public:
         friend class SpawnableEntitiesDefinition;
