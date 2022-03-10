@@ -90,9 +90,11 @@ namespace Profiler
 
     void ImGuiTreemapImpl::Render(int x, int y, int w, int h)
     {
+        const char* treemapName = m_name.IsEmpty() ? "Unnamed treemap" : m_name.GetCStr();
+
         if (m_root.m_children.empty())
         {
-            ImGui::Begin(m_name.IsEmpty() ? "Unnamed treemap" : m_name.GetCStr());
+            ImGui::Begin(treemapName);
             ImGui::End();
             return;
         }
@@ -102,7 +104,7 @@ namespace Profiler
         ImVec2 extent{ static_cast<float>(w), static_cast<float>(h) };
         ImGui::SetNextWindowSize(extent, ImGuiCond_Once);
 
-        if (ImGui::Begin(m_name.IsEmpty() ? "Unnamed treemap" : m_name.GetCStr()))
+        if (ImGui::Begin(treemapName))
         {
             ImGui::Text("Total weight: %f %s", m_root.m_weight, m_unitLabel);
             if (!m_groups.empty())
@@ -162,7 +164,7 @@ namespace Profiler
 
             const auto [mx, my] = ImGui::GetMousePos();
 
-            AZStd::vector<TreemapNode*> tooltipNodes;
+            m_tooltipNodes.clear();
 
             // Draw nodes starting at the top level (ignoring the root) and descend down
             for (auto it = m_levelSets.begin() + 1; it != m_levelSets.end(); ++it)
@@ -196,7 +198,7 @@ namespace Profiler
                     {
                         // Mouse is hovering over this node. Add it as a node to display in the tooltip
                         saturationShift += 0.15f;
-                        tooltipNodes.push_back(node);
+                        m_tooltipNodes.push_back(node);
 
                         if (focused && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && node->m_children.empty())
                         {
@@ -217,7 +219,10 @@ namespace Profiler
                     {
                         const GroupConfig& groupConfig = m_groups[node->m_group];
                         ImGui::ColorConvertHSVtoRGB(
-                            groupConfig.m_hue, groupConfig.m_saturation + saturationShift, selected ? 1.f : node->m_value, r, g, b);
+                            groupConfig.m_hue,
+                            groupConfig.m_saturation + saturationShift,
+                            (selected ? 0.9f : node->m_value) + 0.1f,
+                            r, g, b);
                     }
                     else
                     {
@@ -229,10 +234,10 @@ namespace Profiler
                 }
             }
 
-            if (!tooltipNodes.empty())
+            if (!m_tooltipNodes.empty())
             {
                 ImGui::BeginTooltip();
-                for (TreemapNode* node : tooltipNodes)
+                for (TreemapNode* node : m_tooltipNodes)
                 {
                     if (!node->m_tooltip.empty())
                     {
@@ -244,8 +249,9 @@ namespace Profiler
                     }
                     else
                     {
-                        ImGui::Text("[unnamed] (%f)", node->m_weight, m_unitLabel);
+                        ImGui::Text("[unnamed] (%f %s)", node->m_weight, m_unitLabel);
                     }
+                    ImGui::Indent();
                 }
                 ImGui::EndTooltip();
             }

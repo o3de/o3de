@@ -61,6 +61,9 @@ namespace Profiler
         };
         AZStd::unordered_map<AZ::Name, GroupConfig> m_groups;
 
+        // This set of nodes are reset each frame and used to store treemap nodes beneath the user cursor
+        AZStd::vector<TreemapNode*> m_tooltipNodes;
+
         TreemapNode* m_selectedNode = nullptr;
 
         // A common pattern in the implementation is to use a stack to traverse the tree via BFS. Keeping
