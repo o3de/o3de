@@ -36,6 +36,7 @@
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/ICustomPropertyData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
@@ -96,13 +97,38 @@ namespace AZ::SceneAPI::Behaviors
             return m_preExportEventContextFunction(context);
         }
 
-        using MeshTransformPair = AZStd::pair<Containers::SceneGraph::NodeIndex, Containers::SceneGraph::NodeIndex>;
-        using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshTransformPair>;
-        using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshTransformPair>;
+        // this stores the data related with MeshData nodes
+        struct MeshNodeData
+        {
+            Containers::SceneGraph::NodeIndex m_meshIndex = {};
+            Containers::SceneGraph::NodeIndex m_transformIndex = {};
+            Containers::SceneGraph::NodeIndex m_propertyMapIndex = {};
+        };
+
+        using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
+        using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshNodeData>;
         using MeshIndexContainer = AZStd::unordered_set<Containers::SceneGraph::NodeIndex>;
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
         using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
         using EntityIdList = AZStd::vector<AZ::EntityId>;
+
+        void AssignCustomPropertyMapIndex(
+            MeshNodeData& meshNodeData,
+            const Containers::SceneGraph& graph,
+            const Containers::SceneGraph::NodeIndex meshIndex)
+        {
+            auto childIndex = graph.GetNodeChild(meshIndex);
+            while (childIndex.IsValid())
+            {
+                const auto nodeContent = graph.GetNodeContent(childIndex);
+                if (nodeContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(nodeContent.get()))
+                {
+                    meshNodeData.m_propertyMapIndex = childIndex;
+                    return;
+                }
+                childIndex = graph.GetNodeSibling(childIndex);
+            }
+        }
 
         MeshTransformMap CalculateMeshTransformMap(const Containers::Scene& scene)
         {
@@ -139,8 +165,9 @@ namespace AZ::SceneAPI::Behaviors
                         {
                             // map the node parent to the ITransform
                             meshIndexContainer.erase(parentIndex);
-                            MeshTransformPair pair{ parentIndex, currentIndex };
-                            meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(parentIndex), AZStd::move(pair) });
+                            MeshNodeData meshNodeData{ parentIndex, currentIndex };
+                            AssignCustomPropertyMapIndex(meshNodeData, graph, parentIndex);
+                            meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(parentIndex), AZStd::move(meshNodeData) });
                         }
                     }
                     else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(currentContent.get()))
@@ -155,11 +182,111 @@ namespace AZ::SceneAPI::Behaviors
             // indicate the transform should not be set to a default value
             for( const auto& meshIndex : meshIndexContainer)
             {
-                MeshTransformPair pair{ meshIndex, Containers::SceneGraph::NodeIndex{} };
-                meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(meshIndex), AZStd::move(pair) });
+                MeshNodeData meshNodeData { meshIndex, Containers::SceneGraph::NodeIndex{} };
+                AssignCustomPropertyMapIndex(meshNodeData, graph, meshIndex);
+                meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(meshIndex), AZStd::move(meshNodeData) });
             }
 
             return meshTransformMap;
+        }
+
+        bool AddEditorMaterialComponent(const AZ::EntityId& entityId, const DataTypes::ICustomPropertyData& propertyData)
+        {
+            const auto propertyMaterialPathIterator = propertyData.GetPropertyMap().find("o3de.default.material");
+            if (propertyMaterialPathIterator == propertyData.GetPropertyMap().end())
+            {
+                // skip these assignment since the default material override was not provided
+                return true;
+            }
+
+            const AZStd::any& propertyMaterialPath = propertyMaterialPathIterator->second;
+            if (propertyMaterialPath.empty() || propertyMaterialPath.is<AZStd::string>() == false)
+            {
+                AZ_Error("prefab", false, "The 'o3de.default.material' custom property value type must be a string."
+                                          "This will need to be fixed in the DCC tool and re-export the file asset.");
+                return false;
+            }
+
+            // find asset path via node data
+            const AZStd::string* materialAssetPath = AZStd::any_cast<AZStd::string>(&propertyMaterialPath);
+            if (materialAssetPath->empty())
+            {
+                AZ_Error("prefab", false, "Material asset path must not be empty.");
+                return false;
+            }
+
+            // create a material component for this entity's mesh to render with
+            AzFramework::BehaviorComponentId editorMaterialComponent;
+            AzToolsFramework::EntityUtilityBus::BroadcastResult(
+                editorMaterialComponent,
+                &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
+                entityId,
+                "EditorMaterialComponent");
+
+            if (editorMaterialComponent.IsValid() == false)
+            {
+                AZ_Warning("prefab", false, "Could not add the EditorMaterialComponent component; project needs Atom enabled.");
+                return {};
+            }
+
+            // the material product asset such as 'myassets/path/to/cool.azmaterial' is assigned via hint
+            auto materialAssetJson = AZStd::string::format(
+                R"JSON(
+                    {"Controller":{"Configuration":{"materials":[{"Value":{"MaterialAsset":{"assetHint":"%s"}}}]}}}
+                    )JSON", materialAssetPath->c_str());
+
+            bool result = false;
+            AzToolsFramework::EntityUtilityBus::BroadcastResult(
+                result,
+                &AzToolsFramework::EntityUtilityBus::Events::UpdateComponentForEntity,
+                entityId,
+                editorMaterialComponent,
+                materialAssetJson);
+
+            AZ_Error("prefab", result, "UpdateComponentForEntity failed for EditorMaterialComponent component");
+            return result;
+        }
+
+        bool AddEditorMeshComponent(
+            const AZ::EntityId& entityId,
+            const AZStd::string& relativeSourcePath,
+            const AZStd::string& meshGroupName)
+        {
+            // Since the mesh component lives in a gem, then create it by name
+            AzFramework::BehaviorComponentId editorMeshComponent;
+            AzToolsFramework::EntityUtilityBus::BroadcastResult(
+                editorMeshComponent,
+                &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
+                entityId,
+                "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9} AZ::Render::EditorMeshComponent");
+
+            if (editorMeshComponent.IsValid() == false)
+            {
+                AZ_Warning("prefab", false, "Could not add the EditorMeshComponent component; project needs Atom enabled.");
+                return {};
+            }
+
+            // assign mesh asset id hint using JSON
+            AZStd::string modelAssetPath;
+            modelAssetPath = relativeSourcePath;
+            AZ::StringFunc::Path::ReplaceFullName(modelAssetPath, meshGroupName.c_str());
+            AZ::StringFunc::Replace(modelAssetPath, "\\", "/"); // asset paths use forward slashes
+
+            auto meshAssetJson = AZStd::string::format(
+                R"JSON(
+                        {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
+                    )JSON", modelAssetPath.c_str());
+
+            bool result = false;
+            AzToolsFramework::EntityUtilityBus::BroadcastResult(
+                result,
+                &AzToolsFramework::EntityUtilityBus::Events::UpdateComponentForEntity,
+                entityId,
+                editorMeshComponent,
+                meshAssetJson);
+
+            AZ_Error("prefab", result, "UpdateComponentForEntity failed for EditorMeshComponent component");
+            return result;
         }
 
         NodeEntityMap CreateMeshGroups(
@@ -174,7 +301,8 @@ namespace AZ::SceneAPI::Behaviors
             for (const auto& entry : meshTransformMap)
             {
                 const auto thisNodeIndex = entry.first;
-                const auto meshNodeIndex = entry.second.first;
+                const auto meshNodeIndex = entry.second.m_meshIndex;
+                const auto propertyDataIndex = entry.second.m_propertyMapIndex;
                 const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
 
                 AZStd::string meshNodePath{ meshNodeName.GetPath() };
@@ -190,7 +318,7 @@ namespace AZ::SceneAPI::Behaviors
                 {
                     if (meshGoupNamePair.first != thisNodeIndex)
                     {
-                        const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.first);
+                        const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.m_meshIndex);
                         meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
                     }
                 }
@@ -225,43 +353,25 @@ namespace AZ::SceneAPI::Behaviors
                     return {};
                 }
 
-                // Since the mesh component lives in a gem, then create it by name
-                AzFramework::BehaviorComponentId editorMeshComponent;
-                AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                    editorMeshComponent,
-                    &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
-                    entityId,
-                    "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9} AZ::Render::EditorMeshComponent");
 
-                if (editorMeshComponent.IsValid() == false)
+                if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroupName) == false)
                 {
-                    AZ_Warning("prefab", false, "Could not add the EditorMeshComponent component; project needs Atom enabled.");
                     return {};
                 }
 
-                // assign mesh asset id hint using JSON
-                AZStd::string modelAssetPath;
-                modelAssetPath = relativeSourcePath;
-                AZ::StringFunc::Path::ReplaceFullName(modelAssetPath, meshGroupName.c_str());
-                AZ::StringFunc::Replace(modelAssetPath, "\\", "/"); // asset paths use forward slashes
-
-                auto meshAssetJson = AZStd::string::format(
-                    R"JSON(
-                        {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
-                    )JSON", modelAssetPath.c_str());
-
-                bool result = false;
-                AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                    result,
-                    &AzToolsFramework::EntityUtilityBus::Events::UpdateComponentForEntity,
-                    entityId,
-                    editorMeshComponent,
-                    meshAssetJson);
-
-                if (result == false)
+                if (propertyDataIndex.IsValid())
                 {
-                    AZ_Error("prefab", false, "UpdateComponentForEntity failed for EditorMeshComponent component");
-                    return {};
+                    const auto customPropertyData = azrtti_cast<const DataTypes::ICustomPropertyData*>(graph.GetNodeContent(propertyDataIndex));
+                    if (!customPropertyData)
+                    {
+                        AZ_Error("prefab", false, "Missing custom propertiy data content for node.");
+                        return {};
+                    }
+
+                    if (AddEditorMaterialComponent(entityId, *(customPropertyData.get())) == false)
+                    {
+                        return {};
+                    }
                 }
 
                 nodeEntityMap.insert({ thisNodeIndex, entityId });
@@ -323,7 +433,7 @@ namespace AZ::SceneAPI::Behaviors
 
                 auto thisNodeIterator = meshTransformMap.find(thisNodeIndex);
                 AZ_Assert(thisNodeIterator != meshTransformMap.end(), "This node index missing.");
-                auto thisTransformIndex = thisNodeIterator->second.second;
+                auto thisTransformIndex = thisNodeIterator->second.m_transformIndex;
 
                 // get node matrix data to set the entity's local transform
                 const auto nodeTransform = azrtti_cast<const DataTypes::ITransform*>(graph.GetNodeContent(thisTransformIndex));
@@ -553,6 +663,28 @@ namespace AZ::SceneAPI::Behaviors
             context.GetOutputDirectory(),
             AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
 
+        bool result = WriteOutProductAssetFile(filePath, context, prefabGroup, doc, false);
+
+        if (context.GetDebug())
+        {
+            AZStd::string debugFilePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
+                prefabGroup->GetName().c_str(),
+                context.GetOutputDirectory(),
+                AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
+            debugFilePath.append(".json");
+            WriteOutProductAssetFile(debugFilePath, context, prefabGroup, doc, true);
+        }
+
+        return result;
+    }
+
+    bool PrefabGroupBehavior::WriteOutProductAssetFile(
+        const AZStd::string& filePath,
+        Events::PreExportEventContext& context,
+        const SceneData::PrefabGroup* prefabGroup,
+        const rapidjson::Document& doc,
+        bool debug) const
+    {
         AZ::IO::FileIOStream fileStream(filePath.c_str(), AZ::IO::OpenMode::ModeWrite);
         if (fileStream.IsOpen() == false)
         {
@@ -561,9 +693,23 @@ namespace AZ::SceneAPI::Behaviors
         }
 
         // write to a UTF-8 string buffer
+        Data::AssetType assetType = azrtti_typeid<Prefab::ProceduralPrefabAsset>();
+        AZStd::string productPath {prefabGroup->GetName()};
         rapidjson::StringBuffer sb;
-        rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
-        if (doc.Accept(writer) == false)
+        bool writerResult = false;
+        if (debug)
+        {
+            rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
+            writerResult = doc.Accept(writer);
+            productPath.append(".json");
+            assetType = {};
+        }
+        else
+        {
+            rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
+            writerResult = doc.Accept(writer);
+        }
+        if (writerResult == false)
         {
             AZ_Error("prefab", false, "PrefabGroup(%s) Could not buffer JSON", prefabGroup->GetName().c_str());
             return false;
@@ -572,11 +718,11 @@ namespace AZ::SceneAPI::Behaviors
         const auto bytesWritten = fileStream.Write(sb.GetSize(), sb.GetString());
         if (bytesWritten > 1)
         {
-            AZ::u32 subId = AZ::Crc32(prefabGroup->GetName().c_str());
+            AZ::u32 subId = AZ::Crc32(productPath.c_str());
             context.GetProductList().AddProduct(
                 filePath,
                 context.GetScene().GetSourceGuid(),
-                azrtti_typeid<Prefab::ProceduralPrefabAsset>(),
+                assetType,
                 {},
                 AZStd::make_optional(subId));
 
@@ -636,6 +782,44 @@ namespace AZ::SceneAPI::Behaviors
         if (serializeContext)
         {
             serializeContext->Class<PrefabGroupBehavior, BehaviorComponent>()->Version(1);
+        }
+
+        BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            using namespace AzToolsFramework::Prefab;
+
+            auto loadTemplate = [](const AZStd::string& prefabPath)
+            {
+                AZ::IO::FixedMaxPath path {prefabPath};
+                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                if (prefabLoaderInterface)
+                {
+                    return prefabLoaderInterface->LoadTemplateFromFile(path);
+                }
+                return TemplateId{};
+            };
+
+            behaviorContext->Method("LoadTemplate", loadTemplate)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "prefab");
+
+            auto saveTemplateToString = [](TemplateId templateId) -> AZStd::string
+            {
+                AZStd::string output;
+                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                if (prefabLoaderInterface)
+                {
+                    prefabLoaderInterface->SaveTemplateToString(templateId, output);
+                }
+                return output;
+            };
+
+            behaviorContext->Method("SaveTemplateToString", saveTemplateToString)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "prefab");
         }
     }
 }

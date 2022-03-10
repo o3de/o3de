@@ -27,6 +27,7 @@
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
@@ -54,14 +55,8 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <Document/MaterialDocumentRequestBus.h>
-#include <Viewport/MaterialViewportRequestBus.h>
-#include <Viewport/MaterialViewportSettings.h>
+#include <Viewport/MaterialViewportSettingsRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
-#include <Viewport/ui_MaterialViewportWidget.h>
-
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QWindow>
-AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
 {
@@ -69,64 +64,64 @@ namespace MaterialEditor
 
     MaterialViewportWidget::MaterialViewportWidget(const AZ::Crc32& toolId, QWidget* parent)
         : AtomToolsFramework::RenderViewportWidget(parent)
-        , m_ui(new Ui::MaterialViewportWidget)
         , m_toolId(toolId)
     {
-        m_ui->setupUi(this);
-
         // The viewport context created by AtomToolsFramework::RenderViewportWidget has no name.
         // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
         viewportContextManager->RenameViewportContext(GetViewportContext(), defaultContextName);
 
+        // Create a custom entity context for the entities in this viewport 
+        m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
+        m_entityContext->InitContext();
+
         // Create and register a scene with all available feature processors
         AZ::RPI::SceneDescriptor sceneDesc;
-        sceneDesc.m_nameId = AZ::Name("MaterialViewport");
+        sceneDesc.m_nameId = AZ::Name(AZStd::string::format("MaterialViewportWidgetScene_%i", GetViewportContext()->GetId()));
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
 
-        // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
+        // Bind m_frameworkScene to the entity context's AzFramework::Scene
         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
         AZ_Assert(sceneSystem, "MaterialViewportWidget was unable to get the scene system during construction.");
-        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
 
-        // This should never happen unless scene creation has changed.
-        AZ_Assert(mainScene, "Main scenes missing during system component initialization");
-        mainScene->SetSubsystem(m_scene);
+        AZ::Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome =
+            sceneSystem->CreateScene(AZStd::string::format("MaterialViewportWidgetScene_%i", GetViewportContext()->GetId()));
+        AZ_Assert(createSceneOutcome, createSceneOutcome.GetError().c_str());
+
+        m_frameworkScene = createSceneOutcome.TakeValue();
+        m_frameworkScene->SetSubsystem(m_scene);
+        m_frameworkScene->SetSubsystem(m_entityContext.get());
 
         // Load the render pipeline asset
-        AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
+        AZStd::optional<AZ::RPI::RenderPipelineDescriptor> mainPipelineDesc =
+            AZ::RPI::GetRenderPipelineDescriptorFromAsset(m_mainPipelineAssetPath, AZStd::string::format("_%i", GetViewportContext()->GetId()));
+        AZ_Assert(mainPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", m_mainPipelineAssetPath.c_str());
 
+        // TODO etApplicationMultisampleState should only be called once per application and will need to consider scenarios with multiple
+        // viewports and pipelines
         // The default pipeline determines the initial MSAA state for the application
-        const AZ::RPI::RenderPipelineDescriptor* renderPipelineDescriptor = AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset);
-        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(renderPipelineDescriptor->m_renderSettings.m_multisampleState);
+        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(mainPipelineDesc.value().m_renderSettings.m_multisampleState);
+        mainPipelineDesc.value().m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *GetViewportContext()->GetWindowContext().get());
-        pipelineAsset.Release();
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(mainPipelineDesc.value(), *GetViewportContext()->GetWindowContext().get());
         m_scene->AddRenderPipeline(m_renderPipeline);
 
-        // As part of our initialization we need to create the BRDF texture generation pipeline
-        AZ::RPI::RenderPipelineDescriptor pipelineDesc;
-        pipelineDesc.m_mainViewTagName = "MainCamera";
-        pipelineDesc.m_name = "BRDFTexturePipeline";
-        pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
-        pipelineDesc.m_executeOnce = true;
+        // Create the BRDF texture generation pipeline
+        AZ::RPI::RenderPipelineDescriptor brdfPipelineDesc;
+        brdfPipelineDesc.m_mainViewTagName = "MainCamera";
+        brdfPipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%i", GetViewportContext()->GetId());
+        brdfPipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
+        brdfPipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        brdfPipelineDesc.m_executeOnce = true;
 
-        AZ::RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+        AZ::RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(brdfPipelineDesc);
         m_scene->AddRenderPipeline(brdfTexturePipeline);
-
-        // Currently the scene has to be activated after render pipeline was added so some feature processors (i.e. imgui) can be
-        // initialized properly with pipeline's pass information.
         m_scene->Activate();
 
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
-
-        AzFramework::EntityContextId entityContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
 
         // Configure camera
         m_cameraEntity =
@@ -220,39 +215,22 @@ namespace MaterialEditor
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
 
-        // Attempt to apply the default lighting preset
-        AZ::Render::LightingPresetPtr lightingPreset;
-        MaterialViewportRequestBus::BroadcastResult(lightingPreset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
-        OnLightingPresetSelected(lightingPreset);
-
-        // Attempt to apply the default model preset
-        AZ::Render::ModelPresetPtr modelPreset;
-        MaterialViewportRequestBus::BroadcastResult(modelPreset, &MaterialViewportRequestBus::Events::GetModelPresetSelection);
-        OnModelPresetSelected(modelPreset);
-
         // Apply user settinngs restored since last run
-        AZStd::intrusive_ptr<MaterialViewportSettings> viewportSettings =
-            AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
-
-        OnGridEnabledChanged(viewportSettings->m_enableGrid);
-        OnShadowCatcherEnabledChanged(viewportSettings->m_enableShadowCatcher);
-        OnAlternateSkyboxEnabledChanged(viewportSettings->m_enableAlternateSkybox);
-        OnFieldOfViewChanged(viewportSettings->m_fieldOfView);
-        OnDisplayMapperOperationTypeChanged(viewportSettings->m_displayMapperOperationType);
+        OnViewportSettingsChanged();
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        MaterialViewportNotificationBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+        MaterialViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
+        AZ::TickBus::Handler::BusConnect();
     }
 
     MaterialViewportWidget::~MaterialViewportWidget()
     {
-        AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
-        MaterialViewportNotificationBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
+        MaterialViewportSettingsNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
 
         DestroyEntity(m_iblEntity);
         DestroyEntity(m_modelEntity);
@@ -267,27 +245,23 @@ namespace MaterialEditor
         }
         m_lightHandles.clear();
 
-        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-        AZ_Assert(sceneSystem, "MaterialViewportWidget was unable to get the scene system during destruction.");
-        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
-        // This should never happen unless scene creation has changed.
-        AZ_Assert(mainScene, "Main scenes missing during system component destruction");
-        mainScene->UnsetSubsystem(m_scene);
-
-        m_swapChainPass = nullptr;
+        m_scene->Deactivate();
+        m_scene->RemoveRenderPipeline(m_renderPipeline->GetId());
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
-        m_scene = nullptr;
+        m_frameworkScene->UnsetSubsystem(m_scene);
+        m_frameworkScene->UnsetSubsystem(m_entityContext.get());
+
+        if (auto sceneSystem = AzFramework::SceneSystemInterface::Get())
+        {
+            sceneSystem->RemoveScene(m_frameworkScene->GetName());
+        }
     }
 
     AZ::Entity* MaterialViewportWidget::CreateEntity(const AZStd::string& name, const AZStd::vector<AZ::Uuid>& componentTypeIds)
     {
-        AzFramework::EntityContextId entityContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
-
         AZ::Entity* entity = {};
         AzFramework::EntityContextRequestBus::EventResult(
-            entity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, name.c_str());
+            entity, m_entityContext->GetContextId(), &AzFramework::EntityContextRequestBus::Events::CreateEntity, name.c_str());
         AZ_Assert(entity != nullptr, "Failed to create post process entity: %s.", name.c_str());
 
         if (entity)
@@ -296,6 +270,7 @@ namespace MaterialEditor
             {
                 entity->CreateComponent(componentTypeId);
             }
+            entity->Init();
             entity->Activate();
         }
 
@@ -304,11 +279,8 @@ namespace MaterialEditor
 
     void MaterialViewportWidget::DestroyEntity(AZ::Entity*& entity)
     {
-        AzFramework::EntityContextId entityContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
-
-        AzFramework::EntityContextRequestBus::Event(entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, entity);
+        AzFramework::EntityContextRequestBus::Event(
+            m_entityContext->GetContextId(), &AzFramework::EntityContextRequestBus::Events::DestroyEntity, entity);
         entity = nullptr;
     }
 
@@ -363,131 +335,87 @@ namespace MaterialEditor
             m_modelEntity->GetId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, materials);
     }
 
-    void MaterialViewportWidget::OnLightingPresetSelected(AZ::Render::LightingPresetPtr preset)
+    void MaterialViewportWidget::OnViewportSettingsChanged()
     {
-        if (!preset)
-        {
-            return;
-        }
+        MaterialViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](MaterialViewportSettingsRequestBus::Events* viewportRequests)
+            {
+                UpdateLighting(viewportRequests);
+                UpdateModel(viewportRequests);
+                UpdateGrid(viewportRequests);
 
-        AZ::Render::ImageBasedLightFeatureProcessorInterface* iblFeatureProcessor =
-            m_scene->GetFeatureProcessor<AZ::Render::ImageBasedLightFeatureProcessorInterface>();
-        AZ::Render::PostProcessFeatureProcessorInterface* postProcessFeatureProcessor =
-            m_scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>();
+                AZ::Render::MeshComponentRequestBus::Event(
+                    m_shadowCatcherEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetVisibility,
+                    viewportRequests->GetShadowCatcherEnabled());
 
-        AZ::Render::ExposureControlSettingsInterface* exposureControlSettingInterface =
-            postProcessFeatureProcessor->GetOrCreateSettingsInterface(m_postProcessEntity->GetId())
-                ->GetOrCreateExposureControlSettingsInterface();
+                m_viewportController->SetFieldOfView(viewportRequests->GetFieldOfView());
+
+                AZ::Render::DisplayMapperConfigurationDescriptor desc;
+                desc.m_operationType = viewportRequests->GetDisplayMapperOperationType();
+                m_displayMapperFeatureProcessor->RegisterDisplayMapperConfiguration(desc);
+            });
+    }
+
+    void MaterialViewportWidget::UpdateLighting(MaterialViewportRequests* viewportRequests)
+    {
+        auto iblFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::ImageBasedLightFeatureProcessorInterface>();
+        auto postProcessFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>();
+        auto postProcessSettingInterface = postProcessFeatureProcessor->GetOrCreateSettingsInterface(m_postProcessEntity->GetId());
+        auto exposureControlSettingInterface = postProcessSettingInterface->GetOrCreateExposureControlSettingsInterface();
 
         Camera::Configuration cameraConfig;
         Camera::CameraRequestBus::EventResult(
             cameraConfig, m_cameraEntity->GetId(), &Camera::CameraRequestBus::Events::GetCameraConfiguration);
 
-        bool enableAlternateSkybox = false;
-        MaterialViewportRequestBus::BroadcastResult(enableAlternateSkybox, &MaterialViewportRequestBus::Events::GetAlternateSkyboxEnabled);
-
-        preset->ApplyLightingPreset(
+        const bool enableAlternateSkybox = viewportRequests->GetAlternateSkyboxEnabled();
+        viewportRequests->GetLightingPreset().ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
             cameraConfig, m_lightHandles, m_shadowCatcherMaterial, m_shadowCatcherOpacityPropertyIndex, enableAlternateSkybox);
     }
 
-    void MaterialViewportWidget::OnLightingPresetChanged(AZ::Render::LightingPresetPtr preset)
+    void MaterialViewportWidget::UpdateModel(MaterialViewportRequests* viewportRequests)
     {
-        AZ::Render::LightingPresetPtr selectedPreset;
-        MaterialViewportRequestBus::BroadcastResult(selectedPreset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
-        if (selectedPreset == preset)
+        const auto& modelPreset = viewportRequests->GetModelPreset();
+        if (modelPreset.m_modelAsset.GetId().IsValid() && modelPreset.m_modelAsset != m_modelAsset)
         {
-            OnLightingPresetSelected(preset);
+            AZ::Data::AssetBus::Handler::BusDisconnect();
+
+            m_modelAsset = modelPreset.m_modelAsset;
+            AZ::Data::AssetBus::Handler::BusConnect(m_modelAsset.GetId());
+
+            AZ::Render::MeshComponentRequestBus::Event(
+                m_modelEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
         }
     }
 
-    void MaterialViewportWidget::OnModelPresetSelected(AZ::Render::ModelPresetPtr preset)
-    {
-        if (!preset)
-        {
-            return;
-        }
-
-        if (!preset->m_modelAsset.GetId().IsValid())
-        {
-            AZ_Warning(
-                "MaterialViewportWidget", false, "Attempting to set invalid model for preset: '%s'\n.", preset->m_displayName.c_str());
-            return;
-        }
-
-        if (preset->m_modelAsset.GetId() == m_modelAssetId)
-        {
-            return;
-        }
-
-        AZ::Render::MeshComponentRequestBus::Event(
-            m_modelEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, preset->m_modelAsset);
-
-        m_modelAssetId = preset->m_modelAsset.GetId();
-
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-        AZ::Data::AssetBus::Handler::BusConnect(m_modelAssetId);
-    }
-
-    void MaterialViewportWidget::OnModelPresetChanged(AZ::Render::ModelPresetPtr preset)
-    {
-        AZ::Render::ModelPresetPtr selectedPreset;
-        MaterialViewportRequestBus::BroadcastResult(selectedPreset, &MaterialViewportRequestBus::Events::GetModelPresetSelection);
-        if (selectedPreset == preset)
-        {
-            OnModelPresetSelected(preset);
-        }
-    }
-
-    void MaterialViewportWidget::OnShadowCatcherEnabledChanged(bool enable)
-    {
-        AZ::Render::MeshComponentRequestBus::Event(
-            m_shadowCatcherEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetVisibility, enable);
-    }
-
-    void MaterialViewportWidget::OnGridEnabledChanged(bool enable)
+    void MaterialViewportWidget::UpdateGrid(MaterialViewportRequests* viewportRequests)
     {
         if (m_gridEntity)
         {
-            if (enable && m_gridEntity->GetState() == AZ::Entity::State::Init)
+            const bool enableGrid = viewportRequests->GetGridEnabled();
+            if (enableGrid && m_gridEntity->GetState() == AZ::Entity::State::Init)
             {
                 m_gridEntity->Activate();
+                return;
             }
-            else if (!enable && m_gridEntity->GetState() == AZ::Entity::State::Active)
+
+            if (!enableGrid && m_gridEntity->GetState() == AZ::Entity::State::Active)
             {
                 m_gridEntity->Deactivate();
+                return;
             }
         }
-    }
-
-    void MaterialViewportWidget::OnAlternateSkyboxEnabledChanged(bool enable)
-    {
-        AZ_UNUSED(enable);
-        AZ::Render::LightingPresetPtr selectedPreset;
-        MaterialViewportRequestBus::BroadcastResult(selectedPreset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
-        OnLightingPresetSelected(selectedPreset);
-    }
-
-    void MaterialViewportWidget::OnFieldOfViewChanged(float fieldOfView)
-    {
-        m_viewportController->SetFieldOfView(fieldOfView);
-    }
-
-    void MaterialViewportWidget::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
-    {
-        AZ::Render::DisplayMapperConfigurationDescriptor desc;
-        desc.m_operationType = operationType;
-        m_displayMapperFeatureProcessor->RegisterDisplayMapperConfiguration(desc);
     }
 
     void MaterialViewportWidget::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        if (m_modelAssetId == asset.GetId())
+        if (m_modelAsset == asset)
         {
-            AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset = asset;
-            m_viewportController->SetTargetBounds(modelAsset->GetAabb());
+            m_modelAsset = asset;
+            m_viewportController->SetTargetBounds(m_modelAsset->GetAabb());
             m_viewportController->Reset();
-            AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
+            AZ::Data::AssetBus::Handler::BusDisconnect(m_modelAsset.GetId());
         }
     }
 

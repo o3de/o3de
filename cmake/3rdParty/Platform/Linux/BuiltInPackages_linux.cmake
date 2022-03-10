@@ -7,7 +7,6 @@
 #
 
 # shared by other platforms:
-ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform                  TARGETS ilmbase                     PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                             TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
@@ -20,7 +19,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-linux                           TARGETS assimplib                   PACKAGE_HASH 40d64242d5d32a69af3a25690b76f051f3c1a573c1bafba0782cb771a53dfab7)
-ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-linux             TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a8149a95bd100384af6ade97e2b21a56173740d921e6c3da8188cd51554d39af)
+ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.2-rev1-linux             TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 875a8ee45ab5948b10eedfd9057b14db7f01c4b31820f8f998eb6dee1c05a176)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-linux                          TARGETS TIFF                        PACKAGE_HASH 2377f48b2ebc2d1628d9f65186c881544c92891312abe478a20d10b85877409a)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-linux                          TARGETS freetype                    PACKAGE_HASH 3f10c703d9001ecd2bb51a3bd003d3237c02d8f947ad0161c0252fdc54cbcf97)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev1-linux                    TARGETS AWSNativeSDK                PACKAGE_HASH f30b6969c6732a7c1a23a59d205a150633a7f219dcb60d837b543888d2c63ea1)
@@ -36,6 +35,7 @@ ly_associate_package(PACKAGE_NAME libpng-1.6.37-rev1-linux                      
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux                    TARGETS libsamplerate               PACKAGE_HASH 41643c31bc6b7d037f895f89d8d8d6369e906b92eff42b0fe05ee6a100f06261)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-linux                           TARGETS OpenMesh                    PACKAGE_HASH 805bd0b24911bb00c7f575b8c3f10d7ea16548a5014c40811894a9445f17a126)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-linux                         TARGETS OpenSSL                     PACKAGE_HASH b779426d1e9c5ddf71160d5ae2e639c3b956e0fb5e9fcaf9ce97c4526024e3bc)
+ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev2-linux                          TARGETS OpenEXR                     PACKAGE_HASH d6f5fb9b40ccd636537fe69154f4737742eb9e14edf11218644d0a55df87b046)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2112-o3de-rev1-linux TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH ac9f98e0e3b07fde0f9bbe1e6daa386da37699819cde06dcc8d3235421f6e977)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-linux                  TARGETS SPIRVCross                  PACKAGE_HASH 7889ee5460a688e9b910c0168b31445c0079d363affa07b25d4c8aeb608a0b80)
 ly_associate_package(PACKAGE_NAME azslc-1.7.35-rev1-linux                           TARGETS azslc                       PACKAGE_HASH 273484be06dfc25e8da6a6e17937ae69a2efdb0b4c5f105efa83d6ad54d756e5)

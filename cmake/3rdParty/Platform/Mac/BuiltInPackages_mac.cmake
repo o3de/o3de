@@ -7,7 +7,6 @@
 #
 
 # shared by other platforms:
-ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform                  TARGETS ilmbase                     PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                             TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
@@ -19,7 +18,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform            
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-mac                             TARGETS assimplib                   PACKAGE_HASH ad35c2e0efd0852021c84b9a454fdcba2fc8af8b7117e9a0dd7ea0a1915932e0)
+ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev2-mac                             TARGETS assimplib                   PACKAGE_HASH f5a9228055a9c0d360deeb3a465ad7e0aabf86832af547826ac43bab37c05abc)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2112-o3de-rev1-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 2d3aa6d188fcd4f09c95cf26a518a45400f34a54c8dff3a7ebef6add917fb07c)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-mac                    TARGETS SPIRVCross                  PACKAGE_HASH 78c6376ed2fd195b9b1f5fb2b56e5267a32c3aa21fb399e905308de470eb4515)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-mac                            TARGETS TIFF                        PACKAGE_HASH c2615ccdadcc0e1d6c5ed61e5965c4d3a82193d206591b79b805c3b3ff35a4bf)
@@ -33,6 +32,7 @@ ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac                     
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-mac                    TARGETS GoogleBenchmark             PACKAGE_HASH ad25de0146769c91e179953d845de2bec8ed4a691f973f47e3eb37639381f665)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-mac                             TARGETS OpenMesh                    PACKAGE_HASH af92db02a25c1f7e1741ec898f49d81d52631e00336bf9bddd1e191590063c2f)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-mac                           TARGETS OpenSSL                     PACKAGE_HASH 28adc1c0616ac0482b2a9d7b4a3a3635a1020e87b163f8aba687c501cf35f96c)
+ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev2-mac                            TARGETS OpenEXR                     PACKAGE_HASH af8163d3a92ebf8833ebf61589c5f82ba48d8b5fe42e55693ed6248e540609ef)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-rev5-mac                                TARGETS Qt                          PACKAGE_HASH 9d25918351898b308ded3e9e571fff6f26311b2071aeafd00dd5b249fdf53f7e)
 ly_associate_package(PACKAGE_NAME libpng-1.6.37-mac                                 TARGETS libpng                      PACKAGE_HASH 1ad76cd038ccc1f288f83c5fe2859a0f35c5154e1fe7658e1230cc428d318a8b)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac                      TARGETS libsamplerate               PACKAGE_HASH b912af40c0ac197af9c43d85004395ba92a6a859a24b7eacd920fed5854a97fe)

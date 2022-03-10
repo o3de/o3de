@@ -59,8 +59,11 @@ namespace EMStudio
         AZ::EntityId GetEntityId() const;
         AzFramework::EntityContextId GetEntityContextId() const;
 
-        // Call this function on update to prevent the character going out of bounds of the ground.
-        void CheckBounds();
+        //! Moves the groundplane along with the character.
+        void UpdateGroundplane();
+
+        //! Apply the identity transform to the actor entities.
+        void MoveActorEntitiesToOrigin();
 
     private:
 
@@ -94,7 +97,6 @@ namespace EMStudio
         const RenderOptions* m_renderOptions;
 
         const float DefaultFrustumDimension = 128.0f;
-        const float BoundMaxDistance = 150.0f;
         const float TileSize = 1.0f;
         AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> m_lightHandles;
     };

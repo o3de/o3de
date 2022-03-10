@@ -24,7 +24,6 @@ class TestAutomation(EditorTestSuite):
     # Remove -autotest_mode from global_extra_cmdline_args since we need rendering for these tests.
     global_extra_cmdline_args = ["-autotest_mode"]  # Default is ["-BatchMode", "-autotest_mode"]
     use_null_renderer = False  # Default is True
-    enable_prefab_system = False
 
     @staticmethod
     def screenshot_setup(screenshot_directory, screenshot_names):
@@ -42,7 +41,6 @@ class TestAutomation(EditorTestSuite):
             golden_image_path = os.path.join(golden_images_directory(), golden_image)
             golden_images.append(golden_image_path)
         return test_screenshots, golden_images
-
 
     @pytest.mark.test_case_id("C34525095")
     class AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages_DX12(EditorSingleTest):
@@ -187,5 +185,4 @@ class TestMaterialEditor(object):
             null_renderer=False,
             cfg_args=[cfg_args],
             log_file_name="MaterialEditor.log",
-            enable_prefab_system=False,
         )

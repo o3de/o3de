@@ -69,6 +69,8 @@ namespace AZ
             {
                 serializeContext->RegisterGenericType<EditorMaterialComponentSlotContainer>();
                 serializeContext->RegisterGenericType<EditorMaterialComponentSlotsByLodContainer>();
+                serializeContext->RegisterGenericType<AZStd::unordered_map<MaterialAssignmentId, Data::AssetId, AZStd::hash<MaterialAssignmentId>, AZStd::equal_to<MaterialAssignmentId>, AZStd::allocator>>();
+                serializeContext->RegisterGenericType<AZStd::unordered_map<MaterialAssignmentId, MaterialPropertyOverrideMap, AZStd::hash<MaterialAssignmentId>, AZStd::equal_to<MaterialAssignmentId>, AZStd::allocator>>();
 
                 serializeContext->Class<EditorMaterialComponent, BaseClass>()
                     ->Version(5, &EditorMaterialComponent::ConvertVersion)
@@ -78,9 +80,6 @@ namespace AZ
                     ->Field("materialSlotsByLodEnabled", &EditorMaterialComponent::m_materialSlotsByLodEnabled)
                     ->Field("materialSlotsByLod", &EditorMaterialComponent::m_materialSlotsByLod)
                     ;
-
-                serializeContext->RegisterGenericType<AZStd::unordered_map<MaterialAssignmentId, Data::AssetId, AZStd::hash<MaterialAssignmentId>, AZStd::equal_to<MaterialAssignmentId>, AZStd::allocator>>();
-                serializeContext->RegisterGenericType<AZStd::unordered_map<MaterialAssignmentId, MaterialPropertyOverrideMap, AZStd::hash<MaterialAssignmentId>, AZStd::equal_to<MaterialAssignmentId>, AZStd::allocator>>();
 
                 if (auto editContext = serializeContext->GetEditContext())
                 {

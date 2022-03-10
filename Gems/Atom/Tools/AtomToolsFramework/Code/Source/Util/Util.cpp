@@ -62,6 +62,19 @@ namespace AtomToolsFramework
         job->Start();
     }
 
+    QString GetDisplayNameFromPath(const QString& path)
+    {
+        QFileInfo fileInfo(path);
+        QString fileName = fileInfo.baseName();
+        fileName.replace(QRegExp("[^a-zA-Z\\d\\s]"), " ");
+        QStringList fileNameParts = fileName.split(' ', Qt::SkipEmptyParts);
+        for (QString& part : fileNameParts)
+        {
+            part.replace(0, 1, part[0].toUpper());
+        }
+        return fileNameParts.join(" ");
+    }
+
     QFileInfo GetSaveFileInfo(const QString& initialPath)
     {
         const QFileInfo initialFileInfo(initialPath);
@@ -239,6 +252,11 @@ namespace AtomToolsFramework
         if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
         {
             AZ_Warning("AtomToolsFramework", false, R"(Unable to save changes to the registry file at "%s"\n)", savePath.c_str());
+            return false;
+        }
+
+        if (stringBuffer.empty())
+        {
             return false;
         }
 
