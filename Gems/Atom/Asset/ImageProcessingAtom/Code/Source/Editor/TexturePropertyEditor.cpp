@@ -33,6 +33,11 @@ AZ_PUSH_DISABLE_WARNING(4244 4800 4251, "-Wunknown-warning-option")
 #include <QDesktopServices>
 AZ_POP_DISABLE_WARNING
 
+void InitTexturePropertyEditorResources()
+{
+    Q_INIT_RESOURCE(ImageProcessing);
+}
+
 namespace ImageProcessingAtomEditor
 {
     TexturePropertyEditor::TexturePropertyEditor(const AZ::Uuid& sourceTextureId, QWidget* parent /*= nullptr*/)
@@ -47,7 +52,7 @@ namespace ImageProcessingAtomEditor
             return;
         }
 
-        Q_INIT_RESOURCE(ImageProcessing);
+        InitTexturePropertyEditorResources();
 
         m_ui->setupUi(this);
 
