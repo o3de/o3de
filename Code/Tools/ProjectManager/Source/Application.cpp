@@ -119,7 +119,7 @@ namespace O3DE::ProjectManager
            return false;
         }
 
-        const AZ::CommandLine* commandLine = GetCommandLine();
+        const AZ::CommandLine* commandLine = GetApplicationCommandLine();
         AZ_Assert(commandLine, "Failed to get command line");
 
         ProjectManagerScreen startScreen = ProjectManagerScreen::Projects;

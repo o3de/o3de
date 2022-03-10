@@ -84,7 +84,7 @@ namespace UnitTests
 
         // Add file to database with no modtime
         {
-            AssetDatabaseConnection connection;
+            AssetProcessor::AssetDatabaseConnection connection;
             ASSERT_TRUE(connection.OpenDatabase());
             AzToolsFramework::AssetDatabase::FileDatabaseEntry fileEntry;
             fileEntry.m_fileName = m_data->m_relativePathFromWatchFolder[0].toUtf8().data();

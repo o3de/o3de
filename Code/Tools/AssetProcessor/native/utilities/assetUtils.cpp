@@ -335,7 +335,7 @@ namespace AssetUtilities
         }
 
         const AzFramework::CommandLine* commandLine = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
         static const char AssetRootParam[] = "assetroot";
         if (commandLine && commandLine->HasSwitch(AssetRootParam))

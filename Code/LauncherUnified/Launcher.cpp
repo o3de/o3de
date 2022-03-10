@@ -67,7 +67,7 @@ namespace
     void ExecuteConsoleCommandFile(AzFramework::Application& application)
     {
         const AZStd::string_view customConCmdKey = "console-command-file";
-        const AZ::CommandLine* commandLine = application.GetCommandLine();
+        const AZ::CommandLine* commandLine = application.GetApplicationCommandLine();
         AZStd::size_t numSwitchValues = commandLine->GetNumSwitchValues(customConCmdKey);
         if (numSwitchValues > 0)
         {

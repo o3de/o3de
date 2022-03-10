@@ -721,7 +721,7 @@ namespace AssetProcessor
 
         static const char ScanFolderOption[] = "scanfolders";
         const AzFramework::CommandLine* commandLine = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
         const bool scanFolderOverride = commandLine ? commandLine->HasSwitch(ScanFolderOption) : false;
 
         static const char NoConfigScanFolderOption[] = "noConfigScanFolders";

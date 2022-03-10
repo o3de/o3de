@@ -103,10 +103,6 @@ namespace AzFramework
         bool IsPrefabSystemForLevelsEnabled() const override;
         bool ShouldAssertForLegacySlicesUsage() const override;
 
-#pragma push_macro("GetCommandLine")
-#undef GetCommandLine
-        const CommandLine* GetCommandLine() override { return &m_commandLine; }
-#pragma pop_macro("GetCommandLine")
         const CommandLine* GetApplicationCommandLine() override { return &m_commandLine; }
 
         void MakePathRootRelative(AZStd::string& fullPath) override;

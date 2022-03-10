@@ -792,7 +792,7 @@ void GUIApplicationManager::InitSourceControl()
     bool enableSourceControl = settings.value("EnableSourceControl", 1).toBool();
 
     const AzFramework::CommandLine* commandLine = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
     if (commandLine->HasSwitch("enablescm"))
     {
@@ -813,7 +813,7 @@ bool GUIApplicationManager::GetShouldExitOnIdle() const
 {
     bool shouldExit = false;
     const AzFramework::CommandLine* commandLine = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
     if (commandLine->HasSwitch("quitonidle"))
     {

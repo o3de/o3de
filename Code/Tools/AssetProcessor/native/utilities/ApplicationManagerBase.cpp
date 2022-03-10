@@ -150,7 +150,7 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     });
 
     const AzFramework::CommandLine* commandLine = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
     struct APCommandLineSwitch
     {
@@ -823,7 +823,7 @@ void ApplicationManagerBase::InitAssetRequestHandler(AssetProcessor::AssetReques
 void ApplicationManagerBase::InitFileStateCache()
 {
     const AzFramework::CommandLine* commandLine = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
     if (commandLine->HasSwitch("disableFileCache"))
     {
@@ -965,7 +965,7 @@ void ApplicationManagerBase::HandleFileRelocation() const
     static constexpr char ExcludeMetaDataFiles[] = "excludeMetaDataFiles";
 
     const AzFramework::CommandLine* commandLine = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
     const bool allowBrokenDependencies = commandLine->HasSwitch(AllowBrokenDependenciesCommand);
     const bool previewOnly = !commandLine->HasSwitch(ConfirmCommand);

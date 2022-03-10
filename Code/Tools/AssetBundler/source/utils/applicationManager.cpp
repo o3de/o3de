@@ -88,7 +88,7 @@ namespace AssetBundler
 
     bool ApplicationManager::Run()
     {
-        const AZ::CommandLine* parser = GetCommandLine();
+        const AZ::CommandLine* parser = GetApplicationCommandLine();
 
         bool shouldPrintHelp = ShouldPrintHelp(parser);
 
