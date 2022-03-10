@@ -43,13 +43,12 @@ struct VSOutput
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV4;
-
-    // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
 
     // Used for eye refraction
     float3 m_localPosition : UV3;
+    
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV4;
 };
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>

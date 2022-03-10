@@ -1,5 +1,5 @@
 {
-    "description": "Material Type tailored for rendering eyes, with support for refraction, occlusions, and other eye-specific properties.",
+    "description": "Material Type tailored for rendering eyes, with support for refraction, iris blending, and other eye-specific properties.",
     "version": 1,
     "propertyLayout": {
         "propertyGroups": [

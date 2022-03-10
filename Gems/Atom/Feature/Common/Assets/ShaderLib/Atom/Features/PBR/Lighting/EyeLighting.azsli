@@ -14,9 +14,6 @@
 // Then include custom surface and lighting data types
 #include <Atom/Features/PBR/Lighting/LightingData.azsli>
 
-// Use custom eye surface
-#include <Atom/Features/PBR/Surfaces/EyeSurface.azsli>
-
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
 
