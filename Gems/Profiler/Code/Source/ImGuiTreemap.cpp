@@ -166,8 +166,9 @@ namespace Profiler
             bool focused = ImGui::IsWindowFocused();
 
             // Add 20 pixel gutter to bottom
-            WeighAndComputeLayout(
-                static_cast<int>(cx + wx), static_cast<int>(cy + wy), static_cast<int>(ww - cx), static_cast<int>(wh - cy) - 20);
+            float treemapOffset[2] = { cx + wx, cy + wy };
+
+            WeighAndComputeLayout(static_cast<int>(ww - cx), static_cast<int>(wh - cy) - 20);
 
             const auto [mx, my] = ImGui::GetMousePos();
 
@@ -183,7 +184,7 @@ namespace Profiler
                         continue;
                     }
 
-                    ImVec2 topLeft{ static_cast<float>(node->m_offset[0]), static_cast<float>(node->m_offset[1]) };
+                    ImVec2 topLeft{ static_cast<float>(node->m_offset[0]) + treemapOffset[0], static_cast<float>(node->m_offset[1]) + treemapOffset[1] };
                     ImVec2 nodeExtent{ static_cast<float>(node->m_extent[0]), static_cast<float>(node->m_extent[1]) };
 
                     if (node->m_children.empty())
@@ -266,10 +267,10 @@ namespace Profiler
         ImGui::End();
     }
 
-    void ImGuiTreemapImpl::WeighAndComputeLayout(int x, int y, int w, int h)
+    void ImGuiTreemapImpl::WeighAndComputeLayout(int w, int h)
     {
         WeighNodes();
-        ComputeLayout(x, y, w, h);
+        ComputeLayout(w, h);
         AssignColors();
         m_dirty = false;
     }
@@ -604,9 +605,9 @@ namespace Profiler
         }
     }
 
-    void ImGuiTreemapImpl::ComputeLayout(int x, int y, int w, int h)
+    void ImGuiTreemapImpl::ComputeLayout(int w, int h)
     {
-        if (m_lastExtent[0] == w && m_lastExtent[1] == h && m_lastOffset[0] == x && m_lastOffset[1] == y)
+        if (m_lastExtent[0] == w && m_lastExtent[1] == h)
         {
             return;
         }
@@ -616,8 +617,8 @@ namespace Profiler
         // (archive link: https://web.archive.org/web/20220224165104/https://www.win.tue.nl/~vanwijk/stm.pdf)
         // After function completion, every node will have a computed offset and extent
 
-        m_root.m_offset[0] = x;
-        m_root.m_offset[1] = y;
+        m_root.m_offset[0] = 0;
+        m_root.m_offset[1] = 0;
         m_root.m_extent[0] = w;
         m_root.m_extent[1] = h;
 
@@ -651,8 +652,6 @@ namespace Profiler
 
         m_lastExtent[0] = w;
         m_lastExtent[1] = h;
-        m_lastOffset[0] = x;
-        m_lastOffset[1] = y;
     }
 
 } // namespace Profiler

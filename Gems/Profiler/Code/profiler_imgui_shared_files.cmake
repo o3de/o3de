@@ -12,6 +12,7 @@ set(FILES
     Source/ImGuiCpuProfiler.cpp
     Source/ImGuiCpuProfiler.h
     Source/ImGuiTreemap.cpp
+    Source/ImGuiTreemapImpl.h
     Source/ProfilerImGuiModule.cpp
     Source/ProfilerImGuiSystemComponent.cpp
     Source/ProfilerImGuiSystemComponent.h

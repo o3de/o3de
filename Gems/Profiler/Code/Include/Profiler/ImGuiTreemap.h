@@ -14,7 +14,8 @@
 
 namespace Profiler
 {
-    // TreemapNodes support arbitrary child counts and nesting levels
+    // TreemapNodes support arbitrary child counts and nesting levels. Each node will show up in the final visualization with an
+    // area proportional to the node's weight.
     struct TreemapNode
     {
         // The name of the treemap node
@@ -76,11 +77,13 @@ namespace Profiler
         //! Set unit label (e.g. lbs, square footage, MB, etc.)
         virtual void SetUnitLabel(char const* unitLabel) = 0;
 
+        //! Supply the root nodes of the treemap. This is required to supply data to the treemap.
+        //! Note that the treemap takes ownership of the data.
+        virtual void SetRoots(AZStd::vector<TreemapNode>&& roots) = 0;
+
+        //! ADVANCED
         //! Add a UI radio button that renders only nodes possessing a tag that is either 0 or passes the mask
         virtual void AddMask(const char* label, uint32_t mask) = 0;
-
-        //! Supply the root nodes of the treemap.
-        virtual void SetRoots(AZStd::vector<TreemapNode>&& roots) = 0;
 
         //! Submit ImGui directives to draw the treemap
         virtual void Render(int x, int y, int w, int h) = 0;
@@ -88,9 +91,12 @@ namespace Profiler
         //! Weigh entries and perform layout. This occurs automatically on `Render` but is exposed here if you wish
         //! to perform a layout in advance. Note that previously computed scores and the computed layout are cached
         //! until entries are modified, added, removed, or the window size is changed.
-        virtual void WeighAndComputeLayout(int x, int y, int w, int h) = 0;
+        virtual void WeighAndComputeLayout(int w, int h) = 0;
     };
 
+    // Usage: Create a treemap using the factory interface like so:
+    //     Profiler::ImGuiTreemapFactory::Interface::Get()->Create(AZ::Name{ "My Treemap" }, "MiB");
+    // When you no longer need the treemap, pass the created treemap to the Destroy method.
     class ImGuiTreemapFactory
     {
     public:

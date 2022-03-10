@@ -1459,21 +1459,6 @@ namespace AZ
                 using Profiler::TreemapNode;
                 AZStd::vector<TreemapNode> hostNodes;
                 AZStd::vector<TreemapNode> deviceNodes;
-                for (auto& pool : m_savedPools)
-                {
-                    size_t hostBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_residentInBytes;
-                    size_t deviceBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
-                    if (hostBytes > 0)
-                    {
-                        hostNodes.push_back();
-                        hostNodes.back().m_name = pool.m_name;
-                    }
-                    else if (deviceBytes > 0)
-                    {
-                        deviceNodes.push_back();
-                        deviceNodes.back().m_name = pool.m_name;
-                    }
-                }
 
                 for (auto& pool : m_savedPools)
                 {
@@ -1484,6 +1469,8 @@ namespace AZ
 
                     TreemapNode* poolNode = nullptr;
 
+                    // Resource pools are each associated with either a device-local heap, or a host heap. Identify the association and
+                    // add constiuent buffers and textures as sub-nodes in the corresponding treemap.
                     if (hostBytes > 0)
                     {
                         hostNodes.push_back();

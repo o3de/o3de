@@ -28,12 +28,12 @@ namespace Profiler
         void AddMask(const char* label, uint32_t mask) override;
         void SetRoots(AZStd::vector<TreemapNode>&& roots) override;
         void Render(int x, int y, int w, int h) override;
-        void WeighAndComputeLayout(int x, int y, int w, int h) override;
+        void WeighAndComputeLayout(int w, int h) override;
 
     private:
         void WeighNodes();
         void AssignColors();
-        void ComputeLayout(int x, int y, int w, int h);
+        void ComputeLayout(int w, int h);
         void SquarifyChildren(TreemapNode& node);
 
         AZ::Name m_name;
@@ -70,7 +70,6 @@ namespace Profiler
         // the stack around as a member variable avoids unnecessary allocations and maintains a reservation
         // that matches the maximum size the stack expands to.
         AZStd::vector<TreemapNode*> m_stack;
-        int m_lastOffset[2] = { 0, 0 };
         int m_lastExtent[2] = { 0, 0 };
         uint32_t m_currentMask = 0xffffffff;
         bool m_dirty = true;
