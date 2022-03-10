@@ -12,6 +12,7 @@
 #include <ShaderManagementConsole_Traits_Platform.h>
 
 #include <Document/ShaderManagementConsoleDocument.h>
+#include <Window/ShaderManagementConsoleTableView.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
 void InitShaderManagementConsoleResources()
@@ -70,9 +71,13 @@ namespace ShaderManagementConsole
     {
         Base::StartCommon(systemEntity);
 
+        // Overriding default document type info to provide a custom view
+        auto documentTypeInfo = ShaderManagementConsoleDocument::BuildDocumentTypeInfo();
+        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            return m_window->AddDocumentTab(documentId, new ShaderManagementConsoleTableView(toolId, documentId, m_window.get()));
+        };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
-            ShaderManagementConsoleDocument::BuildDocumentTypeInfo());
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
         m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
         m_window->show();
