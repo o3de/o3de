@@ -59,33 +59,7 @@ namespace UnitTest
             AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-boundsRange / 2.0f), AZ::Vector3(boundsRange / 2.0f));
             float queryResolution = 1.0f;
 
-            // Create a Random Gradient to use as our height provider
-            const uint32_t heightRandomSeed = 12345;
-            auto heightGradientEntity = CreateAndActivateTestRandomGradient(worldBounds, heightRandomSeed);
-
-            // Create a set of Random Gradients to use as our surface providers
-            Terrain::TerrainSurfaceGradientListConfig surfaceConfig;
-            AZStd::vector<AZStd::unique_ptr<AZ::Entity>> surfaceGradientEntities;
-            for (uint32_t surfaces = 0; surfaces < numSurfaces; surfaces++)
-            {
-                const uint32_t surfaceRandomSeed = 23456 + surfaces;
-                auto surfaceGradientEntity = CreateAndActivateTestRandomGradient(worldBounds, surfaceRandomSeed);
-
-                // Give each gradient a new surface tag
-                surfaceConfig.m_gradientSurfaceMappings.emplace_back(
-                    surfaceGradientEntity->GetId(), SurfaceData::SurfaceTag(AZStd::string::format("test%u", surfaces)));
-
-                surfaceGradientEntities.emplace_back(AZStd::move(surfaceGradientEntity));
-            }
-
-            // Create a single Terrain Layer Spawner that covers the entire terrain world bounds
-            // (Do this *after* creating and activating the height and surface gradients)
-            auto testLayerSpawnerEntity = CreateTestLayerSpawnerEntity(worldBounds, heightGradientEntity->GetId(), surfaceConfig);
-            ActivateEntity(testLayerSpawnerEntity.get());
-
-            // Create the terrain system (do this after creating the terrain layer entity to ensure that we don't need any data refreshes)
-            // Also ensure to do this after creating the global JobManager.
-            auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
+            CreateTestTerrainSystem(worldBounds, queryResolution, numSurfaces);
 
             // Call the terrain API we're testing for every height and width in our ranges.
             for ([[maybe_unused]] auto stateIterator : state)
@@ -93,11 +67,7 @@ namespace UnitTest
                 ApiCaller(queryResolution, worldBounds, sampler);
             }
 
-            testLayerSpawnerEntity.reset();
-
-            heightGradientEntity.reset();
-
-            surfaceGradientEntities.clear();
+            DestroyTestTerrainSystem();
         }
 
         void GenerateInputPositionsList(float queryResolution, const AZ::Aabb& worldBounds, AZStd::vector<AZ::Vector3>& positions)

@@ -86,7 +86,7 @@ namespace UnitTest
     {
     }
 
-    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestBoxEntity(float boxHalfBounds)
+    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestBoxEntity(float boxHalfBounds) const
     {
         // Create the base entity
         AZStd::unique_ptr<AZ::Entity> testEntity = CreateEntity();
@@ -102,7 +102,7 @@ namespace UnitTest
         return testEntity;
     }
 
-    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestBoxEntity(const AZ::Aabb& box)
+    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestBoxEntity(const AZ::Aabb& box) const
     {
         // Create the base entity
         AZStd::unique_ptr<AZ::Entity> testEntity = CreateEntity();
@@ -118,7 +118,7 @@ namespace UnitTest
         return testEntity;
     }
 
-    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestSphereEntity(float shapeRadius)
+    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestSphereEntity(float shapeRadius) const
     {
         // Create the base entity
         AZStd::unique_ptr<AZ::Entity> testEntity = CreateEntity();
@@ -134,7 +134,8 @@ namespace UnitTest
         return testEntity;
     }
 
-    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateAndActivateTestRandomGradient(const AZ::Aabb& spawnerBox, uint32_t randomSeed)
+    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateAndActivateTestRandomGradient(
+        const AZ::Aabb& spawnerBox, uint32_t randomSeed) const
     {
         // Create a Random Gradient Component with arbitrary parameters.
         auto entity = CreateTestBoxEntity(spawnerBox);
@@ -154,7 +155,7 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestLayerSpawnerEntity(
         const AZ::Aabb& spawnerBox,
         const AZ::EntityId& heightGradientEntityId,
-        const Terrain::TerrainSurfaceGradientListConfig& surfaceConfig)
+        const Terrain::TerrainSurfaceGradientListConfig& surfaceConfig) const
     {
         // Create the base entity
         AZStd::unique_ptr<AZ::Entity> testLayerSpawnerEntity = CreateTestBoxEntity(spawnerBox);
@@ -176,7 +177,7 @@ namespace UnitTest
     // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
     // on a test-by-test basis.
     AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
-        float queryResolution, AZ::Aabb worldBounds)
+        float queryResolution, AZ::Aabb worldBounds) const
     {
         // Create the terrain system and give it one tick to fully initialize itself.
         auto terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
@@ -185,6 +186,45 @@ namespace UnitTest
         terrainSystem->Activate();
         AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.f, AZ::ScriptTimePoint{});
         return terrainSystem;
+    }
+
+    void TerrainBaseFixture::CreateTestTerrainSystem(const AZ::Aabb& worldBounds, float queryResolution, uint32_t numSurfaces)
+    {
+        // Create a Random Gradient to use as our height provider
+        const uint32_t heightRandomSeed = 12345;
+        m_heightGradientEntity = CreateAndActivateTestRandomGradient(worldBounds, heightRandomSeed);
+
+        // Create a set of Random Gradients to use as our surface providers
+        Terrain::TerrainSurfaceGradientListConfig surfaceConfig;
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> surfaceGradientEntities;
+        for (uint32_t surfaces = 0; surfaces < numSurfaces; surfaces++)
+        {
+            const uint32_t surfaceRandomSeed = 23456 + surfaces;
+            auto surfaceGradientEntity = CreateAndActivateTestRandomGradient(worldBounds, surfaceRandomSeed);
+
+            // Give each gradient a new surface tag
+            surfaceConfig.m_gradientSurfaceMappings.emplace_back(
+                surfaceGradientEntity->GetId(), SurfaceData::SurfaceTag(AZStd::string::format("test%u", surfaces)));
+
+            m_surfaceGradientEntities.emplace_back(AZStd::move(surfaceGradientEntity));
+        }
+
+        // Create a single Terrain Layer Spawner that covers the entire terrain world bounds
+        // (Do this *after* creating and activating the height and surface gradients)
+        m_terrainLayerSpawnerEntity = CreateTestLayerSpawnerEntity(worldBounds, m_heightGradientEntity->GetId(), surfaceConfig);
+        ActivateEntity(m_terrainLayerSpawnerEntity.get());
+
+        // Create the terrain system (do this after creating the terrain layer entity to ensure that we don't need any data refreshes)
+        // Also ensure to do this after creating the global JobManager.
+        m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
+    }
+
+    void TerrainBaseFixture::DestroyTestTerrainSystem()
+    {
+        m_terrainSystem.reset();
+        m_terrainLayerSpawnerEntity.reset();
+        m_heightGradientEntity.reset();
+        m_surfaceGradientEntities.clear();
     }
 
 }
