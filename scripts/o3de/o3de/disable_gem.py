@@ -134,7 +134,7 @@ def remove_explicit_gem_activation_for_all_paths(gem_root_folders: list,
             if 'gem.json' in files:
                 gem_dirs_set.add(pathlib.Path(root))
 
-    for gem_dir in gem_dirs_set:
+    for gem_dir in sorted(gem_dirs_set):
         # Run the command to remove explicit activation even if previous calls failed
         ret_val = disable_gem_in_project(gem_path=gem_dir,
                                         project_name=project_name,
