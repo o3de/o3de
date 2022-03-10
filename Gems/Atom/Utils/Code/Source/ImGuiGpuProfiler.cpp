@@ -15,6 +15,8 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 
+#include <Profiler/ImGuiTreemap.h>
+
 #include <AzCore/std/sort.h>
 
 #include <inttypes.h>
@@ -1065,6 +1067,18 @@ namespace AZ
 
         // --- ImGuiGpuMemoryView ---
 
+        ImGuiGpuMemoryView::~ImGuiGpuMemoryView()
+        {
+            if (m_hostTreemap)
+            {
+                if (auto treemapFactory = Profiler::ImGuiTreemapFactory::Interface::Get())
+                {
+                    treemapFactory->Destroy(m_hostTreemap);
+                    treemapFactory->Destroy(m_deviceTreemap);
+                }
+            }
+        }
+
         void ImGuiGpuMemoryView::SortPoolTable(ImGuiTableSortSpecs* sortSpecs)
         {
             const bool ascending = sortSpecs->Specs->SortDirection == ImGuiSortDirection_Ascending;
@@ -1361,6 +1375,25 @@ namespace AZ
 
                         // Collect the data into TableRows, ignoring depending on flags 
                         UpdateTableRows();
+
+                        UpdateTreemaps();
+                    }
+                }
+
+                if (m_hostTreemap)
+                {
+                    ImGui::Checkbox("Show host memory treemap", &m_showHostTreemap);
+                    ImGui::SameLine();
+                    ImGui::Checkbox("Show device memory treemap", &m_showDeviceTreemap);
+
+                    if (m_showHostTreemap)
+                    {
+                        m_hostTreemap->Render(20, 40, 800, 600);
+                    }
+
+                    if (m_showDeviceTreemap)
+                    {
+                        m_deviceTreemap->Render(40, 80, 800, 600);
                     }
                 }
 
@@ -1406,6 +1439,113 @@ namespace AZ
                 DrawTables();
             }
             ImGui::End();
+        }
+
+        void ImGuiGpuMemoryView::UpdateTreemaps()
+        {
+            if (!m_hostTreemap)
+            {
+                if (auto treemapFactory = Profiler::ImGuiTreemapFactory::Interface::Get())
+                {
+                    m_hostTreemap = &treemapFactory->Create(AZ::Name{ "Atom Host Memory Treemap" }, "MiB");
+                    m_hostTreemap->AddMask("Hide Unused", 0);
+                    m_deviceTreemap = &treemapFactory->Create(AZ::Name{ "Atom Device Memory Treemap" }, "MiB");
+                    m_deviceTreemap->AddMask("Hide Unused", 0);
+                }
+            }
+
+            if (m_hostTreemap)
+            {
+                using Profiler::TreemapNode;
+                AZStd::vector<TreemapNode> hostNodes;
+                AZStd::vector<TreemapNode> deviceNodes;
+                for (auto& pool : m_savedPools)
+                {
+                    size_t hostBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_residentInBytes;
+                    size_t deviceBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
+                    if (hostBytes > 0)
+                    {
+                        hostNodes.push_back();
+                        hostNodes.back().m_name = pool.m_name;
+                    }
+                    else if (deviceBytes > 0)
+                    {
+                        deviceNodes.push_back();
+                        deviceNodes.back().m_name = pool.m_name;
+                    }
+                }
+
+                for (auto& pool : m_savedPools)
+                {
+                    size_t hostBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_reservedInBytes;
+                    size_t hostResidentBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_residentInBytes;
+                    size_t deviceBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_reservedInBytes;
+                    size_t deviceResidentBytes = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
+
+                    TreemapNode* poolNode = nullptr;
+
+                    if (hostBytes > 0)
+                    {
+                        hostNodes.push_back();
+                        poolNode = &hostNodes.back();
+                        poolNode->m_name = pool.m_name;
+                    }
+                    else if (deviceBytes > 0)
+                    {
+                        deviceNodes.push_back();
+                        poolNode = &deviceNodes.back();
+                        poolNode->m_name = pool.m_name;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    const AZ::Name unusedGroup{ "Unused" };
+                    poolNode->m_children.push_back();
+                    TreemapNode& unusedNode = poolNode->m_children.back();
+                    unusedNode.m_name = "Unused";
+                    unusedNode.m_group = unusedGroup;
+                    if (hostBytes > 0)
+                    {
+                        unusedNode.m_weight = static_cast<float>(hostBytes - hostResidentBytes) / GpuProfilerImGuiHelper::MB;
+                    }
+                    else
+                    {
+                        unusedNode.m_weight = static_cast<float>(deviceBytes - deviceResidentBytes) / GpuProfilerImGuiHelper::MB;
+                    }
+                    unusedNode.m_tag = 1;
+
+                    if (pool.m_buffers.empty() && pool.m_images.empty())
+                    {
+                        continue;
+                    }
+
+                    const AZ::Name bufferGroup{ "Buffer" };
+                    const AZ::Name textureGroup{ "Texture" };
+
+                    for (auto& buffer : pool.m_buffers)
+                    {
+                        poolNode->m_children.push_back();
+                        TreemapNode& child = poolNode->m_children.back();
+                        child.m_name = buffer.m_name;
+                        child.m_weight = static_cast<float>(buffer.m_sizeInBytes) / GpuProfilerImGuiHelper::MB;
+                        child.m_group = bufferGroup;
+                    }
+
+                    for (auto& image : pool.m_images)
+                    {
+                        poolNode->m_children.push_back();
+                        TreemapNode& child = poolNode->m_children.back();
+                        child.m_name = image.m_name;
+                        child.m_weight = static_cast<float>(image.m_sizeInBytes) / GpuProfilerImGuiHelper::MB;
+                        child.m_group = textureGroup;
+                    }
+                }
+
+                m_hostTreemap->SetRoots(AZStd::move(hostNodes));
+                m_deviceTreemap->SetRoots(AZStd::move(deviceNodes));
+            }
         }
 
         // --- ImGuiGpuProfiler ---

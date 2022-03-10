@@ -57,6 +57,7 @@ namespace Profiler
 
     private:
 #if defined(IMGUI_ENABLED)
+        ImGuiTreemapFactoryImpl m_imguiTreemapFactory;
         ImGuiCpuProfiler m_imguiCpuProfiler;
         bool m_showCpuProfiler{ false };
 #endif // defined(IMGUI_ENABLED)

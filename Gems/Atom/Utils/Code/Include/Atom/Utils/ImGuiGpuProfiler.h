@@ -18,6 +18,8 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
 
+#include <Profiler/ImGuiTreemap.h>
+
 namespace AZ
 {
     namespace Render
@@ -260,10 +262,14 @@ namespace AZ
         public:
             // Draw the overall GPU memory profiling window.
             void DrawGpuMemoryWindow(bool& draw);
+            ~ImGuiGpuMemoryView();
 
         private:
             // Draw the heap usage pie chart
             void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
+
+            // Update allocations and pools in the device and heap treemap widgets.
+            void UpdateTreemaps();
 
             // Update the saved pointers in m_tableRows according to new data/filters
             void UpdateTableRows();
@@ -305,6 +311,11 @@ namespace AZ
             AZStd::vector<ResourceTableRow> m_resourceTableRows;
             AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;
             AZStd::vector<AZ::RHI::MemoryStatistics::Heap> m_savedHeaps;
+
+            Profiler::ImGuiTreemap* m_hostTreemap = nullptr;
+            Profiler::ImGuiTreemap* m_deviceTreemap = nullptr;
+            bool m_showHostTreemap = false;
+            bool m_showDeviceTreemap = false;
         };
 
         class ImGuiGpuProfiler
