@@ -8,38 +8,68 @@ Pytest test configuration file.
 
 """
 import pytest
-import pathlib
+from pathlib import Path, PurePath
 import shutil
 import os
-from tempfile import NamedTemporaryFile
+import urllib.parse
+import urllib.request
+from tempfile import NamedTemporaryFile, mkdtemp
 from time import sleep
 from subprocess import run
+import boto3
 
 def pytest_addoption(parser):
-    parser.addoption("--installer-path", action="store", default=pathlib.Path().resolve())
-    parser.addoption("--install-root", action="store", default=pathlib.PurePath('C:/O3DE/0.0.0.0'))
-    parser.addoption("--project-path", action="store", default=pathlib.PurePath('C:/Workspace/TestProject'))
+    parser.addoption("--installer-uri", action="store", default="")
+    parser.addoption("--install-root", action="store", default=PurePath('C:/O3DE/0.0.0.0'))
+    parser.addoption("--project-path", action="store", default=PurePath('C:/Workspace/TestProject'))
 
 class SessionContext:
     """Holder for session constants and helper functions"""
     def __init__(self, request):
-        self.installer_path = pathlib.Path(request.config.getoption("--installer-path")).resolve()
-        self.install_root = pathlib.Path(request.config.getoption("--install-root")).resolve()
-        self.project_path = pathlib.Path(request.config.getoption("--project-path")).resolve()
+        # setup to capture subprocess output
+        self.log_file = request.config.getoption("--log-file")
+        self.temp_file = NamedTemporaryFile(mode='w+t', delete=False)
+
+        # download the installer if necessary
+        self.installer_uri = request.config.getoption("--installer-uri")
+        parsed_uri = urllib.parse.urlparse(self.installer_uri)
+        if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps','s3']:
+            tmp_dir = mkdtemp()
+            self.installer_path = Path(tmp_dir) / 'installer.exe'
+
+            if parsed_uri.scheme == 's3':
+                session = boto3.session.Session()
+                client = session.client('s3')
+                client.download_file(parsed_uri.netloc, parsed_uri.path.lstrip('/'), str(self.installer_path))
+            else:
+                urllib.request.urlretrieve(parsed_uri.geturl(), self.installer_path)
+            try:
+                # verify with SignTool if available
+                signtool_path_result = run(['powershell','-Command',"(Resolve-Path \"C:\\Program Files (x86)\\Windows Kits\\10\\bin\\*\\x64\" | Select-Object -Last 1).Path"], text=True, capture_output=True)
+                if signtool_path_result.returncode == 0:
+                    signtool_path = Path(signtool_path_result.stdout.strip()) / 'signtool.exe'
+                    signtool_result = self.run([str(signtool_path),'verify', '/pa', str(self.installer_path)])
+                    assert signtool_result.returncode == 0
+            except FileNotFoundError as e:
+                pass
+        else:
+            # strip the leading slash from the file URI 
+            self.installer_path = Path(parsed_uri.path.lstrip('/')).resolve()
+
+        self.install_root = Path(request.config.getoption("--install-root")).resolve()
+        self.project_path = Path(request.config.getoption("--project-path")).resolve()
         self.engine_bin_path = self.install_root / 'bin' / 'Windows' / 'profile' / 'Default'
         self.project_build_path = self.project_path / 'build' / 'Windows'
         self.project_bin_path = self.project_build_path / 'bin' / 'profile'
 
-        cmake_runtime_path = self.install_root / 'cmake' / 'runtime'
-        self.cmake_path = next(cmake_runtime_path.glob('**/cmake.exe'))
+        self.cmake_runtime_path = self.install_root / 'cmake' / 'runtime'
 
-        self.log_file = request.config.getoption("--log-file")
-        self.temp_file = NamedTemporaryFile(mode='w+t', delete=False)
 
     def run(self, command, timeout=None, cwd=None):
         self.temp_file.write(' '.join(command) + '\n')
         self.temp_file.flush()
         return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True)
+
 
     def cleanup(self):
         if self.project_path.is_dir():
@@ -54,7 +84,7 @@ class SessionContext:
 
         self.temp_file.close()
         if self.log_file:
-            shutil.copy(self.temp_file.name, pathlib.Path(self.log_file).resolve())
+            shutil.copy(self.temp_file.name, Path(self.log_file).resolve())
         os.remove(self.temp_file.name)
 
 @pytest.fixture(scope="session")
