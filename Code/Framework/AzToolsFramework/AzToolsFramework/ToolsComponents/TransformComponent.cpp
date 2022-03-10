@@ -927,6 +927,12 @@ namespace AzToolsFramework
 
             AZ::EntityId actualValue = static_cast<AZ::EntityId>(*((AZ::EntityId*)newValue));
 
+            if (!actualValue.IsValid())
+            {
+                // Handled by the calling code.
+                return AZ::Success();
+            }
+
             // Prevent setting the parent to the entity itself.
             if (actualValue == GetEntityId())
             {
@@ -958,10 +964,7 @@ namespace AzToolsFramework
             // Don't allow entities to be parented outside their container.
             if (m_focusModeInterface && !m_focusModeInterface->IsInFocusSubTree(actualValue))
             {
-                if (actualValue.IsValid())
-                {
-                    return AZ::Failure(AZStd::string("You can only set a parent as one of the entities belonging to the focused prefab."));
-                }
+                return AZ::Failure(AZStd::string("You can only set a parent as one of the entities belonging to the focused prefab."));
             }
 
             return AZ::Success();
