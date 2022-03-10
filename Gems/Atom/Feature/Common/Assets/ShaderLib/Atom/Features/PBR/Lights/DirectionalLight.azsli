@@ -23,6 +23,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     {
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
+            surface.position,
             surface.vertexNormal,
             screenUv,
             debugInfo);

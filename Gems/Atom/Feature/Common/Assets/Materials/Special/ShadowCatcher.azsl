@@ -62,6 +62,7 @@ PSOutput ShadowCatcherPS(VSOutput IN)
     
     float litRatio = DirectionalLightShadow::GetVisibility(
             ViewSrg::m_shadowIndexDirectionalLight,
+            IN.m_worldPosition,
             IN.m_worldNormal,
             0,
         debugInfo);

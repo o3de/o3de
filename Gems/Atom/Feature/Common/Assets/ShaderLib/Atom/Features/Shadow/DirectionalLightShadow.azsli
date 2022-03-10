@@ -16,8 +16,12 @@
 #include "BicubicPcfFilters.azsli"
 #include "ReceiverPlaneDepthBias.azsli"
 #include "NormalOffsetShadows.azsli"
+#include "DirectionalLightShadowCalculator.azsli"
 
-
+// This matchs ShadowFilterMethod in ShadowConstants.h
+option ShadowFilterMethod o_directional_shadow_filtering_method = ShadowFilterMethod::None;
+option bool o_directional_shadow_receiver_plane_bias_enable = true;
+option bool o_blend_between_cascades_enable = false;
 
 // DirectionalLightShadow calculates lit ratio for a directional light.
 class DirectionalLightShadow
@@ -49,6 +53,7 @@ class DirectionalLightShadow
     //! @return lit ratio from the light (1.0 is fully visible).
     static float GetVisibility(
         uint lightIndex,
+        float3 worldPos,
         float3 normalVector,
         float4 screenUv,
         out DebugInfo debugInfo);
@@ -201,6 +206,7 @@ float DirectionalLightShadow::ChooseWeighted(float visDepth[5], float viewSpaceD
 
 float DirectionalLightShadow::GetVisibility(
     uint lightIndex,
+    float3 worldPos,
     float3 normalVector,
     float4 screenUv,
     out DirectionalLightShadow::DebugInfo debugInfo)
@@ -212,6 +218,14 @@ float DirectionalLightShadow::GetVisibility(
     PassSrg::m_fullscreenShadow.GetDimensions(fullScreenShadowWidth, fullScreenShadowHeight);
     const float2 normScreenUv = screenUv.xy / float2(fullScreenShadowWidth, fullScreenShadowHeight);
 
+    DirectionalShadowCalculator calc; 
+    calc.SetBlendBetweenCascadesEnable(o_blend_between_cascades_enable);
+    calc.SetShadowmaps(PassSrg::m_directionalLightShadowmap, PassSrg::m_directionalLightExponentialShadowmap);
+    calc.SetReceiverShadowPlaneBiasEnable(o_directional_shadow_receiver_plane_bias_enable);
+    calc.SetWorldNormal(normalVector);
+    calc.SetLightIndex(lightIndex); 
+    calc.SetFilterMode(o_directional_shadow_filtering_method);
+    calc.SetWorldPos(worldPos);
     
     const float viewSpaceDepth = abs(screenUv.w);
     
@@ -221,6 +235,9 @@ float DirectionalLightShadow::GetVisibility(
     visDepth[2] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(0,1), 0)).x;
     visDepth[3] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(-1,0), 0)).x;
     visDepth[4] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(0,-1), 0)).x;
+    
+    return calc.GetVisibility();  
+    
     return ChooseDimmest(visDepth, viewSpaceDepth);    
 }
 
