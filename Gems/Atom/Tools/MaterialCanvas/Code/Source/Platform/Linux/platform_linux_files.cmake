@@ -7,6 +7,4 @@
 #
 
 set(FILES
-    MaterialCanvas_Traits_Platform.h
-    MaterialCanvas_Traits_Linux.h
 )

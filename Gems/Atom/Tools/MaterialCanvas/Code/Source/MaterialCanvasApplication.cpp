@@ -9,7 +9,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <MaterialCanvasApplication.h>
-#include <MaterialCanvas_Traits_Platform.h>
 
 #include <Document/MaterialCanvasDocument.h>
 #include <Window/MaterialCanvasMainWindow.h>
