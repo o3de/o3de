@@ -89,17 +89,18 @@ def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
 def test_compile_project_fixture(test_create_project_fixture, context):
     """Project can be configured and compiled"""
     project_name = Path(context.project_path).name
+    cmake_path = next(context.cmake_runtime_path.glob('**/cmake.exe'))
     launcher_target = f"{project_name}.GameLauncher"
 
     # configure
-    result = context.run([str(context.cmake_path),'-B', str(context.project_build_path), '-S', '.', '-G', 'Visual Studio 16 2019'], cwd=context.project_path)
+    result = context.run([str(cmake_path),'-B', str(context.project_build_path), '-S', '.', '-G', 'Visual Studio 16 2019'], cwd=context.project_path)
     assert result.returncode == 0
     assert (context.project_build_path / f'{project_name}.sln').is_file()
 
     # build profile
-    result = context.run([str(context.cmake_path),'--build', str(context.project_build_path), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
+    result = context.run([str(cmake_path),'--build', str(context.project_build_path), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
     assert result.returncode == 0
-    assert (context.project_build_path / 'bin' / 'profile' / f'{launcher_target}.exe').is_file()
+    assert (context.project_bin_path / f'{launcher_target}.exe').is_file()
 
 @pytest.fixture(scope="session")
 def test_run_asset_processor_batch_fixture(test_compile_project_fixture, context):
