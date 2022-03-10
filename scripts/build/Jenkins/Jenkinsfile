@@ -557,7 +557,8 @@ def ReplaceContent() {
                 )
             ],
             fileEncoding: 'UTF-8',
-            filePath:"${log_file}"
+            // filePath:"${log_file}"
+            filePath:"${JENKINS_HOME}/mnt/jenkins/jobs/O3DE-LY-FORK/branches/jenkins-replace-content.*/builds/${BUILD_NUMBER}/log"
             )
         ]
     )
