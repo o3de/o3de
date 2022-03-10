@@ -48,6 +48,9 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
+
+            // Set the @gemroot:<gem-name> alias for LmbrCentral gem
+            AZ::Test::AddActiveGem("LmbrCentral", *registry, AZ::IO::FileIOBase::GetInstance());
         }
 
         void TearDown() override
@@ -66,7 +69,7 @@ namespace UnitTest
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
         char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@/Gems/LmbrCentral/Code/Tests/Lua/test1.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test1.lua", resolvedPath, AZ_MAX_PATH_LEN);
 
         worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
 
@@ -85,7 +88,7 @@ namespace UnitTest
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
         char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@/Gems/LmbrCentral/Code/Tests/Lua/test2.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test2.lua", resolvedPath, AZ_MAX_PATH_LEN);
 
         worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
 
@@ -102,7 +105,7 @@ namespace UnitTest
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
         char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@/Gems/LmbrCentral/Code/Tests/Lua/test3_general_dependencies.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test3_general_dependencies.lua", resolvedPath, AZ_MAX_PATH_LEN);
 
         worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
 
@@ -119,7 +122,7 @@ namespace UnitTest
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
         char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@/Gems/LmbrCentral/Code/Tests/Lua/test4_console_command.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test4_console_command.lua", resolvedPath, AZ_MAX_PATH_LEN);
 
         worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
 
@@ -148,17 +151,17 @@ namespace UnitTest
 
     TEST_F(LuaBuilderTests, ParseLuaScript_CommentedOutDependency_EntireLine_ShouldFindNoDependencies)
     {
-        VerifyNoDependenciesGenerated("@engroot@/Gems/LmbrCentral/Code/Tests/Lua/test5_whole_line_comment.lua");
+        VerifyNoDependenciesGenerated("@gemroot:LmbrCentral@/Code/Tests/Lua/test5_whole_line_comment.lua");
     }
 
     TEST_F(LuaBuilderTests, ParseLuaScript_CommentedOutDependency_PartialLine_ShouldFindNoDependencies)
     {
-        VerifyNoDependenciesGenerated("@engroot@/Gems/LmbrCentral/Code/Tests/Lua/test6_partial_line_comment.lua");
+        VerifyNoDependenciesGenerated("@gemroot:LmbrCentral@/Code/Tests/Lua/test6_partial_line_comment.lua");
     }
 
     TEST_F(LuaBuilderTests, ParseLuaScript_CommentedOutDependency_BlockComment_ShouldFindNoDependencies)
     {
-        VerifyNoDependenciesGenerated("@engroot@/Gems/LmbrCentral/Code/Tests/Lua/test7_block_comment.lua");
+        VerifyNoDependenciesGenerated("@gemroot:LmbrCentral@/Code/Tests/Lua/test7_block_comment.lua");
     }
 
     TEST_F(LuaBuilderTests, ParseLuaScript_CommentedOutDependency_NegatedBlockComment_ShouldFindDependencies)
@@ -168,7 +171,7 @@ namespace UnitTest
         AssetBuilderSDK::ProductPathDependencySet pathDependencies;
 
         char resolvedPath[AZ_MAX_PATH_LEN];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@/Gems/LmbrCentral/Code/Tests/Lua/test8_negated_block_comment.lua", resolvedPath, AZ_MAX_PATH_LEN);
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath("@gemroot:LmbrCentral@/Code/Tests/Lua/test8_negated_block_comment.lua", resolvedPath, AZ_MAX_PATH_LEN);
 
         worker.ParseDependencies(AZStd::string(resolvedPath), pathDependencies);
 
