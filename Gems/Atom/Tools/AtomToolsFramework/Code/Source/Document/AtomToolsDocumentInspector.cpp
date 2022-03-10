@@ -50,7 +50,7 @@ namespace AtomToolsFramework
                             AZStd::string::format("%s/%s", groupSettingsPrefix.c_str(), objectInfo.m_name.c_str()));
                         auto propertyGroupWidget = new InspectorPropertyGroupWidget(
                             objectInfo.m_objectPtr, objectInfo.m_objectPtr, objectInfo.m_objectType, this, this, groupSaveStateKey, {},
-                            m_nodeIndicatorFunction, 0);
+                            objectInfo.m_nodeIndicatorFunction, 0);
 
                         AddGroup(objectInfo.m_name, objectInfo.m_displayName, objectInfo.m_description, propertyGroupWidget);
                         SetGroupVisible(objectInfo.m_name, objectInfo.m_visible);
@@ -66,11 +66,6 @@ namespace AtomToolsFramework
     void AtomToolsDocumentInspector::SetDocumentSettingsPrefix(const AZStd::string& prefix)
     {
         m_documentSettingsPrefix = prefix;
-    }
-
-    void AtomToolsDocumentInspector::SetIndicatorFunction(const NodeIndicatorFunction& indicatorFunction)
-    {
-        m_nodeIndicatorFunction = indicatorFunction;
     }
 
     void AtomToolsDocumentInspector::Reset()

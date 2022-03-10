@@ -10,7 +10,13 @@
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
+
+namespace AzToolsFramework
+{
+    class InstanceDataNode;
+}
 
 namespace AtomToolsFramework
 {
@@ -24,6 +30,7 @@ namespace AtomToolsFramework
         AZStd::string m_description;
         AZ::Uuid m_objectType = AZ::Uuid::CreateNull();
         void* m_objectPtr = {};
+        AZStd::function<const char*(const AzToolsFramework::InstanceDataNode*)> m_nodeIndicatorFunction;
     };
 
     using DocumentObjectInfoVector = AZStd::vector<DocumentObjectInfo>;
