@@ -529,7 +529,7 @@ def ReplaceContent() {
                 )
             ],
             fileEncoding: 'UTF-8',
-            filePath:'$JENKINS_HOME/mnt/jenkins/jobs/$JOB_NAME/branches/${branch}*/builds/${BUILD_NUMBER}/log'
+            filePath:"${JENKINS_HOME}/mnt/jenkins/jobs/O3DE-LY-FORK/branches/${branch}*/builds/${BUILD_NUMBER}/log"
             ),
             // Replace .h references to github links
             fileContentReplaceConfig(
