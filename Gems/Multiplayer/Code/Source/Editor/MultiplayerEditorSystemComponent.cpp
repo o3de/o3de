@@ -23,6 +23,7 @@
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 namespace Multiplayer
 {
@@ -194,22 +195,62 @@ namespace Multiplayer
         }
     }
 
+    bool MultiplayerEditorSystemComponent::FindServerLauncher(AZ::IO::FixedMaxPath& serverPath)
+    {
+        serverPath.clear();
+
+        // 1. Try the path from `editorsv_process` cvar.
+        const AZ::IO::FixedMaxPath serverPathFromCvar{ AZ::CVarFixedString(editorsv_process).c_str()};
+        if (AZ::IO::SystemFile::Exists(serverPathFromCvar.c_str()))
+        {
+            serverPath = serverPathFromCvar;
+            return true;
+        }
+
+        // 2. Try from the executable folder where the Editor was launched from.
+        AZ::IO::FixedMaxPath serverPathFromEditorLocation = AZ::Utils::GetExecutableDirectory();
+        serverPathFromEditorLocation /= AZStd::string_view(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+        if (AZ::IO::SystemFile::Exists(serverPathFromEditorLocation.c_str()))
+        {
+            serverPath = serverPathFromEditorLocation;
+            return true;
+        }
+
+        // 3. Try from the project's build folder.
+        AZ::IO::FixedMaxPath serverPathFromProjectBin;
+        if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPath projectModulePath;
+                settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
+            {
+                serverPathFromProjectBin /= projectModulePath;
+                serverPathFromProjectBin /= AZStd::string_view(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                if (AZ::IO::SystemFile::Exists(serverPathFromProjectBin.c_str()))
+                {
+                    serverPath = serverPathFromProjectBin;
+                    return true;
+                }
+            }
+        }
+
+        AZ_Error(
+            "MultiplayerEditor", false,
+            "The ServerLauncher binary is missing! (%s), (%s) and (%s) were tried. Please build server launcher or specify using editorsv_process.",
+            serverPathFromCvar.c_str(),
+            serverPathFromEditorLocation.c_str(),
+            serverPathFromProjectBin.c_str());
+
+        return false;
+    }
+
     void MultiplayerEditorSystemComponent::LaunchEditorServer()
     {
         // Assemble the server's path
-        AZ::CVarFixedString serverProcess = editorsv_process;
         AZ::IO::FixedMaxPath serverPath;
-        if (serverProcess.empty())
+        if (!FindServerLauncher(serverPath))
         {
-            // If enabled but no process name is supplied, try this project's ServerLauncher
-            serverProcess = AZ::Utils::GetProjectName() + ".ServerLauncher";
-            serverPath = AZ::Utils::GetExecutableDirectory();
-            serverPath /= serverProcess + AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
-        }
-        else
-        {
-            serverPath = serverProcess;
-        }
+            return;
+        }        
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
@@ -235,10 +276,6 @@ namespace Multiplayer
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
 
-        AZ_Error(
-            "MultiplayerEditor", processLaunchInfo.m_launchResult != AzFramework::ProcessLauncher::ProcessLaunchResult::PLR_MissingFile,
-            "LaunchEditorServer failed! The ServerLauncher binary is missing! (%s)  Please build server launcher or specify using editorsv_process.", serverPath.c_str());
-
         if (outProcess)
         {
             // Stop the previous server if one exists
@@ -250,6 +287,10 @@ namespace Multiplayer
             m_serverProcessWatcher.reset(outProcess);
             m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
             AZ::TickBus::Handler::BusConnect();
+        }
+        else
+        {
+            AZ_Error("MultiplayerEditor", outProcess, "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.");
         }
     }
 
