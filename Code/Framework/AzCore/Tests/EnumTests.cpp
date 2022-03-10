@@ -9,7 +9,7 @@
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>

@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzFramework/Application/Application.h>

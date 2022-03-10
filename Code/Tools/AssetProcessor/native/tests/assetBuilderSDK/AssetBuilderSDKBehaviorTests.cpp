@@ -12,7 +12,7 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include "native/tests/BaseAssetProcessorTest.h"
 #include "native/unittests/UnitTestRunner.h"

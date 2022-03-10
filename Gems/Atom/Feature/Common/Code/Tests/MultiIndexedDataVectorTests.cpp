@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <AzCore/Memory/SystemAllocator.h>

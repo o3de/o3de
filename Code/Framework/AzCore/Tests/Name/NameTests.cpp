@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 #include <AzCore/std/utils.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>

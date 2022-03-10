@@ -8,7 +8,7 @@
 
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/ShapeIntersection.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest

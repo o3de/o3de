@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <FileIOBaseTestTypes.h>
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/IO/FileIO.h>

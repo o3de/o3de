@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <gtest/gtest.h>
 #include <stdarg.h>
 

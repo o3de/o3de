@@ -8,7 +8,7 @@
 
 #include <Editor/Attribution/AWSCoreAttributionMetric.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace AWSCore
 {

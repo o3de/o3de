@@ -18,7 +18,7 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/Random.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Tests/AZTestShared/Utils/Utils.h>
 
 

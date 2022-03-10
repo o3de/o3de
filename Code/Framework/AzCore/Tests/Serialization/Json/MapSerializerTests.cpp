@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/Json/MapSerializer.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 #include <Tests/Serialization/Json/TestCases_Classes.h>
 

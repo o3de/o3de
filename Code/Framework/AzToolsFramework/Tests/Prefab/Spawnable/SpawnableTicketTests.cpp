@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Prefab/Spawnable/SpawnableTestFixture.h>
 

@@ -16,7 +16,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 

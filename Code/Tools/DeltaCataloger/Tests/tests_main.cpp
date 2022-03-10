@@ -17,7 +17,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleAPI.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 

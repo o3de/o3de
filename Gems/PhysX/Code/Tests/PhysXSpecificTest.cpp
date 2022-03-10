@@ -11,7 +11,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
 

@@ -13,7 +13,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

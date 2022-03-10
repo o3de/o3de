@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <Tests/EditorTestUtilities.h>

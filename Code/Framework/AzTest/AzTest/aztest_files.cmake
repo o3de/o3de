@@ -7,15 +7,23 @@
 #
 
 set(FILES
-    AzTest.h
     AzTest.cpp
+    AzTest.h
     ColorizedOutput.cpp
-    Platform.h
-    Printers.h
-    Printers.inl
-    Printers.cpp
-    Utils.h
-    Utils.cpp
     GemTestEnvironment.cpp
     GemTestEnvironment.h
+    MockComponentApplication.cpp
+    MockComponentApplication.h
+    Mocks/MockFileIOBase.h
+    Mocks/MockITime.h
+    Mocks/MockSettingsRegistry.h
+    Platform.h
+    Printers.cpp
+    Printers.h
+    Printers.inl
+    TestTypes.h
+    UnitTest.cpp
+    UnitTest.h
+    Utils.cpp
+    Utils.h
 )

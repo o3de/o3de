@@ -10,7 +10,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzToolsFramework/SQLite/SQLiteConnection.h>
 

@@ -8,7 +8,7 @@
 
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 using namespace AZ;
 

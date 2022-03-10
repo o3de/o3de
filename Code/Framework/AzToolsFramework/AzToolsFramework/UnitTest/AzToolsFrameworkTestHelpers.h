@@ -17,7 +17,7 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzTest/AzTest.h>
 #include <AZTestShared/Math/MathTestHelpers.h>

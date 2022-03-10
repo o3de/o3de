@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzTest/AzTest.h>

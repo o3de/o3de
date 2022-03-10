@@ -13,7 +13,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 

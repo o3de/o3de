@@ -16,7 +16,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/span.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>

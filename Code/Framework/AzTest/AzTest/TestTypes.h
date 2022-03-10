@@ -9,9 +9,10 @@
 #define AZCORE_UNITTEST_USERTYPES_H
 
 #include <AzCore/base.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 
 #include <AzCore/Debug/BudgetTracker.h>
+#include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
 

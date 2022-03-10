@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <source/Application.h>
 #include <source/ApplicationParameters.h>

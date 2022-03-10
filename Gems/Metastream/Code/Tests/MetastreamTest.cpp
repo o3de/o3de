@@ -7,8 +7,8 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/UnitTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <platform.h>

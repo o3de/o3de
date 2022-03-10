@@ -19,7 +19,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <random>
 #include <QDebug>
 

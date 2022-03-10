@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <Atom/Utils/StableDynamicArray.h>

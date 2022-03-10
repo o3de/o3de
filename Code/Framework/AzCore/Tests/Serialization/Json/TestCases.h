@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Tests/Serialization/Json/TestCases_Base.h>
 #include <Tests/Serialization/Json/TestCases_Classes.h>
 #include <Tests/Serialization/Json/TestCases_Pointers.h>

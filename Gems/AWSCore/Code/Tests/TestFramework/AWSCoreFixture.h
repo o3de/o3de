@@ -10,7 +10,7 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/IO/LocalFileIO.h>
 

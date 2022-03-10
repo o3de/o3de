@@ -10,7 +10,7 @@
 #include <AzCore/Debug/LocalFileEventLogger.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace AZ::Debug
 {

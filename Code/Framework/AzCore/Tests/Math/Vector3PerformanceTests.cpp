@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #if defined(HAVE_BENCHMARK)
 

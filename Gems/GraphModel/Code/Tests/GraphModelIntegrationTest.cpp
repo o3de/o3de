@@ -9,7 +9,7 @@
 // AZ
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 
 // Graph Canvas

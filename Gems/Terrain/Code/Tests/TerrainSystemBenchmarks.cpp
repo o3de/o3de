@@ -15,7 +15,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/std/parallel/semaphore.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzTest/AzTest.h>

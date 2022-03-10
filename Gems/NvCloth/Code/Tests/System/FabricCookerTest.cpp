@@ -9,7 +9,7 @@
 #include <AZTestShared/Math/MathTestHelpers.h>
 
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 
 #include <UnitTestHelper.h>
 #include <TriangleInputHelper.h>

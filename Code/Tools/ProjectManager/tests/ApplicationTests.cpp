@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <Application.h>
 #include <ProjectManager_Test_Traits_Platform.h>

@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AZTestShared/Math/MathTestHelpers.h>

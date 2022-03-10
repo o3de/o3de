@@ -14,7 +14,7 @@
 #include <AzCore/std/time.h>
 #include <AzCore/std/chrono/clocks.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 using namespace AZ;
 using namespace AZ::Debug;

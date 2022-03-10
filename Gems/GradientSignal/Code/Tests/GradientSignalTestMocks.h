@@ -15,7 +15,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/hash.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>

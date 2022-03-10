@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/IO/Streamer/BlockCache.h>
 #include <AzCore/IO/Streamer/FileRequest.h>

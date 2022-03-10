@@ -9,7 +9,7 @@
 #include "Viewport/WhiteBoxManipulatorBounds.h"
 #include "WhiteBoxTestFixtures.h"
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzTest/AzTest.h>

@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>

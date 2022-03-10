@@ -8,7 +8,7 @@
 
 #include "ErrorMessageFinder.h"
 #include <gtest/gtest.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace UnitTest

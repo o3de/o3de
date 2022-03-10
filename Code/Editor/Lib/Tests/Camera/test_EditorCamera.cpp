@@ -8,7 +8,7 @@
 
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>

@@ -9,7 +9,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/Utils.h>
 #include <AzFramework/Application/Application.h>
 

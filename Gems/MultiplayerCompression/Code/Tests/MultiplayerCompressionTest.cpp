@@ -7,7 +7,7 @@
  */
 
 #include <lz4.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <LZ4Compressor.h>
 

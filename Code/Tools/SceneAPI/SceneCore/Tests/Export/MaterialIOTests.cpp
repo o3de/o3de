@@ -6,7 +6,7 @@
  *
  */
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <GFxFramework/MaterialIO/Material.h>
 TEST(MaterialIO, Material_SetDataFromMtl_TexModAsNextSibling_DoesNotGetStuckInInfiniteLoop)

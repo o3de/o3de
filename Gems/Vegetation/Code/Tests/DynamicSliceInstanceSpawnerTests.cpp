@@ -10,8 +10,8 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/Mocks/MockFileIOBase.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Asset/AssetManager.h>

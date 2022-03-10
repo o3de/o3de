@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Tests/ThreadTester.h>
 
 #include <AzCore/std/parallel/thread.h>

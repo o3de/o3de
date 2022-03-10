@@ -8,7 +8,7 @@
 
 #include <AtomCore/std/parallel/concurrency_checker.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 using namespace AZStd;
 

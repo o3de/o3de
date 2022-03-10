@@ -9,7 +9,7 @@
 #include "EditorDefs.h"
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <EditorEnvironment.h>
 
 #include <QApplication>

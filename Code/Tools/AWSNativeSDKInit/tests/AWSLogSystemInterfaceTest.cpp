@@ -10,7 +10,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AWSNativeSDKInit/AWSLogSystemInterface.h>
 

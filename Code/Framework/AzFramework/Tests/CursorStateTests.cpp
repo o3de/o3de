@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Viewport/CursorState.h>
 #include <Tests/Utils/Printers.h>
 

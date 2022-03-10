@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>

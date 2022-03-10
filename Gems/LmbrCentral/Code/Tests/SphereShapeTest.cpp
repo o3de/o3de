@@ -12,7 +12,7 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <Shape/SphereShapeComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace Constants = AZ::Constants;
 

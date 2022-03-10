@@ -7,7 +7,7 @@
  */
 
 #include <AzTest/GemTestEnvironment.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>

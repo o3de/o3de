@@ -12,7 +12,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <random>
 #include <benchmark/benchmark.h>

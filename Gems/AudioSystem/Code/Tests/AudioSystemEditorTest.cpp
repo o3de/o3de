@@ -10,7 +10,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/AllocatorScope.h>
 
-#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <AzTest/Mocks/MockFileIOBase.h>
 
 #include <AudioControlsLoader.h>
 #include <ATLControlsModel.h>

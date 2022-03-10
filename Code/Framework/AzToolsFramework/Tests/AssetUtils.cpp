@@ -9,8 +9,8 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/utils.h>
-#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/Mocks/MockFileIOBase.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>

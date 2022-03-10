@@ -10,7 +10,7 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
 using namespace AZ;

@@ -8,7 +8,7 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
 #include <AzTest/AzTest.h>
 
 #include <AzCore/Math/Crc.h>

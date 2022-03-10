@@ -27,7 +27,7 @@
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 
 #if defined(HAVE_BENCHMARK)

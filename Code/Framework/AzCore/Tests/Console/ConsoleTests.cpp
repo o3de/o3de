@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>

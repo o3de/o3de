@@ -9,7 +9,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/containers/variant.h>
 
 namespace SettingsRegistryScriptUtilsTests

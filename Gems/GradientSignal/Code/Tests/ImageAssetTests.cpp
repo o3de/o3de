@@ -10,8 +10,8 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <GradientSignal/GradientImageConversion.h>
-#include <AzCore/UnitTest/UnitTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
+#include <AzTest/TestTypes.h>
 
 #include <limits>
 

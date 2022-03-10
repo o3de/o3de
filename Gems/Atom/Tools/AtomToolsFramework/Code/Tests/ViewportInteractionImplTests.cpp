@@ -12,7 +12,7 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/NameDictionary.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzTest/AzTest.h>

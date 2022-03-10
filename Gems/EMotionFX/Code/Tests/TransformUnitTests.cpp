@@ -8,7 +8,7 @@
 
 #include <gtest/gtest.h>
 #include <AzCore/Math/Matrix3x3.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <cmath>
 

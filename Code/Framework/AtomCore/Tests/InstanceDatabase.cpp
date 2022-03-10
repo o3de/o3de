@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/parallel/conditional_variable.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Debug/Timer.h>
 
 using namespace AZ;

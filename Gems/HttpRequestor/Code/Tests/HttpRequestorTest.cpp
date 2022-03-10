@@ -7,7 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/condition_variable.h>

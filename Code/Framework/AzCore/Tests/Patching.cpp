@@ -11,7 +11,7 @@
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/any.h>
 
 using namespace AZ;

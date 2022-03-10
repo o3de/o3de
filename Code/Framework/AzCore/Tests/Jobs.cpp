@@ -29,7 +29,7 @@
 
 #include <AzCore/std/time.h>
 #include <AzCore/std/parallel/thread.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <random>
 

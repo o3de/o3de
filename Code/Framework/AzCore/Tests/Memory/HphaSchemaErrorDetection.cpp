@@ -12,7 +12,7 @@
 // requires to do some using of namespaces so HphaSchema gets the right things.
 
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/Trace.h>

@@ -14,8 +14,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Math/Random.h>
-#include <AzCore/UnitTest/UnitTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <CoreLights/ShadowmapAtlas.h>
 

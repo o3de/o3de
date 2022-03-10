@@ -8,7 +8,7 @@
 
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/typetraits/is_assignable.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

@@ -11,7 +11,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>

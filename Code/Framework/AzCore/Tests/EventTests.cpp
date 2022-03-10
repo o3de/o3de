@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/EBus/Event.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <utilities/BatchApplicationManager.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include "assetmanager/MockAssetProcessorManager.h"
 #include "assetmanager/MockFileProcessor.h"
 

@@ -10,7 +10,7 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
 using namespace AZ;

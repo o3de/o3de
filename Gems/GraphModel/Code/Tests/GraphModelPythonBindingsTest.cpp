@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

@@ -12,7 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 
 namespace UnitTest

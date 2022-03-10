@@ -10,7 +10,7 @@
 
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <random>
 
 namespace Benchmark

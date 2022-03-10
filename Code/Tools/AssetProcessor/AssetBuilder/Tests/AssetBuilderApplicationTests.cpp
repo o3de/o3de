@@ -8,7 +8,7 @@
 #include <AssetBuilderApplication.h>
 #include <TraceMessageHook.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
 #include <AzToolsFramework/Debug/TraceContext.h>

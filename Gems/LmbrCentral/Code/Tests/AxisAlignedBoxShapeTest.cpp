@@ -12,7 +12,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Random.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <Shape/AxisAlignedBoxShapeComponent.h>

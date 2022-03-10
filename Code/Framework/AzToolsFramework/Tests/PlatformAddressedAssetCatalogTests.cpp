@@ -8,7 +8,7 @@
 
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogManager.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzCore/Interface/Interface.h>

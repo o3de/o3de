@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/MemoryComponent.h>

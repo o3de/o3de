@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Transform.h>

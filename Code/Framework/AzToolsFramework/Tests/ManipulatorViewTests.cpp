@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/DirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>

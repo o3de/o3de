@@ -6,7 +6,7 @@
  *
  */
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include "VegetationTest.h"
 #include "VegetationMocks.h"
 

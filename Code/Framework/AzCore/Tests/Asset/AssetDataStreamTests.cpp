@@ -7,7 +7,7 @@
  */
 #include <AzCore/Asset/AssetDataStream.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <Tests/Streamer/IStreamerMock.h>
 

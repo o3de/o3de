@@ -11,7 +11,7 @@
 #include <utilities/ApplicationServer.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
 #include <connection/connectionManager.h>
 #include <QCoreApplication>

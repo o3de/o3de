@@ -10,7 +10,7 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Serialization/Json/DoubleSerializer.h>
 #include <AzCore/Serialization/Json/CastingHelpers.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 

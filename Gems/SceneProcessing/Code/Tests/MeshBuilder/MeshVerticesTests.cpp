@@ -10,7 +10,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Generation/Components/MeshOptimizer/MeshBuilder.h>
 
 namespace AZ::MeshBuilder

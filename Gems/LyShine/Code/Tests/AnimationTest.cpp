@@ -8,7 +8,7 @@
 
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
-#include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzTest/Mocks/MockITime.h>
 #include <AzFramework/Application/Application.h>
 
 #include <UiCanvasComponent.h>

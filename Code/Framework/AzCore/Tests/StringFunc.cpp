@@ -8,7 +8,7 @@
 
 #include <gtest/gtest-param-test.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <string.h>
 

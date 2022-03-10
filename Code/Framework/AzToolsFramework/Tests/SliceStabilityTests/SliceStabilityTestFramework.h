@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/std/functional.h>
-#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <AzTest/Mocks/MockFileIOBase.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>

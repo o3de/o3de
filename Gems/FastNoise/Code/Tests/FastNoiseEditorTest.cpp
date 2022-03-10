@@ -9,7 +9,7 @@
 #include <AzTest/AzTest.h>
 
 #include <AzCore/Component/Entity.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <EditorFastNoiseGradientComponent.h>
 #include <FastNoiseTest.h>
 

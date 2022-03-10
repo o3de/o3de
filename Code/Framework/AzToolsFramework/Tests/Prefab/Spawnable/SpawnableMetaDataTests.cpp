@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableMetaDataBuilder.h>
 
 namespace UnitTest

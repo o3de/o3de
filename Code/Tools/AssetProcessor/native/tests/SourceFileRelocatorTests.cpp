@@ -14,7 +14,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include "AssetProcessorTest.h"
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>

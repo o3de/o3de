@@ -9,7 +9,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>

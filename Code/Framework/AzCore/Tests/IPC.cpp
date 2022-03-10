@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/IPC/SharedMemory.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/functional.h>

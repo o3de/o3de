@@ -9,7 +9,7 @@
 #include <AtomCore/std/containers/vector_set.h>
 #include <AtomCore/std/containers/fixed_vector_set.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 using namespace AZStd;
 

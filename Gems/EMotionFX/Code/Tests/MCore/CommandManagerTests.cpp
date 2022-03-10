@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/std/optional.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/CommandLine.h>

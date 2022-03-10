@@ -14,7 +14,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <benchmark/benchmark.h>
 #include <Multiplayer/Components/NetBindComponent.h>

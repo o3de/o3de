@@ -9,7 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>

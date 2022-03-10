@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetInternal/WeakAsset.h>
 

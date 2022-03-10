@@ -16,7 +16,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManagerBus.h>

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #if AZ_DEBUG_BUILD
     #define AZ_MATH_TEST_START_TRACE_SUPPRESSION     AZ_TEST_START_TRACE_SUPPRESSION

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Atom/RHI/Query.h>
 #include <Atom/RHI/QueryPool.h>
 #include <AzCore/Memory/SystemAllocator.h>

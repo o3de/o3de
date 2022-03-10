@@ -7,7 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <UserManagement/AWSCognitoUserManagementController.h>
 #include <AWSClientAuthGemMock.h>
 #include <aws/cognito-idp/CognitoIdentityProviderErrors.h>

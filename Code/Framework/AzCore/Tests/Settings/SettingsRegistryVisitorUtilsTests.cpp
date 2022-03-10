@@ -12,7 +12,7 @@
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace SettingsRegistryVisitorUtilsTests
 {

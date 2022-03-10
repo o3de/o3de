@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzTest/AzTest.h>

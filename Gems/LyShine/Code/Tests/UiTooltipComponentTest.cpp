@@ -24,7 +24,7 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
-#include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzTest/Mocks/MockITime.h>
 
 namespace UnitTest
 {

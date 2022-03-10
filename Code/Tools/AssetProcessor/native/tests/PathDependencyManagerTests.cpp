@@ -8,7 +8,7 @@
 
 #include <QTemporaryDir>
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
 #include "AssetDatabase/AssetDatabase.h"
 #include <AssetManager/PathDependencyManager.h>

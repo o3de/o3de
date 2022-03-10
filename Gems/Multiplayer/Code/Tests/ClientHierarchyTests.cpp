@@ -10,8 +10,8 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Name/Name.h>
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
 #include <AzTest/AzTest.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>

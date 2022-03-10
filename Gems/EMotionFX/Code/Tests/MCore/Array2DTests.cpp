@@ -7,7 +7,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <MCore/Source/Array2D.h>
 

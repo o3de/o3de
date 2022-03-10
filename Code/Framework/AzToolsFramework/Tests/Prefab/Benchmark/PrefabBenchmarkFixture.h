@@ -9,7 +9,7 @@
 #if defined(HAVE_BENCHMARK)
 
 #pragma once
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <Prefab/MockPrefabFileIOActionValidator.h>
 #include <Prefab/PrefabSystemComponent.h>

@@ -11,7 +11,7 @@
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>

@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <EMotionFX/Source/MotionData/MotionData.h>
 #include <Tests/SystemComponentFixture.h>
 

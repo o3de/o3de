@@ -9,7 +9,7 @@
 #include <AWSMetricsGemMock.h>
 #include <DefaultClientIdProvider.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace AWSMetrics
 {

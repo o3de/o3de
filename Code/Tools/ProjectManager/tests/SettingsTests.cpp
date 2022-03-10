@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/Utils.h>
 
 #include <Settings.h>

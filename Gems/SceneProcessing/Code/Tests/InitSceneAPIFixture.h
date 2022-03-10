@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Module/DynamicModuleHandle.h>

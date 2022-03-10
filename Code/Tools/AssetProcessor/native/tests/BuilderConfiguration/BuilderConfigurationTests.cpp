@@ -8,7 +8,7 @@
 
 #include "native/utilities/BuilderConfigurationManager.h"
 #include <native/unittests/UnitTestRunner.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 
 class BuilderConfigurationTests

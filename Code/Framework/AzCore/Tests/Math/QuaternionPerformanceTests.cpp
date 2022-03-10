@@ -9,7 +9,7 @@
 #if defined(HAVE_BENCHMARK)
 
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <random>
 
 namespace Benchmark

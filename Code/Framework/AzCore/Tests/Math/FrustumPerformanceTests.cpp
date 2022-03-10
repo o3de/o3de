@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Math/Frustum.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #if defined(HAVE_BENCHMARK)
 

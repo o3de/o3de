@@ -8,7 +8,7 @@
 
 #include <native/tests/assetmanager/TestEventSignal.h>
 #include <AzCore/std/parallel/thread.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTests
 {

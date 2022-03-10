@@ -7,7 +7,7 @@
  */
 #pragma once
 #include <AzCore/Memory/OSAllocator.h>
-#include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzTest/Mocks/MockITime.h>
 #include <AzTest/AzTest.h>
 #include <Gestures/IGestureRecognizer.h>
 

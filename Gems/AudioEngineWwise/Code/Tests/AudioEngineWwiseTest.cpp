@@ -11,7 +11,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Application/Application.h>

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <gmock/gmock.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>

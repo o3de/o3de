@@ -15,7 +15,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/optional.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>

@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/MockComponentApplication.h>
+#include <AzTest/MockComponentApplication.h>
 
 namespace UnitTest
 {

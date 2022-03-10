@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AZTestShared/Math/MathTestHelpers.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>

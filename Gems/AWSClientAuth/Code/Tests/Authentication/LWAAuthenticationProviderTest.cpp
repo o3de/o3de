@@ -8,7 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <Authentication/LWAAuthenticationProvider.h>
 #include <AWSClientAuthGemMock.h>

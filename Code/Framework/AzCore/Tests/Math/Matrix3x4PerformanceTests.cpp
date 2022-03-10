@@ -11,7 +11,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <random>
 #include <benchmark/benchmark.h>

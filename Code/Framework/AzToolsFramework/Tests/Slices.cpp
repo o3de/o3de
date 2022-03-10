@@ -21,7 +21,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>

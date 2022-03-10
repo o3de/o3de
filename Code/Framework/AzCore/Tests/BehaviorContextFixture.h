@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Interface/Interface.h>
 

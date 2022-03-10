@@ -11,7 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 

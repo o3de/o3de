@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzTest/AzTest.h>
 
 namespace AZ

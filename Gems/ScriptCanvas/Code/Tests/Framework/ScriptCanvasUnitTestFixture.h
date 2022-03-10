@@ -6,7 +6,7 @@
  *
  */
 #pragma once
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 
 namespace ScriptCanvasUnitTest

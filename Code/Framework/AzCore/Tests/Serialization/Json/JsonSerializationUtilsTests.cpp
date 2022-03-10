@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzTest/AzTest.h>
 

@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzTest/AzTest.h>

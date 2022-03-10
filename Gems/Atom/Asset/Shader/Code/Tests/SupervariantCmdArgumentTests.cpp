@@ -7,7 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/algorithm.h>
 
 #include <Atom/RPI.Edit/Common/JsonUtils.h>

@@ -12,7 +12,7 @@
 #include <AWSGameLiftServerSystemComponent.h>
 #include <AWSGameLiftServerManager.h>
 #include <GameLiftServerSDKWrapper.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 using namespace Aws::GameLift;

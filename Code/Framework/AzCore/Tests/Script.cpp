@@ -10,7 +10,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/lua/lua.h>
 #include <AzCore/Script/ScriptContextDebug.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/Component/Entity.h>
 

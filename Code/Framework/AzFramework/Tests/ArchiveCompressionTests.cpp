@@ -8,8 +8,8 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzFramework/Application/Application.h>

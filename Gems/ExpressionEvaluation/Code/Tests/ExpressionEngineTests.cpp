@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <gtest/gtest-param-test.h>
 
 #include <ExpressionEvaluation/ExpressionEngine.h>

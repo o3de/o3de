@@ -16,9 +16,9 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/UnitTest/UnitTest.h>
-#include <AzCore/UnitTest/Mocks/MockITime.h>
+#include <AzTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
+#include <AzTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>

@@ -14,7 +14,7 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 

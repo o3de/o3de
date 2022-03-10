@@ -8,7 +8,7 @@
 
 #include <AZTestShared/Math/MathTestHelpers.h>
 
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/TransformComponent.h>
 

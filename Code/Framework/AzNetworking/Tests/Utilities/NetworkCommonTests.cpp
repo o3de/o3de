@@ -7,7 +7,7 @@
  */
 
 #include <AzNetworking/Utilities/NetworkCommon.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

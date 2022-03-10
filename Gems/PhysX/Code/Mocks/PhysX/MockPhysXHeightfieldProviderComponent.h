@@ -8,7 +8,7 @@
 #pragma once
 
 #include <gmock/gmock.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>

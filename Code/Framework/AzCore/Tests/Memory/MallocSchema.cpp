@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/MallocSchema.h>

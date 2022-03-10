@@ -11,7 +11,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzFramework/Application/Application.h>

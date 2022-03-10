@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzTest/AzTest.h>
