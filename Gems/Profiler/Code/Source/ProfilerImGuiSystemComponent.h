@@ -12,6 +12,8 @@
 
 #include <ImGuiCpuProfiler.h>
 
+#include "ImGuiTreemapImpl.h"
+
 #include <AzCore/Component/Component.h>
 
 #if defined(IMGUI_ENABLED)

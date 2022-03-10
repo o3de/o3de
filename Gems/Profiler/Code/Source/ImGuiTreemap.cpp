@@ -27,8 +27,6 @@ using AZ::Name;
 
 namespace Profiler
 {
-    static constexpr int MinNodeExtent = 10;
-
     static void NameToHueSaturation(AZ::Name name, float& outHue, float& outSaturation)
     {
         uint32_t hash = AZ::Crc32{ name.GetStringView() };
