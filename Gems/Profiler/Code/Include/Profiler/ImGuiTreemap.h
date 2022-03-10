@@ -31,7 +31,7 @@ namespace Profiler
         // The weight must be positive definite and should only be specified *on the leaves* (e.g. m_children is nullptr)
         // The weight may be specified on parent nodes (e.g. to assist in weight normalization of the leaves) but note that
         // this value will be overwritten
-        float m_weight = -1.f;
+        float m_weight = 0.f;
 
         // ADVANCED
         // The tag can be used to filter this node from displaying or not in the visualization. For example, we may tag all
