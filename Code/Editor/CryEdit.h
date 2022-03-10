@@ -253,7 +253,6 @@ private:
 
     CMainFrame* GetMainFrame() const;
     void WriteConfig();
-    void GotoTagLocation(int index);
     void LoadTagLocations();
     bool UserExportToGame(bool bNoMsgBox = true);
     static void ShowSplashScreen(CCryEditApp* app);
@@ -364,18 +363,6 @@ private:
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
-    void OnGotoLocation1();
-    void OnGotoLocation2();
-    void OnGotoLocation3();
-    void OnGotoLocation4();
-    void OnGotoLocation5();
-    void OnGotoLocation6();
-    void OnGotoLocation7();
-    void OnGotoLocation8();
-    void OnGotoLocation9();
-    void OnGotoLocation10();
-    void OnGotoLocation11();
-    void OnGotoLocation12();
     void OnToolsLogMemoryUsage();
     void OnCustomizeKeyboard();
     void OnToolsConfiguretools();

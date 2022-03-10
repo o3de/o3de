@@ -19,6 +19,8 @@ namespace AzToolsFramework
         ViewBookmark() = default;
 
         static void Reflect(AZ::ReflectContext* context);
+        bool operator==(const ViewBookmark& other) const { return m_position == other.m_position && m_rotation == other.m_rotation; }
+        bool operator!=(const ViewBookmark& other) const { return m_position != other.m_position || m_rotation != other.m_rotation; }
 
         AZ::Vector3 m_position = AZ::Vector3::CreateZero();
         AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();
