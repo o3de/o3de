@@ -22,12 +22,12 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
-#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
@@ -72,7 +72,7 @@ namespace MaterialEditor
         const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
         viewportContextManager->RenameViewportContext(GetViewportContext(), defaultContextName);
 
-        // Create a custom entity context for the entities in this viewport 
+        // Create a custom entity context for the entities in this viewport
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
         m_entityContext->InitContext();
 
@@ -95,18 +95,18 @@ namespace MaterialEditor
         m_frameworkScene->SetSubsystem(m_entityContext.get());
 
         // Load the render pipeline asset
-        AZStd::optional<AZ::RPI::RenderPipelineDescriptor> mainPipelineDesc =
-            AZ::RPI::GetRenderPipelineDescriptorFromAsset(m_mainPipelineAssetPath, AZStd::string::format("_%i", GetViewportContext()->GetId()));
+        AZStd::optional<AZ::RPI::RenderPipelineDescriptor> mainPipelineDesc = AZ::RPI::GetRenderPipelineDescriptorFromAsset(
+            m_mainPipelineAssetPath, AZStd::string::format("_%i", GetViewportContext()->GetId()));
         AZ_Assert(mainPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", m_mainPipelineAssetPath.c_str());
 
-        // TODO etApplicationMultisampleState should only be called once per application and will need to consider scenarios with multiple
-        // viewports and pipelines
-        // The default pipeline determines the initial MSAA state for the application
+        // TODO SetApplicationMultisampleState should only be called once per application and will need to consider multiple viewports and
+        // pipelines. The default pipeline determines the initial MSAA state for the application.
         AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(mainPipelineDesc.value().m_renderSettings.m_multisampleState);
         mainPipelineDesc.value().m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(mainPipelineDesc.value(), *GetViewportContext()->GetWindowContext().get());
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(
+            mainPipelineDesc.value(), *GetViewportContext()->GetWindowContext().get());
         m_scene->AddRenderPipeline(m_renderPipeline);
 
         // Create the BRDF texture generation pipeline

@@ -31,12 +31,11 @@ namespace AtomToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         AtomToolsDocument() = default;
-        AtomToolsDocument(const AZ::Crc32& toolId);
+        AtomToolsDocument(const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo);
         virtual ~AtomToolsDocument();
 
         // AtomToolsDocumentRequestBus::Handler overrides...
-        static DocumentTypeInfo BuildDocumentTypeInfo();
-        DocumentTypeInfo GetDocumentTypeInfo() const override;
+        const DocumentTypeInfo& GetDocumentTypeInfo() const override;
         DocumentObjectInfoVector GetObjectInfo() const override;
         const AZ::Uuid& GetId() const override;
         const AZStd::string& GetAbsolutePath() const override;
@@ -74,6 +73,8 @@ namespace AtomToolsFramework
         virtual bool ReopenRestoreState();
 
         const AZ::Crc32 m_toolId = {};
+
+        const DocumentTypeInfo m_documentTypeInfo = {};
 
         //! The unique id of this document, used for all bus notifications and requests.
         const AZ::Uuid m_id = AZ::Uuid::CreateRandom();
