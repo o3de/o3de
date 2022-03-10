@@ -21,6 +21,8 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 
 namespace UnitTest
 {
@@ -29,12 +31,21 @@ namespace UnitTest
         Zaphod = 1,
         Arthur
     };
+
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(
+        TestEnumClassWithFish,
+        uint8_t,
+        OneFish,
+        TwoFish);
+
+    AZ_ENUM_DEFINE_REFLECT_UTILITIES(TestEnumClassWithFish);
 }
 
 // give the enum values types
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(UnitTest::TestEnumClass, "{F8EBD52A-D508-4A37-81CA-40E1DC176BCC}")
+    AZ_TYPE_INFO_SPECIALIZE(UnitTest::TestEnumClass, "{F8EBD52A-D508-4A37-81CA-40E1DC176BCC}");
+    AZ_TYPE_INFO_SPECIALIZE(UnitTest::TestEnumClassWithFish, "{9879918F-E8CE-4B04-A619-FCAA280DCB98}");
 }
 
 namespace UnitTest
@@ -87,6 +98,8 @@ namespace UnitTest
                     ->Field("EnumClass", &PythonReflectionObjectProxyPropertyTester::m_enumClass)
                     ->Field("Int32", &PythonReflectionObjectProxyPropertyTester::m_s32)
                     ;
+
+                UnitTest::TestEnumClassWithFishReflect(*serializeContext);
             }
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -113,6 +126,24 @@ namespace UnitTest
                     ->Enum<aznumeric_cast<AZ::s32>(TestEnumClass::Zaphod)>("Zaphod")
                     ->Enum<aznumeric_cast<AZ::s32>(TestEnumClass::Arthur)>("Arthur")
                     ;
+
+                UnitTest::TestEnumClassWithFishReflect(*behaviorContext);
+
+                auto assignAutomationPropertyAttributes = [behaviorContext](const char* properyName)
+                {
+                    auto property = behaviorContext->m_properties.find(properyName);
+                    ASSERT_NE(property, behaviorContext->m_properties.end());
+                    auto automationAttribute = AZ::AttributePair(
+                        AZ::Crc32(AZ::Script::Attributes::Scope),
+                        aznew AZ::AttributeData<AZ::Script::Attributes::ScopeFlags>(AZ::Script::Attributes::ScopeFlags::Automation));
+                    property->second->m_attributes.emplace_back(AZStd::move(automationAttribute));
+                    auto moduleAttribute = AZ::AttributePair(
+                        AZ::Crc32(AZ::Script::Attributes::Module),
+                        aznew AZ::AttributeData<const char*>("test.enum"));
+                    property->second->m_attributes.emplace_back(AZStd::move(moduleAttribute));
+                };
+                assignAutomationPropertyAttributes("TestEnumClassWithFish_OneFish");
+                assignAutomationPropertyAttributes("TestEnumClassWithFish_TwoFish");
             }
         }
     };
@@ -1620,5 +1651,61 @@ namespace UnitTest
         e.Deactivate();
 
         EXPECT_EQ(3, m_testSink.m_evaluationMap[aznumeric_cast<int>(LogTypes::Found)]);
+    }
+
+    TEST_F(PythonObjectProxyTests, EnumClassInPython_Works)
+    {
+        enum class LogTypes
+        {
+            Skip = 0,
+            Found
+        };
+
+        m_testSink.m_evaluateMessage = [](const char* window, const char* message) -> int
+        {
+            if (AzFramework::StringFunc::Equal(window, "python"))
+            {
+                if (AzFramework::StringFunc::StartsWith(message, "found"))
+                {
+                    return aznumeric_cast<int>(LogTypes::Found);
+                }
+            }
+            return aznumeric_cast<int>(LogTypes::Skip);
+        };
+
+        PythonReflectionObjectProxyPropertyTester pythonReflectionObjectProxyPropertyTester;
+        pythonReflectionObjectProxyPropertyTester.Reflect(m_app.GetSerializeContext());
+        pythonReflectionObjectProxyPropertyTester.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            pybind11::exec(R"(
+                import azlmbr.object
+                import azlmbr.test.enum
+
+                # find and evaluate OneFish
+                enumOneFish = azlmbr.test.enum.TestEnumClassWithFish_OneFish
+                if enumOneFish == 0:
+                    print ('found TestEnumClassWithFish_OneFish')
+
+                # find and evaluate TwoFish
+                enumTwoFish = azlmbr.test.enum.TestEnumClassWithFish_TwoFish
+                if enumTwoFish == 1:
+                    print ('found TestEnumClassWithFish_TwoFish')
+            )");
+        }
+        catch ([[maybe_unused]] const std::exception& ex)
+        {
+            AZ_Warning("UnitTest", false, "Failed on with Python exception: %s", ex.what());
+            FAIL();
+        }
+
+        e.Deactivate();
+        EXPECT_EQ(2, m_testSink.m_evaluationMap[aznumeric_cast<int>(LogTypes::Found)]);
     }
 }
