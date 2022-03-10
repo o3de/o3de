@@ -32,12 +32,11 @@ namespace ShaderManagementConsole
         static void Reflect(AZ::ReflectContext* context);
 
         ShaderManagementConsoleDocument() = default;
-        ShaderManagementConsoleDocument(const AZ::Crc32& toolId);
+        ShaderManagementConsoleDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo);
         ~ShaderManagementConsoleDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
         static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
-        AtomToolsFramework::DocumentTypeInfo GetDocumentTypeInfo() const override;
         AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
         bool Open(const AZStd::string& loadPath) override;
         bool Save() override;

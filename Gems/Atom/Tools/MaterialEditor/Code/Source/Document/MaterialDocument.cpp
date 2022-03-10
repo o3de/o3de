@@ -45,8 +45,8 @@ namespace MaterialEditor
         }
     }
 
-    MaterialDocument::MaterialDocument(const AZ::Crc32& toolId)
-        : AtomToolsFramework::AtomToolsDocument(toolId)
+    MaterialDocument::MaterialDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
     {
         MaterialDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -148,9 +148,10 @@ namespace MaterialEditor
 
     AtomToolsFramework::DocumentTypeInfo MaterialDocument::BuildDocumentTypeInfo()
     {
-        AtomToolsFramework::DocumentTypeInfo documentType = AtomToolsDocument::BuildDocumentTypeInfo();
+        AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Material";
-        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId) { return aznew MaterialDocument(toolId); };
+        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
+            return aznew MaterialDocument(toolId, documentTypeInfo); };
         documentType.m_supportedExtensionsToCreate.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
         documentType.m_supportedExtensionsToCreate.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
@@ -161,11 +162,6 @@ namespace MaterialEditor
             "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype"));
         return documentType;
-    }
-
-    AtomToolsFramework::DocumentTypeInfo MaterialDocument::GetDocumentTypeInfo() const
-    {
-        return BuildDocumentTypeInfo();
     }
 
     AtomToolsFramework::DocumentObjectInfoVector MaterialDocument::GetObjectInfo() const
@@ -904,6 +900,13 @@ namespace MaterialEditor
         objectInfo.m_description = group->m_description;
         objectInfo.m_objectType = azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>();
         objectInfo.m_objectPtr = const_cast<AtomToolsFramework::DynamicPropertyGroup*>(group);
+        objectInfo.m_nodeIndicatorFunction = [](const AzToolsFramework::InstanceDataNode* node)
+        {
+            const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
+            return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue)
+                ? ":/Icons/changed_property.svg"
+                : ":/Icons/blank.png";
+        };
         return objectInfo;
     }
 

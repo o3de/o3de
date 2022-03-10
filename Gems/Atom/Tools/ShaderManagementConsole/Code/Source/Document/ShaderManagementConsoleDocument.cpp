@@ -49,8 +49,9 @@ namespace ShaderManagementConsole
         }
     }
 
-    ShaderManagementConsoleDocument::ShaderManagementConsoleDocument(const AZ::Crc32& toolId)
-        : AtomToolsFramework::AtomToolsDocument(toolId)
+    ShaderManagementConsoleDocument::ShaderManagementConsoleDocument(
+        const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
     {
         ShaderManagementConsoleDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -113,19 +114,15 @@ namespace ShaderManagementConsole
 
     AtomToolsFramework::DocumentTypeInfo ShaderManagementConsoleDocument::BuildDocumentTypeInfo()
     {
-        AtomToolsFramework::DocumentTypeInfo documentType = AtomToolsDocument::BuildDocumentTypeInfo();
+        AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Shader Variant List";
-        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId) { return aznew ShaderManagementConsoleDocument(toolId); };
+        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
+            return aznew ShaderManagementConsoleDocument(toolId, documentTypeInfo); };
         documentType.m_supportedExtensionsToCreate.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         return documentType;
-    }
-
-    AtomToolsFramework::DocumentTypeInfo ShaderManagementConsoleDocument::GetDocumentTypeInfo() const
-    {
-        return BuildDocumentTypeInfo();
     }
 
     AtomToolsFramework::DocumentObjectInfoVector ShaderManagementConsoleDocument::GetObjectInfo() const
