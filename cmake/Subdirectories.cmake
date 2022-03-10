@@ -24,7 +24,7 @@ function(add_pal_external_subdirectories object_type object_path object_json_pat
                 o3de_pal_dir(pal_dir "${object_path}/Platform/${platform}" "${restricted_path}" "${object_path}" "${parent_relative_path}")
                 set(restricted_json_path "${pal_dir}/${object_type}_${platform_lower}.json")
                 if(EXISTS ${restricted_json_path})
-                    read_json_external_subdirs(restricted_external_subdirs ${restricted_json_path})
+                    o3de_read_json_external_subdirs(restricted_external_subdirs ${restricted_json_path})
                     foreach(restricted_external_subdir ${restricted_external_subdirs})
                         file(REAL_PATH ${restricted_external_subdir} real_external_subdir BASE_DIRECTORY ${pal_dir})
 
@@ -47,7 +47,7 @@ function(add_engine_gem_json_external_subdirectories gem_path)
     if(EXISTS ${gem_json_path})
         o3de_read_json_external_subdirs(gem_external_subdirs ${gem_json_path})
         # Read the gem_name from the gem.json and map it to the gem path
-        o3de_read_json_key(gem_name gem_json_path "gem_name")
+        o3de_read_json_key(gem_name ${gem_json_path} "gem_name")
         if (gem_name)
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
