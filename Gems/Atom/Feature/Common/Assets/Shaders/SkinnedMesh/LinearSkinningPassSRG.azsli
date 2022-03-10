@@ -18,6 +18,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 ShaderResourceGroup InstanceSrg : SRG_PerDraw
 {    
     uint m_numVertices;
+    uint m_numInfluencesPerVertex;
     uint m_totalNumberOfThreadsX;
 
     // Per-model input

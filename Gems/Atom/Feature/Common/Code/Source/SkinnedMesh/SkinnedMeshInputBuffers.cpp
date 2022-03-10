@@ -142,11 +142,8 @@ namespace AZ
 
                     if (streamInfo->m_enum == SkinnedMeshInputVertexStreams::BlendWeights)
                     {
-                        // ATOM-3247 Support more or less than 4 influences per vertex
                         uint32_t elementCount = streamBufferView.GetByteCount() / streamBufferView.GetByteStride();
                         skinnedSubMesh.m_skinInfluenceCountPerVertex = elementCount / modelLodAssetMesh.GetVertexCount();
-                        AZ_Assert(
-                            skinnedSubMesh.m_skinInfluenceCountPerVertex == 4, "Only 4 influences per vertex are supported at this time");
                     }
                 }
             }
@@ -528,6 +525,11 @@ namespace AZ
             return m_lods[lodIndex].m_meshes[meshIndex].m_vertexCount;
         }
 
+        uint32_t SkinnedMeshInputBuffers::GetInfluenceCountPerVertex(uint32_t lodIndex, uint32_t meshIndex) const
+        {
+            return m_lods[lodIndex].m_meshes[meshIndex].m_skinInfluenceCountPerVertex;
+        }
+
         const AZStd::vector<MorphTargetComputeMetaData>& SkinnedMeshInputBuffers::GetMorphTargetComputeMetaDatas(uint32_t lodIndex) const
         {
             return m_lods[lodIndex].m_morphTargetComputeMetaDatas;
@@ -567,6 +569,7 @@ namespace AZ
         {
             AZ_Assert(lodIndex < m_lods.size() && meshIndex < m_lods[lodIndex].m_modelLodAsset->GetMeshes().size(), "Lod %" PRIu32 " Mesh %" PRIu32 " out of range for model '%s'", lodIndex, meshIndex, m_modelAsset->GetName().GetCStr());
 
+
             // Loop over each input buffer view and set it on the srg
             for (const SkinnedSubMeshProperties::SrgNameViewPair& nameViewPair :
                  m_lods[lodIndex].m_meshes[meshIndex].m_inputBufferViews)
@@ -582,11 +585,20 @@ namespace AZ
                 AZ_Error("SkinnedMeshInputBuffers", success, "Failed to bind buffer view for %s", nameViewPair.m_srgName.GetCStr());
             }
 
+            RHI::ShaderInputConstantIndex srgConstantIndex;
             // Set the vertex count
-            RHI::ShaderInputConstantIndex numVerticesIndex;
-            numVerticesIndex = perInstanceSRG->FindShaderInputConstantIndex(Name{ "m_numVertices" });
-            AZ_Error("SkinnedMeshInputBuffers", numVerticesIndex.IsValid(), "Failed to find shader input index for m_numVerticies in the skinning compute shader per-instance SRG.");
-            perInstanceSRG->SetConstant(numVerticesIndex, m_lods[lodIndex].m_modelLodAsset->GetMeshes()[meshIndex].GetVertexCount());
+            srgConstantIndex = perInstanceSRG->FindShaderInputConstantIndex(Name{ "m_numVertices" });
+            AZ_Error(
+                "SkinnedMeshInputBuffers", srgConstantIndex.IsValid(),
+                "Failed to find shader input index for m_numVerticies in the skinning compute shader per-instance SRG.");
+            perInstanceSRG->SetConstant(srgConstantIndex, m_lods[lodIndex].m_meshes[meshIndex].m_vertexCount);
+
+            // Set the max influences per vertex for the mesh
+            srgConstantIndex = perInstanceSRG->FindShaderInputConstantIndex(Name{ "m_numInfluencesPerVertex" });
+            AZ_Error(
+                "SkinnedMeshInputBuffers", srgConstantIndex.IsValid(),
+                "Failed to find shader input index for m_numInfluencesPerVertex in the skinning compute shader per-instance SRG.");
+            perInstanceSRG->SetConstant(srgConstantIndex, m_lods[lodIndex].m_meshes[meshIndex].m_skinInfluenceCountPerVertex);
         }
 
         // Create a resource view that has a different type than the data it is viewing

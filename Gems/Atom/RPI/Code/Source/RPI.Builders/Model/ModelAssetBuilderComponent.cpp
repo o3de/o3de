@@ -79,7 +79,6 @@ namespace
 
     const char* ShaderSemanticName_SkinJointIndices = "SKIN_JOINTINDICES";
     const char* ShaderSemanticName_SkinWeights = "SKIN_WEIGHTS";
-    const uint32_t DefaultSkinInfluencesPerVert = 4;
     const AZ::RHI::Format SkinWeightFormat = AZ::RHI::Format::R32_FLOAT; // Single-component, 32-bit floating point per weight
 
     // Morph targets
@@ -109,7 +108,6 @@ namespace AZ
         }
 
         ModelAssetBuilderComponent::ModelAssetBuilderComponent()
-            : m_numSkinJointInfluencesPerVertex(DefaultSkinInfluencesPerVert)
         {
             BindToCall(&ModelAssetBuilderComponent::BuildModel);
         }
@@ -632,11 +630,14 @@ namespace AZ
             }
             productMeshList.reserve(productMeshCount);
 
-            // Get the skin rule
+            // Get the default values if there is no skin rule
+            m_skinRuleSettings = SceneAPI::DataTypes::GetDefaultSkinRuleSettings();
+
+            // Get the skin rule, if it exists
             if (const auto* skinRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>().get())
             {
-                m_numSkinJointInfluencesPerVertex = skinRule->GetMaxWeightsPerVertex();
-                m_skinWeightThreshold = skinRule->GetWeightThreshold();
+                m_skinRuleSettings.m_maxInfluencesPerVertex = skinRule->GetMaxWeightsPerVertex();
+                m_skinRuleSettings.m_weightThreshold = skinRule->GetWeightThreshold();
             }
 
             
@@ -957,9 +958,9 @@ namespace AZ
                     const AZ::u16 jointIndex = jointNameToIndexMap[boneName];
 
                     // Add skin influence
-                    if (weight > m_skinWeightThreshold)
+                    if (weight > m_skinRuleSettings.m_weightThreshold)
                     {
-                        if (numInfluencesAdded < m_numSkinJointInfluencesPerVertex)
+                        if (numInfluencesAdded < m_skinRuleSettings.m_maxInfluencesPerVertex)
                         {
                             skinJointIndices.push_back(jointIndex);
                             skinWeights.push_back(weight);
@@ -977,14 +978,14 @@ namespace AZ
                     AZ_Warning(s_builderName, warnedExcessOfSkinInfluences,
                         "Mesh %s has more skin influences (%d) than the maximum (%d). Skinning influences won't be normalized. Maximum number of skin influences can be increased with a Skin Modifier in Scene Settings.",
                         sourceMesh.m_name.GetCStr(),
-                        m_numSkinJointInfluencesPerVertex + numInfluencesExcess,
-                        m_numSkinJointInfluencesPerVertex);
+                        m_skinRuleSettings.m_maxInfluencesPerVertex + numInfluencesExcess,
+                        m_skinRuleSettings.m_maxInfluencesPerVertex);
                     warnedExcessOfSkinInfluences = true;
                     break;
                 }
             }
 
-            for (size_t influenceIndex = numInfluencesAdded; influenceIndex < m_numSkinJointInfluencesPerVertex; ++influenceIndex)
+            for (size_t influenceIndex = numInfluencesAdded; influenceIndex < m_skinRuleSettings.m_maxInfluencesPerVertex; ++influenceIndex)
             {
                 skinJointIndices.push_back(0);
                 skinWeights.push_back(0.0f);
@@ -1096,11 +1097,11 @@ namespace AZ
             }
             if (!mesh.m_skinJointIndices.empty())
             {
-                ValidateStreamSize(expectedVertexCount * m_numSkinJointInfluencesPerVertex, mesh.m_skinJointIndices, AZ::RHI::Format::R16_UINT, ShaderSemanticName_SkinJointIndices);
+                ValidateStreamSize(expectedVertexCount * m_skinRuleSettings.m_maxInfluencesPerVertex, mesh.m_skinJointIndices, AZ::RHI::Format::R16_UINT, ShaderSemanticName_SkinJointIndices);
             }
             if (!mesh.m_skinWeights.empty())
             {
-                ValidateStreamSize(expectedVertexCount * m_numSkinJointInfluencesPerVertex, mesh.m_skinWeights, SkinWeightFormat, ShaderSemanticName_SkinWeights);
+                ValidateStreamSize(expectedVertexCount * m_skinRuleSettings.m_maxInfluencesPerVertex, mesh.m_skinWeights, SkinWeightFormat, ShaderSemanticName_SkinWeights);
             }
         }
 
@@ -1166,9 +1167,9 @@ namespace AZ
                     "Number of skin influence joint indices (%d) should match the number of weights (%d).",
                     mesh.m_skinJointIndices.size(), mesh.m_skinWeights.size());
 
-                AZ_Assert(mesh.m_skinWeights.size() % m_numSkinJointInfluencesPerVertex == 0,
+                AZ_Assert(mesh.m_skinWeights.size() % m_skinRuleSettings.m_maxInfluencesPerVertex == 0,
                     "The number of skin influences per vertex (%d) is not a multiple of the total number of skinning weights (%d). This means that not every vertex has exactly (%d) skinning weights and invalidates the data.",
-                    mesh.m_skinWeights.size(), m_numSkinJointInfluencesPerVertex, m_numSkinJointInfluencesPerVertex);
+                    mesh.m_skinWeights.size(), m_skinRuleSettings.m_maxInfluencesPerVertex, m_skinRuleSettings.m_maxInfluencesPerVertex);
                 const size_t numSkinInfluences = mesh.m_skinWeights.size();
 
                 uint32_t jointIndicesSizeInBytes = static_cast<uint32_t>(numSkinInfluences * sizeof(uint16_t));
@@ -1336,9 +1337,9 @@ namespace AZ
                         "Number of skin influence joint indices (%d) should match the number of weights (%d).",
                         mesh.m_skinJointIndices.size(), mesh.m_skinWeights.size());
 
-                    AZ_Assert(mesh.m_skinWeights.size() % m_numSkinJointInfluencesPerVertex == 0,
+                    AZ_Assert(mesh.m_skinWeights.size() % m_skinRuleSettings.m_maxInfluencesPerVertex == 0,
                         "The number of skin influences per vertex (%d) is not a multiple of the total number of skinning weights (%d). This means that not every vertex has exactly (%d) skinning weights and invalidates the data.",
-                        mesh.m_skinWeights.size(), m_numSkinJointInfluencesPerVertex, m_numSkinJointInfluencesPerVertex);
+                        mesh.m_skinWeights.size(), m_skinRuleSettings.m_maxInfluencesPerVertex, m_skinRuleSettings.m_maxInfluencesPerVertex);
 
                     uint32_t prevJointIdCount = aznumeric_cast<uint32_t>(lodBufferInfo.m_jointIdsCount);
                     uint32_t newJointIdCount = aznumeric_cast<uint32_t>(mesh.m_skinJointIndices.size());
@@ -1759,7 +1760,7 @@ namespace AZ
             if (!skinJointIndices.empty() && !skinWeights.empty())
             {
                 const size_t vertexCount = positions.size() / PositionFloatsPerVert;
-                const size_t numSkinInfluences = vertexCount * m_numSkinJointInfluencesPerVertex;
+                const size_t numSkinInfluences = vertexCount * m_skinRuleSettings.m_maxInfluencesPerVertex;
 
                 if (!BuildRawStreamBuffer<uint16_t>(outStreamBuffers, skinJointIndices, RHI::ShaderSemantic{ShaderSemanticName_SkinJointIndices}))
                 {

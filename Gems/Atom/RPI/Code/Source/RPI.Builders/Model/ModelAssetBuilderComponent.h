@@ -364,8 +364,7 @@ namespace AZ
             AZStd::string m_lodName;
             AZStd::string m_meshName;
 
-            size_t m_numSkinJointInfluencesPerVertex = 0;
-            float m_skinWeightThreshold = 0.0f;
+            SceneAPI::DataTypes::SkinRuleSettings m_skinRuleSettings;
 
             AZStd::set<uint32_t> m_createdSubId;
 

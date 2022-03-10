@@ -41,7 +41,6 @@ namespace
 {
     const uint32_t LinearSkinningFloatsPerBone = 12;
     const uint32_t DualQuaternionSkinningFloatsPerBone = 8;
-    const uint32_t MaxSupportedSkinInfluences = 4;
 }
 
 namespace AZ
@@ -56,6 +55,7 @@ namespace AZ
         static void ProcessSkinInfluences(
             const EMotionFX::Mesh* mesh,
             const EMotionFX::SubMesh* subMesh,
+            const uint32_t maxInfluencesPerVertex,
             AZStd::vector<uint32_t>& blendIndexBufferData,
             AZStd::vector<float>& blendWeightBufferData,
             bool hasClothData)
@@ -64,7 +64,6 @@ namespace AZ
             
             // EMotionFX source gives 16 bit indices and 32 bit float weights
             // Atom consumes 32 bit uint indices and 32 bit float weights (range 0-1)
-            // Up to MaxSupportedSkinInfluences influences per vertex are supported
             const uint32_t* sourceOriginalVertex = static_cast<uint32_t*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS));
             const uint32_t vertexCount = subMesh->GetNumVertices();
             const uint32_t vertexStart = subMesh->GetStartVertex();
@@ -73,7 +72,8 @@ namespace AZ
                 for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
                 {
                     const uint32_t originalVertex = sourceOriginalVertex[vertexIndex + vertexStart];
-                    const uint32_t influenceCount = AZStd::GetMin<uint32_t>(MaxSupportedSkinInfluences, static_cast<uint32_t>(sourceSkinningInfo->GetNumInfluences(originalVertex)));
+                    const uint32_t influenceCount = AZStd::GetMin<uint32_t>(
+                        maxInfluencesPerVertex, static_cast<uint32_t>(sourceSkinningInfo->GetNumInfluences(originalVertex)));
                     uint32_t influenceIndex = 0;
 
                     AZStd::vector<uint32_t> localIndices;
@@ -86,7 +86,7 @@ namespace AZ
                     }
 
                     // Zero out any unused ids/weights
-                    for (; influenceIndex < MaxSupportedSkinInfluences; ++influenceIndex)
+                    for (; influenceIndex < maxInfluencesPerVertex; ++influenceIndex)
                     {
                         localIndices.push_back(0);
                         blendWeightBufferData.push_back(0.0f);
@@ -101,7 +101,7 @@ namespace AZ
                     // If there is no skinning info, default to 0 weights and display an error
                     if (hasClothData || !sourceSkinningInfo)
                     {
-                        for (influenceIndex = 0; influenceIndex < MaxSupportedSkinInfluences; ++influenceIndex)
+                        for (influenceIndex = 0; influenceIndex < maxInfluencesPerVertex; ++influenceIndex)
                         {
                             blendWeightBufferData[influenceIndex] = 0.0f;
                         }
@@ -219,8 +219,13 @@ namespace AZ
                 // Clear out the vector for re-mapped joint data that will be populated by values from EMotionFX
                 blendIndexBufferData.clear();
                 blendWeightBufferData.clear();
-                blendIndexBufferData.reserve(skinnedMeshLod.GetVertexCount() * MaxSupportedSkinInfluences / 2);
-                blendWeightBufferData.reserve(skinnedMeshLod.GetVertexCount() * MaxSupportedSkinInfluences);
+
+                // Reserve enough memory for the default/common case. This is a temporary vector, so over-allocating isn't going to be wasteful
+                // Under-allocating won't be the end of the world, just a minor one-time re-allocation when the vector runs out of space.
+                // To know exactly what we need in advance would require iterating over all the vertices twice, which isn't worth it.
+                constexpr uint32_t defaultMaxInfluencesPerVertex = 4;
+                blendIndexBufferData.reserve(skinnedMeshLod.GetVertexCount() * defaultMaxInfluencesPerVertex / 2);
+                blendWeightBufferData.reserve(skinnedMeshLod.GetVertexCount() * defaultMaxInfluencesPerVertex);
 
                 // Now iterate over the actual data and populate the data for the per-actor buffers
                 uint32_t vertexBufferOffset = 0;
@@ -250,7 +255,7 @@ namespace AZ
                             // Check if the model mesh asset has cloth data. One ModelLodAsset::Mesh corresponds to one EMotionFX::SubMesh.
                             const bool hasClothData = modelLodAsset->GetMeshes()[subMeshIndex].GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr;
 
-                            ProcessSkinInfluences(mesh, subMesh, blendIndexBufferData, blendWeightBufferData, hasClothData);
+                            ProcessSkinInfluences(mesh, subMesh, skinnedMeshInputBuffers->GetInfluenceCountPerVertex(lodIndex, subMeshIndex), blendIndexBufferData, blendWeightBufferData, hasClothData);
 
                             // Increment offsets so that the next sub-mesh can start at the right place
                             vertexBufferOffset += vertexCount;

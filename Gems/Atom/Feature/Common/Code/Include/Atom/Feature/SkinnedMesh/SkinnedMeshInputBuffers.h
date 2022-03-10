@@ -256,6 +256,9 @@ namespace AZ
             //! Returns true if WaitForUpload has finished, false if it has not been called.
             bool IsUploadPending() const;
 
+            //! Returns the number of influences per vertex for a mesh
+            uint32_t GetInfluenceCountPerVertex(uint32_t lodIndex, uint32_t meshIndex) const;
+
             //! Returns a vector of MorphTargetMetaData with one entry for each morph target that could be applied to this mesh
             const AZStd::vector<MorphTargetComputeMetaData>& GetMorphTargetComputeMetaDatas(uint32_t lodIndex) const;
 
