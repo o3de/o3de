@@ -20,7 +20,6 @@
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
@@ -709,7 +708,7 @@ namespace AZ::SceneAPI::Behaviors
             rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
             writerResult = doc.Accept(writer);
             productPath.append(".json");
-            assetType = {};
+            assetType = Data::AssetType::CreateNull();
         }
         else
         {
