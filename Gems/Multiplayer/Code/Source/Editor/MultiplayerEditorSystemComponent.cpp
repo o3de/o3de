@@ -221,22 +221,12 @@ namespace Multiplayer
             server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
         }
 
-        const auto console = AZ::Interface<AZ::IConsole>::Get();
-        AZ::CVarFixedString sv_defaultPlayerSpawnAsset;
-
-        if (console->GetCvarValue("sv_defaultPlayerSpawnAsset", sv_defaultPlayerSpawnAsset) != AZ::GetValueResult::Success)
-        {
-            AZ_Assert( false,
-                "MultiplayerEditorSystemComponent::LaunchEditorServer failed! Could not find the sv_defaultPlayerSpawnAsset cvar; the editor-server "
-                "will fall back to using some other default player! Please update this code to use a valid cvar!")
-        }
-        
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s" --rhi "%s")",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
-            sv_defaultPlayerSpawnAsset.c_str(),
-            server_rhi.GetCStr()
+            server_rhi.GetCStr(),
+            static_cast<uint16_t>(editorsv_port)
         );
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;

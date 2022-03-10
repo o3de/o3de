@@ -51,10 +51,11 @@ namespace AtomToolsFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "atomtools")
-                ->Event("CreateDocument", &AtomToolsDocumentSystemRequestBus::Events::CreateDocument)
+                ->Event("CreateDocumentFromTypeName", &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromTypeName)
+                ->Event("CreateDocumentFromFileType", &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFileType)
+                ->Event("CreateDocumentFromFilePath", &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFilePath)
                 ->Event("DestroyDocument", &AtomToolsDocumentSystemRequestBus::Events::DestroyDocument)
                 ->Event("OpenDocument", &AtomToolsDocumentSystemRequestBus::Events::OpenDocument)
-                ->Event("CreateDocumentFromFile", &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile)
                 ->Event("CloseDocument", &AtomToolsDocumentSystemRequestBus::Events::CloseDocument)
                 ->Event("CloseAllDocuments", &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments)
                 ->Event("CloseAllDocumentsExcept", &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept)
@@ -81,42 +82,55 @@ namespace AtomToolsFramework
         AtomToolsDocumentSystemRequestBus::Handler::BusDisconnect();
     }
 
-    void AtomToolsDocumentSystem::RegisterDocumentType(const AtomToolsDocumentFactoryCallback& documentCreator)
+    void AtomToolsDocumentSystem::RegisterDocumentType(const DocumentTypeInfo& documentType)
     {
-        m_documentCreator = documentCreator;
+        m_documentTypes.push_back(documentType);
     }
 
-    AZ::Uuid AtomToolsDocumentSystem::CreateDocument()
+    const DocumentTypeInfoVector& AtomToolsDocumentSystem::GetRegisteredDocumentTypes() const
     {
-        if (!m_documentCreator)
-        {
-            AZ_Error("AtomToolsDocument", false, "Failed to create new document");
-            return AZ::Uuid::CreateNull();
-        }
+        return m_documentTypes;
+    }
 
-        AZStd::unique_ptr<AtomToolsDocument> document(m_documentCreator(m_toolId));
+    AZ::Uuid AtomToolsDocumentSystem::CreateDocumentFromType(const DocumentTypeInfo& documentType)
+    {
+        AZStd::unique_ptr<AtomToolsDocumentRequests> document(documentType.CreateDocument(m_toolId));
         if (!document)
         {
-            AZ_Error("AtomToolsDocument", false, "Failed to create new document");
+            AZ_Error("AtomToolsDocument", false, "Failed to create new document.");
             return AZ::Uuid::CreateNull();
         }
 
-        AZ::Uuid documentId = document->GetId();
+        const AZ::Uuid documentId = document->GetId();
         m_documentMap.emplace(documentId, document.release());
         return documentId;
     }
 
-    bool AtomToolsDocumentSystem::DestroyDocument(const AZ::Uuid& documentId)
+    AZ::Uuid AtomToolsDocumentSystem::CreateDocumentFromTypeName(const AZStd::string& documentTypeName)
     {
-        return m_documentMap.erase(documentId) != 0;
+        for (const auto& documentType : m_documentTypes)
+        {
+            if (AZ::StringFunc::Equal(documentType.m_documentTypeName, documentTypeName))
+            {
+                return CreateDocumentFromType(documentType);
+            }
+        }
+        return AZ::Uuid();
     }
 
-    AZ::Uuid AtomToolsDocumentSystem::OpenDocument(AZStd::string_view sourcePath)
+    AZ::Uuid AtomToolsDocumentSystem::CreateDocumentFromFileType(const AZStd::string& path)
     {
-        return OpenDocumentImpl(sourcePath, true);
+        for (const auto& documentType : m_documentTypes)
+        {
+            if (documentType.IsSupportedExtensionToCreate(path))
+            {
+                return CreateDocumentFromType(documentType);
+            }
+        }
+        return AZ::Uuid();
     }
 
-    AZ::Uuid AtomToolsDocumentSystem::CreateDocumentFromFile(AZStd::string_view sourcePath, AZStd::string_view targetPath)
+    AZ::Uuid AtomToolsDocumentSystem::CreateDocumentFromFilePath(const AZStd::string& sourcePath, const AZStd::string& targetPath)
     {
         const AZ::Uuid documentId = OpenDocumentImpl(sourcePath, false);
         if (documentId.IsNull())
@@ -133,6 +147,16 @@ namespace AtomToolsFramework
         // Send document open notification after creating new one
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         return documentId;
+    }
+
+    bool AtomToolsDocumentSystem::DestroyDocument(const AZ::Uuid& documentId)
+    {
+        return m_documentMap.erase(documentId) != 0;
+    }
+
+    AZ::Uuid AtomToolsDocumentSystem::OpenDocument(const AZStd::string& sourcePath)
+    {
+        return OpenDocumentImpl(sourcePath, true);
     }
 
     bool AtomToolsDocumentSystem::CloseDocument(const AZ::Uuid& documentId)
@@ -227,7 +251,9 @@ namespace AtomToolsFramework
         AZStd::string saveDocumentPath;
         AtomToolsDocumentRequestBus::EventResult(saveDocumentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
-        if (saveDocumentPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveDocumentPath))
+        if (saveDocumentPath.empty() ||
+            !AzFramework::StringFunc::Path::Normalize(saveDocumentPath) ||
+            AzFramework::StringFunc::Path::IsRelative(saveDocumentPath.c_str()))
         {
             return false;
         }
@@ -258,10 +284,12 @@ namespace AtomToolsFramework
         return true;
     }
 
-    bool AtomToolsDocumentSystem::SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath)
+    bool AtomToolsDocumentSystem::SaveDocumentAsCopy(const AZ::Uuid& documentId, const AZStd::string& targetPath)
     {
         AZStd::string saveDocumentPath = targetPath;
-        if (saveDocumentPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveDocumentPath))
+        if (saveDocumentPath.empty() ||
+            !AzFramework::StringFunc::Path::Normalize(saveDocumentPath) ||
+            AzFramework::StringFunc::Path::IsRelative(saveDocumentPath.c_str()))
         {
             return false;
         }
@@ -291,10 +319,12 @@ namespace AtomToolsFramework
         return true;
     }
 
-    bool AtomToolsDocumentSystem::SaveDocumentAsChild(const AZ::Uuid& documentId, AZStd::string_view targetPath)
+    bool AtomToolsDocumentSystem::SaveDocumentAsChild(const AZ::Uuid& documentId, const AZStd::string& targetPath)
     {
         AZStd::string saveDocumentPath = targetPath;
-        if (saveDocumentPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveDocumentPath))
+        if (saveDocumentPath.empty() ||
+            !AzFramework::StringFunc::Path::Normalize(saveDocumentPath) ||
+            AzFramework::StringFunc::Path::IsRelative(saveDocumentPath.c_str()))
         {
             return false;
         }
@@ -442,15 +472,12 @@ namespace AtomToolsFramework
         m_queueReopenDocuments = false;
     }
 
-    AZ::Uuid AtomToolsDocumentSystem::OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen)
+    AZ::Uuid AtomToolsDocumentSystem::OpenDocumentImpl(const AZStd::string& sourcePath, bool checkIfAlreadyOpen)
     {
         AZStd::string requestedPath = sourcePath;
-        if (requestedPath.empty())
-        {
-            return AZ::Uuid::CreateNull();
-        }
-
-        if (!AzFramework::StringFunc::Path::Normalize(requestedPath))
+        if (requestedPath.empty() ||
+            !AzFramework::StringFunc::Path::Normalize(requestedPath) ||
+            AzFramework::StringFunc::Path::IsRelative(requestedPath.c_str()))
         {
             QMessageBox::critical(QApplication::activeWindow(),
                 QObject::tr("Document could not be opened"),
@@ -476,7 +503,7 @@ namespace AtomToolsFramework
 
         TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
-        AZ::Uuid documentId = CreateDocument();
+        AZ::Uuid documentId = CreateDocumentFromFileType(requestedPath);
         if (documentId.IsNull())
         {
             QMessageBox::critical(
@@ -497,7 +524,8 @@ namespace AtomToolsFramework
             DestroyDocument(documentId);
             return AZ::Uuid::CreateNull();
         }
-        else if (traceRecorder.GetWarningCount(true) > 0)
+
+        if (traceRecorder.GetWarningCount(true) > 0)
         {
             QMessageBox::warning(
                 QApplication::activeWindow(),
