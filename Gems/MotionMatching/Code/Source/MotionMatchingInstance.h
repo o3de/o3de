@@ -12,8 +12,6 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
-
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <Feature.h>
 #include <TrajectoryHistory.h>
@@ -115,7 +113,5 @@ namespace EMotionFX::MotionMatching
         /// Buffers used for FindLowestCostFrameIndex().
         AZStd::vector<float> m_tempCosts;
         AZStd::vector<float> m_minCosts;
-
-        AZStd::vector<AzFramework::DebugDisplayRequests*> m_debugDisplays;
     };
 } // namespace EMotionFX::MotionMatching

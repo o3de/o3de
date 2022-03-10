@@ -1298,6 +1298,9 @@ namespace AzToolsFramework
             Prefab::PrefabDom instanceDomAfter;
             m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
 
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
+
             // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
             // and then add the deletion as children.
             // Commands always execute themselves first and then their children (when going forwards)
