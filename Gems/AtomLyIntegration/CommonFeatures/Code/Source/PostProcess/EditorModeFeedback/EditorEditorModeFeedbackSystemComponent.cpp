@@ -11,6 +11,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -126,23 +127,37 @@ namespace AZ
 
         void EditorEditorModeFeedbackSystemComponent::Activate()
         {
+            AzFramework::ApplicationRequests::Bus::Broadcast(
+                [this](AzFramework::ApplicationRequests::Bus::Events* ebus)
+                {
+                    m_registeryEnabled = ebus->IsEditorModeFeedbackEnabled();
+                });
+
             AzToolsFramework::Components::EditorComponentBase::Activate();
             AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
-            AZ::Interface<EditorModeFeedbackInterface>::Register(this);
             AZ::TickBus::Handler::BusConnect();
+
+            if (m_registeryEnabled)
+            {
+                AZ::Interface<EditorModeFeedbackInterface>::Register(this);
+            }
         }
 
         void EditorEditorModeFeedbackSystemComponent::Deactivate()
         {
+            if (m_registeryEnabled)
+            {
+                AZ::Interface<EditorModeFeedbackInterface>::Unregister(this);
+            }
+
             AZ::TickBus::Handler::BusDisconnect();
-            AZ::Interface<EditorModeFeedbackInterface>::Unregister(this);
             AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
             AzToolsFramework::Components::EditorComponentBase::Deactivate();
         }
 
         bool EditorEditorModeFeedbackSystemComponent::IsEnabled() const
         {
-            return m_enabled;
+            return m_enabled && m_registeryEnabled;
         }
 
         void EditorEditorModeFeedbackSystemComponent::RegisterOrUpdateDrawableComponent(
@@ -196,7 +211,7 @@ namespace AZ
 
         void EditorEditorModeFeedbackSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
-            if (!m_enabled)
+            if (!IsEnabled())
             {
                 return;
             }

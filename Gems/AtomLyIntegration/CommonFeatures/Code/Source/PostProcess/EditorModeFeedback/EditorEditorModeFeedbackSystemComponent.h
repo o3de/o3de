@@ -81,6 +81,9 @@ namespace AZ
 
             //! Material for sending draw packets to the entity mask pass.
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;
+
+            //! Settings registery override for enabling/disabling editor mode feedback.
+            bool m_registeryEnabled = false;
         };
     } // namespace Render
 } // namespace AZ
