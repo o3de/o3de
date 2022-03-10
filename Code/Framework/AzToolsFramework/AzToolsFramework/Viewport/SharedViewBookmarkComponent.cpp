@@ -39,8 +39,7 @@ namespace AzToolsFramework
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<EditorViewBookmarks>()
-                ->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);
+            serializeContext->Class<EditorViewBookmarks>()->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -82,7 +81,8 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SharedViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &SharedViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
             }
         }
@@ -102,13 +102,25 @@ namespace AzToolsFramework
         m_viewBookmark.m_viewBookmarks.push_back(viewBookmark);
     }
 
-    void SharedViewBookmarkComponent::RemoveBookmarkAtIndex([[maybe_unused]] int index)
+    bool SharedViewBookmarkComponent::RemoveBookmarkAtIndex(int index)
     {
+        if (index >= 0 && index < m_viewBookmark.m_viewBookmarks.size())
+        {
+            m_viewBookmark.m_viewBookmarks.erase(m_viewBookmark.m_viewBookmarks.cbegin() + index);
+            return true;
+        }
+
+        return false;
     }
 
-    void SharedViewBookmarkComponent::ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark)
+    bool SharedViewBookmarkComponent::ModifyBookmarkAtIndex(int index,const ViewBookmark& newBookmark)
     {
-        m_viewBookmark.m_viewBookmarks[index] = newBookmark;
+        if (index >= 0 && index < m_viewBookmark.m_viewBookmarks.size())
+        {
+            m_viewBookmark.m_viewBookmarks[index] = newBookmark;
+            return true;
+        }
+        return false;
     }
 
     void SharedViewBookmarkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)

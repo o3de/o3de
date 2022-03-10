@@ -16,7 +16,7 @@ namespace AzToolsFramework
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<LocalViewBookmarkComponent>()->Field(
+            serializeContext->Class<LocalViewBookmarkComponent, EditorComponentBase>()->Field(
                 "LocalBookmarkFileName", &LocalViewBookmarkComponent::m_localBookmarksFileName);
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {

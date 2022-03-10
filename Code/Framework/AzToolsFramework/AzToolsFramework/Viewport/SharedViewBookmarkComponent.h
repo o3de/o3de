@@ -21,6 +21,8 @@ namespace AzToolsFramework
         ViewBookmark() = default;
 
         static void Reflect(AZ::ReflectContext* context);
+        bool operator==(const ViewBookmark& other) const { return m_position == other.m_position && m_rotation == other.m_rotation; }
+        bool operator!=(const ViewBookmark& other) const { return m_position != other.m_position || m_rotation != other.m_rotation; }
 
         AZ::Vector3 m_position = AZ::Vector3::CreateZero();
         AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();
@@ -58,8 +60,8 @@ namespace AzToolsFramework
 
         AZStd::optional<ViewBookmark> GetBookmarkAtIndex(int index) const;
         void AddBookmark(ViewBookmark viewBookmark);
-        void RemoveBookmarkAtIndex(int index);
-        void ModifyBookmarkAtIndex(int index, ViewBookmark newBookmark);
+        bool RemoveBookmarkAtIndex(int index);
+        bool ModifyBookmarkAtIndex(int index, const ViewBookmark& newBookmark);
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);

@@ -21,6 +21,10 @@
 #include <QAbstractEventDispatcher>
 #endif
 
+// Atom
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Interface/Interface.h>
@@ -35,6 +39,7 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
+#include <AzFramework/Viewport/CameraInput.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Application/Ticker.h>
@@ -44,6 +49,8 @@
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
@@ -845,78 +852,183 @@ void MainWindow::InitActions()
         .SetShortcut(tr("Z"))
         .SetToolTip(tr("Center on Selection (Z)"))
         .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected);
+
+    auto goToViewBookmark = [](int index)
+    {
+        if (AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get())
+        {
+            const AZStd::optional<AzToolsFramework::ViewBookmark> bookmark =
+                bookmarkLoader->GetBookmarkAtIndex(index, ViewBookmarkLoaderInterface::StorageMode::Local);
+
+            if (bookmark.has_value())
+            {
+                auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+                if (!viewportContextManager)
+                {
+                    return false;
+                }
+
+                auto viewportContext = viewportContextManager->GetDefaultViewportContext();
+                if (!viewportContext)
+                {
+                    return false;
+                }
+
+                //Check the bookmark we want to load is not exactly 0;
+                if (bookmark.value() != ViewBookmark())
+                {
+                    SandboxEditor::InterpolateDefaultViewportCameraToTransform(
+                        bookmark->m_position, bookmark->m_rotation.GetX(), bookmark->m_rotation.GetZ());
+
+                    QString tagConsoleText = tr("View Bookmark %1 loaded position: x=%2, y=%3, z=%4")
+                                                 .arg(index + 1)
+                                                 .arg(bookmark->m_position.GetX(), 0, 'f', 2)
+                                                 .arg(bookmark->m_position.GetY(), 0, 'f', 2)
+                                                 .arg(bookmark->m_position.GetZ(), 0, 'f', 2);
+                    GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
+                    return true;
+                }
+            }
+        }
+
+        QString tagConsoleText = tr("Couldn't find View Bookmark Loader");
+        GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
+        AZ_Warning("Main Window", false, "goToViewBookmark: Couldn't find View Bookmark Loader");
+        return false;
+    };
+
     am->AddAction(ID_GOTO_LOC1, tr("Location 1"))
         .SetShortcut(tr("Shift+F1"))
-        .SetToolTip(tr("Location 1 (Shift+F1)"));
+        .SetToolTip(tr("Location 1 (Shift+F1)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(0);});
     am->AddAction(ID_GOTO_LOC2, tr("Location 2"))
         .SetShortcut(tr("Shift+F2"))
-        .SetToolTip(tr("Location 2 (Shift+F2)"));
+        .SetToolTip(tr("Location 2 (Shift+F2)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(1);});
     am->AddAction(ID_GOTO_LOC3, tr("Location 3"))
         .SetShortcut(tr("Shift+F3"))
-        .SetToolTip(tr("Location 3 (Shift+F3)"));
+        .SetToolTip(tr("Location 3 (Shift+F3)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(2);});
     am->AddAction(ID_GOTO_LOC4, tr("Location 4"))
         .SetShortcut(tr("Shift+F4"))
-        .SetToolTip(tr("Location 4 (Shift+F4)"));
+        .SetToolTip(tr("Location 4 (Shift+F4)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(3);});
     am->AddAction(ID_GOTO_LOC5, tr("Location 5"))
         .SetShortcut(tr("Shift+F5"))
-        .SetToolTip(tr("Location 5 (Shift+F5)"));
+        .SetToolTip(tr("Location 5 (Shift+F5)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(4);});
     am->AddAction(ID_GOTO_LOC6, tr("Location 6"))
         .SetShortcut(tr("Shift+F6"))
-        .SetToolTip(tr("Location 6 (Shift+F6)"));
+        .SetToolTip(tr("Location 6 (Shift+F6)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(5);});
     am->AddAction(ID_GOTO_LOC7, tr("Location 7"))
         .SetShortcut(tr("Shift+F7"))
-        .SetToolTip(tr("Location 7 (Shift+F7)"));
+        .SetToolTip(tr("Location 7 (Shift+F7)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(6);});
     am->AddAction(ID_GOTO_LOC8, tr("Location 8"))
         .SetShortcut(tr("Shift+F8"))
-        .SetToolTip(tr("Location 8 (Shift+F8)"));
+        .SetToolTip(tr("Location 8 (Shift+F8)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(7);});
     am->AddAction(ID_GOTO_LOC9, tr("Location 9"))
         .SetShortcut(tr("Shift+F9"))
-        .SetToolTip(tr("Location 9 (Shift+F9)"));
+        .SetToolTip(tr("Location 9 (Shift+F9)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(8);});
     am->AddAction(ID_GOTO_LOC10, tr("Location 10"))
         .SetShortcut(tr("Shift+F10"))
-        .SetToolTip(tr("Location 10 (Shift+F10)"));
+        .SetToolTip(tr("Location 10 (Shift+F10)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(9);});
     am->AddAction(ID_GOTO_LOC11, tr("Location 11"))
         .SetShortcut(tr("Shift+F11"))
-        .SetToolTip(tr("Location 11 (Shift+F11)"));
+        .SetToolTip(tr("Location 11 (Shift+F11)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(10);});
     am->AddAction(ID_GOTO_LOC12, tr("Location 12"))
         .SetShortcut(tr("Shift+F12"))
-        .SetToolTip(tr("Location 12 (Shift+F12)"));
+        .SetToolTip(tr("Location 12 (Shift+F12)"))
+        .Connect(&QAction::triggered, [&goToViewBookmark](){ goToViewBookmark(11);});
+
+    auto tagViewBookmark = [](int index)
+    {
+        if (AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get())
+        {
+            bool found = false;
+            AzFramework::CameraState cameraState;
+            Camera::EditorCameraRequestBus::BroadcastResult(
+                found, &Camera::EditorCameraRequestBus::Events::GetActiveCameraState, cameraState);
+            if (found)
+            {
+                ViewBookmark bookmark;
+                bookmark.m_position = cameraState.m_position;
+                bookmark.m_rotation =
+                    AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up));
+
+                bookmarkLoader->ModifyBookmarkAtIndex(bookmark, index, ViewBookmarkLoaderInterface::StorageMode::Local);
+                QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
+                                             .arg(index + 1)
+                                             .arg(bookmark.m_position.GetX(), 0, 'f', 2)
+                                             .arg(bookmark.m_position.GetY(), 0, 'f', 2)
+                                             .arg(bookmark.m_position.GetZ(), 0, 'f', 2);
+                GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
+                return true;
+            }
+
+            AZ_Warning("Main Window", false, "tagLocation: Couldn't find Active Camera State.");
+            return false;
+        }
+        QString tagConsoleText = tr("Failed to tag View Bookmark %1").arg(index + 1);
+        GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
+
+        AZ_Warning("Main Window", false, "tagViewBookmark: Couldn't find View Bookmark Loader");
+        return false;
+    };
+
     am->AddAction(ID_TAG_LOC1, tr("Location 1"))
         .SetShortcut(tr("Ctrl+F1"))
-        .SetToolTip(tr("Location 1 (Ctrl+F1)"));
+        .SetToolTip(tr("Location 1 (Ctrl+F1)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(0); });
     am->AddAction(ID_TAG_LOC2, tr("Location 2"))
         .SetShortcut(tr("Ctrl+F2"))
-        .SetToolTip(tr("Location 2 (Ctrl+F2)"));
+        .SetToolTip(tr("Location 2 (Ctrl+F2)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(1); });
     am->AddAction(ID_TAG_LOC3, tr("Location 3"))
         .SetShortcut(tr("Ctrl+F3"))
-        .SetToolTip(tr("Location 3 (Ctrl+F3)"));
+        .SetToolTip(tr("Location 3 (Ctrl+F3)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(2); });
     am->AddAction(ID_TAG_LOC4, tr("Location 4"))
         .SetShortcut(tr("Ctrl+F4"))
-        .SetToolTip(tr("Location 4 (Ctrl+F4)"));
+        .SetToolTip(tr("Location 4 (Ctrl+F4)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(3); });
     am->AddAction(ID_TAG_LOC5, tr("Location 5"))
         .SetShortcut(tr("Ctrl+F5"))
-        .SetToolTip(tr("Location 5 (Ctrl+F5)"));
+        .SetToolTip(tr("Location 5 (Ctrl+F5)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(4); });
     am->AddAction(ID_TAG_LOC6, tr("Location 6"))
         .SetShortcut(tr("Ctrl+F6"))
-        .SetToolTip(tr("Location 6 (Ctrl+F6)"));
+        .SetToolTip(tr("Location 6 (Ctrl+F6)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(5); });
     am->AddAction(ID_TAG_LOC7, tr("Location 7"))
         .SetShortcut(tr("Ctrl+F7"))
-        .SetToolTip(tr("Location 7 (Ctrl+F7)"));
+        .SetToolTip(tr("Location 7 (Ctrl+F7)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(6); });
     am->AddAction(ID_TAG_LOC8, tr("Location 8"))
         .SetShortcut(tr("Ctrl+F8"))
-        .SetToolTip(tr("Location 8 (Ctrl+F8)"));
+        .SetToolTip(tr("Location 8 (Ctrl+F8)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(7); });
     am->AddAction(ID_TAG_LOC9, tr("Location 9"))
         .SetShortcut(tr("Ctrl+F9"))
-        .SetToolTip(tr("Location 9 (Ctrl+F9)"));
+        .SetToolTip(tr("Location 9 (Ctrl+F9)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(8); });
     am->AddAction(ID_TAG_LOC10, tr("Location 10"))
         .SetShortcut(tr("Ctrl+F10"))
-        .SetToolTip(tr("Location 10 (Ctrl+F10)"));
+        .SetToolTip(tr("Location 10 (Ctrl+F10)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(9); });
     am->AddAction(ID_TAG_LOC11, tr("Location 11"))
         .SetShortcut(tr("Ctrl+F11"))
-        .SetToolTip(tr("Location 11 (Ctrl+F11)"));
+        .SetToolTip(tr("Location 11 (Ctrl+F11)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(10); });
     am->AddAction(ID_TAG_LOC12, tr("Location 12"))
         .SetShortcut(tr("Ctrl+F12"))
-        .SetToolTip(tr("Location 12 (Ctrl+F12)"));
+        .SetToolTip(tr("Location 12 (Ctrl+F12)"))
+        .Connect(&QAction::triggered, [&tagViewBookmark](){ tagViewBookmark(11); });
 
     if (CViewManager::IsMultiViewportEnabled())
     {
