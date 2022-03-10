@@ -524,10 +524,41 @@ namespace ScriptCanvasEditor
     }
 
     AZ::Outcome<EditorGraph::LiveSlotInfo, AZStd::string> EditorGraph::ConvertToLiveStateInfo
-        ( const ScriptCanvas::Node& /*node*/
-        , const ScriptCanvas::Slot& /*slot*/) const
+        ( const ScriptCanvas::Node& node
+        , const ScriptCanvas::Slot& nodeSlot) const
     {
-        return AZ::Failure(AZStd::string("FINISH ME!"));
+        LiveSlotInfo info;
+        ScriptCanvas::SlotState& slotState = info.state;
+        slotState.type = nodeSlot.GetType();
+        slotState.name = nodeSlot.GetName();
+
+        if (slotState.type == ScriptCanvas::CombinedSlotType::DataIn || slotState.type == ScriptCanvas::CombinedSlotType::DataOut)
+        {
+            slotState.value.SetType(nodeSlot.GetDataType());
+            
+            if (nodeSlot.IsVariableReference())
+            {
+                slotState.variableReference = nodeSlot.GetVariableReference();
+            }
+            else if (!nodeSlot.IsConnected())
+            {
+                if (auto datum = nodeSlot.FindDatum())
+                {
+                    slotState.value.DeepCopyDatum(*datum);
+                }
+                else
+                {
+                    return AZ::Failure(AZStd::string::format("Failed to copy over required value from Slot: %s", slotState.name.c_str()));
+                }
+            }
+            else
+            {
+                slotState.value.SetToDefaultValueOfType();
+            }
+        }
+
+        info.connections = AZStd::move(node.GetConnectedNodes(nodeSlot));
+        return AZ::Success(info);
     }
 
     AZ::Outcome<EditorGraph::LiveSlotStates, AZStd::string> EditorGraph::GetSlotState(const ScriptCanvas::Node& node) const
@@ -537,25 +568,58 @@ namespace ScriptCanvasEditor
         auto nodeSlots = node.GetAllSlots();
         for (auto nodeSlot : nodeSlots)
         {
-            if (auto liveSlotInfoOutcome = ConvertToLiveStateInfo(node, *nodeSlot); liveSlotInfoOutcome.IsSuccess())
+            if (!nodeSlot)
             {
-                slotStates.push_back(liveSlotInfoOutcome.TakeValue());
+                return AZ::Failure(AZStd::string("null slot in Node %s list: ", node.GetNodeName().c_str()));
             }
-            else
+
+            auto liveSlotInfoOutcome = ConvertToLiveStateInfo(node, *nodeSlot);
+            if (!liveSlotInfoOutcome.IsSuccess())
             {
                 return AZ::Failure(liveSlotInfoOutcome.TakeError());
             }
+
+            slotStates.push_back(liveSlotInfoOutcome.TakeValue());
         }
 
         return AZ::Success(slotStates);
     }
 
     AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotState
-        ( [[maybe_unused]] ScriptCanvas::Node& node
-        , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
-        , [[maybe_unused]] const LiveSlotStates& slotState)
+        ( ScriptCanvas::Node& node
+        , ScriptCanvas::Slot& slot
+        , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
+        , const LiveSlotStates& slotState)
     {
-        return AZ::Failure(AZStd::string("FINISH ME!"));
+        // find a match for the slot in the slot state
+        // update based on type / values
+        // make new connections if possible
+
+        return AZ::Success();
+    }
+
+    AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotState
+        ( ScriptCanvas::Node& node
+        , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
+        , const LiveSlotStates& slotState)
+    {
+        auto nodeSlots = node.ModAllSlots();
+
+        for (auto nodeSlot : nodeSlots)
+        {
+            if (!nodeSlot)
+            {
+                return AZ::Failure(AZStd::string("null slot in Node %s list: ", node.GetNodeName().c_str()));
+            }
+
+            auto slotOutcome = UpdateSlotState(node, *nodeSlot, nodeConfig, slotState);
+            if (!slotOutcome.IsSuccess() && !nodeConfig.m_tolerateIndividualSlotUpdateFailures)
+            {
+                return AZ::Failure(AZStd::string("null slot in Node %s list: ", node.GetNodeName().c_str()));
+            }
+        }
+
+        return AZ::Success();
     }
 
     AZ::Outcome<ScriptCanvas::Node*> EditorGraph::ReplaceNodeByConfig

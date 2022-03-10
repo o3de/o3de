@@ -393,8 +393,9 @@ namespace ScriptCanvas
         AZStd::string m_className;
         AZStd::string m_methodName;
         PropertyStatus m_propertyStatus = PropertyStatus::None;
-        // AZStd::function<void(const Node&, Node&)> modify;
         AZStd::function<Node*(const Node&)> create;
+
+        bool m_tolerateIndividualSlotUpdateFailures = false;
 
         bool IsValid()
         {
