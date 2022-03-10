@@ -220,12 +220,13 @@ namespace Multiplayer
         {
             server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
         }
-        
+
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --rhi "%s")",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
-            server_rhi.GetCStr()
+            server_rhi.GetCStr(),
+            static_cast<uint16_t>(editorsv_port)
         );
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;

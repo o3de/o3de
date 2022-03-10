@@ -24,6 +24,9 @@ namespace AzQtComponents
         static QString GetSaveFileName(QWidget* parent = nullptr, const QString& caption = QString(),
             const QString& dir = QString(), const QString& filter = QString(),
             QString* selectedFilter = nullptr, QFileDialog::Options options = QFileDialog::Options());
+        
+        //! Check if the filename has any invalid characters
+        static bool IsValidFileName(const QString& fileName);
 
         //! Helper method that parses a selected filter from Qt's QFileDialog::getSaveFileName and applies the 
         //! selected filter's extension to the filePath if it doesnt already have the extension. This is needed
