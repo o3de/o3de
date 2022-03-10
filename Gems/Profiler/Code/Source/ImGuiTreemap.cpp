@@ -28,7 +28,8 @@ namespace Profiler
         hash *= 1103515245u;
         hash += 12345u;
 
-        outHue = static_cast<float>(hash) / 0xffffffff;
+        // The explicit cast of the uint32 max quantity is needed because on cast, the value increases by 1.
+        outHue = static_cast<float>(hash) / static_cast<float>(0xffffffff);
 
         outSaturation = 0.7f;
     }
