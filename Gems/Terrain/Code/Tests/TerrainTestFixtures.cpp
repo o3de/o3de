@@ -151,6 +151,28 @@ namespace UnitTest
         return entity;
     }
 
+        AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestLayerSpawnerEntity(
+        const AZ::Aabb& spawnerBox,
+        const AZ::EntityId& heightGradientEntityId,
+        const Terrain::TerrainSurfaceGradientListConfig& surfaceConfig)
+    {
+        // Create the base entity
+        AZStd::unique_ptr<AZ::Entity> testLayerSpawnerEntity = CreateTestBoxEntity(spawnerBox);
+
+        // Add a Terrain Layer Spawner
+        testLayerSpawnerEntity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>();
+
+        // Add a Terrain Height Gradient List with one entry pointing to the given gradient entity
+        Terrain::TerrainHeightGradientListConfig heightConfig;
+        heightConfig.m_gradientEntities.emplace_back(heightGradientEntityId);
+        testLayerSpawnerEntity->CreateComponent<Terrain::TerrainHeightGradientListComponent>(heightConfig);
+
+        // Add a Terrain Surface Gradient List with however many entries we were given
+        testLayerSpawnerEntity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>(surfaceConfig);
+
+        return testLayerSpawnerEntity;
+    }
+
     // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
     // on a test-by-test basis.
     AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(

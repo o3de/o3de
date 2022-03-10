@@ -9,6 +9,7 @@
 
 #include <AzTest/GemTestEnvironment.h>
 #include <TerrainSystem/TerrainSystem.h>
+#include <Components/TerrainSurfaceGradientListComponent.h>
 
 namespace UnitTest
 {
@@ -71,6 +72,11 @@ namespace UnitTest
 
         // Create and activate an entity with a gradient component of the requested type, initialized with test data.
         AZStd::unique_ptr<AZ::Entity> CreateAndActivateTestRandomGradient(const AZ::Aabb& spawnerBox, uint32_t randomSeed);
+
+        AZStd::unique_ptr<AZ::Entity> CreateTestLayerSpawnerEntity(
+            const AZ::Aabb& spawnerBox,
+            const AZ::EntityId& heightGradientEntityId,
+            const Terrain::TerrainSurfaceGradientListConfig& surfaceConfig);
 
         // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
         // on a test-by-test basis.

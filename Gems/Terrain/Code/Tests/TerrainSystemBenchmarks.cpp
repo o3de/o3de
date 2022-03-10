@@ -30,12 +30,7 @@
 #include <MockAxisAlignedBoxShapeComponent.h>
 
 #include <TerrainSystem/TerrainSystem.h>
-#include <Components/TerrainLayerSpawnerComponent.h>
-#include <Components/TerrainHeightGradientListComponent.h>
-#include <Components/TerrainSurfaceGradientListComponent.h>
-
 #include <TerrainTestFixtures.h>
-
 #include <benchmark/benchmark.h>
 
 namespace UnitTest
@@ -47,32 +42,6 @@ namespace UnitTest
         : public TerrainBenchmarkFixture
     {
     public:
-        AZStd::unique_ptr<AZ::Entity> CreateTestLayerSpawnerEntity(
-            const AZ::Aabb& spawnerBox, const AZ::EntityId& heightGradientEntityId,
-            const Terrain::TerrainSurfaceGradientListConfig& surfaceConfig)
-        {
-            // Create the base entity
-            AZStd::unique_ptr<AZ::Entity> testLayerSpawnerEntity = CreateTestBoxEntity(spawnerBox);
-
-            // Add a Terrain Layer Spawner
-            testLayerSpawnerEntity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>();
-
-            // Add a Terrain Height Gradient List with one entry pointing to the given gradient entity
-            Terrain::TerrainHeightGradientListConfig heightConfig;
-            heightConfig.m_gradientEntities.emplace_back(heightGradientEntityId);
-            testLayerSpawnerEntity->CreateComponent<Terrain::TerrainHeightGradientListComponent>(heightConfig);
-
-            // Add a Terrain Surface Gradient List with however many entries we were given
-            testLayerSpawnerEntity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>(surfaceConfig);
-
-            // Set the transform to match the given spawnerBox
-            auto transform = testLayerSpawnerEntity->CreateComponent<AzFramework::TransformComponent>();
-            transform->SetLocalTM(AZ::Transform::CreateTranslation(spawnerBox.GetCenter()));
-            transform->SetWorldTM(AZ::Transform::CreateTranslation(spawnerBox.GetCenter()));
-
-            return testLayerSpawnerEntity;
-        }
-
         void RunTerrainApiBenchmark(
             benchmark::State& state,
             AZStd::function<void(
