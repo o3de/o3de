@@ -67,9 +67,6 @@ namespace GradientSignal
         bool AreTransformSettingsDisabled() const;
 
         AZ::Outcome<void, AZStd::string>  ValidatePotentialEntityId(void* newValue, const AZ::Uuid& valueType) const;
-
-        //prevent recursion in case user attaches cyclic dependences
-        mutable bool m_isRequestInProgress = false; 
     };
 
     namespace GradientSamplerUtil
@@ -118,14 +115,12 @@ namespace GradientSignal
             auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
             typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
-            if (m_isRequestInProgress)
+            if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
-                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependencies with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references");
             }
             else
             {
-                m_isRequestInProgress = true;
-
                 GradientRequestBus::EventResult(output, m_gradientId, &GradientRequestBus::Events::GetValue, sampleParamsTransformed);
 
                 if (m_invertInput)
@@ -138,8 +133,6 @@ namespace GradientSignal
                 {
                     output = GetLevels(output, m_inputMid, m_inputMin, m_inputMax, m_outputMin, m_outputMax);
                 }
-
-                m_isRequestInProgress = false;
             }
 
         }
@@ -189,21 +182,17 @@ namespace GradientSignal
             auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
             typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
-            if (m_isRequestInProgress)
+            if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
-                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependencies with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references");
                 ClearOutputValues(outValues);
                 return;
             }
             else
             {
-                m_isRequestInProgress = true;
-
                 GradientRequestBus::Event(
                     m_gradientId, &GradientRequestBus::Events::GetValues, useTransformedPositions ? transformedPositions : positions,
                     outValues);
-
-                m_isRequestInProgress = false;
             }
         }
 
