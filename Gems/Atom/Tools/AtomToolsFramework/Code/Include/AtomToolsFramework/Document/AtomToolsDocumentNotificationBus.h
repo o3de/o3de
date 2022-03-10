@@ -41,10 +41,6 @@ namespace AtomToolsFramework
         //! @param documentId unique id of document for which the notification is sent
         virtual void OnDocumentSaved([[maybe_unused]] const AZ::Uuid& documentId) {}
 
-        //! Signal that a document was selected
-        //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentSelected([[maybe_unused]] const AZ::Uuid& documentId) {}
-
         //! Signal that a document was modified
         //! @param documentId unique id of document for which the notification is sent
         virtual void OnDocumentModified([[maybe_unused]] const AZ::Uuid& documentId) {}
