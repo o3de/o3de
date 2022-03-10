@@ -20,6 +20,7 @@ namespace AzFramework
     {
         Spawnable::Reflect(context);
         SpawnableMetaData::Reflect(context);
+        EntitySpawnTicket::Reflect(context);
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
