@@ -45,6 +45,7 @@ def Multiplayer_BasicConnectivity_Connects():
 
     # 1) Open Level
     helper.open_level("Multiplayer", level_name)
+    general.set_cvar_integer('editorsv_port', 33454)
 
     with Tracer() as section_tracer:
         # 2) Enter game mode
@@ -53,7 +54,7 @@ def Multiplayer_BasicConnectivity_Connects():
         # 3) Make sure the network player was spawned
         player_id = general.find_game_entity("Player")
         Report.critical_result(TestConstants.find_network_player, player_id.IsValid())
-    
+
     # Exit game mode
     helper.exit_game_mode(TestConstants.exit_game_mode)
 

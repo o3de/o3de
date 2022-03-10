@@ -36,12 +36,11 @@ namespace MaterialEditor
         static void Reflect(AZ::ReflectContext* context);
 
         MaterialDocument() = default;
-        MaterialDocument(const AZ::Crc32& toolId);
+        MaterialDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo);
         virtual ~MaterialDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
         static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
-        AtomToolsFramework::DocumentTypeInfo GetDocumentTypeInfo() const override;
         AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
         bool Open(const AZStd::string& loadPath) override;
         bool Save() override;

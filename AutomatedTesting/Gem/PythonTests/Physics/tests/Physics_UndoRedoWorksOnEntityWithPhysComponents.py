@@ -71,11 +71,13 @@ def Physics_UndoRedoWorksOnEntityWithPhysComponents():
 
         # 4) Undo deletion
         general.undo()
+        general.idle_wait_frames(1)
         entity_id = general.find_editor_entity(entity_name)
         Report.result(Tests.deletion_undone, entity_id.IsValid())
 
         # 5) Redo deletion
         general.redo()
+        general.idle_wait_frames(1)
         entity_id = general.find_editor_entity(entity_name)
         Report.result(Tests.deletion_redone, not entity_id.IsValid())
 

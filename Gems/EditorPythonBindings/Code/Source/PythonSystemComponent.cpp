@@ -506,57 +506,14 @@ namespace EditorPythonBindings
         }
 
         // 2 - gems
-        struct GetGemSourcePathsVisitor
-            : AZ::SettingsRegistryInterface::Visitor
+        AZStd::vector<AZ::IO::Path> gemSourcePaths;
+        auto AppendGemPaths = [&gemSourcePaths](AZStd::string_view, AZStd::string_view gemPath)
         {
-            GetGemSourcePathsVisitor(AZ::SettingsRegistryInterface& settingsRegistry)
-                : m_settingsRegistry(settingsRegistry)
-            {}
-
-            using AZ::SettingsRegistryInterface::Visitor::Visit;
-            void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
-                AZStd::string_view value) override
-            {
-                AZStd::string_view jsonSourcePathPointer{ path };
-                // Remove the array index from the path and check if the JSON path ends with "/SourcePaths"
-                AZ::StringFunc::TokenizeLast(jsonSourcePathPointer, "/");
-                if (jsonSourcePathPointer.ends_with("/SourcePaths"))
-                {
-                    AZ::IO::Path newSourcePath = jsonSourcePathPointer;
-                    // Resolve any file aliases first - Do not use ResolvePath() as that assumes
-                    // any relative path is underneath the @products@ alias
-                    if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
-                    {
-                        AZ::IO::FixedMaxPath replacedAliasPath;
-                        if (fileIoBase->ReplaceAlias(replacedAliasPath, value))
-                        {
-                            newSourcePath = AZ::IO::PathView(replacedAliasPath);
-                        }
-                    }
-
-                    // The current assumption is that the gem source path is the relative to the engine root
-                    AZ::IO::Path engineRootPath;
-                    m_settingsRegistry.Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-                    newSourcePath = (engineRootPath / newSourcePath).LexicallyNormal();
-
-                    if (auto gemSourcePathIter = AZStd::find(m_gemSourcePaths.begin(), m_gemSourcePaths.end(), newSourcePath);
-                        gemSourcePathIter == m_gemSourcePaths.end())
-                    {
-                        m_gemSourcePaths.emplace_back(AZStd::move(newSourcePath));
-                    }
-                }
-            }
-
-            AZStd::vector<AZ::IO::Path> m_gemSourcePaths;
-        private:
-            AZ::SettingsRegistryInterface& m_settingsRegistry;
+            gemSourcePaths.emplace_back(gemPath);
         };
+        AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, AppendGemPaths);
 
-        GetGemSourcePathsVisitor visitor{ *settingsRegistry };
-        constexpr auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::OrganizationRootKey)
-            + "/Gems";
-        settingsRegistry->Visit(visitor, gemListKey);
-        for (const AZ::IO::Path& gemSourcePath : visitor.m_gemSourcePaths)
+        for (const AZ::IO::Path& gemSourcePath : gemSourcePaths)
         {
             resolveScriptPath(gemSourcePath.Native());
         }

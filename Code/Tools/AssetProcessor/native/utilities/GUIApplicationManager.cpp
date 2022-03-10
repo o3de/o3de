@@ -152,6 +152,8 @@ ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
 
 void GUIApplicationManager::Destroy()
 {
+    m_startupErrorCollector = nullptr;
+
     if (m_mainWindow)
     {
         delete m_mainWindow;

@@ -11,6 +11,7 @@
 #include <QDirIterator>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Gem/GemInfo.h>
@@ -1019,7 +1020,7 @@ namespace AssetProcessor
             return false;
         }
 
-        AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+        AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
         AZ::IO::FixedMaxPathString projectName = AZ::Utils::GetProjectName();
 
         AZ::IO::FixedMaxPath engineRoot(AZ::IO::PosixPathSeparator);
@@ -1040,6 +1041,36 @@ namespace AssetProcessor
 
         if (!skipScanFolders)
         {
+            AZStd::unordered_map<AZStd::string, AZ::IO::Path> gemNameToPathMap;
+            auto MakeGemNameToPathMap = [&gemNameToPathMap, &projectPath, &engineRoot]
+            (AZStd::string_view gemName, AZ::IO::PathView gemPath)
+            {
+                AZ::IO::FixedMaxPath gemAbsPath = gemPath;
+                if (gemPath.IsRelative())
+                {
+                    gemAbsPath = projectPath / gemPath;
+                    if (!AZ::IO::SystemFile::Exists(gemAbsPath.c_str()))
+                    {
+                        gemAbsPath = engineRoot / gemPath;
+                    }
+
+                    // convert the relative path to an absolute path
+                    if (!AZ::IO::SystemFile::Exists(gemAbsPath.c_str()))
+                    {
+                        if (auto gemAbsPathOpt = AZ::Utils::ConvertToAbsolutePath(gemPath.Native());
+                            gemAbsPathOpt.has_value())
+                        {
+                            gemAbsPath = AZStd::move(*gemAbsPathOpt);
+                        }
+                    }
+                }
+                if (AZ::IO::SystemFile::Exists(gemAbsPath.c_str()))
+                {
+                    gemNameToPathMap.try_emplace(AZStd::string::format("@GEMROOT:%.*s@", AZ_STRING_ARG(gemName)), gemAbsPath.AsPosix());
+                }
+            };
+
+            AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, MakeGemNameToPathMap);
             ScanFolderVisitor visitor;
             settingsRegistry->Visit(visitor, AssetProcessorSettingsKey);
             for (auto& scanFolderEntry : visitor.m_scanFolderInfos)
@@ -1073,6 +1104,17 @@ namespace AssetProcessor
                 AZ::StringFunc::Replace(scanFolderEntry.m_scanFolderDisplayName, "@PROJECTROOT@", projectPath.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_scanFolderDisplayName, "@PROJECTNAME@", projectName.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_scanFolderDisplayName, "@ENGINEROOT@", engineRoot.c_str());
+
+                // Substitute gem root path if applicable
+                if (scanFolderEntry.m_watchPath.Native().contains("@GEMROOT")
+                    || scanFolderEntry.m_scanFolderDisplayName.contains("@GEMROOT"))
+                {
+                    for (const auto& [gemAlias, gemPath] : gemNameToPathMap)
+                    {
+                        AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), gemAlias.c_str(), gemPath.c_str());
+                        AZ::StringFunc::Replace(scanFolderEntry.m_scanFolderDisplayName, gemAlias.c_str(), gemPath.c_str());
+                    }
+                }
 
                 QStringList includeIdentifiers;
                 for (AZStd::string_view includeIdentifier : scanFolderEntry.m_includeIdentifiers)

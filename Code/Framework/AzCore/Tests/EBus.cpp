@@ -4180,6 +4180,124 @@ namespace UnitTest
         EXPECT_EQ(totalThreadDispatchCalls, ThreadDispatchTestBusTraits::s_threadPostDispatchCalls);
         ThreadDispatchTestBusTraits::s_threadPostDispatchCalls = 0;
     }
+
+
+    struct ReentrantEBusUseTestRequests : public AZ::EBusTraits
+    {
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        using BusIdType = int32_t;
+
+        // This event will directly call itself recursively via EBus.
+        virtual void EventDirectlyCallsItself(bool expectedReentrantResult) = 0;
+
+        // The first event will call the second event via EBus.
+        virtual void EventCallsOtherEventOnSameEBus() = 0;
+        virtual bool EventCalledByOtherEventOnSameEBus() = 0;
+
+        // The first event will call the second event via EBus, but on different bus IDs.
+        virtual void EventCallsOtherEventOnDifferentEBusId(BusIdType busId) = 0;
+        virtual bool EventCalledByOtherEventOnDifferentEBusId() = 0;
+    };
+
+    using ReentrantEBusUseTestRequestBus = AZ::EBus<ReentrantEBusUseTestRequests>;
+
+    struct ReentrantEBusUseTestImpl : public ReentrantEBusUseTestRequestBus::Handler
+    {
+        ReentrantEBusUseTestImpl(ReentrantEBusUseTestRequestBus::BusIdType busId)
+        {
+            m_busId = busId;
+            ReentrantEBusUseTestRequestBus::Handler::BusConnect(busId);
+        }
+
+        ~ReentrantEBusUseTestImpl()
+        {
+            ReentrantEBusUseTestRequestBus::Handler::BusDisconnect();
+        }
+
+        void EventDirectlyCallsItself(bool expectedReentrantResult) override
+        {
+            // Verify that we get the expected API result. (We use ASSERT_EQ because a test failure here might cause infinite recursion)
+            ASSERT_EQ(ReentrantEBusUseTestRequestBus::HasReentrantEBusUseThisThread(), expectedReentrantResult);
+
+            // Avoid infinite recursion. :)
+            if (ReentrantEBusUseTestRequestBus::HasReentrantEBusUseThisThread())
+            {
+                return;
+            }
+
+            // This event calls itself via a nested EBus call. We expect the nested call to detect the reentrancy.
+            ReentrantEBusUseTestRequestBus::Event(m_busId, &ReentrantEBusUseTestRequestBus::Events::EventDirectlyCallsItself, true);
+        }
+
+        void EventCallsOtherEventOnSameEBus() override
+        {
+            // Call a second event on the same EBus and verify that it was called.
+            bool otherEventCalled = false;
+            ReentrantEBusUseTestRequestBus::EventResult(otherEventCalled, m_busId, 
+                &ReentrantEBusUseTestRequestBus::Events::EventCalledByOtherEventOnSameEBus);
+            EXPECT_TRUE(otherEventCalled);
+        }
+
+        bool EventCalledByOtherEventOnSameEBus() override
+        {
+            // Verify that even though two different events have been called on the same EBus,
+            // it is still considered reentrant use of the ebus itself.
+            EXPECT_TRUE(ReentrantEBusUseTestRequestBus::HasReentrantEBusUseThisThread());
+            return true;
+        }
+
+        void EventCallsOtherEventOnDifferentEBusId(BusIdType busId) override
+        {
+            // Call a second event on a different EBus and verify that it was called.
+            bool otherEventCalled = false;
+            ReentrantEBusUseTestRequestBus::EventResult(otherEventCalled, busId,
+                &ReentrantEBusUseTestRequestBus::Events::EventCalledByOtherEventOnDifferentEBusId);
+            EXPECT_TRUE(otherEventCalled);
+        }
+
+        bool EventCalledByOtherEventOnDifferentEBusId() override
+        {
+            // Verify that two different nested events on the same EBus but with different EBus IDs will not be detected as reentrant.
+            EXPECT_FALSE(ReentrantEBusUseTestRequestBus::HasReentrantEBusUseThisThread());
+            return true;
+        }
+
+
+    protected:
+        ReentrantEBusUseTestRequestBus::BusIdType m_busId;
+    };
+
+    TEST_F(EBus, ReentrantEBusUsageDetectedFromNestedDirectCalls)
+    {
+        constexpr int32_t busId = 4;
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
+
+        constexpr bool expectedReentrantResult = false;
+        ReentrantEBusUseTestRequestBus::Event(
+            busId, &ReentrantEBusUseTestRequestBus::Events::EventDirectlyCallsItself, expectedReentrantResult);
+    }
+
+    TEST_F(EBus, ReentrantEBusUsageDetectedFromTwoSeparateCallsOnSameBus)
+    {
+        constexpr int32_t busId = 4;
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
+
+        ReentrantEBusUseTestRequestBus::Event(busId, &ReentrantEBusUseTestRequestBus::Events::EventCallsOtherEventOnSameEBus);
+    }
+
+    TEST_F(EBus, ReentrantEBusUsageNotDetectedFromTwoSeparateCallsOnSameBusWithDifferentIds)
+    {
+        constexpr int32_t busId = 4;
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
+
+        constexpr int32_t secondBusId = 8;
+        ReentrantEBusUseTestImpl secondReentrantEBusUseTestRequest(secondBusId);
+
+        ReentrantEBusUseTestRequestBus::Event(busId,
+            &ReentrantEBusUseTestRequestBus::Events::EventCallsOtherEventOnDifferentEBusId, secondBusId);
+    }
+
 } // namespace UnitTest
 
 #if defined(HAVE_BENCHMARK)
