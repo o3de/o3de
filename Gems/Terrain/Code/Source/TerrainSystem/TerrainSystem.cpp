@@ -11,6 +11,7 @@
 #include <AzCore/std/sort.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
+#include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #include <Atom/RPI.Public/Scene.h>
@@ -61,6 +62,10 @@ TerrainSystem::TerrainSystem()
 
     m_requestedSettings = m_currentSettings;
     m_requestedSettings.m_worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-512.0f), AZ::Vector3(512.0f));
+
+    // Use the global JobManager for terrain jobs (we could create our own dedicated terrain JobManager if needed).
+    AZ::JobManagerBus::BroadcastResult(m_terrainJobManager, &AZ::JobManagerEvents::GetManager);
+    AZ_Assert(m_terrainJobManager, "No global JobManager found.");
 }
 
 TerrainSystem::~TerrainSystem()
@@ -106,6 +111,16 @@ void TerrainSystem::Activate()
 
 void TerrainSystem::Deactivate()
 {
+    {
+        // Cancel all active terrain jobs, and wait until they have completed.
+        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+        for (auto activeTerrainJobContext : m_activeTerrainJobContexts)
+        {
+            activeTerrainJobContext->Cancel();
+        }
+        m_activeTerrainJobContextMutexConditionVariable.wait(lock, [this]{ return m_activeTerrainJobContexts.empty(); });
+    }
+
     // Stop listening to the bus even before we signal DestroyBegin so that way any calls to the terrain system as a *result* of
     // calling DestroyBegin will fail to reach the terrain system.
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
@@ -178,7 +193,7 @@ bool TerrainSystem::InWorldBounds(float x, float y) const
 }
 
 // Generate positions to be queried based on the sampler type.
-void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPositions,
+void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>& inPositions,
     AZStd::vector<AZ::Vector3>& outPositions,
     Sampler sampler) const
 {
@@ -238,15 +253,31 @@ AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
     return inPositions;
 }
 
+AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromListOfVector2(
+    const AZStd::span<const AZ::Vector2> inPositionsVec2) const
+{
+    AZStd::vector<AZ::Vector3> inPositions;
+    inPositions.reserve(inPositionsVec2.size());
+
+    for (auto& pos : inPositionsVec2)
+    {
+        inPositions.emplace_back(AZ::Vector3(pos.GetX(), pos.GetY(), 0.0f));
+    }
+
+    return inPositions;
+}
+
 void TerrainSystem::MakeBulkQueries(
-    const AZStd::span<AZ::Vector3> inPositions,
+    const AZStd::span<const AZ::Vector3> inPositions,
     AZStd::span<AZ::Vector3> outPositions,
     AZStd::span<bool> outTerrainExists,
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
     BulkQueriesCallback queryCallback) const
 {
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
     AZ::Aabb bounds;
-    AZ::EntityId prevAreaId = FindBestAreaEntityAtPosition(inPositions[0].GetX(), inPositions[0].GetY(), bounds);
+    AZ::EntityId prevAreaId = FindBestAreaEntityAtPosition(inPositions[0], bounds);
     
     // We use a sliding window here and update the window end for each
     // position that falls in the same area as the previous positions. This consumes lesser memory
@@ -258,7 +289,7 @@ void TerrainSystem::MakeBulkQueries(
     const size_t numPositions = inPositions.size();
     for(int i = 1; i < numPositions; i++)
     {
-        AZ::EntityId areaId = FindBestAreaEntityAtPosition(inPositions[i].GetX(), inPositions[i].GetY(), bounds);
+        AZ::EntityId areaId = FindBestAreaEntityAtPosition(inPositions[i], bounds);
         bool queryHeights = false;
         if (areaId == prevAreaId)
         {
@@ -282,7 +313,7 @@ void TerrainSystem::MakeBulkQueries(
             if (prevAreaId != AZ::EntityId())
             {
                 size_t spanLength = (windowEnd - windowStart) + 1;
-                queryCallback(AZStd::span<AZ::Vector3>(inPositions.begin() + windowStart, spanLength),
+                queryCallback(AZStd::span<const AZ::Vector3>(inPositions.begin() + windowStart, spanLength),
                     AZStd::span<AZ::Vector3>(outPositions.begin() + windowStart, spanLength),
                     AZStd::span<bool>(outTerrainExists.begin() + windowStart, spanLength),
                     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList>(outSurfaceWeights.begin() + windowStart, spanLength),
@@ -297,7 +328,7 @@ void TerrainSystem::MakeBulkQueries(
     }
 }
 
-void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler, 
+void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
@@ -314,7 +345,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
 
     GenerateQueryPositions(inPositions, outPositions, sampler);
 
-    auto callback = []([[maybe_unused]] const AZStd::span<AZ::Vector3> inPositions,
+    auto callback = []([[maybe_unused]] const AZStd::span<const AZ::Vector3> inPositions,
                         AZStd::span<AZ::Vector3> outPositions,
                         AZStd::span<bool> outTerrainExists,
                         [[maybe_unused]] AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
@@ -502,7 +533,7 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
     return !terrainExists;
 }
 
-void TerrainSystem::GetNormalsSynchronous(const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler, 
+void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
     AZStd::vector<AZ::Vector3> directionVectors;
@@ -670,18 +701,137 @@ AzFramework::RenderGeometry::RayResult TerrainSystem::GetClosestIntersection(
     return m_terrainRaycastContext.RayIntersect(ray);
 }
 
-AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromListAsync(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    AZ::Vector3 inPosition = AZ::Vector3(x, y, 0);
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
 
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromListAsync(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromListAsync(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromListAsync(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromListOfVector2Async(
+    const AZStd::span<const AZ::Vector2>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromListOfVector2Async(
+    const AZStd::span<const AZ::Vector2>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromListOfVector2Async(
+    const AZStd::span<const AZ::Vector2>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromListOfVector2Async(
+    const AZStd::span<const AZ::Vector2>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+        inPositions, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromRegionAsync(
+    const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+        inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromRegionAsync(
+    const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+        inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromRegionAsync(
+    const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+        inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromRegionAsync(
+    const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            Sampler sampleFilter,
+            AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+        inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const
+{
     // Find the highest priority layer that encompasses this position
-    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
-
     // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
     for (const auto& [areaId, areaData] : m_registeredAreas)
     {
-        inPosition.SetZ(areaData.m_areaBounds.GetMin().GetZ());
-        if (areaData.m_areaBounds.Contains(inPosition))
+        if (SurfaceData::AabbContains2D(areaData.m_areaBounds, position))
         {
             bounds = areaData.m_areaBounds;
             return areaId;
@@ -692,7 +842,7 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::A
 }
 
 void TerrainSystem::GetOrderedSurfaceWeightsFromList(
-    const AZStd::span<AZ::Vector3>& inPositions,
+    const AZStd::span<const AZ::Vector3>& inPositions,
     [[maybe_unused]] Sampler sampler,
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
     AZStd::span<bool> terrainExists) const
@@ -703,7 +853,7 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
         GetHeightsSynchronous(inPositions, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, heights, terrainExists);
     }
 
-    auto callback = [](const AZStd::span<AZ::Vector3> inPositions,
+    auto callback = [](const AZStd::span<const AZ::Vector3> inPositions,
                         [[maybe_unused]] AZStd::span<AZ::Vector3> outPositions,
                         [[maybe_unused]] AZStd::span<bool> outTerrainExists,
                         AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
@@ -713,6 +863,14 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
                                 "The sizes of the surface weights list and in/out positions list should match.");
                             Terrain::TerrainAreaSurfaceRequestBus::Event(areaId, &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeightsFromList,
                                 inPositions, outSurfaceWeights);
+
+                            // Sort the surface weights on each output weight list in decreasing weight order.
+                            for (auto& outSurfaceWeight : outSurfaceWeights)
+                            {
+                                AZStd::sort(
+                                    outSurfaceWeight.begin(), outSurfaceWeight.end(),
+                                    AzFramework::SurfaceData::SurfaceTagWeightComparator());
+                            }
                         };
     
     // This will be unused for surface weights. It's fine if it's empty.
@@ -727,8 +885,10 @@ void TerrainSystem::GetOrderedSurfaceWeights(
     AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
     bool* terrainExistsPtr) const
 {
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
     AZ::Aabb bounds;
-    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(x, y, bounds);
+    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(AZ::Vector3(x, y, 0.0f), bounds);
 
     if (terrainExistsPtr)
     {
@@ -791,7 +951,7 @@ const char* TerrainSystem::GetMaxSurfaceName(
 }
 
 void TerrainSystem::ProcessHeightsFromList(
-    const AZStd::span<AZ::Vector3>& inPositions,
+    const AZStd::span<const AZ::Vector3>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -815,7 +975,7 @@ void TerrainSystem::ProcessHeightsFromList(
 }
 
 void TerrainSystem::ProcessNormalsFromList(
-    const AZStd::span<AZ::Vector3>& inPositions,
+    const AZStd::span<const AZ::Vector3>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -839,7 +999,7 @@ void TerrainSystem::ProcessNormalsFromList(
 }
 
 void TerrainSystem::ProcessSurfaceWeightsFromList(
-    const AZStd::span<AZ::Vector3>& inPositions,
+    const AZStd::span<const AZ::Vector3>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -863,7 +1023,7 @@ void TerrainSystem::ProcessSurfaceWeightsFromList(
 }
 
 void TerrainSystem::ProcessSurfacePointsFromList(
-    const AZStd::span<AZ::Vector3>& inPositions,
+    const AZStd::span<const AZ::Vector3>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -896,7 +1056,7 @@ void TerrainSystem::ProcessSurfacePointsFromList(
 }
 
 void TerrainSystem::ProcessHeightsFromListOfVector2(
-    const AZStd::span<AZ::Vector2>& inPositions,
+    const AZStd::span<const AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -905,18 +1065,13 @@ void TerrainSystem::ProcessHeightsFromListOfVector2(
         return;
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
-    {
-        bool terrainExists = false;
-        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
-        surfacePoint.m_position.SetZ(GetHeightFromVector2(position, sampleFilter, &terrainExists));
-        perPositionCallback(surfacePoint, terrainExists);
-    }
+    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
+
+    ProcessHeightsFromList(inPositionsVec3, perPositionCallback, sampleFilter);
 }
 
 void TerrainSystem::ProcessNormalsFromListOfVector2(
-    const AZStd::span<AZ::Vector2>& inPositions,
+    const AZStd::span<const AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -925,18 +1080,13 @@ void TerrainSystem::ProcessNormalsFromListOfVector2(
         return;
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
-    {
-        bool terrainExists = false;
-        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
-        surfacePoint.m_normal = GetNormalFromVector2(position, sampleFilter, &terrainExists);
-        perPositionCallback(surfacePoint, terrainExists);
-    }
+    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
+
+    ProcessNormalsFromList(inPositionsVec3, perPositionCallback, sampleFilter);
 }
 
 void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2(
-    const AZStd::span<AZ::Vector2>& inPositions,
+    const AZStd::span<const AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -945,18 +1095,13 @@ void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2(
         return;
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
-    {
-        bool terrainExists = false;
-        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
-        GetSurfaceWeightsFromVector2(position, surfacePoint.m_surfaceTags, sampleFilter, &terrainExists);
-        perPositionCallback(surfacePoint, terrainExists);
-    }
+    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
+
+    ProcessSurfaceWeightsFromList(inPositionsVec3, perPositionCallback, sampleFilter);
 }
 
 void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
-    const AZStd::span<AZ::Vector2>& inPositions,
+    const AZStd::span<const AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -965,14 +1110,9 @@ void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
         return;
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
-    {
-        bool terrainExists = false;
-        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
-        GetSurfacePointFromVector2(position, surfacePoint, sampleFilter, &terrainExists);
-        perPositionCallback(surfacePoint, terrainExists);
-    }
+    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
+
+    ProcessSurfacePointsFromList(inPositionsVec3, perPositionCallback, sampleFilter);
 }
 
 AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(
@@ -1228,10 +1368,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     if (terrainSettingsChanged || m_terrainHeightDirty || m_terrainSurfacesDirty)
     {
         // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-        // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-        // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-        // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
-        // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
+        // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
         auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
         typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 

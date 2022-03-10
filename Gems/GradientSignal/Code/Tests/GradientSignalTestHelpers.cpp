@@ -259,7 +259,7 @@ namespace UnitTest
         const float width = aznumeric_cast<float>(queryRange);
 
         // Call GetValue() on the EBus for every height and width in our ranges.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (float y = 0.0f; y < height; y += 1.0f)
             {
@@ -285,7 +285,7 @@ namespace UnitTest
         int64_t totalQueryPoints = queryRange * queryRange;
 
         // Call GetValues() for every height and width in our ranges.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Set up our vector of query positions. This is done inside the benchmark timing since we're counting the work to create
             // each query position in the single GetValue() call benchmarks, and will make the timing more directly comparable.
@@ -313,7 +313,7 @@ namespace UnitTest
         const float width = aznumeric_cast<float>(queryRange);
 
         // Call GetValue() through the GradientSampler for every height and width in our ranges.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (float y = 0.0f; y < height; y += 1.0f)
             {
@@ -343,7 +343,7 @@ namespace UnitTest
         const int64_t totalQueryPoints = queryRange * queryRange;
 
         // Call GetValues() through the GradientSampler for every height and width in our ranges.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Set up our vector of query positions. This is done inside the benchmark timing since we're counting the work to create
             // each query position in the single GetValue() call benchmarks, and will make the timing more directly comparable.

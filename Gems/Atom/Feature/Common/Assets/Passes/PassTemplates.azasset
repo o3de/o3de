@@ -461,6 +461,10 @@
                 "Path": "Passes/DiffuseProbeGridClassification.pass"
             },
             {
+                "Name": "DiffuseProbeGridPreparePassTemplate",
+                "Path": "Passes/DiffuseProbeGridPrepare.pass"
+            },
+            {
                 "Name": "DiffuseGlobalIlluminationPassTemplate",
                 "Path": "Passes/DiffuseGlobalIllumination.pass"
             },
@@ -487,6 +491,10 @@
             {
                 "Name": "DiffuseProbeGridVisualizationRayTracingPassTemplate",
                 "Path": "Passes/DiffuseProbeGridVisualizationRayTracing.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridQueryPassTemplate",
+                "Path": "Passes/DiffuseProbeGridQuery.pass"
             },
             {
                 "Name": "DiffuseProbeGridVisualizationCompositePassTemplate",

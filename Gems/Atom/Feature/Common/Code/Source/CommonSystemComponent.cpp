@@ -86,6 +86,7 @@
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
 #include <RayTracing/RayTracingPass.h>
 #include <RayTracing/RayTracingPassData.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.h>
@@ -98,6 +99,7 @@
 #include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
@@ -274,6 +276,7 @@ namespace AZ
 
             // Add Diffuse Global Illumination passes
             passSystem->AddPassCreator(Name("RayTracingAccelerationStructurePass"), &Render::RayTracingAccelerationStructurePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridPreparePass"), &Render::DiffuseProbeGridPreparePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRayTracingPass"), &Render::DiffuseProbeGridRayTracingPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridBlendIrradiancePass"), &Render::DiffuseProbeGridBlendIrradiancePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridBlendDistancePass"), &Render::DiffuseProbeGridBlendDistancePass::Create);
@@ -286,6 +289,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationAccelerationStructurePass"), &Render::DiffuseProbeGridVisualizationAccelerationStructurePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationRayTracingPass"), &Render::DiffuseProbeGridVisualizationRayTracingPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationCompositePass"), &Render::DiffuseProbeGridVisualizationCompositePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridQueryPass"), &Render::DiffuseProbeGridQueryPass::Create);
 
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
 

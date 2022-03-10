@@ -247,4 +247,18 @@ namespace UnitTest
             EXPECT_EQ(7, *mismatchIt2);
         }
     }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesAllOfReturnsTrueForMatchingViews)
+    {
+        constexpr AZStd::array numbers {0, 1, 2, 3, 4, 5};
+        EXPECT_TRUE(AZStd::ranges::all_of(numbers, [](int i) { return i < 6; })) << "All numbers should be less than 6";
+        EXPECT_FALSE(AZStd::ranges::all_of(numbers, [](int i) { return i < 5; })) << "At least one number should be greater than or equal to 5";
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesAnyOfReturnsTrueForMatchingViews)
+    {
+        constexpr AZStd::array numbers {0, 1, 2, 3, 4, 5};
+        EXPECT_TRUE(AZStd::ranges::any_of(numbers, [](int i) { return i == 3; })) << "At least one number should equal 3";
+        EXPECT_FALSE(AZStd::ranges::any_of(numbers, [](int i) { return i == 6; })) << "No number should equal 6";
+    }
 }

@@ -135,6 +135,15 @@ set(FILES
     Components/AzFrameworkConfigurationSystemComponent.cpp
     Components/NonUniformScaleComponent.h
     Components/NonUniformScaleComponent.cpp
+    DocumentPropertyEditor/AdapterBuilder.cpp
+    DocumentPropertyEditor/AdapterBuilder.h
+    DocumentPropertyEditor/BasicAdapter.cpp
+    DocumentPropertyEditor/BasicAdapter.h
+    DocumentPropertyEditor/DocumentAdapter.cpp
+    DocumentPropertyEditor/DocumentAdapter.h
+    DocumentPropertyEditor/DocumentSchema.h
+    DocumentPropertyEditor/PropertyEditorNodes.cpp
+    DocumentPropertyEditor/PropertyEditorNodes.h
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
     Font/FontInterface.h
@@ -215,6 +224,8 @@ set(FILES
     Physics/Configuration/SimulatedBodyConfiguration.cpp
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
+    Physics/DebugDraw/CharacterPhysicsDebugDraw.h
+    Physics/DebugDraw/CharacterPhysicsDebugDraw.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h

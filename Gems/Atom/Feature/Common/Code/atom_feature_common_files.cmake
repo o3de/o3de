@@ -130,6 +130,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
@@ -148,6 +150,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
