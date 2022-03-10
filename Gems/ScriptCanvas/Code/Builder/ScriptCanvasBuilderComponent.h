@@ -23,7 +23,7 @@ namespace ScriptCanvasBuilder
     {
     public:
         AZ_COMPONENT(PluginComponent, "{F8286B21-E751-4745-8BC4-512F190215FF}")
-        static void Reflect(AZ::ReflectContext* context);
+            static void Reflect(AZ::ReflectContext* context);
 
         PluginComponent() = default;
         ~PluginComponent() override = default;
