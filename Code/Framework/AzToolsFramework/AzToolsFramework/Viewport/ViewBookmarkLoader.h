@@ -18,6 +18,12 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(ViewBookmarkLoader, AZ::SystemAllocator, 0);
         AZ_RTTI(ViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkLoaderInterface);
 
+        enum class ViewBookmarkType : int
+        {
+            Standard,
+            LastKnownLocation
+        };
+
         void RegisterViewBookmarkLoaderInterface();
         void UnregisterViewBookmarkLoaderInterface();
 
@@ -27,18 +33,18 @@ namespace AzToolsFramework
         bool SaveLastKnownLocation(ViewBookmark bookmark) override;
         bool LoadViewBookmarks() override;
         AZStd::optional<ViewBookmark> GetBookmarkAtIndex(int index, const StorageMode mode) override;
-        ViewBookmark GetLastKnownLocationInLevel() const override;
+        AZStd::optional<ViewBookmark> LoadLastKnownLocation() const override;
         bool RemoveBookmarkAtIndex(int index, const StorageMode mode) override;
 
     private:
         void SaveBookmarkSettingsFile() override;
-        bool SaveLocalBookmark(const ViewBookmark& bookmark, bool isLastKnownLocation = false);
+        bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
         bool SaveLocalBookmarkAtIndex(const ViewBookmark& bookmark, int index);
         bool SaveSharedBookmark(ViewBookmark& bookmark);
         bool InitializeDefaultLocalViewBookmarks();
 
         template<typename BookmarkComponentType>
-        BookmarkComponentType* FindBookmarkComponent() const;
+        BookmarkComponentType* RetrieveBookmarkComponent() const;
 
         AZStd::string GenerateBookmarkFileName() const;
 

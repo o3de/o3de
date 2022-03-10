@@ -113,7 +113,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    bool SharedViewBookmarkComponent::ModifyBookmarkAtIndex(int index,const ViewBookmark& newBookmark)
+    bool SharedViewBookmarkComponent::ModifyBookmarkAtIndex(int index, const ViewBookmark& newBookmark)
     {
         if (index >= 0 && index < m_viewBookmark.m_viewBookmarks.size())
         {

@@ -36,7 +36,7 @@ namespace AzToolsFramework
         virtual bool SaveLastKnownLocation(ViewBookmark bookmark) = 0;
         virtual bool LoadViewBookmarks() = 0;
         virtual AZStd::optional<ViewBookmark> GetBookmarkAtIndex(int index, const StorageMode mode) = 0;
-        virtual ViewBookmark GetLastKnownLocationInLevel() const = 0;
+        virtual AZStd::optional<ViewBookmark> LoadLastKnownLocation() const = 0;
         virtual bool RemoveBookmarkAtIndex(int index, const StorageMode mode) = 0;
 
     private:
