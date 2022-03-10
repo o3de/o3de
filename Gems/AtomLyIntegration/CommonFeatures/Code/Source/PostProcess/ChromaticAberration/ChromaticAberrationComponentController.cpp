@@ -22,8 +22,9 @@ namespace AZ
 
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<ChromaticAberrationComponentController>()->Version(0)->Field(
-                    "Configuration", &ChromaticAberrationComponentController::m_configuration);
+                serializeContext->Class<ChromaticAberrationComponentController>()
+                ->Version(0)
+                ->Field("Configuration", &ChromaticAberrationComponentController::m_configuration);
             }
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

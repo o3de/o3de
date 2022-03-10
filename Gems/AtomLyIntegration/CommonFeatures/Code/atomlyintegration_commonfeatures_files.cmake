@@ -83,7 +83,7 @@ set(FILES
     Source/PostProcess/Bloom/BloomComponentConfig.cpp
     Source/PostProcess/Bloom/BloomComponentController.cpp
     Source/PostProcess/Bloom/BloomComponentController.h
-	Source/PostProcess/ChromaticAberration/ChromaticAberrationComponent.cpp
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationComponent.cpp
     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponent.h
     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.cpp
     Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentController.cpp

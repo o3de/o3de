@@ -31,7 +31,7 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h
-	Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldComponentConfig.h

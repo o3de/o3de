@@ -85,7 +85,7 @@ namespace AZ
             }
 
             AZ_Assert(GetOutputCount() > 0, "ChromaticAberrationPass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "ChromaticAberrationPass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
