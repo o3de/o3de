@@ -138,6 +138,10 @@ namespace EMotionFX
             case QtWarningMsg:
             case QtCriticalMsg:
             case QtFatalMsg:
+                if (msg.contains("has active key-value observers (KVO)! These will stop working now that the window is recreated, and will result in exceptions when the observers are removed"))
+                {
+                    break;
+                }
                 FAIL() << msg.toStdString();
                 break;
             }
