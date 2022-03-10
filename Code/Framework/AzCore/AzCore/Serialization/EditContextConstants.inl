@@ -194,6 +194,9 @@ namespace AZ
             //! For use with slice creation tools. See SliceCreationFlags below for details.
             const static AZ::Crc32 SliceFlags = AZ_CRC("SliceFlags", 0xa447e1fb);
 
+            //! To allow the transform components lineedit to be modified dependant on position in the heirarchy.
+            const static AZ::Crc32 TransformParentClearButton = AZ_CRC_CE("TransformParentClearButton");
+
             //! For optional use on Getter Events used for Virtual Properties
             const static AZ::Crc32 PropertyPosition = AZ_CRC("Position", 0x462ce4f5);
             const static AZ::Crc32 PropertyRotation = AZ_CRC("Rotation", 0x297c98f1);

@@ -78,6 +78,9 @@ namespace AzToolsFramework
 
         void SetAcceptedEntityContext(AzFramework::EntityContextId contextId);
 
+        void SetCheckClearButton(bool value){m_checkClearButton = value;}
+        bool GetCheckClearButton(){return m_checkClearButton;}
+
     signals:
         void OnEntityIdChanged(AZ::EntityId newEntityId);
 
@@ -106,7 +109,7 @@ namespace AzToolsFramework
         AZStd::list<AZStd::string> m_componentsSatisfyingServices;
 
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
-
+        bool m_checkClearButton{ false };
         QIcon m_pickerIcon;
     };
 
