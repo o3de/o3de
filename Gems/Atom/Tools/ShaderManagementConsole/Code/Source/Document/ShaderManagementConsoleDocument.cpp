@@ -111,7 +111,24 @@ namespace ShaderManagementConsole
         return m_invalidDescriptor;
     }
 
-    AZStd::vector<AtomToolsFramework::DocumentObjectInfo> ShaderManagementConsoleDocument::GetObjectInfo() const
+    AtomToolsFramework::DocumentTypeInfo ShaderManagementConsoleDocument::BuildDocumentTypeInfo()
+    {
+        AtomToolsFramework::DocumentTypeInfo documentType = AtomToolsDocument::BuildDocumentTypeInfo();
+        documentType.m_documentTypeName = "Shader Variant List";
+        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId) { return aznew ShaderManagementConsoleDocument(toolId); };
+        documentType.m_supportedExtensionsToCreate.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
+        documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
+        return documentType;
+    }
+
+    AtomToolsFramework::DocumentTypeInfo ShaderManagementConsoleDocument::GetDocumentTypeInfo() const
+    {
+        return BuildDocumentTypeInfo();
+    }
+
+    AtomToolsFramework::DocumentObjectInfoVector ShaderManagementConsoleDocument::GetObjectInfo() const
     {
         if (!IsOpen())
         {
@@ -119,7 +136,7 @@ namespace ShaderManagementConsole
             return {};
         }
 
-        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> objects;
+        AtomToolsFramework::DocumentObjectInfoVector objects;
 
         AtomToolsFramework::DocumentObjectInfo objectInfo;
         objectInfo.m_visible = true;
@@ -133,10 +150,12 @@ namespace ShaderManagementConsole
         return objects;
     }
 
-    bool ShaderManagementConsoleDocument::Open(AZStd::string_view loadPath)
+    bool ShaderManagementConsoleDocument::Open(const AZStd::string& loadPath)
     {
         if (!AtomToolsDocument::Open(loadPath))
         {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
             return false;
         }
 
@@ -166,7 +185,7 @@ namespace ShaderManagementConsole
         return SaveSourceData();
     }
 
-    bool ShaderManagementConsoleDocument::SaveAsCopy(AZStd::string_view savePath)
+    bool ShaderManagementConsoleDocument::SaveAsCopy(const AZStd::string& savePath)
     {
         if (!AtomToolsDocument::SaveAsCopy(savePath))
         {
@@ -178,7 +197,7 @@ namespace ShaderManagementConsole
         return SaveSourceData();
     }
 
-    bool ShaderManagementConsoleDocument::SaveAsChild(AZStd::string_view savePath)
+    bool ShaderManagementConsoleDocument::SaveAsChild(const AZStd::string& savePath)
     {
         if (!AtomToolsDocument::SaveAsChild(savePath))
         {
@@ -198,12 +217,6 @@ namespace ShaderManagementConsole
     bool ShaderManagementConsoleDocument::IsModified() const
     {
         return false;
-    }
-
-    bool ShaderManagementConsoleDocument::IsSavable() const
-    {
-        return IsOpen() &&
-            AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension);
     }
 
     void ShaderManagementConsoleDocument::Clear()

@@ -74,6 +74,12 @@ class TestHelper:
 
         :return: None
         """
+        # Make sure we are not in game mode
+        if general.is_in_game_mode():
+            general.exit_game_mode()
+            TestHelper.wait_for_condition(lambda : not general.is_in_game_mode(), 1.0)
+            assert not general.is_in_game_mode(), "Editor was in gamemode when opening the level and was unable to exit from it"
+
         Report.info("Open level {}/{}".format(directory, level))
         if no_prompt:
             success = general.open_level_no_prompt(os.path.join(directory, level))
@@ -148,16 +154,13 @@ class TestHelper:
         Report.critical_result(("Unexpected line not found: " + line, "Unexpected line found: " + line), not TestHelper.find_line(window, line, print_infos))
 
     @staticmethod
-    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], sv_default_player_spawn_asset: str) -> None:
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
-        :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 
 
         :return: None
         """
         Report.info("Entering game mode")
-        if sv_default_player_spawn_asset :
-            general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
 
         with Tracer() as section_tracer:
             # enter game-mode. 
@@ -177,8 +180,6 @@ class TestHelper:
             TestHelper.succeed_if_log_line_found("EditorServer", "Logger: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
 
             TestHelper.succeed_if_log_line_found("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
-
-            TestHelper.fail_if_log_line_found("EditorServer", f"MultiplayerSystemComponent: SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '{sv_default_player_spawn_asset.lower()}'.", section_tracer.prints, 0.5)
 
         TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
@@ -209,10 +210,8 @@ class TestHelper:
         raises FailFast
         :return: None
         """
-        Report.info("Failing fast. Raising an exception and shutting down the editor.")
         if message:
             Report.info("Fail fast message: {}".format(message))
-        TestHelper.close_editor()
         raise FailFast()
 
     @staticmethod

@@ -65,8 +65,6 @@ namespace MaterialEditor
         void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
         void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
 
-        AZStd::string GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const;
-
         AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
 
         const AZ::Crc32 m_toolId = {};
