@@ -33,7 +33,17 @@ namespace ScriptCanvas
 
         int m_index = 0;
     };
-    
+
+    struct SlotState
+    {
+        CombinedSlotType type;
+        AZStd::string name;
+        VariableId variableReference;
+        Datum value;
+    };
+    //         EndpointsResolved connections;
+
+
     class Slot final
         : public VariableNotificationBus::Handler
     {

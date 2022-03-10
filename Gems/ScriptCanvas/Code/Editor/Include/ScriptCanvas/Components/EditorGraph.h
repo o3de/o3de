@@ -360,18 +360,23 @@ namespace ScriptCanvasEditor
         // Function Definition Node Extension
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
 
-        struct SlotState
+        struct LiveSlotInfo
         {
-
+            ScriptCanvas::SlotState state;
+            ScriptCanvas::EndpointsResolved connections;
         };
 
+        using LiveSlotStates = AZStd::vector<LiveSlotInfo>;
+
         //// Version Update code
+        AZ::Outcome<LiveSlotInfo, AZStd::string> ConvertToLiveStateInfo(const ScriptCanvas::Node& node, const ScriptCanvas::Slot& slot) const;
+
         static ScriptCanvas::Node* GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeReplacementConfiguration& config);
         AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, ScriptCanvas::NodeReplacementConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
         AZ::Outcome<ScriptCanvas::Node*, AZStd::string> ReplaceLiveNode(ScriptCanvas::Node&, ScriptCanvas::NodeReplacementConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
         bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
-        AZ::Outcome<SlotState, AZStd::string> GetSlotState(const ScriptCanvas::Node& node) const;
-        AZ::Outcome<void, AZStd::string> UpdateSlotState(ScriptCanvas::Node& node, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const SlotState& slotState);
+        AZ::Outcome<LiveSlotStates, AZStd::string> GetSlotState(const ScriptCanvas::Node& node) const;
+        AZ::Outcome<void, AZStd::string> UpdateSlotState(ScriptCanvas::Node& node, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotStates& slotState);
 
         void RefreshVariableReferences(const ScriptCanvas::VariableId& variableId) override;
 

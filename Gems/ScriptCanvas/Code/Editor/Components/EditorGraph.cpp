@@ -523,15 +523,37 @@ namespace ScriptCanvasEditor
         return AZ::Success(returnNode);
     }
 
-    AZ::Outcome<EditorGraph::SlotState, AZStd::string> EditorGraph::GetSlotState([[maybe_unused]] const ScriptCanvas::Node& node) const
+    AZ::Outcome<EditorGraph::LiveSlotInfo, AZStd::string> EditorGraph::ConvertToLiveStateInfo
+        ( const ScriptCanvas::Node& /*node*/
+        , const ScriptCanvas::Slot& /*slot*/) const
     {
         return AZ::Failure(AZStd::string("FINISH ME!"));
+    }
+
+    AZ::Outcome<EditorGraph::LiveSlotStates, AZStd::string> EditorGraph::GetSlotState(const ScriptCanvas::Node& node) const
+    {
+        EditorGraph::LiveSlotStates slotStates;
+
+        auto nodeSlots = node.GetAllSlots();
+        for (auto nodeSlot : nodeSlots)
+        {
+            if (auto liveSlotInfoOutcome = ConvertToLiveStateInfo(node, *nodeSlot); liveSlotInfoOutcome.IsSuccess())
+            {
+                slotStates.push_back(liveSlotInfoOutcome.TakeValue());
+            }
+            else
+            {
+                return AZ::Failure(liveSlotInfoOutcome.TakeError());
+            }
+        }
+
+        return AZ::Success(slotStates);
     }
 
     AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotState
         ( [[maybe_unused]] ScriptCanvas::Node& node
         , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
-        , [[maybe_unused]] const SlotState& slotState)
+        , [[maybe_unused]] const LiveSlotStates& slotState)
     {
         return AZ::Failure(AZStd::string("FINISH ME!"));
     }
