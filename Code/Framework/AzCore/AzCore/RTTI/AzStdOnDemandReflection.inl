@@ -428,8 +428,8 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::Deprecated, true)
                     ->template Method<typename ContainerType::reference (ContainerType::*)(typename ContainerType::size_type)>(
                         k_accessElementNameUnchecked, &ContainerType::at,
-                        { { { "Container", "The container to get element from", nullptr, {} },
-                            { "Index", "The index to read from", nullptr, {} } } })
+                        { "Container", "The container to get element from", nullptr, {} },
+                        { { { "Index", "The index to read from", nullptr, {} } } })
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Element", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("Has Key", {}, "Out", "Key Not Found"))
                     ->Method("size", [](ContainerType& thisPtr) { return aznumeric_cast<int>(thisPtr.size()); })
@@ -447,7 +447,7 @@ namespace AZ
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Clear All Elements", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "ContainerGroup" }, { "ContainerGroup" }))
                     ->Method("Empty", &ContainerType::empty,
-                        { { { "Container", "The container to check if it is empty", nullptr, {} } } })
+                        { "Container", "The container to check if it is empty", nullptr, {} }, {})
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Is Empty", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, emptyBranchInfo)
                     ->Method("NotEmpty", [](ContainerType& thisPtr) { return !thisPtr.empty(); },
@@ -456,11 +456,11 @@ namespace AZ
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Has Elements", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, hasElementsBranchInfo)
                     ->template Method<typename ContainerType::reference(ContainerType::*)()>("Back", &ContainerType::back,
-                        { { { "Container", "The container to get the last element from", nullptr, {} } } })
+                        { "Container", "The container to get the last element from", nullptr, {} }, {})
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Last Element", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("NotEmpty", {}, "Out", "Empty"))
                     ->template Method<typename ContainerType::reference(ContainerType::*)()>("Front", &ContainerType::front,
-                        { { { "Container", "The container to get the first element from", nullptr, {} } } })
+                        { "Container", "The container to get the first element from", nullptr, {} }, {})
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get First Element", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("NotEmpty", {}, "Out", "Empty"))
                     ->Method("Has Key", &HasKey,

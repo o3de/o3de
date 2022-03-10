@@ -1227,9 +1227,7 @@ namespace AZ
     };
 
     template<class Function>
-    inline constexpr size_t FunctionTypeCallCount = AZStd::function_traits<typename AZStd::function_traits<Function>::function_type>::arity;
-    template<class Function>
-    using BehaviorParameterOverridesArray = AZStd::array<BehaviorParameterOverrides, FunctionTypeCallCount<Function>>;
+    using BehaviorParameterOverridesArray = AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>;
 
     class BehaviorEBusHandler
     {
@@ -1654,6 +1652,14 @@ namespace AZ
 
             template<class Function>
             ClassBuilder* Method(const char* name, Function f, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc = nullptr);
+
+            template<class Function>
+            ClassBuilder* Method(
+                const char* name,
+                Function f,
+                const BehaviorParameterOverrides& classMetadata,
+                const BehaviorParameterOverridesArray<Function>& argsMetadata,
+                const char* dbgDesc = nullptr);
 
             template<class Function>
             ClassBuilder* Method(const char* name, Function f, const char* deprecatedName, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc = nullptr);
@@ -2832,7 +2838,7 @@ namespace AZ
             m_events[i].m_metadataParameters.resize(m_events[i].m_parameters.size());
             for (size_t argIndex = 0; argIndex < args.size(); ++argIndex)
             {
-                m_events[i].m_metadataParameters[AZ::eBehaviorBusForwarderEventIndices::UserData + argIndex] = { args[argIndex].m_name, args[argIndex].m_toolTip };
+                m_events[i].m_metadataParameters[AZ::eBehaviorBusForwarderEventIndices::ParameterFirst + argIndex] = { args[argIndex].m_name, args[argIndex].m_toolTip };
             }
         }
     }
@@ -3188,12 +3194,13 @@ namespace AZ
             return GlobalMethodBuilder(this, nullptr, nullptr);
         }
 
+        size_t classPtrIndex = method->IsMember() ? 1 : 0;
         for (size_t i = 0; i < args.size(); ++i)
         {
-            method->SetArgumentName(i, args[i].m_name);
-            method->SetArgumentToolTip(i, args[i].m_toolTip);
-            method->SetDefaultValue(i, args[i].m_defaultValue);
-            method->OverrideParameterTraits(i, args[i].m_addTraits, args[i].m_removeTraits);
+            method->SetArgumentName(i + classPtrIndex, args[i].m_name);
+            method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
+            method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
+            method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
         }
 
         return GlobalMethodBuilder(this, name, method);
@@ -3231,6 +3238,64 @@ namespace AZ
     BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(const char* name, Function f, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc)
     {
         return Method(name, f, nullptr, args, dbgDesc);
+    }
+
+    template<class C>
+    template<class Function>
+    BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(
+        const char* name,
+        Function f,
+        const BehaviorParameterOverrides& classMetadata,
+        const BehaviorParameterOverridesArray<Function>& argsMetadata,
+        const char* dbgDesc)
+    {
+        if (m_class)
+        {
+            typedef AZ::Internal::BehaviorMethodImpl<
+                typename AZStd::RemoveFunctionConst<typename AZStd::remove_pointer<Function>::type>::type>
+                BehaviorMethodType;
+            BehaviorMethod* method =
+                aznew BehaviorMethodType(f, Base::m_context, AZStd::string::format("%s::%s", m_class->m_name.c_str(), name));
+            method->m_debugDescription = dbgDesc;
+
+            auto methodIter = m_class->m_methods.find(name);
+            if (methodIter != m_class->m_methods.end())
+            {
+                if (!methodIter->second->AddOverload(method))
+                {
+                    AZ_Error("BehaviorContext", false, "Method incorrectly reflected as C++ overload");
+                    delete method;
+                    return this;
+                }
+            }
+            else
+            {
+                m_class->m_methods.insert(AZStd::make_pair(name, method));
+            }
+
+            size_t classPtrIndex = 0;
+            if (method->IsMember())
+            {
+                method->SetArgumentName(classPtrIndex, classMetadata.m_name);
+                method->SetArgumentToolTip(classPtrIndex, classMetadata.m_toolTip);
+                method->SetDefaultValue(classPtrIndex, classMetadata.m_defaultValue);
+                method->OverrideParameterTraits(classPtrIndex, classMetadata.m_addTraits, classMetadata.m_removeTraits);
+                classPtrIndex++;
+            }
+
+            for (size_t i = 0; i < argsMetadata.size(); ++i)
+            {
+                method->SetArgumentName(i + classPtrIndex, argsMetadata[i].m_name);
+                method->SetArgumentToolTip(i + classPtrIndex, argsMetadata[i].m_toolTip);
+                method->SetDefaultValue(i + classPtrIndex, argsMetadata[i].m_defaultValue);
+                method->OverrideParameterTraits(i + classPtrIndex, argsMetadata[i].m_addTraits, argsMetadata[i].m_removeTraits);
+            }
+
+            // \note we can start returning a context so we can maintain the scope
+            Base::m_currentAttributes = &method->m_attributes;
+        }
+
+        return this;
     }
 
     template<class C>
@@ -3290,12 +3355,13 @@ namespace AZ
                 m_class->m_methods.insert(AZStd::make_pair(name, method));
             }
 
+            size_t classPtrIndex = method->IsMember() ? 1 : 0;
             for (size_t i = 0; i < args.size(); ++i)
             {
-                method->SetArgumentName(i, args[i].m_name);
-                method->SetArgumentToolTip(i, args[i].m_toolTip);
-                method->SetDefaultValue(i, args[i].m_defaultValue);
-                method->OverrideParameterTraits(i, args[i].m_addTraits, args[i].m_removeTraits);
+                method->SetArgumentName(i + classPtrIndex, args[i].m_name);
+                method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
+                method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
+                method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
             }
 
             // \note we can start returning a context so we can maintain the scope
