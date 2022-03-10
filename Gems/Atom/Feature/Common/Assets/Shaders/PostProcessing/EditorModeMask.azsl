@@ -121,17 +121,21 @@ PixelOutput MainPS(VSOutput IN)
     existingLinearDepth = abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * existingLinearDepth - ViewSrg::GetFarZ()))); 
     newLinearDepth = abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * newLinearDepth - ViewSrg::GetFarZ()))); 
 
-    if((newLinearDepth - existingLinearDepth) > 1.)
-    {
-        discard;
-    }
 
+    OUT.m_color.a = 1.0;
+    OUT.m_color.g = 1.;
+    OUT.m_color.r =0.0;
+    if((newLinearDepth - existingLinearDepth) <= 1.)
+    {
+        OUT.m_color.r =1.0;
+    }
     //existingLinearDepth *= 0.05;
     //newLinearDepth *= 0.05;
 
-    OUT.m_color = float4(1., 1., 1., 1.);
+    //OUT.m_color.r = 1.;//float4(1., 1., 1., 1.);
     // Output Linear Depth
     // OUT.m_color.rgb = existingLinearDepth.rrr;
+    
 
     return OUT;
 } 

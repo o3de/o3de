@@ -13,6 +13,13 @@
     //    "depthBiasSlopeScale" : "4"
     //},
 
+    "BlendState" : {
+        "Enable" : true,
+        "BlendSource" : "AlphaSource",
+        "BlendDest" : "AlphaSourceInverse",
+        "BlendOp" : "Maximum"
+    },
+
     "ProgramSettings":
     {
       "EntryPoints":
