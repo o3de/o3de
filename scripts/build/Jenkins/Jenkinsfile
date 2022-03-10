@@ -515,7 +515,7 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
 }
 
 def ReplaceContent() {
-    // log_file = "${WORKSPACE}".replace('workspace', 'builds/$BUILD_NUMBER/log')
+    log_file = "${WORKSPACE}".replace('workspace', 'builds/$BUILD_NUMBER/log')
     contentReplace(
         configs: [
             // Replace .cpp references to github links
@@ -529,8 +529,7 @@ def ReplaceContent() {
                 )
             ],
             fileEncoding: 'UTF-8',
-            filePath:"${JENKINS_HOME}/mnt/jenkins/jobs/O3DE-LY-FORK/branches/jenkins-replace-content.*/builds/${BUILD_NUMBER}/log"
-            // filePath:"${log_file}"
+            filePath:"${log_file}"
             ),
             // Replace .h references to github links
             fileContentReplaceConfig(
@@ -543,8 +542,7 @@ def ReplaceContent() {
                 )
             ],
             fileEncoding: 'UTF-8',
-            filePath:"${JENKINS_HOME}/mnt/jenkins/jobs/O3DE-LY-FORK/branches/jenkins-replace-content.*/builds/${BUILD_NUMBER}/log"
-            // filePath:"${log_file}"
+            filePath:"${log_file}"
             ),
             // Replace .py references github links
             fileContentReplaceConfig(
@@ -557,8 +555,7 @@ def ReplaceContent() {
                 )
             ],
             fileEncoding: 'UTF-8',
-            // filePath:"${log_file}"
-            filePath:"${JENKINS_HOME}/mnt/jenkins/jobs/O3DE-LY-FORK/branches/jenkins-replace-content.*/builds/${BUILD_NUMBER}/log"
+            filePath:"${log_file}"
             )
         ]
     )
