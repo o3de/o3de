@@ -22,6 +22,7 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -54,7 +55,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <Document/MaterialDocumentRequestBus.h>
-#include <Viewport/MaterialViewportRequestBus.h>
+#include <Viewport/MaterialViewportSettingsRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
 
 namespace MaterialEditor
@@ -71,7 +72,7 @@ namespace MaterialEditor
         const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
         viewportContextManager->RenameViewportContext(GetViewportContext(), defaultContextName);
 
-        // Create a custom entity context for the entities in this viewport 
+        // Create a custom entity context for the entities in this viewport
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
         m_entityContext->InitContext();
 
@@ -94,23 +95,18 @@ namespace MaterialEditor
         m_frameworkScene->SetSubsystem(m_entityContext.get());
 
         // Load the render pipeline asset
-        AZ::Data::Asset<AZ::RPI::AnyAsset> mainPipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            m_mainPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
-        AZ_Assert(mainPipelineAsset.IsReady(), "MaterialViewportWidget pipeline asset fails to load.");
+        AZStd::optional<AZ::RPI::RenderPipelineDescriptor> mainPipelineDesc = AZ::RPI::GetRenderPipelineDescriptorFromAsset(
+            m_mainPipelineAssetPath, AZStd::string::format("_%i", GetViewportContext()->GetId()));
+        AZ_Assert(mainPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", m_mainPipelineAssetPath.c_str());
 
-        // Copy the pipeline descriptor from the asset so that it can be given a unique name in case there are multiple viewports
-        AZ::RPI::RenderPipelineDescriptor mainPipelineDesc =
-            *AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(mainPipelineAsset);
-        mainPipelineDesc.m_name += AZStd::string::format("_%i", GetViewportContext()->GetId());
-
-        // TODO etApplicationMultisampleState should only be called once per application and will need to consider scenarios with multiple
-        // viewports and pipelines
-        // The default pipeline determines the initial MSAA state for the application
-        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(mainPipelineDesc.m_renderSettings.m_multisampleState);
-        mainPipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        // TODO SetApplicationMultisampleState should only be called once per application and will need to consider multiple viewports and
+        // pipelines. The default pipeline determines the initial MSAA state for the application.
+        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(mainPipelineDesc.value().m_renderSettings.m_multisampleState);
+        mainPipelineDesc.value().m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(mainPipelineDesc, *GetViewportContext()->GetWindowContext().get());
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(
+            mainPipelineDesc.value(), *GetViewportContext()->GetWindowContext().get());
         m_scene->AddRenderPipeline(m_renderPipeline);
 
         // Create the BRDF texture generation pipeline
@@ -223,18 +219,18 @@ namespace MaterialEditor
         OnViewportSettingsChanged();
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        MaterialViewportNotificationBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+        MaterialViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
+        AZ::TickBus::Handler::BusConnect();
     }
 
     MaterialViewportWidget::~MaterialViewportWidget()
     {
-        AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
-        MaterialViewportNotificationBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
+        MaterialViewportSettingsNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
 
         DestroyEntity(m_iblEntity);
         DestroyEntity(m_modelEntity);
@@ -341,8 +337,9 @@ namespace MaterialEditor
 
     void MaterialViewportWidget::OnViewportSettingsChanged()
     {
-        MaterialViewportRequestBus::Broadcast(
-            [this](MaterialViewportRequestBus::Events* viewportRequests)
+        MaterialViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](MaterialViewportSettingsRequestBus::Events* viewportRequests)
             {
                 UpdateLighting(viewportRequests);
                 UpdateModel(viewportRequests);

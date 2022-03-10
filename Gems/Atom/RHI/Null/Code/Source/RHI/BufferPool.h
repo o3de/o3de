@@ -43,6 +43,7 @@ namespace AZ
             void UnmapBufferInternal([[maybe_unused]] RHI::Buffer& buffer) override {}
             RHI::ResultCode StreamBufferInternal([[maybe_unused]] const RHI::BufferStreamRequest& request) override { return RHI::ResultCode::Success;}
             void BufferCopy([[maybe_unused]] void* destination, [[maybe_unused]] const void* source, [[maybe_unused]] size_t num) override {}
+            void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
 
         };

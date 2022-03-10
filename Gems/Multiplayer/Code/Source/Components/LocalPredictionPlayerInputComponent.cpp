@@ -275,17 +275,21 @@ namespace Multiplayer
 
                 correction.Resize(serializer.GetSize());
 
-                AZLOG_INFO("** Autonomous Desync - Corrected clientInputId=%d at hostFrame=%u hostTime=%lu", aznumeric_cast<int32_t>(m_lastClientInputId),
-                    aznumeric_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()), aznumeric_cast<uint64_t>(m_lastInputReceived[0].GetHostTimeMs()));
+                AZLOG_INFO(
+                    "** Autonomous Desync - Corrected clientInputId=%hu at hostFrame=%u hostTime=%" PRId64,
+                        static_cast<uint16_t>(m_lastClientInputId),
+                        static_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()),
+                        static_cast<int64_t>(m_lastInputReceived[0].GetHostTimeMs()));
 
  #ifndef AZ_RELEASE_BUILD
                 if (cl_EnableDesyncDebugging)
                 {
                     MultiplayerAuditingElement detail;
                     detail.m_name = AZStd::string::format(
-                        "Autonomous Desync - Corrected clientInputId=%d at hostFrame=%u hostTime=%lu",
-                        aznumeric_cast<int32_t>(m_lastClientInputId), aznumeric_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()),
-                        aznumeric_cast<uint64_t>(m_lastInputReceived[0].GetHostTimeMs()));
+                        "Autonomous Desync - Corrected clientInputId=%hu at hostFrame=%u hostTime=%" PRId64,
+                        static_cast<uint16_t>(m_lastClientInputId),
+                        static_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()),
+                        static_cast<int64_t>(m_lastInputReceived[0].GetHostTimeMs()));
                     AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
                         AuditCategory::Desync, m_lastClientInputId, m_lastInputReceived[0].GetHostFrameId(), GetEntity()->GetName(),
                         { AZStd::move(detail) });

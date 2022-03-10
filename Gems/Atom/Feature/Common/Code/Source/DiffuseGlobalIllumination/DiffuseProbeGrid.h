@@ -142,6 +142,7 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& GetRenderObjectSrg() const { return m_renderObjectSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetVisualizationPrepareSrg() const { return m_visualizationPrepareSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetVisualizationRayTraceSrg() const { return m_visualizationRayTraceSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetQuerySrg() const { return m_querySrg; }
 
             // Srg updates
             void UpdatePrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
@@ -155,6 +156,7 @@ namespace AZ
             void UpdateRenderObjectSrg();
             void UpdateVisualizationPrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, const RHI::ImageView* outputImageView);
+            void UpdateQuerySrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
 
             // textures
             const RHI::Ptr<RHI::Image> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
@@ -198,6 +200,9 @@ namespace AZ
 
             bool GetVisualizationTlasUpdateRequired() const;
             void ResetVisualizationTlasUpdateRequired() { m_visualizationTlasUpdateRequired = false; }
+
+            // query
+            bool ContainsPosition(const AZ::Vector3& position) const;
 
         private:
 
@@ -313,6 +318,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> m_relocationSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_classificationSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_renderObjectSrg;
+            Data::Instance<RPI::ShaderResourceGroup> m_querySrg;
             bool m_updateRenderObjectSrg = true;
 
             // attachment Ids

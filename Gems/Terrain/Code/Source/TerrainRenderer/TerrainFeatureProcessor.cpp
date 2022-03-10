@@ -22,6 +22,7 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/Feature/RenderCommon.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
@@ -176,6 +177,49 @@ namespace Terrain
         CacheForwardPass();
     }
 
+    void TerrainFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
+    {
+        // Get the pass request to create terrain parent pass from the asset
+        const char* passRequestAssetFilePath = "Passes/TerrainPassRequest.azasset";
+        auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+            passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+        const AZ::RPI::PassRequest* passRequest = nullptr;
+        if (passRequestAsset->IsReady())
+        {
+            passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+        }
+        if (!passRequest)
+        {
+            AZ_Error("Terrain", false, "Failed to add terrain parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
+            return;
+        }
+
+        // Return if the pass to be created already exists
+        AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
+        AZ::RPI::Pass* pass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+        if (pass)
+        {
+            return;
+        }
+
+        // Create the pass
+        AZ::RPI::Ptr<AZ::RPI::Pass> terrainParentPass  = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
+        if (!terrainParentPass)
+        {
+            AZ_Error("Terrain", false, "Create terrain parent pass from pass request failed");
+            return;
+        }
+
+        // Add the pass to render pipeline
+        bool success = renderPipeline->AddPassBefore(terrainParentPass, AZ::Name("DepthPrePass"));
+        // only create pass resources if it was success
+        if (!success)
+        {
+            AZ_Error("Terrain", false, "Add the terrain parent pass to render pipeline [%s] failed",
+                renderPipeline->GetId().GetCStr());
+        }
+    }
+
     void TerrainFeatureProcessor::UpdateHeightmapImage()
     {
         auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
@@ -224,11 +268,9 @@ namespace Terrain
             pixels.reserve(updateWidth * updateHeight);
 
             {
-                // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
-                // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-                // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-                // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
-                // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
+			
+	            // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
+	            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
 
                 auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
                 typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);

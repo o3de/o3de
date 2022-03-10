@@ -14,13 +14,14 @@
 
 namespace AZ::Dom
 {
+    using PatchOutcome = AZ::Outcome<void, AZStd::string>;
+    void CombinePatchOutcomes(PatchOutcome& lhs, PatchOutcome&& rhs);
+
     //! A patch operation that represents an atomic operation for mutating or validating a Value.
     //! PatchOperations can be created with helper methods in Patch. /see Patch
     class PatchOperation final
     {
     public:
-        using PatchOutcome = AZ::Outcome<void, AZStd::string>;
-
         //! The operation to perform.
         enum class Type
         {
@@ -111,7 +112,7 @@ namespace AZ::Dom
     struct PatchApplicationState
     {
         //! The outcome of the last operation, may be overridden to produce a different failure outcome.
-        PatchOperation::PatchOutcome m_outcome;
+        PatchOutcome m_outcome = AZ::Success();
         //! The patch being applied.
         const Patch* m_patch = nullptr;
         //! The last operation attempted.
@@ -175,7 +176,7 @@ namespace AZ::Dom
         size_t size() const;
 
         AZ::Outcome<Value, AZStd::string> Apply(Value rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure) const;
-        AZ::Outcome<void, AZStd::string> ApplyInPlace(Value& rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure) const;
+        PatchOutcome ApplyInPlace(Value& rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure) const;
 
         Value GetDomRepresentation() const;
         static AZ::Outcome<Patch, AZStd::string> CreateFromDomRepresentation(Value domValue);

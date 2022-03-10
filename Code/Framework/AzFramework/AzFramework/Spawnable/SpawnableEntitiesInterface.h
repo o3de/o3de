@@ -6,6 +6,9 @@
  *
  */
 
+// Note that the tests for the Spawnables are in the AzToolsFramework.Tests in order to get access to easy ways to construct
+// spawnables in memory.
+
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -170,26 +173,30 @@ namespace AzFramework
         using Id = uint32_t;
 
         EntitySpawnTicket() = default;
-        EntitySpawnTicket(const EntitySpawnTicket&) = delete;
+        EntitySpawnTicket(const EntitySpawnTicket& rhs);
         EntitySpawnTicket(EntitySpawnTicket&& rhs);
         explicit EntitySpawnTicket(AZ::Data::Asset<Spawnable> spawnable);
         ~EntitySpawnTicket();
 
-        EntitySpawnTicket& operator=(const EntitySpawnTicket&) = delete;
+        EntitySpawnTicket& operator=(const EntitySpawnTicket& rhs);
         EntitySpawnTicket& operator=(EntitySpawnTicket&& rhs);
 
+        //! Returns an id that uniquely identifies this ticket or 0 if no spawnable has been assigned.
         Id GetId() const;
+        //! Returns the assets associated with the ticket or a nullptr if no spawnable has been assigned yet.
+        const AZ::Data::Asset<Spawnable>* GetSpawnable() const;
+        //! Returns whether or not the ticket is in a usable state.
         bool IsValid() const;
 
     private:
         void* m_payload{ nullptr };
-        Id m_id { 0 }; //!< An id that uniquely identifies a ticket.
+        class SpawnableEntitiesDefinition* m_interface{ nullptr };
     };
 
     using EntitySpawnCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using EntityPreInsertionCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
     using EntityDespawnCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
-    using RetrieveEntitySpawnTicketCallback = AZStd::function<void(EntitySpawnTicket*)>;
+    using RetrieveEntitySpawnTicketCallback = AZStd::function<void(EntitySpawnTicket&&)>;
     using ReloadSpawnableCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using UpdateEntityAliasTypesCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
     using ListEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
@@ -246,6 +253,12 @@ namespace AzFramework
         //! Callback that's called when despawning entity has completed. This can be triggered from a different thread than the one that
         //! made the function call to despawn.
         EntityDespawnCallback m_completionCallback;
+        //! The priority at which this call will be executed.
+        SpawnablePriority m_priority{ SpawnablePriority_Default };
+    };
+
+    struct RetrieveTicketOptionalArgs final
+    {
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority{ SpawnablePriority_Default };
     };
@@ -342,7 +355,8 @@ namespace AzFramework
         //! Gets the EntitySpawnTicket associated with the entitySpawnTicketId.
         //! @param entitySpawnTicketId the id of EntitySpawnTicket to get.
         //! @param callback The callback to execute upon retrieving the ticket.
-        virtual void RetrieveEntitySpawnTicket(EntitySpawnTicket::Id entitySpawnTicketId, RetrieveEntitySpawnTicketCallback callback) = 0;
+        virtual void RetrieveTicket(
+            EntitySpawnTicket::Id ticketId, RetrieveEntitySpawnTicketCallback callback, RetrieveTicketOptionalArgs optionalArgs = {}) = 0;
         //! Removes all entities in the provided list from the environment and reconstructs the entities from the provided spawnable.
         //! @param ticket Holds the information on the entities to reload.
         //! @param priority The priority at which this call will be executed.
@@ -400,9 +414,14 @@ namespace AzFramework
             EntitySpawnTicket& ticket, BarrierCallback completionCallback, LoadBarrierOptionalArgs optionalArgs = {}) = 0;
 
     protected:
-        [[nodiscard]] virtual AZStd::pair<EntitySpawnTicket::Id, void*> CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;
-        virtual void DestroyTicket(void* ticket) = 0;
+        [[nodiscard]] virtual void* CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;
+        virtual void IncrementTicketReference(void* ticket) = 0;
+        virtual void DecrementTicketReference(void* ticket) = 0;
+        [[nodiscard]] virtual EntitySpawnTicket::Id GetTicketId(void* ticket) = 0;
+        [[nodiscard]] virtual const AZ::Data::Asset<Spawnable>& GetSpawnableOnTicket(void* ticket) = 0;
 
+        static EntitySpawnTicket InternalToExternalTicket(void* internalTicket, SpawnableEntitiesDefinition* owner);
+        
         template<typename T>
         [[nodiscard]] static T& GetTicketPayload(EntitySpawnTicket& ticket)
         {
@@ -426,9 +445,6 @@ namespace AzFramework
         {
             return reinterpret_cast<const T*>(ticket->m_payload);
         }
-
-        AZStd::unordered_map<EntitySpawnTicket::Id, EntitySpawnTicket*> m_entitySpawnTicketMap;
-        AZStd::recursive_mutex m_entitySpawnTicketMapMutex;
     };
 
     using SpawnableEntitiesInterface = AZ::Interface<SpawnableEntitiesDefinition>;
