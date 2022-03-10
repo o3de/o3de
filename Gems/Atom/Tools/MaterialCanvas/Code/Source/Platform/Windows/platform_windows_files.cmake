@@ -7,7 +7,5 @@
 #
 
 set(FILES
-    MaterialCanvas_Traits_Platform.h
-    MaterialCanvas_Traits_Windows.h
     MaterialCanvas.rc
 )
