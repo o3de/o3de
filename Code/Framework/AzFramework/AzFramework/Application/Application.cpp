@@ -22,6 +22,7 @@
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
@@ -89,6 +90,8 @@ namespace AzFramework
         static constexpr const char* DeprecatedFileIOAliasesRoot = "/O3DE/AzCore/FileIO/DeprecatedAliases";
         static constexpr const char* DeprecatedFileIOAliasesOldAliasKey = "OldAlias";
         static constexpr const char* DeprecatedFileIOAliasesNewAliasKey = "NewAlias";
+
+        static constexpr const char* FilesystemAliasesRoot = "/O3DE/Filesystem/Aliases";
     }
 
     Application::Application()
@@ -683,34 +686,36 @@ namespace AzFramework
         if (auto fileIoBase = m_archiveFileIO.get(); fileIoBase)
         {
             // Set up the default file aliases based on the settings registry
-            fileIoBase->SetAlias("@engroot@", GetEngineRoot());
-            fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
-            fileIoBase->SetAlias("@exefolder@", GetExecutableFolder());
 
+            AZ::IO::FixedMaxPath engineRootPath;
+            if (m_settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
             {
-                AZ::IO::FixedMaxPath pathAliases;
-                pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
-                {
-                    fileIoBase->SetAlias("@products@", pathAliases.c_str());
-                }
-                pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
-                {
-                    fileIoBase->SetAlias("@engroot@", pathAliases.c_str());
-                }
-                pathAliases.clear();
-                if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
-                {
-                    fileIoBase->SetAlias("@projectroot@", pathAliases.c_str());
-                }
+                fileIoBase->SetAlias("@engroot@", engineRootPath.c_str());
+                // default project root to engine root if not set
+                // It should be overridden in the next if block
+                fileIoBase->SetAlias("@projectroot@", engineRootPath.c_str());
             }
 
-            AZ::IO::FixedMaxPath engineRoot = GetEngineRoot();
+            AZ::IO::FixedMaxPath projectRootPath;
+            if (m_settingsRegistry->Get(projectRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
+            {
+                fileIoBase->SetAlias("@projectroot@", projectRootPath.c_str());
+            }
+
+            if (AZ::IO::FixedMaxPath exeFolder; m_settingsRegistry->Get(exeFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_BinaryFolder))
+            {
+                fileIoBase->SetAlias("@exefolder@", exeFolder.c_str());
+            }
+
+            if (AZ::IO::FixedMaxPath pathAliases; m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                fileIoBase->SetAlias("@products@", pathAliases.c_str());
+            }
+
             AZ::IO::FixedMaxPath projectUserPath;
             if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
             {
-                projectUserPath = engineRoot / "user";
+                projectUserPath = engineRootPath / "user";
             }
             fileIoBase->SetAlias("@user@", projectUserPath.c_str());
             fileIoBase->CreatePath(projectUserPath.c_str());
@@ -732,6 +737,33 @@ namespace AzFramework
                     fileIoBase->SetDeprecatedAlias(oldAlias, newAlias);
                 }
             }
+
+            // The following section sets the @gemroot:<gem-name>@ alias for
+            // every loaded gem
+            using Type = AZ::SettingsRegistryInterface::Type;
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            auto AddGemAlias = [&fileIoBase](AZStd::string_view gemName, AZStd::string_view gemRootPath)
+            {
+                const auto gemAlias{ FixedValueString::format("@gemroot:%.*s@", AZ_STRING_ARG(gemName)) };
+                const auto gemAliasPath = FixedValueString(gemRootPath);
+                fileIoBase->SetAlias(gemAlias.c_str(), gemAliasPath.c_str());
+            };
+            AZ::SettingsRegistryMergeUtils::VisitActiveGems(*m_settingsRegistry, AddGemAlias);
+
+            // Load any Filesystem aliases from the SettingsRegistry
+            auto SetAliasesFromSettingsRegistry = [&fileIoBase, &settingsRegistry = *m_settingsRegistry]
+                (AZStd::string_view aliasJsonPath, AZStd::string_view aliasKey, Type)
+            {
+                if (AZ::IO::FixedMaxPath aliasPath; settingsRegistry.Get(aliasPath.Native(), aliasJsonPath))
+                {
+                    if (AZ::IO::SystemFile::Exists(aliasPath.c_str()))
+                    {
+                        fileIoBase->SetAlias(FixedValueString(aliasKey).c_str(), aliasPath.c_str());
+                    }
+                }
+            };
+            AZ::SettingsRegistryVisitorUtils::VisitObject(*m_settingsRegistry, SetAliasesFromSettingsRegistry,
+                ApplicationInternal::FilesystemAliasesRoot);
         }
     }
 

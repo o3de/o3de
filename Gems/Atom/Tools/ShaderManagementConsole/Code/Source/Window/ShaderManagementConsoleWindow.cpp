@@ -11,7 +11,6 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Utils/Utils.h>
-#include <Window/ShaderManagementConsoleTableView.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
 #include <QFileDialog>
@@ -34,11 +33,6 @@ namespace ShaderManagementConsole
         m_actionSaveAsChild->setEnabled(false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
-    }
-
-    QWidget* ShaderManagementConsoleWindow::CreateDocumentTabView(const AZ::Uuid& documentId)
-    {
-        return new ShaderManagementConsoleTableView(m_toolId, documentId, centralWidget());
     }
 } // namespace ShaderManagementConsole
 
