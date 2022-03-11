@@ -51,7 +51,7 @@ namespace ScriptCanvasBuilder
         auto sourceOutcome = ScriptCanvasEditor::LoadFromFile(fullPath);
         if (sourceOutcome.IsSuccess())
         {
-            sourceHandle = sourceOutcome.TakeValue();
+            sourceHandle = sourceOutcome.GetValue().handle;
             sourceGraph = sourceHandle.Get();
             graphData = sourceGraph->GetGraphDataConst();
         }
@@ -228,7 +228,7 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), fileNameOnly.c_str(), runtimeScriptCanvasOutputPath, true, true);
         AzFramework::StringFunc::Path::ReplaceExtension(runtimeScriptCanvasOutputPath, ScriptCanvas::RuntimeAsset::GetFileExtension());
 
-        auto sourceHandle = loadOutcome.TakeValue();
+        auto sourceHandle = loadOutcome.GetValue().handle;
 
         if (request.m_jobDescription.m_jobKey == s_scriptCanvasProcessJobKey)
         {
