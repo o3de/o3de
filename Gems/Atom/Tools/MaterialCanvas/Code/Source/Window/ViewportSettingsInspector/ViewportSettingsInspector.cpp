@@ -98,9 +98,7 @@ namespace MaterialCanvas
 
     void ViewportSettingsInspector::CreateModelPreset()
     {
-        const AZStd::string defaultPath =
-            AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZStd::string::format("untited.%s", AZ::Render::ModelPreset::Extension));
-
+        const AZStd::string defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
         const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
         if (!savePath.empty())
         {
@@ -156,8 +154,7 @@ namespace MaterialCanvas
 
         if (defaultPath.empty())
         {
-            defaultPath =
-                AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZStd::string::format("untited.%s", AZ::Render::ModelPreset::Extension));
+            defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
         }
 
         const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
@@ -202,9 +199,7 @@ namespace MaterialCanvas
 
     void ViewportSettingsInspector::CreateLightingPreset()
     {
-        const AZStd::string defaultPath =
-            AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZStd::string::format("untited.%s", AZ::Render::LightingPreset::Extension));
-
+        const AZStd::string defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
         const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
         if (!savePath.empty())
         {
@@ -260,8 +255,7 @@ namespace MaterialCanvas
 
         if (defaultPath.empty())
         {
-            defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(
-                AZStd::string::format("untited.%s", AZ::Render::LightingPreset::Extension));
+            defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
         }
 
         const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
