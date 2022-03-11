@@ -34,7 +34,7 @@ namespace AzFramework
     typedef AZ::u64 MsgSlotId;                          // meant to be a crc32, but using AZ::u64 so it can be other stuff (pointers)
 
     // id for the local application
-    static const AZ::u32 k_selfNetworkId = static_cast<AZ::u32>(-1);
+    static const AZ::u32 k_selfNetworkId = 0xFFFFFFFF;
 
     enum TargetFlags
     {

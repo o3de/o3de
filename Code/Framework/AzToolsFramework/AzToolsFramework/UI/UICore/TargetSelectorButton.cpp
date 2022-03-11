@@ -53,6 +53,13 @@ namespace AzToolsFramework
         for (AzFramework::TargetContainer::const_iterator it = targets.begin(); it != targets.end(); ++it)
         {
             const AzFramework::TargetInfo& info = it->second;
+            bool isSelf = (info.GetStatusFlags() & AzFramework::TF_SELF) != 0;
+            if (isSelf)
+            {
+                // Do not list the current application as a target
+                continue;
+            }
+
             bool isOnline = (info.GetStatusFlags() & AzFramework::TF_ONLINE) != 0;
 
             QString displayTargetString;

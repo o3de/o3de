@@ -46,12 +46,14 @@ namespace Neighborhood {
         virtual ~NeighborhoodEvents() {}
 
         // used to advertise a node and its capabilities
-        virtual void OnNodeJoined([[maybe_unused]] const AzFrameworkPackets::Neighbor& node, [[maybe_unused]] AZ::u32 networkId) {}
+        virtual void OnNodeJoined([[maybe_unused]] const AzFrameworkPackets::Neighbor& node, [[maybe_unused]] const AZ::u32 networkId) {}
         // used to notify that a node is no longer available
-        virtual void OnNodeLeft([[maybe_unused]] const AzFrameworkPackets::Neighbor& node) {}
+        virtual void OnNodeLeft([[maybe_unused]] const AZ::u32 networkId) {}
     };
     typedef AZ::EBus<NeighborhoodEvents> NeighborhoodBus;
 
+    static constexpr uint32_t NeighborBufferSize = 16000;
+    using NeighborMessageBuffer = AzNetworking::ByteBuffer<NeighborBufferSize>;
 }   // namespace Neighborhood
 
 

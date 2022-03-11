@@ -649,7 +649,7 @@ namespace AzFramework
                     {
                         Attach(sender, request->m_context.c_str());
                     }
-                    else
+                    else if (m_debugger.GetNetworkId() != sender.GetNetworkId())
                     {
                         // we need to detach from the current context first
                         AZ_TracePrintf("LUA", "Received connection from %s while still connected to %s! Detaching from %s.\n", sender.GetDisplayName(), m_debugger.GetDisplayName(), m_debugger.GetDisplayName());
@@ -667,7 +667,10 @@ namespace AzFramework
                 {
                     // We need to switch contexts before any more processing, keep remaining messages
                     // in the queue and return.
-                    m_executionState = SDA_STATE_DETACHING;
+                    if (m_executionState != SDA_STATE_DETACHED)
+                    {
+                        m_executionState = SDA_STATE_DETACHING;
+                    }
                     return;
                     // EnumContexts
                 }
