@@ -1,0 +1,8 @@
+
+/cmake/LYTestWrappers.cmake @sig-testing
+
+/Code/Tools/AzTestRunner/ @sig-testing
+
+/Tools/LyTestTools/ @sig-testing
+/Tools/RemoteConsole/ @sig-testing
+
