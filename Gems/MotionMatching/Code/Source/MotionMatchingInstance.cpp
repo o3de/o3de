@@ -268,7 +268,13 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    void MotionMatchingInstance::Update(float timePassedInSeconds, const AZ::Vector3& targetPos, const AZ::Vector3& targetFacingDir, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed)
+    void MotionMatchingInstance::Update(float timePassedInSeconds,
+        const AZ::Vector3& targetPos,
+        const AZ::Vector3& targetFacingDir,
+        bool useTargetFacingDir,
+        TrajectoryQuery::EMode mode,
+        float pathRadius,
+        float pathSpeed)
     {
         AZ_PROFILE_SCOPE(Animation, "MotionMatchingInstance::Update");
 
@@ -295,6 +301,7 @@ namespace EMotionFX::MotionMatching
             mode,
             targetPos,
             targetFacingDir,
+            useTargetFacingDir,
             timePassedInSeconds,
             pathRadius,
             pathSpeed);
@@ -348,14 +355,17 @@ namespace EMotionFX::MotionMatching
                 }
 
                 // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
+                const float originalTime = m_motionInstance->GetCurrentTime();
+                m_motionInstance->SetCurrentTime(newMotionTime);
                 PoseDataJointVelocities* velocityPoseData = m_queryPose.GetAndPreparePoseData<PoseDataJointVelocities>(m_actorInstance);
                 velocityPoseData->CalculateVelocity(m_motionInstance, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
+                m_motionInstance->SetCurrentTime(originalTime);
             }
 
             const FeatureMatrix& featureMatrix = m_data->GetFeatureMatrix();
             const FrameDatabase& frameDatabase = m_data->GetFrameDatabase();
 
-            Feature::FrameCostContext frameCostContext(featureMatrix, m_queryPose);
+            Feature::FrameCostContext frameCostContext(frameDatabase, featureMatrix, m_queryPose);
             frameCostContext.m_trajectoryQuery = &m_trajectoryQuery;
             frameCostContext.m_actorInstance = m_actorInstance;
             const size_t lowestCostFrameIndex = FindLowestCostFrameIndex(frameCostContext);
@@ -448,7 +458,11 @@ namespace EMotionFX::MotionMatching
         float minTrajectoryFutureCost = 0.0f;
 
         // Iterate through the frames filtered by the broad-phase search.
+#ifdef SEARCH_THROUGH_WHOLE_MOTIONDATABASE
+        for (size_t frameIndex = 0; frameIndex < frameDatabase.GetNumFrames(); ++frameIndex)
+#else
         for (const size_t frameIndex : m_nearestFrames)
+#endif
         {
             const Frame& frame = frameDatabase.GetFrame(frameIndex);
 

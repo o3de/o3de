@@ -410,8 +410,7 @@ namespace AtomToolsFramework
         }
 
         const auto& documentType = documentTypes[documentTypeIndex];
-        CreateDocumentDialog dialog(
-            documentType, QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets", this);
+        CreateDocumentDialog dialog(documentType, AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(), this);
         dialog.adjustSize();
 
         if (dialog.exec() == QDialog::Accepted && !dialog.m_sourcePath.isEmpty() && !dialog.m_targetPath.isEmpty())

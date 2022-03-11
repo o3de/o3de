@@ -119,9 +119,11 @@ namespace ShaderManagementConsole
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             return aznew ShaderManagementConsoleDocument(toolId, documentTypeInfo); };
         documentType.m_supportedExtensionsToCreate.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
+        documentType.m_supportedExtensionsToCreate.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
+        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::ShaderAsset>());
         return documentType;
     }
 
@@ -305,6 +307,11 @@ namespace ShaderManagementConsole
                 stableId++;
             }
         }
+
+        // Even though the data originated from a different file source it has now been transformed into a shader variant list so update the
+        // extension to match. This will allow the document to be resaved immediately without doing a save as child or derived type when
+        // loaded from a shader source file.
+        AzFramework::StringFunc::Path::ReplaceExtension(m_absolutePath, AZ::RPI::ShaderVariantListSourceData::Extension);
 
         SetShaderVariantListSourceData(shaderVariantListSourceData);
         return IsOpen() ? OpenSucceeded() : OpenFailed();

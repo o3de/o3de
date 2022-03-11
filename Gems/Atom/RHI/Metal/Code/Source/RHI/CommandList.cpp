@@ -99,7 +99,7 @@ namespace AZ
                     MTLOrigin destinationOrigin = MTLOriginMake(descriptor.m_destinationOrigin.m_left,
                                                     descriptor.m_destinationOrigin.m_top,
                                                     descriptor.m_destinationOrigin.m_front);
-
+                    
                     [blitEncoder copyFromTexture: sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
                                      sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
                                      sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
@@ -127,6 +127,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
+                    MTLBlitOption mtlBlitOption = GetBlitOption(destinationImage->GetDescriptor().m_format, descriptor.m_destinationSubresource.m_aspect);
                     [blitEncoder copyFromBuffer: sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
                                    sourceOffset: sourceBuffer->GetMemoryView().GetOffset() + descriptor.m_sourceOffset
                               sourceBytesPerRow: descriptor.m_sourceBytesPerRow
@@ -135,7 +136,8 @@ namespace AZ
                                       toTexture: destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
                                destinationSlice: descriptor.m_destinationSubresource.m_arraySlice
                                destinationLevel: descriptor.m_destinationSubresource.m_mipSlice
-                              destinationOrigin: destinationOrigin];
+                              destinationOrigin: destinationOrigin
+                                        options: mtlBlitOption];
 
                     Platform::SynchronizeTextureOnGPU(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
                     break;
@@ -154,6 +156,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
+                    MTLBlitOption mtlBlitOption = GetBlitOption(sourceImage->GetDescriptor().m_format, descriptor.m_sourceSubresource.m_aspect);
                     [blitEncoder copyFromTexture: sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
                                      sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
                                      sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
@@ -162,7 +165,8 @@ namespace AZ
                                         toBuffer: destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
                                destinationOffset: destinationBuffer->GetMemoryView().GetOffset() + descriptor.m_destinationOffset
                           destinationBytesPerRow: descriptor.m_destinationBytesPerRow
-                        destinationBytesPerImage: descriptor.m_destinationBytesPerImage];
+                        destinationBytesPerImage: descriptor.m_destinationBytesPerImage
+                                         options: mtlBlitOption];
 
                     Platform::SynchronizeBufferOnGPU(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
                     break;
@@ -183,7 +187,7 @@ namespace AZ
 
             if(!bindResourceSuccessfull)
             {
-                AZ_Assert(false, "Resource binding was unsuccessfully.");
+                AZ_Assert(false, "Skip draw call as resource binding was unsuccessfully.");
                 return;
             }
             const RHI::DispatchDirect& arguments = dispatchItem.m_arguments.m_direct;
@@ -509,7 +513,7 @@ namespace AZ
             bool bindResourceSuccessfull = CommitShaderResources<RHI::PipelineStateType::Draw>(drawItem);
             if(!bindResourceSuccessfull)
             {
-                AZ_Assert(false, "Resource binding was unsuccessfully.");
+                AZ_Assert(false, "Skip draw call as resource binding was unsuccessfully.");
                 return;
             }
 
@@ -643,7 +647,7 @@ namespace AZ
             AZ::HashValue64 streamsHash = AZ::HashValue64{0};
             for (uint32_t i = 0; i < count; ++i)
             {
-                streamsHash = AZ::TypeHash64(streamsHash, streams[i].GetHash());
+                streamsHash = AZ::TypeHash64(streams[i].GetHash(), streamsHash);
             }
 
             if (streamsHash != m_state.m_streamsHash)
@@ -703,7 +707,14 @@ namespace AZ
             const PipelineState* pipelineState = static_cast<const PipelineState*>(item.m_pipelineState);
             if(!pipelineState)
             {
-                AZ_Assert(false, "Pipeline state not provided");
+                AZ_Error("CommandList", false, "Pipeline state not provided");
+                return false;
+            }
+            
+            const PipelineLayout* pipelineLayout = &pipelineState->GetPipelineLayout();
+            if(!pipelineLayout)
+            {
+                AZ_Error("CommandList", false, "Pipeline layout not provided");
                 return false;
             }
 
