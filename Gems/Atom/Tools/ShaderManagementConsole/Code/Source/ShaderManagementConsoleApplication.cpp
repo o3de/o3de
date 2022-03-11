@@ -40,6 +40,7 @@ namespace ShaderManagementConsole
 
         QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Shader Management Console");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
     }

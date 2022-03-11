@@ -22,15 +22,7 @@ namespace ShaderManagementConsole
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, parent)
     {
-        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
-
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
-
-        // Disable unused actions
-        m_actionNew->setVisible(false);
-        m_actionNew->setEnabled(false);
-        m_actionSaveAsChild->setVisible(false);
-        m_actionSaveAsChild->setEnabled(false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
