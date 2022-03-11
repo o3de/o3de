@@ -38,6 +38,7 @@ namespace MaterialCanvas
 
         QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Material Canvas");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
     }

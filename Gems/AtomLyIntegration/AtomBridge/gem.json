@@ -31,6 +31,7 @@
         "ImageProcessingAtom",
         "AtomToolsFramework",
         "AtomViewportDisplayIcons",
+        "MaterialCanvas",
         "MaterialEditor",
         "ShaderManagementConsole"
     ]

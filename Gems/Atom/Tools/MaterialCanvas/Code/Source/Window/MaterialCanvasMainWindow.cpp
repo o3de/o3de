@@ -12,19 +12,15 @@
 #include <Window/MaterialCanvasMainWindow.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QMessageBox>
 #include <QWindow>
-AZ_POP_DISABLE_WARNING
 
 namespace MaterialCanvas
 {
     MaterialCanvasMainWindow::MaterialCanvasMainWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, parent)
     {
-        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
-
         m_toolBar = new MaterialCanvasToolBar(m_toolId, this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
