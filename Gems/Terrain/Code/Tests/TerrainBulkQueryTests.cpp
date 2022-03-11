@@ -38,8 +38,8 @@ namespace UnitTest::TerrainTest
             resultPositions.clear();
 
             auto perPositionCallback = [&queryPositions, &resultPositions](
-                                              [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 queryPositions.emplace_back(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY(), 0.0f);
                 resultPositions.emplace_back(surfacePoint.m_position);
@@ -70,8 +70,9 @@ namespace UnitTest::TerrainTest
                 EXPECT_NE(foundValue, baselineValues.end());
                 if (foundValue != baselineValues.end())
                 {
-                    EXPECT_FALSE(matchFound[foundValue - baselineValues.begin()]);
-                    matchFound[foundValue - baselineValues.begin()] = true;
+                    size_t foundIndex = foundValue - baselineValues.begin();
+                    EXPECT_FALSE(matchFound[foundIndex]);
+                    matchFound[foundIndex] = true;
                 }
             }
         }
@@ -88,8 +89,8 @@ namespace UnitTest::TerrainTest
             resultNormals.clear();
 
             auto perPositionCallback = [&queryPositions, &resultNormals](
-                                              [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 queryPositions.emplace_back(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY(), 0.0f);
                 resultNormals.emplace_back(surfacePoint.m_normal);
@@ -146,8 +147,8 @@ namespace UnitTest::TerrainTest
             resultWeights.clear();
 
             auto perPositionCallback = [&queryPositions, &resultWeights](
-                                           [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                           const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 queryPositions.emplace_back(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY(), 0.0f);
                 resultWeights.emplace_back(surfacePoint.m_surfaceTags);
@@ -204,8 +205,8 @@ namespace UnitTest::TerrainTest
             resultPoints.clear();
 
             auto perPositionCallback = [&queryPositions, &resultPoints](
-                                           [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                           const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 queryPositions.emplace_back(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY(), 0.0f);
                 resultPoints.emplace_back(surfacePoint);
@@ -258,8 +259,7 @@ namespace UnitTest::TerrainTest
             // Set the number of jobs > 1 so that we have parallel queries that execute.
             params->m_desiredNumberOfJobs = 4;
             params->m_completionCallback =
-                [this](
-                    [[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> context)
+                [this]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> context)
             {
                 // Notify the main test thread that the query has completed.
                 m_queryCompletionEvent.release();
@@ -378,8 +378,8 @@ namespace UnitTest::TerrainTest
             AZStd::mutex outputMutex;
 
             auto regionPositionCallback = [&comparisonResultPositions, &outputMutex](
-                                                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
@@ -421,8 +421,8 @@ namespace UnitTest::TerrainTest
             AZStd::vector<AZ::Vector3> comparisonResultPositions;
             AZStd::mutex outputMutex;
 
-            auto listPositionCallback = [&comparisonResultPositions,
-                                            &outputMutex](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            auto listPositionCallback = [&comparisonResultPositions, &outputMutex](
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
@@ -467,9 +467,8 @@ namespace UnitTest::TerrainTest
             AZStd::vector<AZ::Vector3> comparisonResultPositions;
             AZStd::vector<AZ::Vector3> comparisonResultNormals;
 
-            auto listNormalCallback =
-                [&comparisonResultPositions, &comparisonResultNormals]
-                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            auto listNormalCallback = [&comparisonResultPositions, &comparisonResultNormals](
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 comparisonResultPositions.emplace_back(surfacePoint.m_position);
                 comparisonResultNormals.emplace_back(surfacePoint.m_normal);
@@ -540,8 +539,8 @@ namespace UnitTest::TerrainTest
             AZStd::mutex outputMutex;
 
             auto regionPositionCallback = [&comparisonResultPositions, &comparisonResultNormals, &outputMutex](
-                                              [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
@@ -585,9 +584,8 @@ namespace UnitTest::TerrainTest
             AZStd::vector<AZ::Vector3> comparisonResultNormals;
             AZStd::mutex outputMutex;
 
-            auto listPositionCallback =
-                [&comparisonResultPositions, &comparisonResultNormals, &outputMutex]
-                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            auto listPositionCallback = [&comparisonResultPositions, &comparisonResultNormals, &outputMutex](
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
@@ -634,7 +632,7 @@ namespace UnitTest::TerrainTest
             AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> comparisonResultWeights;
 
             auto listWeightsCallback = [&comparisonResultPositions, &comparisonResultWeights](
-                                          const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 comparisonResultPositions.emplace_back(surfacePoint.m_position);
                 comparisonResultWeights.emplace_back(surfacePoint.m_surfaceTags);
@@ -705,9 +703,8 @@ namespace UnitTest::TerrainTest
             AZStd::mutex outputMutex;
 
             auto perPositionCallback = [&comparisonResultPositions, &comparisonResultWeights, &outputMutex](
-                                              [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
-                                              bool terrainExists)
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
@@ -752,7 +749,7 @@ namespace UnitTest::TerrainTest
             AZStd::mutex outputMutex;
 
             auto listPositionCallback = [&comparisonResultPositions, &comparisonResultWeights, &outputMutex](
-                                            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
@@ -797,8 +794,8 @@ namespace UnitTest::TerrainTest
             // Gather results from Process*FromList
             AZStd::vector<AzFramework::SurfaceData::SurfacePoint> comparisonResultPoints;
 
-            auto listPositionCallback =
-                [&comparisonResultPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            auto listPositionCallback = [&comparisonResultPoints](
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 comparisonResultPoints.emplace_back(surfacePoint);
                 EXPECT_TRUE(terrainExists);
@@ -867,8 +864,8 @@ namespace UnitTest::TerrainTest
             AZStd::mutex outputMutex;
 
             auto regionPositionCallback = [&comparisonResultPoints, &outputMutex](
-                                              [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
@@ -910,8 +907,8 @@ namespace UnitTest::TerrainTest
             AZStd::vector<AzFramework::SurfaceData::SurfacePoint> comparisonResultPoints;
             AZStd::mutex outputMutex;
 
-            auto listPositionCallback =
-                [&comparisonResultPoints, &outputMutex](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            auto listPositionCallback = [&comparisonResultPoints, &outputMutex](
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);

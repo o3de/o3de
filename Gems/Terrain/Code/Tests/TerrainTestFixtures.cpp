@@ -152,7 +152,7 @@ namespace UnitTest
         return entity;
     }
 
-        AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestLayerSpawnerEntity(
+    AZStd::unique_ptr<AZ::Entity> TerrainBaseFixture::CreateTestLayerSpawnerEntity(
         const AZ::Aabb& spawnerBox,
         const AZ::EntityId& heightGradientEntityId,
         const Terrain::TerrainSurfaceGradientListConfig& surfaceConfig) const
