@@ -41,6 +41,22 @@ namespace GradientSignal
             AZ::JsonDeserializerContext& context) override;
     };
 
+    enum class ChannelToUse : AZ::u8
+    {
+        R,
+        G,
+        B,
+        A,
+        Terrarium
+    };
+
+    //! Custom scaling to apply to the values retrieved from the image data
+    enum class CustomScaleType : AZ::u8
+    {
+        None,                   //! Data left as-is, no scaling calculation performed
+        Manual                  //! Scale according to m_scaleRangeMin and m_scaleRangeMax
+    };
+
     class ImageGradientConfig
         : public AZ::ComponentConfig
     {
@@ -48,9 +64,19 @@ namespace GradientSignal
         AZ_CLASS_ALLOCATOR(ImageGradientConfig, AZ::SystemAllocator, 0);
         AZ_RTTI(ImageGradientConfig, "{1BDB5DA4-A4A8-452B-BE6D-6BD451D4E7CD}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
+
+        bool IsAdvancedModeReadOnly() const;
+        bool IsManualScaleReadOnly() const;
+
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_imageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
         float m_tilingX = 1.0f;
         float m_tilingY = 1.0f;
+
+        bool m_advancedMode = false;
+        ChannelToUse m_channelToUse = ChannelToUse::R;
+        CustomScaleType m_customScaleType = CustomScaleType::None;
+        float m_scaleRangeMin = 0.0f;
+        float m_scaleRangeMax = 255.0f;
     };
 
     static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
@@ -99,7 +125,8 @@ namespace GradientSignal
         void SetupDependencies();
 
         void GetSubImageData();
-        float GetValueFromImageData(const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue) const;
+        float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
+        float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
 
         // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;
