@@ -9,7 +9,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <MaterialEditorApplication.h>
-#include <MaterialEditor_Traits_Platform.h>
 
 #include <Document/MaterialDocument.h>
 #include <Window/MaterialEditorWindow.h>

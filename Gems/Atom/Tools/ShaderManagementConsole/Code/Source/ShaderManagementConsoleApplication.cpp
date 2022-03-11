@@ -9,7 +9,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <ShaderManagementConsoleApplication.h>
-#include <ShaderManagementConsole_Traits_Platform.h>
 
 #include <Document/ShaderManagementConsoleDocument.h>
 #include <Window/ShaderManagementConsoleTableView.h>
