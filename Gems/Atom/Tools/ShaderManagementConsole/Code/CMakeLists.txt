@@ -49,6 +49,10 @@ ly_add_target(
 
 ly_set_gem_variant_to_load(TARGETS ShaderManagementConsole VARIANTS Tools)
 
+# Add a 'builders' alias to allow the ShaderManagementConsole root gem path to be added to the generated
+# cmake_dependencies.<project>.assetprocessor.setreg to allow the asset scan folder for it to be added
+ly_create_alias(NAME ShaderManagementConsole.Builders NAMESPACE Gem)
+
 # Add build dependency to Editor for the ShaderManagementConsole application since
 # Editor opens up the ShaderManagementConsole
 ly_add_dependencies(Editor Gem::ShaderManagementConsole)
