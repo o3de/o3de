@@ -67,12 +67,14 @@ namespace UnitTest
     template<typename ProfilerType, typename StatIdType>
     void RecordStatistics(ProfilerType& profiler, const int loopCount, const StatIdType& rootId, const StatIdType& loopId)
     {
-        typename ProfilerType::TimedScope rootScope(profiler, rootId);
+        using TimedScopeType = typename ProfilerType::TimedScope;
+
+        TimedScopeType rootScope(profiler, rootId);
 
         int counter = 0;
         for (int i = 0; i < loopCount; ++i)
         {
-            typename ProfilerType::TimedScope loopScope(profiler, loopId);
+            TimedScopeType loopScope(profiler, loopId);
             ++counter;
         }
     }
@@ -165,9 +167,10 @@ namespace UnitTest
 
     TYPED_TEST(StatisticalProfilerFixture, ProfileCode_SingleThread_ValidateStatistics)
     {
+        using ProfilerType = typename TypeParam::ProfilerType;
         using StatIdType = typename TypeParam::StatIdType;
 
-        typename TypeParam::ProfilerType profiler;
+        ProfilerType profiler;
 
         const AZStd::string statNamePerformance("PerformanceResult");
         const auto statIdPerformance = ConvertNameToStatId<StatIdType>(statNamePerformance);
@@ -216,9 +219,10 @@ namespace UnitTest
 
     TYPED_TEST(ThreadedStatisticalProfilerFixture, ProfileCode_4Threads_ValidateStatistics)
     {
+        using ProfilerType = typename TypeParam::ProfilerType;
         using StatIdType = typename TypeParam::StatIdType;
 
-        typename TypeParam::ProfilerType profiler;
+        ProfilerType profiler;
 
         const AZStd::string statNameThread1("thread1");
         const auto statIdThread1 = ConvertNameToStatId<StatIdType>(statNameThread1);
@@ -434,7 +438,7 @@ namespace Benchmark
         : public UnitTest::AllocatorsBenchmarkFixture
     {
         using ProfilerType = AZ::Statistics::StatisticalProfiler<StatIdType, MutexType>;
-
+        using TimedScopeType = typename ProfilerType::TimedScope;
     public:
         void RunBenchmark(benchmark::State& state)
         {
@@ -456,7 +460,7 @@ namespace Benchmark
 
             for (auto _ : state)
             {
-                typename ProfilerType::TimedScope timedScope(*m_profiler, statId);
+                TimedScopeType timedScope(*m_profiler, statId);
                 benchmark::DoNotOptimize(m_profiler);
             }
 
@@ -609,7 +613,7 @@ namespace Benchmark
         {
             if (state.thread_index == 0)
             {
-                ProxyType::TimedScope::ClearCachedProxy();
+                TimedScopeType::ClearCachedProxy();
 
                 m_proxy = new ProxyType;
                 ProfilerType& profiler = m_proxy->GetProfiler(UnitTest::ProfilerProxyGroup);
