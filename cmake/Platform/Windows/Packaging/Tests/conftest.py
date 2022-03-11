@@ -43,15 +43,16 @@ class SessionContext:
                 client.download_file(parsed_uri.netloc, parsed_uri.path.lstrip('/'), str(self.installer_path))
             else:
                 urllib.request.urlretrieve(parsed_uri.geturl(), self.installer_path)
-            try:
-                # verify with SignTool if available
-                signtool_path_result = run(['powershell','-Command',"(Resolve-Path \"C:\\Program Files (x86)\\Windows Kits\\10\\bin\\*\\x64\" | Select-Object -Last 1).Path"], text=True, capture_output=True)
-                if signtool_path_result.returncode == 0:
-                    signtool_path = Path(signtool_path_result.stdout.strip()) / 'signtool.exe'
-                    signtool_result = self.run([str(signtool_path),'verify', '/pa', str(self.installer_path)])
-                    assert signtool_result.returncode == 0
-            except FileNotFoundError as e:
-                pass
+
+                try:
+                    # verify with SignTool if available
+                    signtool_path_result = run(['powershell','-Command',"(Resolve-Path \"C:\\Program Files (x86)\\Windows Kits\\10\\bin\\*\\x64\" | Select-Object -Last 1).Path"], text=True, capture_output=True)
+                    if signtool_path_result.returncode == 0:
+                        signtool_path = Path(signtool_path_result.stdout.strip()) / 'signtool.exe'
+                        signtool_result = self.run([str(signtool_path),'verify', '/pa', str(self.installer_path)])
+                        assert signtool_result.returncode == 0
+                except FileNotFoundError as e:
+                    pass
         else:
             # strip the leading slash from the file URI 
             self.installer_path = Path(parsed_uri.path.lstrip('/')).resolve()
