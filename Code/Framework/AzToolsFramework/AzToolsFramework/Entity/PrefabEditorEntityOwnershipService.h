@@ -179,6 +179,7 @@ namespace AzToolsFramework
 
     private:
         bool IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const;
+        void ParentToFocusedInstanceContainer(AZ::EntityId entityId) const;
 
         struct PlayInEditorData
         {

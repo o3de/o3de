@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
@@ -101,6 +102,24 @@ namespace AzToolsFramework
             m_entityContextId, &AzFramework::EntityOwnershipServiceNotificationBus::Events::OnEntityOwnershipServiceReset);
     }
 
+    void PrefabEditorEntityOwnershipService::ParentToFocusedInstanceContainer(AZ::EntityId entityId) const
+    {
+        auto* prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+
+        // Find the container entity id for the focused prefab and parent the new entity to that.
+        if (prefabFocusPublicInterface)
+        {
+            if (AZ::EntityId focusedContainerEntityId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(m_entityContextId); focusedContainerEntityId.IsValid())
+            {
+                AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetParent, focusedContainerEntityId);
+                return;
+            }
+        }
+
+        // If something went wrong, just fall back to parenting to the root instance container.
+        AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetParent, m_rootInstance->m_containerEntity->GetId());
+    }
+
     void PrefabEditorEntityOwnershipService::AddEntity(AZ::Entity* entity)
     {
         AZ_Assert(IsInitialized(), "Tried to add an entity without initializing the Entity Ownership Service");
@@ -110,7 +129,7 @@ namespace AzToolsFramework
 
         m_rootInstance->AddEntity(*entity);
         HandleEntitiesAdded({ entity });
-        AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetParent, m_rootInstance->m_containerEntity->GetId());
+        ParentToFocusedInstanceContainer(entity->GetId());
 
         Prefab::PrefabUndoHelpers::UpdatePrefabInstance(
             *m_rootInstance, "Undo adding entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
@@ -132,7 +151,7 @@ namespace AzToolsFramework
 
         for (AZ::Entity* entity : entities)
         {
-            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetParent, m_rootInstance->m_containerEntity->GetId());
+            ParentToFocusedInstanceContainer(entity->GetId());
         }
 
         Prefab::PrefabUndoHelpers::UpdatePrefabInstance(
