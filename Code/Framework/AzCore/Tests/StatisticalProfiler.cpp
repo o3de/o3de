@@ -479,43 +479,15 @@ namespace Benchmark
         RunBenchmark(state);
     }
 
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Hash_SingleThreadedPerf, UnitTest::StringHash)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SingleThreadedPerf, AZ::Crc32)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
     BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue32_SingleThreadedPerf, AZ::HashValue32)(benchmark::State& state)
     {
         RunBenchmark(state);
     }
 
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue64_SingleThreadedPerf, AZ::HashValue64)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
     REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SingleThreadedPerf)
-    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, Hash_SingleThreadedPerf)
-    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SingleThreadedPerf)
     REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue32_SingleThreadedPerf)
-    REGISTER_STATS_PROFILER_SINGLETHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue64_SingleThreadedPerf)
 
     BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_Mutex_ThreadedPerf, AZStd::string, AZStd::mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Hash_Mutex_ThreadedPerf, UnitTest::StringHash, AZStd::mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_Mutex_ThreadedPerf, AZ::Crc32, AZStd::mutex)(benchmark::State& state)
     {
         RunBenchmark(state);
     }
@@ -525,28 +497,10 @@ namespace Benchmark
         RunBenchmark(state);
     }
 
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue64_Mutex_ThreadedPerf, AZ::HashValue64, AZStd::mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
     REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_Mutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Hash_Mutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_Mutex_ThreadedPerf)
     REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue32_Mutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue64_Mutex_ThreadedPerf)
 
     BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_SpinMutex_ThreadedPerf, AZStd::string, AZStd::spin_mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Hash_SpinMutex_ThreadedPerf, UnitTest::StringHash, AZStd::spin_mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SpinMutex_ThreadedPerf, AZ::Crc32, AZStd::spin_mutex)(benchmark::State& state)
     {
         RunBenchmark(state);
     }
@@ -556,28 +510,10 @@ namespace Benchmark
         RunBenchmark(state);
     }
 
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue64_SpinMutex_ThreadedPerf, AZ::HashValue64, AZStd::spin_mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
     REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SpinMutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Hash_SpinMutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SpinMutex_ThreadedPerf)
     REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue32_SpinMutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue64_SpinMutex_ThreadedPerf)
 
     BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, String_SharedMutex_ThreadedPerf, AZStd::string, AZStd::shared_mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Hash_SharedMutex_ThreadedPerf, UnitTest::StringHash, AZStd::shared_mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, Crc32_SharedMutex_ThreadedPerf, AZ::Crc32, AZStd::shared_mutex)(benchmark::State& state)
     {
         RunBenchmark(state);
     }
@@ -587,16 +523,8 @@ namespace Benchmark
         RunBenchmark(state);
     }
 
-    BENCHMARK_TEMPLATE_DEFINE_F(StatisticalProfilerBenchmark, HashValue64_SharedMutex_ThreadedPerf, AZ::HashValue64, AZStd::shared_mutex)(benchmark::State& state)
-    {
-        RunBenchmark(state);
-    }
-
     REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, String_SharedMutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Hash_SharedMutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, Crc32_SharedMutex_ThreadedPerf)
     REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue32_SharedMutex_ThreadedPerf)
-    REGISTER_STATS_PROFILER_MULTITHREADED_BENCHMARK(StatisticalProfilerBenchmark, HashValue64_SharedMutex_ThreadedPerf)
 
     // -- AZ::Statistics::StatisticalProfilerProxy benchmarks --
 
