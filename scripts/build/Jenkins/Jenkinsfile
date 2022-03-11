@@ -515,7 +515,8 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
 }
 
 def ReplaceContent() {
-    log_file = "${WORKSPACE}".replace('workspace', 'builds/$BUILD_NUMBER/log')
+    // log_file = "${WORKSPACE}".replace('workspace', 'builds/$BUILD_NUMBER/log')
+    log_file = "${ITEM_ROOTDIR}/builds/${BUILD_NUMBER}/log"
     contentReplace(
         configs: [
             // Replace .cpp references to github links
@@ -950,6 +951,7 @@ catch(Exception e) {
 finally {
     try {
         node('controller') {
+            echo "ITEM_FULL_NAME: ${ITEM_FULL_NAME}\nITEM_ROOTDIR: ${ITEM_ROOTDIR}\nITEM_FULLNAME: ${ITEM_FULLNAME}"
             ReplaceContent()
             if("${currentBuild.currentResult}" == "SUCCESS") {
                 buildFailure = ""
