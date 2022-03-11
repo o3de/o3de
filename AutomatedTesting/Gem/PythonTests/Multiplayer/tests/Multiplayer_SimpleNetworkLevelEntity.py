@@ -38,7 +38,6 @@ def Multiplayer_SimpleNetworkLevelEntity():
     from editor_python_test_tools.utils import Tracer
 
     from editor_python_test_tools.utils import TestHelper as helper
-    from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
 
     level_name = "SimpleNetworkLevelEntity"
 
@@ -46,6 +45,7 @@ def Multiplayer_SimpleNetworkLevelEntity():
 
     # 1) Open Level
     helper.open_level("Multiplayer", level_name)
+    general.set_cvar_integer('editorsv_port', 33455)
 
     with Tracer() as section_tracer:
         # 2) Enter game mode

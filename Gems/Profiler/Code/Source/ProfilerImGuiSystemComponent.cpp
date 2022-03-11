@@ -8,6 +8,8 @@
 
 #include <ProfilerImGuiSystemComponent.h>
 
+#include "ImGuiTreemapImpl.h"
+
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -61,12 +63,22 @@ namespace Profiler
         {
             ProfilerImGuiInterface::Register(this);
         }
+
+        if (!ImGuiTreemapFactory::Interface::Get())
+        {
+            ImGuiTreemapFactory::Interface::Register(&m_imguiTreemapFactory);
+        }
 #endif // defined(IMGUI_ENABLED)
     }
 
     ProfilerImGuiSystemComponent::~ProfilerImGuiSystemComponent()
     {
 #if defined(IMGUI_ENABLED)
+        if (ImGuiTreemapFactory::Interface::Get() == &m_imguiTreemapFactory)
+        {
+            ImGuiTreemapFactory::Interface::Unregister(&m_imguiTreemapFactory);
+        }
+
         if (ProfilerImGuiInterface::Get() == this)
         {
             ProfilerImGuiInterface::Unregister(this);

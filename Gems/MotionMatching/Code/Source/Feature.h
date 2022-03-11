@@ -85,12 +85,14 @@ namespace EMotionFX::MotionMatching
         // Feature cost
         struct EMFX_API FrameCostContext
         {
-            FrameCostContext(const FeatureMatrix& featureMatrix, const Pose& currentPose)
-                : m_featureMatrix(featureMatrix)
+            FrameCostContext(const FrameDatabase& frameDatabase, const FeatureMatrix& featureMatrix, const Pose& currentPose)
+                : m_frameDatabase(frameDatabase)
+                , m_featureMatrix(featureMatrix)
                 , m_currentPose(currentPose)
             {
             }
 
+            const FrameDatabase& m_frameDatabase;
             const FeatureMatrix& m_featureMatrix;
             const ActorInstance* m_actorInstance = nullptr;
             const Pose& m_currentPose; //! Current actor instance pose.
