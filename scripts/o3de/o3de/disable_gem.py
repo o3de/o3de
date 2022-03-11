@@ -131,7 +131,7 @@ def remove_explicit_gem_activation_for_all_paths(gem_root_folders: list,
             # Skip template directories
             if stop_on_template_folders(dirs, files):
                 dirs[:] = []
-            if 'gem.json' in files:
+            elif 'gem.json' in files:
                 gem_dirs_set.add(pathlib.Path(root))
 
     for gem_dir in sorted(gem_dirs_set):
