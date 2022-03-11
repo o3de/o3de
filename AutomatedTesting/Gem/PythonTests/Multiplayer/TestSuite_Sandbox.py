@@ -19,7 +19,7 @@ from Tools.LyTestTools.ly_test_tools.log.log_monitor import LogMonitor
 
 import Tools.LyTestTools.ly_test_tools.environment.waiter as waiter
 
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
@@ -45,4 +45,3 @@ class TestAutomation(EditorTestSuite):
         game_launcher_log_file = os.path.join(game_launcher.workspace.paths.project_log(), 'Game.log')
         game_launcher_log_monitor = LogMonitor(game_launcher, game_launcher_log_file)
         game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected, timeout)
-
