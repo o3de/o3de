@@ -89,7 +89,7 @@ namespace UnitTest::TerrainTest
 
             auto perPositionCallback = [&queryPositions, &resultNormals](
                                               [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 queryPositions.emplace_back(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY(), 0.0f);
                 resultNormals.emplace_back(surfacePoint.m_normal);
@@ -134,10 +134,144 @@ namespace UnitTest::TerrainTest
             }
         }
 
+        // Use the ProcessSurfaceWeightsFromRegion API as our baseline that we'll compare the other query APIs against.
+        void GenerateBaselineSurfaceWeightData(
+            const AZ::Aabb& inputQueryRegion,
+            const AZ::Vector2& inputQueryStepSize,
+            AzFramework::Terrain::TerrainDataRequests::Sampler sampler,
+            AZStd::vector<AZ::Vector3>& queryPositions,
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList>& resultWeights)
+        {
+            queryPositions.clear();
+            resultWeights.clear();
+
+            auto perPositionCallback = [&queryPositions, &resultWeights](
+                                           [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                                           const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                queryPositions.emplace_back(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY(), 0.0f);
+                resultWeights.emplace_back(surfacePoint.m_surfaceTags);
+
+                // For these unit tests, we expect every point queried to have valid terrain data.
+                EXPECT_TRUE(terrainExists);
+            };
+
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, inputQueryRegion, inputQueryStepSize,
+                perPositionCallback, sampler);
+
+            EXPECT_EQ(queryPositions.size(), resultWeights.size());
+        }
+
+        // Compare two sets of output data and verify that they match.
+        void CompareSurfaceWeightData(
+            const AZStd::vector<AZ::Vector3>& baselineQueryPositions,
+            const AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList>& baselineValues,
+            const AZStd::vector<AZ::Vector3>& comparisonQueryPositions,
+            const AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList>& comparisonValues)
+        {
+            // Verify that we have the same quantity of results in both sets.
+            ASSERT_EQ(baselineValues.size(), comparisonValues.size());
+
+            // Verify that every value is found exactly once in each set. The two sets might not have the values in the same order though,
+            // so we need to search for each value, verify it's found, and verify that it hadn't previously been found.
+            // Also, since surface weight lists are easy to duplicate, we'll search by query positions to find the weight lists to compare.
+            AZStd::vector<bool> matchFound(baselineValues.size(), false);
+            for (size_t comparisonIndex = 0; comparisonIndex < comparisonQueryPositions.size(); comparisonIndex++)
+            {
+                auto& comparisonPosition = comparisonQueryPositions[comparisonIndex];
+                auto foundPosition = AZStd::find(baselineQueryPositions.begin(), baselineQueryPositions.end(), comparisonPosition);
+                EXPECT_NE(foundPosition, baselineQueryPositions.end());
+                if (foundPosition != baselineQueryPositions.end())
+                {
+                    size_t foundIndex = foundPosition - baselineQueryPositions.begin();
+                    EXPECT_FALSE(matchFound[foundIndex]);
+                    EXPECT_EQ(baselineValues[foundIndex], comparisonValues[comparisonIndex]);
+                    matchFound[foundIndex] = true;
+                }
+            }
+        }
+
+        // Use the ProcessSurfacePointsFromRegion API as our baseline that we'll compare the other query APIs against.
+        void GenerateBaselineSurfacePointData(
+            const AZ::Aabb& inputQueryRegion,
+            const AZ::Vector2& inputQueryStepSize,
+            AzFramework::Terrain::TerrainDataRequests::Sampler sampler,
+            AZStd::vector<AZ::Vector3>& queryPositions,
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint>& resultPoints)
+        {
+            queryPositions.clear();
+            resultPoints.clear();
+
+            auto perPositionCallback = [&queryPositions, &resultPoints](
+                                           [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                                           const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                queryPositions.emplace_back(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY(), 0.0f);
+                resultPoints.emplace_back(surfacePoint);
+
+                // For these unit tests, we expect every point queried to have valid terrain data.
+                EXPECT_TRUE(terrainExists);
+            };
+
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion, inputQueryRegion, inputQueryStepSize,
+                perPositionCallback, sampler);
+
+            EXPECT_EQ(queryPositions.size(), resultPoints.size());
+        }
+
+        // Compare two sets of output data and verify that they match.
+        void CompareSurfacePointData(
+            const AZStd::vector<AzFramework::SurfaceData::SurfacePoint>& baselineValues,
+            const AZStd::vector<AzFramework::SurfaceData::SurfacePoint>& comparisonValues)
+        {
+            // Verify that we have the same quantity of results in both sets.
+            ASSERT_EQ(baselineValues.size(), comparisonValues.size());
+
+            // Verify that every value is found exactly once in each set. The two sets might not have the values in the same order though,
+            // so we need to search for each value, verify it's found, and verify that it hadn't previously been found.
+            AZStd::vector<bool> matchFound(baselineValues.size(), false);
+            for (auto& comparisonValue : comparisonValues)
+            {
+                auto foundValue = AZStd::find_if(
+                    baselineValues.begin(), baselineValues.end(),
+                    [&comparisonValue](const AzFramework::SurfaceData::SurfacePoint& baselineValue) -> bool
+                    {
+                        return (baselineValue.m_position == comparisonValue.m_position)
+                            && (baselineValue.m_normal == comparisonValue.m_normal)
+                            && (baselineValue.m_surfaceTags == comparisonValue.m_surfaceTags);
+                    });
+                EXPECT_NE(foundValue, baselineValues.end());
+                if (foundValue != baselineValues.end())
+                {
+                    EXPECT_FALSE(matchFound[foundValue - baselineValues.begin()]);
+                    matchFound[foundValue - baselineValues.begin()] = true;
+                }
+            }
+        }
+
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> CreateTestAsyncParams()
+        {
+            auto params = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+
+            // Set the number of jobs > 1 so that we have parallel queries that execute.
+            params->m_desiredNumberOfJobs = 4;
+            params->m_completionCallback =
+                [this](
+                    [[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> context)
+            {
+                // Notify the main test thread that the query has completed.
+                m_queryCompletionEvent.release();
+            };
+
+            return params;
+        }
+
         // Set up the arbitrary terrain world parameters that we'll use for verifying our queries match.
         const static inline float TerrainSize = 32.0f;
         const static inline float TerrainQueryResolution = 1.0f;
-        const static inline uint32_t TerrainNumSurfaces = 1;
+        const static inline uint32_t TerrainNumSurfaces = 3;
         const static inline AZ::Aabb TerrainWorldBounds =
             AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TerrainSize / 2.0f), AZ::Vector3(TerrainSize / 2.0f));
 
@@ -146,7 +280,13 @@ namespace UnitTest::TerrainTest
         const static inline AZ::Vector2 QueryStepSize = AZ::Vector2(TerrainQueryResolution / 2.0f);
         const static inline uint32_t ExpectedResultCount =
             aznumeric_cast<uint32_t>((TerrainSize / QueryStepSize.GetX()) * (TerrainSize / QueryStepSize.GetY()));
+
+        // Semaphore for use in async tests.
+        AZStd::binary_semaphore m_queryCompletionEvent;
     };
+
+    // -----------------------------------------------------------------------------
+    // Compare Height Query APIs
 
     TEST_F(TerrainBulkQueryTest, ProcessHeightsFromRegionAndProcessHeightsFromListProduceSameResults)
     {
@@ -236,7 +376,6 @@ namespace UnitTest::TerrainTest
             // Gather results from Process*FromRegionAsync
             AZStd::vector<AZ::Vector3> comparisonResultPositions;
             AZStd::mutex outputMutex;
-            AZStd::binary_semaphore queryCompletionEvent;
 
             auto regionPositionCallback = [&comparisonResultPositions, &outputMutex](
                                                 [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
@@ -248,22 +387,14 @@ namespace UnitTest::TerrainTest
                 EXPECT_TRUE(terrainExists);
             };
 
-            auto params = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
-            params->m_desiredNumberOfJobs = 4;
-            params->m_completionCallback =
-                [&queryCompletionEvent](
-                    [[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> context)
-            {
-                queryCompletionEvent.release();
-            };
-
+            auto params = CreateTestAsyncParams();
             AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> jobContext;
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 jobContext, &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegionAsync, QueryBounds, QueryStepSize,
                 regionPositionCallback, sampler, params);
 
             // Wait for the async query to complete
-            queryCompletionEvent.acquire();
+            m_queryCompletionEvent.acquire();
 
             // Compare the results
             ComparePositionData(baselineResultPositions, comparisonResultPositions);
@@ -289,7 +420,6 @@ namespace UnitTest::TerrainTest
             // Gather results from Process*FromListAsync
             AZStd::vector<AZ::Vector3> comparisonResultPositions;
             AZStd::mutex outputMutex;
-            AZStd::binary_semaphore queryCompletionEvent;
 
             auto listPositionCallback = [&comparisonResultPositions,
                                             &outputMutex](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
@@ -300,22 +430,14 @@ namespace UnitTest::TerrainTest
                 EXPECT_TRUE(terrainExists);
             };
 
-            auto params = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
-            params->m_desiredNumberOfJobs = 4;
-            params->m_completionCallback =
-                [&queryCompletionEvent](
-                    [[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> context)
-            {
-                queryCompletionEvent.release();
-            };
-
+            auto params = CreateTestAsyncParams();
             AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> jobContext;
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 jobContext, &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromListAsync, queryPositions,
                 listPositionCallback, sampler, params);
 
             // Wait for the async query to complete
-            queryCompletionEvent.acquire();
+            m_queryCompletionEvent.acquire();
 
             // Compare the results
             ComparePositionData(baselineResultPositions, comparisonResultPositions);
@@ -324,9 +446,8 @@ namespace UnitTest::TerrainTest
         DestroyTestTerrainSystem();
     }
 
-
-
-
+    // -----------------------------------------------------------------------------
+    // Compare Normal Query APIs
 
     TEST_F(TerrainBulkQueryTest, ProcessNormalsFromRegionAndProcessNormalsFromListProduceSameResults)
     {
@@ -348,11 +469,11 @@ namespace UnitTest::TerrainTest
 
             auto listNormalCallback =
                 [&comparisonResultPositions, &comparisonResultNormals]
-                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 comparisonResultPositions.emplace_back(surfacePoint.m_position);
                 comparisonResultNormals.emplace_back(surfacePoint.m_normal);
-                //EXPECT_TRUE(terrainExists);
+                EXPECT_TRUE(terrainExists);
             };
 
             AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
@@ -389,7 +510,7 @@ namespace UnitTest::TerrainTest
                     terrainNormal, &AzFramework::Terrain::TerrainDataRequests::GetNormal, position, sampler, &terrainExists);
 
                 comparisonResultNormals.emplace_back(terrainNormal);
-                //EXPECT_TRUE(terrainExists);
+                EXPECT_TRUE(terrainExists);
             }
 
             // Compare the results
@@ -417,35 +538,26 @@ namespace UnitTest::TerrainTest
             AZStd::vector<AZ::Vector3> comparisonResultPositions;
             AZStd::vector<AZ::Vector3> comparisonResultNormals;
             AZStd::mutex outputMutex;
-            AZStd::binary_semaphore queryCompletionEvent;
 
             auto regionPositionCallback = [&comparisonResultPositions, &comparisonResultNormals, &outputMutex](
                                               [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
                 comparisonResultPositions.emplace_back(surfacePoint.m_position);
                 comparisonResultNormals.emplace_back(surfacePoint.m_normal);
-                //EXPECT_TRUE(terrainExists);
+                EXPECT_TRUE(terrainExists);
             };
 
-            auto params = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
-            params->m_desiredNumberOfJobs = 4;
-            params->m_completionCallback =
-                [&queryCompletionEvent](
-                    [[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> context)
-            {
-                queryCompletionEvent.release();
-            };
-
+            auto params = CreateTestAsyncParams();
             AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> jobContext;
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 jobContext, &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromRegionAsync, QueryBounds, QueryStepSize,
                 regionPositionCallback, sampler, params);
 
             // Wait for the async query to complete
-            queryCompletionEvent.acquire();
+            m_queryCompletionEvent.acquire();
 
             // Compare the results
             CompareNormalData(queryPositions, baselineResultNormals, comparisonResultPositions, comparisonResultNormals);
@@ -472,11 +584,10 @@ namespace UnitTest::TerrainTest
             AZStd::vector<AZ::Vector3> comparisonResultPositions;
             AZStd::vector<AZ::Vector3> comparisonResultNormals;
             AZStd::mutex outputMutex;
-            AZStd::binary_semaphore queryCompletionEvent;
 
             auto listPositionCallback =
                 [&comparisonResultPositions, &comparisonResultNormals, &outputMutex]
-                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
                 // Make sure only one thread can add its result at a time.
                 AZStd::scoped_lock lock(outputMutex);
@@ -485,22 +596,14 @@ namespace UnitTest::TerrainTest
                 EXPECT_TRUE(terrainExists);
             };
 
-            auto params = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
-            params->m_desiredNumberOfJobs = 4;
-            params->m_completionCallback =
-                [&queryCompletionEvent](
-                    [[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> context)
-            {
-                queryCompletionEvent.release();
-            };
-
+            auto params = CreateTestAsyncParams();
             AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> jobContext;
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 jobContext, &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromListAsync, queryPositions, listPositionCallback,
                 sampler, params);
 
             // Wait for the async query to complete
-            queryCompletionEvent.acquire();
+            m_queryCompletionEvent.acquire();
 
             // Compare the results
             CompareNormalData(queryPositions, baselineResultNormals, comparisonResultPositions, comparisonResultNormals);
@@ -509,7 +612,327 @@ namespace UnitTest::TerrainTest
         DestroyTestTerrainSystem();
     }
 
+    // -----------------------------------------------------------------------------
+    // Compare Surface Weight Query APIs
+
+    TEST_F(TerrainBulkQueryTest, ProcessSurfaceWeightsFromRegionAndProcessSurfaceWeightsFromListProduceSameResults)
+    {
+        CreateTestTerrainSystem(TerrainWorldBounds, TerrainQueryResolution, TerrainNumSurfaces);
+
+        for (auto sampler :
+             { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            // Gather all our initial results from calling Process*FromRegion
+            AZStd::vector<AZ::Vector3> queryPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> baselineResultWeights;
+            GenerateBaselineSurfaceWeightData(QueryBounds, QueryStepSize, sampler, queryPositions, baselineResultWeights);
+            ASSERT_EQ(queryPositions.size(), ExpectedResultCount);
+
+            // Gather results from Process*FromList
+            AZStd::vector<AZ::Vector3> comparisonResultPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> comparisonResultWeights;
+
+            auto listWeightsCallback = [&comparisonResultPositions, &comparisonResultWeights](
+                                          const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                comparisonResultPositions.emplace_back(surfacePoint.m_position);
+                comparisonResultWeights.emplace_back(surfacePoint.m_surfaceTags);
+                EXPECT_TRUE(terrainExists);
+            };
+
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromList, queryPositions, listWeightsCallback, sampler);
+
+            // Compare the results
+            CompareSurfaceWeightData(queryPositions, baselineResultWeights, comparisonResultPositions, comparisonResultWeights);
+        }
+
+        DestroyTestTerrainSystem();
+    }
+
+    TEST_F(TerrainBulkQueryTest, ProcessSurfaceWeightsFromRegionAndGetSurfaceWeightsProduceSameResults)
+    {
+        CreateTestTerrainSystem(TerrainWorldBounds, TerrainQueryResolution, TerrainNumSurfaces);
+
+        for (auto sampler :
+             { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            // Gather all our initial results from calling Process*FromRegion
+            AZStd::vector<AZ::Vector3> queryPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> baselineResultWeights;
+            GenerateBaselineSurfaceWeightData(QueryBounds, QueryStepSize, sampler, queryPositions, baselineResultWeights);
+            ASSERT_EQ(queryPositions.size(), ExpectedResultCount);
+
+            // Gather results from Get*
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> comparisonResultWeights;
+            AzFramework::SurfaceData::SurfaceTagWeightList terrainWeights;
+            for (auto& position : queryPositions)
+            {
+                bool terrainExists = false;
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::GetSurfaceWeights, position, terrainWeights, sampler, &terrainExists);
+
+                comparisonResultWeights.emplace_back(terrainWeights);
+                EXPECT_TRUE(terrainExists);
+            }
+
+            // Compare the results
+            CompareSurfaceWeightData(queryPositions, baselineResultWeights, queryPositions, comparisonResultWeights);
+        }
+
+        DestroyTestTerrainSystem();
+    }
+
+    TEST_F(TerrainBulkQueryTest, ProcessSurfaceWeightsFromRegionAndProcessSurfaceWeightsFromRegionAsyncProduceSameResults)
+    {
+        CreateTestTerrainSystem(TerrainWorldBounds, TerrainQueryResolution, TerrainNumSurfaces);
+
+        for (auto sampler :
+             { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            // Gather all our initial results from calling Process*FromRegion
+            AZStd::vector<AZ::Vector3> queryPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> baselineResultWeights;
+            GenerateBaselineSurfaceWeightData(QueryBounds, QueryStepSize, sampler, queryPositions, baselineResultWeights);
+            ASSERT_EQ(queryPositions.size(), ExpectedResultCount);
+
+            // Gather results from Process*FromRegionAsync
+            AZStd::vector<AZ::Vector3> comparisonResultPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> comparisonResultWeights;
+            AZStd::mutex outputMutex;
+
+            auto perPositionCallback = [&comparisonResultPositions, &comparisonResultWeights, &outputMutex](
+                                              [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                              bool terrainExists)
+            {
+                // Make sure only one thread can add its result at a time.
+                AZStd::scoped_lock lock(outputMutex);
+                comparisonResultPositions.emplace_back(surfacePoint.m_position);
+                comparisonResultWeights.emplace_back(surfacePoint.m_surfaceTags);
+                EXPECT_TRUE(terrainExists);
+            };
+
+            auto params = CreateTestAsyncParams();
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> jobContext;
+            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                jobContext, &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegionAsync, QueryBounds, QueryStepSize,
+                perPositionCallback, sampler, params);
+
+            // Wait for the async query to complete
+            m_queryCompletionEvent.acquire();
+
+            // Compare the results
+            CompareSurfaceWeightData(queryPositions, baselineResultWeights, comparisonResultPositions, comparisonResultWeights);
+        }
+
+        DestroyTestTerrainSystem();
+    }
+
+    TEST_F(TerrainBulkQueryTest, ProcessSurfaceWeightsFromRegionAndProcessSurfaceWeightsFromListAsyncProduceSameResults)
+    {
+        CreateTestTerrainSystem(TerrainWorldBounds, TerrainQueryResolution, TerrainNumSurfaces);
+
+        for (auto sampler :
+             { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            // Gather all our initial results from calling Process*FromRegion
+            AZStd::vector<AZ::Vector3> queryPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> baselineResultWeights;
+            GenerateBaselineSurfaceWeightData(QueryBounds, QueryStepSize, sampler, queryPositions, baselineResultWeights);
+            ASSERT_EQ(queryPositions.size(), ExpectedResultCount);
+
+            // Gather results from Process*FromListAsync
+            AZStd::vector<AZ::Vector3> comparisonResultPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> comparisonResultWeights;
+            AZStd::mutex outputMutex;
+
+            auto listPositionCallback = [&comparisonResultPositions, &comparisonResultWeights, &outputMutex](
+                                            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                // Make sure only one thread can add its result at a time.
+                AZStd::scoped_lock lock(outputMutex);
+                comparisonResultPositions.emplace_back(surfacePoint.m_position);
+                comparisonResultWeights.emplace_back(surfacePoint.m_surfaceTags);
+                EXPECT_TRUE(terrainExists);
+            };
+
+            auto params = CreateTestAsyncParams();
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> jobContext;
+            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                jobContext, &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromListAsync,
+                queryPositions, listPositionCallback, sampler, params);
+
+            // Wait for the async query to complete
+            m_queryCompletionEvent.acquire();
+
+            // Compare the results
+            CompareSurfaceWeightData(queryPositions, baselineResultWeights, comparisonResultPositions, comparisonResultWeights);
+        }
+
+        DestroyTestTerrainSystem();
+    }
+
+    // -----------------------------------------------------------------------------
+    // Compare Surface Point Query APIs
+
+    TEST_F(TerrainBulkQueryTest, ProcessSurfacePointsFromRegionAndProcessSurfacePointsFromListProduceSameResults)
+    {
+        CreateTestTerrainSystem(TerrainWorldBounds, TerrainQueryResolution, TerrainNumSurfaces);
+
+        for (auto sampler :
+             { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            // Gather all our initial results from calling Process*FromRegion
+            AZStd::vector<AZ::Vector3> queryPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint> baselineResultPoints;
+            GenerateBaselineSurfacePointData(QueryBounds, QueryStepSize, sampler, queryPositions, baselineResultPoints);
+            ASSERT_EQ(queryPositions.size(), ExpectedResultCount);
+
+            // Gather results from Process*FromList
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint> comparisonResultPoints;
+
+            auto listPositionCallback =
+                [&comparisonResultPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                comparisonResultPoints.emplace_back(surfacePoint);
+                EXPECT_TRUE(terrainExists);
+            };
+
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromList, queryPositions, listPositionCallback, sampler);
+
+            // Compare the results
+            CompareSurfacePointData(baselineResultPoints, comparisonResultPoints);
+        }
+
+        DestroyTestTerrainSystem();
+    }
+
+    TEST_F(TerrainBulkQueryTest, ProcessSurfacePointsFromRegionAndGetSurfacePointProduceSameResults)
+    {
+        CreateTestTerrainSystem(TerrainWorldBounds, TerrainQueryResolution, TerrainNumSurfaces);
+
+        for (auto sampler :
+             { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            // Gather all our initial results from calling Process*FromRegion
+            AZStd::vector<AZ::Vector3> queryPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint> baselineResultPoints;
+            GenerateBaselineSurfacePointData(QueryBounds, QueryStepSize, sampler, queryPositions, baselineResultPoints);
+            ASSERT_EQ(queryPositions.size(), ExpectedResultCount);
+
+            // Gather results from Get*
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint> comparisonResultPoints;
+            AzFramework::SurfaceData::SurfacePoint surfacePoint;
+            for (auto& position : queryPositions)
+            {
+                bool terrainExists = false;
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::GetSurfacePoint, position, surfacePoint, sampler, &terrainExists);
+
+                comparisonResultPoints.emplace_back(surfacePoint);
+                EXPECT_TRUE(terrainExists);
+            }
+
+            // Compare the results
+            CompareSurfacePointData(baselineResultPoints, comparisonResultPoints);
+        }
+
+        DestroyTestTerrainSystem();
+    }
+
+    TEST_F(TerrainBulkQueryTest, ProcessSurfacePointsFromRegionAndProcessSurfacePointsFromRegionAsyncProduceSameResults)
+    {
+        CreateTestTerrainSystem(TerrainWorldBounds, TerrainQueryResolution, TerrainNumSurfaces);
+
+        for (auto sampler :
+             { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            // Gather all our initial results from calling Process*FromRegion
+            AZStd::vector<AZ::Vector3> queryPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint> baselineResultPoints;
+            GenerateBaselineSurfacePointData(QueryBounds, QueryStepSize, sampler, queryPositions, baselineResultPoints);
+            ASSERT_EQ(queryPositions.size(), ExpectedResultCount);
+
+            // Gather results from Process*FromRegionAsync
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint> comparisonResultPoints;
+            AZStd::mutex outputMutex;
+
+            auto regionPositionCallback = [&comparisonResultPoints, &outputMutex](
+                                              [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                                              const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                // Make sure only one thread can add its result at a time.
+                AZStd::scoped_lock lock(outputMutex);
+                comparisonResultPoints.emplace_back(surfacePoint);
+                EXPECT_TRUE(terrainExists);
+            };
+
+            auto params = CreateTestAsyncParams();
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> jobContext;
+            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                jobContext, &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegionAsync, QueryBounds, QueryStepSize,
+                regionPositionCallback, sampler, params);
+
+            // Wait for the async query to complete
+            m_queryCompletionEvent.acquire();
+
+            // Compare the results
+            CompareSurfacePointData(baselineResultPoints, comparisonResultPoints);
+        }
+
+        DestroyTestTerrainSystem();
+    }
+
+    TEST_F(TerrainBulkQueryTest, ProcessSurfacePointsFromRegionAndProcessSurfacePointsFromListAsyncProduceSameResults)
+    {
+        CreateTestTerrainSystem(TerrainWorldBounds, TerrainQueryResolution, TerrainNumSurfaces);
+
+        for (auto sampler :
+             { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            // Gather all our initial results from calling Process*FromRegion
+            AZStd::vector<AZ::Vector3> queryPositions;
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint> baselineResultPoints;
+            GenerateBaselineSurfacePointData(QueryBounds, QueryStepSize, sampler, queryPositions, baselineResultPoints);
+            ASSERT_EQ(queryPositions.size(), ExpectedResultCount);
+
+            // Gather results from Process*FromListAsync
+            AZStd::vector<AzFramework::SurfaceData::SurfacePoint> comparisonResultPoints;
+            AZStd::mutex outputMutex;
+
+            auto listPositionCallback =
+                [&comparisonResultPoints, &outputMutex](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            {
+                // Make sure only one thread can add its result at a time.
+                AZStd::scoped_lock lock(outputMutex);
+                comparisonResultPoints.emplace_back(surfacePoint);
+                EXPECT_TRUE(terrainExists);
+            };
+
+            auto params = CreateTestAsyncParams();
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> jobContext;
+            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                jobContext, &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromListAsync,
+                queryPositions, listPositionCallback, sampler, params);
+
+            // Wait for the async query to complete
+            m_queryCompletionEvent.acquire();
+
+            // Compare the results
+            CompareSurfacePointData(baselineResultPoints, comparisonResultPoints);
+        }
+
+        DestroyTestTerrainSystem();
+    }
 
 } // namespace UnitTest
-
-#pragma optimize("", on)
