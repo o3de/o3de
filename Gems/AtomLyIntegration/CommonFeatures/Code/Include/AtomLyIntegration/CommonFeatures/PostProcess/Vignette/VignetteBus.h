@@ -8,30 +8,30 @@
 
 #pragma once
 
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h>
+#include <Atom/Feature/PostProcess/Vignette/VignetteConstants.h>
 #include <AzCore/Component/Component.h>
 
 namespace AZ
 {
     namespace Render
     {
-        class ChromaticAberrationRequests : public ComponentBus
+        class VignetteRequests : public ComponentBus
         {
         public:
-            AZ_RTTI(AZ::Render::ChromaticAberrationRequests, "{400844DF-0B44-4941-AECD-135D94909E16}");
+            AZ_RTTI(AZ::Render::VignetteRequests, "{F4DE4346-1919-4D8F-BE05-EA040906C12C}");
 
             /// Overrides the default AZ::EBusTraits handler policy to allow one listener only.
             static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
-            virtual ~ChromaticAberrationRequests()
+            virtual ~VignetteRequests()
             {
             }
 
             // Auto-gen virtual getters/setters...
 #include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
         };
 
-        typedef AZ::EBus<ChromaticAberrationRequests> ChromaticAberrationRequestBus;
+        typedef AZ::EBus<VignetteRequests> VignetteRequestBus;
     } // namespace Render
 } // namespace AZ

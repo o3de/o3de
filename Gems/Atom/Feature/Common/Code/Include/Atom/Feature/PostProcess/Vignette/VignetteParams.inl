@@ -12,10 +12,6 @@
 AZ_GFX_BOOL_PARAM(Enabled, m_enabled, false)
 AZ_GFX_ANY_PARAM_BOOL_OVERRIDE(bool, Enabled, m_enabled)
 
-// Strength of effect
-AZ_GFX_FLOAT_PARAM(Strength, m_strength, ChromaticAberration::DefaultStrength)
-AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, Strength, m_strength)
-
-// Blending
-AZ_GFX_FLOAT_PARAM(Blend, m_blend, ChromaticAberration::DefaultBlend)
-AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, Blend, m_blend)
+// Intensity of effect
+AZ_GFX_FLOAT_PARAM(Intensity, m_intensity, Vignette::DefaultIntensity)
+AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, Intensity, m_intensity)

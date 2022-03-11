@@ -12,10 +12,9 @@ namespace AZ
 {
     namespace Render
     {
-        namespace ChromaticAberration
+        namespace Vignette
         {
-            static constexpr float DefaultStrength = 0.01f;
-            static constexpr float DefaultBlend = 0.5f;
-        } // namespace ChromaticAberration
+            static constexpr float DefaultIntensity = 0.01f;
+        } // namespace Vignette
     } // namespace Render
 } // namespace AZ

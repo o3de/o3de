@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h>
+#include <Atom/Feature/PostProcess/Vignette/VignetteConstants.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/RTTI/RTTI.h>
 
@@ -16,14 +16,14 @@ namespace AZ
 {
     namespace Render
     {
-        class ChromaticAberrationSettingsInterface
+        class VignetteSettingsInterface
         {
         public:
-            AZ_RTTI(AZ::Render::ChromaticAberrationSettingsInterface, "{725CC98B-AE22-4DE5-B68B-5D61A3270264}");
+            AZ_RTTI(AZ::Render::VignetteSettingsInterface, "{FDBB7B33-DD8B-48A7-BB01-6558984F6771}");
 
             // Auto-gen virtual getter and setter functions...
 #include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             virtual void OnConfigChanged() = 0;

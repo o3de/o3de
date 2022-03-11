@@ -573,8 +573,8 @@
                 "Path": "Passes/LutGeneration.pass"
             },
             {
-                "Name": "ChromaticAberrationTemplate",
-                "Path": "Passes/ChromaticAberration.pass"
+                "Name": "VignetteTemplate",
+                "Path": "Passes/Vignette.pass"
             }
         ]
     }

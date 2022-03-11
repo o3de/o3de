@@ -8,32 +8,32 @@
 
 #pragma once
 
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h>
+#include <Atom/Feature/PostProcess/Vignette/VignetteSettingsInterface.h>
 #include <AzCore/Component/Component.h>
 
 namespace AZ
 {
     namespace Render
     {
-        class ChromaticAberrationComponentConfig final : public ComponentConfig
+        class VignetteComponentConfig final : public ComponentConfig
         {
         public:
-            AZ_RTTI(AZ::Render::ChromaticAberrationComponentConfig, "{D0E889C8-C0B0-4B88-8672-91A1A2D21EFF}", AZ::ComponentConfig);
+            AZ_RTTI(AZ::Render::VignetteComponentConfig, "{2CB8446B-1410-4885-A3DE-11BB0590D91A}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);
 
             // Generate members...
 #include <Atom/Feature/ParamMacros/StartParamMembers.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             // Generate Getters/Setters...
 #include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-            void CopySettingsFrom(ChromaticAberrationSettingsInterface* settings);
-            void CopySettingsTo(ChromaticAberrationSettingsInterface* settings);
+            void CopySettingsFrom(VignetteSettingsInterface* settings);
+            void CopySettingsTo(VignetteSettingsInterface* settings);
 
             bool ArePropertiesReadOnly() const
             {

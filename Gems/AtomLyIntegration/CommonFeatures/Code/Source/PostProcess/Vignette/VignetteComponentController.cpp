@@ -6,7 +6,7 @@
  *
  */
 
-#include <PostProcess/ChromaticAberration/ChromaticAberrationComponentController.h>
+#include <PostProcess/Vignette/VignetteComponentController.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
@@ -16,26 +16,26 @@ namespace AZ
 {
     namespace Render
     {
-        void ChromaticAberrationComponentController::Reflect(ReflectContext* context)
+        void VignetteComponentController::Reflect(ReflectContext* context)
         {
-            ChromaticAberrationComponentConfig::Reflect(context);
+            VignetteComponentConfig::Reflect(context);
 
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<ChromaticAberrationComponentController>()
+                serializeContext->Class<VignetteComponentController>()
                 ->Version(0)
-                ->Field("Configuration", &ChromaticAberrationComponentController::m_configuration);
+                ->Field("Configuration", &VignetteComponentController::m_configuration);
             }
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->EBus<ChromaticAberrationRequestBus>("ChromaticAberrationRequestBus")
+                behaviorContext->EBus<VignetteRequestBus>("VignetteRequestBus")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 // Auto-gen behavior context...
-#define PARAM_EVENT_BUS ChromaticAberrationRequestBus::Events
+#define PARAM_EVENT_BUS VignetteRequestBus::Events
 #include <Atom/Feature/ParamMacros/StartParamBehaviorContext.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef PARAM_EVENT_BUS
 
@@ -43,27 +43,27 @@ namespace AZ
             }
         }
 
-        void ChromaticAberrationComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        void VignetteComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC_CE("ChromaticAberrationService"));
+            provided.push_back(AZ_CRC_CE("VignetteService"));
         }
 
-        void ChromaticAberrationComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        void VignetteComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC_CE("ChromaticAberrationService"));
+            incompatible.push_back(AZ_CRC_CE("VignetteService"));
         }
 
-        void ChromaticAberrationComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        void VignetteComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("PostFXLayerService"));
         }
 
-        ChromaticAberrationComponentController::ChromaticAberrationComponentController(const ChromaticAberrationComponentConfig& config)
+        VignetteComponentController::VignetteComponentController(const VignetteComponentConfig& config)
             : m_configuration(config)
         {
         }
 
-        void ChromaticAberrationComponentController::Activate(EntityId entityId)
+        void VignetteComponentController::Activate(EntityId entityId)
         {
             m_entityId = entityId;
 
@@ -74,20 +74,20 @@ namespace AZ
                 m_postProcessInterface = fp->GetOrCreateSettingsInterface(m_entityId);
                 if (m_postProcessInterface)
                 {
-                    m_settingsInterface = m_postProcessInterface->GetOrCreateChromaticAberrationSettingsInterface();
+                    m_settingsInterface = m_postProcessInterface->GetOrCreateVignetteSettingsInterface();
                     OnConfigChanged();
                 }
             }
-            ChromaticAberrationRequestBus::Handler::BusConnect(m_entityId);
+            VignetteRequestBus::Handler::BusConnect(m_entityId);
         }
 
-        void ChromaticAberrationComponentController::Deactivate()
+        void VignetteComponentController::Deactivate()
         {
-            ChromaticAberrationRequestBus::Handler::BusDisconnect(m_entityId);
+            VignetteRequestBus::Handler::BusDisconnect(m_entityId);
 
             if (m_postProcessInterface)
             {
-                m_postProcessInterface->RemoveChromaticAberrationSettingsInterface();
+                m_postProcessInterface->RemoveVignetteSettingsInterface();
             }
 
             m_postProcessInterface = nullptr;
@@ -97,18 +97,18 @@ namespace AZ
 
         // Getters & Setters...
 
-        void ChromaticAberrationComponentController::SetConfiguration(const ChromaticAberrationComponentConfig& config)
+        void VignetteComponentController::SetConfiguration(const VignetteComponentConfig& config)
         {
             m_configuration = config;
             OnConfigChanged();
         }
 
-        const ChromaticAberrationComponentConfig& ChromaticAberrationComponentController::GetConfiguration() const
+        const VignetteComponentConfig& VignetteComponentController::GetConfiguration() const
         {
             return m_configuration;
         }
 
-        void ChromaticAberrationComponentController::OnConfigChanged()
+        void VignetteComponentController::OnConfigChanged()
         {
             if (m_settingsInterface)
             {
@@ -122,11 +122,11 @@ namespace AZ
         // from the settings class to set the local configuration. This is in case the settings class
         // applies some custom logic that results in the set value being different from the input
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                                                     \
-    ValueType ChromaticAberrationComponentController::Get##Name() const                                                                              \
+    ValueType VignetteComponentController::Get##Name() const                                                                              \
     {                                                                                                                                      \
         return m_configuration.MemberName;                                                                                                 \
     }                                                                                                                                      \
-    void ChromaticAberrationComponentController::Set##Name(ValueType val)                                                                            \
+    void VignetteComponentController::Set##Name(ValueType val)                                                                            \
     {                                                                                                                                      \
         if (m_settingsInterface)                                                                                                           \
         {                                                                                                                                  \
@@ -141,11 +141,11 @@ namespace AZ
     }
 
 #define AZ_GFX_COMMON_OVERRIDE(ValueType, Name, MemberName, OverrideValueType)                                                             \
-    OverrideValueType ChromaticAberrationComponentController::Get##Name##Override() const                                                            \
+    OverrideValueType VignetteComponentController::Get##Name##Override() const                                                            \
     {                                                                                                                                      \
         return m_configuration.MemberName##Override;                                                                                       \
     }                                                                                                                                      \
-    void ChromaticAberrationComponentController::Set##Name##Override(OverrideValueType val)                                                          \
+    void VignetteComponentController::Set##Name##Override(OverrideValueType val)                                                          \
     {                                                                                                                                      \
         m_configuration.MemberName##Override = val;                                                                                        \
         if (m_settingsInterface)                                                                                                           \
@@ -156,7 +156,7 @@ namespace AZ
     }
 
 #include <Atom/Feature/ParamMacros/MapAllCommon.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
     } // namespace Render
 } // namespace AZ

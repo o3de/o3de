@@ -7,31 +7,31 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <PostProcess/ChromaticAberration/ChromaticAberrationComponent.h>
+#include <PostProcess/Vignette/VignetteComponent.h>
 
 namespace AZ
 {
     namespace Render
     {
-        ChromaticAberrationComponent::ChromaticAberrationComponent(const ChromaticAberrationComponentConfig& config)
+        VignetteComponent::VignetteComponent(const VignetteComponentConfig& config)
             : BaseClass(config)
         {
         }
 
-        void ChromaticAberrationComponent::Reflect(AZ::ReflectContext* context)
+        void VignetteComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
 
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<ChromaticAberrationComponent, BaseClass>();
+                serializeContext->Class<VignetteComponent, BaseClass>();
             }
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext->Class<ChromaticAberrationComponent>()->RequestBus("ChromaticAberrationRequestBus");
+                behaviorContext->Class<VignetteComponent>()->RequestBus("VignetteRequestBus");
 
-                behaviorContext->ConstantProperty("ChromaticAberrationComponentTypeId", BehaviorConstant(Uuid(ChromaticAberration::ChromaticAberrationComponentTypeId)))
+                behaviorContext->ConstantProperty("VignetteComponentTypeId", BehaviorConstant(Uuid(Vignette::VignetteComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
             }

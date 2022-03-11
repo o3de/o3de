@@ -13,16 +13,16 @@ namespace AZ
 {
     namespace Render
     {
-        class ChromaticAberrationPass final : public RPI::ComputePass
+        class VignettePass final : public RPI::ComputePass
         {
-            AZ_RPI_PASS(ChromaticAberrationPass);
+            AZ_RPI_PASS(VignettePass);
 
         public:
-            AZ_RTTI(ChromaticAberrationPass, "{557EF771-7D60-4EF1-BD61-E2446237B85B}", AZ::RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(ChromaticAberrationPass, SystemAllocator, 0);
+            AZ_RTTI(VignettePass, "{69228453-67F9-473D-ACD6-FA712A23FD23}", AZ::RPI::ComputePass);
+            AZ_CLASS_ALLOCATOR(VignettePass, SystemAllocator, 0);
 
-            ~ChromaticAberrationPass() = default;
-            static RPI::Ptr<ChromaticAberrationPass> Create(const RPI::PassDescriptor& descriptor);
+            ~VignettePass() = default;
+            static RPI::Ptr<VignettePass> Create(const RPI::PassDescriptor& descriptor);
 
             bool IsEnabled() const override;
 
@@ -31,7 +31,7 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:
-            ChromaticAberrationPass(const RPI::PassDescriptor& descriptor);
+            VignettePass(const RPI::PassDescriptor& descriptor);
 
             AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
         };

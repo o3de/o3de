@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h>
+#include <Atom/Feature/PostProcess/Vignette/VignetteConstants.h>
+#include <Atom/Feature/PostProcess/Vignette/VignetteSettingsInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>
 
-#include <AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h>
-#include <AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/Vignette/VignetteBus.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/Vignette/VignetteComponentConfig.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
@@ -24,38 +24,38 @@ namespace AZ
 {
     namespace Render
     {
-        class ChromaticAberrationComponentController final : public ChromaticAberrationRequestBus::Handler
+        class VignetteComponentController final : public VignetteRequestBus::Handler
         {
         public:
-            friend class EditorChromaticAberrationComponent;
+            friend class EditorVignetteComponent;
 
-            AZ_TYPE_INFO(AZ::Render::ChromaticAberrationComponentController, "{776770B4-03BA-491D-BE5B-CBF3948BF078}");
+            AZ_TYPE_INFO(AZ::Render::VignetteComponentController, "{98B2F7E6-A8E3-443B-B301-E180FFE710F5}");
             static void Reflect(AZ::ReflectContext* context);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-            ChromaticAberrationComponentController() = default;
-            ChromaticAberrationComponentController(const ChromaticAberrationComponentConfig& config);
+            VignetteComponentController() = default;
+            VignetteComponentController(const VignetteComponentConfig& config);
 
             void Activate(EntityId entityId);
             void Deactivate();
-            void SetConfiguration(const ChromaticAberrationComponentConfig& config);
-            const ChromaticAberrationComponentConfig& GetConfiguration() const;
+            void SetConfiguration(const VignetteComponentConfig& config);
+            const VignetteComponentConfig& GetConfiguration() const;
 
             // Auto-gen function override declarations (functions definitions in .cpp)...
 #include <Atom/Feature/ParamMacros/StartParamFunctionsOverride.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
         private:
-            AZ_DISABLE_COPY(ChromaticAberrationComponentController);
+            AZ_DISABLE_COPY(VignetteComponentController);
 
             void OnConfigChanged();
 
             PostProcessSettingsInterface* m_postProcessInterface = nullptr;
-            ChromaticAberrationSettingsInterface* m_settingsInterface = nullptr;
-            ChromaticAberrationComponentConfig m_configuration;
+            VignetteSettingsInterface* m_settingsInterface = nullptr;
+            VignetteComponentConfig m_configuration;
             EntityId m_entityId;
         };
     } // namespace Render

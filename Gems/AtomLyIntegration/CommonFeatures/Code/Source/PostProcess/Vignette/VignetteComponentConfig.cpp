@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/Vignette/VignetteComponentConfig.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -14,23 +14,23 @@ namespace AZ
 {
     namespace Render
     {
-        void ChromaticAberrationComponentConfig::Reflect(ReflectContext* context)
+        void VignetteComponentConfig::Reflect(ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<ChromaticAberrationComponentConfig, ComponentConfig>()->Version(0)
+                serializeContext->Class<VignetteComponentConfig, ComponentConfig>()->Version(0)
 
                 // Auto-gen serialize context code...
-#define SERIALIZE_CLASS ChromaticAberrationComponentConfig
+#define SERIALIZE_CLASS VignetteComponentConfig
 #include <Atom/Feature/ParamMacros/StartParamSerializeContext.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef SERIALIZE_CLASS
                     ;
             }
         }
 
-        void ChromaticAberrationComponentConfig::CopySettingsFrom(ChromaticAberrationSettingsInterface* settings)
+        void VignetteComponentConfig::CopySettingsFrom(VignetteSettingsInterface* settings)
         {
             if (!settings)
             {
@@ -39,12 +39,12 @@ namespace AZ
 
 #define COPY_SOURCE settings
 #include <Atom/Feature/ParamMacros/StartParamCopySettingsFrom.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef COPY_SOURCE
         }
 
-        void ChromaticAberrationComponentConfig::CopySettingsTo(ChromaticAberrationSettingsInterface* settings)
+        void VignetteComponentConfig::CopySettingsTo(VignetteSettingsInterface* settings)
         {
             if (!settings)
             {
@@ -53,7 +53,7 @@ namespace AZ
 
 #define COPY_TARGET settings
 #include <Atom/Feature/ParamMacros/StartParamCopySettingsTo.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef COPY_TARGET
         }

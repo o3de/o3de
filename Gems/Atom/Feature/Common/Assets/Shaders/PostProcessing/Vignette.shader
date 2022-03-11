@@ -1,5 +1,5 @@
 {
-    "Source": "ChromaticAberration.azsl",
+    "Source": "Vignette.azsl",
 
     "ProgramSettings": 
     {

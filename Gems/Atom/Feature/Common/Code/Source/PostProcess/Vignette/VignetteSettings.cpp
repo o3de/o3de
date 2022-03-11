@@ -6,8 +6,8 @@
  *
  */
 
-#include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h>
+#include <PostProcess/Vignette/VignetteSettings.h>
+#include <Atom/Feature/PostProcess/Vignette/VignetteConstants.h>
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
@@ -25,31 +25,31 @@ namespace AZ
 {
     namespace Render
     {
-        ChromaticAberrationSettings::ChromaticAberrationSettings(PostProcessFeatureProcessor* featureProcessor)
+        VignetteSettings::VignetteSettings(PostProcessFeatureProcessor* featureProcessor)
             : PostProcessBase(featureProcessor)
         {
         }
 
-        void ChromaticAberrationSettings::OnConfigChanged()
+        void VignetteSettings::OnConfigChanged()
         {
             m_parentSettings->OnConfigChanged();
         }
 
-        void ChromaticAberrationSettings::ApplySettingsTo(ChromaticAberrationSettings* target, float alpha) const
+        void VignetteSettings::ApplySettingsTo(VignetteSettings* target, float alpha) const
         {
-            AZ_Assert(target != nullptr, "ChromaticAberrationSettings::ApplySettingsTo called with nullptr as argument.");
+            AZ_Assert(target != nullptr, "VignetteSettings::ApplySettingsTo called with nullptr as argument.");
 
             // Auto-gen code to blend individual params based on their override value onto target settings
 #define OVERRIDE_TARGET target
 #define OVERRIDE_ALPHA alpha
 #include <Atom/Feature/ParamMacros/StartOverrideBlend.inl>
-#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl>
+#include <Atom/Feature/PostProcess/Vignette/VignetteParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef OVERRIDE_TARGET
 #undef OVERRIDE_ALPHA
         }
 
-        void ChromaticAberrationSettings::Simulate(float deltaTime)
+        void VignetteSettings::Simulate(float deltaTime)
         {
             m_deltaTime = deltaTime;
         }

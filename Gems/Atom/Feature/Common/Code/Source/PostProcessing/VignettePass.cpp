@@ -6,7 +6,7 @@
  *
  */
 
-#include <PostProcessing/ChromaticAberrationPass.h>
+#include <PostProcessing/VignettePass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -15,18 +15,18 @@ namespace AZ
 {
     namespace Render
     {
-        RPI::Ptr<ChromaticAberrationPass> ChromaticAberrationPass::Create(const RPI::PassDescriptor& descriptor)
+        RPI::Ptr<VignettePass> VignettePass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<ChromaticAberrationPass> pass = aznew ChromaticAberrationPass(descriptor);
+            RPI::Ptr<VignettePass> pass = aznew VignettePass(descriptor);
             return AZStd::move(pass);
         }
 
-        ChromaticAberrationPass::ChromaticAberrationPass(const RPI::PassDescriptor& descriptor)
+        VignettePass::VignettePass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         {
         }
 
-        bool ChromaticAberrationPass::IsEnabled() const
+        bool VignettePass::IsEnabled() const
         {
             if (!ComputePass::IsEnabled())
             {
@@ -48,23 +48,22 @@ namespace AZ
             {
                 return false;
             }
-            const ChromaticAberrationSettings* chromaticAberrationSettings = postProcessSettings->GetChromaticAberrationSettings();
-            if (!chromaticAberrationSettings)
+            const VignetteSettings* VignetteSettings = postProcessSettings->GetVignetteSettings();
+            if (!VignetteSettings)
             {
                 return false;
             }
-            return chromaticAberrationSettings->GetEnabled();
+            return VignetteSettings->GetEnabled();
         }
 
-        void ChromaticAberrationPass::FrameBeginInternal(FramePrepareParams params)
+        void VignettePass::FrameBeginInternal(FramePrepareParams params)
         {
-            // Must match the struct in ChromaticAberration.azsl
+            // Must match the struct in Vignette.azsl
             struct Constants
             {
                 AZStd::array<u32, 2> m_outputSize;
                 AZStd::array<float, 2> m_outputCenter;
-                float m_strength = ChromaticAberration::DefaultStrength;
-                float m_blend = ChromaticAberration::DefaultBlend;
+                float m_strength = Vignette::DefaultIntensity;
             } constants{};
 
             RPI::Scene* scene = GetScene();
@@ -75,19 +74,18 @@ namespace AZ
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
                 if (postProcessSettings)
                 {
-                    ChromaticAberrationSettings* chromaticAberrationSettings = postProcessSettings->GetChromaticAberrationSettings();
-                    if (chromaticAberrationSettings)
+                    VignetteSettings* VignetteSettings = postProcessSettings->GetVignetteSettings();
+                    if (VignetteSettings)
                     {
-                        constants.m_strength = chromaticAberrationSettings->GetStrength();
-                        constants.m_blend = chromaticAberrationSettings->GetBlend();
+                        constants.m_strength = VignetteSettings->GetIntensity();
                     }
                 }
             }
 
-            AZ_Assert(GetOutputCount() > 0, "ChromaticAberrationPass: No output bindings!");
+            AZ_Assert(GetOutputCount() > 0, "VignettePass: No output bindings!");
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
-            AZ_Assert(outputAttachment != nullptr, "ChromaticAberrationPass: Output binding has no attachment!");
+            AZ_Assert(outputAttachment != nullptr, "VignettePass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
 
             constants.m_outputSize[0] = size.m_width;

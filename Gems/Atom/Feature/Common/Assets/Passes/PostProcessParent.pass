@@ -44,7 +44,7 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "ChromaticAberrationPass",
+                        "Pass": "VignettePass",
                         "Attachment": "Output"
                     }
                 },
@@ -204,8 +204,8 @@
                     ]
                 },
                 {
-                    "Name": "ChromaticAberrationPass",
-                    "TemplateName": "ChromaticAberrationTemplate",
+                    "Name": "VignettePass",
+                    "TemplateName": "VignetteTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",

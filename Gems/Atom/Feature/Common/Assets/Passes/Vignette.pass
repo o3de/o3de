@@ -4,8 +4,8 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "ChromaticAberrationTemplate",
-            "PassClass": "ChromaticAberrationPass",
+            "Name": "VignetteTemplate",
+            "PassClass": "VignettePass",
             "Slots": [
                 {
                     "Name": "Input",
@@ -23,7 +23,7 @@
             ],
             "ImageAttachments": [
                 {
-                    "Name": "ChromaticAberration",
+                    "Name": "Vignette",
                     "SizeSource": {
                         "Source": {
                             "Pass": "This",
@@ -41,7 +41,7 @@
                     "LocalSlot": "Output",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "ChromaticAberration"
+                        "Attachment": "Vignette"
                     }
                 }
             ],
@@ -54,7 +54,7 @@
             "PassData": {
                 "$type": "ComputePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/ChromaticAberration.shader"
+                    "FilePath": "Shaders/PostProcessing/Vignette.shader"
                 },
                 "Make Fullscreen Pass": true
             }
