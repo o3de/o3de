@@ -309,7 +309,13 @@ namespace AZ::SceneAPI::Behaviors
                 AZStd::string meshGroupName = "default_";
                 meshGroupName += scene.GetName();
                 meshGroupName += meshNodePath;
-                AZ::StringFunc::Replace(meshGroupName, ".", "_");
+
+                // clean up the mesh group name
+                AZStd::replace_if(
+                    meshGroupName.begin(),
+                    meshGroupName.end(),
+                    [](char c) { return (!AZStd::is_alnum(c) && c != '_'); },
+                    '_');
 
                 auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
                 meshGroup->SetName(meshGroupName);
@@ -702,7 +708,7 @@ namespace AZ::SceneAPI::Behaviors
             rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
             writerResult = doc.Accept(writer);
             productPath.append(".json");
-            assetType = {};
+            assetType = Data::AssetType::CreateNull();
         }
         else
         {

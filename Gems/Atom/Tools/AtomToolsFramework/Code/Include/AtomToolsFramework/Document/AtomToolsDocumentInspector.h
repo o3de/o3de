@@ -17,7 +17,7 @@
 
 namespace AtomToolsFramework
 {
-    //! This is a specialized inspector widget that populates itself by inspecting document reflected object info.
+    //! This is a specialized inspector widget that populates itself by inspecting reflected document object info.
     //! Each element of an AtomToolsDocument object info vector will be displayed in a collapsible RPE group in the inspector.
     //! Property changes emitted from each RPE will be tracked and used to signal undo/redo events in the document.
     class AtomToolsDocumentInspector
@@ -37,11 +37,6 @@ namespace AtomToolsFramework
 
         //! Set a prefix string for storing registry settings 
         void SetDocumentSettingsPrefix(const AZStd::string& prefix);
-
-        using NodeIndicatorFunction = AZStd::function<const char*(const AzToolsFramework::InstanceDataNode*)>;
-
-        //! Set a function that will be used to determine what, if any, icon should be displayed next to a property in the inspector
-        void SetIndicatorFunction(const NodeIndicatorFunction& indicatorFunction);
 
         // InspectorRequestBus::Handler overrides...
         void Reset() override;
@@ -64,8 +59,6 @@ namespace AtomToolsFramework
         bool m_editInProgress = {};
 
         AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
-
-        NodeIndicatorFunction m_nodeIndicatorFunction;
 
         AZStd::string m_documentSettingsPrefix = "/O3DE/AtomToolsFramework/AtomToolsDocumentInspector";
     };

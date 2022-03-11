@@ -47,9 +47,19 @@ namespace LyShine
         {
             // Listen for rebuild requests
             LyShinePassRequestBus::Handler::BusConnect(scene->GetId());
+        }
 
-            RemoveChildren();
+        // Always recreate children when rebuild the pass
+        m_flags.m_createChildren = true;
 
+        Base::BuildInternal();
+    }
+
+    void LyShinePass::CreateChildPassesInternal()
+    {
+        AZ::RPI::Scene* scene = GetScene();
+        if (scene)
+        {
             // Get the current list of render targets being used across all loaded UI Canvases
             LyShine::AttachmentImagesAndDependencies attachmentImagesAndDependencies;
             LyShinePassDataRequestBus::EventResult(
@@ -61,8 +71,6 @@ namespace LyShine
             AddRttChildPasses(attachmentImagesAndDependencies);
             AddUiCanvasChildPass(attachmentImagesAndDependencies);
         }
-
-        Base::BuildInternal();
     }
 
     void LyShinePass::RebuildRttChildren()
@@ -98,53 +106,10 @@ namespace LyShine
     void LyShinePass::AddRttChildPass(AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage, AttachmentImages attachmentImageDependencies)
     {
         // Add a pass that renders to the specified texture
-
-        // Create a pass template
-        auto passTemplate = AZStd::make_shared<AZ::RPI::PassTemplate>();
-        passTemplate->m_name = "RttChildPass";
-        passTemplate->m_passClass = AZ::Name("RttChildPass");
-
-        // Slots
-        passTemplate->m_slots.resize(2);
-
-        AZ::RPI::PassSlot& depthInOutSlot = passTemplate->m_slots[0];
-        depthInOutSlot.m_name = "DepthInputOutput";
-        depthInOutSlot.m_slotType = AZ::RPI::PassSlotType::InputOutput;
-        depthInOutSlot.m_scopeAttachmentUsage = AZ::RHI::ScopeAttachmentUsage::DepthStencil;
-        depthInOutSlot.m_loadStoreAction.m_clearValue = AZ::RHI::ClearValue::CreateDepthStencil(0.0f, 0);
-        depthInOutSlot.m_loadStoreAction.m_loadActionStencil = AZ::RHI::AttachmentLoadAction::Clear;
-
-        AZ::RPI::PassSlot& outSlot = passTemplate->m_slots[1];
-        outSlot.m_name = AZ::Name("RenderTargetOutput");
-        outSlot.m_slotType = AZ::RPI::PassSlotType::Output;
-        outSlot.m_scopeAttachmentUsage = AZ::RHI::ScopeAttachmentUsage::RenderTarget;
-        outSlot.m_loadStoreAction.m_clearValue = AZ::RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 0.0f);
-        outSlot.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Clear;
-
-        // Connections
-        passTemplate->m_connections.resize(1);
-
-        AZ::RPI::PassConnection& depthInOutConnection = passTemplate->m_connections[0];
-        depthInOutConnection.m_localSlot = "DepthInputOutput";
-        depthInOutConnection.m_attachmentRef.m_pass = "Parent";
-        depthInOutConnection.m_attachmentRef.m_attachment = "DepthInputOutput";
-
-        // Pass data
-        AZStd::shared_ptr<AZ::RPI::RasterPassData> passData = AZStd::make_shared<AZ::RPI::RasterPassData>();
-        passData->m_drawListTag = AZ::Name("uicanvas");
-        passData->m_pipelineViewTag = AZ::Name("MainCamera");
-        auto size = attachmentImage->GetRHIImage()->GetDescriptor().m_size;
-        passData->m_overrideScissor = AZ::RHI::Scissor(0, 0, size.m_width, size.m_height);
-        passData->m_overrideViewport = AZ::RHI::Viewport(0, static_cast<float>(size.m_width), 0, static_cast<float>(size.m_height));
-        passTemplate->m_passData = AZStd::move(passData);
-        // Create a pass descriptor for the new child pass
-        AZ::RPI::PassDescriptor childDesc;
-        childDesc.m_passTemplate = passTemplate;
-        childDesc.m_passName = attachmentImage->GetAttachmentId();
-
         AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
-        AZ::RPI::Ptr<RttChildPass> rttChildPass = passSystem->CreatePass<RttChildPass>(childDesc);
-        AZ_Assert(rttChildPass, "[LyShinePass] Unable to create %s.", passTemplate->m_name.GetCStr());
+        auto passName = attachmentImage->GetRHIImage()->GetName(); // Use attachment name (but not attachment id) as pass name so the pass can be found by GetRttPass() function
+        AZ::RPI::Ptr<RttChildPass> rttChildPass = azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), passName).get());
+        AZ_Assert(rttChildPass, "[LyShinePass] Unable to create a RttChildPass.");
 
         // Store the info needed to attach to slots and set up frame graph dependencies
         rttChildPass->m_attachmentImage = attachmentImage;
@@ -157,53 +122,9 @@ namespace LyShine
     {
         if (!m_uiCanvasChildPass)
         {
-            // Create a pass template
-            auto passTemplate = AZStd::make_shared<AZ::RPI::PassTemplate>();
-            passTemplate->m_name = AZ::Name("LyShineChildPass");
-            passTemplate->m_passClass = AZ::Name("LyShineChildPass");
-
-            // Slots
-            passTemplate->m_slots.resize(2);
-
-            AZ::RPI::PassSlot& depthInOutSlot = passTemplate->m_slots[0];
-            depthInOutSlot.m_name = "DepthInputOutput";
-            depthInOutSlot.m_slotType = AZ::RPI::PassSlotType::InputOutput;
-            depthInOutSlot.m_scopeAttachmentUsage = AZ::RHI::ScopeAttachmentUsage::DepthStencil;
-            depthInOutSlot.m_loadStoreAction.m_clearValue = AZ::RHI::ClearValue::CreateDepthStencil(0.0f, 0);
-            depthInOutSlot.m_loadStoreAction.m_loadActionStencil = AZ::RHI::AttachmentLoadAction::Clear;
-
-            AZ::RPI::PassSlot& inOutSlot = passTemplate->m_slots[1];
-            inOutSlot.m_name = "ColorInputOutput";
-            inOutSlot.m_slotType = AZ::RPI::PassSlotType::InputOutput;
-            inOutSlot.m_scopeAttachmentUsage = AZ::RHI::ScopeAttachmentUsage::RenderTarget;
-
-            // Connections
-            passTemplate->m_connections.resize(2);
-
-            AZ::RPI::PassConnection& depthInOutConnection = passTemplate->m_connections[0];
-            depthInOutConnection.m_localSlot = "DepthInputOutput";
-            depthInOutConnection.m_attachmentRef.m_pass = "Parent";
-            depthInOutConnection.m_attachmentRef.m_attachment = "DepthInputOutput";
-
-            AZ::RPI::PassConnection& inOutConnection = passTemplate->m_connections[1];
-            inOutConnection.m_localSlot = "ColorInputOutput";
-            inOutConnection.m_attachmentRef.m_pass = "Parent";
-            inOutConnection.m_attachmentRef.m_attachment = "ColorInputOutput";
-
-            // Pass data
-            AZStd::shared_ptr<AZ::RPI::RasterPassData> passData = AZStd::make_shared<AZ::RPI::RasterPassData>();
-            passData->m_drawListTag = AZ::Name("uicanvas");
-            passData->m_pipelineViewTag = AZ::Name("MainCamera");
-            passTemplate->m_passData = AZStd::move(passData);
-
-            // Create a pass descriptor for the new child pass
-            AZ::RPI::PassDescriptor childDesc;
-            childDesc.m_passTemplate = passTemplate;
-            childDesc.m_passName = AZ::Name("LyShineChildPass");
-
             AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
-            m_uiCanvasChildPass = passSystem->CreatePass<LyShineChildPass>(childDesc);
-            AZ_Assert(m_uiCanvasChildPass, "[LyShinePass] Unable to create %s.", passTemplate->m_name.GetCStr());
+            m_uiCanvasChildPass = azrtti_cast<LyShineChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("LyShineChildPassTemplate"), AZ::Name("LyShineChildPass")).get());
+            AZ_Assert(m_uiCanvasChildPass, "[LyShinePass] Unable to create a LyShineChildPass.");
         }
 
         // Store the info needed to set up frame graph dependencies
@@ -270,5 +191,12 @@ namespace LyShine
     void RttChildPass::BuildInternal()
     {
         AttachImageToSlot(AZ::Name("RenderTargetOutput"), m_attachmentImage);
+
+        auto imageSize = m_attachmentImage->GetDescriptor().m_size;
+        // use render target's size to setup override scissor and viewport
+        m_scissorState = AZ::RHI::Scissor(0, 0, imageSize.m_width, imageSize.m_height);
+        m_viewportState = AZ::RHI::Viewport(0.f, aznumeric_cast<float>(imageSize.m_width), 0.f, aznumeric_cast<float>(imageSize.m_height));
+        m_overrideScissorSate = false;
+        m_overrideViewportState = false;
     }
 } // namespace LyShine

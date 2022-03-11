@@ -87,7 +87,7 @@ namespace AZ
         AZ::IO::FixedMaxPathString GetO3deManifestDirectory();
 
         //! Retrieves the full path where the manifest file lives, i.e. "<userhome>/.o3de/o3de_manifest.json"
-        AZ::IO::FixedMaxPathString GetEngineManifestPath();
+        AZ::IO::FixedMaxPathString GetO3deManifestPath();
 
         //! Retrieves the full directory to the O3DE logs directory, i.e. "<userhome>/.o3de/Logs"
         AZ::IO::FixedMaxPathString GetO3deLogsDirectory();
