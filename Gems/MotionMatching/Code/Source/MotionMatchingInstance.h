@@ -57,7 +57,14 @@ namespace EMotionFX::MotionMatching
         // DebugDrawRequestBus::Handler overrides
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        void Update(float timePassedInSeconds, const AZ::Vector3& targetPos, const AZ::Vector3& targetFacingDir, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed);
+        void Update(
+            float timePassedInSeconds,
+            const AZ::Vector3& targetPos,
+            const AZ::Vector3& targetFacingDir,
+            bool useTargetFacingDir,
+            TrajectoryQuery::EMode mode,
+            float pathRadius,
+            float pathSpeed);
         void PostUpdate(float timeDelta);
         void Output(Pose& outputPose);
 
