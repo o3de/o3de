@@ -26,7 +26,7 @@ TEST_F(AWSGameLiftStopMatchmakingActivityTest, BuildAWSGameLiftStopMatchmakingRe
 TEST_F(AWSGameLiftStopMatchmakingActivityTest, ValidateStopMatchmakingRequest_CallWithoutTicketId_GetFalseResult)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    auto result = StopMatchmakingActivity::ValidateStopMatchmakingRequest(Multiplayer::StopMatchmakingRequest());
+    auto result = StopMatchmakingActivity::ValidateStopMatchmakingRequest(AzFramework::StopMatchmakingRequest());
     EXPECT_FALSE(result);
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }

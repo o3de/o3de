@@ -86,21 +86,10 @@ namespace AZ
             ScopeProducer();
 
             /**
-             *  Sets the HardwareQueueClass on the scope
-             */
-            void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
-
-            /**
-             *  DEPRECATED.
-             *  @deprecated Use InitScope instead
+             *  Sets ID of the scope producer. Used by class that inherit from
+             *  ScopeProducer but that can't supply a ScopeId at construction.
              */
             void SetScopeId(const ScopeId& scopeId);
-
-            /**
-             *  Initializes the scope with a ScopeId and HardwareQueueClass. 
-             *  Used by classes that inherit from ScopeProducer but can't supply a ScopeId at construction.
-             */
-            void InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
 
         private:
             //////////////////////////////////////////////////////////////////////////

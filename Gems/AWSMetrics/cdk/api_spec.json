@@ -3,7 +3,7 @@
     "info": {
         "title": "AWSMetricsServiceApi",
         "description": "Service API for the data analytics pipeline defined by the AWS Metrics Gem",
-        "version": "1.0.1"
+        "version": "1.0.0"
     },
     "x-amazon-apigateway-request-validators": {
       "all": {
@@ -68,7 +68,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostMetricsEventsResponse"
+                                    "$ref": "#/components/schemas/MetricsEventSuccessResponse"
                                 }
                             }
                         }
@@ -78,7 +78,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostMetricsEventsError"
+                                    "$ref": "#/components/schemas/Error"
                                 }
                             }
                         }
@@ -88,17 +88,17 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostMetricsEventsError"
+                                    "$ref": "#/components/schemas/Error"
                                 }
                             }
                         }
                     },
                     "500": {
-                        "description": "Internal Server PostMetricsEventsError",
+                        "description": "Internal Server Error",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PostMetricsEventsError"
+                                    "$ref": "#/components/schemas/Error"
                                 }
                             }
                         }
@@ -109,7 +109,7 @@
     },
     "components": {
         "schemas": {
-            "PostMetricsEventsError": {
+            "Error": {
                 "type": "object",
                 "properties": {
                     "message": {
@@ -184,18 +184,18 @@
                     }
                 }
             },
-            "PostMetricsEventsResponse": {
+            "MetricsEventSuccessResponse": {
                 "title": "Metrics Event Success Response Schema",
                 "type": "object",
                 "properties": {
                     "failed_record_count": {
                         "type": "number",
-                        "description": "Number of events that failed to be sent to the backend"
+                        "description": "Number of events that failed to be saved to metrics events stream"
                     },
                     "events": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/PostMetricsEventsResponseEntry"
+                            "$ref": "#/components/schemas/MetricsEventSuccessResponseRecord"
                         }
                     },
                     "total": {
@@ -204,16 +204,16 @@
                     }
                 }
             },
-            "PostMetricsEventsResponseEntry": {
+            "MetricsEventSuccessResponseRecord": {
                 "type": "object",
                 "properties": {
                     "error_code": {
                         "type": "string",
-                        "description": "Error code if the individual metrics event failed to be sent"
+                        "description": "The error code from the metrics events stream. Value set if Result is Error"
                     },
                     "result": {
                         "type": "string",
-                        "description": "Result for the processed individual metrics event. Expected value: \"Error\" or \"Ok\""
+                        "description": "Processing result for the input record"
                     }
                 }
             }

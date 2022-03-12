@@ -69,6 +69,12 @@ namespace AZ
                 HairShortCutResolveColorPassName = Name{ "HairShortCutResolveColorPass" };
 
                 ++s_instanceCount;
+
+                if (!CreatePerPassResources())
+                {   // this might not be an error - if the pass system is still empty / minimal
+                    //  and these passes are not part of the minimal pipeline, they will not be created.
+                    AZ_Error("Hair Gem", false, "Failed to create the hair shared buffer resource");
+                }
             }
 
             HairFeatureProcessor::~HairFeatureProcessor()
@@ -100,15 +106,9 @@ namespace AZ
 
             void HairFeatureProcessor::Deactivate()
             {
-                m_hairPassRequestAsset.Reset();
                 DisableSceneNotification();
                 TickBus::Handler::BusDisconnect();
                 HairGlobalSettingsRequestBus::Handler::BusDisconnect();
-            }
-
-            void HairFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
-            {
-                AddHairParentPass(renderPipeline);
             }
 
             void HairFeatureProcessor::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -268,12 +268,6 @@ namespace AZ
                     return;
                 }
 
-                // Skip adding draw or dispath items if there it no hair render objects
-                if (m_hairRenderObjects.size() == 0)
-                {
-                    return;
-                }
-
                 // [To Do] - no culling scheme applied yet.
                 // Possibly setup the hair culling work group to be re-used for each view.
                 // See SkinnedMeshFeatureProcessor::Render for more details
@@ -320,53 +314,6 @@ namespace AZ
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairParentPassName, renderPipeline);
                 RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
                 return pass ? true : false;
-            }
-
-            bool HairFeatureProcessor::AddHairParentPass(RPI::RenderPipeline* renderPipeline)
-            {
-                if (HasHairParentPass(renderPipeline))
-                {
-                    CreatePerPassResources();
-                    return true;
-                }
-                const char* passRequestAssetFilePath = "Passes/AtomTressFX_PassRequest.azasset";
-                m_hairPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-                    passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-                const AZ::RPI::PassRequest* passRequest = nullptr;
-                if (m_hairPassRequestAsset->IsReady())
-                {
-                    passRequest = m_hairPassRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
-                }
-                if (!passRequest)
-                {
-                    AZ_Error("AtomTressFx", false, "Failed to add hair parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
-                    return false;
-                }
-
-                m_usePPLLRenderTechnique = passRequest->m_templateName == AZ::Name("HairParentPassTemplate");
-
-                 // Create the pass
-                RPI::Ptr<RPI::Pass> hairParentPass  = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
-                if (!hairParentPass)
-                {
-                    AZ_Error("AtomTressFx", false, "Create hair parent pass from pass request failed",
-                        renderPipeline->GetId().GetCStr());
-                    return false;
-                }
-
-                // Add the pass to render pipeline
-                bool success = renderPipeline->AddPassAfter(hairParentPass, Name("OpaquePass"));
-                // only create pass resources if it was success
-                if (success)
-                {
-                    CreatePerPassResources();
-                }
-                else
-                {
-                    AZ_Error("AtomTressFx", false, "Add the hair parent pass to render pipeline [%s] failed",
-                        renderPipeline->GetId().GetCStr());
-                }
-                return success;
             }
 
             void HairFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline)
@@ -458,11 +405,15 @@ namespace AZ
 
             bool HairFeatureProcessor::CreatePerPassResources()
             {
+                if (m_sharedResourcesCreated)
+                {
+                    return true;
+                }
+
                 SrgBufferDescriptor descriptor;
                 AZStd::string instanceNumber = AZStd::to_string(s_instanceCount);
 
                 // Shared buffer - this is a persistent buffer that needs to be created manually.
-                if (!m_sharedDynamicBuffer)
                 {
                     AZStd::vector<SrgBufferDescriptor> hairDynamicDescriptors;
                     DynamicHairData::PrepareSrgDescriptors(hairDynamicDescriptors, 1, 1);
@@ -475,7 +426,7 @@ namespace AZ
                 }
 
                 // PPLL nodes buffer - created only if the PPLL technique is used
-                if (m_usePPLLRenderTechnique && !m_linkedListNodesBuffer)
+                if (m_usePPLLRenderTechnique)
                 {
                     descriptor = SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
@@ -490,6 +441,7 @@ namespace AZ
                     }
                 }
 
+                m_sharedResourcesCreated = true;
                 return true;
             }
 

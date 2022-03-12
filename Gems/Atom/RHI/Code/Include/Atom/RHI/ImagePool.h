@@ -88,9 +88,6 @@ namespace AZ
             /// Returns the descriptor used to initialize the pool.
             const ImagePoolDescriptor& GetDescriptor() const override final;
 
-            /// Returns the fragmentation produced by this pool
-            void ComputeFragmentation() const override;
-
         protected:
             ImagePool() = default;
 

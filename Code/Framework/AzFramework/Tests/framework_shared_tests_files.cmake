@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    DocumentPropertyEditor/DocumentPropertyEditorFixture.h
-    DocumentPropertyEditor/DocumentPropertyEditorFixture.cpp
     Mocks/MockSpawnableEntitiesInterface.h
     Mocks/MockWindowRequests.h
     Utils/Utils.h

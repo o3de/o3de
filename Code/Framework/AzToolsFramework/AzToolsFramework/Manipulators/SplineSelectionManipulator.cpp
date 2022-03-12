@@ -63,7 +63,7 @@ namespace AzToolsFramework
         if (m_onLeftMouseDownCallback)
         {
             m_onLeftMouseDownCallback(CalculateManipulationDataAction(
-                GetSpace(), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, m_spline));
+                TransformUniformScale(GetSpace()), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, m_spline));
         }
     }
 
@@ -72,7 +72,7 @@ namespace AzToolsFramework
         if (MouseOver() && m_onLeftMouseUpCallback)
         {
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                GetSpace(), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, m_spline));
+                TransformUniformScale(GetSpace()), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, m_spline));
         }
     }
 
@@ -94,8 +94,8 @@ namespace AzToolsFramework
         {
             m_manipulatorView->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
-                ManipulatorState{ GetSpace(), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay, cameraState,
-                mouseInteraction);
+                ManipulatorState{ TransformUniformScale(GetSpace()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() },
+                debugDisplay, cameraState, mouseInteraction);
         }
     }
 

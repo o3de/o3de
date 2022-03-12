@@ -220,3 +220,5 @@ void CAssetBlendKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& 
         }
     }
 }
+
+REGISTER_QT_CLASS_DESC(CAssetBlendKeyUIControls, "TrackView.KeyUI.AssetBlends", "TrackViewKeyUI");

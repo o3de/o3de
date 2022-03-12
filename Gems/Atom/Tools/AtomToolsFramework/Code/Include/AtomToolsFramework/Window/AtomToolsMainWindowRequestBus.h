@@ -16,14 +16,12 @@ class QWidget;
 
 namespace AtomToolsFramework
 {
-    //! AtomToolsMainWindowRequestBus provides an interface to common main application window functions like adding docked windows,
-    //! resizing the viewport, and other operations 
+    //! AtomToolsMainWindowRequestBus provides
     class AtomToolsMainWindowRequests : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        typedef AZ::Crc32 BusIdType;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
         //! Bring main window to foreground
         virtual void ActivateWindow() = 0;
@@ -60,7 +58,6 @@ namespace AtomToolsFramework
         //! Releases the viewport's render target resolution lock, allowing it to match the viewport widget again.
         virtual void UnlockViewportRenderTargetSize() {};
     };
-
     using AtomToolsMainWindowRequestBus = AZ::EBus<AtomToolsMainWindowRequests>;
 
 } // namespace AtomToolsFramework

@@ -20,7 +20,8 @@ namespace AZ
     // [1/28/2011]
     //=========================================================================
     BestFitExternalMapAllocator::BestFitExternalMapAllocator()
-        : AllocatorBase(nullptr, "BestFitExternalMapAllocator", "Best fit allocator with external tracking storage!")
+        : AllocatorBase(this, "BestFitExternalMapAllocator", "Best fit allocator with external tracking storage!")
+        , m_schema(nullptr)
     {
     }
 
@@ -179,6 +180,15 @@ namespace AZ
     auto BestFitExternalMapAllocator::GetMaxContiguousAllocationSize() const -> size_type
     {
         return m_schema->GetMaxContiguousAllocationSize();
+    }
+
+    //=========================================================================
+    // GetSubAllocator
+    // [1/28/2011]
+    //=========================================================================
+    IAllocatorAllocate* BestFitExternalMapAllocator::GetSubAllocator()
+    {
+        return m_schema->GetSubAllocator();
     }
 
 } // namespace AZ

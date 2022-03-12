@@ -146,40 +146,42 @@ namespace Terrain
     void TerrainSurfaceDataSystemComponent::GetSurfacePoints(
         const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const
     {
-        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
-    }
-
-    void TerrainSurfaceDataSystemComponent::GetSurfacePointsFromList(
-        AZStd::span<const AZ::Vector3> inPositions, SurfaceData::SurfacePointList& surfacePointList) const
-    {
-        if (!m_terrainBoundsIsValid)
+        if (m_terrainBoundsIsValid)
         {
-            return;
-        }
-
-        size_t inPositionIndex = 0;
-
-        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-            &AzFramework::Terrain::TerrainDataRequestBus::Events::ProcessSurfacePointsFromList, inPositions,
-            [this, inPositions, &inPositionIndex, &surfacePointList]
-                (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            auto enumerationCallback = [&](AzFramework::Terrain::TerrainDataRequests* terrain) -> bool
             {
-                AZ_Assert(inPositionIndex < inPositions.size(), "Too many points returned from ProcessSurfacePointsFromList");
+                if (terrain->GetTerrainAabb().Contains(inPosition))
+                {
+                    bool isTerrainValidAtPoint = false;
+                    AzFramework::SurfaceData::SurfacePoint terrainSurfacePoint;
+                    terrain->GetSurfacePoint(
+                        inPosition, terrainSurfacePoint, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
+                        &isTerrainValidAtPoint);
 
-                SurfaceData::SurfaceTagWeights weights(surfacePoint.m_surfaceTags);
+                    const bool isHole = !isTerrainValidAtPoint;
 
-                // Always add a "terrain" or "terrainHole" tag.
-                const AZ::Crc32 terrainTag = terrainExists ? Constants::s_terrainTagCrc : Constants::s_terrainHoleTagCrc;
-                weights.AddSurfaceTagWeight(terrainTag, 1.0f);
+                    SurfaceData::SurfacePoint point;
+                    point.m_entityId = GetEntityId();
+                    point.m_position = terrainSurfacePoint.m_position;
+                    point.m_normal = terrainSurfacePoint.m_normal;
 
-                surfacePointList.AddSurfacePoint(
-                    GetEntityId(), inPositions[inPositionIndex], surfacePoint.m_position, surfacePoint.m_normal, weights);
+                    // Always add a "terrain" or "terrainHole" tag.
+                    const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
+                    SurfaceData::AddMaxValueForMasks(point.m_masks, terrainTag, 1.0f);
 
-                inPositionIndex++;
-            },
-            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+                    // Add all of the surface tags that the terrain has at this point.
+                    for (auto& tag : terrainSurfacePoint.m_surfaceTags)
+                    {
+                        SurfaceData::AddMaxValueForMasks(point.m_masks, tag.m_surfaceType, tag.m_weight);
+                    }
+                    surfacePointList.push_back(point);
+                }
+                // Only one handler should exist.
+                return false;
+            };
+            AzFramework::Terrain::TerrainDataRequestBus::EnumerateHandlers(enumerationCallback);
+        }
     }
-
 
     AZ::Aabb TerrainSurfaceDataSystemComponent::GetSurfaceAabb() const
     {
@@ -205,7 +207,6 @@ namespace Terrain
         registryEntry.m_entityId = GetEntityId();
         registryEntry.m_bounds = GetSurfaceAabb();
         registryEntry.m_tags = GetSurfaceTags();
-        registryEntry.m_maxPointsCreatedPerInput = 1;
 
         m_terrainBounds = registryEntry.m_bounds;
         m_terrainBoundsIsValid = m_terrainBounds.IsValid();

@@ -148,6 +148,7 @@ void FileWatcher::StopWatching()
 {
     if (!m_startedWatching)
     {
+        AZ_Warning("FileWatcher", false, "StopWatching() called when is not watching for file changes.");
         return;
     }
 

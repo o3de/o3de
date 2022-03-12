@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Editor / Image</title>
+    <g id="Icons-/-Editor-/-Image" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <g id="picture" transform="translate(3.000000, 3.000000)" fill="#FFFFFF" fill-rule="nonzero">
+            <path d="M14.550959,11.6 L12,8.6 L11,9.6 L8,6.6 L3.46109347,11.6 L3.46109347,14.5401062 L14.550959,14.5401062 L14.550959,11.6 Z M13.5,3 C14.3284271,3 15,3.67157288 15,4.5 C15,5.32842712 14.3284271,6 13.5,6 C12.6715729,6 12,5.32842712 12,4.5 C12,3.67157288 12.6715729,3 13.5,3 Z M0,1.77635684e-15 L0,18 L18,18 L18,1.77635684e-15 L0,1.77635684e-15 Z M16,16 L2,16 L2,2 L16,2 L16,16 Z" id="Shape"></path>
+        </g>
+    </g>
+</svg>

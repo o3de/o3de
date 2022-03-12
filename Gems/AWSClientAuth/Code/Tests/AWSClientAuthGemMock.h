@@ -30,7 +30,7 @@
 #include <AWSCoreBus.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
 #include <AWSClientAuthBus.h>
-#include <AWSNativeSDKTestManager.h>
+#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 #include <HttpRequestor/HttpRequestorBus.h>
 
 #include <aws/core/utils/Outcome.h>
@@ -542,7 +542,7 @@ namespace AWSClientAuthUnitTest
             m_jobContext.reset(aznew AZ::JobContext(*m_jobManager, *m_jobCancelGroup));
             AZ::JobContext::SetGlobalContext(m_jobContext.get());
 
-            AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Init();
+            AWSNativeSDKInit::InitializationManager::InitAwsApi();
             m_cognitoIdentityProviderClientMock = std::make_shared<CognitoIdentityProviderClientMock>();
             m_cognitoIdentityClientMock = std::make_shared<CognitoIdentityClientMock>();
         }
@@ -557,7 +557,8 @@ namespace AWSClientAuthUnitTest
             m_cognitoIdentityProviderClientMock.reset();
             m_cognitoIdentityClientMock.reset();
 
-            AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
+            AWSNativeSDKInit::InitializationManager::Shutdown();
+
 
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 

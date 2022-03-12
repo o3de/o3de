@@ -25,7 +25,7 @@ namespace AWSGameLift
         AZStd::string CreateSession(const AWSGameLiftCreateSessionRequest& createSessionRequest);
 
         // Validate CreateSessionRequest and check required request parameters
-        bool ValidateCreateSessionRequest(const Multiplayer::CreateSessionRequest& createSessionRequest);
+        bool ValidateCreateSessionRequest(const AzFramework::CreateSessionRequest& createSessionRequest);
 
     } // namespace CreateSessionActivity
 } // namespace AWSGameLift

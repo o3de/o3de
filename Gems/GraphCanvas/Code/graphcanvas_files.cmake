@@ -16,6 +16,7 @@ set(FILES
     Source/GraphCanvas.h
     Source/GraphCanvasModule.h
     Source/GraphCanvasEditorModule.cpp
+    Source/tools.cpp
     Source/Components/BookmarkManagerComponent.cpp
     Source/Components/BookmarkManagerComponent.h
     Source/Components/GeometryComponent.cpp
@@ -144,4 +145,10 @@ set(FILES
     Source/Translation/TranslationAsset.cpp
     Source/Translation/TranslationBuilder.h
     Source/Translation/TranslationBuilder.cpp
+    Source/Translation/TranslationBus.h
+    Source/Translation/TranslationDatabase.h
+    Source/Translation/TranslationDatabase.cpp
+    Source/Translation/TranslationSerializer.h
+    Source/Translation/TranslationSerializer.cpp
+
 )

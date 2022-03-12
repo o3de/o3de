@@ -7,6 +7,7 @@
  */
 
 #include "OperatorSub.h"
+#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Contracts/MathOperatorContract.h>
 #include <AzCore/Math/MathUtils.h>
 

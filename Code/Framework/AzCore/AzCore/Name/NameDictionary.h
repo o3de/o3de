@@ -16,6 +16,11 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Name/Name.h>
 
+namespace MaterialEditor
+{
+    class MaterialEditorCoreComponent;
+}
+
 namespace UnitTest
 {
     class NameDictionaryTester;
@@ -40,9 +45,7 @@ namespace AZ
     //! that already exist.
     class NameDictionary final
     {
-    public:
         AZ_CLASS_ALLOCATOR(NameDictionary, AZ::OSAllocator, 0);
-    private:
 
         friend Module;
         friend Name;
@@ -72,8 +75,8 @@ namespace AZ
         //! @return A Name instance. If the hash was not found, the Name will be empty.
         Name FindName(Name::Hash hash) const;
 
-        NameDictionary();
     private:
+        NameDictionary();
         ~NameDictionary();
 
         void ReportStats() const;

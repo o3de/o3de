@@ -172,17 +172,17 @@ namespace AWSMetrics
                 if (outcome.IsSuccess())
                 {
                     // Generate response records for success call to keep consistency with the Service API response
-                    ServiceAPI::PostMetricsEventsResponseEntries responseEntries;
+                    ServiceAPI::MetricsEventSuccessResponsePropertyEvents responseRecords;
                     int numMetricsEventsInRequest = metricsQueue->GetNumMetrics();
                     for (int index = 0; index < numMetricsEventsInRequest; ++index)
                     {
-                        ServiceAPI::PostMetricsEventsResponseEntry responseEntry;
-                        responseEntry.m_result = AwsMetricsPostMetricsEventsResponseEntrySuccessResult;
+                        ServiceAPI::MetricsEventSuccessResponseRecord responseRecord;
+                        responseRecord.result = AwsMetricsSuccessResponseRecordResult;
 
-                        responseEntries.emplace_back(responseEntry);
+                        responseRecords.emplace_back(responseRecord);
                     }
 
-                    OnResponseReceived(*metricsQueue, responseEntries);
+                    OnResponseReceived(*metricsQueue, responseRecords);
 
                     AZ::TickBus::QueueFunction([requestId]()
                     {
@@ -209,19 +209,19 @@ namespace AWSMetrics
     {
         int requestId = ++m_sendMetricsId;
 
-        ServiceAPI::PostMetricsEventsRequestJob* requestJob = ServiceAPI::PostMetricsEventsRequestJob::Create(
-            [this, requestId](ServiceAPI::PostMetricsEventsRequestJob* successJob)
+        ServiceAPI::PostProducerEventsRequestJob* requestJob = ServiceAPI::PostProducerEventsRequestJob::Create(
+            [this, requestId](ServiceAPI::PostProducerEventsRequestJob* successJob)
             {
-                OnResponseReceived(successJob->parameters.m_metricsQueue, successJob->result.m_responseEntries);
+                OnResponseReceived(successJob->parameters.data, successJob->result.events);
 
                 AZ::TickBus::QueueFunction([requestId]()
                 {
                     AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsSuccess, requestId);
                 });
             },
-            [this, requestId](ServiceAPI::PostMetricsEventsRequestJob* failedJob)
+            [this, requestId](ServiceAPI::PostProducerEventsRequestJob* failedJob)
             {
-                OnResponseReceived(failedJob->parameters.m_metricsQueue);
+                OnResponseReceived(failedJob->parameters.data);
 
                 AZStd::string errorMessage = failedJob->error.message;
                 AZ::TickBus::QueueFunction([requestId, errorMessage]()
@@ -230,11 +230,11 @@ namespace AWSMetrics
                 });
             });
 
-        requestJob->parameters.m_metricsQueue = AZStd::move(metricsQueue);
+        requestJob->parameters.data = AZStd::move(metricsQueue);
         requestJob->Start();
     }
 
-    void MetricsManager::OnResponseReceived(const MetricsQueue& metricsEventsInRequest, const ServiceAPI::PostMetricsEventsResponseEntries& responseEntries)
+    void MetricsManager::OnResponseReceived(const MetricsQueue& metricsEventsInRequest, const ServiceAPI::MetricsEventSuccessResponsePropertyEvents& responseRecords)
     {
         MetricsQueue metricsEventsForRetry;
         int numMetricsEventsInRequest = metricsEventsInRequest.GetNumMetrics();
@@ -242,7 +242,7 @@ namespace AWSMetrics
         {
             MetricsEvent metricsEvent = metricsEventsInRequest[index];
 
-            if (responseEntries.size() > 0 && responseEntries[index].m_result == AwsMetricsPostMetricsEventsResponseEntrySuccessResult)
+            if (responseRecords.size() > 0 && responseRecords[index].result == AwsMetricsSuccessResponseRecordResult)
             {
                 // The metrics event is sent to the backend successfully.
                 if (metricsEvent.GetNumFailures() == 0)

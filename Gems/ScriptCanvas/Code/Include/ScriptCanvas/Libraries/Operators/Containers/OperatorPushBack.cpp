@@ -7,6 +7,7 @@
  */
 
 #include "OperatorPushBack.h"
+#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Contracts/SupportsMethodContract.h>
 
 namespace ScriptCanvas

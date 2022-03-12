@@ -32,6 +32,15 @@
 #include "Settings.h"
 #include "CryEdit.h"
 
+enum
+{
+    // in milliseconds
+    GameModeIdleFrequency = 0,
+    EditorModeIdleFrequency = 1,
+    InactiveModeFrequency = 10,
+    UninitializedFrequency = 9999,
+};
+
 Q_LOGGING_CATEGORY(InputDebugging, "o3de.editor.input")
 
 // internal, private namespace:
@@ -225,12 +234,18 @@ namespace Editor
     EditorQtApplication::EditorQtApplication(int& argc, char** argv)
         : AzQtApplication(argc, argv)
         , m_stylesheet(new AzQtComponents::O3DEStylesheet(this))
+        , m_idleTimer(new QTimer(this))
     {
+        m_idleTimer->setInterval(UninitializedFrequency);
+
         setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"));
 
         // set the default key store for our preferences:
         setApplicationName("O3DE Editor");
 
+        connect(m_idleTimer, &QTimer::timeout, this, &EditorQtApplication::maybeProcessIdle);
+
+        connect(this, &QGuiApplication::applicationStateChanged, this, [this] { ResetIdleTimerInterval(PollState); });
         installEventFilter(this);
 
         // Disable our debugging input helpers by default
@@ -309,10 +324,6 @@ namespace Editor
                 winapp->OnIdle(0);
             }
         }
-        if (m_applicationActive)
-        {
-            QTimer::singleShot(1, this, &EditorQtApplication::maybeProcessIdle);
-        }
     }
 
     void EditorQtApplication::InstallQtLogHandler()
@@ -364,6 +375,14 @@ namespace Editor
 
             case eNotify_OnQuit:
                 GetIEditor()->UnregisterNotifyListener(this);
+            break;
+
+            case eNotify_OnBeginGameMode:
+                // GetIEditor()->IsInGameMode() Isn't reliable when called from within the notification handler
+                ResetIdleTimerInterval(GameMode);
+            break;
+            case eNotify_OnEndGameMode:
+                ResetIdleTimerInterval(EditorMode);
             break;
         }
     }
@@ -437,16 +456,55 @@ namespace Editor
 
     void EditorQtApplication::EnableOnIdle(bool enable)
     {
-        m_applicationActive = enable;
         if (enable)
         {
-            QTimer::singleShot(0, this, &EditorQtApplication::maybeProcessIdle);
+            if (m_idleTimer->interval() == UninitializedFrequency)
+            {
+                ResetIdleTimerInterval();
+            }
+
+            m_idleTimer->start();
+        }
+        else
+        {
+            m_idleTimer->stop();
         }
     }
 
     bool EditorQtApplication::OnIdleEnabled() const
     {
-        return m_applicationActive;
+        if (m_idleTimer->interval() == UninitializedFrequency)
+        {
+            return false;
+        }
+
+        return m_idleTimer->isActive();
+    }
+
+    void EditorQtApplication::ResetIdleTimerInterval(TimerResetFlag flag)
+    {
+        bool isInGameMode = flag == GameMode;
+        if (flag == PollState)
+        {
+            isInGameMode = GetIEditor() ? GetIEditor()->IsInGameMode() : false;
+        }
+
+        // Game mode takes precedence over anything else
+        if (isInGameMode)
+        {
+            m_idleTimer->setInterval(GameModeIdleFrequency);
+        }
+        else
+        {
+            if (applicationState() & Qt::ApplicationActive)
+            {
+                m_idleTimer->setInterval(EditorModeIdleFrequency);
+            }
+            else
+            {
+                m_idleTimer->setInterval(InactiveModeFrequency);
+            }
+        }
     }
 
     bool EditorQtApplication::eventFilter(QObject* object, QEvent* event)

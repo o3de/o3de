@@ -58,16 +58,16 @@ namespace AzToolsFramework
             void keyPressEvent(QKeyEvent* e) override;
             void resizeEvent(QResizeEvent* resizeEvent) override;
 
-        protected Q_SLOTS:
+        private Q_SLOTS:
             void DoubleClickedSlot(const QModelIndex& index);
             void SelectionChangedSlot();
             void RestoreState();
             void OnFilterUpdated();
 
-        protected:
+        private:
             //! Evaluate whether current selection is valid.
             //! Valid selection requires exactly one item to be selected, must be source or product type, and must match the wildcard filter
-            virtual bool EvaluateSelection() const;
+            bool EvaluateSelection() const;
             void UpdatePreview() const;
             void SaveState();
 

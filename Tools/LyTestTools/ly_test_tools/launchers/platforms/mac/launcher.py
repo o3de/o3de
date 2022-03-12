@@ -44,7 +44,7 @@ class MacLauncher(Launcher):
         self._proc = subprocess.Popen(command)
         log.debug(f"Started Mac Launcher with command: {command}")
 
-    def _kill(self):
+    def kill(self):
         """
         This is a hard kill, and then wait to make sure until it actually ended.
 

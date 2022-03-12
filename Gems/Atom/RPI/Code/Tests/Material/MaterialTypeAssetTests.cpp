@@ -103,9 +103,18 @@ namespace UnitTest
 
             m_testMaterialSrgLayout = CreateCommonTestMaterialSrgLayout();
 
-            AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
-            AZStd::vector<RPI::ShaderOptionValuePair> enumOptionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
-            AZStd::vector<RPI::ShaderOptionValuePair> intOptionRange = CreateIntRangeShaderOptionValues(0, 8);
+            AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
+            boolOptionValues.push_back({Name{"False"},  RPI::ShaderOptionValue{0}});
+            boolOptionValues.push_back({Name{"True"}, RPI::ShaderOptionValue{1}});
+
+            AZStd::vector<RPI::ShaderOptionValuePair> enumOptionValues;
+            enumOptionValues.push_back({Name{"Low"},  RPI::ShaderOptionValue{0}});
+            enumOptionValues.push_back({Name{"Med"}, RPI::ShaderOptionValue{1}});
+            enumOptionValues.push_back({Name{"High"}, RPI::ShaderOptionValue{2}});
+
+            AZStd::vector<RPI::ShaderOptionValuePair> intOptionRange;
+            intOptionRange.push_back({Name{"0"},  RPI::ShaderOptionValue{0}});
+            intOptionRange.push_back({Name{"8"}, RPI::ShaderOptionValue{8}});
 
             m_testShaderOptionsLayout = ShaderOptionGroupLayout::Create();
             uint32_t order = 0;
@@ -968,7 +977,9 @@ namespace UnitTest
     {
         // Create shaders...
 
-        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
+        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
+        boolOptionValues.push_back({Name("False"),  RPI::ShaderOptionValue(0)});
+        boolOptionValues.push_back({Name("True"), RPI::ShaderOptionValue(1)});
 
         Ptr<ShaderOptionGroupLayout> optionsForShaderA = ShaderOptionGroupLayout::Create();
         optionsForShaderA->AddShaderOption(ShaderOptionDescriptor{Name{"o_globalOption_inBothShaders"}, ShaderOptionType::Boolean, 0, 0, boolOptionValues, Name{"False"}});

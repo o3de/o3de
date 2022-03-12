@@ -15,7 +15,6 @@ import time
 import azlmbr.atom
 import azlmbr.atomtools as atomtools
 import azlmbr.materialeditor as materialeditor
-import azlmbr.math as math
 import azlmbr.bus as bus
 
 
@@ -115,11 +114,11 @@ def get_property(document_id, property_name):
     """
     :return: property value or invalid value if the document is not open or the property_name can't be found
     """
-    return azlmbr.materialeditor.MaterialDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
 
 
 def set_property(document_id, property_name, value):
-    azlmbr.materialeditor.MaterialDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
+    azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
 
 
 def is_pane_visible(pane_name):
@@ -133,43 +132,41 @@ def set_pane_visibility(pane_name, value):
     atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
-def select_lighting_config(asset_path):
-    asset_id = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', asset_path, azlmbr.math.Uuid(), False)
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
+def select_lighting_config(config_name):
+    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectLightingPresetByName", config_name)
 
 
 def set_grid_enable_disable(value):
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
+    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
 
 
 def get_grid_enable_disable():
     """
     :return: bool
     """
-    return azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
+    return azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
 
 
 def set_shadowcatcher_enable_disable(value):
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
+    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
 
 
 def get_shadowcatcher_enable_disable():
     """
     :return: bool
     """
-    return azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
+    return azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
 
 
-def select_model_config(asset_path):
-    asset_id = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', asset_path, azlmbr.math.Uuid(), False)
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
+def select_model_config(configname):
+    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectModelPresetByName", configname)
 
 
-def exit():
+def destroy_main_window():
     """
-    Closes the Material Editor
+    Closes the Material Editor window
     """
-    azlmbr.atomtools.general.exit()
+    azlmbr.atomtools.AtomToolsMainWindowFactoryRequestBus(azlmbr.bus.Broadcast, "DestroyMainWindow")
 
 
 def wait_for_condition(function, timeout_in_seconds=1.0):

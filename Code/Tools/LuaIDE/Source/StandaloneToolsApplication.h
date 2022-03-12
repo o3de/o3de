@@ -25,7 +25,7 @@ namespace StandaloneTools
     {
     public:
 
-        BaseApplication(int argc, char **argv);
+        BaseApplication(int &argc, char **argv);
         ~BaseApplication() override;
 
     protected:

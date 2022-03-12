@@ -379,9 +379,19 @@ namespace Audio
     class CATLAudioFileEntry
     {
     public:
-        explicit CATLAudioFileEntry(const char* const filePath = nullptr, IATLAudioFileEntryData* const implData = nullptr);
+        explicit CATLAudioFileEntry(const char* const filePath = nullptr, IATLAudioFileEntryData* const implData = nullptr)
+            : m_filePath(filePath)
+            , m_fileSize(0)
+            , m_useCount(0)
+            , m_memoryBlockAlignment(AUDIO_MEMORY_ALIGNMENT)
+            , m_flags(eAFF_NOTFOUND)
+            , m_dataScope(eADS_ALL)
+            , m_memoryBlock(nullptr)
+            , m_implData(implData)
+        {
+        }
 
-        ~CATLAudioFileEntry();
+        ~CATLAudioFileEntry() = default;
 
         AZStd::string m_filePath;
         size_t m_fileSize;

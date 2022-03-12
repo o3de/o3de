@@ -87,7 +87,7 @@ namespace AWSGameLift
             return result;
         }
 
-        bool ValidateCreateSessionOnQueueRequest(const Multiplayer::CreateSessionRequest& createSessionRequest)
+        bool ValidateCreateSessionOnQueueRequest(const AzFramework::CreateSessionRequest& createSessionRequest)
         {
             auto gameliftCreateSessionOnQueueRequest =
                 azrtti_cast<const AWSGameLiftCreateSessionOnQueueRequest*>(&createSessionRequest);

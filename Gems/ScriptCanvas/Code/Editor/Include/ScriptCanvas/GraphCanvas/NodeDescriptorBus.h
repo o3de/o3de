@@ -27,6 +27,7 @@
 namespace GraphCanvas
 {
     class StringDataInterface;
+    class VariableReferenceDataInterface;
 }
 
 namespace ScriptCanvasEditor

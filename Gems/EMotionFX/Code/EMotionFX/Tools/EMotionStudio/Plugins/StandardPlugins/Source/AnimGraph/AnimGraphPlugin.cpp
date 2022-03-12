@@ -16,6 +16,7 @@
 #include "AttributesWindow.h"
 #include "NodeGroupWindow.h"
 #include "BlendTreeVisualNode.h"
+#include "DebugEventHandler.h"
 #include "StateGraphNode.h"
 #include "ParameterWindow.h"
 #include "GraphNodeFactory.h"

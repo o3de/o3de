@@ -44,11 +44,6 @@ AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
     return m_manifestWidget.data();
 }
 
-void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
-{
-    ui->m_filePathText->setText(headerText);
-}
-
 void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
 {
     AZ_PROFILE_FUNCTION(Editor);
@@ -58,7 +53,7 @@ void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd
         return;
     }
 
-    SetSceneHeaderText(headerText);
+    ui->m_filePathText->setText(headerText);
 
     HandleSceneWasReset(scene);
 

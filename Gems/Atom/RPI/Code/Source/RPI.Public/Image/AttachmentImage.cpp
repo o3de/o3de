@@ -25,9 +25,15 @@ namespace AZ
     {
         Data::Instance<AttachmentImage> AttachmentImage::FindOrCreate(const Data::Asset<AttachmentImageAsset>& imageAsset)
         {
-            return Data::InstanceDatabase<AttachmentImage>::Instance().FindOrCreate(
+            auto image = Data::InstanceDatabase<AttachmentImage>::Instance().FindOrCreate(
                 Data::InstanceId::CreateFromAssetId(imageAsset.GetId()),
                 imageAsset);
+            if (image && image->m_image)
+            {
+                image->m_image->SetName(Name(imageAsset.GetHint()));
+                image->m_attachmentId = image->m_image->GetName();
+            }
+            return image;
         }
 
         Data::Instance<AttachmentImage> AttachmentImage::Create(
@@ -37,51 +43,23 @@ namespace AZ
             const RHI::ClearValue* optimizedClearValue,
             const RHI::ImageViewDescriptor* imageViewDescriptor)
         {
-            CreateAttachmentImageRequest createImageRequest;
-            createImageRequest.m_imagePool = &imagePool;
-            createImageRequest.m_imageDescriptor = imageDescriptor;
-            createImageRequest.m_imageName = imageName;
-            createImageRequest.m_isUniqueName = false;
-            createImageRequest.m_optimizedClearValue = optimizedClearValue;
-            createImageRequest.m_imageViewDescriptor = imageViewDescriptor;
-            return Create(createImageRequest);
-        }
-                    
-        Data::Instance<AttachmentImage> AttachmentImage::Create(const CreateAttachmentImageRequest& createImageRequest)
-        {
             Data::Asset<AttachmentImageAsset> imageAsset;
 
-            AZ::Uuid uuid;
-            if (createImageRequest.m_isUniqueName)
-            {
-                uuid = Uuid::CreateName(createImageRequest.m_imageName.GetCStr());
-                Data::InstanceId instanceId = Data::InstanceId::CreateFromAssetId(uuid);
-                if (Data::InstanceDatabase<AttachmentImage>::Instance().Find(instanceId))
-                {
-                    AZ_Error("AttchmentImage", false, "AttachmentImage with an unique name '%s' was already created", createImageRequest.m_imageName.GetCStr());
-                    return nullptr;
-                }
-            }
-            else
-            {
-                uuid = Uuid::CreateRandom();
-            }
-
             AttachmentImageAssetCreator imageAssetCreator;
+            auto uuid = Uuid::CreateRandom();
             imageAssetCreator.Begin(uuid);
-            imageAssetCreator.SetImageDescriptor(createImageRequest.m_imageDescriptor);
-            imageAssetCreator.SetPoolAsset({createImageRequest.m_imagePool->GetAssetId(), azrtti_typeid<ResourcePoolAsset>()});
+            imageAssetCreator.SetImageDescriptor(imageDescriptor);
+            imageAssetCreator.SetPoolAsset({imagePool.GetAssetId(), azrtti_typeid<ResourcePoolAsset>()});
+            imageAssetCreator.SetAssetHint(imageName.GetCStr());
 
-            imageAssetCreator.SetName(createImageRequest.m_imageName, createImageRequest.m_isUniqueName);
-
-            if (createImageRequest.m_imageViewDescriptor)
+            if (imageViewDescriptor)
             {
-                imageAssetCreator.SetImageViewDescriptor(*createImageRequest.m_imageViewDescriptor);
+                imageAssetCreator.SetImageViewDescriptor(*imageViewDescriptor);
             }
 
-            if (createImageRequest.m_optimizedClearValue)
+            if (optimizedClearValue)
             {
-                imageAssetCreator.SetOptimizedClearValue(*createImageRequest.m_optimizedClearValue);
+                imageAssetCreator.SetOptimizedClearValue(*optimizedClearValue);
             }
 
             if (imageAssetCreator.End(imageAsset))
@@ -92,11 +70,6 @@ namespace AZ
             return nullptr;
         }
 
-        Data::Instance<AttachmentImage> AttachmentImage::FindByUniqueName(const Name& uniqueAttachmentName)
-        {            
-            return ImageSystemInterface::Get()->FindRegisteredAttachmentImage(uniqueAttachmentName);
-        }
-
         Data::Instance<AttachmentImage> AttachmentImage::CreateInternal(AttachmentImageAsset& imageAsset)
         {
             Data::Instance<AttachmentImage> image = aznew AttachmentImage();
@@ -104,33 +77,18 @@ namespace AZ
 
             if (result == RHI::ResultCode::Success)
             {
-                image->m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
                 return image;
             }
 
             return nullptr;
         }
-        
-        AttachmentImage::~AttachmentImage()
-        {
-            Shutdown(); 
-        }
 
         RHI::ResultCode AttachmentImage::Init(const AttachmentImageAsset& imageAsset)
         {
-            Data::Instance<AttachmentImagePool> pool;
-            if (imageAsset.GetPoolAsset().GetId().IsValid())
-            {
-                pool = AttachmentImagePool::FindOrCreate(imageAsset.GetPoolAsset());
-            }
-            else
-            {
-                pool = ImageSystemInterface::Get()->GetSystemAttachmentPool();
-            }
-
+            Data::Instance<AttachmentImagePool> pool = ImageSystemInterface::Get()->GetSystemAttachmentPool();
             if (!pool)
             {
-                AZ_Error("AttachmentImage", false, "Failed to acquire the attachment image pool instance.");
+                AZ_Error("AttachmentImage", false, "Failed to acquire the image pool instance.");
                 return RHI::ResultCode::Fail;
             }
 
@@ -151,14 +109,6 @@ namespace AZ
                     AZ_Error("AttachmentImage", false, "AttachmentImage::Init() failed to initialize RHI image view.");
                     return RHI::ResultCode::Fail;
                 }
-                
-                m_image->SetName(imageAsset.GetName());
-                m_attachmentId = imageAsset.GetAttachmentId();
-
-                if (imageAsset.HasUniqueName())
-                {
-                    ImageSystemInterface::Get()->RegisterAttachmentImage(this);
-                }
 
                 return RHI::ResultCode::Success;
             }
@@ -167,17 +117,9 @@ namespace AZ
             return resultCode;
         }
         
-        const RHI::AttachmentId& AttachmentImage::GetAttachmentId() const
+        const RHI::AttachmentId& AttachmentImage::GetAttachmentId()
         {
             return m_attachmentId;
-        }
-        
-        void AttachmentImage::Shutdown()
-        {
-            if (m_imageAsset && m_imageAsset->HasUniqueName())
-            {
-                ImageSystemInterface::Get()->UnregisterAttachmentImage(this);
-            }
         }
     }
 }

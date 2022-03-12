@@ -41,10 +41,7 @@ namespace AZ
             // Calls a lua function that returns a list of strings.
             Outcome<AZStd::vector<Name>, void> GetNameListFromLuaScript(AZ::ScriptContext& scriptContext, const char* luaFunctionName) const;
 
-            FunctorResult CreateFunctor(
-                const AZStd::string& materialTypeSourceFilePath,
-                const MaterialPropertiesLayout* propertiesLayout,
-                const MaterialNameContext* materialNameContext) const;
+            FunctorResult CreateFunctor(const AZStd::string& materialTypeSourceFilePath, const MaterialPropertiesLayout* propertiesLayout) const;
 
             // Only one of these should have data
             AZStd::string m_luaSourceFile;

@@ -29,8 +29,6 @@ namespace UnitTest
         MOCK_METHOD0(Activate, void());
         MOCK_METHOD0(Deactivate, void());
         MOCK_CONST_METHOD2(GetSurfaceWeights, void(const AZ::Vector3&, AzFramework::SurfaceData::SurfaceTagWeightList&));
-        MOCK_CONST_METHOD2(GetSurfaceWeightsFromList,
-            void(AZStd::span<const AZ::Vector3>, AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList>));
     };
 
 } // namespace UnitTest

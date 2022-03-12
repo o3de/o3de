@@ -18,7 +18,6 @@
 #include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/std/typetraits/void_t.h>
 #include <AzCore/std/function/invoke.h>
-#include <AzCore/std/optional.h>
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Math/Crc.h>
@@ -90,6 +89,9 @@ namespace AZStd
     template<class Signature>
     class function;
 
+    template<class T>
+    class optional;
+
     struct monostate;
 
     template<class... Types>
@@ -146,18 +148,11 @@ namespace AZ
     {
         /// Needs to match declared parameter type.
         template <template <typename...> class> constexpr bool false_v1 = false;
-#if defined(AZ_COMPILER_MSVC)
-        // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
-        // template argument with a type variadic pack vs a template template argument with a non-type auto variadic pack.
-        template<template<AZStd::size_t...> class> constexpr bool false_v2 = false;
-#else
-        template<template<auto...> class> constexpr bool false_v2 = false;
-#endif // defined(AZ_COMPILER_MSVC)
-        template<template<typename, auto> class>
-        constexpr bool false_v3 = false;
-        template <template <typename, typename, auto> class> constexpr bool false_v4 = false;
-        template <template <typename, typename, typename, auto> class> constexpr bool false_v5 = false;
-        template <template <typename, auto, typename> class> constexpr bool false_v6 = false;
+        template <template <AZStd::size_t...> class> constexpr bool false_v2 = false;
+        template <template <typename, AZStd::size_t> class> constexpr bool false_v3 = false;
+        template <template <typename, typename, AZStd::size_t> class> constexpr bool false_v4 = false;
+        template <template <typename, typename, typename, AZStd::size_t> class> constexpr bool false_v5 = false;
+        template <template <typename, AZStd::size_t, typename> class> constexpr bool false_v6 = false;
 
         template<typename T>
         inline const AZ::TypeId& Uuid()
@@ -172,13 +167,8 @@ namespace AZ
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
-#if defined(AZ_COMPILER_MSVC)
-        // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
-        // template argument with a type variadic pack vs a template template argument with a non-type auto variadic pack.
+
         template<template<AZStd::size_t...> class T>
-#else
-        template<template<auto...> class T>
-#endif // defined(AZ_COMPILER_MSVC)
         inline const AZ::TypeId& Uuid()
         {
             static_assert(false_v2<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
@@ -186,8 +176,7 @@ namespace AZ
             return s_uuid;
         }
 
-
-        template<template<typename, auto> class T>
+        template<template<typename, AZStd::size_t> class T>
         inline const AZ::TypeId& Uuid()
         {
             static_assert(false_v3<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
@@ -195,7 +184,7 @@ namespace AZ
             return s_uuid;
         }
 
-        template<template<typename, typename, auto> class T>
+        template<template<typename, typename, AZStd::size_t> class T>
         inline const AZ::TypeId& Uuid()
         {
             static_assert(false_v4<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
@@ -203,7 +192,7 @@ namespace AZ
             return s_uuid;
         }
 
-        template<template<typename, typename, typename, auto> class T>
+        template<template<typename, typename, typename, AZStd::size_t> class T>
         inline const AZ::TypeId& Uuid()
         {
             static_assert(false_v5<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
@@ -211,7 +200,7 @@ namespace AZ
             return s_uuid;
         }
 
-        template<template<typename, auto, typename> class T>
+        template<template<typename, AZStd::size_t, typename> class T>
         inline const AZ::TypeId& Uuid()
         {
             static_assert(false_v6<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
@@ -324,7 +313,7 @@ namespace AZ
         using TypeIdHolder = AZ::TypeId;
 #endif
 
-        // Represents the "*" typeid that can be combined with non-pointer types T to form a unique T* typeid
+        // Represents the "*" typeid that can be combined with non-pointer types T to form a unique T* typeid 
         inline static const AZ::TypeId& PointerTypeId()
         {
             static TypeIdHolder s_uuid("{35C8A027-FE00-4769-AE36-6997CFFAF8AE}");
@@ -700,7 +689,8 @@ namespace AZ
 #define AZ_TYPE_INFO_INTERNAL_CLASS_VARARGS__UUID(Tag, A) AZ::Internal::AggregateTypes< A... >::template Uuid< Tag >()
 #define AZ_TYPE_INFO_INTERNAL_CLASS_VARARGS__NAME(A) AZ::Internal::AggregateTypes< A... >::TypeName(typeName, AZ_ARRAY_SIZE(typeName));
 
-#define AZ_TYPE_INFO_INTERNAL_AUTO__TYPE auto
+// Once C++17 has been introduced size_t can be replaced with auto for all integer non-type arguments
+#define AZ_TYPE_INFO_INTERNAL_AUTO__TYPE AZStd::size_t
 #define AZ_TYPE_INFO_INTERNAL_AUTO__ARG(A) A
 #define AZ_TYPE_INFO_INTERNAL_AUTO__UUID(Tag, A) AZ::Internal::GetTypeId< A , Tag >()
 #define AZ_TYPE_INFO_INTERNAL_AUTO__NAME(A) AZ::Internal::AzTypeInfoSafeCat(typeName, AZ_ARRAY_SIZE(typeName), AZ::Internal::GetTypeName< A >())
@@ -975,7 +965,7 @@ namespace AZ
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_CV(T, const T&, "const ", "&");
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_CV(T, const T&&, "const ", "&&");
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_CV(T, const T, "const ", "");
-
+    
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::less,                "{41B40AFC-68FD-4ED9-9EC7-BA9992802E1B}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::less_equal,          "{91CC0BDC-FC46-4617-A405-D914EF1C1902}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::greater,             "{907F012A-7A4F-4B57-AC23-48DC08D0782E}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
@@ -1012,7 +1002,7 @@ namespace AZ
 
     static constexpr const char* s_variantTypeId{ "{1E8BB1E5-410A-4367-8FAA-D43A4DE14D4B}" };
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::variant, "variant", s_variantTypeId, AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
-
+    
     AZ_TYPE_INFO_INTERNAL_FUNCTION_VARIATION_SPECIALIZATION(AZStd::function, "{C9F9C644-CCC3-4F77-A792-F5B5DBCA746E}");
 } // namespace AZ
 

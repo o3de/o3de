@@ -63,7 +63,6 @@ public:
     AZ::SceneAPI::UI::ManifestWidget* GetManifestWidget();
 
     void SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene);
-    void SetSceneHeaderText(const QString& headerText);
     void HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene);
     void HandleSaveWasSuccessful();
     bool HasUnsavedChanges() const;

@@ -67,8 +67,7 @@ namespace AzToolsFramework
             bool foundIt = false;
             AZStd::string watchFolder;
             AZ::Data::AssetInfo assetInfo;
-            AssetSystemRequestBus::BroadcastResult(
-                foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceKey->GetSourceUuid(), assetInfo, watchFolder);
+            AssetSystemRequestBus::BroadcastResult(foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceKey->GetSourceUuid(), assetInfo, watchFolder);
 
             QString iconPathToUse;
             if (foundIt)

@@ -56,7 +56,8 @@ def ImageGradient_ProcessedImageAssignedSuccessfully():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    hydra.open_base_level()
+    helper.init_idle()
+    helper.open_level("Physics", "Base")
 
     # 2) Create an entity with Image Gradient and Gradient Transform Modifier components
     components_to_add = ["Image Gradient", "Gradient Transform Modifier", "Box Shape"]
@@ -74,11 +75,11 @@ def ImageGradient_ProcessedImageAssignedSuccessfully():
 
     # First, check for the base image in the workspace
     base_image = "image_grad_test_gsi.png"
-    base_image_path = os.path.join(azlmbr.paths.projectroot, "Assets", "ImageGradients", base_image)
+    base_image_path = os.path.join("AutomatedTesting", "Assets", "ImageGradients", base_image)
     Report.critical_result(Tests.image_gradient_asset_found, os.path.isfile(base_image_path))
 
     # Next, assign the processed image to the Image Gradient's Image Asset property
-    processed_image_path = os.path.join("Assets", "ImageGradients", "image_grad_test_gsi.png.streamingimage")
+    processed_image_path = os.path.join("Assets", "ImageGradients", "image_grad_test_gsi.gradimage")
     asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", processed_image_path, math.Uuid(),
                                             False)
     hydra.get_set_test(image_gradient_entity, 0, "Configuration|Image Asset", asset_id)

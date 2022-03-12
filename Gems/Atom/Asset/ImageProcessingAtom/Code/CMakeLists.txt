@@ -66,7 +66,7 @@ ly_add_target(
             3rdParty::squish-ccr
             3rdParty::TIFF
             3rdParty::ISPCTexComp
-            3rdParty::OpenEXR
+            3rdParty::ilmbase
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AzQtComponents

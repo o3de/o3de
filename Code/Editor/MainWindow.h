@@ -49,6 +49,7 @@ class ToolbarCustomizationDialog;
 class QWidgetAction;
 class ActionManager;
 class ShortcutDispatcher;
+class CVarMenu;
 
 namespace AzQtComponents
 {
@@ -63,11 +64,11 @@ namespace AzToolsFramework
     //! @name Reverse URLs.
     //! Used to identify common actions and override them when necessary.
     //@{
-    constexpr inline AZ::Crc32 EditModeMove = AZ_CRC_CE("org.o3de.action.editor.editmode.move");
-    constexpr inline AZ::Crc32 EditModeRotate = AZ_CRC_CE("org.o3de.action.editor.editmode.rotate");
-    constexpr inline AZ::Crc32 EditModeScale = AZ_CRC_CE("org.o3de.action.editor.editmode.scale");
-    constexpr inline AZ::Crc32 SnapToGrid = AZ_CRC_CE("org.o3de.action.editor.snaptogrid");
-    constexpr inline AZ::Crc32 SnapAngle = AZ_CRC_CE("org.o3de.action.editor.snapangle");
+    constexpr inline AZ::Crc32 EditModeMove = AZ_CRC_CE("com.o3de.action.editor.editmode.move");
+    constexpr inline AZ::Crc32 EditModeRotate = AZ_CRC_CE("com.o3de.action.editor.editmode.rotate");
+    constexpr inline AZ::Crc32 EditModeScale = AZ_CRC_CE("com.o3de.action.editor.editmode.scale");
+    constexpr inline AZ::Crc32 SnapToGrid = AZ_CRC_CE("com.o3de.action.editor.snaptogrid");
+    constexpr inline AZ::Crc32 SnapAngle = AZ_CRC_CE("com.o3de.action.editor.snapangle");
     //@}
 }
 

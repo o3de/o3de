@@ -45,7 +45,7 @@ namespace AzToolsFramework
     void PropertyEnumComboBoxCtrl::setValue(AZ::s64 value)
     {
         m_pComboBox->blockSignals(true);
-        [[maybe_unused]] bool indexWasFound = false;
+        bool indexWasFound = false;
         for (size_t enumValIndex = 0; enumValIndex < m_enumValues.size(); enumValIndex++)
         {
             if (m_enumValues[enumValIndex].first == value)

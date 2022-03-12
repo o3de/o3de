@@ -75,9 +75,7 @@ namespace AzToolsFramework
                     bool foundIt = false;
                     AZStd::string watchFolder;
                     AZ::Data::AssetInfo assetInfo;
-                    AssetSystemRequestBus::BroadcastResult(
-                        foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, iconPath.toUtf8().constData(), assetInfo,
-                        watchFolder);
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, iconPath.toUtf8().constData(), assetInfo, watchFolder);
 
                     if (foundIt)
                     {

@@ -40,14 +40,7 @@ namespace AzToolsFramework
         }
 
         void* classInstance = parent->FirstInstance(); // pointer to the owner class so we can read member variables and functions
-
-        void* parentClassInstance = nullptr;
-        if (InstanceDataNode* parentInstanceDataNode = parent->GetParent())
-        {
-            parentClassInstance = parentInstanceDataNode->FirstInstance();
-        }
-
-        auto consumeAttributes = [this, classInstance, wid](const auto& attributes, const char* name)
+        auto consumeAttributes = [&](const auto& attributes, const char* name)
         {
             for (size_t i = 0; i < attributes.size(); ++i)
             {
@@ -57,43 +50,25 @@ namespace AzToolsFramework
             }
         };
 
-        auto consumeParentAttributes = [this, parentClassInstance, wid](const auto& attributes, const char* name)
-        {
-            if (parentClassInstance)
-            {
-                for (size_t i = 0; i < attributes.size(); ++i)
-                {
-                    const auto& attrPair = attributes[i];
-                    PropertyAttributeReader reader(parentClassInstance, &*attrPair.second);
-                    ConsumeParentAttribute(wid, attrPair.first, &reader, name);
-                }
-            }
-        };
-
         const AZ::SerializeContext::ClassElement* element = dataNode->GetElementMetadata();
         if (element)
         {
             consumeAttributes(element->m_attributes, element->m_name);
-
-            if (const AZ::Edit::ElementData* elementEdit = dataNode->GetElementEditMetadata();
-                elementEdit != nullptr)
+            const AZ::Edit::ElementData* elementEdit = dataNode->GetElementEditMetadata();
+            if (elementEdit)
             {
                 consumeAttributes(elementEdit->m_attributes, elementEdit->m_name);
             }
+        }
 
-            const AZ::SerializeContext::ClassElement* parentElement = parent != dataNode ?
-                dataNode->GetElementMetadata() :
-                nullptr;
-
-            if (parentElement != nullptr)
+        if (dataNode->GetClassMetadata())
+        {
+            const AZ::Edit::ClassData* classEditData = dataNode->GetClassMetadata()->m_editData;
+            if (classEditData)
             {
-                // Reuse the current instance element name for the debug name
-                consumeParentAttributes(parentElement->m_attributes, element->m_name);
-
-                if (const AZ::Edit::ElementData* elementEdit = parent->GetElementEditMetadata();
-                    elementEdit != nullptr)
+                for (auto it = classEditData->m_elements.begin(); it != classEditData->m_elements.end(); ++it)
                 {
-                    consumeParentAttributes(elementEdit->m_attributes, elementEdit->m_name);
+                    consumeAttributes(it->m_attributes, it->m_name);
                 }
             }
         }

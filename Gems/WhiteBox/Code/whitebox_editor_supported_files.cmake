@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/WhiteBox/EditorWhiteBoxBus.h
     Include/WhiteBox/EditorWhiteBoxComponentBus.h
     Include/WhiteBox/WhiteBoxToolApi.h
     Include/WhiteBox/EditorWhiteBoxColliderBus.h

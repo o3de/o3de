@@ -10,6 +10,7 @@
 #include "VariablePropertyType.h"
 
 #include "Variable.h"
+#include "UIEnumsDatabase.h"
 #include "IEditor.h"
 
 namespace Prop
@@ -71,6 +72,7 @@ namespace Prop
         , m_bHardMin(false)
         , m_bHardMax(false)
         , m_valueMultiplier(1)
+        , m_pEnumDBItem(nullptr)
     {
     }
 
@@ -84,6 +86,7 @@ namespace Prop
         , m_bHardMin(false)
         , m_bHardMax(false)
         , m_valueMultiplier(1)
+        , m_pEnumDBItem(nullptr)
     {
         if (!pVar)
         {
@@ -157,6 +160,11 @@ namespace Prop
             m_rangeMin = max(-360.0f, m_rangeMin);
             m_rangeMax = min(360.0f, m_rangeMax);
         }
+        else if (type == IVariable::DT_UIENUM)
+        {
+            m_pEnumDBItem = GetIEditor()->GetUIEnumsDatabase()->FindEnum(m_name);
+        }
+
 
         const bool useExplicitStep = (pVar->GetFlags() & IVariable::UI_EXPLICIT_STEP);
         if (!useExplicitStep)

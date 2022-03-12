@@ -144,6 +144,7 @@ namespace UnitTest
         SSystemGlobalEnvironment env;
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
+        gEnv->pLyShine = nullptr;
 
         auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnHover);
@@ -169,6 +170,7 @@ namespace UnitTest
         SSystemGlobalEnvironment env;
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
+        gEnv->pLyShine = nullptr;
 
         auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnHover);
@@ -192,6 +194,7 @@ namespace UnitTest
         SSystemGlobalEnvironment env;
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
+        gEnv->pLyShine = nullptr;
 
         auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnPress);
@@ -215,6 +218,7 @@ namespace UnitTest
         SSystemGlobalEnvironment env;
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
+        gEnv->pLyShine = nullptr;
 
         auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnPress);
@@ -238,6 +242,7 @@ namespace UnitTest
         SSystemGlobalEnvironment env;
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
+        gEnv->pLyShine = nullptr;
 
         auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnClick);

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <CpuProfiler.h>
+#include <CpuProfilerImpl.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Debug/ProfilerBus.h>
@@ -44,7 +44,6 @@ namespace Profiler
         bool CaptureFrame(const AZStd::string& outputFilePath) override;
         bool StartCapture(AZStd::string outputFilePath) override;
         bool EndCapture() override;
-        bool IsCaptureInProgress() const override;
 
 
         AZStd::thread m_cpuDataSerializationThread;
@@ -52,7 +51,7 @@ namespace Profiler
 
         AZStd::atomic_bool m_cpuCaptureInProgress{ false };
 
-        CpuProfiler m_cpuProfiler;
+        CpuProfilerImpl m_cpuProfiler;
         AZStd::string m_captureFile;
     };
 

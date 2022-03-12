@@ -47,18 +47,4 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         COMPONENT
             Atom
     )
-    ly_add_pytest(
-        NAME AutomatedTesting::Atom_TestSuite_Benchmark_GPU
-        TEST_SUITE main
-        TEST_REQUIRES gpu
-        TEST_SERIAL
-        TIMEOUT 700
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Benchmark_GPU.py
-        RUNTIME_DEPENDENCIES
-            AssetProcessor
-            AutomatedTesting.Assets
-            Editor
-        COMPONENT
-            Atom
-    )
 endif()

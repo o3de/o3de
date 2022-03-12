@@ -11,6 +11,7 @@
 #include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
+#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 
 namespace AZ
@@ -51,9 +52,13 @@ namespace AZ
 
                 rapidjson::Document& document = loadOutcome.GetValue();
 
+                AZ::RPI::JsonFileLoadContext fileLoadContext;
+                fileLoadContext.PushFilePath(path);
+
                 AZ::JsonDeserializerSettings jsonSettings;
                 AZ::RPI::JsonReportingHelper reportingHelper;
                 reportingHelper.Attach(jsonSettings);
+                jsonSettings.m_metadata.Add(AZStd::move(fileLoadContext));
 
                 AZ::JsonSerialization::Load(objectData, document, jsonSettings);
                 if (reportingHelper.ErrorsReported())

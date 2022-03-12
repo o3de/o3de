@@ -23,11 +23,6 @@
 #include <AzCore/EBus/Results.h>
 #include <AzCore/EBus/Internal/Debug.h>
 
- // Included for backwards compatibility purposes
-#include <AzCore/std/typetraits/typetraits.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/containers/unordered_set.h>
-
 #include <AzCore/std/typetraits/is_same.h>
 
 #include <AzCore/std/utils.h>
@@ -520,7 +515,7 @@ namespace AZ
         * This is not EBus Context Mutex when LocklessDispatch is set
         */
         template <typename DispatchMutex>
-        using DispatchLockGuardTemplate = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
+        using DispatchLockGuard = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
 
         //////////////////////////////////////////////////////////////////////////
         // Check to help identify common mistakes
@@ -600,16 +595,6 @@ namespace AZ
          */
         static const BusIdType* GetCurrentBusId();
 
-        /**
-         * Checks to see if an EBus with a given Bus ID appears twice in the callstack.
-         * This can be used to detect infinite recursive loops and other reentrancy problems.
-         * This method only checks EBus and ID, not the specific EBus event, so two different
-         * nested event calls on the same EBus and ID will still return true.
-         * @param busId The bus ID to check for reentrancy on this thread.
-         * @return true if the EBus has been called more than once on this thread's callstack, false if not.
-         */
-        static bool HasReentrantEBusUseThisThread(const BusIdType* busId = GetCurrentBusId());
-
         /// @cond EXCLUDE_DOCS
         /**
          * Sets the current event processing state. This function has an
@@ -660,7 +645,7 @@ namespace AZ
              * during broadcast/event dispatch.
              * @see EBusTraits::LocklessDispatch
              */
-            using DispatchLockGuard = DispatchLockGuardTemplate<ContextMutexType>;
+            using DispatchLockGuard = DispatchLockGuard<ContextMutexType>;
 
             /**
             * The scoped lock guard to use during connection.  Some specialized policies execute handler methods which
@@ -1149,42 +1134,11 @@ AZ_POP_DISABLE_WARNING
     const typename EBus<Interface, Traits>::BusIdType * EBus<Interface, Traits>::GetCurrentBusId()
     {
         Context* context = GetContext();
-        if (IsInDispatchThisThread(context))
+        if (IsInDispatch(context))
         {
             return context->s_callstack->m_prev->m_busId;
         }
         return nullptr;
-    }
-
-    //=========================================================================
-    // HasReentrantEBusUseThisThread
-    //=========================================================================
-    template<class Interface, class Traits>
-    bool EBus<Interface, Traits>::HasReentrantEBusUseThisThread(const BusIdType* busId)
-    {
-        Context* context = GetContext();
-
-        if (busId && IsInDispatchThisThread(context))
-        {
-            bool busIdInCallstack = false;
-
-            // If we're in a dispatch, callstack->m_prev contains the entry for the current bus call. Start the search for the given
-            // bus ID and look upwards. If we find the given ID more than once in the callstack, we've got a reentrant call.
-            for (auto callstackEntry = context->s_callstack->m_prev; callstackEntry != nullptr; callstackEntry = callstackEntry->m_prev)
-            {
-                if ((*busId) == (*callstackEntry->m_busId))
-                {
-                    if (busIdInCallstack)
-                    {
-                        return true;
-                    }
-
-                    busIdInCallstack = true;
-                }
-            }
-        }
-
-        return false;
     }
 
     //=========================================================================

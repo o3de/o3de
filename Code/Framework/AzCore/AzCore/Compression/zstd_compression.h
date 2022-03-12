@@ -17,11 +17,12 @@
 namespace AZ
 {
     class IAllocator;
+    class IAllocatorAllocate;
 
     class ZStd
     {
     public:
-        ZStd(IAllocator* workMemAllocator = 0);
+        ZStd(IAllocatorAllocate* workMemAllocator = 0);
         ~ZStd();
 
         enum FlushType
@@ -76,7 +77,7 @@ namespace AZ
 
         ZSTD_CStream*   m_streamCompression;
         ZSTD_DStream*   m_streamDecompression;
-        IAllocator*     m_workMemoryAllocator;
+        IAllocatorAllocate*     m_workMemoryAllocator;
         ZSTD_inBuffer   m_inBuffer;
         ZSTD_outBuffer  m_outBuffer;
         size_t          m_nextBlockSize;

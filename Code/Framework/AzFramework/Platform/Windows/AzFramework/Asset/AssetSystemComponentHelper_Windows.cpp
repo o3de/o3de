@@ -76,18 +76,7 @@ namespace AzFramework::AssetSystem::Platform
 
             if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
             {
-                // Now try with the "Default" permutation
-                // The Monolithic permutation will not have tools such as the AssetProcessor
-                // so need to check there
-                constexpr const char* BuildPermutation = "Default";
-
-                assetProcessorPath =
-                    AZ::IO::FixedMaxPath{ engineRoot } / "bin" / AZ_TRAIT_OS_PLATFORM_NAME /
-                    AZ_BUILD_CONFIGURATION_TYPE / BuildPermutation / "AssetProcessor.exe";
-                if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
-                {
-                    return false;
-                }
+                return false;
             }
         }
 

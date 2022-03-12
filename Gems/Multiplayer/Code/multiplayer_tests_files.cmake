@@ -18,7 +18,6 @@ set(FILES
     Tests/CommonHierarchySetup.h
     Tests/CommonBenchmarkSetup.h
     Tests/IMultiplayerConnectionMock.h
-    Tests/IMultiplayerSpawnerMock.h
     Tests/Main.cpp
     Tests/MockInterfaces.h
     Tests/MultiplayerSystemTests.cpp

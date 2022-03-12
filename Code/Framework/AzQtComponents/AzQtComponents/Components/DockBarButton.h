@@ -81,7 +81,6 @@ namespace AzQtComponents
         static bool drawDockBarButton(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget, const Config& config);
 
         void handleButtonClick();
-        void SetMaximizeRestoreButton();
         const DockBarButton::WindowDecorationButton m_buttonType;
         bool m_isDarkStyle;
 

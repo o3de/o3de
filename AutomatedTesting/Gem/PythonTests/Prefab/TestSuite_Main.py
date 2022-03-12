@@ -38,10 +38,6 @@ class TestAutomation(TestAutomationBase):
         from Prefab.tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(self, request, workspace, editor, launcher_platform):
-        from Prefab.tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
-        self._run_prefab_test(request, workspace, editor, test_module)
-
     def test_DeletePrefab_ContainingASingleEntity(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
@@ -64,18 +60,6 @@ class TestAutomation(TestAutomationBase):
 
     def test_CreatePrefab_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.create_prefab import CreatePrefab_UnderAnotherPrefab as test_module
-        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
-
-    def test_CreatePrefab_UnderChildEntityOfAnotherPrefab(self, request, workspace, editor, launcher_platform):
-        from Prefab.tests.create_prefab import CreatePrefab_UnderChildEntityOfAnotherPrefab as test_module
-        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
-
-    def test_CreatePrefab_WithNestedEntities(self, request, workspace, editor, launcher_platform):
-        from Prefab.tests.create_prefab import CreatePrefab_WithNestedEntities as test_module
-        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
-
-    def test_CreatePrefab_WithNestedEntitiesAndNestedPrefabs(self, request, workspace, editor, launcher_platform):
-        from Prefab.tests.create_prefab import CreatePrefab_WithNestedEntitiesAndNestedPrefabs as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
 
     def test_DeleteEntity_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):

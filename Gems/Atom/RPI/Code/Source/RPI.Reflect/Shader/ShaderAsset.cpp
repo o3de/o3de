@@ -383,7 +383,7 @@ namespace AZ
             return RHI::NullSrgLayout;
         }
 
-        AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> ShaderAsset::GetShaderResourceGroupLayouts(
+        AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> ShaderAsset::GetShaderResourceGroupLayouts(
             SupervariantIndex supervariantIndex) const
         {
             auto supervariant = GetSupervariant(supervariantIndex);

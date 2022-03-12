@@ -7,19 +7,22 @@
  */
 #pragma once
 
-#include <AzCore/std/concepts/concepts.h>
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/typetraits/integral_constant.h>
 #include <AzCore/std/typetraits/is_array.h>
 #include <AzCore/std/typetraits/is_assignable.h>
 #include <AzCore/std/typetraits/is_constructible.h>
 #include <AzCore/std/typetraits/is_destructible.h>
+#include <AzCore/std/typetraits/is_function.h>
 #include <AzCore/std/typetraits/is_trivially_copyable.h>
 #include <AzCore/std/typetraits/is_void.h>
 #include <AzCore/std/utils.h> // AZStd::addressof
 
 namespace AZStd
 {
+    // alias std::pointer_traits into the AZStd::namespace
+    using std::pointer_traits;
+
     //! Bring the names of uninitialized_default_construct and
     //! uninitialized_default_construct_n into the AZStd namespace
     using std::uninitialized_default_construct;
@@ -33,6 +36,42 @@ namespace AZStd
 
 namespace AZStd::Internal
 {
+    template <typename T, typename = void>
+    constexpr bool pointer_traits_has_to_address_v = false;
+    template <typename T>
+    constexpr bool pointer_traits_has_to_address_v<T, AZStd::void_t<decltype(AZStd::pointer_traits<T>::to_address(declval<const T&>()))>> = true;
+}
+
+namespace AZStd
+{
+    //! Implements the C++20 to_address function
+    //! This obtains the address represented by ptr without forming a reference
+    //! to the pointee type
+    template <typename  T>
+    constexpr T* to_address(T* ptr) noexcept
+    {
+        static_assert(!AZStd::is_function_v<T>, "Invoking to address on a function pointer is not allowed");
+        return ptr;
+    }
+    //! Fancy pointer overload which delegates to using a specialization of pointer_traits<T>::to_address
+    //! if that is a well-formed expression, otherwise it returns ptr->operator->()
+    //! For example invoking `to_address(AZStd::reverse_iterator<const char*>(char_ptr))`
+    //! Returns an element of type const char*
+    template <typename  T>
+    constexpr auto to_address(const T& ptr) noexcept
+    {
+        if constexpr (AZStd::Internal::pointer_traits_has_to_address_v<T>)
+        {
+            return pointer_traits<T>::to_address(ptr);
+        }
+        else
+        {
+            return AZStd::to_address(ptr.operator->());
+        }
+    }
+}
+namespace AZStd::Internal
+{
     /**
      * Internal code should be used only by AZSTD. These are as flat as possible (less function calls) implementation, that
      * should be fast and easy in debug. You can call this functions, but it's better to use the specialized one in the
@@ -42,7 +81,7 @@ namespace AZStd::Internal
      /**
       * Type has trivial destructor. We don't call it.
       */
-    template <class InputIterator, class ValueType = iter_value_t<InputIterator>, bool = is_trivially_destructible_v<ValueType>>
+    template <class InputIterator, class ValueType = typename iterator_traits<InputIterator>::value_type, bool = is_trivially_destructible_v<ValueType>>
     struct destroy
     {
         static constexpr void range(InputIterator first, InputIterator last) { (void)first; (void)last; }
@@ -124,7 +163,7 @@ namespace AZStd::Internal
      * Default object construction.
      */
     // placement new isn't a core constant expression therefore it cannot be used in a constexpr function
-    template<class InputIterator, class ValueType = iter_value_t<InputIterator>,
+    template<class InputIterator, class ValueType = typename iterator_traits<InputIterator>::value_type,
         bool = is_trivially_constructible_v<ValueType>>
         struct construct
     {
@@ -203,125 +242,93 @@ namespace AZStd::Internal
     //////////////////////////////////////////////////////////////////////////
     // Sequence copy. If we use optimized version we use memcpy.
     /**
-    * Class to determine if we have apply fast copy. There are 2 conditions
+    * Helper class to determine if we have apply fast copy. There are 2 conditions
     * - trivial copy ctor.
-    * - all iterators satisfy the C++20 are contiguous iterator concept
+    * - all iterators satisfy the C++20 are contiguous iterator concept: pointers or iterator classes with
+    *   the iterator_concept typedef set to contiguous_iterator_tag
     */
-    template<class Out, class = void>
-    constexpr bool indirectly_trivially_copyable = false;
-    template<class Out>
-    constexpr bool indirectly_trivially_copyable<Out,
-        enable_if_t<indirectly_readable<Out>>> = is_trivially_copyable_v<iter_value_t<Out>>;
-
     template<class InputIterator, class ResultIterator>
-    using is_fast_copy = bool_constant<indirectly_trivially_copyable<ResultIterator>
-        && contiguous_iterator<InputIterator>
-        && contiguous_iterator<ResultIterator>
-        >;
-
-    template<class InputIterator, class ResultIterator>
-    constexpr bool is_fast_copy_v = is_fast_copy<InputIterator, ResultIterator>::value;
-
-
-    // is_fast_copy argument is no longer used.
-    template <class InputIterator, class ForwardIterator>
-    constexpr ForwardIterator copy(InputIterator first, InputIterator last, ForwardIterator result, bool)
+    struct is_fast_copy_helper
     {
-        if constexpr (is_fast_copy_v<InputIterator, ForwardIterator>)
-        {
-            // Specialized copy for contiguous iterators which are trivially copyable
-            size_t numElements = last - first;
-            if (numElements > 0)
-            {
-#if az_has_builtin_memcpy
-                static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Size of value types must match for a trivial copy");
-                __builtin_memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
-#else
-                if (az_builtin_is_constant_evaluated())
-                {
-                    for (; first != last; ++result, ++first)
-                    {
-                        *result = *first;
-                    }
+        using value_type = typename iterator_traits<ResultIterator>::value_type;
+        static constexpr bool value = AZStd::is_trivially_copyable_v<value_type>
+            && Internal::satisfies_contiguous_iterator_concept_v<InputIterator>
+            && Internal::satisfies_contiguous_iterator_concept_v<ResultIterator>;
+    };
 
-                    return result;
-                }
-                else
-                {
-                    static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Size of value types must match for a trivial copy");
-                    AZ_Assert((static_cast<const void*>(&*result) < static_cast<const void*>(&*first))
-                        || (static_cast<const void*>(&*result) >= static_cast<const void*>(&*first + numElements)),
-                        "AZStd::copy memory overlaps use AZStd::copy_backward!");
-                    ::memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
-                }
-#endif
-            }
-            return result + numElements;
-        }
-        else
-        {
-            for (; first != last; ++result, ++first)
-            {
-                *result = *first;
-            }
+    // Use this trait to to determine copy mode, based on the iterator category and object copy properties,
+    // Use it when when you call  uninitialized_copy, Internal::copy, Internal::move, etc.
+    template< typename InputIterator, typename ResultIterator >
+    struct is_fast_copy
+        : public ::AZStd::integral_constant<bool, ::AZStd::Internal::is_fast_copy_helper<InputIterator, ResultIterator>::value> {};
 
-            return result;
+    template <class InputIterator, class ForwardIterator>
+    constexpr ForwardIterator copy(const InputIterator& first, const InputIterator& last, ForwardIterator result, const false_type& /* is_fast_copy<InputIterator,ForwardIterator>() */)
+    {
+        InputIterator iter(first);
+        for (; iter != last; ++result, ++iter)
+        {
+            *result = *iter;
         }
+
+        return result;
     }
 
+    // Specialized copy for contiguous iterators (pointers) and trivial copy type.
+    // This overload cannot be constexpr until builtin_memcpy is added to MSVC compilers
+    template <class InputIterator, class ForwardIterator>
+    inline ForwardIterator copy(const InputIterator& first, const InputIterator& last, ForwardIterator result, const true_type& /* is_fast_copy<InputIterator,ForwardIterator>() */)
+    {
+        // \todo Make sure memory ranges don't overlap, otherwise people should use move and move_backward.
+        static_assert(sizeof(typename iterator_traits<InputIterator>::value_type) == sizeof(typename iterator_traits<ForwardIterator>::value_type), "Size of value types must match for a trivial copy");
+        AZStd::size_t numElements = last - first;
+        if (numElements > 0)
+        {
+            AZ_Assert((static_cast<const void*>(&*result) < static_cast<const void*>(&*first)) || (static_cast<const void*>(&*result) >= static_cast<const void*>(&*first + numElements)), "AZStd::copy memory overlaps use AZStd::copy_backward!");
+            AZ_Assert((static_cast<const void*>(&*result + numElements) <= static_cast<const void*>(&*first)) || (static_cast<const void*>(&*result + numElements) > static_cast<const void*>(&*first + numElements)), "AZStd::copy memory overlaps use AZStd::copy_backward!");
+            /*AZSTD_STL::*/ memcpy(&*result, &*first, numElements * sizeof(typename iterator_traits<InputIterator>::value_type));
+        }
+        return result + numElements;
+    }
 
     // Copy backward.
     template <class BidirectionalIterator1, class BidirectionalIterator2>
-    constexpr BidirectionalIterator2 copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result, bool)
+    constexpr BidirectionalIterator2 copy_backward(const BidirectionalIterator1& first, const BidirectionalIterator1& last, BidirectionalIterator2 result, const false_type& /* is_fast_copy<BidirectionalIterator1,BidirectionalIterator2>() */)
     {
-        if constexpr (is_fast_copy_v<BidirectionalIterator1, BidirectionalIterator2>)
+        BidirectionalIterator1 iter(last);
+        while (first != iter)
         {
-            // Specialized copy for contiguous iterators which are trivially copyable
-            size_t numElements = last - first;
-            if (numElements > 0)
-            {
-#if az_has_builtin_memmove
-                static_assert(sizeof(iter_value_t<BidirectionalIterator1>) == sizeof(iter_value_t<BidirectionalIterator2>), "Size of value types must match for a trivial copy");
-                result -= numElements;
-                __builtin_memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<BidirectionalIterator1>));
-#else
-                if (az_builtin_is_constant_evaluated())
-                {
-                    while (first != last)
-                    {
-                        *--result = *--last;
-                    }
-
-                    return result;
-                }
-                else
-                {
-                    static_assert(sizeof(iter_value_t<BidirectionalIterator1>) == sizeof(iter_value_t<BidirectionalIterator2>), "Size of value types must match for a trivial copy");
-                    result -= numElements;
-                    AZ_Assert(((&*result + numElements) <= &*first) || ((&*result + numElements) > (&*first + numElements)), "AZStd::copy_backward memory overlaps use AZStd::copy!");
-                    ::memmove(&*result, &*first, numElements * sizeof(iter_value_t<BidirectionalIterator1>));
-                }
-#endif
-            }
-            return result;
+            *--result = *--iter;
         }
-        else
+
+        return result;
+    }
+
+    // Specialized copy for contiguous iterators (pointers) and trivial copy type.
+    // This overload cannot be constexpr until builtin_memcpy is added to MSVC compilers
+    template <class BidirectionalIterator1, class BidirectionalIterator2>
+    inline BidirectionalIterator2 copy_backward(const BidirectionalIterator1& first, const BidirectionalIterator1& last, BidirectionalIterator2 result, const true_type& /* is_fast_copy<BidirectionalIterator1,BidirectionalIterator2>() */)
+    {
+        // \todo Make sure memory ranges don't overlap, otherwise people should use move and move_backward.
+        static_assert(sizeof(typename iterator_traits<BidirectionalIterator1>::value_type) == sizeof(typename iterator_traits<BidirectionalIterator2>::value_type), "Size of value types must match for a trivial copy");
+        AZStd::size_t numElements = last - first;
+        if (numElements > 0)
         {
-            while (first != last)
-            {
-                *--result = *--last;
-            }
-
-            return result;
+            result -= numElements;
+            AZ_Assert((&*result < &*first) || (&*result >= (&*first + numElements)), "AZStd::copy_backward memory overlaps use AZStd::copy!");
+            AZ_Assert(((&*result + numElements) <= &*first) || ((&*result + numElements) > (&*first + numElements)), "AZStd::copy_backward memory overlaps use AZStd::copy!");
+            /*AZSTD_STL::*/ memcpy(&*result, &*first, numElements * sizeof(typename iterator_traits<BidirectionalIterator1>::value_type));
         }
+        return result;
     }
 
     template <class BidirectionalIterator1, class ForwardIterator>
-    constexpr ForwardIterator reverse_copy(BidirectionalIterator1 first, BidirectionalIterator1 last, ForwardIterator dest)
+    constexpr ForwardIterator reverse_copy(const BidirectionalIterator1& first, const BidirectionalIterator1& last, ForwardIterator dest)
     {
-        while (last != first)
+        BidirectionalIterator1 iter(last);
+        while (iter != first)
         {
-            *(dest++) = *(--last);
+            *(dest++) = *(--iter);
         }
 
         return dest;
@@ -335,209 +342,143 @@ namespace AZStd
     * Specialized algorithms 20.4.4. We extend that by adding faster specialized versions when we have trivial assign type.
     */
     template <class InputIterator, class ForwardIterator>
-    constexpr ForwardIterator uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result, bool)
+    constexpr ForwardIterator uninitialized_copy(const InputIterator& first, const InputIterator& last, ForwardIterator result, const false_type& /* is_fast_copy<InputIterator,ForwardIterator>() */)
     {
-        // Specialized copy for contiguous iterators which are trivially copyable
-        if constexpr (Internal::is_fast_copy_v<InputIterator, ForwardIterator>)
+        InputIterator iter(first);
+        for (; iter != last; ++result, ++iter)
         {
-            size_t numElements = last - first;
-            if (numElements > 0)
-            {
-#if az_has_builtin_memcpy
-                static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Value type sizes must match for a trivial copy");
-                __builtin_memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
-#else
-                if (az_builtin_is_constant_evaluated())
-                {
-                    for (; first != last; ++result, ++first)
-                    {
-                        construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), *first);
-                    }
-
-                    return result;
-                }
-                else
-                {
-                    static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Value type sizes must match for a trivial copy");
-                    ::memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
-                }
-#endif
-            }
-            return result + numElements;
+            ::new (static_cast<void*>(&*result)) typename iterator_traits<ForwardIterator>::value_type(*iter);
         }
-        else
-        {
-            for (; first != last; ++result, ++first)
-            {
-                construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), *first);
-            }
 
-            return result;
-        }
+        return result;
     }
 
+    // Specialized copy for contiguous iterators and trivial copy type.
+    // This overload cannot be constexpr until builtin_memcpy is added to MSVC compilers
+    template <class InputIterator, class ForwardIterator>
+    inline ForwardIterator uninitialized_copy(const InputIterator& first, const InputIterator& last, ForwardIterator result, const true_type& /* is_fast_copy<InputIterator,ForwardIterator>() */)
+    {
+        static_assert(sizeof(typename iterator_traits<InputIterator>::value_type) == sizeof(typename iterator_traits<ForwardIterator>::value_type), "Value type sizes must match for a trivial copy");
+        AZStd::size_t numElements = last - first;
+        if (numElements > 0)
+        {
+            /*AZSTD_STL::*/
+            memcpy(&*result, &*first, numElements * sizeof(typename iterator_traits<InputIterator>::value_type));
+        }
+        return result + numElements;
+    }
 
     template <class InputIterator, class ForwardIterator>
-    constexpr ForwardIterator uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result)
+    constexpr ForwardIterator uninitialized_copy(const InputIterator& first, const InputIterator& last, ForwardIterator result)
     {
-        return uninitialized_copy(first, last, result, {});
+        return uninitialized_copy(first, last, result, Internal::is_fast_copy<InputIterator, ForwardIterator>());
     }
 
     // 25.3.1 Copy
     template<class InputIterator, class OutputIterator>
     constexpr OutputIterator copy(InputIterator first, InputIterator last, OutputIterator result)
     {
-        return Internal::copy(first, last, result, {});
+        return AZStd::Internal::copy(first, last, result, AZStd::Internal::is_fast_copy<InputIterator, OutputIterator>());
     }
 
     template <class BidirectionalIterator, class OutputIterator>
     constexpr OutputIterator reverse_copy(BidirectionalIterator first, BidirectionalIterator last, OutputIterator dest)
     {
-        return Internal::reverse_copy(first, last, dest);
+        return AZStd::Internal::reverse_copy(first, last, dest);
     }
 
     template<class BidirectionalIterator1, class BidirectionalIterator2>
     BidirectionalIterator2 copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result)
     {
-        return Internal::copy_backward(first, last, result, {});
+        return AZStd::Internal::copy_backward(first, last, result, AZStd::Internal::is_fast_copy<BidirectionalIterator1, BidirectionalIterator2>());
     }
 }
 
 namespace AZStd::Internal
 {
     //////////////////////////////////////////////////////////////////////////
-    // Sequence move
+    // Sequence move. If we use optimized version we use memmove.
     template <class InputIterator, class ForwardIterator>
-    constexpr ForwardIterator move(InputIterator first, InputIterator last, ForwardIterator result, bool)
+    constexpr ForwardIterator move(const InputIterator& first, const InputIterator& last, ForwardIterator result, const false_type& /* is_fast_copy<InputIterator,ForwardIterator>() */)
     {
-        // Specialized copy for contiguous iterators which are trivially copyable
-        if constexpr (is_fast_copy_v<InputIterator, ForwardIterator>)
+        InputIterator iter(first);
+        for (; iter != last; ++result, ++iter)
         {
-            size_t numElements = last - first;
-            if (numElements > 0)
-            {
-#if az_has_builtin_memcpy
-                static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Size of value types must match for a trivial copy");
-                __builtin_memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
-#else
-                if (az_builtin_is_constant_evaluated())
-                {
-                    for (; first != last; ++result, ++first)
-                    {
-                        *result = ::AZStd::move(*first);
-                    }
-                    return result;
-                }
-                else
-                {
-                    static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Size of value types must match for a trivial copy");
-                    AZ_Assert((static_cast<const void*>(&*result) < static_cast<const void*>(&*first))
-                        || (static_cast<const void*>(&*result) >= static_cast<const void*>(&*first + numElements)),
-                        "AZStd::move memory overlaps use AZStd::move_backward!");
-                    ::memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
-                }
-#endif
-            }
-            return result + numElements;
+            *result = AZStd::move(*iter);
         }
-        else
-        {
-            for (; first != last; ++result, ++first)
-            {
-                *result = ::AZStd::move(*first);
-            }
-            return result;
-        }
+        return result;
     }
 
+    // Specialized copy for contiguous iterators (pointers) and trivial copy type.
+    // This overload cannot be constexpr until builtin_memmove is added to MSVC compilers
+    template <class InputIterator, class ForwardIterator>
+    inline ForwardIterator move(const InputIterator& first, const InputIterator& last, ForwardIterator result, const true_type& /* is_fast_copy<InputIterator,ForwardIterator>() */)
+    {
+        static_assert(sizeof(typename iterator_traits<InputIterator>::value_type) == sizeof(typename iterator_traits<ForwardIterator>::value_type), "Size of value types must match for a trivial copy");
+        AZStd::size_t numElements = last - first;
+        if (numElements > 0)
+        {
+            /*AZSTD_STL::*/
+            memmove(&*result, &*first, numElements * sizeof(typename iterator_traits<InputIterator>::value_type));
+        }
+        return result + numElements;
+    }
 
     // For generic iterators, move is the same as copy.
     template <class BidirectionalIterator1, class BidirectionalIterator2>
-    constexpr BidirectionalIterator2 move_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result, bool)
+    constexpr BidirectionalIterator2 move_backward(const BidirectionalIterator1& first, const BidirectionalIterator1& last, BidirectionalIterator2 result, const false_type& /* is_fast_copy<BidirectionalIterator1,BidirectionalIterator2>() */)
     {
-        // Specialized copy for contiguous iterators which are trivially copyable
-        if constexpr (is_fast_copy_v<BidirectionalIterator1, BidirectionalIterator1>)
+        BidirectionalIterator1 iter(last);
+        while (first != iter)
         {
-            size_t numElements = last - first;
-            if (numElements > 0)
-            {
-#if az_has_builtin_memmove
-                static_assert(sizeof(iter_value_t<BidirectionalIterator1>) == sizeof(iter_value_t<BidirectionalIterator2>), "Size of value types must match for a trivial copy");
-                result -= numElements;
-                __builtin_memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<BidirectionalIterator1>));
-#else
-                if (az_builtin_is_constant_evaluated())
-                {
-                    while (first != last)
-                    {
-                        *--result = ::AZStd::move(*--last);
-                    }
-                    return result;
-                }
-                else
-                {
-                    static_assert(sizeof(iter_value_t<BidirectionalIterator1>) == sizeof(iter_value_t<BidirectionalIterator2>), "Size of value types must match for a trivial copy");
-                    result -= numElements;
-                    AZ_Assert((static_cast<const void*>(&*result + numElements) <= static_cast<const void*>(&*first))
-                        || (static_cast<const void*>(&*result + numElements) > static_cast<const void*>(&*first + numElements)),
-                        "AZStd::move_backward memory overlaps use AZStd::move!");
-                    ::memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<BidirectionalIterator1>));
-                }
-#endif
-            }
-            return result;
+            *--result = AZStd::move(*--iter);
         }
-        else
+        return result;
+    }
+
+    // Specialized copy for contiguous iterators (pointers) and trivial copy type.
+    // This overload cannot be constexpr until builtin_memmove is added to MSVC compilers
+    template <class BidirectionalIterator1, class BidirectionalIterator2>
+    inline BidirectionalIterator2 move_backward(const BidirectionalIterator1& first, const BidirectionalIterator1& last, BidirectionalIterator2 result, const true_type& /* is_fast_copy<BidirectionalIterator1,BidirectionalIterator2>() */)
+    {
+        // \todo Make sure memory ranges don't overlap, otherwise people should use move and move_backward.
+        static_assert(sizeof(typename iterator_traits<BidirectionalIterator1>::value_type) == sizeof(typename iterator_traits<BidirectionalIterator2>::value_type), "Size of value types must match for a trivial copy");
+        AZStd::size_t numElements = last - first;
+        result -= numElements;
+        if (numElements > 0)
         {
-            while (first != last)
-            {
-                *--result = ::AZStd::move(*--last);
-            }
-            return result;
+            /*AZSTD_STL::*/
+            memmove(&*result, &*first, numElements * sizeof(typename iterator_traits<BidirectionalIterator1>::value_type));
         }
+        return result;
     }
 
     template <class InputIterator, class ForwardIterator>
-    constexpr ForwardIterator uninitialized_move(InputIterator first, InputIterator last, ForwardIterator result, bool)
+    constexpr ForwardIterator uninitialized_move(const InputIterator& first, const InputIterator& last, ForwardIterator result, const false_type& /* is_fast_copy<InputIterator,ForwardIterator>() */)
     {
-        // Specialized copy for contiguous iterators which are trivially copyable
-        if constexpr (is_fast_copy_v<InputIterator, ForwardIterator>)
-        {
-            size_t numElements = last - first;
-            if (numElements > 0)
-            {
-#if az_has_builtin_memcpy
-                static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Value type sizes must match for a trivial copy");
-                __builtin_memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
-#else
-                if (az_builtin_is_constant_evaluated())
-                {
-                    for (; first != last; ++result, ++first)
-                    {
-                        construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), ::AZStd::move(*first));
-                    }
+        InputIterator iter(first);
 
-                    return result;
-                }
-                else
-                {
-                    static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Value type sizes must match for a trivial copy");
-                    ::memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
-                }
-#endif
-            }
-            return result + numElements;
-        }
-        else
+        for (; iter != last; ++result, ++iter)
         {
-            for (; first != last; ++result, ++first)
-            {
-                construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), ::AZStd::move(*first));
-            }
-
-            return result;
+            ::new (static_cast<void*>(&*result)) typename iterator_traits<ForwardIterator>::value_type(AZStd::move(*iter));
         }
+        return result;
     }
+    // Specialized copy for contiguous iterators and trivial move type. (since the object is POD we will just perform a copy)
+    // This overload cannot be constexpr until builtin_memcpy is added to MSVC compilers
+    template <class InputIterator, class ForwardIterator>
+    inline ForwardIterator uninitialized_move(const InputIterator& first, const InputIterator& last, ForwardIterator result, const true_type& /* is_fast_copy<InputIterator,ForwardIterator>() */)
+    {
+        static_assert(sizeof(typename iterator_traits<InputIterator>::value_type) == sizeof(typename iterator_traits<ForwardIterator>::value_type), "Value type sizes must match for a trivial copy");
+        AZStd::size_t numElements = last - first;
+        if (numElements > 0)
+        {
+            /*AZSTD_STL::*/
+            memcpy(&*result, &*first, numElements * sizeof(typename iterator_traits<InputIterator>::value_type));
+        }
+        return result + numElements;
+    }
+
     // end of sequence move.
     //////////////////////////////////////////////////////////////////////////
 }
@@ -551,19 +492,19 @@ namespace AZStd
     template <typename InputIt, typename ForwardIt>
     ForwardIt uninitialized_move(InputIt first, InputIt last, ForwardIt result)
     {
-        return AZStd::Internal::uninitialized_move(first, last, result, {});
+        return AZStd::Internal::uninitialized_move(first, last, result, AZStd::Internal::is_fast_copy<InputIt, InputIt>{});
     }
     // 25.3.2 Move
     template<class InputIterator, class OutputIterator>
     OutputIterator move(InputIterator first, InputIterator last, OutputIterator result)
     {
-        return AZStd::Internal::move(first, last, result, {});
+        return AZStd::Internal::move(first, last, result, AZStd::Internal::is_fast_copy<InputIterator, OutputIterator>());
     }
 
     template<class BidirectionalIterator1, class BidirectionalIterator2>
     BidirectionalIterator2 move_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result)
     {
-        return AZStd::Internal::move_backward(first, last, result, {});
+        return AZStd::Internal::move_backward(first, last, result, AZStd::Internal::is_fast_copy<BidirectionalIterator1, BidirectionalIterator2>());
     }
 }
 
@@ -575,77 +516,63 @@ namespace AZStd::Internal
     * Helper class to determine if we have apply fast fill. There are 3 conditions
     * - trivial assign
     * - size of type == 1 (chars) to use memset
-    * - contiguous iterators
+    * - contiguous iterators (pointers)
     */
-    template<class Out, class = void>
-    constexpr bool indirectly_copy_assignable = false;
-    template<class Out>
-    constexpr bool indirectly_copy_assignable<Out, enable_if_t<indirectly_readable<Out>>> =
-        is_trivially_copy_assignable_v<iter_value_t<Out>> && sizeof(iter_value_t<Out>) == 1;
-
     template<class Iterator>
-    using is_fast_fill = bool_constant<indirectly_copy_assignable<Iterator> && contiguous_iterator<Iterator>>;
-    template<class Iterator>
-    constexpr bool is_fast_fill_v = is_fast_fill<Iterator>::value;
-
-    // The fast fill trait is no longer used
-    // It is detected using C++20 concepts now
-    template <class ForwardIterator, class T>
-    constexpr void fill(ForwardIterator first, ForwardIterator last, const T& value, bool)
+    struct is_fast_fill_helper
     {
-        if constexpr (is_fast_fill_v<ForwardIterator>)
+        using value_type = typename iterator_traits<Iterator>::value_type;
+        constexpr static bool value = is_trivially_copy_assignable_v<value_type> && sizeof(value_type) == 1
+            && Internal::satisfies_contiguous_iterator_concept_v<Iterator>;
+    };
+
+    // Use this trait to to determine fill mode, based on the iterator, value size, etc.
+    // Use it when you call uninitialized_fill, uninitialized_fill_n, fill and fill_n.
+    template< typename Iterator >
+    struct is_fast_fill
+        : public ::AZStd::integral_constant<bool, ::AZStd::Internal::is_fast_fill_helper<Iterator>::value>
+    {};
+
+    template <class ForwardIterator, class T>
+    constexpr void fill(const ForwardIterator& first, const ForwardIterator& last, const T& value, const false_type& /* is_fast_fill<ForwardIterator>() */)
+    {
+        ForwardIterator iter(first);
+        for (; iter != last; ++iter)
         {
-            size_t numElements = last - first;
-            if (numElements > 0)
-            {
-                if (az_builtin_is_constant_evaluated())
-                {
-                    for (; first != last; ++first)
-                    {
-                        *first = value;
-                    }
-                }
-                else
-                {
-                    ::memset(to_address(first), reinterpret_cast<const unsigned char&>(value), numElements);
-                }
-            }
+            *iter = value;
         }
-        else
+    }
+    // Specialized version for character types where memset can be used
+    // This overload cannot be constexpr until builtin_memset is added to MSVC compilers
+    template <class ForwardIterator, class T>
+    inline void fill(const ForwardIterator& first, const ForwardIterator& last, const T& value, const true_type& /* is_fast_fill<ForwardIterator>() */)
+    {
+        AZStd::size_t numElements = last - first;
+        if (numElements > 0)
         {
-            for (; first != last; ++first)
-            {
-                *first = value;
-            }
+            /*AZSTD_STL::*/
+            memset((void*)&*first, *reinterpret_cast<const unsigned char*>(&value), numElements);
         }
     }
 
     template <class ForwardIterator, class Size, class T>
-    constexpr void fill_n(ForwardIterator first, Size numElements, const T& value, bool)
+    constexpr void fill_n(ForwardIterator first, Size numElements, const T& value, const false_type& /* is_fast_fill<ForwardIterator>() */)
     {
-        if constexpr (is_fast_fill_v<ForwardIterator>)
+        for (; numElements--; ++first)
         {
-            if (numElements)
-            {
-                if (az_builtin_is_constant_evaluated())
-                {
-                    for (; numElements--; ++first)
-                    {
-                        *first = value;
-                    }
-                }
-                else
-                {
-                    ::memset(to_address(first), reinterpret_cast<const unsigned char&>(value), numElements);
-                }
-            }
+            *first = value;
         }
-        else
+    }
+
+    // Specialized version for character types where memset can be used to perform the fill
+    // This overload cannot be constexpr until builtin_memset is added to MSVC compilers
+    template <class ForwardIterator, class Size, class T>
+    inline void fill_n(ForwardIterator first, Size numElements, const T& value, const true_type& /* is_fast_fill<ForwardIterator>() */)
+    {
+        if (numElements > 0)
         {
-            for (; numElements--; ++first)
-            {
-                *first = value;
-            }
+            /*AZSTD_STL::*/
+            memset(&*first, *reinterpret_cast<const unsigned char*>(&value), numElements);
         }
     }
 }
@@ -653,85 +580,78 @@ namespace AZStd::Internal
 namespace AZStd
 {
     template <class ForwardIterator, class T>
-    constexpr void fill(ForwardIterator first, ForwardIterator last, const T& value)
+    constexpr void fill(const ForwardIterator& first, const ForwardIterator& last, const T& value)
     {
-        Internal::fill(first, last, value, {});
+        Internal::fill(first, last, value, Internal::is_fast_fill<ForwardIterator>());
     }
+
 
     template <class ForwardIterator, class Size, class T>
     constexpr void fill_n(ForwardIterator first, Size numElements, const T& value)
     {
-        Internal::fill_n(first, numElements, value, {});
+        Internal::fill_n(first, numElements, value, Internal::is_fast_fill<ForwardIterator>());
     }
 
     template <class ForwardIterator, class T>
-    constexpr void uninitialized_fill(ForwardIterator first, ForwardIterator last, const T& value, bool)
+    constexpr void uninitialized_fill(const ForwardIterator& first, const ForwardIterator& last, const T& value, const false_type& /* is_fast_fill<ForwardIterator>() */)
     {
-        if constexpr (Internal::is_fast_fill_v<ForwardIterator>)
+        ForwardIterator iter(first);
+        for (; iter != last; ++iter)
         {
-            size_t numElements = last - first;
-            if (numElements > 0)
-            {
-                if (az_builtin_is_constant_evaluated())
-                {
-                    for (; first != last; ++first)
-                    {
-                        construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
-                    }
-                }
-                else
-                {
-                    ::memset(to_address(first), reinterpret_cast<const unsigned char&>(value), numElements);
-                }
-            }
+            ::new (static_cast<void*>(&*iter)) typename iterator_traits<ForwardIterator>::value_type(value);
         }
-        else
+    }
+
+    // Specialized overload for types which meet the following criteria.
+    // 1. Has it's iterator_traits<T>::iterator_concept type set to to contiguous_iterator_tag
+    // 2. Is trivially assignable
+    // 3. Has a sizeof(T) == 1
+    // In such a case memset can be used to fill in the data
+    // This overload cannot be constexpr until builtin_memset is added to MSVC compilers
+    template <class ForwardIterator, class T>
+    inline void uninitialized_fill(const ForwardIterator& first, const ForwardIterator& last, const T& value, const true_type& /* is_fast_fill<ForwardIterator>() */)
+    {
+        AZStd::size_t numElements = last - first;
+        if (numElements > 0)
         {
-            for (; first != last; ++first)
-            {
-                construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
-            }
+            /*AZSTD_STL::*/
+            memset(&*first, *reinterpret_cast<const unsigned char*>(&value), numElements);
         }
     }
 
     template <class ForwardIterator, class Size, class T>
     constexpr void uninitialized_fill(ForwardIterator first, Size numElements, const T& value)
     {
-        return uninitialized_fill(first, numElements, value, {});
+        return uninitialized_fill(first, numElements, value, Internal::is_fast_fill<ForwardIterator>());
     }
 
     template <class ForwardIterator, class Size, class T>
-    constexpr void uninitialized_fill_n(ForwardIterator first, Size numElements, const T& value, bool)
+    constexpr void uninitialized_fill_n(ForwardIterator first, Size numElements, const T& value, const false_type& /* is_fast_fill<ForwardIterator>() */)
     {
-        if constexpr (Internal::is_fast_fill_v<ForwardIterator>)
+        for (; numElements--; ++first)
         {
-            if (numElements > 0)
-            {
-                if (az_builtin_is_constant_evaluated())
-                {
-                    for (; numElements--; ++first)
-                    {
-                        construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
-                    }
-                }
-                else
-                {
-                    ::memset(to_address(first), reinterpret_cast<const unsigned char&>(value), numElements);
-                }
-            }
+            ::new (static_cast<void*>(&*first)) typename iterator_traits<ForwardIterator>::value_type(value);
         }
-        else
+    }
+
+    // Specialized overload for types which meet the following criteria.
+    // 1. Has it's iterator_traits<T>::iterator_concept type set to to contiguous_iterator_tag
+    // 2. Is trivially assignable
+    // 3. Has a sizeof(T) == 1
+    // In such a case memset can be used to fill in the data
+    template <class ForwardIterator, class Size, class T>
+    inline void uninitialized_fill_n(ForwardIterator first, Size numElements, const T& value, const true_type& /* is_fast_fill<ForwardIterator>() */)
+    {
+        if (numElements)
         {
-            for (; numElements--; ++first)
-            {
-                construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
-            }
+            /*AZSTD_STL::*/
+            memset(&*first, *reinterpret_cast<const unsigned char*>(&value), numElements);
         }
     }
 
     template <class ForwardIterator, class Size, class T>
     constexpr void uninitialized_fill_n(ForwardIterator first, Size numElements, const T& value)
     {
-        return uninitialized_fill_n(first, numElements, value, {});
+        return uninitialized_fill_n(first, numElements, value, Internal::is_fast_fill<ForwardIterator>());
     }
 }

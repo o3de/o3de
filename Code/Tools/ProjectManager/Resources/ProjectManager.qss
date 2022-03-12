@@ -453,52 +453,10 @@ QTabBar::tab:focus {
     margin-top:6px;
 }
 
-#projectButton QLabel {
+#projectButton > QFrame > QLabel {
     font-weight:bold;
     font-size:14px;
     qproperty-indent: 0;
-}
-
-#labelButton QPushButton {
-    min-width:140px;
-    max-width:140px;
-    min-height:24px;
-    max-height:24px;
-}
-
-#labelButton #projectActionCancelButton{
-    qproperty-flat: true;
-    border-radius: 3px;
-    margin-left: 1px;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #E32C27, stop: 1.0 #951D21);
-}
-#labelButton #projectActionCancelButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #FD3129, stop: 1.0 #AF2221);
-}
-#labelButton #projectActionCancelButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #951D1F, stop: 1.0 #C92724);
-}
-
-#labelButtonOverlay {
-    background-color: rgba(0,0,0,0.7);
-}
-
-#projectMessageOverlay, #projectSubMessageOverlay {
-    min-width:160px;
-    max-width:160px;
-    min-height:32px;
-    max-height:32px;
-}
-
-#labelButton #projectMessageOverlay {
-    font-size:16px;
-}
-
-#labelButton #projectSubMessageOverlay {
-    font-size:12px;
 }
 
 #projectMenuButton {
@@ -517,6 +475,19 @@ QTabBar::tab:focus {
     max-height:26px;
 }
 
+#projectActionButton, #openEditorButton {
+    min-height:26px;
+    max-height:26px;
+}
+
+#labelButtonOverlay {
+    background-color: rgba(50,50,50,200);
+    min-width:210px;
+    max-width:210px;;
+    min-height:278px;
+    max-height:278px;
+}
+
 QProgressBar {
     border: none;
     background-color: transparent;
@@ -528,10 +499,6 @@ QProgressBar::chunk {
 }
 
 /************** Gem Catalog **************/
-
-#GemCatalogScreen {
-    background-color: #333333;
-}
 
 #GemCatalogTitle {
     font-size: 18px;
@@ -579,8 +546,9 @@ QProgressBar::chunk {
     min-height:24px;
 }
 
-#adjustableHeaderWidget QHeaderView::section { 
-    background-color: transparent;
+#GemCatalogHeaderLabel {
+    font-size: 12px;
+    color: #FFFFFF;
 }
 
 #GemCatalogHeaderShowCountLabel {
@@ -762,6 +730,15 @@ QProgressBar::chunk {
 #gemRepoAddButton:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#gemRepoHeaderTable {
+    background-color: transparent;
+    max-height: 30px;
+}
+
+#gemRepoListHeader {
+    background-color: transparent;
 }
 
 #gemRepoInspector {

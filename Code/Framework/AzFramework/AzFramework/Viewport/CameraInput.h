@@ -289,17 +289,7 @@ namespace AzFramework
 
         //! Add a camera input (behavior) to run in this set of camera inputs.
         //! The camera inputs added here will determine the overall behavior of the camera.
-        //! @return Returns if the camera was successfully added (if the camera already exists it is not added and AddCamera returns false).
-        bool AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
-        //! Add a collection of camera inputs (behaviors) to run in this set of camera inputs.
-        //! @return Returns if all cameras were added successfully.
-        bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs);
-        //! Remove a camera input (behavior) to stop it running in the set of camera inputs.
-        //! @return Returns if the camera was removed successfully (if the could not be found RemoveCamera returns false).
-        bool RemoveCamera(const AZStd::shared_ptr<CameraInput>& cameraInput);
-        //! Remove a collection of camera inputs (behaviors) to stop them running in the set of camera inputs.
-        //! @return Returns if all cameras were removed successfully.
-        bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs);
+        void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
         //! Reset the state of all cameras.
         void Reset();
         //! Remove all cameras that were added.
@@ -309,10 +299,9 @@ namespace AzFramework
         bool Exclusive() const;
 
     private:
-        //! Active camera inputs updating the camera (empty initially).
-        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_activeCameraInputs;
-        //! Idle camera inputs not contributing to the update (filled initially).
-        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_idleCameraInputs;
+        AZStd::vector<AZStd::shared_ptr<CameraInput>> m_activeCameraInputs; //!< Active camera inputs updating the camera (empty initially).
+        AZStd::vector<AZStd::shared_ptr<CameraInput>>
+            m_idleCameraInputs; //!< Idle camera inputs not contributing to the update (filled initially).
     };
 
     //! Responsible for updating a series of cameras given various inputs.
@@ -382,11 +371,6 @@ namespace AzFramework
         AZStd::function<bool()> m_invertPitchFn;
         AZStd::function<bool()> m_invertYawFn;
         AZStd::function<bool()> m_constrainPitch;
-
-        void SetInitiateRotateFn(AZStd::function<void()> initiateRotateFn)
-        {
-            m_clickDetector.SetClickDownEventFn(AZStd::move(initiateRotateFn));
-        }
 
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.
@@ -602,10 +586,10 @@ namespace AzFramework
     };
 
     //! A camera input to handle discrete scroll events that can modify the camera offset.
-    class OrbitScrollDollyCameraInput : public CameraInput
+    class OrbitDollyScrollCameraInput : public CameraInput
     {
     public:
-        OrbitScrollDollyCameraInput();
+        OrbitDollyScrollCameraInput();
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -615,10 +599,10 @@ namespace AzFramework
     };
 
     //! A camera input to handle motion deltas that can modify the camera offset.
-    class OrbitMotionDollyCameraInput : public CameraInput
+    class OrbitDollyMotionCameraInput : public CameraInput
     {
     public:
-        explicit OrbitMotionDollyCameraInput(const InputChannelId& dollyChannelId);
+        explicit OrbitDollyMotionCameraInput(const InputChannelId& dollyChannelId);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;

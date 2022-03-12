@@ -19,6 +19,7 @@
 #include <QTreeView>
 #endif
 
+
 QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace EMotionFX
@@ -72,7 +73,7 @@ namespace EMotionFX
         AZStd::unique_ptr<SkeletonModel>        m_skeletonModel;
         QModelIndexList                         m_selectedRows;
         SkeletonSortFilterProxyModel*           m_filterProxyModel;
-        static constexpr int s_iconSize = 16;
+        static int                              s_iconSize;
 
         // Callbacks
         // Works for all commands that use the actor id as well as the joint name mixins

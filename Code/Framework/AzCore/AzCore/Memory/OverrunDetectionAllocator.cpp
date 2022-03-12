@@ -233,6 +233,7 @@ namespace AZ
         size_type Capacity() const;
         size_type GetMaxAllocationSize() const;
         size_type GetMaxContiguousAllocationSize() const;
+        IAllocatorAllocate* GetSubAllocator();
         void GarbageCollect();
 
     private:
@@ -679,6 +680,11 @@ auto AZ::OverrunDetectionSchemaImpl::GetMaxContiguousAllocationSize() const -> s
     return 0;
 }
 
+AZ::IAllocatorAllocate* AZ::OverrunDetectionSchemaImpl::GetSubAllocator()
+{
+    return nullptr;
+}
+
 void AZ::OverrunDetectionSchemaImpl::GarbageCollect()
 {
 }
@@ -802,6 +808,11 @@ AZ::OverrunDetectionSchema::size_type AZ::OverrunDetectionSchema::GetMaxAllocati
 auto AZ::OverrunDetectionSchema::GetMaxContiguousAllocationSize() const -> size_type
 {
     return m_impl->GetMaxContiguousAllocationSize();
+}
+
+AZ::IAllocatorAllocate* AZ::OverrunDetectionSchema::GetSubAllocator()
+{
+    return m_impl->GetSubAllocator();
 }
 
 void AZ::OverrunDetectionSchema::GarbageCollect()

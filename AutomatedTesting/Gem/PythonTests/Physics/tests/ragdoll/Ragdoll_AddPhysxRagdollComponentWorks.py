@@ -49,10 +49,9 @@ def Ragdoll_AddPhysxRagdollComponentWorks():
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
 
-    import editor_python_test_tools.hydra_editor_utils as hydra
-
+    helper.init_idle()
     # 1) Load the level
-    hydra.open_base_level()
+    helper.open_level("Physics", "Base")
 
     # 2) Create test entity
     test_entity = EditorEntity.create_editor_entity("TestEntity")

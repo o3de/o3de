@@ -288,7 +288,6 @@ namespace UnitTest
         MaterialAssetCreator creator;
         const bool shouldFinalize = false;
         creator.Begin(assetId, testMaterialTypeAssetV1, shouldFinalize);
-        creator.SetMaterialTypeVersion(1);
         creator.SetPropertyValue(Name{ "MyInt" }, 7);
         creator.SetPropertyValue(Name{ "MyUInt" }, 8u);
         creator.SetPropertyValue(Name{ "MyFloat" }, 9.0f);
@@ -319,7 +318,7 @@ namespace UnitTest
 
         // This can find errors and warnings, we are looking for a warning when the version update is applied
         ErrorMessageFinder warningFinder; 
-        warningFinder.AddExpectedErrorMessage("Automatic updates have been applied. Consider updating the .material source file");
+        warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
         warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
         warningFinder.AddExpectedErrorMessage("material type is now at version '2'");
         
@@ -450,7 +449,37 @@ namespace UnitTest
         expectCreatorError("Type mismatch",
             [](MaterialAssetCreator& creator)
             {
-                creator.SetPropertyValue(Name{ "MyFloat" }, AZ::Vector4{});
+                creator.SetPropertyValue(Name{ "MyInt" }, 0.0f);
+            });
+
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyUInt" }, -1);
+            });
+
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat" }, 10u);
+            });
+
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat2" }, 1.0f);
+            });
+
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat3" }, AZ::Vector4{});
+            });
+
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat4" }, AZ::Vector3{});
             });
 
         expectCreatorError("Type mismatch",

@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>AzTestRunner</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.o3de.tests</string>
+	<string>com.lumberyard.tests</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

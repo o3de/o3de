@@ -31,12 +31,18 @@ namespace EMotionFX
 {
     class RagdollEditTestsFixture : public UIFixture
     {
-    public:
+      public:
         void SetUp() override
         {
-            UIFixture::SetUp();
-
             using ::testing::_;
+
+            SetupQtAndFixtureBase();
+
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+            Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
+            D6JointLimitConfiguration::Reflect(serializeContext);
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
                 .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
@@ -61,6 +67,7 @@ namespace EMotionFX
                         return AZStd::make_unique<D6JointLimitConfiguration>();
                     });
 
+            SetupPluginWindows();
         }
 
         void TearDown() override
@@ -88,8 +95,6 @@ namespace EMotionFX
         }
 
     protected:
-        virtual bool ShouldReflectPhysicSystem() override { return true; }
-
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;
         EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;

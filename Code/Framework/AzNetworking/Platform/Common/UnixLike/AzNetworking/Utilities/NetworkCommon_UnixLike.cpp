@@ -71,7 +71,7 @@ namespace AzNetworking
         const char* GetNetworkErrorDesc(int32_t errorCode)
         {
             static AZ_THREAD_LOCAL char buffer[1024];
-            [[maybe_unused]] auto strErrorResult = strerror_r(errorCode, buffer, sizeof(buffer));
+            strerror_r(errorCode, buffer, sizeof(buffer));
             return buffer;
         }
     }

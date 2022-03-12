@@ -411,6 +411,18 @@ namespace AzQtComponents
             }
             break;
 
+            case CE_HeaderSection:
+            {
+                if (qobject_cast<const QHeaderView*>(widget))
+                {
+                    if (TableView::drawHeaderSection(this, option, painter, widget, m_data->tableViewConfig))
+                    {
+                        return;
+                    }
+                }
+            }
+            break;
+
             case CE_ComboBoxLabel:
             {
                 if (qobject_cast<const QComboBox*>(widget))

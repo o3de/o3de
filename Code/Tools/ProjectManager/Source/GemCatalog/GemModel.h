@@ -21,7 +21,7 @@ namespace O3DE::ProjectManager
     class GemModel
         : public QStandardItemModel
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
     public:
         explicit GemModel(QObject* parent = nullptr);

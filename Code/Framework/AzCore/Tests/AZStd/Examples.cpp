@@ -27,10 +27,11 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 
+using namespace AZStd;
+using namespace UnitTestInternal;
+
 namespace UnitTest
 {
-    using namespace AZStd;
-    using namespace UnitTestInternal;
     class TypeTraitExamples
     {
     public:
@@ -442,7 +443,7 @@ namespace UnitTest
                     : m_data(data) { /* expensive operations */ }
 
             private:
-                [[maybe_unused]] int m_data;
+                int m_data;
             };
             //////////////////////////////////////////////////////////////////////////
 

@@ -22,10 +22,6 @@
             "isTemplated": true
         },
         {
-            "file": "Registry/assetprocessor_settings.setreg",
-            "isTemplated": true
-        },
-        {
             "file": "gem.json",
             "isTemplated": true
         },
@@ -37,9 +33,6 @@
     "createDirectories": [
         {
             "dir": "Assets"
-        },
-        {
-            "dir": "Registry"
         }
     ]
 }

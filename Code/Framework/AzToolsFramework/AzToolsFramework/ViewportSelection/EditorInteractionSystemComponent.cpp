@@ -84,7 +84,7 @@ namespace AzToolsFramework
     void EditorInteractionSystemComponent::SetDefaultHandler()
     {
         SetHandler(
-            [](const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            [](const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 return AZStd::make_unique<EditorDefaultSelection>(entityDataCache, viewportEditorModeTracker);
             });

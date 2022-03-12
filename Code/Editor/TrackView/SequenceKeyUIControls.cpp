@@ -215,3 +215,5 @@ void CSequenceKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
         }
     }
 }
+
+REGISTER_QT_CLASS_DESC(CSequenceKeyUIControls, "TrackView.KeyUI.Sequence", "TrackViewKeyUI");

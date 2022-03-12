@@ -17,6 +17,7 @@ class Tests:
     )
 
 
+
 def LayerBlocker_InstancesBlockedInConfiguredArea():
     """
     Summary:
@@ -57,7 +58,8 @@ def LayerBlocker_InstancesBlockedInConfiguredArea():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    hydra.open_base_level()
+    helper.init_idle()
+    helper.open_level("Physics", "Base")
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 500.0, 38.0)
@@ -65,10 +67,9 @@ def LayerBlocker_InstancesBlockedInConfiguredArea():
 
     # 2) Create a new instance spawner entity
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
-    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "Blocker_PinkFlower")[0]
-    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", spawner_center_point,
-                                                               16.0, 16.0, 16.0, pink_flower_prefab)
+    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
+                                                                               asset_path)
 
     # 3) Create surface for planting on
     dynveg.create_surface_entity("Surface Entity", spawner_center_point, 32.0, 32.0, 1.0)

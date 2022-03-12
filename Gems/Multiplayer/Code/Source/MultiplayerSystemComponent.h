@@ -9,8 +9,6 @@
 #pragma once
 
 #include <Multiplayer/IMultiplayer.h>
-#include <Multiplayer/Session/ISessionHandlingRequests.h>
-#include <Multiplayer/Session/SessionNotifications.h>
 #include <Editor/MultiplayerEditorConnection.h>
 #include <NetworkTime/NetworkTime.h>
 #include <NetworkEntity/NetworkEntityManager.h>
@@ -23,6 +21,8 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Session/SessionNotifications.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
 namespace AzFramework
@@ -41,8 +41,8 @@ namespace Multiplayer
     class MultiplayerSystemComponent final
         : public AZ::Component
         , public AZ::TickBus::Handler
-        , public SessionNotificationBus::Handler
-        , public ISessionHandlingClientRequests
+        , public AzFramework::SessionNotificationBus::Handler
+        , public AzFramework::ISessionHandlingClientRequests
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
     {
@@ -63,14 +63,14 @@ namespace Multiplayer
         void Deactivate() override;
         //! @}
 
-        //! SessionNotificationBus::Handler overrides.
+        //! AzFramework::SessionNotificationBus::Handler overrides.
         //! @{
         bool OnSessionHealthCheck() override;
-        bool OnCreateSessionBegin(const SessionConfig& sessionConfig) override;
+        bool OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig) override;
         void OnCreateSessionEnd() override;
         bool OnDestroySessionBegin() override;
         void OnDestroySessionEnd() override;
-        void OnUpdateSessionBegin(const SessionConfig& sessionConfig, const AZStd::string& updateReason) override;
+        void OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason) override;
         void OnUpdateSessionEnd() override;
         //! @}
 
@@ -101,7 +101,7 @@ namespace Multiplayer
 
         //! ISessionHandlingClientRequests interface
         //! @{
-        bool RequestPlayerJoinSession(const SessionConnectionConfig& sessionConnectionConfig) override;
+        bool RequestPlayerJoinSession(const AzFramework::SessionConnectionConfig& sessionConnectionConfig) override;
         void RequestPlayerLeaveSession() override;
         //! @}
 
@@ -128,6 +128,8 @@ namespace Multiplayer
         float GetCurrentBlendFactor() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
+        void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
+        IFilterEntityManager* GetFilterEntityManager() override;
         void RegisterPlayerIdentifierForRejoin(uint64_t temporaryUserIdentifier, NetEntityId controlledEntityId) override;
         void CompleteClientMigration(uint64_t temporaryUserIdentifier, AzNetworking::ConnectionId connectionId, const HostId& publicHostId, ClientInputId migratedClientInputId) override;
         void SetShouldSpawnNetworkEntities(bool value) override;
@@ -145,6 +147,7 @@ namespace Multiplayer
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void OnAutonomousEntityReplicatorCreated();
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
+        NetworkEntityHandle SpawnDefaultPlayerPrefab(uint64_t temporaryUserIdentifier);
         void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId);
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
@@ -181,7 +184,7 @@ namespace Multiplayer
         double m_serverSendAccumulator = 0.0;
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
-        bool m_spawnNetboundEntities = false;
+        bool m_spawnNetboundEntities = true;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

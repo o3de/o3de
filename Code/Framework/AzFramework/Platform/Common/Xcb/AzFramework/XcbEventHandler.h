@@ -15,8 +15,6 @@
 
 namespace AzFramework
 {
-    static constexpr inline uint8_t s_XcbResponseTypeMask = 0x7f; // Mask to extract the specific event type from an xcb event
-
     class XcbEventHandler
     {
     public:

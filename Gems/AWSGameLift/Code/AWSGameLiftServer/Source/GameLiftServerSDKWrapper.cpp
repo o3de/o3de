@@ -33,11 +33,6 @@ namespace AWSGameLift
         return Aws::GameLift::Server::InitSDK();
     }
 
-    Aws::GameLift::GetInstanceCertificateOutcome GameLiftServerSDKWrapper::GetInstanceCertificate()
-    {
-        return Aws::GameLift::Server::GetInstanceCertificate();
-    }
-
     Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::ProcessReady(
         const Aws::GameLift::Server::ProcessParameters& processParameters)
     {

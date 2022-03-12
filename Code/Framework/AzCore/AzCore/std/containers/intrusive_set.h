@@ -42,13 +42,20 @@ namespace AZStd
         template<class U, class Hook, class Compare>
         friend class intrusive_multiset;
 
-        intrusive_multiset_node() = default;
+#ifdef AZ_DEBUG_BUILD
+        intrusive_multiset_node()
+        {
+            m_children[0] = nullptr;
+            m_children[1] = nullptr;
+            m_neighbours[0] = nullptr;
+            m_neighbours[1] = nullptr;
+            m_parentColorSide = nullptr;
+        }
         ~intrusive_multiset_node()
         {
-#if defined(AZ_DEBUG_BUILD)
             AZSTD_CONTAINER_ASSERT(m_children[0] == nullptr && m_children[1] == nullptr && m_parentColorSide == nullptr, "AZStd::intrusive_multiset_node - intrusive list node is being destroyed while still in a container!");
-#endif
         }
+#endif
         // We use the lower 2 bits of the parent pointer to store
         enum Bits
         {
@@ -88,9 +95,9 @@ namespace AZStd
         AZ_FORCE_INLINE T*      next() const { return m_neighbours[AZSTD_RBTREE_RIGHT];  }
 
     protected:
-        T* m_children[2]{};
-        T* m_neighbours[2]{};
-        T* m_parentColorSide{};
+        T* m_children[2];
+        T* m_neighbours[2];
+        T* m_parentColorSide;
     } AZ_MAY_ALIAS; // we access the object in such way that we potentially can break strict aliasing rules
 
     /**
@@ -652,10 +659,12 @@ namespace AZStd
 
             --m_numElements;
 
+#ifdef AZ_DEBUG_BUILD
             nodeHook->m_children[0] = nodeHook->m_children[1] = nullptr;
             nodeHook->m_parentColorSide = nullptr;
-#if defined(AZ_DEBUG_BUILD) && defined(DEBUG_INTRUSIVE_MULTISET)
+#ifdef DEBUG_INTRUSIVE_MULTISET
             validate();
+#endif
 #endif
         }
 
@@ -946,11 +955,8 @@ namespace AZStd
             hookNode->setParentSide(side);
         }
 
-        //! pre-condition
-        //! @param node must be non-nullptr
         inline static node_ptr_type MinOrMax(const_node_ptr_type node, SideType side)
         {
-            AZSTD_CONTAINER_ASSERT(node != nullptr, "MinOrMax can only be called with a non-nullptr node")
             const_node_ptr_type cur = node;
             const_node_ptr_type minMax = cur;
             while (!iterator_impl::isNil(cur))

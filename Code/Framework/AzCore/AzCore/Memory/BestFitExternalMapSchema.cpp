@@ -42,15 +42,9 @@ namespace AZ
     // Allocate
     // [1/28/2011]
     //=========================================================================
-    BestFitExternalMapSchema::pointer_type BestFitExternalMapSchema::Allocate(
-        size_type byteSize,
-        size_type alignment,
-        [[maybe_unused]] int flags,
-        [[maybe_unused]] const char* name,
-        [[maybe_unused]] const char* fileName,
-        [[maybe_unused]] int lineNum,
-        [[maybe_unused]] unsigned int suppressStackRecord)
+    BestFitExternalMapSchema::pointer_type BestFitExternalMapSchema::Allocate(size_type byteSize, size_type alignment, int flags)
     {
+        (void)flags;
         char* address = nullptr;
         AZ_Assert(alignment > 0 && (alignment & (alignment - 1)) == 0, "Alignment must be >0 and power of 2!");
         for (int i = 0; i < 2; ++i) // max 2 attempts to allocate
@@ -102,7 +96,7 @@ namespace AZ
     // DeAllocate
     // [1/28/2011]
     //=========================================================================
-    void BestFitExternalMapSchema::DeAllocate(pointer_type ptr, [[maybe_unused]] size_type byteSize, [[maybe_unused]] size_type alignment)
+    void BestFitExternalMapSchema::DeAllocate(pointer_type ptr)
     {
         if (ptr == nullptr)
         {
@@ -129,18 +123,6 @@ namespace AZ
             return iter->second;
         }
         return 0;
-    }
-
-    BestFitExternalMapSchema::size_type BestFitExternalMapSchema::Resize(pointer_type, size_type)
-    {
-        AZ_Assert(false, "%s unsupported", AZ_FUNCTION_SIGNATURE);
-        return 0;
-    }
-
-    BestFitExternalMapSchema::pointer_type BestFitExternalMapSchema::ReAllocate(pointer_type, size_type, size_type)
-    {
-        AZ_Assert(false, "%s unsupported", AZ_FUNCTION_SIGNATURE);
-        return nullptr;
     }
 
     //=========================================================================

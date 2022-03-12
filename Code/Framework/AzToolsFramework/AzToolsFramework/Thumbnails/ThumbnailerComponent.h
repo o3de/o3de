@@ -7,29 +7,19 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <AzCore/Component/Component.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/containers/set.h>
-#include <AzToolsFramework/Thumbnails/Thumbnail.h>
+#include <AzCore/Component/Component.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-
-#include <QList>
-#include <QObject>
-#include <QThreadPool>
-#endif
-
-class QString;
-class QPixmap;
 
 namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
+        class ThumbnailContext;
+
         class ThumbnailerComponent
             : public AZ::Component
-            , public ThumbnailerRequestBus::Handler
-            , public QObject
+            , public ThumbnailerRequestsBus::Handler
         {
         public:
             AZ_COMPONENT(ThumbnailerComponent, "{80090CA5-6A3A-4554-B5FE-A6D74ECB2D84}")
@@ -37,41 +27,28 @@ namespace AzToolsFramework
             ThumbnailerComponent();
             virtual ~ThumbnailerComponent();
 
-            // AZ::Component overrides...
+            //////////////////////////////////////////////////////////////////////////
+            // AZ::Component
+            //////////////////////////////////////////////////////////////////////////
             void Activate() override;
             void Deactivate() override;
             static void Reflect(AZ::ReflectContext* context);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
-            // ThumbnailerRequestBus::Handler interface overrides...
-            void RegisterThumbnailProvider(SharedThumbnailProvider provider) override;
-            void UnregisterThumbnailProvider(const char* providerName) override;
-            SharedThumbnail GetThumbnail(SharedThumbnailKey thumbnailKey) override;
-            bool IsLoading(SharedThumbnailKey thumbnailKey) override;
-            QThreadPool* GetThreadPool() override;
-
-            void RedrawThumbnail();
+            //////////////////////////////////////////////////////////////////////////
+            // ThumbnailerRequests
+            //////////////////////////////////////////////////////////////////////////
+            void RegisterContext(const char* contextName) override;
+            void UnregisterContext(const char* contextName) override;
+            bool HasContext(const char* contextName) const override;
+            void RegisterThumbnailProvider(SharedThumbnailProvider provider, const char* contextName) override;
+            void UnregisterThumbnailProvider(const char* providerName, const char* contextName) override;
+            SharedThumbnail GetThumbnail(SharedThumbnailKey thumbnailKey, const char* contextName) override;
+            bool IsLoading(SharedThumbnailKey thumbnailKey, const char* contextName) override;
 
         private:
-            struct ProviderCompare
-            {
-                bool operator()(const SharedThumbnailProvider& lhs, const SharedThumbnailProvider& rhs) const
-                {
-                    // sorting in reverse, higher priority means the provider should be considered first
-                    return lhs->GetPriority() > rhs->GetPriority();
-                }
-            };
-
-            //! Collection of thumbnail caches provided by this context
-            AZStd::multiset<SharedThumbnailProvider, ProviderCompare> m_providers;
-            //! Default missing thumbnail used when no thumbnail for given key can be found within this context
-            SharedThumbnail m_missingThumbnail;
-            //! Default loading thumbnail used when thumbnail is found by is not yet generated
-            SharedThumbnail m_loadingThumbnail;
-            //! There is only a limited number of threads on global threadPool, because there can be many thumbnails rendering at once
-            //! an individual threadPool is needed to avoid deadlocks
-            QThreadPool m_threadPool;
+            AZStd::unordered_map<AZStd::string, AZStd::shared_ptr<ThumbnailContext>> m_thumbnails;
         };
     } // Thumbnailer
 } // namespace AssetBrowser

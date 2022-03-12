@@ -90,10 +90,7 @@ namespace AZ
         /// Checks whether the result is successful; if not, it break program execution.
         inline void AssertSuccess([[maybe_unused]] VkResult result)
         {
-            if (result != VK_SUCCESS)
-            {
-                AZ_Assert(false, "ASSERT: Vulkan API method failed: %s", GetResultString(result));
-            }
+            AZ_Assert(result == VK_SUCCESS, "ASSERT: Vulkan API method failed: %s", GetResultString(result));
         }
 
         /// Checks whether the result is successful; if not, reports the error and returns false. Otherwise, returns true.

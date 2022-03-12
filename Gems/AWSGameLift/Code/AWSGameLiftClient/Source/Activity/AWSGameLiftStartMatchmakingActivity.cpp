@@ -110,7 +110,7 @@ namespace AWSGameLift
             return result;
         }
 
-        bool ValidateStartMatchmakingRequest(const Multiplayer::StartMatchmakingRequest& startMatchmakingRequest)
+        bool ValidateStartMatchmakingRequest(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest)
         {
             auto gameliftStartMatchmakingRequest = azrtti_cast<const AWSGameLiftStartMatchmakingRequest*>(&startMatchmakingRequest);
             bool isValid = gameliftStartMatchmakingRequest &&

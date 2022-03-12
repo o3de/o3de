@@ -10,15 +10,18 @@
                     "Generic":
                     {
                         "Stack":
-                        {
-                            "Remote drive":
+                        [
+                            {
+                                "$type": "AZ::IO::StorageDriveConfig",
+                                // The maximum number of file handles that the drive will cache.
+                                "MaxFileHandles": 1024 
+                            },
                             {
                                 "$type": "AzFramework::RemoteStorageDriveConfig",
-                                "$stack_after": "Drive",
                                 // The maximum number of file handles that the drive will cache.
                                 "MaxFileHandles": 1024
                             }
-                        }
+                        ]
                     }
                 }
             }

@@ -89,10 +89,9 @@ namespace LmbrCentral
         provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
-    void EditorAxisAlignedBoxShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void EditorAxisAlignedBoxShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        EditorBaseShapeComponent::GetIncompatibleServices(incompatible);
-        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorAxisAlignedBoxShapeComponent::DisplayEntityViewport(
@@ -105,7 +104,7 @@ namespace LmbrCentral
             {
                 DrawBoxShape(
                     { m_aaboxShape.GetBoxConfiguration().GetDrawColor(), m_shapeWireColor, m_aaboxShape.GetBoxConfiguration().IsFilled() },
-                    m_aaboxShape.GetBoxConfiguration(), debugDisplay);
+                    m_aaboxShape.GetBoxConfiguration(), debugDisplay, m_aaboxShape.GetCurrentNonUniformScale());
             },
             m_aaboxShape.GetCurrentTransform());
     }
@@ -162,13 +161,8 @@ namespace LmbrCentral
         return AzToolsFramework::TransformNormalizedScale(m_aaboxShape.GetCurrentTransform());
     }
 
-    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentLocalTransform()
-    {
-        return AZ::Transform::CreateIdentity();
-    }
-
     AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetBoxScale()
     {
-        return AZ::Vector3(m_aaboxShape.GetCurrentTransform().GetUniformScale());
+        return AZ::Vector3(m_aaboxShape.GetCurrentTransform().GetUniformScale() * m_aaboxShape.GetCurrentNonUniformScale());
     }
 } // namespace LmbrCentral

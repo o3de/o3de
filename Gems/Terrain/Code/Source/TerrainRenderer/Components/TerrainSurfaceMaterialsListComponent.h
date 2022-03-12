@@ -8,17 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Component/Component.h>
-#include <AzCore/Serialization/EditContext.h>
-
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/Component.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
+
 
 namespace LmbrCentral
 {
@@ -30,19 +27,15 @@ namespace Terrain
 {
     struct TerrainSurfaceMaterialMapping final
     {
+    public:
         AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
         AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
         static void Reflect(AZ::ReflectContext* context);
 
+        SurfaceData::SurfaceTag m_surfaceTag;
+        AZ::Data::AssetId m_activeMaterialAssetId;
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
-
-        AZ::Data::AssetId m_activeMaterialAssetId;
-        AZ::RPI::Material::ChangeId m_previousChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
-
-        // Surface tags not used by default material
-        SurfaceData::SurfaceTag m_surfaceTag;
-        SurfaceData::SurfaceTag m_previousTag;
 
         bool m_active = false;
     };
@@ -54,13 +47,7 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceMaterialsListConfig, "{68A1CB1B-C835-4C3A-8D1C-08692E07711A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        TerrainSurfaceMaterialsListConfig();
-
-        TerrainSurfaceMaterialMapping m_defaultSurfaceMaterial;
         AZStd::vector<TerrainSurfaceMaterialMapping> m_surfaceMaterials;
-    private:
-        static const AZ::Edit::ElementData* GetDynamicData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);
-        AZ::Edit::ElementData m_hideSurfaceTagData;
     };
 
     class TerrainSurfaceMaterialsListComponent
@@ -91,7 +78,7 @@ namespace Terrain
 
     private:
         void HandleMaterialStateChanges();
-        int CountMaterialIdInstances(AZ::Data::AssetId id) const;
+        int CountMaterialIDInstances(AZ::Data::AssetId id) const;
 
         ////////////////////////////////////////////////////////////////////////
         // ShapeComponentNotificationsBus
@@ -101,7 +88,6 @@ namespace Terrain
         // TerrainAreaMaterialRequestBus
         const AZ::Aabb& GetTerrainSurfaceMaterialRegion() const override;
         const AZStd::vector<TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings() const override;
-        const TerrainSurfaceMaterialMapping& GetDefaultMaterial() const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Data::AssetBus::Handler
@@ -110,6 +96,6 @@ namespace Terrain
 
         TerrainSurfaceMaterialsListConfig m_configuration;
 
-        AZ::Aabb m_cachedAabb{ AZ::Aabb::CreateNull() };
+        AZ::Aabb m_cachedAabb;
     };
 } // namespace Terrain

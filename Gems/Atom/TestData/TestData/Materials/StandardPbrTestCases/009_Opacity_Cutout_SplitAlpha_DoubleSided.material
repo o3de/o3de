@@ -1,10 +1,14 @@
 {
+    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "materialTypeVersion": 3,
-    "propertyValues": {
-        "opacity.alphaSource": "Split",
-        "opacity.doubleSided": true,
-        "opacity.mode": "Cutout",
-        "opacity.textureMap": "TestData/Textures/checker8x8_512.png"
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "opacity": {
+            "alphaSource": "Split",
+            "doubleSided": true,
+            "mode": "Cutout",
+            "textureMap": "TestData/Textures/checker8x8_512.png"
+        }
     }
 }

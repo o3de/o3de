@@ -80,9 +80,6 @@
      <property name="toolTip">
       <string>Camera settings</string>
      </property>
-     <property name="text">
-      <string>Camera settings</string>
-     </property>
      <property name="icon">
       <iconset>
        <normaloff>:/Menu/camera.svg</normaloff>:/Menu/camera.svg</iconset>
@@ -92,9 +89,6 @@
    <item>
     <widget class="QToolButton" name="m_debugInformationMenu">
      <property name="toolTip">
-      <string>Debug information</string>
-     </property>
-     <property name="text">
       <string>Debug information</string>
      </property>
      <property name="icon">
@@ -111,9 +105,6 @@
      <property name="toolTip">
       <string>Toggle viewport helpers</string>
      </property>
-     <property name="text">
-      <string>Toggle viewport helpers</string>
-     </property>
      <property name="icon">
       <iconset>
        <normaloff>:/Menu/helpers.svg</normaloff>:/Menu/helpers.svg</iconset>
@@ -128,9 +119,6 @@
      <property name="toolTip">
       <string>Viewport resolution</string>
      </property>
-     <property name="text">
-      <string>Viewport resolution</string>
-     </property>
      <property name="icon">
       <iconset>
        <normaloff>:/Menu/resolution.svg</normaloff>:/Menu/resolution.svg</iconset>
@@ -140,9 +128,6 @@
    <item>
     <widget class="QToolButton" name="m_overflowBtn">
      <property name="toolTip">
-      <string>Other settings</string>
-     </property>
-     <property name="text">
       <string>Other settings</string>
      </property>
      <property name="icon">

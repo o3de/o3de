@@ -195,7 +195,7 @@ namespace AzFramework::AssetBenchmark
     // Console command:  Add the given list of assets to the list of assets to load with BenchmarkLoadAssetList
     void BenchmarkAddAssetsToList(const AZ::ConsoleCommandContainer& parameters)
     {
-        [[maybe_unused]] bool allAssetsAdded = true;
+        bool allAssetsAdded = true;
 
         for (auto& assetName : parameters)
         {

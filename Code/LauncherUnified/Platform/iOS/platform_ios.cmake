@@ -9,5 +9,5 @@
 
 set(LY_BUILD_DEPENDENCIES
     PUBLIC
-        3rdParty::Freetype
+        3rdParty::freetype
 )

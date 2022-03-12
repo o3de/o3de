@@ -10,7 +10,6 @@
 #include <AtomToolsFramework/Communication/LocalServer.h>
 #include <AtomToolsFramework/Communication/LocalSocket.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
-#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
@@ -40,16 +39,16 @@ namespace AtomToolsFramework
     {
     public:
         AZ_TYPE_INFO(AtomTools::AtomToolsApplication, "{A0DF25BA-6F74-4F11-9F85-0F99278D5986}");
-        AZ_DISABLE_COPY_MOVE(AtomToolsApplication);
 
         using Base = AzFramework::Application;
 
-        AtomToolsApplication(const char* targetName, int* argc, char*** argv);
+        AtomToolsApplication(int* argc, char*** argv);
         ~AtomToolsApplication();
 
         virtual bool LaunchLocalServer();
 
-        // AzFramework::Application overrides...
+        //////////////////////////////////////////////////////////////////////////
+        // AzFramework::Application
         void CreateReflectionManager() override;
         void Reflect(AZ::ReflectContext* context) override;
         void RegisterCoreComponents() override;
@@ -58,25 +57,43 @@ namespace AtomToolsFramework
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Tick() override;
-        void Destroy() override;
+        void Stop() override;
 
     protected:
+        //////////////////////////////////////////////////////////////////////////
         // AtomsToolMainWindowNotificationBus::Handler overrides...
         void OnMainWindowClosing() override;
+        //////////////////////////////////////////////////////////////////////////
 
+        //////////////////////////////////////////////////////////////////////////
         // AssetDatabaseRequestsBus::Handler overrides...
         bool GetAssetDatabaseLocation(AZStd::string& result) override;
+        //////////////////////////////////////////////////////////////////////////
 
+        //////////////////////////////////////////////////////////////////////////
+        // AzFramework::Application overrides...
+        void Destroy() override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
         // AZ::ComponentApplication overrides...
         void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
+        //////////////////////////////////////////////////////////////////////////
 
+        //////////////////////////////////////////////////////////////////////////
         // AZ::UserSettingsOwnerRequestBus::Handler overrides...
         void SaveSettings() override;
+        //////////////////////////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////////////////////////
         // EditorPythonConsoleNotificationBus::Handler overrides...
         void OnTraceMessage(AZStd::string_view message) override;
         void OnErrorMessage(AZStd::string_view message) override;
         void OnExceptionMessage(AZStd::string_view message) override;
+        ////////////////////////////////////////////////////////////////////////
+
+        //! Executable target name generally used as a prefix for logging and other saved files
+        virtual AZStd::string GetBuildTargetName() const;
 
         //! List of filters for assets that need to be pre-built to run the application
         virtual AZStd::vector<AZStd::string> GetCriticalAssetFilters() const;
@@ -94,7 +111,7 @@ namespace AtomToolsFramework
 
         AZStd::unique_ptr<AzQtComponents::StyleManager> m_styleManager;
 
-        //! Local user settings are used to store asset browser tree expansion state
+        //! Local user settings are used to store material browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;
 
         //! Are local settings loaded
@@ -104,10 +121,5 @@ namespace AtomToolsFramework
 
         AtomToolsFramework::LocalSocket m_socket;
         AtomToolsFramework::LocalServer m_server;
-
-        AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
-
-        const AZStd::string m_targetName;
-        const AZ::Crc32 m_toolId = {};
     };
 } // namespace AtomToolsFramework

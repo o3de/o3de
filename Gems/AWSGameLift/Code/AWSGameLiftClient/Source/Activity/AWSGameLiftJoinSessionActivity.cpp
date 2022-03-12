@@ -39,28 +39,19 @@ namespace AWSGameLift
             return request;
         }
 
-        Multiplayer::SessionConnectionConfig BuildSessionConnectionConfig(
+        AzFramework::SessionConnectionConfig BuildSessionConnectionConfig(
             const Aws::GameLift::Model::CreatePlayerSessionOutcome& createPlayerSessionOutcome)
         {
-            Multiplayer::SessionConnectionConfig sessionConnectionConfig;
+            AzFramework::SessionConnectionConfig sessionConnectionConfig;
             auto createPlayerSessionResult = createPlayerSessionOutcome.GetResult();
-            AZStd::string_view dnsName = createPlayerSessionResult.GetPlayerSession().GetDnsName().c_str();
-            AZStd::string_view ipAddress = createPlayerSessionResult.GetPlayerSession().GetIpAddress().c_str();
-            // When connecting to a game session that is running on a TLS-enabled fleet, you must use the DNS name, not the IP address.
-            if (dnsName.ends_with(AWSGameLiftTLSEnabledDNSSuffix))
-            {
-                sessionConnectionConfig.m_dnsName = dnsName;
-            }
-            else
-            {
-                sessionConnectionConfig.m_ipAddress = ipAddress;
-            }
+            // TODO: AWSNativeSDK needs to be updated to support this attribute, and it is a must have for TLS certificate enabled fleet
+            //sessionConnectionConfig.m_dnsName = createPlayerSessionResult.GetPlayerSession().GetDnsName().c_str();
+            sessionConnectionConfig.m_ipAddress = createPlayerSessionResult.GetPlayerSession().GetIpAddress().c_str();
             sessionConnectionConfig.m_playerSessionId = createPlayerSessionResult.GetPlayerSession().GetPlayerSessionId().c_str();
             sessionConnectionConfig.m_port = static_cast<uint16_t>(createPlayerSessionResult.GetPlayerSession().GetPort());
 
             AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
-                "Built SessionConnectionConfig with DnsName=%s, IpAddress=%s, PlayerSessionId=%s and Port=%d",
-                sessionConnectionConfig.m_dnsName.c_str(),
+                "Built SessionConnectionConfig with IpAddress=%s, PlayerSessionId=%s and Port=%d",
                 sessionConnectionConfig.m_ipAddress.c_str(),
                 sessionConnectionConfig.m_playerSessionId.c_str(),
                 sessionConnectionConfig.m_port);
@@ -104,10 +95,10 @@ namespace AWSGameLift
             bool result = false;
             if (createPlayerSessionOutcome.IsSuccess())
             {
-                auto clientRequestHandler = AZ::Interface<Multiplayer::ISessionHandlingClientRequests>::Get();
+                auto clientRequestHandler = AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get();
                 if (clientRequestHandler)
                 {
-                    Multiplayer::SessionConnectionConfig sessionConnectionConfig =
+                    AzFramework::SessionConnectionConfig sessionConnectionConfig =
                         BuildSessionConnectionConfig(createPlayerSessionOutcome);
 
                     AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
@@ -123,7 +114,7 @@ namespace AWSGameLift
             return result;
         }
 
-        bool ValidateJoinSessionRequest(const Multiplayer::JoinSessionRequest& joinSessionRequest)
+        bool ValidateJoinSessionRequest(const AzFramework::JoinSessionRequest& joinSessionRequest)
         {
             auto gameliftJoinSessionRequest = azrtti_cast<const AWSGameLiftJoinSessionRequest*>(&joinSessionRequest);
 

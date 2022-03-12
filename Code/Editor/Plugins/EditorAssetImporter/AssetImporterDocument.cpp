@@ -7,6 +7,7 @@
  */
 
 #include <AssetImporterDocument.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>
 #include <Util/PathUtil.h>
 #include <GFxFramework/MaterialIO/IMaterial.h>

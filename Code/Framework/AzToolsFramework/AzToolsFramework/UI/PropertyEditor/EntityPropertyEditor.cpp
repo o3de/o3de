@@ -797,7 +797,7 @@ namespace AzToolsFramework
     {
         if (IsEntitySelected(entityId))
         {
-            QueuePropertyRefresh();
+            UpdateContents(); // immediately refresh
         }
     }
 

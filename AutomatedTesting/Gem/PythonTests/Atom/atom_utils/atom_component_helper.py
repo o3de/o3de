@@ -86,8 +86,9 @@ def compare_screenshot_similarity(
         if create_zip_archive:
             create_screenshots_archive(screenshot_directory)
         result = (
-            f"When comparing the test_screenshot: '{test_screenshot}' to golden_image: '{golden_image}'.\n"
-            f"The mean similarity ({mean_similarity}) was lower than the similarity threshold ({similarity_threshold})")
+            f"When comparing the test_screenshot: '{test_screenshot}' "
+            f"to golden_image: '{golden_image}' the mean similarity of '{mean_similarity}' "
+            f"was lower than the similarity threshold of '{similarity_threshold}'. ")
 
     return result
 
@@ -122,9 +123,7 @@ def initial_viewport_setup(screen_width=1280, screen_height=720):
     import azlmbr.legacy.general as general
 
     general.set_viewport_size(screen_width, screen_height)
-    general.idle_wait_frames(1)
     general.update_viewport()
-    general.idle_wait_frames(1)
 
 
 def enter_exit_game_mode_take_screenshot(screenshot_name, enter_game_tuple, exit_game_tuple, timeout_in_seconds=4):
@@ -138,18 +137,13 @@ def enter_exit_game_mode_take_screenshot(screenshot_name, enter_game_tuple, exit
     """
     import azlmbr.legacy.general as general
 
-    from editor_python_test_tools.utils import TestHelper, Report
+    from editor_python_test_tools.utils import TestHelper
 
     from Atom.atom_utils.screenshot_utils import ScreenshotHelper
 
-    screenshot_helper = ScreenshotHelper(general.idle_wait_frames)
     TestHelper.enter_game_mode(enter_game_tuple)
     TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=timeout_in_seconds)
-    screenshot_helper.prepare_viewport_for_screenshot(1920, 1080)
-    success_screenshot = TestHelper.wait_for_condition(
-        function=lambda: screenshot_helper.capture_screenshot_blocking(screenshot_name),
-        timeout_in_seconds=timeout_in_seconds)
-    Report.result(("Screenshot taken", "Screenshot failed to be taken"), success_screenshot)
+    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(screenshot_name)
     TestHelper.exit_game_mode(exit_game_tuple)
     TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=timeout_in_seconds)
 

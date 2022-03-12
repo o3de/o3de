@@ -127,3 +127,5 @@ void CSoundKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selec
         }
     }
 }
+
+REGISTER_QT_CLASS_DESC(CSoundKeyUIControls, "TrackView.KeyUI.Sound", "TrackViewKeyUI");

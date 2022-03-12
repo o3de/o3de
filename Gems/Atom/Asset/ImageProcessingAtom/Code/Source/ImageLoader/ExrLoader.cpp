@@ -14,7 +14,6 @@
 
 // From OpenEXR third party library
 #include <OpenEXR/ImfArray.h>
-#include <OpenEXR/ImfFrameBuffer.h>
 #include <OpenEXR/ImfChannelList.h>
 #include <OpenEXR/ImfHeader.h>
 #include <OpenEXR/ImfInputFile.h>

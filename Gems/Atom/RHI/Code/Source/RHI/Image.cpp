@@ -74,15 +74,5 @@ namespace AZ
         {
             return m_aspectFlags;
         }
-
-        const HashValue64 Image::GetHash() const
-        {
-            HashValue64 hash = HashValue64{ 0 };
-            hash = m_descriptor.GetHash();
-            hash = TypeHash64(m_supportedQueueMask, hash);
-            hash = TypeHash64(m_residentMipLevel, hash);
-            hash = TypeHash64(m_aspectFlags, hash);
-            return hash;
-        }
     }
 }

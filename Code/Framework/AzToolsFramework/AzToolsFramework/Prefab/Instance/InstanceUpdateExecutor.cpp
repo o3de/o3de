@@ -154,7 +154,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        EntityList newEntities;
+                        Instance::EntityList newEntities;
 
                         // Climb up to the root of the instance hierarchy from this instance
                         InstanceOptionalConstReference rootInstance = *instanceToUpdate;

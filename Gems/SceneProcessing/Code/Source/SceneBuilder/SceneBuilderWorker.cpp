@@ -79,7 +79,7 @@ namespace SceneBuilder
                 m_cachedFingerprint.append(element);
             }
             // A general catch all version fingerprint. Update this to force all FBX files to recompile.
-            m_cachedFingerprint.append("Version 3");
+            m_cachedFingerprint.append("Version 2");
         }
 
         return m_cachedFingerprint.c_str();
@@ -389,19 +389,18 @@ namespace SceneBuilder
         AZ_TracePrintf(Utilities::LogWindow, "Creating export entities.\n");
         EntityConstructor::EntityPointer exporter = EntityConstructor::BuildEntity("Scene Exporters", ExportingComponent::TYPEINFO_Uuid());
 
-        auto itr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
-        const bool isDebug = (itr != request.m_jobDescription.m_jobParameters.end() && itr->second == "true");
-
         ExportProductList productList;
         ProcessingResultCombiner result;
         AZ_TracePrintf(Utilities::LogWindow, "Preparing for export.\n");
-        result += Process<PreExportEventContext>(productList, outputFolder, *scene, platformIdentifier, isDebug);
+        result += Process<PreExportEventContext>(productList, outputFolder, *scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Exporting...\n");
         result += Process<ExportEventContext>(productList, outputFolder, *scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Finalizing export process.\n");
         result += Process<PostExportEventContext>(productList, outputFolder, platformIdentifier);
 
-        if (isDebug)
+        auto itr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
+
+        if (itr != request.m_jobDescription.m_jobParameters.end() && itr->second == "true")
         {
             AZStd::string productName;
             AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), productName);

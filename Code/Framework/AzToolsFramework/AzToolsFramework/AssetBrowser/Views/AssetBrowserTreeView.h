@@ -73,6 +73,7 @@ namespace AzToolsFramework
             void OnAssetBrowserComponentReady() override;
             //////////////////////////////////////////////////////////////////////////
 
+            void SetThumbnailContext(const char* context) const;
             void SetShowSourceControlIcons(bool showSourceControlsIcons);
             void UpdateAfterFilter(bool hasFilter, bool selectFirstValidEntry);
 

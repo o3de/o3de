@@ -143,3 +143,5 @@ void C2DBezierKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
         }
     }
 }
+
+REGISTER_QT_CLASS_DESC(C2DBezierKeyUIControls, "TrackView.KeyUI.2DBezier", "TrackViewKeyUI");

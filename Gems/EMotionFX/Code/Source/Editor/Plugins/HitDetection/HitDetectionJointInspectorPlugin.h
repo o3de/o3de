@@ -44,6 +44,7 @@ namespace EMotionFX
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;
 
         void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
+        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
 
     public slots:
         void OnAddCollider();

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <Editor/PropertyWidgets/LODTreeSelectionHandler.h>
 #include <Editor/PropertyWidgets/PropertyWidgetAllocator.h>

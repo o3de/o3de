@@ -10,7 +10,6 @@
 #include <AzCore/Component/Component.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
-#include <SurfaceData/SurfacePointList.h>
 #include <Vegetation/Ebuses/SurfaceMaskDepthFilterRequestBus.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 

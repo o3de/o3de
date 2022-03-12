@@ -193,7 +193,7 @@ namespace LmbrCentral
                     AzToolsFramework::VertexContainerDisplay::DisplayVertexContainerIndices(
                         debugDisplay, AzToolsFramework::VariableVerticesVertexContainer<AZ::Vector2>(
                             m_polygonPrismShape.GetPolygonPrism()->m_vertexContainer),
-                        m_polygonPrismShape.GetCurrentTransform(),
+                        AzToolsFramework::TransformUniformScale(m_polygonPrismShape.GetCurrentTransform()),
                         m_polygonPrismShape.GetCurrentNonUniformScale(),
                         IsSelected());
                 }

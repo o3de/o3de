@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
@@ -16,11 +15,6 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/chrono/clocks.h>
-
-namespace AZ::IO::Requests
-{
-    struct ReportData;
-}
 
 namespace AZ::IO
 {
@@ -78,7 +72,7 @@ namespace AZ::IO
         void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
             const RequestPath*& activeFile, u64& activeOffset) const;
 
-        void Report(const Requests::ReportData& data) const;
+        void Report(const FileRequest::ReportData& data) const;
 
         TimedAverageWindow<s_statisticsWindowSize> m_fileOpenCloseTimeAverage;
         TimedAverageWindow<s_statisticsWindowSize> m_getFileExistsTimeAverage;

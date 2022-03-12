@@ -171,11 +171,6 @@ namespace ScriptCanvasEditor::Nodes
             SlotDisplayHelper::DisplayVisualExtensionSlot(graphCanvasEntity->GetId(), extensionConfiguration);
         }
 
-        if (details.m_name.empty())
-        {
-            details.m_name = node->GetNodeName();
-        }
-
         graphCanvasEntity->SetName(AZStd::string::format("GC-Node(%s)", details.m_name.c_str()));
 
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
@@ -343,7 +338,7 @@ namespace ScriptCanvasEditor::Nodes
         AZStd::string methodContext;
         // Get the method's text data
         GraphCanvas::TranslationRequests::Details methodDetails;
-        methodDetails.m_name = methodName; // fallback
+        methodDetails.m_name = details.m_name; // fallback
         key << "methods";
         AZStd::string updatedMethodName = methodName;
         if (isAccessor)
@@ -360,13 +355,13 @@ namespace ScriptCanvasEditor::Nodes
             }
             updatedMethodName.append(methodName);
         }
-        key << updatedMethodName << methodContext;
+        key << methodContext << updatedMethodName;
         GraphCanvas::TranslationRequestBus::BroadcastResult(methodDetails, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", methodDetails);
 
 
         if (methodDetails.m_subtitle.empty())
         {
-            methodDetails.m_subtitle = details.m_category.empty() ? details.m_name : details.m_category;
+            methodDetails.m_subtitle = details.m_category;
         }
 
         // Add to the tooltip the C++ class for reference
@@ -409,19 +404,6 @@ namespace ScriptCanvasEditor::Nodes
                 {
                     key.clear();
                     key << context << className << "methods" << updatedMethodName;
-
-                    if (isAccessor)
-                    {
-                        if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || methodNode->GetMethodType() == ScriptCanvas::MethodType::Free)
-                        {
-                            key << "Getter";
-                        }
-                        else
-                        {
-                            key << "Setter";
-                        }
-                    }
-
                     if (slot.IsInput())
                     {
                         key << "params";

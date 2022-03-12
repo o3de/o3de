@@ -13,6 +13,7 @@
 #include <GridMate/GridMate.h>
 #include <GridMate/GridMateService.h>
 #include <GridMate/GridMateEventsBus.h>
+#include <GridMate/Version.h>
 
 AZ_DEFINE_BUDGET(GridMate);
 

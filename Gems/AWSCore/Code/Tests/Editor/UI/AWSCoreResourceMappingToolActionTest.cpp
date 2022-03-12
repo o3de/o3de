@@ -38,7 +38,8 @@ TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_No
 {
     AWSCoreResourceMappingToolAction testAction("dummy title");
     AZ_TEST_START_TRACE_SUPPRESSION;
-    EXPECT_EQ("", testAction.GetToolLaunchCommand());
-    EXPECT_EQ("", testAction.GetToolLogFilePath());
-    AZ_TEST_STOP_TRACE_SUPPRESSION(2);
+    EXPECT_TRUE(testAction.GetToolLaunchCommand() == "");
+    EXPECT_TRUE(testAction.GetToolLogFilePath() == "");
+    EXPECT_TRUE(testAction.GetToolReadMePath() == "");
+    AZ_TEST_STOP_TRACE_SUPPRESSION(3);
 }

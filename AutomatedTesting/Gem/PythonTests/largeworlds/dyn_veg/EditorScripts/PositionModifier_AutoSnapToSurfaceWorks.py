@@ -64,7 +64,8 @@ def PositionModifier_AutoSnapToSurfaceWorks():
                                'Configuration|Position Z|Range Min', 'Configuration|Position Z|Range Max']
 
     # 1) Open an existing simple level
-    hydra.open_base_level()
+    helper.init_idle()
+    helper.open_level("Physics", "Base")
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 500.0, 38.0)
@@ -72,10 +73,9 @@ def PositionModifier_AutoSnapToSurfaceWorks():
 
     # 2) Create a new entity with required vegetation area components and a Position Modifier
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
-    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "PosMod_PinkFlower")[0]
-    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0,
-                                                               16.0, pink_flower_prefab)
+    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
+                                                                               asset_path)
 
     # Add a Vegetation Position Modifier and set offset values to 0
     spawner_entity.add_component("Vegetation Position Modifier")

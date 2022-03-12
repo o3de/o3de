@@ -112,7 +112,6 @@ namespace AzFramework
         virtual void SetPrefabSystemEnabled([[maybe_unused]] bool enable) {}
 
         /// Returns true if Prefab System is enabled for use with levels, false if legacy level system is enabled (level.pak)
-        /// @deprecated Use 'IsPrefabSystemEnabled' instead
         virtual bool IsPrefabSystemForLevelsEnabled() const { return false; }
 
         /// Returns true if code should assert when the Legacy Slice System is used

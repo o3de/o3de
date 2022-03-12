@@ -29,11 +29,12 @@ namespace AZ
             return *m_compiledArgBuffers[m_compiledDataIndex];
         }
     
-        void ShaderResourceGroup::CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+        void ShaderResourceGroup::CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
+                                                            const ShaderResourceGroupVisibility& srgResourcesVisInfo,
                                                             ArgumentBuffer::ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
                                                             ArgumentBuffer::GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const
         {
-            GetCompiledArgumentBuffer().CollectUntrackedResources(srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+            GetCompiledArgumentBuffer().CollectUntrackedResources(commandEncoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
         }
     
         bool ShaderResourceGroup::IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const

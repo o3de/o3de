@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetManager.h>
 
 #include <ScriptCanvas/Core/SlotNames.h>
+#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 
 #include <ScriptEvents/ScriptEventsBus.h>
 

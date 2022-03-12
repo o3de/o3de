@@ -231,24 +231,14 @@ namespace AtomToolsFramework
         return QWidget::event(event);
     }
 
-    void RenderViewportWidget::enterEvent(QEvent* event)
+    void RenderViewportWidget::enterEvent([[maybe_unused]] QEvent* event)
     {
-        if (const auto eventType = event->type();
-            eventType == QEvent::Type::MouseMove)
-        {
-            const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
-            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
-        }
+        m_mouseOver = true;
     }
 
     void RenderViewportWidget::leaveEvent([[maybe_unused]] QEvent* event)
     {
-        m_mousePosition.reset();
-    }
-
-    void RenderViewportWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
-    {
-        m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
+        m_mouseOver = false;
     }
 
     void RenderViewportWidget::SendWindowResizeEvent()
@@ -337,27 +327,17 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::IsMouseOver() const
     {
-        return m_mousePosition.has_value();
-    }
-
-    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::MousePosition() const
-    {
-        return m_mousePosition;
+        return m_mouseOver;
     }
 
     void RenderViewportWidget::BeginCursorCapture()
     {
-        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeCaptured);
+        m_inputChannelMapper->SetCursorCaptureEnabled(true);
     }
 
     void RenderViewportWidget::EndCursorCapture()
     {
-        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeNone);
-    }
-
-    void RenderViewportWidget::SetCursorMode(AzToolsFramework::CursorInputMode mode) 
-    {
-        m_inputChannelMapper->SetCursorMode(mode);
+        m_inputChannelMapper->SetCursorCaptureEnabled(false);
     }
 
     void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)

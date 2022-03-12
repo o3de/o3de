@@ -7,5 +7,7 @@
 #
 
 set(FILES
+    MaterialEditor_Traits_Platform.h
+    MaterialEditor_Traits_Windows.h
     MaterialEditor.rc
 )

@@ -403,7 +403,6 @@ void LtcQuadEvaluate(
     float2 schlick = ltcAmpMatrix.Sample(PassSrg::LinearSampler, ltcCoords).xy;
     float3 specularRgb = specular * (schlick.x * surface.specularF0 + (1.0 - surface.specularF0) * schlick.y);
     
-#if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
     {
         int vertexCountCc = LtcQuadTransformAndClip(surface.clearCoat.normal, lightingData.dirToCamera, p, polygon);
@@ -423,7 +422,6 @@ void LtcQuadEvaluate(
             specularRgb = (specularRgb * (1.0 - F)) + (clearCoatSpecular * F);
         }
     }
-#endif
 
     diffuseOut = diffuse;
     specularOut = specularRgb;
@@ -622,7 +620,6 @@ void LtcPolygonEvaluate(
     float2 schlick = ltcAmpMatrix.Sample(PassSrg::LinearSampler, ltcCoords).xy;
     float3 specularRgb = specular * ((schlick.x * surface.specularF0) + (1.0 - surface.specularF0) * schlick.y);
 
-#if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
     {
         // Rotate ltc matrix
@@ -663,7 +660,6 @@ void LtcPolygonEvaluate(
             specularRgb = (specularRgb * (1.0 - F)) + (specularCc * F);
         }
     }
-#endif
 
     diffuseOut = diffuse;
     specularRgbOut = specularRgb;

@@ -8,7 +8,6 @@
 
 #include <Tests/FocusMode/EditorFocusModeFixture.h>
 
-#include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 #include <Tests/BoundsTestComponent.h>
@@ -94,13 +93,10 @@ namespace UnitTest
         entity->CreateComponent<UnitTest::BoundsTestComponent>();
         entity->Activate();
 
-        // Move the City so that it is in view
-        AZ::TransformBus::Event(m_entityMap[CityEntityName], &AZ::TransformBus::Events::SetWorldTranslation, s_worldCityEntityPosition);
+        // Move the CarEntity so it's out of the way.
+        AZ::TransformBus::Event(m_entityMap[CarEntityName], &AZ::TransformBus::Events::SetWorldTranslation, WorldCarEntityPosition);
 
-        // Move the CarEntity so that it's not overlapping with the rest
-        AZ::TransformBus::Event(m_entityMap[CarEntityName], &AZ::TransformBus::Events::SetWorldTranslation, s_worldCarEntityPosition);
-
-        // Setup the camera so the entities is in view.
+        // Setup the camera so the Car entity is in view.
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromQuaternionAndTranslation(
@@ -117,5 +113,4 @@ namespace UnitTest
 
         return entity->GetId();
     }
-
 } // namespace UnitTest

@@ -44,9 +44,6 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <SceneAPI/SceneUI/SceneWidgets/SceneGraphInspectWidget.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
-#include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
-#include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 
 const char* AssetImporterWindow::s_documentationWebAddress = "http://docs.aws.amazon.com/lumberyard/latest/userguide/char-fbx-importer.html";
 const AZ::Uuid AssetImporterWindow::s_browseTag = AZ::Uuid::CreateString("{C240D2E1-BFD2-4FFA-BB5B-CC0FA389A5D3}");
@@ -201,7 +198,7 @@ void AssetImporterWindow::Init()
     // Filling the initial browse prompt text to be programmatically set from available extensions
     AZStd::unordered_set<AZStd::string> extensions;
     EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
-    AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, !extensions.empty(), "No file extensions defined for assets.");
+    AZ_Assert(!extensions.empty(), "No file extensions defined for assets.");
     if (!extensions.empty())
     {
         for (AZStd::string& extension : extensions)
@@ -255,7 +252,6 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         [this, filePath]()
         {
             m_assetImporterDocument->LoadScene(filePath);
-            UpdateSceneDisplay({});
         },
         [this]()
         {
@@ -292,11 +288,6 @@ void AssetImporterWindow::UpdateClicked()
     if (m_processingOverlay)
     {
         AZ_Assert(!m_processingOverlay, "Attempted to update asset while processing is in progress.");
-        return;
-    }
-    else if (!m_scriptProcessorRuleFilename.empty())
-    {
-        AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow, "A script updates the manifest; will not save.");
         return;
     }
 
@@ -392,68 +383,11 @@ void AssetImporterWindow::OnSceneResetRequested()
             m_rootDisplay->HandleSceneWasReset(m_assetImporterDocument->GetScene());
         }, this);
 
-    // reset the script rule from the .assetinfo file if it exists
-    if (!m_scriptProcessorRuleFilename.empty())
-    {
-        m_scriptProcessorRuleFilename.clear();
-        if (QFile::exists(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str()))
-        {
-            QFile file(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
-            file.remove();
-        }
-    }
-    UpdateSceneDisplay({});
-
     m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Resetting, s_browseTag));
     m_processingOverlay->SetAndStartProcessingHandler(asyncLoadHandler);
     m_processingOverlay->SetAutoCloseOnSuccess(true);
     connect(m_processingOverlay.data(), &ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
     m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
-}
-
-void AssetImporterWindow::OnAssignScript()
-{
-    using namespace AZ::SceneAPI;
-    using namespace AZ::SceneAPI::Events;
-    using namespace AZ::SceneAPI::SceneUI;
-    using namespace AZ::SceneAPI::Utilities;
-
-    // use QFileDialog to select a Python script to embed into a scene manifest file
-    QString pyFilename = QFileDialog::getOpenFileName(this,
-        tr("Select scene builder Python script"),
-        Path::GetEditingGameDataFolder().c_str(),
-        tr("Python (*.py)"));
-
-    if (pyFilename.isNull())
-    {
-        return;
-    }
-
-    // reset the script rule from the .assetinfo file if it exists
-    if (!m_scriptProcessorRuleFilename.empty())
-    {
-        m_scriptProcessorRuleFilename.clear();
-        if (QFile::exists(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str()))
-        {
-            QFile file(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
-            file.remove();
-        }
-    }
-
-    // find the path relative to the project folder
-    pyFilename = Path::GetRelativePath(pyFilename, true);
-
-    // create a script rule
-    auto scriptProcessorRule = AZStd::make_shared<SceneData::ScriptProcessorRule>();
-    scriptProcessorRule->SetScriptFilename(pyFilename.toUtf8().toStdString().c_str());
-
-    // add the script rule to the manifest & save off the scene manifest
-    Containers::SceneManifest sceneManifest;
-    sceneManifest.AddEntry(scriptProcessorRule);
-    if (sceneManifest.SaveToFile(m_assetImporterDocument->GetScene()->GetManifestFilename()))
-    {
-        OpenFile(m_assetImporterDocument->GetScene()->GetSourceFilename());
-    }
 }
 
 void AssetImporterWindow::ResetMenuAccess(WindowState state)
@@ -546,35 +480,13 @@ void AssetImporterWindow::SetTitle(const char* filePath)
             }
             AZStd::string fileName;
             AzFramework::StringFunc::Path::GetFileName(filePath, fileName);
-            converted->setWindowTitle(QString("%1 Settings - %2").arg(extension.c_str(), fileName.c_str()));
+            converted->setWindowTitle(QString("%1 Settings (PREVIEW) - %2").arg(extension.c_str(), fileName.c_str()));
             break;
         }
         else
         {
             dock = dock->parentWidget();
         }
-    }
-}
-
-void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene) const
-{
-    AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
-    AZ::IO::FixedMaxPath relativeSourcePath = AZ::IO::PathView(m_fullSourcePath).LexicallyProximate(projectPath);
-    auto sceneHeaderText = QString::fromUtf8(relativeSourcePath.c_str(), static_cast<int>(relativeSourcePath.Native().size()));
-    if (!m_scriptProcessorRuleFilename.empty())
-    {
-        sceneHeaderText.append("\n Assigned Python builder script (")
-            .append(m_scriptProcessorRuleFilename.c_str())
-            .append(")");
-    }
-
-    if (scene)
-    {
-        m_rootDisplay->SetSceneDisplay(sceneHeaderText, scene);
-    }
-    else
-    {
-        m_rootDisplay->SetSceneHeaderText(sceneHeaderText);
     }
 }
 
@@ -589,24 +501,10 @@ void AssetImporterWindow::HandleAssetLoadingCompleted()
     m_fullSourcePath = m_assetImporterDocument->GetScene()->GetSourceFilename();
     SetTitle(m_fullSourcePath.c_str());
 
-    using namespace AZ::SceneAPI;
-    m_scriptProcessorRuleFilename.clear();
-
-    // load up the source scene manifest file
-    Containers::SceneManifest sceneManifest;
-    if (sceneManifest.LoadFromFile(m_assetImporterDocument->GetScene()->GetManifestFilename()))
-    {
-        // check a Python script rule is in that source manifest
-        auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(sceneManifest.GetValueStorage());
-        if (!view.empty())
-        {
-            // record the info about the rule in the class
-            const auto scriptProcessorRule = &*view.begin();
-            m_scriptProcessorRuleFilename = scriptProcessorRule->GetScriptFilename();
-        }
-    }
-
-    UpdateSceneDisplay(m_assetImporterDocument->GetScene());
+    AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+    AZ::IO::FixedMaxPath relativeSourcePath = AZ::IO::PathView(m_fullSourcePath).LexicallyProximate(projectPath);
+    auto userFriendlyFileName = QString::fromUtf8(relativeSourcePath.c_str(), static_cast<int>(relativeSourcePath.Native().size()));
+    m_rootDisplay->SetSceneDisplay(userFriendlyFileName, m_assetImporterDocument->GetScene());
 
     // Once we've browsed to something successfully, we need to hide the initial browse button layer and
     //  show the main area where all the actual work takes place

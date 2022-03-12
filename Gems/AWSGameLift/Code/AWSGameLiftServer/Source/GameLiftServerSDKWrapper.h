@@ -41,13 +41,6 @@ namespace AWSGameLift
         virtual Aws::GameLift::DescribePlayerSessionsOutcome DescribePlayerSessions(
             const Aws::GameLift::Server::Model::DescribePlayerSessionsRequest& describePlayerSessionsRequest);
 
-        //! Retrieves the file location of a pem-encoded TLS certificate that is associated with the fleet and its
-        //! instances. This certificate is generated when a new fleet is created with the certificate configuration set to
-        //! GENERATED. Use this certificate to establish a secure connection with a game client and to encrypt client server communication. 
-        //! @return If successful, returns a GetInstanceCertificateOutcome object containing the location of the fleet's TLS certificate file,
-        //!         which is stored on the instance. If not successful, returns an error message.
-        virtual Aws::GameLift::GetInstanceCertificateOutcome GetInstanceCertificate();
-
         //! Initializes the GameLift SDK.
         //! Should be called when the server starts, before any GameLift-dependent initialization happens.
         //! @return If successful, returns an InitSdkOutcome object indicating that the server process is ready to call ProcessReady().

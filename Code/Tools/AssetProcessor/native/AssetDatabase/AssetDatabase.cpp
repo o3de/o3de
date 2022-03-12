@@ -2747,17 +2747,6 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetDirectReverseProductDependenciesBySourceGuidAllPlatforms(AZ::Uuid dependencySourceGuid, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& container)
-    {
-        bool succeeded = QueryDirectReverseProductDependenciesBySourceGuidAllPlatforms(dependencySourceGuid, [&container](ProductDependencyDatabaseEntry entry)
-        {
-            container.emplace_back(AZStd::move(entry));
-            return true;
-        });
-
-        return succeeded;
-    }
-
     bool AssetDatabaseConnection::GetAllProductDependencies(AZ::s64 productID, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container)
     {
         bool found = false;

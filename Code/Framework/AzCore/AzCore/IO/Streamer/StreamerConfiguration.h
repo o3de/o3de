@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/Settings/ConfigurableStack.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
@@ -61,7 +60,7 @@ namespace AZ::IO
         AZ_RTTI(AZ::IO::StreamerConfig, "{B20540CB-A75C-45F9-A891-7ABFD9192E9F}");
         AZ_CLASS_ALLOCATOR(StreamerConfig, SystemAllocator, 0);
 
-        ConfigurableStack<AZ::IO::IStreamerStackConfig> m_stackConfig;
+        AZStd::vector<AZStd::shared_ptr<IStreamerStackConfig>> m_stackConfig;
         static void Reflect(ReflectContext* context);
     };
 

@@ -49,50 +49,6 @@ namespace ScriptCanvasFileHandlingCpp
             }
         }
     }
-
-    class EntityIdMapper
-    {
-    public:
-        EntityIdMapper()
-        {
-            m_newIdsByOld[AZ::EntityId()] = AZ::EntityId();
-            m_newIdsByOld[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
-            m_newIdsByOld[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
-        }
-
-        AZ::EntityId GetNewId(const AZ::EntityId& old)
-        {
-            if (auto iter = m_newIdsByOld.find(old); iter != m_newIdsByOld.end())
-            {
-                return iter->second;
-            }
-            else
-            {
-                const AZ::EntityId newId = AZ::Entity::MakeId();
-                m_newIdsByOld.insert(AZStd::make_pair(old, newId));
-                return newId;
-            }
-        }
-
-    private:
-        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_newIdsByOld;
-    };
-
-    // Create new EntityIds for all EntityIds found in the SC Entity/Component objects
-    // and map all old Ids to the new ones. This way, no Entity activation/deactivation, or
-    // bus communication via EntityId will be handled by multiple or incorrect objects on
-    // possible multiple instantiations of graphs.
-    //
-    // EntityIds contained in variable (those set to self or the graph unique id, will be ignored)
-    void MakeGraphComponentEntityIdsUnique(AZ::Entity* entity, AZ::SerializeContext* serializeContext)
-    {
-        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> remappedIds;
-        remappedIds[AZ::EntityId()] = AZ::EntityId();
-        remappedIds[ScriptCanvas::GraphOwnerId] = ScriptCanvas::GraphOwnerId;
-        remappedIds[ScriptCanvas::UniqueId] = ScriptCanvas::UniqueId;
-
-        AZ::IdUtils::Remapper<AZ::EntityId>::GenerateNewIdsAndFixRefs(entity, remappedIds, serializeContext);
-    }
 }
 
 namespace ScriptCanvasEditor
@@ -194,8 +150,8 @@ namespace ScriptCanvasEditor
 
         AZStd::vector<SourceHandle> dependentAssets;
         const auto subgraphInterfaceAssetTypeID = azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>();
-
-        auto onBeginElement = [&subgraphInterfaceAssetTypeID, &dependentAssets]
+        
+        auto beginElementCB = [&subgraphInterfaceAssetTypeID, &dependentAssets]
             ( void* instance
             , const AZ::SerializeContext::ClassData* classData
             , const AZ::SerializeContext::ClassElement* classElement) -> bool
@@ -206,13 +162,14 @@ namespace ScriptCanvasEditor
                 if (classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_POINTER)
                 {
                     // if ptr is a pointer-to-pointer, cast its value to a void* (or const void*) and dereference to get to the actual object pointer.
-                    instance = *static_cast<void**>(instance);
+                    instance = *(void**)(instance);
                 }
             }
 
             if (classData->m_typeId == subgraphInterfaceAssetTypeID)
             {
-                auto id = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance)->GetId();
+                auto asset = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance);
+                auto id = asset->GetId();
                 dependentAssets.push_back(SourceHandle(nullptr, id.m_guid, {}));
             }
 
@@ -224,7 +181,7 @@ namespace ScriptCanvasEditor
         AZ_Assert(serializeContext, "LoadEditorAssetTree() ailed to retrieve serialize context!");
 
         const ScriptCanvasEditor::EditorGraph* graph = handle.Get();
-        serializeContext->EnumerateObject(graph, onBeginElement, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
+        serializeContext->EnumerateObject(graph, beginElementCB, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
         EditorAssetTree result;
 
@@ -265,7 +222,7 @@ namespace ScriptCanvasEditor
         {
             return AZ::Failure(AZStd::string("failed to allocate ScriptCanvas::ScriptCanvasData after loading source file"));
         }
-
+        
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         if (!serializeContext)
@@ -292,9 +249,13 @@ namespace ScriptCanvasEditor
         if (auto entity = scriptCanvasData->GetScriptCanvasEntity())
         {
             AZ_Assert(entity->GetState() == AZ::Entity::State::Constructed, "Entity loaded in bad state");
-            ScriptCanvasFileHandlingCpp::MakeGraphComponentEntityIdsUnique(entity, serializeContext);
+            AZ::u64 entityId =
+                aznumeric_caster(ScriptCanvas::MathNodeUtilities::GetRandomIntegral<AZ::s64>(1, std::numeric_limits<AZ::s64>::max()));
+            entity->SetId(AZ::EntityId(entityId));
+
             auto graph = entity->FindComponent<ScriptCanvasEditor::EditorGraph>();
             graph->MarkOwnership(*scriptCanvasData);
+
             entity->Init();
             entity->Activate();
         }
@@ -309,7 +270,7 @@ namespace ScriptCanvasEditor
     AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
-
+        
         if (!source.IsGraphValid())
         {
             return AZ::Failure(AZStd::string("no source graph to save"));
@@ -332,7 +293,7 @@ namespace ScriptCanvasEditor
         {
             return AZ::Failure(AZStd::string("source is missing save container"));
         }
-
+        
         if (graphData->GetEditorGraph() != source.Get())
         {
             return AZ::Failure(AZStd::string("source save container refers to incorrect graph"));
@@ -353,7 +314,7 @@ namespace ScriptCanvasEditor
         settings.m_serializeContext = serializeContext;
 
         for (auto listener : *listeners)
-        {
+        {   
             listener->OnSerialize();
         }
 

@@ -258,6 +258,7 @@ namespace ScriptCanvasEditorTools
                 AZStd::string cleanName = GraphCanvas::TranslationKey::Sanitize(methodPair.first);
 
                 methodEntry.m_key = cleanName;
+                methodEntry.m_context = className;
 
                 methodEntry.m_details.m_category = "";
                 methodEntry.m_details.m_tooltip = "";

@@ -20,7 +20,6 @@
 #include <GridMate/Containers/unordered_set.h>
 #include <GridMate/Carrier/DriverEvents.h>
 
-#include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/chrono/types.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/memorytoascii.h>
@@ -1952,7 +1951,7 @@ namespace GridMate
     char *SocketDriverCommon::RIOPlatformSocketDriver::AllocRIOBuffer(AZ::u64 bufferSize, AZ::u64 numBuffers, AZ::u64* amountAllocated /*=nullptr*/)
     {
         // calculate how much memory we are really asking for, and this must be page aligned.
-        AZ::u64 totalBufferSize = AZ::RoundUpToMultiple(bufferSize * numBuffers, m_pageSize);
+        AZ::u64 totalBufferSize = RoundUp(bufferSize * numBuffers, m_pageSize);
 
         if (amountAllocated != nullptr)
         {

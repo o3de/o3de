@@ -48,7 +48,7 @@ namespace AzToolsFramework
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
-        return worldFromLocal;
+        return TransformUniformScale(worldFromLocal);
     }
 
     AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)

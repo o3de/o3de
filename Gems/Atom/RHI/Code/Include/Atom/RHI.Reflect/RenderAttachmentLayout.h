@@ -13,7 +13,7 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/containers/array.h>
-#include <AzCore/std/containers/span.h>
+#include <AtomCore/std/containers/array_view.h>
 
 namespace AZ
 {

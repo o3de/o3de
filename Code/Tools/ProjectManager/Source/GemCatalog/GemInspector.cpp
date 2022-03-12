@@ -8,9 +8,7 @@
 
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemItemDelegate.h>
-#include <ProjectManagerDefs.h>
 
-#include <QDir>
 #include <QFrame>
 #include <QLabel>
 #include <QSpacerItem>
@@ -30,10 +28,6 @@ namespace O3DE::ProjectManager
         setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         m_mainWidget = new QWidget();
-        if (parent)
-        {
-            m_mainWidget->setFixedWidth(parent->width());
-        }
         setWidget(m_mainWidget);
 
         m_mainLayout = new QVBoxLayout();
@@ -124,12 +118,10 @@ namespace O3DE::ProjectManager
         {
             m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGemTags);
             m_dependingGems->show();
-            m_dependingGemsSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
         else
         {
             m_dependingGems->hide();
-            m_dependingGemsSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
 
         // Additional information
@@ -254,8 +246,7 @@ namespace O3DE::ProjectManager
         m_dependingGems = new GemsSubWidget();
         connect(m_dependingGems, &GemsSubWidget::TagClicked, this, [this](const Tag& tag){ emit TagClicked(tag); });
         m_mainLayout->addWidget(m_dependingGems);
-        m_dependingGemsSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
-        m_mainLayout->addSpacerItem(m_dependingGemsSpacer);
+        m_mainLayout->addSpacing(20);
 
         // Additional information
         QLabel* additionalInfoLabel = CreateStyledLabel(m_mainLayout, 14, s_headerColor);

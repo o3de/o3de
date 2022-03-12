@@ -36,7 +36,7 @@ namespace AZ::IO
     struct MemoryBlockDeleter
     {
         void operator()(const AZStd::intrusive_refcount<AZStd::atomic_uint, MemoryBlockDeleter>* ptr) const;
-        AZ::IAllocator* m_allocator{};
+        AZ::IAllocatorAllocate* m_allocator{};
     };
     struct MemoryBlock
         : AZStd::intrusive_refcount<AZStd::atomic_uint, MemoryBlockDeleter>

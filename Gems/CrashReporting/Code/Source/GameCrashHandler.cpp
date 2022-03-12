@@ -14,7 +14,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/Module/Module.h>
 
 namespace CrashHandler
 {
@@ -91,5 +90,3 @@ namespace CrashHandler
         return returnPath;
     }
 }
-
-AZ_DECLARE_MODULE_CLASS(Gem_CrashReporting, AZ::Module)

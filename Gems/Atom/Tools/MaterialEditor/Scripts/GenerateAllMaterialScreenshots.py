@@ -11,9 +11,7 @@ import azlmbr.materialeditor
 import azlmbr.name
 import azlmbr.render
 import azlmbr.paths
-import azlmbr.math
 import azlmbr.atom
-import azlmbr.asset
 import sys
 import os.path
 import filecmp
@@ -101,13 +99,11 @@ def OpenMaterial(filename):
 def CloseMaterial(documentId):
     azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'CloseDocument', documentId)
 
-def LoadLightingPreset(path):
-    assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', path, azlmbr.math.Uuid(), False)
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, 'LoadLightingPresetByAssetId', assetId)
+def SelectLightingPreset(presetName):
+    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, 'SelectLightingPresetByName', presetName)
     
-def LoadModelPreset(path):
-    assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', path, azlmbr.math.Uuid(), False)
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, 'LoadModelPresetByAssetId', assetId)
+def SelectModelPreset(presetName):
+    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, 'SelectModelPresetByName', presetName)
 
 def SetCameraDistance(distance):
     azlmbr.render.ArcBallControllerRequestBus(azlmbr.bus.Broadcast, 'SetDistance', distance)
@@ -139,8 +135,8 @@ def GenerateMaterialScreenshot(materialName,
                                cameraHeading=-30.0,
                                cameraPitch=20.0,
                                cameraDistance=1.25,
-                               lighting="materialeditor/lightingpresets/neutral_urban.lightingpreset.azasset",
-                               model="materialeditor/viewportmodels/shaderball.modelpreset.azasset",
+                               lighting="Neutral Urban (Alt)",
+                               model="Shader Ball",
                                delayFrames=g_defaultDelayFrames):
     """
     Opens a material, takes a screenshot in the material editor viewport, and saves the file to ppm. 
@@ -168,8 +164,8 @@ def GenerateMaterialScreenshot(materialName,
     global g_failedScreenshots
 
     documentId = OpenMaterial(materialName + '.material')
-    LoadLightingPreset(lighting)
-    LoadModelPreset(model)
+    SelectLightingPreset(lighting)
+    SelectModelPreset(model)
     SetCameraDistance(cameraDistance)
     SetCameraHeading(ToRadians(cameraHeading))
     SetCameraPitch(ToRadians(-cameraPitch))
@@ -238,31 +234,31 @@ def GenerateAllMaterialScreenshots():
     GenerateMaterialScreenshot('007_MultiscatteringCompensationOn')
     GenerateMaterialScreenshot('008_NormalMap')
     GenerateMaterialScreenshot('008_NormalMap_Bevels')
-    GenerateMaterialScreenshot('009_Opacity_Blended', lighting="materialeditor/lightingpresets/neutral_urban.lightingpreset.azasset", model="materialeditor/viewportmodels/beveledcube.modelpreset.azasset")
-    GenerateMaterialScreenshot('009_Opacity_Cutout_PackedAlpha_DoubleSided', lighting="materialeditor/lightingpresets/neutral_urban.lightingpreset.azasset", model="materialeditor/viewportmodels/beveledcube.modelpreset.azasset")
-    GenerateMaterialScreenshot('009_Opacity_Cutout_SplitAlpha_DoubleSided', lighting="materialeditor/lightingpresets/neutral_urban.lightingpreset.azasset", model="materialeditor/viewportmodels/beveledcube.modelpreset.azasset")
-    GenerateMaterialScreenshot('009_Opacity_Cutout_SplitAlpha_SingleSided', lighting="materialeditor/lightingpresets/neutral_urban.lightingpreset.azasset", model="materialeditor/viewportmodels/beveledcube.modelpreset.azasset")
+    GenerateMaterialScreenshot('009_Opacity_Blended', lighting="Neutral Urban", model="Cube (Beveled)")
+    GenerateMaterialScreenshot('009_Opacity_Cutout_PackedAlpha_DoubleSided', lighting="Neutral Urban", model="Cube (Beveled)")
+    GenerateMaterialScreenshot('009_Opacity_Cutout_SplitAlpha_DoubleSided', lighting="Neutral Urban", model="Cube (Beveled)")
+    GenerateMaterialScreenshot('009_Opacity_Cutout_SplitAlpha_SingleSided', lighting="Neutral Urban", model="Cube (Beveled)")
     GenerateMaterialScreenshot('010_AmbientOcclusion')
     GenerateMaterialScreenshot('011_Emissive')
-    GenerateMaterialScreenshot('012_Parallax_POM', model="materialeditor/viewportmodels/cube.modelpreset.azasset", cameraHeading=-35.0, cameraPitch=35.0)
-    GenerateMaterialScreenshot('013_SpecularAA_Off', lighting="testdata/test.lightingpreset.azasset")
-    GenerateMaterialScreenshot('013_SpecularAA_On', lighting="testdata/test.lightingpreset.azasset")
+    GenerateMaterialScreenshot('012_Parallax_POM', model="Cube", cameraHeading=-35.0, cameraPitch=35.0)
+    GenerateMaterialScreenshot('013_SpecularAA_Off', lighting="Dark Test Lighting")
+    GenerateMaterialScreenshot('013_SpecularAA_On', lighting="Dark Test Lighting")
     GenerateMaterialScreenshot('100_UvTiling_AmbientOcclusion')
     GenerateMaterialScreenshot('100_UvTiling_BaseColor')
     GenerateMaterialScreenshot('100_UvTiling_Emissive')
     GenerateMaterialScreenshot('100_UvTiling_Metallic')
     GenerateMaterialScreenshot('100_UvTiling_Normal')
-    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_Rotate20',      model="materialeditor/viewportmodels/cube.modelpreset.azasset", lighting="testdata/test.lightingpreset.azasset", cameraHeading=225.0)
-    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_Rotate90',      model="materialeditor/viewportmodels/cube.modelpreset.azasset", lighting="testdata/test.lightingpreset.azasset", cameraHeading=225.0)
-    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_ScaleOnlyU',    model="materialeditor/viewportmodels/cube.modelpreset.azasset", lighting="testdata/test.lightingpreset.azasset", cameraHeading=225.0)
-    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_ScaleOnlyV',    model="materialeditor/viewportmodels/cube.modelpreset.azasset", lighting="testdata/test.lightingpreset.azasset", cameraHeading=225.0)
-    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_ScaleUniform',  model="materialeditor/viewportmodels/cube.modelpreset.azasset", lighting="testdata/test.lightingpreset.azasset", cameraHeading=225.0)
-    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_TransformAll',  model="materialeditor/viewportmodels/cube.modelpreset.azasset", lighting="testdata/test.lightingpreset.azasset", cameraHeading=225.0)
-    GenerateMaterialScreenshot('100_UvTiling_Opacity', lighting="materialeditor/lightingpresets/neutral_urban.lightingpreset.azasset")
-    GenerateMaterialScreenshot('100_UvTiling_Parallax_A', uniqueSuffix="Angle1", model="materialeditor/viewportmodels/cube.modelpreset.azasset", cameraHeading=35.0, cameraPitch=35.0)
-    GenerateMaterialScreenshot('100_UvTiling_Parallax_A', uniqueSuffix="Angle2", model="materialeditor/viewportmodels/cube.modelpreset.azasset", cameraHeading=125.0, cameraPitch=35.0)
-    GenerateMaterialScreenshot('100_UvTiling_Parallax_B', uniqueSuffix="Angle1", model="materialeditor/viewportmodels/cube.modelpreset.azasset", cameraHeading=0.0, cameraPitch=45.0, cameraDistance=1.0)
-    GenerateMaterialScreenshot('100_UvTiling_Parallax_B', uniqueSuffix="Angle2", model="materialeditor/viewportmodels/cube.modelpreset.azasset", cameraHeading=90.0, cameraPitch=45.0, cameraDistance=1.0)
+    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_Rotate20',      model="Cube", lighting="Dark Test Lighting", cameraHeading=225.0)
+    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_Rotate90',      model="Cube", lighting="Dark Test Lighting", cameraHeading=225.0)
+    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_ScaleOnlyU',    model="Cube", lighting="Dark Test Lighting", cameraHeading=225.0)
+    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_ScaleOnlyV',    model="Cube", lighting="Dark Test Lighting", cameraHeading=225.0)
+    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_ScaleUniform',  model="Cube", lighting="Dark Test Lighting", cameraHeading=225.0)
+    GenerateMaterialScreenshot('100_UvTiling_Normal_Dome_TransformAll',  model="Cube", lighting="Dark Test Lighting", cameraHeading=225.0)
+    GenerateMaterialScreenshot('100_UvTiling_Opacity', lighting="Neutral Urban")
+    GenerateMaterialScreenshot('100_UvTiling_Parallax_A', uniqueSuffix="Angle1", model="Cube", cameraHeading=35.0, cameraPitch=35.0)
+    GenerateMaterialScreenshot('100_UvTiling_Parallax_A', uniqueSuffix="Angle2", model="Cube", cameraHeading=125.0, cameraPitch=35.0)
+    GenerateMaterialScreenshot('100_UvTiling_Parallax_B', uniqueSuffix="Angle1", model="Cube", cameraHeading=0.0, cameraPitch=45.0, cameraDistance=1.0)
+    GenerateMaterialScreenshot('100_UvTiling_Parallax_B', uniqueSuffix="Angle2", model="Cube", cameraHeading=90.0, cameraPitch=45.0, cameraDistance=1.0)
     GenerateMaterialScreenshot('100_UvTiling_Roughness')
     GenerateMaterialScreenshot('100_UvTiling_SpecularF0')
 

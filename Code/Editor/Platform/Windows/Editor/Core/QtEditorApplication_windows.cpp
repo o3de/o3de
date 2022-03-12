@@ -135,7 +135,7 @@ namespace Editor
                         }
                         widget = widget->parentWidget();
                     }
-                    return nullptr;
+                    return false;
                 };
                 if (object == toolBarAt(QCursor::pos()))
                 {

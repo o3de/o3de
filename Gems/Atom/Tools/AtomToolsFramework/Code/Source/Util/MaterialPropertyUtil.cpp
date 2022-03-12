@@ -6,18 +6,21 @@
  *
  */
 
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
-#include <AtomToolsFramework/Util/Util.h>
+
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 
 namespace AtomToolsFramework
 {
@@ -30,13 +33,11 @@ namespace AtomToolsFramework
     {
         if (value.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
         {
-            const auto& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(imageAsset.GetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), imageAsset.GetHint()));
-        }
-        else if (value.Is<AZ::Data::Instance<AZ::RPI::Image>>())
-        {
-            const auto& image = value.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(image->GetAssetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>()));
+            const AZ::Data::Asset<AZ::RPI::ImageAsset>& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
+            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(
+                imageAsset.GetId(),
+                azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
+                imageAsset.GetHint()));
         }
 
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
@@ -75,7 +76,7 @@ namespace AtomToolsFramework
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
     {
         propertyConfig.m_dataType = ConvertToEditableType(propertyDefinition.m_dataType);
-        propertyConfig.m_name = propertyDefinition.GetName();
+        propertyConfig.m_name = propertyDefinition.m_name;
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
         propertyConfig.m_description = propertyDefinition.m_description;
         propertyConfig.m_defaultValue = ConvertToEditableType(propertyDefinition.m_value);
@@ -219,5 +220,52 @@ namespace AtomToolsFramework
         }
 
         return true;
+    }
+
+    AZStd::string GetExteralReferencePath(
+        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
+    {
+        if (referencePath.empty())
+        {
+            return {};
+        }
+
+        if (!relativeToExportPath)
+        {
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            bool sourceInfoFound = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, referencePath.c_str(),
+                assetInfo, watchFolder);
+            if (sourceInfoFound)
+            {
+                return assetInfo.m_relativePath;
+            }
+        }
+
+        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
+        exportFolder.RemoveFilename();
+        return AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
+    }
+
+    const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode)
+    {
+        // Traverse up the hierarchy from the input node to search for an instance corresponding to material inspector property
+        for (const AzToolsFramework::InstanceDataNode* currentNode = pNode; currentNode; currentNode = currentNode->GetParent())
+        {
+            const AZ::SerializeContext* context = currentNode->GetSerializeContext();
+            const AZ::SerializeContext::ClassData* classData = currentNode->GetClassMetadata();
+            if (context && classData)
+            {
+                if (context->CanDowncast(
+                        classData->m_typeId, azrtti_typeid<AtomToolsFramework::DynamicProperty>(), classData->m_azRtti, nullptr))
+                {
+                    return static_cast<const AtomToolsFramework::DynamicProperty*>(currentNode->FirstInstance());
+                }
+            }
+        }
+
+        return nullptr;
     }
 } // namespace AtomToolsFramework

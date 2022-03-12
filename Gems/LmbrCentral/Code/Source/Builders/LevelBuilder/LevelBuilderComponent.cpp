@@ -17,7 +17,7 @@ namespace LevelBuilder
     {
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
         // No need to build level.pak files when using the prefab system.
         if (usePrefabSystemForLevels)

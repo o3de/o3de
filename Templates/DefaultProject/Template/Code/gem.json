@@ -1,0 +1,16 @@
+{
+    "gem_name": "${Name}",
+    "display_name": "${Name}",
+    "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
+    "type": "Code",
+    "summary": "A short description of ${Name}.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "${Name}"
+    ],
+    "icon_path": "preview.png",
+    "requirements": ""
+}

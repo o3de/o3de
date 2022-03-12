@@ -74,7 +74,8 @@ def GradientModifiers_Incompatibilities():
     }
 
     # Open an existing simple level
-    hydra.open_base_level()
+    helper.init_idle()
+    helper.open_level("Physics", "Base")
 
     # For every gradient modifier component, verify that they are incompatible
     # which each vegetation area and gradient generator/modifier component

@@ -132,6 +132,7 @@ set(FILES
     Tests/Mocks/AnimGraphManager.h
     Tests/Mocks/AnimGraphNode.h
     Tests/Mocks/AnimGraphObject.h
+    Tests/Mocks/AnimGraphObjectData.h
     Tests/Mocks/AnimGraphStateTransition.h
     Tests/Mocks/BlendTreeParameterNode.h
     Tests/Mocks/Command.h

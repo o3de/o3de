@@ -15,77 +15,56 @@ namespace AWSMetrics
 {
     namespace ServiceAPI
     {
-        bool PostMetricsEventsResponseEntry::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
+        bool MetricsEventSuccessResponseRecord::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
         {
-            if (strcmp(key, AwsMetricsPostMetricsEventsResponseEntryKeyErrorCode) == 0)
-            {
-                return reader.Accept(m_errorCode);
-            }
+            if (strcmp(key, AwsMetricsSuccessResponseRecordKeyErrorCode) == 0) return reader.Accept(errorCode);
 
-            if (strcmp(key, AwsMetricsPostMetricsEventsResponseEntryKeyResult) == 0)
-            {
-                return reader.Accept(m_result);
-            }
+            if (strcmp(key, AwsMetricsSuccessResponseRecordKeyResult) == 0) return reader.Accept(result);
 
             return reader.Ignore();
         }
 
-        bool PostMetricsEventsResponse::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
+        bool MetricsEventSuccessResponse::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
         {
-            if (strcmp(key, AwsMetricsPostMetricsEventsResponseKeyFailedRecordCount) == 0)
-            {
-                return reader.Accept(m_failedRecordCount);
-            }
+            if (strcmp(key, AwsMetricsSuccessResponseKeyFailedRecordCount) == 0) return reader.Accept(failedRecordCount);
 
-            if (strcmp(key, AwsMetricsPostMetricsEventsResponseKeyEvents) == 0)
-            {
-                return reader.Accept(m_responseEntries);
-            }
+            if (strcmp(key, AwsMetricsSuccessResponseKeyEvents) == 0) return reader.Accept(events);
 
-            if (strcmp(key, AwsMetricsPostMetricsEventsResponseKeyTotal) == 0)
-            {
-                return reader.Accept(m_total);
-            }
+            if (strcmp(key, AwsMetricsSuccessResponseKeyTotal) == 0) return reader.Accept(total);
 
             return reader.Ignore();
         }
 
-        bool PostMetricsEventsError::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
+        bool Error::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
         {
-            if (strcmp(key, AwsMetricsPostMetricsEventsErrorKeyMessage) == 0)
-            {
-                return reader.Accept(message);
-            }
+            if (strcmp(key, AwsMetricsErrorKeyMessage) == 0) return reader.Accept(message);
 
-            if (strcmp(key, AwsMetricsPostMetricsEventsErrorKeyType) == 0)
-            {
-                return reader.Accept(type);
-            }
+            if (strcmp(key, AwsMetricsErrorKeyType) == 0) return reader.Accept(type);
 
             return reader.Ignore();
         }
 
-        // Generated request parameters
-        bool PostMetricsEventsRequest::Parameters::BuildRequest(AWSCore::RequestBuilder& request)
+        // Generated Function Parameters
+        bool PostProducerEventsRequest::Parameters::BuildRequest(AWSCore::RequestBuilder& request)
         {
-            bool buildResult = true;
-            buildResult = buildResult && request.WriteJsonBodyParameter(*this);
+            bool ok = true;
 
-            return buildResult;
+            ok = ok && request.WriteJsonBodyParameter(*this);
+            return ok;
         }
 
-        bool PostMetricsEventsRequest::Parameters::WriteJson(AWSCore::JsonWriter& writer) const
+        bool PostProducerEventsRequest::Parameters::WriteJson(AWSCore::JsonWriter& writer) const
         {
-            bool writeResult = true;
+            bool ok = true;
 
-            writeResult = writeResult && writer.StartObject();
+            ok = ok && writer.StartObject();
 
-            writeResult = writeResult && writer.Key(AwsMetricsPostMetricsEventsRequestParameterKeyEvents);
-            writeResult = writeResult && m_metricsQueue.SerializeToJson(writer);
+            ok = ok && writer.Key(AwsMetricsRequestParameterKeyEvents);
+            ok = ok && data.SerializeToJson(writer);
 
-            writeResult = writeResult && writer.EndObject();
+            ok = ok && writer.EndObject();
 
-            return writeResult;
+            return ok;
         }
     }
 }

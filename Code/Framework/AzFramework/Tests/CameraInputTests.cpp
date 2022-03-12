@@ -490,40 +490,4 @@ namespace UnitTest
         EXPECT_THAT(m_orbitCamera->Ending(), IsFalse());
         EXPECT_THAT(m_orbitCamera->Idle(), IsTrue());
     }
-
-    TEST_F(CameraInputFixture, NewCameraInputCanBeAddedToCameraSystem)
-    {
-        auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
-            AzFramework::InputDeviceMouse::Button::Middle, AzFramework::LookPan, AzFramework::TranslatePivotLook);
-        const bool added =
-            m_cameraSystem->m_cameras.AddCameras(AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ firstPersonPanCamera });
-
-        EXPECT_THAT(added, ::testing::IsTrue());
-    }
-
-    TEST_F(CameraInputFixture, ExistingCameraInputCannotBeAddedToCameraSystem)
-    {
-        const bool added =
-            m_cameraSystem->m_cameras.AddCameras(AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_firstPersonRotateCamera });
-
-        EXPECT_THAT(added, ::testing::IsFalse());
-    }
-
-    TEST_F(CameraInputFixture, ExistingCameraInputCanBeRemovedFromCameraSystem)
-    {
-        const bool removed = m_cameraSystem->m_cameras.RemoveCameras(
-            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_firstPersonRotateCamera });
-
-        EXPECT_THAT(removed, ::testing::IsTrue());
-    }
-
-    TEST_F(CameraInputFixture, NonExistentCameraInputCannotBeRemovedFromCameraSystem)
-    {
-        auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
-            AzFramework::InputDeviceMouse::Button::Middle, AzFramework::LookPan, AzFramework::TranslatePivotLook);
-        const bool removed = m_cameraSystem->m_cameras.RemoveCameras(
-            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ firstPersonPanCamera });
-
-        EXPECT_THAT(removed, ::testing::IsFalse());
-    }
 } // namespace UnitTest

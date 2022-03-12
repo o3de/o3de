@@ -18,7 +18,7 @@ namespace AWSGameLift
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AWSGameLiftCreateSessionOnQueueRequest, Multiplayer::CreateSessionRequest>()
+            serializeContext->Class<AWSGameLiftCreateSessionOnQueueRequest, AzFramework::CreateSessionRequest>()
                 ->Version(0)
                 ->Field("queueName", &AWSGameLiftCreateSessionOnQueueRequest::m_queueName)
                 ->Field("placementId", &AWSGameLiftCreateSessionOnQueueRequest::m_placementId)

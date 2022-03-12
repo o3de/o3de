@@ -10,7 +10,6 @@
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
-#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 
@@ -67,20 +66,17 @@ namespace AZ
             return m_shaderResourceGroupLayout;
         }
 
-        MaterialPropertyIndex MaterialFunctorSourceData::RuntimeContext::FindMaterialPropertyIndex(Name propertyId) const
+        MaterialPropertyIndex MaterialFunctorSourceData::RuntimeContext::FindMaterialPropertyIndex(const Name& propertyName) const
         {
-            m_materialNameContext->ContextualizeProperty(propertyId);
-            MaterialPropertyIndex propertyIndex = m_materialPropertiesLayout->FindPropertyIndex(propertyId);
+            MaterialPropertyIndex propertyIndex = m_materialPropertiesLayout->FindPropertyIndex(propertyName);
 
-            AZ_Error("MaterialFunctorSourceData", propertyIndex.IsValid(), "Could not find property '%s'.", propertyId.GetCStr());
+            AZ_Error("MaterialFunctorSourceData", propertyIndex.IsValid(), "Could not find property '%s'.", propertyName.GetCStr());
 
             return propertyIndex;
         }
 
-        ShaderOptionIndex MaterialFunctorSourceData::RuntimeContext::FindShaderOptionIndex(AZStd::size_t shaderIndex, Name optionName, bool reportErrors) const
+        ShaderOptionIndex MaterialFunctorSourceData::RuntimeContext::FindShaderOptionIndex(AZStd::size_t shaderIndex, const Name& optionName, bool reportErrors) const
         {
-            m_materialNameContext->ContextualizeShaderOption(optionName);
-
             const ShaderOptionGroupLayout* shaderOptionGroupLayout = GetShaderOptionGroupLayout(shaderIndex);
 
             if (shaderOptionGroupLayout)
@@ -96,10 +92,8 @@ namespace AZ
             return ShaderOptionIndex();
         }
 
-        AZ::RPI::ShaderOptionIndex MaterialFunctorSourceData::RuntimeContext::FindShaderOptionIndex(const AZ::Name& shaderTag, Name optionName, bool reportErrors /*= true*/) const
+        AZ::RPI::ShaderOptionIndex MaterialFunctorSourceData::RuntimeContext::FindShaderOptionIndex(const AZ::Name& shaderTag, const Name& optionName, bool reportErrors /*= true*/) const
         {
-            m_materialNameContext->ContextualizeShaderOption(optionName);
-
             const ShaderOptionGroupLayout* shaderOptionGroupLayout = GetShaderOptionGroupLayout(shaderTag);
 
             if (shaderOptionGroupLayout)
@@ -128,33 +122,19 @@ namespace AZ
             AZ_Error("MaterialFunctorSourceData", valid, "Shader tag '%s' is invalid", shaderTag.GetCStr());
             return valid;
         }
-        
-        RHI::ShaderInputConstantIndex MaterialFunctorSourceData::RuntimeContext::FindShaderInputConstantIndex(Name inputName) const
-        {
-            m_materialNameContext->ContextualizeSrgInput(inputName);
-            return m_shaderResourceGroupLayout->FindShaderInputConstantIndex(inputName);
-        }
-
-        RHI::ShaderInputImageIndex MaterialFunctorSourceData::RuntimeContext::FindShaderInputImageIndex(Name inputName) const
-        {
-            m_materialNameContext->ContextualizeSrgInput(inputName);
-            return m_shaderResourceGroupLayout->FindShaderInputImageIndex(inputName);
-        }
 
         const MaterialPropertiesLayout* MaterialFunctorSourceData::EditorContext::GetMaterialPropertiesLayout() const
         {
             return m_materialPropertiesLayout;
         }
 
-        MaterialPropertyIndex MaterialFunctorSourceData::EditorContext::FindMaterialPropertyIndex(Name propertyId) const
+        MaterialPropertyIndex MaterialFunctorSourceData::EditorContext::FindMaterialPropertyIndex(const Name& propertyName) const
         {
-            m_materialNameContext->ContextualizeProperty(propertyId);
-            MaterialPropertyIndex propertyIndex = m_materialPropertiesLayout->FindPropertyIndex(propertyId);
+            MaterialPropertyIndex propertyIndex = m_materialPropertiesLayout->FindPropertyIndex(propertyName);
 
-            AZ_Error("MaterialFunctorSourceData", propertyIndex.IsValid(), "Could not find property '%s'", propertyId.GetCStr());
+            AZ_Error("MaterialFunctorSourceData", propertyIndex.IsValid(), "Could not find property '%s'", propertyName.GetCStr());
 
             return propertyIndex;
         }
-
     } // namespace RPI
 } // namespace AZ

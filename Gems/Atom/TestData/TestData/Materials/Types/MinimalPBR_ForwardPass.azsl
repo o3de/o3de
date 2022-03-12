@@ -67,13 +67,12 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     surface.CalculateRoughnessA();
 
     // Albedo, SpecularF0
-    float3 baseColor = MinimalPBRSrg::m_baseColor;
-    float metallic = MinimalPBRSrg::m_metallic;
-    float specularF0Factor = 0.5f;
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+    const float specularF0Factor = 0.5f;
+    surface.SetAlbedoAndSpecularF0(MinimalPBRSrg::m_baseColor, specularF0Factor, MinimalPBRSrg::m_metallic);
 
-    // Clear Coat
+    // Clear Coat, Transmission
     surface.clearCoat.InitializeToZero();
+    surface.transmission.InitializeToZero();
 
     // ------- LightingData -------
 
@@ -102,7 +101,7 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting();
+    lightingData.FinalizeLighting(surface.transmission.tint);
 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 

@@ -19,8 +19,7 @@ namespace SurfaceData
     {
     public:
         AZ_CLASS_ALLOCATOR(SurfaceTag, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(SurfaceTag, "{67C8C6ED-F32A-443E-A777-1CAE48B22CD7}");
-
+        AZ_RTTI(SurfaceTag, "{67C8C6ED-F32A-443E-A777-1CAE48B22CD7}");
         static void Reflect(AZ::ReflectContext* context);
 
         SurfaceTag()
@@ -48,14 +47,14 @@ namespace SurfaceData
             m_surfaceTagCrc = AZ::Crc32(value.data());
         }
 
-        AZStd::string GetDisplayName() const;
-
         static AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> GetRegisteredTags();
 
     private:
         bool FindDisplayName(const AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>>& selectableTags, AZStd::string& name) const;
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> BuildSelectableTagList() const;
+
+        AZStd::string GetDisplayName() const;
 
         AZ::u32 m_surfaceTagCrc;
     };

@@ -35,6 +35,7 @@ set(FILES
     Source/Artifact/Factory/TestImpactTestTargetMetaMapFactory.h
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.cpp
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.h
+    Source/Artifact/Static/TestImpactBuildTargetDescriptor.cpp
     Source/Artifact/Static/TestImpactBuildTargetDescriptor.h
     Source/Artifact/Static/TestImpactTargetDescriptorCompiler.cpp
     Source/Artifact/Static/TestImpactTargetDescriptorCompiler.h
@@ -89,6 +90,8 @@ set(FILES
     Source/TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h
     Source/TestEngine/Enumeration/TestImpactTestEnumerator.cpp
     Source/TestEngine/Enumeration/TestImpactTestEnumerator.h
+    Source/TestEngine/Run/TestImpactTestRunSerializer.cpp
+    Source/TestEngine/Run/TestImpactTestRunSerializer.h
     Source/TestEngine/Run/TestImpactTestRunner.cpp
     Source/TestEngine/Run/TestImpactTestRunner.h
     Source/TestEngine/Run/TestImpactInstrumentedTestRunner.cpp

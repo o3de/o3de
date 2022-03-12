@@ -18,17 +18,27 @@
 #include <QTextStream>
 #include <QThread>
 
+//#define MOCK_BUILD_PROJECT true
+
 namespace O3DE::ProjectManager
 {
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
         , m_projectInfo(projectInfo)
+        , m_progressEstimate(0)
     {
     }
 
     void ProjectBuilderWorker::BuildProject()
     {
-
+#ifdef MOCK_BUILD_PROJECT
+        for (int i = 0; i < 10; ++i)
+        {
+            QThread::sleep(1);
+            UpdateProgress(i * 10);
+        }
+        Done("");
+#else
         auto result = BuildProjectForPlatform();
 
         if (result.IsSuccess())
@@ -39,6 +49,7 @@ namespace O3DE::ProjectManager
         {
             emit Done(result.GetError());
         }
+#endif
     }
 
     QString ProjectBuilderWorker::GetLogFilePath() const
@@ -103,7 +114,8 @@ namespace O3DE::ProjectManager
             return AZ::Failure(BuildCancelled);
         }
 
-        UpdateProgress(tr("Setting Up Environment"));
+        // Show some kind of progress with very approximate estimates
+        UpdateProgress(++m_progressEstimate);
 
         auto currentEnvironmentRequest = ProjectUtils::SetupCommandLineProcessEnvironment();
         if (!currentEnvironmentRequest.IsSuccess())
@@ -143,8 +155,7 @@ namespace O3DE::ProjectManager
             logStream << configOutput;
             logStream.flush();
 
-            // Show last line of output
-            UpdateProgress(configOutput.split('\n', Qt::SkipEmptyParts).last());
+            UpdateProgress(qMin(++m_progressEstimate, 19));
 
             if (QThread::currentThread()->isInterruptionRequested())
             {
@@ -162,6 +173,8 @@ namespace O3DE::ProjectManager
             QStringToAZTracePrint(error);
             return AZ::Failure(error);
         }
+
+        UpdateProgress(++m_progressEstimate);
 
         m_buildProjectProcess = new QProcess(this);
         m_buildProjectProcess->setProcessChannelMode(QProcess::MergedChannels);
@@ -183,15 +196,15 @@ namespace O3DE::ProjectManager
             return AZ::Failure(error);
         }
 
+        // There are a lot of steps when building so estimate around 800 more steps ((100 - 20) * 10) remaining
+        m_progressEstimate = 200;
         while (m_buildProjectProcess->waitForReadyRead(MaxBuildTimeMSecs))
         {
-            QString buildOutput = m_buildProjectProcess->readAllStandardOutput();
-
-            logStream << buildOutput;
+            logStream << m_buildProjectProcess->readAllStandardOutput();
             logStream.flush();
 
-            // Show last line of output
-            UpdateProgress(buildOutput.split('\n', Qt::SkipEmptyParts).last());
+            // Show 1% progress for every 10 steps completed
+            UpdateProgress(qMin(++m_progressEstimate / 10, 99));
 
             if (QThread::currentThread()->isInterruptionRequested())
             {

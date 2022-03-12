@@ -99,24 +99,7 @@
                         }
                     ]
                 }
-            ],
-            "PassData": {
-                "$type": "PassData",
-                "PipelineGlobalConnections": [
-                    {
-                        "GlobalName": "Depth",
-                        "Slot": "Depth"
-                    },
-                    {
-                        "GlobalName": "DepthMSAA",
-                        "Slot": "DepthMSAA"
-                    },
-                    {
-                        "GlobalName": "DepthLinear",
-                        "Slot": "DepthLinear"
-                    }
-                ]
-            }
+            ]
         }
     }
 }

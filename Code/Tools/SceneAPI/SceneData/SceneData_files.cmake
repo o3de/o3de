@@ -69,8 +69,6 @@ set(FILES
     Rules/SkinRule.cpp
     Rules/TangentsRule.h
     Rules/TangentsRule.cpp
-    GraphData/CustomPropertyData.h
-    GraphData/CustomPropertyData.cpp
     GraphData/MeshData.h
     GraphData/MeshData.cpp
     GraphData/MeshVertexColorData.h

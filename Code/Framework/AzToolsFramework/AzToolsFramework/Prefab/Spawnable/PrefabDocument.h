@@ -58,13 +58,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     private:
         bool ConstructInstanceFromPrefabDom(const PrefabDom& prefab);
-        // Marked const so this function can be called from other const functions. It will only operate on mutable variables.
-        void RefreshPrefabDom() const;
         
         mutable PrefabDom m_dom;
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> m_instance;
         AZStd::string m_name;
-        mutable AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_referencedAssets;
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_referencedAssets;
         mutable bool m_isDirty{ false };
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

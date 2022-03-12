@@ -19,10 +19,48 @@ if(NOT PAL_TRAIT_ATOM_SHADER_MANAGEMENT_CONSOLE_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME ShaderManagementConsole EXECUTABLE
+    NAME ShaderManagementConsole.Document STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        shadermanagementconsoledocument_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::AtomToolsFramework.Static
+            Gem::AtomToolsFramework.Editor
+            Gem::Atom_RPI.Edit
+            Gem::Atom_RPI.Public
+            Gem::Atom_RHI.Reflect
+)
+
+ly_add_target(
+    NAME ShaderManagementConsole.Window STATIC
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
+    FILES_CMAKE
+        shadermanagementconsolewindow_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::AtomToolsFramework.Static
+            Gem::AtomToolsFramework.Editor
+            Gem::Atom_RPI.Public
+)
+
+ly_add_target(
+    NAME ShaderManagementConsole EXECUTABLE
+    NAMESPACE Gem
     FILES_CMAKE
         shadermanagementconsole_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -39,19 +77,14 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
             Gem::AtomToolsFramework.Editor
-            Gem::Atom_RPI.Edit
-            Gem::Atom_RPI.Public
-            Gem::Atom_RHI.Reflect
+            Gem::ShaderManagementConsole.Window
+            Gem::ShaderManagementConsole.Document
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
         Gem::EditorPythonBindings.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS ShaderManagementConsole VARIANTS Tools)
-
-# Add a 'builders' alias to allow the ShaderManagementConsole root gem path to be added to the generated
-# cmake_dependencies.<project>.assetprocessor.setreg to allow the asset scan folder for it to be added
-ly_create_alias(NAME ShaderManagementConsole.Builders NAMESPACE Gem)
 
 # Add build dependency to Editor for the ShaderManagementConsole application since
 # Editor opens up the ShaderManagementConsole

@@ -14,6 +14,7 @@
 #include "UI/QComponentEntityEditorOutlinerWindow.h"
 #include "UI/QComponentLevelEntityEditorMainWindow.h"
 #include "UI/ComponentPalette/ComponentPaletteSettings.h"
+#include "UI/ComponentPalette/ComponentPaletteWindow.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityUtils.h>

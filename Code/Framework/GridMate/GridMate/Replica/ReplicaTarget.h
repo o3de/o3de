@@ -46,6 +46,8 @@ namespace GridMate
     */
     class ReplicaTarget
     {
+        friend class InterestManager;
+
     public:
         static ReplicaTarget* AddReplicaTarget(ReplicaPeer* peer, Replica* replica);
 

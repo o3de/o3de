@@ -11,13 +11,11 @@
                     "Generic":
                     {
                         "Stack":
-                        {
-                            "Drive":
+                        [
                             {
                                 "$type": "AZ::IO::StorageDriveConfig",
                                 "MaxFileHandles": 1024
                             },
-                            "Splitter":
                             {
                                 "$type": "AZ::IO::ReadSplitterConfig",
                                 "BufferSizeMib": 10,
@@ -25,26 +23,23 @@
                                 "AdjustOffset": true,
                                 "SplitAlignedRequests": false
                             },
-                            "Cache":
                             {
                                 "$type": "AZ::IO::BlockCacheConfig",
                                 "CacheSizeMib": 10,
                                 "BlockSize": "MaxTransfer"
                             },
-                            "Dedicated cache":
                             {
                                 "$type": "AZ::IO::DedicatedCacheConfig",
                                 "CacheSizeMib": 10,
                                 "BlockSize": "MemoryAlignment",
                                 "WriteOnlyEpilog": true
                             },
-                            "Decompressor":
                             {
                                 "$type": "AZ::IO::FullFileDecompressorConfig",
                                 "MaxNumReads": 4,
                                 "MaxNumJobs": 4
                             }
-                        }
+                        ]
                     }
                 }
             }

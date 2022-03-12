@@ -553,7 +553,7 @@ namespace AZ
 
             // Create a new unmodified prefab Instance for the nested slice instance.
             auto nestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AZStd::move(instanceAlias));
-            AzToolsFramework::EntityList newEntities;
+            AzToolsFramework::Prefab::Instance::EntityList newEntities;
             if (!AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(
                     *nestedInstance, newEntities, nestedTemplate->get().GetPrefabDom()))
             {

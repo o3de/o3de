@@ -10,7 +10,7 @@
 
 # Unit tests.
 ly_add_pytest(
-    NAME LyTestTools_Unit
+    NAME LyTestTools_UnitTests
     TEST_SUITE smoke
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit/
     COMPONENT TestTools
@@ -19,9 +19,8 @@ ly_add_pytest(
 get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_TARGET_NAME)
     # Integration tests.
-
     ly_add_pytest(
-        NAME LyTestTools_Integ_Sanity
+        NAME LyTestTools_IntegTests_Sanity_smoke_no_gpu
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/sanity_tests.py
         TEST_SERIAL
         TEST_SUITE smoke
@@ -29,13 +28,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             Legacy::Editor
             AssetProcessor
             AutomatedTesting.GameLauncher
-            AutomatedTesting.ServerLauncher
             AutomatedTesting.Assets
             COMPONENT TestTools
     )
 
     ly_add_pytest(
-        NAME LyTestTools_Integ_ProcessUtils
+        NAME LyTestTools_IntegTests_ProcessUtils_smoke_no_gpu
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_process_utils.py
         TEST_SERIAL
         TEST_SUITE smoke
@@ -43,7 +41,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
     )
     
     ly_add_pytest(
-        NAME LyTestTools_Integ_ProcessUtilsLinux
+        NAME LyTestTools_IntegTests_ProcessUtilsLinux_smoke_no_gpu
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_process_utils_linux.py
         TEST_SERIAL
         TEST_SUITE smoke
@@ -52,7 +50,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
 
     # Regression tests.
     ly_add_pytest(
-        NAME LyTestTools_Integ_RegressionTests
+        NAME LyTestTools_IntegTests_RegressionTests_periodic_no_gpu
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_regression.py
         TEST_SERIAL
         TEST_SUITE periodic

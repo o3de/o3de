@@ -17,6 +17,7 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
 #include "ExecutionInterpretedAPI.h"

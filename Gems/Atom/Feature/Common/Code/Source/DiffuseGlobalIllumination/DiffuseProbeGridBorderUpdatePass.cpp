@@ -83,34 +83,27 @@ namespace AZ
             }
         }
 
-        bool DiffuseProbeGridBorderUpdatePass::IsEnabled() const
+        void DiffuseProbeGridBorderUpdatePass::FrameBeginInternal(FramePrepareParams params)
         {
-            if (!RenderPass::IsEnabled())
-            {
-                return false;
-            }
-
             RPI::Scene* scene = m_pipeline->GetScene();
-            if (!scene)
-            {
-                return false;
-            }
-
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
-            {
-                // empty scene
-                return false;
-            }
-
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+
             if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
             {
                 // no diffuse probe grids
-                return false;
+                return;
             }
 
-            return true;
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridBorderUpdatePass requires the RayTracingFeatureProcessor");
+
+            if (!rayTracingFeatureProcessor->GetSubMeshCount())
+            {
+                // empty scene
+                return;
+            }
+
+            RenderPass::FrameBeginInternal(params);
         }
 
         void DiffuseProbeGridBorderUpdatePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)

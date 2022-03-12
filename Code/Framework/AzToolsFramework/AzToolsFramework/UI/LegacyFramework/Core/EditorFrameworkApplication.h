@@ -56,7 +56,6 @@ namespace LegacyFramework
         using CoreMessageBus::Handler::Run;
         virtual int Run(const ApplicationDesc& desc);
         Application();
-        Application(int argc, char** argv);
 
         void CreateReflectionManager() override;
 
@@ -71,6 +70,7 @@ namespace LegacyFramework
         const char* GetApplicationName() override;
         const char* GetApplicationModule() override;
         const char* GetApplicationDirectory() override;
+        const AzFramework::CommandLine* GetCommandLineParser() override;
         void TeardownApplicationComponent() override;
         void RunAssetProcessor() override;
         // ------------------------------------------------------------------
@@ -138,6 +138,7 @@ namespace LegacyFramework
         volatile bool m_abortRequested; // if you CTRL+C in a console app, this becomes true.  its up to you to check...
         char m_applicationFilePath[AZ_MAX_PATH_LEN];
         ApplicationDesc m_desc;
+        AzFramework::CommandLine* m_ptrCommandLineParser;
     };
 }
 

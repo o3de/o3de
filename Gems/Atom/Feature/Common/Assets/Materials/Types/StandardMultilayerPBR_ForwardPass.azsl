@@ -418,6 +418,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     Surface surface;
     surface.position = IN.m_worldPosition;
+    surface.transmission.InitializeToZero();
 
     // ------- Combine Normals ---------
 
@@ -441,8 +442,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Combine Albedo, roughness, specular, roughness ---------
 
     float3 baseColor = BlendLayers(lightingInputLayer1.m_baseColor, lightingInputLayer2.m_baseColor, lightingInputLayer3.m_baseColor, blendWeights);
-    float specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
-    float metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
+    float3 specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
+    float3 metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
     
     if(o_parallax_highlightClipping && displacementIsClipped)
     {
@@ -510,7 +511,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting();
+    lightingData.FinalizeLighting(0);
 
 
     const float alpha = 1.0;

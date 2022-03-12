@@ -1,7 +1,7 @@
 {
     "material": {
         "baseMaterial": "StaticMesh.basematerial",
-        "materialTypeVersion": 1,
+        "propertyLayoutVersion": 1,
         "properties": {
             "general": {
                 "DiffuseColor": [ 1.0, 0.5, 0.5, 1.0 ],

@@ -56,7 +56,8 @@ def AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    hydra.open_base_level()
+    helper.init_idle()
+    helper.open_level("", "Base")
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 500.0, 38.0)
@@ -66,9 +67,9 @@ def AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude():
     center_point = math.Vector3(512.0, 512.0, 32.0)
 
     flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
-    flower_prefab = dynveg.create_temp_mesh_prefab(flower_asset_path, "AltFilter_PinkFlower3")[0]
+    flower_prefab = dynveg.create_temp_mesh_prefab(flower_asset_path, "PinkFlower")[0]
 
-    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 16.0, flower_prefab)
+    spawner_entity = dynveg.create_prefab_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 16.0, flower_prefab)
 
     # Add a Vegetation Altitude Filter
     spawner_entity.add_component("Vegetation Altitude Filter")

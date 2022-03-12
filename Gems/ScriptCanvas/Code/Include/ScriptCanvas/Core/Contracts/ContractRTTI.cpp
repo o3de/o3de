@@ -8,6 +8,7 @@
 
 #include "ContractRTTI.h"
 
+#include <Core/ContractBus.h>
 #include <Core/Node.h>
 #include <Core/Slot.h>
 

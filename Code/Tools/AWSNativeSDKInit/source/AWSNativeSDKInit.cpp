@@ -89,4 +89,5 @@ namespace AWSNativeSDKInit
         Platform::CustomizeShutdown();
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     }
+
 }

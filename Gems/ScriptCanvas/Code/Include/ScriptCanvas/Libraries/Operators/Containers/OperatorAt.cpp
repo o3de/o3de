@@ -9,6 +9,7 @@
 #include "OperatorAt.h"
 
 #include <ScriptCanvas/Core/Contracts/SupportsMethodContract.h>
+#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvas

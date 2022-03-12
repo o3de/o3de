@@ -14,7 +14,6 @@
 #include <AzCore/IO/Streamer/BlockCache.h>
 #include <AzCore/IO/Streamer/DedicatedCache.h>
 #include <AzCore/IO/Streamer/FullFileDecompressor.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Scheduler.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -55,6 +54,7 @@ namespace AZ
 
     AZStd::unique_ptr<AZ::IO::Scheduler> StreamerComponent::CreateStreamerStack(AZStd::string_view profile)
     {
+        AZ::IO::StreamerConfig config;
         auto settingsRegistry = AZ::SettingsRegistry::Get();
 
         if (!settingsRegistry)
@@ -81,7 +81,6 @@ namespace AZ
         AZStd::string profilePath = "/Amazon/AzCore/Streamer/Profiles/";
         profilePath += profile;
 
-        AZ::IO::StreamerConfig config;
         if (!settingsRegistry->GetObject(config, profilePath))
         {
             AZ_Printf("Streamer",
@@ -96,7 +95,7 @@ namespace AZ
         }
 
         AZStd::shared_ptr<AZ::IO::StreamStackEntry> stack;
-        for (auto&& [name, stackEntryConfig] : config.m_stackConfig)
+        for (AZStd::shared_ptr<AZ::IO::IStreamerStackConfig>& stackEntryConfig : config.m_stackConfig)
         {
             stack = stackEntryConfig->AddStreamStackEntry(hardwareInfo, AZStd::move(stack));
         }
@@ -208,7 +207,7 @@ namespace AZ
     {
         if (m_streamer)
         {
-            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::Requests::ReportType::FileLocks));
+            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::FileRequest::ReportData::ReportType::FileLocks));
         }
     }
 

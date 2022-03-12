@@ -23,15 +23,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // ThumbnailKey
         //////////////////////////////////////////////////////////////////////////
-        void ThumbnailKey::SetReady(bool ready)
-        {
-            m_ready = ready;
-        }
-
-        bool ThumbnailKey::IsReady() const
-        {
-            return m_ready;
-        }
+        bool ThumbnailKey::IsReady() const { return m_ready; }
 
         bool ThumbnailKey::UpdateThumbnail()
         {
@@ -83,8 +75,10 @@ namespace AzToolsFramework
             if (m_state == State::Unloaded)
             {
                 m_state = State::Loading;
-                QThreadPool* threadPool = {};
-                ThumbnailerRequestBus::BroadcastResult(threadPool, &ThumbnailerRequestBus::Handler::GetThreadPool);
+                QThreadPool* threadPool;
+                ThumbnailContextRequestBus::BroadcastResult(
+                    threadPool,
+                    &ThumbnailContextRequestBus::Handler::GetThreadPool);
                 QFuture<void> future = QtConcurrent::run(threadPool, [this](){ LoadThread(); });
                 m_watcher.setFuture(future);
             }

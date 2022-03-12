@@ -9,7 +9,6 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
 {
@@ -45,6 +44,6 @@ namespace AZ
             AZStd::vector<VariantInfo> m_shaderVariants;
 
         };
-
+        
     } // namespace RPI
 } // namespace AZ

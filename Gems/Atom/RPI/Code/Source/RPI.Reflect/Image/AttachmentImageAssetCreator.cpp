@@ -7,8 +7,6 @@
  */
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h>
-#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 #include <AzCore/Asset/AssetManager.h>
 
@@ -49,7 +47,8 @@ namespace AZ
         {
             if (ValidateIsReady())
             {
-                m_asset->m_optimizedClearValue = AZStd::make_shared<RHI::ClearValue>(clearValue);
+                m_asset->m_isClearValueValid = true;
+                m_asset->m_optimizedClearValue = clearValue;
             }
         }
 
@@ -60,11 +59,12 @@ namespace AZ
                 return false;
             }
 
-            // If the pool wasn't provided, use the system default attachment pool
+            // Validate assetId instead of validate AssetData* exist. This is mainly because the Asset<T> 's serializer only need serialize asset id instead of asset data
+            // Instead of create a complete Asset<T>, we could use new Asset(assetId, type, hint) to create a placeholder to save the asset id for serialization.
             if (!m_asset->m_poolAsset.GetId().IsValid())
             {
-                Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-                m_asset->m_poolAsset = {pool->GetAssetId(), azrtti_typeid<ResourcePoolAsset>()};
+                ReportError("You must assign a pool asset before calling End().");
+                return false;
             }
 
             m_asset->SetReady();
@@ -74,21 +74,6 @@ namespace AZ
         void AttachmentImageAssetCreator::SetAssetHint(AZStd::string_view hint)
         {
             m_asset.SetHint(hint);
-        }
-
-        void AttachmentImageAssetCreator::SetName(const AZ::Name& uniqueName, bool isUniqueName)
-        {
-            if (uniqueName.IsEmpty())
-            {
-                m_asset->m_isUniqueName = false;
-                AZ_Warning("RPI", false, "Can't set empty string as unique name");
-            }
-            else
-            {
-                m_asset->m_isUniqueName = isUniqueName;
-            }
-            m_asset->m_name = uniqueName;
-
         }
     }
 }

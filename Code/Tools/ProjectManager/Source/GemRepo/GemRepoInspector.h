@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
 {
     class GemRepoInspector : public QScrollArea
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
             public : explicit GemRepoInspector(GemRepoModel* model, QWidget* parent = nullptr);
         ~GemRepoInspector() = default;

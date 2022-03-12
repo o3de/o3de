@@ -13,8 +13,7 @@ def CreatePrefab_UnderAnEntity():
     Test is successful if the new instanced prefab of the child has the parent entity id
     """
 
-    from pathlib import Path
-    CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
+    CAR_PREFAB_FILE_NAME = 'car_prefab'
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab

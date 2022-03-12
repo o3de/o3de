@@ -28,7 +28,7 @@ namespace UnitTest
     {
     }
 
-    RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> libraries)
+    RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> libraries)
     {
         return RHI::ResultCode::Success;
     }

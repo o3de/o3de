@@ -60,6 +60,7 @@
 #include <AzCore/Slice/SliceAsset.h>
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
+#include <LmbrCentral/Rendering/MaterialHandle.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -219,6 +220,9 @@ namespace LmbrCentral
             PolygonPrismShapeDebugDisplayComponent::CreateDescriptor(),
             TubeShapeDebugDisplayComponent::CreateDescriptor(),
             AssetSystemDebugComponent::CreateDescriptor(),
+#if AZ_LOADSCREENCOMPONENT_ENABLED
+            LoadScreenComponent::CreateDescriptor(),
+#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
             });
 
         // This is an internal Amazon gem, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
@@ -245,6 +249,9 @@ namespace LmbrCentral
                    azrtti_typeid<AudioSystemComponent>(),
                    azrtti_typeid<BundlingSystemComponent>(),
                    azrtti_typeid<AssetSystemDebugComponent>(),
+#if AZ_LOADSCREENCOMPONENT_ENABLED
+                   azrtti_typeid<LoadScreenComponent>(),
+#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
         };
     }
 

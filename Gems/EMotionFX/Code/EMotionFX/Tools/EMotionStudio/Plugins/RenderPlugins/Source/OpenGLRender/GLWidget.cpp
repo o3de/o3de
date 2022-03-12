@@ -12,13 +12,12 @@
 #include <EMotionFX/Rendering/Common/OrbitCamera.h>
 #include <EMotionFX/Rendering/Common/OrthographicCamera.h>
 #include <EMotionFX/Rendering/Common/FirstPersonCamera.h>
+#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/Recorder.h>
-#include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
-#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include "../../../../EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h"
 
-#include <QtGui/QPainter>
 
 namespace EMStudio
 {

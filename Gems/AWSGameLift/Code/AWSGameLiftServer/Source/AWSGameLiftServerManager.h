@@ -16,8 +16,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <Multiplayer/Session/ISessionHandlingRequests.h>
-#include <Multiplayer/Session/SessionConfig.h>
+#include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Session/SessionConfig.h>
 
 #include <AWSGameLiftPlayer.h>
 #include <Request/AWSGameLiftServerRequestBus.h>
@@ -37,7 +37,7 @@ namespace AWSGameLift
     //! Manage the server process for hosting game sessions via GameLiftServerSDK.
     class AWSGameLiftServerManager
         : public AWSGameLiftServerRequestBus::Handler
-        , public Multiplayer::ISessionHandlingProviderRequests
+        , public AzFramework::ISessionHandlingProviderRequests
     {
     public:
         static constexpr const char AWSGameLiftServerManagerName[] = "AWSGameLiftServerManager";
@@ -56,10 +56,6 @@ namespace AWSGameLift
         static constexpr const char AWSGameLiftServerPlayerConnectionMissingErrorMessage[] =
             "Player connection id %d does not exist.";
 
-        static constexpr const char AWSGameLiftServerInstanceCertificateErrorMessage[] =
-            "Failed to locate Amazon GameLift TLS certificate file.";
-        static constexpr const char AWSGameLiftServerInstancePrivateKeyErrorMessage[] =
-            "Failed to locate Amazon GameLift TLS private key file.";
         static constexpr const char AWSGameLiftServerInitSDKErrorMessage[] =
             "Failed to initialize Amazon GameLift Server SDK. ErrorMessage: %s";
         static constexpr const char AWSGameLiftServerProcessReadyErrorMessage[] =
@@ -121,18 +117,16 @@ namespace AWSGameLift
 
         // ISessionHandlingProviderRequests interface implementation
         void HandleDestroySession() override;
-        bool ValidatePlayerJoinSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig) override;
-        void HandlePlayerLeaveSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig) override;
+        bool ValidatePlayerJoinSession(const AzFramework::PlayerConnectionConfig& playerConnectionConfig) override;
+        void HandlePlayerLeaveSession(const AzFramework::PlayerConnectionConfig& playerConnectionConfig) override;
         AZ::IO::Path GetExternalSessionCertificate() override;
-        AZ::IO::Path GetExternalSessionPrivateKey() override;
         AZ::IO::Path GetInternalSessionCertificate() override;
-        AZ::IO::Path GetInternalSessionPrivateKey() override;
 
     protected:
         void SetGameLiftServerSDKWrapper(AZStd::unique_ptr<GameLiftServerSDKWrapper> gameLiftServerSDKWrapper);
 
         //! Add connected player session id.
-        bool AddConnectedPlayer(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig);
+        bool AddConnectedPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig);
 
         //! Get active server player data from lazy loaded game session for server match backfill
         AZStd::vector<AWSGameLiftPlayer> GetActiveServerMatchBackfillPlayers();
@@ -163,7 +157,7 @@ namespace AWSGameLift
         void BuildStopMatchBackfillRequest(const AZStd::string& ticketId, Aws::GameLift::Server::Model::StopMatchBackfillRequest& outRequest);
 
         //! Build session config by using AWS GameLift Server GameSession Model.
-        Multiplayer::SessionConfig BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession);
+        AzFramework::SessionConfig BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession);
 
         //! Check whether matchmaking data is in proper format
         bool IsMatchmakingDataValid();

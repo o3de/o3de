@@ -147,14 +147,6 @@ namespace AWSCore
         using ServiceRequestJobType = ServiceRequestJob<RequestType>;
         using ServiceClientJobType = ServiceClientJob<typename RequestType::ServiceTraits>;
 
-        using OnSuccessFunction = AZStd::function<void(ServiceRequestJob* job)>;
-        using OnFailureFunction = AZStd::function<void(ServiceRequestJob* job)>;
-
-        class Function;
-
-        template<class Allocator = AZ::SystemAllocator>
-        static ServiceRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig());
-
         static Config* GetDefaultConfig()
         {
             static AwsApiJobConfigHolder<Config> s_configHolder{};
@@ -217,6 +209,19 @@ namespace AWSCore
         }
 
     protected:
+        /// The URL created by appending the API path to the service URL.
+        /// The path may contain {param} format parameters. The 
+        /// RequestType::parameters.BuildRequest method is responsible
+        /// for replacing these parts of the url.
+        const Aws::String& m_requestUrl;
+
+        std::shared_ptr<Aws::Client::AWSAuthV4Signer> m_AWSAuthSigner{ nullptr };
+
+        // Passed in configuration contains the AWS Credentials to use. If this request requires credentials 
+        // check in the constructor and set this bool to indicate if we're not valid before placing the credentials
+        // in the m_AWSAuthSigner
+        bool m_missingCredentials{ false };
+
         /// Called to prepare the request. By default no changes
         /// are made to the parameters object. Override to defer the preparation
         /// of parameters until running on the job's worker thread,
@@ -247,19 +252,6 @@ namespace AWSCore
         virtual void DoCleanup()
         {
         }
-
-        /// The URL created by appending the API path to the service URL.
-        /// The path may contain {param} format parameters. The
-        /// RequestType::parameters.BuildRequest method is responsible
-        /// for replacing these parts of the url.
-        const Aws::String& m_requestUrl;
-
-        std::shared_ptr<Aws::Client::AWSAuthV4Signer> m_AWSAuthSigner{ nullptr };
-
-        // Passed in configuration contains the AWS Credentials to use. If this request requires credentials
-        // check in the constructor and set this bool to indicate if we're not valid before placing the credentials
-        // in the m_AWSAuthSigner
-        bool m_missingCredentials{ false };
 
     private:
         bool BuildRequest(RequestBuilder& request) override
@@ -605,73 +597,77 @@ namespace AWSCore
             AZ_Printf(logRequestsChannel, "Response Body:\n");
             PrintRequestOutput(responseContent);
         }
-    };
 
-    /// A derived class that calls lambda functions on job completion.
-    template<class RequestTraits>
-    class ServiceRequestJob<RequestTraits>::Function
-        : public ServiceRequestJob
-    {
     public:
-        // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator, 0);
+        using OnSuccessFunction = AZStd::function<void(ServiceRequestJob* job)>;
+        using OnFailureFunction = AZStd::function<void(ServiceRequestJob* job)>;
 
-        Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
-            : ServiceRequestJob(false, config) // No auto delete - The Function class will handle it with the DoCleanup() function
-            , m_onSuccess{ onSuccess }
-            , m_onFailure{ onFailure }
+        /// A derived class that calls lambda functions on job completion.
+        class Function : public ServiceRequestJobType
         {
-        }
 
-    private:
-        void OnSuccess() override
-        {
-            AZStd::function<void()> callbackHandler = [this]()
+        public:
+
+            // To use a different allocator, extend this class and use this macro.
+            AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator, 0);
+
+            Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
+                : ServiceRequestJob(false, config) // No auto delete - we'll take care of it
+                , m_onSuccess{ onSuccess }
+                , m_onFailure{ onFailure }
             {
-                if (m_onSuccess)
+            }
+
+        protected:
+
+            OnSuccessFunction m_onSuccess;
+            OnFailureFunction m_onFailure;
+
+            void OnSuccess() override
+            {
+                AZStd::function<void()> callbackHandler = [this]()
                 {
-                    m_onSuccess(this);
-                }
-                delete this;
-            };
-            AZ::TickBus::QueueFunction(callbackHandler);
-        }
+                    if (m_onSuccess)
+                    {
+                        m_onSuccess(this);
+                    }
+                    delete this;
+                };
+                AZ::TickBus::QueueFunction(callbackHandler);
+            }
 
-        void OnFailure() override
-        {
-            AZStd::function<void()> callbackHandler = [this]()
+            void OnFailure() override
             {
-                if (m_onFailure)
+                AZStd::function<void()> callbackHandler = [this]()
                 {
-                    m_onFailure(this);
-                }
-                delete this;
-            };
-            AZ::TickBus::QueueFunction(callbackHandler);
-        }
+                    if (m_onFailure)
+                    {
+                        m_onFailure(this);
+                    }
+                    delete this;
+                };
+                AZ::TickBus::QueueFunction(callbackHandler);
+            }
 
-        // Code doesn't use auto delete - this ensure things get cleaned up in cases when code can't call success or failure
-        void DoCleanup() override
-        {
-            AZStd::function<void()> callbackHandler = [this]()
+            // Code doesn't use auto delete - this ensure things get cleaned up in cases when code can't call success or failure
+            void DoCleanup() override
             {
-                delete this;
-            };
-            AZ::TickBus::QueueFunction(callbackHandler);
-        }
+                AZStd::function<void()> callbackHandler = [this]()
+                {
+                    delete this;
+                };
+                AZ::TickBus::QueueFunction(callbackHandler);
+            }
+        };
 
-        OnSuccessFunction m_onSuccess;
-        OnFailureFunction m_onFailure;
+        template<class Allocator = AZ::SystemAllocator>
+        static ServiceRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
+        {
+            return azcreate(Function, (onSuccess, onFailure, config), Allocator);
+        }
 
     };
 
-    template<class RequestType>
-    template<class Allocator>
-    ServiceRequestJob<RequestType>* ServiceRequestJob<RequestType>::Create(
-        OnSuccessFunction onSuccess, OnFailureFunction onFailure, IConfig* config)
-    {
-        return azcreate(Function, (onSuccess, onFailure, config), Allocator);
-    }
 } // namespace AWSCore
 
 

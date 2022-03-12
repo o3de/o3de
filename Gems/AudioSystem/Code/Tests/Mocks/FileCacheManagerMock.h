@@ -13,11 +13,6 @@
 #include <AzTest/AzTest.h>
 #include <IRenderAuxGeom.h>
 
-namespace AZ::IO
-{
-    class FileRequestHandle;
-}
-
 namespace Audio
 {
     class FileCacheManagerMock

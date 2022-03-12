@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
     class TagWidget
         : public QLabel
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
     public:
         explicit TagWidget(const Tag& id, QWidget* parent = nullptr);

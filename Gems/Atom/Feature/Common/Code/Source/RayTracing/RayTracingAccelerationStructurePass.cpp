@@ -40,7 +40,7 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::BuildInternal()
         {
-            InitScope(RHI::ScopeId(GetPathName()));
+            SetScopeId(RHI::ScopeId(GetPathName()));
         }
 
         void RayTracingAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)

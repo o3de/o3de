@@ -24,7 +24,6 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(GemRepoInspector)
     QT_FORWARD_DECLARE_CLASS(GemRepoListView)
     QT_FORWARD_DECLARE_CLASS(GemRepoModel)
-    QT_FORWARD_DECLARE_CLASS(AdjustableHeaderWidget)
 
     class GemRepoScreen
         : public ScreenWidget
@@ -60,7 +59,7 @@ namespace O3DE::ProjectManager
         QFrame* m_noRepoContent;
         QFrame* m_repoContent;
 
-        AdjustableHeaderWidget* m_gemRepoHeaderTable = nullptr;
+        QTableWidget* m_gemRepoHeaderTable = nullptr;
         QHeaderView* m_gemRepoListHeader = nullptr;
         GemRepoListView* m_gemRepoListView = nullptr;
         GemRepoInspector* m_gemRepoInspector = nullptr;

@@ -68,23 +68,20 @@ namespace AZ
             {
                 AZStd::vector<AssetBuilderSDK::JobDependency> jobDependencyList;
 
-                // setup dependencies on the root azshadervariant asset file names, for each supervariant
-                for (const auto& supervariant : precompiledShaderAsset.m_supervariants)
+                // setup dependencies on the root azshadervariant asset file names
+                for (const auto& rootShaderVariantAsset : precompiledShaderAsset.m_rootShaderVariantAssets)
                 {
-                    for (const auto& rootShaderVariantAsset : supervariant->m_rootShaderVariantAssets)
-                    {
-                        AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
-                        AssetBuilderSDK::SourceFileDependency sourceDependency;
-                        sourceDependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
-                        response.m_sourceFileDependencyList.push_back(sourceDependency);
+                    AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
+                    AssetBuilderSDK::SourceFileDependency sourceDependency;
+                    sourceDependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
+                    response.m_sourceFileDependencyList.push_back(sourceDependency);
 
-                        AssetBuilderSDK::JobDependency jobDependency;
-                        jobDependency.m_jobKey = "azshadervariant";
-                        jobDependency.m_platformIdentifier = platformInfo.m_identifier;
-                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                        jobDependency.m_sourceFile = sourceDependency;
-                        jobDependencyList.push_back(jobDependency);
-                    }
+                    AssetBuilderSDK::JobDependency jobDependency;
+                    jobDependency.m_jobKey = "azshadervariant";
+                    jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                    jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                    jobDependency.m_sourceFile = sourceDependency;
+                    jobDependencyList.push_back(jobDependency);
                 }
 
                 AssetBuilderSDK::JobDescriptor job;
@@ -140,37 +137,33 @@ namespace AZ
 
         AssetBuilderSDK::JobProduct jobProduct;
 
-        // load the variant product assets, for each supervariant
+        // load the variant product assets
         // these are the dependency root variant asset products that were processed prior to running this job
-        RPI::ShaderAssetCreator::ShaderSupervariants supervariants;
-        for (const auto& supervariant : precompiledShaderAsset.m_supervariants)
+        RPI::ShaderAssetCreator::ShaderRootVariantAssets rootVariantProductAssets;
+        for (AZStd::unique_ptr<RPI::RootShaderVariantAssetSourceData>& rootShaderVariantAsset : precompiledShaderAsset.m_rootShaderVariantAssets)
         {
-            RPI::ShaderAssetCreator::ShaderRootVariantAssets rootVariantProductAssets;
-            for (const auto& rootShaderVariantAsset : supervariant->m_rootShaderVariantAssets)
+            // retrieve the variant asset
+            auto assetOutcome = RPI::AssetUtils::LoadAsset<RPI::ShaderVariantAsset>(request.m_fullPath, rootShaderVariantAsset->m_rootShaderVariantAssetFileName, 0);
+            if (!assetOutcome)
             {
-                // retrieve the variant asset
-                auto assetOutcome = RPI::AssetUtils::LoadAsset<RPI::ShaderVariantAsset>(request.m_fullPath, rootShaderVariantAsset->m_rootShaderVariantAssetFileName, 0);
-                if (!assetOutcome)
-                {
-                    AZ_Error(PrecompiledShaderBuilderName, false, "Failed to retrieve Variant asset for file [%s]", rootShaderVariantAsset->m_rootShaderVariantAssetFileName.c_str());
-                    return;
-                }
-
-                rootVariantProductAssets.push_back(AZStd::make_pair(RHI::APIType{ rootShaderVariantAsset->m_apiName.GetCStr() }, assetOutcome.GetValue()));
-
-                AssetBuilderSDK::ProductDependency productDependency;
-                productDependency.m_dependencyId = assetOutcome.GetValue().GetId();
-                productDependency.m_flags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad);
-                jobProduct.m_dependencies.push_back(productDependency);
+                AZ_Error(PrecompiledShaderBuilderName, false, "Failed to retrieve Variant asset for file [%s]", rootShaderVariantAsset->m_rootShaderVariantAssetFileName.c_str());
+                return;
             }
 
-            supervariants.push_back({ supervariant->m_name, rootVariantProductAssets });
+            rootVariantProductAssets.push_back(AZStd::make_pair(RHI::APIType{ rootShaderVariantAsset->m_apiName.GetCStr() }, assetOutcome.GetValue()));
+
+            AssetBuilderSDK::ProductDependency productDependency;
+            productDependency.m_dependencyId = assetOutcome.GetValue().GetId();
+            productDependency.m_flags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad);
+            jobProduct.m_dependencies.push_back(productDependency);
         }
 
         // use the ShaderAssetCreator to clone the shader asset, which  will update the embedded Srg and Variant asset UUIDs
         // Note that the Srg and Variant assets do not have embedded asset references and are processed with the RC Copy functionality
         RPI::ShaderAssetCreator shaderAssetCreator;
-        shaderAssetCreator.Clone(Uuid::CreateRandom(), *shaderAsset, supervariants);
+        shaderAssetCreator.Clone(Uuid::CreateRandom(),
+            *shaderAsset,
+            rootVariantProductAssets);
 
         Data::Asset<RPI::ShaderAsset> outputShaderAsset;
         if (!shaderAssetCreator.End(outputShaderAsset))

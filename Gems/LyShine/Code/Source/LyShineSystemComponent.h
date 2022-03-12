@@ -107,7 +107,7 @@ namespace LyShine
 
     protected:  // data
 
-        AZStd::unique_ptr<ILyShine> m_lyShine;
+        CLyShine* m_pLyShine = nullptr;
 
         AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset> m_cursorImagePathname;
 

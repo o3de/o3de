@@ -20,10 +20,6 @@ namespace AZStd
     struct thread_desc;
 }
 
-namespace AZ::IO::Requests
-{
-    enum class ReportType : int8_t;
-}
 
 namespace AZ::IO
 {
@@ -189,9 +185,9 @@ namespace AZ::IO
         void RecordStatistics();
 
         //! Tells AZ::IO::Streamer the report the information for the report to the output.
-        FileRequestPtr Report(Requests::ReportType reportType);
+        FileRequestPtr Report(FileRequest::ReportData::ReportType reportType);
         //! Tells AZ::IO::Streamer the report the information for the report to the output.
-        FileRequestPtr& Report(FileRequestPtr& request, Requests::ReportType reportType);
+        FileRequestPtr& Report(FileRequestPtr& request, FileRequest::ReportData::ReportType reportType);
 
 
         Streamer(const AZStd::thread_desc& threadDesc, AZStd::unique_ptr<Scheduler> streamStack);

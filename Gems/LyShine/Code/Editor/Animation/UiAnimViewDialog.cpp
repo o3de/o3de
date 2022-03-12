@@ -37,6 +37,7 @@
 
 #include "Objects/EntityObject.h"
 
+#include "IViewPane.h"
 #include "PluginManager.h"
 #include "Util/3DConnexionDriver.h"
 #include "UiAnimViewNewSequenceDialog.h"

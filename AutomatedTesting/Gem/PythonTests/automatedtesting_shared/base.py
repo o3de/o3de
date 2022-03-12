@@ -49,11 +49,9 @@ class TestAutomationBase:
             time_info_str += f"{testcase_name}: (Full:{t} sec, Editor:{editor_t} sec)\n"
             
         logger.info(time_info_str)
-        if cls.asset_processor is not None:
-            cls.asset_processor.teardown()
-
         # Kill all ly processes
-        cls._kill_ly_processes(include_asset_processor=True)
+        cls.asset_processor.teardown()
+        cls._kill_ly_processes()
 
     def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], batch_mode=True,
                   autotest_mode=True, use_null_renderer=True, enable_prefab_system=True):
@@ -64,16 +62,14 @@ class TestAutomationBase:
         
         #########
         # Setup #
+        
         if self.asset_processor is None:
-            self._kill_ly_processes(include_asset_processor=True)
             self.__class__.asset_processor = AssetProcessor(workspace)
             self.asset_processor.backup_ap_settings()
-        else:
-            self._kill_ly_processes(include_asset_processor=False)
-
-        if not self.asset_processor.process_exists():
-            self.asset_processor.start()
-            self.asset_processor.wait_for_idle()
+        
+        self._kill_ly_processes(include_asset_processor=False)
+        self.asset_processor.start()    
+        self.asset_processor.wait_for_idle()
 
         def teardown():
             if os.path.exists(workspace.paths.editor_log()):
@@ -82,7 +78,7 @@ class TestAutomationBase:
                 file_system.restore_backup(workspace.paths.editor_log(), workspace.paths.project_log())
             except FileNotFoundError as e:
                 self.logger.debug(f"File restoration failed, editor log could not be found.\nError: {e}")
-            editor.stop()
+            editor.kill()
 
         request.addfinalizer(teardown)
 
@@ -117,7 +113,7 @@ class TestAutomationBase:
             editor.wait(TestAutomationBase.MAX_TIMEOUT)
         except WaitTimeoutError:
             errors.append(TestRunError("TIMEOUT", f"Editor did not close after {TestAutomationBase.MAX_TIMEOUT} seconds, verify the test is ending and the application didn't freeze"))
-            editor.stop()
+            editor.kill()
             
         output = editor.get_output()
         self.logger.debug("Test output:\n" + output)

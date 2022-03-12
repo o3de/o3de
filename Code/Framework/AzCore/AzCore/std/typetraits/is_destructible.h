@@ -21,7 +21,4 @@ namespace AZStd
     constexpr bool is_trivially_destructible_v = std::is_trivially_destructible<T>::value;
     template<class T>
     constexpr bool is_nothrow_destructible_v = std::is_nothrow_destructible<T>::value;
-
-    template<class T>
-    /*concept*/ constexpr bool destructible = is_nothrow_destructible_v<T>;
 }

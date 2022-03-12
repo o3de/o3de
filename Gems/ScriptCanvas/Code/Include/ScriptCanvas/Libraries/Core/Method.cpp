@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <Core/SlotConfigurationDefaults.h> 
 #include <Core/SlotExecutionMap.h>
+#include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 

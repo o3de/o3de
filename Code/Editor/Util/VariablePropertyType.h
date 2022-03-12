@@ -73,6 +73,7 @@ namespace Prop
         bool m_bHardMax;
         QString m_name;
         float m_valueMultiplier;
+        CUIEnumsDatabase_SEnum* m_pEnumDBItem;
     };
 
     EDITOR_CORE_API const char* GetName(int dataType);

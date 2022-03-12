@@ -11,6 +11,11 @@
 
 #include <algorithm>
 
+// AWs Native SDK
+AZ_PUSH_DISABLE_WARNING(4251 4355 4996, "-Wunknown-warning-option")
+#include <aws/core/auth/AWSCredentialsProvider.h>
+AZ_POP_DISABLE_WARNING
+
 // Qt
 #include <QMenuBar>
 #include <QDebug>
@@ -72,6 +77,7 @@
 #include "ToolbarManager.h"
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
+#include "CVarMenu.h"
 #include "EditorViewportSettings.h"
 
 #include "KeyboardCustomizationSettings.h"
@@ -659,7 +665,7 @@ void MainWindow::InitActions()
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
     if (!usePrefabSystemForLevels)
     {
         am->AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, tr("&Export to Engine"))
@@ -1011,6 +1017,9 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"));
+    am->AddAction(ID_VALIDATELEVEL, tr("&Check Level for Errors"))
+        .SetStatusTip(tr("Validate Level"));
+    am->AddAction(ID_TOOLS_VALIDATEOBJECTPOSITIONS, tr("Check Object Positions"));
     QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
                 .SetStatusTip(tr("Logs Editor memory usage."));

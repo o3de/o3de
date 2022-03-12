@@ -12,13 +12,12 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 #include <Framework/JsonObjectHandler.h>
 #include <Framework/JsonWriter.h>
 
-#include <AWSNativeSDKTestManager.h>
+#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
 namespace AWSCoreTestingUtils
 {
@@ -139,15 +138,7 @@ public:
             m_app = AZStd::make_unique<AZ::ComponentApplication>();
         }
 
-        // Add AWSCore as an active gem for unit test
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(*settingsRegistry);
-            AZ::Test::AddActiveGem("AWSCore", *settingsRegistry, m_localFileIO);
-        }
-
-        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Init();
+        AWSNativeSDKInit::InitializationManager::InitAwsApi();
     }
 
     void TearDown() override
@@ -157,7 +148,7 @@ public:
 
     void TearDownFixture(bool mockSettingsRegistry = true) 
     {
-        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
+        AWSNativeSDKInit::InitializationManager::Shutdown();
 
         if (mockSettingsRegistry)
         {

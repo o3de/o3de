@@ -164,16 +164,6 @@ namespace AZ
                 m_envs.push_back(std::move(env));
             }
 
-            // Remove a registered benchmark from the registry
-            void RemoveBenchmarkEnvironment(BenchmarkEnvironmentBase* env)
-            {
-                auto RemoveBenchmarkFunc = [env](const std::unique_ptr<BenchmarkEnvironmentBase>& envElement)
-                {
-                    return envElement.get() == env;
-                };
-                m_envs.erase(std::remove_if(m_envs.begin(), m_envs.end(), std::move(RemoveBenchmarkFunc)));
-            }
-
             std::vector<std::unique_ptr<BenchmarkEnvironmentBase>>& GetBenchmarkEnvironments()
             {
                 return m_envs;
@@ -204,26 +194,21 @@ namespace AZ
             return *benchmarkEnv;
         }
 
-        /*
-         * An RAII wrapper about registering a BenchmarkEnvironment with the BenchmarkRegistry
-         * It will unregister the BenchmarkEnvironment with the BenchmarkRegistry on destruction
-         */
-        struct ScopedRegisterBenchmarkEnvironment
+        template<typename... Ts>
+        std::array<BenchmarkEnvironmentBase*, sizeof...(Ts)> RegisterBenchmarkEnvironments()
         {
-            template<typename T>
-            ScopedRegisterBenchmarkEnvironment(T& benchmarkEnv)
-                : m_benchmarkEnv(benchmarkEnv)
-            {}
-            ~ScopedRegisterBenchmarkEnvironment()
+            constexpr size_t EnvironmentCount{ sizeof...(Ts) };
+            if constexpr (EnvironmentCount)
             {
-                if (auto benchmarkRegistry = AZ::Environment::FindVariable<BenchmarkEnvironmentRegistry>(s_benchmarkEnvironmentName);
-                    benchmarkRegistry != nullptr)
-                {
-                    benchmarkRegistry->RemoveBenchmarkEnvironment(&m_benchmarkEnv);
-                }
+                std::array<BenchmarkEnvironmentBase*, EnvironmentCount> benchmarkEnvs{ { &RegisterBenchmarkEnvironment<Ts>()... } };
+                return benchmarkEnvs;
             }
-            BenchmarkEnvironmentBase& m_benchmarkEnv;
-        };
+            else
+            {
+                std::array<BenchmarkEnvironmentBase*, EnvironmentCount> benchmarkEnvs{};
+                return benchmarkEnvs;
+            }
+        }
 #endif
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //! listener class to capture and print test output for embedded platforms
@@ -291,7 +276,7 @@ namespace AZ
 #define AZ_BENCHMARK_HOOK_ENV(TEST_ENV) \
 AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 { \
-    AZ::Test::ScopedRegisterBenchmarkEnvironment scopedBenchmarkEnv(AZ::Test::RegisterBenchmarkEnvironment<TEST_ENV>()); \
+    AZ::Test::RegisterBenchmarkEnvironments<TEST_ENV>(); \
     auto benchmarkEnvRegistry = AZ::Environment::FindVariable<AZ::Test::BenchmarkEnvironmentRegistry>(AZ::Test::s_benchmarkEnvironmentName); \
     std::vector<std::unique_ptr<AZ::Test::BenchmarkEnvironmentBase>>* benchmarkEnvs = benchmarkEnvRegistry ? &(benchmarkEnvRegistry->GetBenchmarkEnvironments()) : nullptr; \
     if (benchmarkEnvs != nullptr) \
@@ -322,6 +307,7 @@ AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 #define AZ_BENCHMARK_HOOK() \
 AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 { \
+    AZ::Test::RegisterBenchmarkEnvironments<>(); \
     auto benchmarkEnvRegistry = AZ::Environment::FindVariable<AZ::Test::BenchmarkEnvironmentRegistry>(AZ::Test::s_benchmarkEnvironmentName); \
     std::vector<std::unique_ptr<AZ::Test::BenchmarkEnvironmentBase>>* benchmarkEnvs = benchmarkEnvRegistry ? &(benchmarkEnvRegistry->GetBenchmarkEnvironments()) : nullptr; \
     if (benchmarkEnvs != nullptr) \

@@ -8,14 +8,12 @@
 
 #pragma once
 
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
-
-#include <AzToolsFramework/Entity/EntityTypes.h>
 
 namespace AzToolsFramework
 {
@@ -37,9 +35,6 @@ namespace AzToolsFramework
         //! Returns the entity id of the root of the current Editor focus.
         //! @return The entity id of the root of the Editor focus, or an invalid entity id if no focus is set.
         virtual AZ::EntityId GetFocusRoot(AzFramework::EntityContextId entityContextId) = 0;
-
-        //! Returns a list of the ids of all the entities that are descendants of the focus root.
-        virtual const EntityIdList& GetFocusedEntities(AzFramework::EntityContextId entityContextId) = 0;
 
         //! Returns whether the entity id provided is part of the focused sub-tree.
         virtual bool IsInFocusSubTree(AZ::EntityId entityId) const = 0;

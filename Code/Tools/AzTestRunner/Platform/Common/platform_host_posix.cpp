@@ -13,7 +13,7 @@ namespace AzTestRunner
 {
     void set_quiet_mode()
     {
-        [[maybe_unused]] auto freopenResult = freopen("/dev/null", "a", stdout);
+        freopen("/dev/null", "a", stdout);
     }
 
     const char* get_current_working_directory()
@@ -24,7 +24,7 @@ namespace AzTestRunner
 
     void pause_on_completion()
     {
-        [[maybe_unused]] auto systemResult = system("pause");
+        system("pause");
     }
 
 }

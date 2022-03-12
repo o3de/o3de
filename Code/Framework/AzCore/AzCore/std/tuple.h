@@ -19,14 +19,22 @@
 
 namespace AZStd
 {
-    using std::tuple;
-    using std::tuple_size;
-    using std::tuple_size_v;
-    using std::tuple_element;
-    using std::tuple_element_t;
+    template<class... Types>
+    using tuple = std::tuple<Types...>;
+
+    template<class T>
+    using tuple_size = std::tuple_size<T>;
+
+    template<size_t I, class T>
+    using tuple_element = std::tuple_element<I, T>;
+
+    template<size_t I, class T>
+    using tuple_element_t = typename std::tuple_element<I, T>::type;
 
     // Placeholder structure that can be assigned any value with no effect.
-    using std::ignore;
+    // This is used by AZStd::tie as placeholder for unused arugments
+    using ignore_t = AZStd::decay_t<decltype(std::ignore)>;
+    decltype(std::ignore) ignore = std::ignore;
 
     using std::make_tuple;
     using std::tie;

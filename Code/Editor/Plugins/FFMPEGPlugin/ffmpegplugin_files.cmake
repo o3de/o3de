@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    FFMPEGPlugin.rc
     main.cpp
     FFMPEGPlugin.cpp
     FFMPEGPlugin.h

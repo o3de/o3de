@@ -61,7 +61,8 @@ def GradientSampling_GradientReferencesAddRemoveSuccessfully():
         Report.result(gradient_cleared_from_modifier, entity.Equal(EntityId.EntityId()))
 
     # 1) Open an existing simple level
-    hydra.open_base_level()
+    helper.init_idle()
+    helper.open_level("Physics", "Base")
 
     # 2) Create a new entity with components "Random Noise Gradient", "Gradient Transform Modifier" and "Box Shape"
     entity_position = math.Vector3(125.0, 136.0, 32.0)

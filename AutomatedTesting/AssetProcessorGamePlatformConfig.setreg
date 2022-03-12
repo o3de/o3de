@@ -9,7 +9,7 @@
                     "ignore": true
                 },
                 "ScanFolder AtomTestData": {
-                    "watch": "@GEMROOT:Atom@/TestData",
+                    "watch": "@ENGINEROOT@/Gems/Atom/TestData",
                     "recursive": 1,
                     "order": 1000
                 }

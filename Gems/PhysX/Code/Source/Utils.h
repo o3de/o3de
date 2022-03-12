@@ -142,9 +142,6 @@ namespace PhysX
         AZ::Transform GetColliderLocalTransform(const AZ::Vector3& colliderRelativePosition
             , const AZ::Quaternion& colliderRelativeRotation);
 
-        //! Gets the local transform for a collider (the position and rotation relative to its entity).
-        AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair);
-
         //! Combines collider position and orientation offsets and world transform to a transform.
         AZ::Transform GetColliderWorldTransform(const AZ::Transform& worldTransform
             , const AZ::Vector3& colliderRelativePosition
@@ -191,14 +188,7 @@ namespace PhysX
         //! Returns defaultValue if the input is infinite or NaN, otherwise returns the input unchanged.
         const AZ::Vector3& Sanitize(const AZ::Vector3& input, const AZ::Vector3& defaultValue = AZ::Vector3::CreateZero());
 
-        AZStd::pair<uint8_t, uint8_t> GetPhysXMaterialIndicesFromHeightfieldSamples(
-            const AZStd::vector<Physics::HeightMaterialPoint>& samples,
-            const int32_t row, const int32_t col,
-            const int32_t numRows, const int32_t numCols);
-
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId);
-
-        void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSelection& materialSelection);
 
         namespace Geometry
         {

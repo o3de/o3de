@@ -693,12 +693,7 @@ namespace AzToolsFramework
         SliceEditorEntityOwnershipServiceNotificationBus::Broadcast(
             &SliceEditorEntityOwnershipServiceNotifications::OnSaveStreamForGameBegin, stream, streamType, tempEntities);
 
-        sourceEntities.reserve(sourceEntities.size() + tempEntities.size());
-        for (AZStd::unique_ptr<AZ::Entity>& tempEntity : tempEntities)
-        {
-            sourceEntities.emplace_back(tempEntity.release());
-        }
-        tempEntities = {};
+        sourceEntities.insert(sourceEntities.end(), tempEntities.begin(), tempEntities.end());
         // Add the root slice metadata entity so that we export any level components
         sourceEntities.push_back(GetRootSlice()->GetMetadataEntity());
 

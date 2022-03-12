@@ -19,6 +19,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/UnitScaleWindow.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
 
 #include <Editor/ActorEditorBus.h>
@@ -532,7 +533,7 @@ namespace EMStudio
         QAction* characterLayoutAction = new QAction(
             "Character",
             this);
-        characterLayoutAction->setShortcut(Qt::Key_3 | Qt::AltModifier);
+        characterLayoutAction->setShortcut(Qt::Key_1 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(characterLayoutAction, layoutGroupName, false);
         connect(characterLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(2); });
         addAction(characterLayoutAction);

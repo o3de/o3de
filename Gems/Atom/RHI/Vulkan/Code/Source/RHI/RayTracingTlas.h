@@ -43,8 +43,7 @@ namespace AZ
             const TlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
 
             // RHI::RayTracingTlas overrides...
-            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasBuffer; }
-            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasInstancesBuffer; }
+            virtual const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasBuffer; }
 
         private:
             RayTracingTlas() = default;

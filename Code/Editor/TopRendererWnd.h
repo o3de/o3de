@@ -81,6 +81,8 @@ public:
     bool m_bShowStatObjects;
     bool m_bShowWater;
     bool m_bAutoScaleGreyRange;
+
+    friend class QTopRendererWnd;
 };
 
 #endif // CRYINCLUDE_EDITOR_TOPRENDERERWND_H

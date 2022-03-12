@@ -143,3 +143,5 @@ void CCaptureKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
         }
     }
 }
+
+REGISTER_QT_CLASS_DESC(CCaptureKeyUIControls, "TrackView.KeyUI.Capture", "TrackViewKeyUI");

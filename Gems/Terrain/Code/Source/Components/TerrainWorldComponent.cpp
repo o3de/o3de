@@ -7,9 +7,9 @@
  */
 
 #include <Components/TerrainWorldComponent.h>
-#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -17,60 +17,13 @@
 
 namespace Terrain
 {
-    
-    AZ::JsonSerializationResult::Result JsonTerrainWorldConfigSerializer::Load(
-        void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
-        const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context)
-    {
-        namespace JSR = AZ::JsonSerializationResult;
-
-        auto configInstance = reinterpret_cast<TerrainWorldConfig*>(outputValue);
-        AZ_Assert(configInstance, "Output value for JsonTerrainWorldConfigSerializer can't be null.");
-        
-        JSR::ResultCode result(JSR::Tasks::ReadField);
-        
-        result.Combine(ContinueLoadingFromJsonObjectField(
-            &configInstance->m_worldMin, azrtti_typeid<decltype(configInstance->m_worldMin)>(), inputValue, "WorldMin", context));
-        
-        result.Combine(ContinueLoadingFromJsonObjectField(
-            &configInstance->m_worldMax, azrtti_typeid<decltype(configInstance->m_worldMax)>(), inputValue, "WorldMax", context));
-
-        rapidjson::Value::ConstMemberIterator itr = inputValue.FindMember("HeightQueryResolution");
-        if (itr != inputValue.MemberEnd())
-        {
-            if (itr->value.IsArray())
-            {
-                // Version 1 stored a Vector2 (serialized as a json array) to have a separate x and y
-                // query resolution. Now this is only one value, so just take the x value from the Vector2.
-                configInstance->m_heightQueryResolution = itr->value.GetArray().Begin()->GetFloat();
-            }
-            else
-            {
-                result.Combine(ContinueLoadingFromJsonObjectField(
-                    &configInstance->m_heightQueryResolution, azrtti_typeid<decltype(configInstance->m_heightQueryResolution)>(), inputValue, "HeightQueryResolution", context));
-            }
-        }
-
-        return context.Report(result,
-            result.GetProcessing() != JSR::Processing::Halted ?
-            "Successfully loaded TerrainWorldConfig information." :
-            "Failed to load TerrainWorldConfig information.");
-    }
-    
-    AZ_CLASS_ALLOCATOR_IMPL(JsonTerrainWorldConfigSerializer, AZ::SystemAllocator, 0);
-
     void TerrainWorldConfig::Reflect(AZ::ReflectContext* context)
     {
-        if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
-        {
-            jsonContext->Serializer<JsonTerrainWorldConfigSerializer>()->HandlesType<TerrainWorldConfig>();
-        }
-
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
             serialize->Class<TerrainWorldConfig, AZ::ComponentConfig>()
-                ->Version(2)
+                ->Version(1)
                 ->Field("WorldMin", &TerrainWorldConfig::m_worldMin)
                 ->Field("WorldMax", &TerrainWorldConfig::m_worldMax)
                 ->Field("HeightQueryResolution", &TerrainWorldConfig::m_heightQueryResolution)
@@ -178,9 +131,9 @@ namespace Terrain
         return false;
     }
 
-    float TerrainWorldConfig::NumberOfSamples(const AZ::Vector3& min, const AZ::Vector3& max, float heightQuery)
+    float TerrainWorldConfig::NumberOfSamples(AZ::Vector3* min, AZ::Vector3* max, AZ::Vector2* heightQuery)
     {
-        float numberOfSamples = ((max.GetX() - min.GetX()) / heightQuery) * ((max.GetY() - min.GetY()) / heightQuery);
+        float numberOfSamples = ((max->GetX() - min->GetX()) / heightQuery->GetX()) * ((max->GetY() - min->GetY()) / heightQuery->GetY());
         return numberOfSamples;
     }
 
@@ -198,21 +151,21 @@ namespace Terrain
     {
         AZ::Vector3 minValue = *static_cast<AZ::Vector3*>(newValue);
 
-        return DetermineMessage(NumberOfSamples(minValue, m_worldMax, m_heightQueryResolution));
+        return DetermineMessage(NumberOfSamples(&minValue, &m_worldMax, &m_heightQueryResolution));
     }
 
     AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateWorldMax(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
     {
         AZ::Vector3 maxValue = *static_cast<AZ::Vector3*>(newValue);
 
-        return DetermineMessage(NumberOfSamples(m_worldMin, maxValue, m_heightQueryResolution));
+        return DetermineMessage(NumberOfSamples(&m_worldMin, &maxValue, &m_heightQueryResolution));
     }
 
     AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateWorldHeight(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
     {
-        float heightValue = *static_cast<float*>(newValue);
+        AZ::Vector2 heightValue = *static_cast<AZ::Vector2*>(newValue);
 
-        return DetermineMessage(NumberOfSamples(m_worldMin, m_worldMax, heightValue));
+        return DetermineMessage(NumberOfSamples(&m_worldMin, &m_worldMax, &heightValue));
     }
 
 } // namespace Terrain

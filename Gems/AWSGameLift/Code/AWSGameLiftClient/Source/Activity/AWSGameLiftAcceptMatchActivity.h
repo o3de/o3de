@@ -26,6 +26,6 @@ namespace AWSGameLift
         void AcceptMatch(const AWSGameLiftAcceptMatchRequest& AcceptMatchRequest);
 
         // Validate AcceptMatchRequest and check required request parameters
-        bool ValidateAcceptMatchRequest(const Multiplayer::AcceptMatchRequest& AcceptMatchRequest);
+        bool ValidateAcceptMatchRequest(const AzFramework::AcceptMatchRequest& AcceptMatchRequest);
     } // namespace AcceptMatchActivity
 } // namespace AWSGameLift

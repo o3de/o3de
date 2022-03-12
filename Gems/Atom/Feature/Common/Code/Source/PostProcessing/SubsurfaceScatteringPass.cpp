@@ -45,11 +45,11 @@ namespace AZ
 
                 if (GetOutputCount() > 0)
                 {
-                    outputAttachment = GetOutputBinding(0).GetAttachment().get();
+                    outputAttachment = GetOutputBinding(0).m_attachment.get();
                 }
                 else if (GetInputOutputCount() > 0)
                 {
-                    outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
+                    outputAttachment = GetInputOutputBinding(0).m_attachment.get();
                 }
 
                 AZ_Assert(outputAttachment != nullptr, "[ComputePass '%s']: A fullscreen compute pass must have a valid output or input/output.",

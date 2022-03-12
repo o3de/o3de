@@ -8,7 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <Atom/Utils/TestUtils/AssetSystemStub.h>
-#include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 
 namespace UnitTest
 {

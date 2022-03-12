@@ -55,12 +55,5 @@ namespace AZStd
         {
             pthread_setname_np(tId, name);
         }
-
-        uint8_t GetDefaultThreadPriority()
-        {
-            // pthread priority is an integer between >=1 and <=99 (although only range 1<=>32 is guaranteed)
-            // Don't use a scheduling policy value (e.g. SCHED_OTHER or SCHED_FIFO) here.
-            return 1;
-        }
     }
 }

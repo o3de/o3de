@@ -20,6 +20,7 @@
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/EventManager.h>
+#include <EMotionFX/Exporters/ExporterLib/Exporter/ExporterFileProcessor.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 
 #include <AzFramework/API/ApplicationAPI.h>

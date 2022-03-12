@@ -21,9 +21,7 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
 
-    @pytest.mark.test_case_id("C36529679")
-    class AtomLevelLoadTest_Editor(EditorSharedTest):
-        from Atom.tests import hydra_Atom_LevelLoadTest as test_module
+    enable_prefab_system = False
 
     @pytest.mark.test_case_id("C36525657")
     class AtomEditorComponents_BloomAdded(EditorSharedTest):
@@ -122,14 +120,6 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_SSAOAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
 
-    @pytest.mark.test_case_id("C36529666")
-    class AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded(EditorSharedTest):
-        from Atom.tests import hydra_AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded as test_module
-
-    @pytest.mark.test_case_id("C36525660")
-    class AtomEditorComponentsLevel_DisplayMapperAdded(EditorSharedTest):
-        from Atom.tests import hydra_AtomEditorComponentsLevel_DisplayMapperAdded as test_module
-
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
         from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
 
@@ -202,4 +192,5 @@ class TestMaterialEditorBasicTests(object):
             halt_on_unexpected=True,
             null_renderer=True,
             log_file_name="MaterialEditor.log",
+            enable_prefab_system=False,
         )

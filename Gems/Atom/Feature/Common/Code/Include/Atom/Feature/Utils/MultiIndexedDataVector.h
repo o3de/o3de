@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/span.h>
+#include <AtomCore/std/containers/array_view.h>
 
 namespace AZ
 {

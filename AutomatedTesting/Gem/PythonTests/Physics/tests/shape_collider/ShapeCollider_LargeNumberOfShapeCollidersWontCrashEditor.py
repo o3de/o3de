@@ -45,8 +45,6 @@ def ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor():
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
 
-    import editor_python_test_tools.hydra_editor_utils as hydra
-
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
@@ -63,8 +61,9 @@ def ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor():
         # Wait 60 frames more
         general.idle_wait_frames(60)
 
+    helper.init_idle()
     # 1) Load the empty level
-    hydra.open_base_level()
+    helper.open_level("Physics", "Base")
 
     # 2) Create 512 entities with PhysX Shape Collider and Sphere Shape components
     entity_failure = False

@@ -64,9 +64,6 @@ namespace AZ
             //! Sets the opacity of the decal
             void SetDecalOpacity(DecalHandle handle, float opacity) override;
 
-            //! Sets the opacity of the decal normal map
-            void SetDecalNormalMapOpacity(DecalHandle handle, float opacity) override;
-
             //! Sets the decal sort key. Decals with a larger sort key appear over top of smaller sort keys.
             void SetDecalSortKey(DecalHandle handle, uint8_t sortKey) override;
 
@@ -84,11 +81,11 @@ namespace AZ
 
             DecalFeatureProcessor(const DecalFeatureProcessor&) = delete;
             Data::Instance<RPI::Image> GetImageFromMaterial(const AZ::Name& mapName, Data::Instance<RPI::Material> materialInstance) const;
-            AZStd::span<const Data::Instance<RPI::Image>> GetImageArray() const;
+            AZStd::array_view<Data::Instance<RPI::Image>> GetImageArray() const;
             void CacheShaderIndices();
 
             template<size_t ArrayIndex>
-            AZStd::span<const Data::Instance<RPI::Image>> GetImagesFromDecalData();
+            AZStd::array_view<Data::Instance<RPI::Image>> GetImagesFromDecalData();
 
             static constexpr const char* FeatureProcessorName = "DecalFeatureProcessor";
 
@@ -108,7 +105,7 @@ namespace AZ
         };
 
         template<size_t ArrayIndex>
-        AZStd::span<const Data::Instance<RPI::Image>>
+        AZStd::array_view<Data::Instance<RPI::Image>>
         AZ::Render::DecalFeatureProcessor::GetImagesFromDecalData()
         {
             // [GFX TODO][ATOM-4445] Replace this hardcoded constant with atlasing / bindless so we can have far more than 8 decal textures
@@ -116,7 +113,7 @@ namespace AZ
             const size_t MaxDecals = 4;
             size_t numImages = AZStd::min(MaxDecals, m_decalData.GetDataCount());
 
-            AZStd::span<const ImagePtr> imageArrayView(m_decalData.GetDataVector<ArrayIndex>().begin(), m_decalData.GetDataVector<ArrayIndex>().begin() + numImages);
+            AZStd::array_view<ImagePtr> imageArrayView(m_decalData.GetDataVector<ArrayIndex>().begin(), m_decalData.GetDataVector<ArrayIndex>().begin() + numImages);
             return imageArrayView;
         }
     } // namespace Render

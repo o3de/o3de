@@ -176,7 +176,7 @@ namespace UnitTest
     TEST_F(PrefabFixupTest, Test_LoadInstanceFromPrefabDom_Overload3)
     {
         Instance instance;
-        AzToolsFramework::EntityList entityList;
+        Instance::EntityList entityList;
         (PrefabDomUtils::LoadInstanceFromPrefabDom(instance, entityList, m_prefabDom));
 
         CheckInstance(instance);

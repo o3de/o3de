@@ -14,7 +14,7 @@
 #define CRYINCLUDE_EDITOR_CORE_ERRORRECORDER_H
 #pragma once
 
-#include <EditorCoreAPI.h>
+#include "Include/EditorCoreAPI.h"
 
 //////////////////////////////////////////////////////////////////////////
 //! Automatic class to record and display error.

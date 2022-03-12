@@ -16,44 +16,41 @@ namespace AWSMetrics
 {
     namespace ServiceAPI
     {
-        //! Response for an individual metrics event from a PostMetricsEvents request.
-        //! If the event is successfully sent to the backend, it receives an "Ok" result.
-        //! If the event fails to be sent to the backend, the result includes an error code and an "Error" result.
-        struct PostMetricsEventsResponseEntry
+        //! Struct for storing event record from the response.
+        struct MetricsEventSuccessResponseRecord
         {
-            //! Identify the expected property type in the response entry for each individual metrics event and provide a location where the property value can be stored.
+            //! Identify the expected property type and provide a location where the property value can be stored.
             //! @param key Name of the property.
             //! @param reader JSON reader to read the property.
             bool OnJsonKey(const char* key, AWSCore::JsonReader& reader);
 
-            AZStd::string m_errorCode; //!< Error code if the individual metrics event failed to be sent.
-            AZStd::string m_result; //!< Result for the processed individual metrics event. Expected value: "Error" or "Ok".
+            AZStd::string errorCode; //!< Error code if the event is not sent successfully.
+            AZStd::string result; //!< Processing result for the input record.
         };
 
-        using PostMetricsEventsResponseEntries = AZStd::vector<PostMetricsEventsResponseEntry>;
+        using MetricsEventSuccessResponsePropertyEvents = AZStd::vector<MetricsEventSuccessResponseRecord>;
 
-        //! Response for all the processed metrics events from a PostMetricsEvents request.
-        struct PostMetricsEventsResponse
+        //! Struct for storing the success response.
+        struct MetricsEventSuccessResponse
         {
-            //! Identify the expected property type in the response and provide a location where the property value can be stored.
+            //! Identify the expected property type and provide a location where the property value can be stored.
             //! @param key Name of the property.
             //! @param reader JSON reader to read the property.
             bool OnJsonKey(const char* key, AWSCore::JsonReader& reader);
 
-            int m_failedRecordCount{ 0 }; //!< Number of events that failed to be sent to the backend.
-            PostMetricsEventsResponseEntries m_responseEntries; //! Response list for all the processed metrics events.
-            int m_total{ 0 }; //!< Total number of events that were processed in the request.
+            int failedRecordCount{ 0 }; //!< Number of events that failed to be saved to metrics events stream.
+            MetricsEventSuccessResponsePropertyEvents events; //! List of input event records.
+            int total{ 0 }; //!< Total number of events that were processed in the request
         };
 
-        //! Failure response for sending the PostMetricsEvents request.
-        struct PostMetricsEventsError
+        //! Struct for storing the failure response.
+        struct Error
         {
-            //! Identify the expected property type in the failure response and provide a location where the property value can be stored.
+            //! Identify the expected property type and provide a location where the property value can be stored.
             //! @param key Name of the property.
             //! @param reader JSON reader to read the property.
             bool OnJsonKey(const char* key, AWSCore::JsonReader& reader);
 
-            //! Do not rename the following members since they are expected by the AWSCore dependency.
             AZStd::string message; //!< Error message.
             AZStd::string type; //!< Error type.
         };
@@ -63,7 +60,7 @@ namespace AWSMetrics
 
         //! POST request defined by api_spec.json to send metrics to the backend.
         //! The path for this service API is "/producer/events".
-        class PostMetricsEventsRequest
+        class PostProducerEventsRequest
             : public AWSCore::ServiceRequest
         {
         public:
@@ -82,15 +79,14 @@ namespace AWSMetrics
                 //! @return Whether the serialization is successful.
                 bool WriteJson(AWSCore::JsonWriter& writer) const;
 
-                MetricsQueue m_metricsQueue; //!< Metrics events to send via the service API request.
+                MetricsQueue data; //!< Data to send via the service API request.
             };
 
-            //! Do not rename the following members since they are expected by the AWSCore dependency.
-            PostMetricsEventsResponse result; //! Success response.
-            PostMetricsEventsError error; //! Failure response.
+            MetricsEventSuccessResponse result; //! Success response.
+            Error error; //! Failure response.
             Parameters parameters; //! Request parameter.
         };
 
-        using PostMetricsEventsRequestJob = AWSCore::ServiceRequestJob<PostMetricsEventsRequest>;
+        using PostProducerEventsRequestJob = AWSCore::ServiceRequestJob<PostProducerEventsRequest>;
     } // ServiceAPI
 } // AWSMetrics

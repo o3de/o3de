@@ -7,7 +7,7 @@
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "Default",
+    "display_name": "Default Project Template",
     "summary": "This is the project template that will be used if no project template is specified during project creation.",
     "canonical_tags": [
         "Template",
@@ -123,10 +123,6 @@
             "isTemplated": true
         },
         {
-            "file": "Gem/Registry/assetprocessor_settings.setreg",
-            "isTemplated": true
-        },
-        {
             "file": "Gem/Source/${Name}Module.cpp",
             "isTemplated": true
         },
@@ -187,7 +183,7 @@
             "isTemplated": false
         },
         {
-            "file": "Registry/assetprocessor_settings.setreg",
+            "file": "Registry/assets_scan_folders.setreg",
             "isTemplated": true
         },
         {
@@ -417,9 +413,6 @@
         },
         {
             "dir": "Gem/Platform/iOS"
-        },
-        {
-            "dir": "Gem/Registry"
         },
         {
             "dir": "Gem/Source"

@@ -18,7 +18,6 @@
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -489,7 +488,7 @@ bool CGameEngine::LoadLevel(
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
     if (!usePrefabSystemForLevels)
     {

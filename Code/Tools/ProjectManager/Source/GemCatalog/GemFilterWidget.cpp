@@ -116,7 +116,7 @@ namespace O3DE::ProjectManager
         // Separating line
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
-        hLine->setObjectName("horizontalSeparatingLine");
+        hLine->setStyleSheet("color: #666666;");
         vLayout->addWidget(hLine);
 
         UpdateCollapseState();

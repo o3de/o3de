@@ -95,6 +95,7 @@ namespace AZ
             RHI::ResultCode BindMemoryView(const MemoryView& memoryView, const RHI::HeapMemoryLevel heapMemoryLevel);
 
             RHI::ResultCode BuildNativeImage();
+            VkImageFormatProperties GetImageFormatProperties() const;
 
             VkImageCreateFlags GetImageCreateFlags() const;
             VkImageUsageFlags GetImageUsageFlags() const;

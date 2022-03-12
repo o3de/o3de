@@ -25,12 +25,7 @@ namespace AZ::Render
         float m_vertexNormalsScale = 1.0f;
         float m_faceNormalsScale = 1.0f;
         float m_tangentsScale = 1.0f;
-
-        //! Use the vertex normals to scale the wireframe a bit to avoid Z-fighting when rendering.
-        //! Scale the normal by the m_wireframeScale to push the wireframe a bit above the solide mesh rendering.
-        //! Additionally the character bounds will be taken into account, so this is a relative-to the character size value.
-        float m_wireframeScale = 0.1f;
-
+        float m_wireframeScale = 1.0f;
         float m_nodeOrientationScale = 1.0f;
 
         bool m_enabledNodeBasedAabb = true;
@@ -60,7 +55,5 @@ namespace AZ::Render
         AZ::Color m_nodeAABBColor{ 1.0f, 0.0f, 0.0f, 1.0f };
         AZ::Color m_meshAABBColor{ 0.0f, 0.0f, 0.7f, 1.0f };
         AZ::Color m_staticAABBColor{ 0.0f, 0.7f, 0.7f, 1.0f };
-        AZ::Color m_trajectoryHeadColor{ 0.230f, 0.580f, 0.980, 1.0f };
-        AZ::Color m_trajectoryPathColor{ 0.184f, 0.494f, 0.866f, 1.0f };
     };
 } // namespace AZ::Render

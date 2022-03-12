@@ -10,52 +10,48 @@
 
 namespace AZ::Debug
 {
-    namespace Platform
-    {
-        template<typename... T>
-        void BeginProfileRegion(Budget* budget, const char* eventName, T const&... args);
-        void BeginProfileRegion(Budget* budget, const char* eventName);
-        void EndProfileRegion(Budget* budget);
-    } // namespace Platform
-
     template<typename... T>
     void ProfileScope::BeginRegion(
         [[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args)
     {
-    #if !defined(_RELEASE)
-        if (budget)
+        if (!budget)
         {
-            Platform::BeginProfileRegion(budget, eventName, args...);
-
-            budget->BeginProfileRegion();
-
-            if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
-            {
-                profiler->BeginRegion(budget, eventName, sizeof...(T), args...);
-            }
+            return;
         }
-    #endif // !defined(_RELEASE)
+#if !defined(_RELEASE)
+        // TODO: Verification that the supplied system name corresponds to a known budget
+#if defined(USE_PIX)
+        PIXBeginEvent(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName, args...);
+#endif
+        budget->BeginProfileRegion();
+
+        if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
+        {
+            profiler->BeginRegion(budget, eventName);
+        }
+#endif
     }
 
     inline void ProfileScope::EndRegion([[maybe_unused]] Budget* budget)
     {
-    #if !defined(_RELEASE)
-        if (budget)
+        if (!budget)
         {
-            budget->EndProfileRegion();
-
-            if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
-            {
-                profiler->EndRegion(budget);
-            }
-
-            Platform::EndProfileRegion(budget);
+            return;
         }
-    #endif // !defined(_RELEASE)
+#if !defined(_RELEASE)
+        budget->EndProfileRegion();
+#if defined(USE_PIX)
+        PIXEndEvent();
+#endif
+        if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
+        {
+            profiler->EndRegion(budget);
+        }
+#endif
     }
 
     template<typename... T>
-    ProfileScope::ProfileScope(Budget* budget, const char* eventName, T const&... args)
+    ProfileScope::ProfileScope(Budget* budget, char const* eventName, T const&... args)
         : m_budget{ budget }
     {
         BeginRegion(budget, eventName, args...);
@@ -67,5 +63,3 @@ namespace AZ::Debug
     }
 
 } // namespace AZ::Debug
-
-#include <AzCore/Debug/Profiler_Platform.inl>

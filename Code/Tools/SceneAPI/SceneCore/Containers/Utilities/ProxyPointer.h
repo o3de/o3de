@@ -25,9 +25,7 @@ namespace AZ
             public:
                 ProxyPointer(const Type& value);
                 Type& operator*();
-                const Type& operator*() const;
                 Type* operator->();
-                const Type* operator->() const;
 
             private:
                 Type m_value;
@@ -38,10 +36,8 @@ namespace AZ
             {
             public:
                 ProxyPointer(Type& value);
-                Type* operator->();
-                const Type& operator*() const;
                 Type& operator*();
-                const Type* operator->() const;
+                Type* operator->();
 
             private:
                 Type& m_value;

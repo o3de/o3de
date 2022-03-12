@@ -12,17 +12,17 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Multiplayer/Session/SessionConfig.h>
+#include <AzFramework/Session/SessionConfig.h>
 
 namespace AWSGameLift
 {
     void AWSGameLiftSearchSessionsRequest::Reflect(AZ::ReflectContext* context)
     {
-        Multiplayer::SearchSessionsRequest::Reflect(context);
+        AzFramework::SearchSessionsRequest::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AWSGameLiftSearchSessionsRequest, Multiplayer::SearchSessionsRequest>()
+            serializeContext->Class<AWSGameLiftSearchSessionsRequest, AzFramework::SearchSessionsRequest>()
                 ->Version(0)
                 ->Field("aliasId", &AWSGameLiftSearchSessionsRequest::m_aliasId)
                 ->Field("fleetId", &AWSGameLiftSearchSessionsRequest::m_fleetId)
@@ -47,7 +47,7 @@ namespace AWSGameLift
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<Multiplayer::SearchSessionsRequest>("SearchSessionsRequest")
+            behaviorContext->Class<AzFramework::SearchSessionsRequest>("SearchSessionsRequest")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 // Expose base type to BehaviorContext, but hide it to be used directly
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);

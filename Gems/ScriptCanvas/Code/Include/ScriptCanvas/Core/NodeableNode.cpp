@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/IdUtils.h>
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
+#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 
 namespace NodeableNodeCpp
 {

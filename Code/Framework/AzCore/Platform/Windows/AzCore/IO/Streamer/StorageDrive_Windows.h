@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
@@ -19,12 +18,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Statistics/RunningStatistic.h>
-
-namespace AZ::IO::Requests
-{
-    struct ReadData;
-    struct ReportData;
-}
 
 namespace AZ::IO
 {
@@ -118,7 +111,7 @@ namespace AZ::IO
             CacheFull
         };
 
-        OpenFileResult OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const Requests::ReadData& data);
+        OpenFileResult OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const FileRequest::ReadData& data);
         bool ReadRequest(FileRequest* request);
         bool ReadRequest(FileRequest* request, size_t readSlot);
         bool CancelRequest(FileRequest* cancelRequest, FileRequestPtr& target);
@@ -144,7 +137,7 @@ namespace AZ::IO
         void FinalizeSingleRequest(FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred,
             bool isCanceled, bool encounteredError);
 
-        void Report(const Requests::ReportData& data) const;
+        void Report(const FileRequest::ReportData& data) const;
 
         TimedAverageWindow<s_statisticsWindowSize> m_fileOpenCloseTimeAverage;
         TimedAverageWindow<s_statisticsWindowSize> m_getFileExistsTimeAverage;

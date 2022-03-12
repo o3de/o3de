@@ -122,7 +122,7 @@ namespace AzToolsFramework
 
             EditorInteractionSystemViewportSelectionRequestBus::Event(
                 GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
-                [](const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+                [](const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                     return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
             });

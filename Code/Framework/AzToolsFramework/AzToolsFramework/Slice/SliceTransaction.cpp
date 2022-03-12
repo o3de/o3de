@@ -926,7 +926,7 @@ namespace AzToolsFramework
             const bool entityIsFromIgnoredSliceInstance = ignoreSliceInstance && ignoreSliceInstance->IsValid() && ignoreSliceInstance->GetReference()->GetSliceAsset().GetId() == instanceAddr.GetReference()->GetSliceAsset().GetId();
             if (!entityIsFromIgnoredSliceInstance)
             {
-                [[maybe_unused]] bool foundTargetAncestor = false;
+                bool foundTargetAncestor = false;
 
                 const AZ::SliceComponent::EntityList& entitiesInInstance = instanceAddr.GetInstance()->GetInstantiated()->m_entities;
 

@@ -14,43 +14,29 @@ namespace AZ
 {
     namespace RPI
     {
-        void PrecompiledRootShaderVariantAssetSourceData::Reflect(ReflectContext* context)
+        void RootShaderVariantAssetSourceData::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<PrecompiledRootShaderVariantAssetSourceData>()
+                serializeContext->Class<RootShaderVariantAssetSourceData>()
                     ->Version(0)
-                    ->Field("APIName", &PrecompiledRootShaderVariantAssetSourceData::m_apiName)
-                    ->Field("RootShaderVariantAssetFileName", &PrecompiledRootShaderVariantAssetSourceData::m_rootShaderVariantAssetFileName)
-                    ;
-            }
-        }
-
-        void PrecompiledSupervariantSourceData::Reflect(ReflectContext* context)
-        {
-            PrecompiledRootShaderVariantAssetSourceData::Reflect(context);
-
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<PrecompiledSupervariantSourceData>()
-                    ->Version(0)
-                    ->Field("Name", &PrecompiledSupervariantSourceData::m_name)
-                    ->Field("RootShaderVariantAssets", &PrecompiledSupervariantSourceData::m_rootShaderVariantAssets)
+                    ->Field("APIName", &RootShaderVariantAssetSourceData::m_apiName)
+                    ->Field("RootShaderVariantAssetFileName", &RootShaderVariantAssetSourceData::m_rootShaderVariantAssetFileName)
                     ;
             }
         }
 
         void PrecompiledShaderAssetSourceData::Reflect(ReflectContext* context)
         {
-            PrecompiledSupervariantSourceData::Reflect(context);
+            RootShaderVariantAssetSourceData::Reflect(context);
 
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<PrecompiledShaderAssetSourceData>()
-                    ->Version(2) // ATOM-15740
+                    ->Version(1) // ATOM-15472
                     ->Field("ShaderAssetFileName", &PrecompiledShaderAssetSourceData::m_shaderAssetFileName)
                     ->Field("PlatformIdentifiers", &PrecompiledShaderAssetSourceData::m_platformIdentifiers)
-                    ->Field("Supervariants", &PrecompiledShaderAssetSourceData::m_supervariants)
+                    ->Field("RootShaderVariantAssets", &PrecompiledShaderAssetSourceData::m_rootShaderVariantAssets)
                     ;
             }
         }

@@ -159,12 +159,12 @@ namespace AZ
             return m_topology;
         }
 
-        AZStd::span<const StreamChannelDescriptor> InputStreamLayout::GetStreamChannels() const
+        AZStd::array_view<StreamChannelDescriptor> InputStreamLayout::GetStreamChannels() const
         {
             return m_streamChannels;
         }
 
-        AZStd::span<const StreamBufferDescriptor> InputStreamLayout::GetStreamBuffers() const
+        AZStd::array_view<StreamBufferDescriptor> InputStreamLayout::GetStreamBuffers() const
         {
             return m_streamBuffers;
         }

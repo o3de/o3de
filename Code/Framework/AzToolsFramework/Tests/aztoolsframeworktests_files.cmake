@@ -24,7 +24,6 @@ set(FILES
     ComponentModeTests.cpp
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
-    EditorViewportIconTests.cpp
     Entity/EditorEntityContextComponentTests.cpp
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
@@ -98,9 +97,6 @@ set(FILES
     Prefab/PrefabUpdateTemplateTests.cpp
     Prefab/PrefabUpdateWithPatchesTests.cpp
     Prefab/Spawnable/SpawnableMetaDataTests.cpp
-    Prefab/Spawnable/SpawnableTestFixture.h
-    Prefab/Spawnable/SpawnableTestFixture.cpp
-    Prefab/Spawnable/SpawnableTicketTests.cpp
     Prefab/SpawnableCreateTests.cpp
     Prefab/SpawnableRemoveEditorInfoTestFixture.cpp
     Prefab/SpawnableRemoveEditorInfoTestFixture.h

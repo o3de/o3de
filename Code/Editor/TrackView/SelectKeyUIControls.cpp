@@ -269,3 +269,5 @@ void CSelectKeyUIControls::ResetCameraEntries()
         OnCameraAdded(cameraComponentEntities.values[i]);
     }
 }
+
+REGISTER_QT_CLASS_DESC(CSelectKeyUIControls, "TrackView.KeyUI.Select", "TrackViewKeyUI");

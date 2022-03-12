@@ -21,7 +21,7 @@
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/JSON/writer.h>
 #include <AzCore/std/bind/bind.h>
-#include <Multiplayer/Session/SessionNotifications.h>
+#include <AzFramework/Session/SessionNotifications.h>
 
 namespace AWSGameLift
 {
@@ -50,7 +50,7 @@ namespace AWSGameLift
         AZ::Interface<IAWSGameLiftServerRequests>::Unregister(this);
     }
 
-    bool AWSGameLiftServerManager::AddConnectedPlayer(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig)
+    bool AWSGameLiftServerManager::AddConnectedPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_gameliftMutex);
         if (m_connectedPlayers.contains(playerConnectionConfig.m_playerConnectionId))
@@ -100,9 +100,9 @@ namespace AWSGameLift
         return serverProcessDesc;
     }
 
-    Multiplayer::SessionConfig AWSGameLiftServerManager::BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession)
+    AzFramework::SessionConfig AWSGameLiftServerManager::BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession)
     {
-        Multiplayer::SessionConfig sessionConfig;
+        AzFramework::SessionConfig sessionConfig;
 
         sessionConfig.m_dnsName = gameSession.GetDnsName().c_str();
         AZStd::string propertiesOutput = "";
@@ -406,39 +406,11 @@ namespace AWSGameLift
 
     AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionCertificate()
     {
-        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetInstanceCertificate();
-        if (certificateOutcome.IsSuccess())
-        {
-            return AZ::IO::Path(certificateOutcome.GetResult().GetCertificatePath().c_str());
-        }
-        else
-        {
-            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstanceCertificateErrorMessage);
-            return AZ::IO::Path();
-        }
-    }
-
-    AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionPrivateKey()
-    {
-        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetInstanceCertificate();
-        if (certificateOutcome.IsSuccess())
-        {
-            return AZ::IO::Path(certificateOutcome.GetResult().GetPrivateKeyPath().c_str());
-        }
-        else
-        {
-            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstancePrivateKeyErrorMessage);
-            return AZ::IO::Path();
-        }
-    }
-
-    AZ::IO::Path AWSGameLiftServerManager::GetInternalSessionCertificate()
-    {
-        // GameLift doesn't support it, return empty path
+        // TODO: Add support to get TLS cert file path
         return AZ::IO::Path();
     }
 
-    AZ::IO::Path AWSGameLiftServerManager::GetInternalSessionPrivateKey()
+    AZ::IO::Path AWSGameLiftServerManager::GetInternalSessionCertificate()
     {
         // GameLift doesn't support it, return empty path
         return AZ::IO::Path();
@@ -465,9 +437,9 @@ namespace AWSGameLift
     void AWSGameLiftServerManager::HandleDestroySession()
     {
         // No further request should be handled by GameLift server manager at this point
-        if (AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get())
+        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get())
         {
-            AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Unregister(this);
+            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Unregister(this);
         }
 
         AZ_TracePrintf(AWSGameLiftServerManagerName, "Server process is scheduled to be shut down at %s",
@@ -476,7 +448,7 @@ namespace AWSGameLift
         // Send notifications to handler(s) to gracefully shut down the server process.
         bool destroySessionResult = true;
         AZ::EBusReduceResult<bool&, AZStd::logical_and<bool>> result(destroySessionResult);
-        Multiplayer::SessionNotificationBus::BroadcastResult(result, &Multiplayer::SessionNotifications::OnDestroySessionBegin);
+        AzFramework::SessionNotificationBus::BroadcastResult(result, &AzFramework::SessionNotifications::OnDestroySessionBegin);
 
         if (!destroySessionResult)
         {
@@ -489,7 +461,7 @@ namespace AWSGameLift
         if (processEndingOutcome.IsSuccess())
         {
             AZ_TracePrintf(AWSGameLiftServerManagerName, "ProcessEnding request against Amazon GameLift service succeeded.");
-            Multiplayer::SessionNotificationBus::Broadcast(&Multiplayer::SessionNotifications::OnDestroySessionEnd);
+            AzFramework::SessionNotificationBus::Broadcast(&AzFramework::SessionNotifications::OnDestroySessionEnd);
         }
         else
         {
@@ -498,7 +470,7 @@ namespace AWSGameLift
         }
     }
 
-    void AWSGameLiftServerManager::HandlePlayerLeaveSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig)
+    void AWSGameLiftServerManager::HandlePlayerLeaveSession(const AzFramework::PlayerConnectionConfig& playerConnectionConfig)
     {
         AZStd::string playerSessionId = "";
         RemoveConnectedPlayer(playerConnectionConfig.m_playerConnectionId, playerSessionId);
@@ -564,16 +536,12 @@ namespace AWSGameLift
     void AWSGameLiftServerManager::OnStartGameSession(const Aws::GameLift::Server::Model::GameSession& gameSession)
     {
         UpdateGameSessionData(gameSession);
-        Multiplayer::SessionConfig sessionConfig = BuildSessionConfig(gameSession);
-        if (!AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get())
-        {
-            AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Register(this);
-        }
+        AzFramework::SessionConfig sessionConfig = BuildSessionConfig(gameSession);
 
         bool createSessionResult = true;
         AZ::EBusReduceResult<bool&, AZStd::logical_and<bool>> result(createSessionResult);
-        Multiplayer::SessionNotificationBus::BroadcastResult(
-            result, &Multiplayer::SessionNotifications::OnCreateSessionBegin, sessionConfig);
+        AzFramework::SessionNotificationBus::BroadcastResult(
+            result, &AzFramework::SessionNotifications::OnCreateSessionBegin, sessionConfig);
 
         if (createSessionResult)
         {
@@ -583,7 +551,12 @@ namespace AWSGameLift
             if (activationOutcome.IsSuccess())
             {
                 AZ_TracePrintf(AWSGameLiftServerManagerName, "ActivateGameSession request against Amazon GameLift service succeeded.");
-                Multiplayer::SessionNotificationBus::Broadcast(&Multiplayer::SessionNotifications::OnCreateSessionEnd);
+                // Register server manager as handler once game session has been activated
+                if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get())
+                {
+                    AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Register(this);
+                }
+                AzFramework::SessionNotificationBus::Broadcast(&AzFramework::SessionNotifications::OnCreateSessionEnd);
             }
             else
             {
@@ -610,16 +583,16 @@ namespace AWSGameLift
     {
         bool healthCheckResult = true;
         AZ::EBusReduceResult<bool&, AZStd::logical_and<bool>> result(healthCheckResult);
-        Multiplayer::SessionNotificationBus::BroadcastResult(result, &Multiplayer::SessionNotifications::OnSessionHealthCheck);
+        AzFramework::SessionNotificationBus::BroadcastResult(result, &AzFramework::SessionNotifications::OnSessionHealthCheck);
 
         return m_serverSDKInitialized && healthCheckResult;
     }
 
     void AWSGameLiftServerManager::OnUpdateGameSession(const Aws::GameLift::Server::Model::UpdateGameSession& updateGameSession)
     {
-        Multiplayer::SessionConfig sessionConfig = BuildSessionConfig(updateGameSession.GetGameSession());
+        AzFramework::SessionConfig sessionConfig = BuildSessionConfig(updateGameSession.GetGameSession());
         Aws::GameLift::Server::Model::UpdateReason updateReason = updateGameSession.GetUpdateReason();
-        Multiplayer::SessionNotificationBus::Broadcast(&Multiplayer::SessionNotifications::OnUpdateSessionBegin,
+        AzFramework::SessionNotificationBus::Broadcast(&AzFramework::SessionNotifications::OnUpdateSessionBegin,
             sessionConfig, Aws::GameLift::Server::Model::UpdateReasonMapper::GetNameForUpdateReason(updateReason).c_str());
 
         // Update game session data locally
@@ -628,7 +601,7 @@ namespace AWSGameLift
             UpdateGameSessionData(updateGameSession.GetGameSession());
         }
 
-        Multiplayer::SessionNotificationBus::Broadcast(&Multiplayer::SessionNotifications::OnUpdateSessionEnd);
+        AzFramework::SessionNotificationBus::Broadcast(&AzFramework::SessionNotifications::OnUpdateSessionEnd);
     }
 
     bool AWSGameLiftServerManager::RemoveConnectedPlayer(uint32_t playerConnectionId, AZStd::string& outPlayerSessionId)
@@ -740,7 +713,7 @@ namespace AWSGameLift
         }
     }
 
-    bool AWSGameLiftServerManager::ValidatePlayerJoinSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig)
+    bool AWSGameLiftServerManager::ValidatePlayerJoinSession(const AzFramework::PlayerConnectionConfig& playerConnectionConfig)
     {
         uint32_t playerConnectionId = playerConnectionConfig.m_playerConnectionId;
         AZStd::string playerSessionId = playerConnectionConfig.m_playerSessionId;

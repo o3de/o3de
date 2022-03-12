@@ -26,6 +26,6 @@ namespace AWSGameLift
         void StopMatchmaking(const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest);
 
         // Validate StopMatchmakingRequest and check required request parameters
-        bool ValidateStopMatchmakingRequest(const Multiplayer::StopMatchmakingRequest& stopMatchmakingRequest);
+        bool ValidateStopMatchmakingRequest(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest);
     } // namespace StopMatchmakingActivity
 } // namespace AWSGameLift

@@ -61,13 +61,8 @@ protected:
 
     bool WaitForConnectionStateToBeEqual(AzFramework::AssetSystem::AssetProcessorConnection& connectionObject, AzFramework::SocketConnection::EConnectionState desired)
     {
-        // The connection state must be copied to a local variable as once the condition
-        // matches in the loop condition it could later not match in the return statement
-        // as the state is being updated on another thread
-        AzFramework::SocketConnection::EConnectionState connectionState;
         auto started = AZStd::chrono::system_clock::now();
-        for (connectionState = connectionObject.GetConnectionState(); connectionState != desired;
-            connectionState = connectionObject.GetConnectionState())
+        while (connectionObject.GetConnectionState() != desired )
         {
             auto seconds_passed = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - started).count();
             if (seconds_passed > secondsMaxConnectionAttempt)
@@ -76,19 +71,14 @@ protected:
             }
             AZStd::this_thread::yield();
         }
-        return connectionState == desired;
+        return connectionObject.GetConnectionState() == desired;
     }
 
 
     bool WaitForConnectionStateToNotBeEqual(AzFramework::AssetSystem::AssetProcessorConnection& connectionObject, AzFramework::SocketConnection::EConnectionState notDesired)
     {
-        // The connection state must be copied to a local variable as once the condition
-        // matches in the loop condition it could later not match in the return statement
-        // as the state is being updated on another thread
-        AzFramework::SocketConnection::EConnectionState connectionState;
         auto started  = AZStd::chrono::system_clock::now();
-        for (connectionState = connectionObject.GetConnectionState(); connectionState == notDesired;
-            connectionState = connectionObject.GetConnectionState())
+        while (connectionObject.GetConnectionState() == notDesired)
         {
             auto seconds_passed = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - started).count();
             if (seconds_passed > secondsMaxConnectionAttempt)
@@ -97,7 +87,7 @@ protected:
             }
             AZStd::this_thread::yield();
         }
-        return connectionState != notDesired;
+        return connectionObject.GetConnectionState() != notDesired;
     }
 
 };

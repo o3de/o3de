@@ -31,8 +31,8 @@ namespace AzToolsFramework
 
         enum class AssetBrowserDisplayState : int
         {
-            TreeViewMode,
-            ListViewMode,
+            ExpandedMode,
+            DefaultMode,
             Invalid
         };
     } // namespace AssetBrowser
@@ -66,9 +66,9 @@ private:
 
 protected slots:
     void CreateSwitchViewMenu();
-    void SetTreeViewMode();
-    void SetListViewMode();
-    void UpdateWidgetAfterFilter();
+    void SetExpandedAssetBrowserMode();
+    void SetDefaultAssetBrowserMode();
+    void SetTableViewVisibleAfterFilter();
 
 private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
@@ -76,10 +76,10 @@ private:
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     QMenu* m_viewSwitchMenu = nullptr;
-    QAction* m_treeViewMode = nullptr;
-    QAction* m_listViewMode = nullptr;
+    QAction* m_expandedAssetBrowserMode = nullptr;
+    QAction* m_defaultAssetBrowserMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
-        AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
+        AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::DefaultMode;
 
     void UpdatePreview() const;
 

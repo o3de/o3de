@@ -26,12 +26,8 @@ namespace AZ
 
             void Init(id<MTLDevice> mtlDevice);
             static RHI::PhysicalDeviceList Enumerate();
-            id<MTLDevice> GetNativeDevice();
-
         private:
             void Shutdown() override;
-            
-            id<MTLDevice> m_mtlNativeDevice = nil;
         };
     }
 }

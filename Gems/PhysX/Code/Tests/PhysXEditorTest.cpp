@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -70,9 +69,9 @@ namespace Physics
 
             AZ::IO::FileIOBase::SetInstance(m_fileIo.get());
 
-            AZ::IO::FixedMaxPath testDir = AZ::Utils::GetExecutableDirectory();
-            testDir /= "Test.Assets/Gems/PhysX/Code/Tests";
-            m_fileIo->SetAlias("@test@", testDir.c_str());
+            char testDir[AZ_MAX_PATH_LEN];
+            m_fileIo->ConvertToAbsolutePath("../Gems/PhysX/Code/Tests", testDir, AZ_MAX_PATH_LEN);
+            m_fileIo->SetAlias("@test@", testDir);
 
             //Test_PhysXSettingsRegistryManager will not do any file saving
             m_physXSystem = AZStd::make_unique<PhysX::PhysXSystem>(new PhysX::TestUtils::Test_PhysXSettingsRegistryManager(), PhysX::PxCooking::GetEditTimeCookingParams());

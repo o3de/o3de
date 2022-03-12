@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom_Feature_Traits_Platform.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
@@ -43,66 +44,53 @@ namespace AZ
 
         void DiffuseProbeGridBlendIrradiancePass::LoadShader()
         {
-            // load shaders, each supervariant handles a different number of rays per probe
-            // Note: the raytracing shaders may not be available on all platforms
-            m_shaders.reserve(DiffuseProbeGridNumRaysPerProbeArraySize);
-            for (uint32_t index = 0; index < DiffuseProbeGridNumRaysPerProbeArraySize; ++index)
+            // load shader
+            // Note: the shader may not be available on all platforms
+            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiance.azshader";
+            m_shader = RPI::LoadCriticalShader(shaderFilePath);
+            if (m_shader == nullptr)
             {
-                AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiance.azshader";
-                Data::Instance<RPI::Shader> shader = RPI::LoadCriticalShader(shaderFilePath, DiffuseProbeGridNumRaysPerProbeArray[index].m_supervariant);
-                if (shader == nullptr)
-                {
-                    return;
-                }
+                return;
+            }
 
-                RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-                const auto& shaderVariant = shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-                const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
-                AZ_Assert(pipelineState, "Failed to acquire pipeline state");
+            // load pipeline state
+            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+            const auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
 
-                RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
-                AZ_Assert(srgLayout.get(), "Failed to find Srg layout");
+            // load Pass Srg asset
+            m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
 
-                RHI::DispatchDirect dispatchArgs;
-                const auto outcome = RPI::GetComputeShaderNumThreads(shader->GetAsset(), dispatchArgs);
-                if (!outcome.IsSuccess())
-                {
-                    AZ_Error("PassSystem", false, "[DiffuseProbeBlendIrradiancePass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath.c_str(), outcome.GetError().c_str());
-                }
-
-                m_shaders.push_back({ shader, pipelineState, srgLayout, dispatchArgs });
+            // retrieve the number of threads per thread group from the shader
+            const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchArgs);
+            if (!outcome.IsSuccess())
+            {
+                AZ_Error("PassSystem", false, "[DiffuseProbeBlendIrradiancePass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath.c_str(), outcome.GetError().c_str());
             }
         }
 
-        bool DiffuseProbeGridBlendIrradiancePass::IsEnabled() const
+        void DiffuseProbeGridBlendIrradiancePass::FrameBeginInternal(FramePrepareParams params)
         {
-            if (!RenderPass::IsEnabled())
-            {
-                return false;
-            }
-
             RPI::Scene* scene = m_pipeline->GetScene();
-            if (!scene)
-            {
-                return false;
-            }
-
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
-            {
-                // empty scene
-                return false;
-            }
-
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+
             if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
             {
                 // no diffuse probe grids
-                return false;
+                return;
             }
 
-            return true;
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridBlendIrradiancePass requires the RayTracingFeatureProcessor");
+
+            if (!rayTracingFeatureProcessor->GetSubMeshCount())
+            {
+                // empty scene
+                return;
+            }
+
+            RenderPass::FrameBeginInternal(params);
         }
 
         void DiffuseProbeGridBlendIrradiancePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -113,16 +101,6 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
-                // grid data
-                {
-                    RHI::BufferScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetGridDataBufferAttachmentId();
-                    desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
-                }
-
                 // probe raytrace image
                 {
                     RHI::ImageScopeAttachmentDescriptor desc;
@@ -154,8 +132,7 @@ namespace AZ
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
-                DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
-                diffuseProbeGrid->UpdateBlendIrradianceSrg(shader.m_shader, shader.m_srgLayout);
+                diffuseProbeGrid->UpdateBlendIrradianceSrg(m_shader, m_srgLayout);
 
                 diffuseProbeGrid->GetBlendIrradianceSrg()->Compile();
             }
@@ -170,8 +147,6 @@ namespace AZ
             // submit the DispatchItem for each DiffuseProbeGrid
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
-                DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
-
                 const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBlendIrradianceSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
@@ -180,8 +155,8 @@ namespace AZ
                 diffuseProbeGrid->GetTexture2DProbeCount(probeCountX, probeCountY);
 
                 RHI::DispatchItem dispatchItem;
-                dispatchItem.m_arguments = shader.m_dispatchArgs;
-                dispatchItem.m_pipelineState = shader.m_pipelineState;
+                dispatchItem.m_arguments = m_dispatchArgs;
+                dispatchItem.m_pipelineState = m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * dispatchItem.m_arguments.m_direct.m_threadsPerGroupX;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * dispatchItem.m_arguments.m_direct.m_threadsPerGroupY;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;

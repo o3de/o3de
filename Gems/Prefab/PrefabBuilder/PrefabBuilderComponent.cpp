@@ -7,7 +7,6 @@
  */
 
 #include "PrefabBuilderComponent.h"
-#include <AzToolsFramework/Debug/TraceContext.h>
 
 namespace AZ::Prefab
 {
@@ -33,7 +32,7 @@ namespace AZ::Prefab
     {
         AssetBuilderSDK::AssetBuilderCommandBus::Handler::BusConnect(m_builderId);
 
-        m_pipeline.LoadStackProfile(ConfigKey);
+        m_pipeline.LoadStackProfile("GameObjectCreation");
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -77,7 +76,7 @@ namespace AZ::Prefab
 
         // Deserialize all of the entities and their components (for this prefab only)
         auto newInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
-        AzToolsFramework::EntityList entities;
+        AzToolsFramework::Prefab::Instance::EntityList entities;
         if (AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, entities, genericDocument))
         {
             // Add the fingerprint of all the components and their types
@@ -240,7 +239,6 @@ namespace AZ::Prefab
         const AZ::PlatformTagSet& platformTags, const char* filePath, AZ::IO::PathView tempDirPath, const AZ::Uuid& sourceFileUuid,
         AzToolsFramework::Prefab::PrefabDom&& rootDom, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts)
     {
-        AZ_TraceContext("Stack config", ConfigKey);
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext context(sourceFileUuid);
         AZStd::string rootPrefabName;
         if (!StringFunc::Path::GetFileName(filePath, rootPrefabName))

@@ -7,8 +7,6 @@
  */
 
 #include "AssetManagerTestFixture.h"
-
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Memory/PoolAllocator.h>
 

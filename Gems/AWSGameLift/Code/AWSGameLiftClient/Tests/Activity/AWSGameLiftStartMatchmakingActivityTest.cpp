@@ -49,7 +49,7 @@ TEST_F(AWSGameLiftStartMatchmakingActivityTest, BuildAWSGameLiftStartMatchmaking
 TEST_F(AWSGameLiftStartMatchmakingActivityTest, ValidateStartMatchmakingRequest_CallWithBaseType_GetFalseResult)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    auto result = StartMatchmakingActivity::ValidateStartMatchmakingRequest(Multiplayer::StartMatchmakingRequest());
+    auto result = StartMatchmakingActivity::ValidateStartMatchmakingRequest(AzFramework::StartMatchmakingRequest());
     EXPECT_FALSE(result);
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }

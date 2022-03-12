@@ -9,7 +9,6 @@
 set(FILES
     base.h
     Docs.h
-    variadic.h
     Platform.cpp
     Platform.h
     PlatformDef.h
@@ -116,10 +115,6 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
-    DOM/DomPatch.cpp
-    DOM/DomPatch.h
-    DOM/DomPath.cpp
-    DOM/DomPath.h
     DOM/DomUtils.cpp
     DOM/DomUtils.h
     DOM/DomValue.cpp
@@ -128,10 +123,6 @@ set(FILES
     DOM/DomValueWriter.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
-    DOM/DomComparison.cpp
-    DOM/DomComparison.h
-    DOM/DomPrefixTree.h
-    DOM/DomPrefixTree.inl
     DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
@@ -246,6 +237,7 @@ set(FILES
     Jobs/JobManagerComponent.cpp
     Jobs/JobManagerComponent.h
     Jobs/JobManagerDesc.h
+    Jobs/LegacyJobExecutor.h
     Jobs/MultipleDependentJob.h
     Jobs/task_group.h
     Math/Aabb.cpp
@@ -300,8 +292,6 @@ set(FILES
     Math/MathUtils.h
     Math/MathMatrixSerializer.h
     Math/MathMatrixSerializer.cpp
-    Math/MathStringConversions.h
-    Math/MathStringConversions.cpp
     Math/MathVectorSerializer.h
     Math/MathVectorSerializer.cpp
     Math/Matrix3x3.cpp
@@ -368,12 +358,16 @@ set(FILES
     Math/Color.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
+    Math/ToString.h
+    Math/ToString.cpp
     Memory/AllocationRecords.cpp
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
     Memory/AllocatorBase.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
+    Memory/AllocatorOverrideShim.cpp
+    Memory/AllocatorOverrideShim.h
     Memory/AllocatorWrapper.h
     Memory/AllocatorScope.h
     Memory/BestFitExternalMapAllocator.cpp
@@ -562,9 +556,6 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
-    Settings/ConfigurableStack.cpp
-    Settings/ConfigurableStack.inl
-    Settings/ConfigurableStack.h
     Settings/SettingsRegistry.cpp
     Settings/SettingsRegistry.h
     Settings/SettingsRegistryConsoleUtils.cpp

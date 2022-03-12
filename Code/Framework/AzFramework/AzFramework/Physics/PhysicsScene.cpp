@@ -9,7 +9,6 @@
 
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 

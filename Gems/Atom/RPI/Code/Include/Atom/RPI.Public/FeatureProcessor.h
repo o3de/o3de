@@ -30,8 +30,6 @@ namespace AZ
 
     namespace RPI
     {
-        class RenderPipeline;
-
         //! @class FeatureProcessor
         //! @brief Interface that FeatureProcessors should derive from
         //! @detail FeatureProcceors will record simulation state from the simulation job graph into a buffer that is isolated from the asynchronous rendering graph.
@@ -88,9 +86,6 @@ namespace AZ
 
             //! Perform any necessary deactivation.
             virtual void Deactivate() {}
-
-            //! Apply changes and add additional render passes to the render pipeline from the feature processors
-            virtual void ApplyRenderPipelineChange(RenderPipeline* ) {}
 
             //! Allows the feature processor to expose supporting views based on
             //! the main views passed in. Main views (persistent views) are views that must be 

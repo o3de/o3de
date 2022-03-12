@@ -19,7 +19,7 @@ namespace Ui
 
 class EditorPreferencesTreeWidgetItem;
 
-bool WidgetConsumesKeyPressEvent(QKeyEvent* event);
+void WidgetHandleKeyPressEvent(QWidget* widget, QKeyEvent* event);
 
 class EditorPreferencesDialog
     : public QDialog

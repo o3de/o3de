@@ -7,6 +7,8 @@
  */
 #include <ScriptCanvas/Internal/Nodes/BaseTimerNode.h>
 
+#include <Libraries/Core/MethodUtility.h>
+
 namespace ScriptCanvas
 {
     namespace Nodes    

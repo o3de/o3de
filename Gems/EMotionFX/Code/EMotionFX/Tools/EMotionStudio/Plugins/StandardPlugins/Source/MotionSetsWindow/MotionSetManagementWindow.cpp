@@ -10,6 +10,7 @@
 #include "AzCore/std/iterator.h"
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <EMotionFX/Source/MotionManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioCore.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>

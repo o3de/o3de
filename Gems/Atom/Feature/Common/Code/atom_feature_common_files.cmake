@@ -31,7 +31,7 @@ set(FILES
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
-    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
+    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyboxConstants.h
     Include/Atom/Feature/SkyBox/SkyBoxLUT.h
@@ -130,8 +130,6 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
@@ -142,16 +140,6 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
@@ -284,9 +272,7 @@ set(FILES
     Source/RayTracing/RayTracingPass.cpp
     Source/RayTracing/RayTracingPass.h
     Source/RayTracing/RayTracingPassData.h
-    Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
-    Source/ReflectionProbe/ReflectionProbe.h
     Source/ReflectionProbe/ReflectionProbe.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h

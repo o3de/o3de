@@ -128,14 +128,14 @@ namespace AzToolsFramework
             RegExpFilter();
             ~RegExpFilter() override = default;
 
-            void SetFilterPattern(const QRegExp& filterPattern);
+            void SetFilterPattern(const QString& filterPattern);
 
         protected:
             QString GetNameInternal() const override;
             bool MatchInternal(const AssetBrowserEntry* entry) const override;
 
         private:
-            QRegExp m_filterPattern;
+            QString m_filterPattern;
         };
 
         //////////////////////////////////////////////////////////////////////////

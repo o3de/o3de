@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
 namespace PythonAssetBuilder

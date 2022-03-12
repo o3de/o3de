@@ -9,8 +9,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <Multiplayer/Session/ISessionHandlingRequests.h>
-#include <Multiplayer/Session/MatchmakingNotifications.h>
+#include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 
 #include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSGameLiftSessionConstants.h>
@@ -97,7 +97,7 @@ namespace AWSGameLift
                             AZ_TracePrintf(AWSGameLiftClientLocalTicketTrackerName,
                                 "Matchmaking ticket %s is complete.", ticket.GetTicketId().c_str());
                             RequestPlayerJoinMatch(ticket, playerId);
-                            Multiplayer::MatchmakingNotificationBus::Broadcast(&Multiplayer::MatchmakingNotifications::OnMatchComplete);
+                            AzFramework::MatchmakingNotificationBus::Broadcast(&AzFramework::MatchmakingNotifications::OnMatchComplete);
                             m_status = TicketTrackerStatus::Idle;
                             return;
                         }
@@ -107,7 +107,7 @@ namespace AWSGameLift
                         {
                             AZ_Warning(AWSGameLiftClientLocalTicketTrackerName, false, "Matchmaking ticket %s is not complete, %s",
                                 ticket.GetTicketId().c_str(), ticket.GetStatusMessage().c_str());
-                            Multiplayer::MatchmakingNotificationBus::Broadcast(&Multiplayer::MatchmakingNotifications::OnMatchFailure);
+                            AzFramework::MatchmakingNotificationBus::Broadcast(&AzFramework::MatchmakingNotifications::OnMatchFailure);
                             m_status = TicketTrackerStatus::Idle;
                             return;
                         }
@@ -115,7 +115,7 @@ namespace AWSGameLift
                         {
                             AZ_TracePrintf(AWSGameLiftClientLocalTicketTrackerName, "Matchmaking ticket %s is pending on acceptance, %s.",
                                 ticket.GetTicketId().c_str(), ticket.GetStatusMessage().c_str());
-                            Multiplayer::MatchmakingNotificationBus::Broadcast(&Multiplayer::MatchmakingNotifications::OnMatchAcceptance);
+                            AzFramework::MatchmakingNotificationBus::Broadcast(&AzFramework::MatchmakingNotifications::OnMatchAcceptance);
                         }
                         else
                         {
@@ -126,7 +126,7 @@ namespace AWSGameLift
                     else
                     {
                         AZ_Error(AWSGameLiftClientLocalTicketTrackerName, false, "Unable to find expected ticket with id %s", ticketId.c_str());
-                        Multiplayer::MatchmakingNotificationBus::Broadcast(&Multiplayer::MatchmakingNotifications::OnMatchError);
+                        AzFramework::MatchmakingNotificationBus::Broadcast(&AzFramework::MatchmakingNotifications::OnMatchError);
                     }
                 }
                 else
@@ -134,13 +134,13 @@ namespace AWSGameLift
                     AZ_Error(AWSGameLiftClientLocalTicketTrackerName, false, AWSGameLiftErrorMessageTemplate,
                         describeMatchmakingOutcome.GetError().GetExceptionName().c_str(),
                         describeMatchmakingOutcome.GetError().GetMessage().c_str());
-                    Multiplayer::MatchmakingNotificationBus::Broadcast(&Multiplayer::MatchmakingNotifications::OnMatchError);
+                    AzFramework::MatchmakingNotificationBus::Broadcast(&AzFramework::MatchmakingNotifications::OnMatchError);
                 }
             }
             else
             {
                 AZ_Error(AWSGameLiftClientLocalTicketTrackerName, false, AWSGameLiftClientMissingErrorMessage);
-                Multiplayer::MatchmakingNotificationBus::Broadcast(&Multiplayer::MatchmakingNotifications::OnMatchError);
+                AzFramework::MatchmakingNotificationBus::Broadcast(&AzFramework::MatchmakingNotifications::OnMatchError);
             }
             m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(m_pollingPeriodInMS));
         }
@@ -150,7 +150,7 @@ namespace AWSGameLift
         const Aws::GameLift::Model::MatchmakingTicket& ticket, const AZStd::string& playerId)
     {
         auto connectionInfo = ticket.GetGameSessionConnectionInfo();
-        Multiplayer::SessionConnectionConfig sessionConnectionConfig;
+        AzFramework::SessionConnectionConfig sessionConnectionConfig;
         sessionConnectionConfig.m_ipAddress = connectionInfo.GetIpAddress().c_str();
         for (auto matchedPlayer : connectionInfo.GetMatchedPlayerSessions())
         {
@@ -168,7 +168,7 @@ namespace AWSGameLift
                 "Requesting and validating player session %s to connect to the match ...",
                 sessionConnectionConfig.m_playerSessionId.c_str());
             bool result =
-                AZ::Interface<Multiplayer::ISessionHandlingClientRequests>::Get()->RequestPlayerJoinSession(sessionConnectionConfig);
+                AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get()->RequestPlayerJoinSession(sessionConnectionConfig);
             if (result)
             {
                 AZ_TracePrintf(AWSGameLiftClientLocalTicketTrackerName,

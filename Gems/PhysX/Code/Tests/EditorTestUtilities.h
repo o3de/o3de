@@ -48,9 +48,6 @@ namespace PhysXEditorTests
         void SetUp() override;
         void TearDown() override;
 
-        void ConnectToPVD();
-        void DisconnectFromPVD();
-
         // DefaultWorldBus
         AzPhysics::SceneHandle GetDefaultSceneHandle() const override;
        

@@ -123,10 +123,6 @@
             "isTemplated": true
         },
         {
-            "file": "Registry/assetprocessor_settings.setreg",
-            "isTemplated": true
-        },
-        {
             "file": "gem.json",
             "isTemplated": true
         },
@@ -171,9 +167,6 @@
         },
         {
             "dir": "Code/Tests"
-        },
-        {
-            "dir": "Registry"
         }
     ]
 }

@@ -9,8 +9,6 @@
 #ifndef CRYINCLUDE_COMPONENTENTITYEDITORPLUGIN_SANDBOXINTEGRATION_H
 #define CRYINCLUDE_COMPONENTENTITYEDITORPLUGIN_SANDBOXINTEGRATION_H
 
-#include "ContextMenuHandlers.h"
-
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Slice/SliceBus.h>
 #include <AzCore/Slice/SliceComponent.h>
@@ -275,8 +273,6 @@ private:
     };
 
 private:
-    ContextMenuBottomHandler m_contextMenuBottomHandler;
-
     AZ::Vector2 m_contextMenuViewPoint;
 
     short m_startedUndoRecordingNestingLevel;   // used in OnBegin/EndUndo to ensure we only accept undo's we started recording

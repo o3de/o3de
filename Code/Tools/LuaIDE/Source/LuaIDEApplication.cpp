@@ -27,8 +27,7 @@
 namespace LUAEditor
 {
 
-    Application::Application(int argc, char **argv)
-        : BaseApplication(argc, argv)
+    Application::Application(int &argc, char **argv) : BaseApplication(argc, argv)
     {
         AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
     }

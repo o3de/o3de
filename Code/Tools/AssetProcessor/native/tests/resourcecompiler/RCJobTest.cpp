@@ -6,6 +6,8 @@
  *
  */
 
+#include "RCJobTest.h"
+
 #include <native/tests/AssetProcessorTest.h>
 #include <native/resourcecompiler/rcjob.h>
 

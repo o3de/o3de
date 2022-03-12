@@ -13,7 +13,6 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Builder/ScriptCanvasBuilder.h>
-#include <Builder/ScriptCanvasBuilderDataSystemBus.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
@@ -29,10 +28,10 @@ namespace ScriptCanvasEditor
         : public AzToolsFramework::Components::EditorComponentBase
         , private EditorContextMenuRequestBus::Handler
         , private AzFramework::AssetCatalogEventBus::Handler
+        , private AzToolsFramework::AssetSystemBus::Handler
         , private EditorScriptCanvasComponentLoggingBus::Handler
         , private EditorScriptCanvasComponentRequestBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
-        , private ScriptCanvasBuilder::DataSystemNotificationsBus::Handler
     {
     public:
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
@@ -84,7 +83,6 @@ namespace ScriptCanvasEditor
         //=====================================================================
         
     protected:
-        // move this to the new ebus, or az event
         enum class SourceChangeDescription : AZ::u8
         {
             Error,
@@ -111,15 +109,10 @@ namespace ScriptCanvasEditor
         }
 
         // complete the id, load call OnScriptCanvasAssetChanged
-        void SourceFileChanged
-            ( const ScriptCanvasBuilder::BuildResult& result
-            , AZStd::string_view relativePath
-            , AZStd::string_view scanFolder) override;
-
+        void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         // update the display icon for failure, save the values in the graph
-        void SourceFileRemoved(AZStd::string_view relativePath, AZStd::string_view scanFolder) override;
-
-        void SourceFileFailed(AZStd::string_view relativePath, AZStd::string_view scanFolder) override;
+        void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
+        void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
 
         AZ::u32 OnFileSelectionChanged();
 
@@ -131,11 +124,12 @@ namespace ScriptCanvasEditor
         void UpdatePropertyDisplay();
         //=====================================================================
 
-        void ApplyGameEntityData(const ScriptCanvasBuilder::BuildVariableOverrides& buildData);
+        void BuildGameEntityData();
         void ClearVariables();
 
     private:
         AZStd::string m_name;
+        bool m_runtimeDataIsValid = false;
         ScriptCanvasBuilder::BuildVariableOverrides m_variableOverrides;
         SourceHandle m_sourceHandle;
         SourceHandle m_previousHandle;

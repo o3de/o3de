@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
 namespace AZ

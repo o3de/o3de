@@ -6,13 +6,12 @@
  *
  */
 
-#include <Terrain/Passes/TerrainDetailTextureComputePass.h>
-#include <Terrain/Passes/TerrainMacroTextureComputePass.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 #include <Atom/Utils/Utils.h>
+
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -22,7 +21,9 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
+
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+
 #include <Atom/Feature/RenderCommon.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
@@ -54,9 +55,6 @@ namespace Terrain
                 ->Version(0)
                 ;
         }
-
-        TerrainDetailTextureComputePassData::Reflect(context);
-        TerrainMacroTextureComputePassData::Reflect(context);
     }
 
     void TerrainFeatureProcessor::Activate()
@@ -161,10 +159,11 @@ namespace Terrain
         m_dirtyRegion.AddAabb(regionToUpdate);
         m_dirtyRegion.Clamp(worldBounds);
 
-        float queryResolution = 1.0f;
+        AZ::Vector2 queryResolution2D = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+            queryResolution2D, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
         // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
+        float queryResolution = queryResolution2D.GetX();
 
         m_terrainBounds = worldBounds;
         m_sampleSpacing = queryResolution;
@@ -174,49 +173,6 @@ namespace Terrain
     void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
     {
         CacheForwardPass();
-    }
-
-    void TerrainFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
-    {
-        // Get the pass request to create terrain parent pass from the asset
-        const char* passRequestAssetFilePath = "Passes/TerrainPassRequest.azasset";
-        auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-        const AZ::RPI::PassRequest* passRequest = nullptr;
-        if (passRequestAsset->IsReady())
-        {
-            passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
-        }
-        if (!passRequest)
-        {
-            AZ_Error("Terrain", false, "Failed to add terrain parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
-            return;
-        }
-
-        // Return if the pass to be created already exists
-        AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
-        AZ::RPI::Pass* pass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
-        if (pass)
-        {
-            return;
-        }
-
-        // Create the pass
-        AZ::RPI::Ptr<AZ::RPI::Pass> terrainParentPass  = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
-        if (!terrainParentPass)
-        {
-            AZ_Error("Terrain", false, "Create terrain parent pass from pass request failed");
-            return;
-        }
-
-        // Add the pass to render pipeline
-        bool success = renderPipeline->AddPassBefore(terrainParentPass, AZ::Name("DepthPrePass"));
-        // only create pass resources if it was success
-        if (!success)
-        {
-            AZ_Error("Terrain", false, "Add the terrain parent pass to render pipeline [%s] failed",
-                renderPipeline->GetId().GetCStr());
-        }
     }
 
     void TerrainFeatureProcessor::UpdateHeightmapImage()
@@ -252,45 +208,43 @@ namespace Terrain
         }
         
         int32_t xStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetX() / m_sampleSpacing));
+        int32_t xEnd = aznumeric_cast<int32_t>(AZStd::floorf(m_dirtyRegion.GetMax().GetX() / m_sampleSpacing)) + 1;
         int32_t yStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetY() / m_sampleSpacing));
-        
-        AZ::Vector2 stepSize(m_sampleSpacing);
-        AZ::Vector3 maxBound(
-            m_dirtyRegion.GetMax().GetX() + m_sampleSpacing, m_dirtyRegion.GetMax().GetY() + m_sampleSpacing, 0.0f);
-        AZ::Aabb region;
-        region.Set(m_dirtyRegion.GetMin(), maxBound);
+        int32_t yEnd = aznumeric_cast<int32_t>(AZStd::floorf(m_dirtyRegion.GetMax().GetY() / m_sampleSpacing)) + 1;
+        uint32_t updateWidth = xEnd - xStart;
+        uint32_t updateHeight = yEnd - yStart;
 
-        AZStd::pair<size_t, size_t> numSamples;
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            region, stepSize);
-
-        uint32_t updateWidth = static_cast<uint32_t>(numSamples.first);
-        uint32_t updateHeight = static_cast<uint32_t>(numSamples.second);
         AZStd::vector<uint16_t> pixels;
         pixels.reserve(updateWidth * updateHeight);
         {
             // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
-            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
+            // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
+            // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
+            // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
+            // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
 
             auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
             typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
-            auto perPositionCallback = [this, &pixels]
-                ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
-                [[maybe_unused]] bool terrainExists)
+            for (int32_t y = yStart; y < yEnd; y++)
             {
-                const float clampedHeight = AZ::GetClamp((surfacePoint.m_position.GetZ() - m_terrainBounds.GetMin().GetZ()) / m_terrainBounds.GetExtents().GetZ(), 0.0f, 1.0f);
-                const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
-                const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
+                for (int32_t x = xStart; x < xEnd; x++)
+                {
+                    bool terrainExists = true;
+                    float terrainHeight = 0.0f;
+                    float xPos = x * m_sampleSpacing;
+                    float yPos = y * m_sampleSpacing;
+                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                        terrainHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats,
+                        xPos, yPos, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
 
-                pixels.push_back(uint16Height);
-            };
+                    const float clampedHeight = AZ::GetClamp((terrainHeight - m_terrainBounds.GetMin().GetZ()) / m_terrainBounds.GetExtents().GetZ(), 0.0f, 1.0f);
+                    const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
+                    const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
 
-            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-                region, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+                    pixels.push_back(uint16Height);
+                }
+            }
         }
 
         if (m_heightmapImage)

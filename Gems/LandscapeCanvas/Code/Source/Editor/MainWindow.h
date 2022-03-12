@@ -34,8 +34,6 @@
 
 namespace AzToolsFramework
 {
-    class ReadOnlyEntityPublicInterface;
-
     namespace Prefab
     {
         class PrefabFocusPublicInterface;
@@ -263,9 +261,7 @@ namespace LandscapeCanvasEditor
 
         AZ::SerializeContext* m_serializeContext = nullptr;
 
-        static AzFramework::EntityContextId s_editorEntityContextId;
         AzToolsFramework::Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
-        AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
         bool m_ignoreGraphUpdates = false;
         bool m_prefabPropagationInProgress = false;

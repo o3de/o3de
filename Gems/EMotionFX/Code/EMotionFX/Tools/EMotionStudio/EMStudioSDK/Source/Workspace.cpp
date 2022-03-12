@@ -344,9 +344,8 @@ namespace EMStudio
             if (itActivationIndices->second.m_animGraphCommandIndex != -1
                 && itActivationIndices->second.m_motionSetCommandIndex != -1)
             {
-                // Since the actor instance will be created by the component, we pass in -1 as the actor instance id so the activate anim graph command
-                // will pick up the first available actor instance.
-                commandString = AZStd::string::format("ActivateAnimGraph -actorInstanceID -1 -animGraphID %%LASTRESULT%d%% -motionSetID %%LASTRESULT%d%% -visualizeScale %f\n",
+                commandString = AZStd::string::format("ActivateAnimGraph -actorInstanceID %%LASTRESULT%d%% -animGraphID %%LASTRESULT%d%% -motionSetID %%LASTRESULT%d%% -visualizeScale %f\n",
+                        (commandIndex - itActivationIndices->second.m_actorInstanceCommandIndex),
                         (commandIndex - itActivationIndices->second.m_animGraphCommandIndex),
                         (commandIndex - itActivationIndices->second.m_motionSetCommandIndex),
                         animGraphInstance->GetVisualizeScale());

@@ -10,7 +10,6 @@
 #include <PhysX/EditorColliderComponentRequestBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -30,9 +29,6 @@ namespace PhysX
         AZ::Transform worldTransform;
         AZ::TransformBus::EventResult(worldTransform, idPair.GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
-        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-
         AZ::Quaternion colliderRotation;
         PhysX::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
 
@@ -40,8 +36,7 @@ namespace PhysX
         PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
 
         m_rotationManipulators.SetSpace(worldTransform);
-        m_rotationManipulators.SetNonUniformScale(nonUniformScale);
-        m_rotationManipulators.SetLocalPosition(nonUniformScale * colliderOffset);
+        m_rotationManipulators.SetLocalPosition(colliderOffset);
         m_rotationManipulators.SetLocalOrientation(colliderRotation);
         m_rotationManipulators.AddEntityComponentIdPair(idPair);
         m_rotationManipulators.Register(AzToolsFramework::g_mainManipulatorManagerId);       
@@ -75,11 +70,7 @@ namespace PhysX
 
         AZ::Vector3 colliderOffset = AZ::Vector3::CreateZero();
         PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
-
-        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-
-        m_rotationManipulators.SetLocalPosition(nonUniformScale * colliderOffset);
+        m_rotationManipulators.SetLocalPosition(colliderOffset);
     }
 
     void ColliderRotationMode::Teardown(const AZ::EntityComponentIdPair& idPair)

@@ -20,10 +20,12 @@ def fetch_vector3_parts(vec3):
 
 general.idle_enable(True)
 
-# It needs a new test level in prefab format to make it testable again.
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'Base')
+# Try to open the WaterSample level. If not, fail the test.
+# We need to rely on an existing level since the API does not provide
+# a way to create entities, but only lets us manipulate them.
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'WaterSample')
 
-if (editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelName') == 'Base'):
+if (editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelName') == 'WaterSample'):
     
     objs_list = general.get_all_objects()
     

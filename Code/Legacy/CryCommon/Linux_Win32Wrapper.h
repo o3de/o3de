@@ -259,8 +259,8 @@ extern BOOL SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft);
 extern bool IsBadReadPtr(void* ptr, unsigned int size);
 
 // Defined in the launcher.
-AZ_DLL_IMPORT void OutputDebugString(const char*);
-AZ_DLL_IMPORT void DebugBreak();
+DLL_IMPORT void OutputDebugString(const char*);
+DLL_IMPORT void DebugBreak();
 
 /*
 //critical section stuff

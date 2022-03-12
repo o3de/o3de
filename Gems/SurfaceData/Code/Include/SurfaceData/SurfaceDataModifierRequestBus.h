@@ -11,7 +11,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <SurfaceData/SurfaceDataTypes.h>
-#include <SurfaceData/SurfacePointList.h>
 
 namespace SurfaceData
 {
@@ -32,10 +31,7 @@ namespace SurfaceData
         //! allows multiple threads to call
         using MutexType = AZStd::recursive_mutex;
 
-        virtual void ModifySurfacePoints(
-            AZStd::span<const AZ::Vector3> positions,
-            AZStd::span<const AZ::EntityId> creatorEntityIds,
-            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const = 0;
+        virtual void ModifySurfacePoints(SurfacePointList& surfacePointList) const = 0;
     };
 
     typedef AZ::EBus<SurfaceDataModifierRequests> SurfaceDataModifierRequestBus;

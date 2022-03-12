@@ -30,5 +30,8 @@
                 "type": "Fragment"
             }
         ]
-    }
+    },
+
+    "ProgramVariants": [
+    ]
 }

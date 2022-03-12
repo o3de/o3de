@@ -18,11 +18,11 @@
 #include <benchmark/benchmark.h>
 #endif // HAVE_BENCHMARK
 
+using namespace AZStd;
+using namespace UnitTestInternal;
+
 namespace UnitTest
 {
-    using namespace AZStd;
-    using namespace UnitTestInternal;
-    
     AZ_HAS_MEMBER(HashValidate, validate, void, ());
 
     /**
@@ -1400,7 +1400,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
         {
             ContainerType allocatorSet(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
@@ -1798,7 +1798,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
         {
             ContainerType allocatorMap(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;

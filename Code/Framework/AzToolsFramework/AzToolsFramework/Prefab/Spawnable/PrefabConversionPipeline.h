@@ -10,7 +10,6 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AzCore/Settings/ConfigurableStack.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string_view.h>
@@ -24,7 +23,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     public:
         AZ_CLASS_ALLOCATOR(PrefabConversionPipeline, AZ::SystemAllocator, 0);
         
-        using PrefabProcessorStack = AZ::ConfigurableStack<PrefabProcessor>;
+        using PrefabProcessorListEntry = AZStd::unique_ptr<PrefabProcessor>;
+        using PrefabProcessorList = AZStd::vector<PrefabProcessorListEntry>;
 
         bool LoadStackProfile(AZStd::string_view stackProfile);
         bool IsLoaded() const;
@@ -38,7 +38,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     private:
         size_t CalculateProcessorFingerprint(AZ::SerializeContext* context);
 
-        PrefabProcessorStack m_processors;
+        PrefabProcessorList m_processors;
         size_t m_fingerprint{};
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

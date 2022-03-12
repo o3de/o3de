@@ -112,7 +112,6 @@ namespace AzToolsFramework
         // PrefabPublicNotificationBus
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
-        void OnPrefabTemplateDirtyFlagUpdated(Prefab::TemplateId templateId, bool status) override;
 
         // EditorWindowUIRequestBus overrides
         void SetEditorUiEnabled(bool enable) override;
@@ -156,6 +155,7 @@ namespace AzToolsFramework
         void OnTreeItemDoubleClicked(const QModelIndex& index);
         void OnTreeItemExpanded(const QModelIndex& index);
         void OnTreeItemCollapsed(const QModelIndex& index);
+        void OnExpandEntity(const AZ::EntityId& entityId, bool expand);
         void OnSelectEntity(const AZ::EntityId& entityId, bool selected);
         void OnEnableSelectionUpdates(bool enable);
         void OnDropEvent();

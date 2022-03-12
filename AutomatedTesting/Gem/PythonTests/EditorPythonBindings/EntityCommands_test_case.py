@@ -32,7 +32,7 @@ def onEditorEntityDeleted(parameters):
 
 
 # Open a level (any level should work)
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'Base')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'WaterSample')
 
 # Listen for notifications when entities are created/deleted
 handler = bus.NotificationHandler('EditorEntityContextNotificationBus')

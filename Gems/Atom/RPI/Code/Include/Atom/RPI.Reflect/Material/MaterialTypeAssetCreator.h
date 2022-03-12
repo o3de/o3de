@@ -9,7 +9,7 @@
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
-#include <AzCore/std/containers/span.h>
+#include <AtomCore/std/containers/array_view.h>
 
 namespace AZ
 {

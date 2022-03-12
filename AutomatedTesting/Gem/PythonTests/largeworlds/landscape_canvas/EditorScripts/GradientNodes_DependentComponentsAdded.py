@@ -60,6 +60,7 @@ def GradientNodes_DependentComponentsAdded():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 
@@ -68,7 +69,8 @@ def GradientNodes_DependentComponentsAdded():
         newEntityId = parameters[0]
 
     # Open an existing simple level
-    hydra.open_base_level()
+    helper.init_idle()
+    helper.open_level("Physics", "Base")
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')

@@ -6,54 +6,21 @@
  *
  */
 
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <Atom/Document/ShaderManagementConsoleDocumentModule.h>
+#include <Atom/Window/ShaderManagementConsoleWindowModule.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <ShaderManagementConsoleApplication.h>
-
-#include <Document/ShaderManagementConsoleDocument.h>
-#include <Window/ShaderManagementConsoleTableView.h>
-#include <Window/ShaderManagementConsoleWindow.h>
-
-void InitShaderManagementConsoleResources()
-{
-    // Must register qt resources from other modules
-    Q_INIT_RESOURCE(ShaderManagementConsole);
-    Q_INIT_RESOURCE(InspectorWidget);
-    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
-}
+#include <ShaderManagementConsole_Traits_Platform.h>
 
 namespace ShaderManagementConsole
 {
-    static const char* GetBuildTargetName()
+    //! This function returns the build system target name of "ShaderManagementConsole"
+    AZStd::string ShaderManagementConsoleApplication::GetBuildTargetName() const
     {
 #if !defined(LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
-        return LY_CMAKE_TARGET;
-    }
-
-    ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
-        : Base(GetBuildTargetName(), argc, argv)
-    {
-        InitShaderManagementConsoleResources();
-
-        QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Shader Management Console");
-        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
-
-        AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-    }
-
-    ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
-    {
-        AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
-        m_window.reset();
-    }
-
-    void ShaderManagementConsoleApplication::Reflect(AZ::ReflectContext* context)
-    {
-        Base::Reflect(context);
-        ShaderManagementConsoleDocument::Reflect(context);
+        return AZStd::string_view{ LY_CMAKE_TARGET };
     }
 
     const char* ShaderManagementConsoleApplication::GetCurrentConfigurationName() const
@@ -67,35 +34,25 @@ namespace ShaderManagementConsole
 #endif
     }
 
-    void ShaderManagementConsoleApplication::StartCommon(AZ::Entity* systemEntity)
+    ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
+        : Base(argc, argv)
     {
-        Base::StartCommon(systemEntity);
+        QApplication::setApplicationName("O3DE Shader Management Console");
 
-        // Overriding default document type info to provide a custom view
-        auto documentTypeInfo = ShaderManagementConsoleDocument::BuildDocumentTypeInfo();
-        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
-            return m_window->AddDocumentTab(documentId, new ShaderManagementConsoleTableView(toolId, documentId, m_window.get()));
-        };
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
-
-        m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
-        m_window->show();
+        // The settings registry has been created at this point, so add the CMake target
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
+            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
     }
 
-    void ShaderManagementConsoleApplication::Destroy()
+    void ShaderManagementConsoleApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
-        m_window.reset();
-        Base::Destroy();
+        Base::CreateStaticModules(outModules);
+        outModules.push_back(aznew ShaderManagementConsoleDocumentModule);
+        outModules.push_back(aznew ShaderManagementConsoleWindowModule);
     }
 
     AZStd::vector<AZStd::string> ShaderManagementConsoleApplication::GetCriticalAssetFilters() const
     {
         return AZStd::vector<AZStd::string>({ "passes/", "config/" });
-    }
-
-    QWidget* ShaderManagementConsoleApplication::GetAppMainWindow()
-    {
-        return m_window.get();
     }
 } // namespace ShaderManagementConsole

@@ -14,7 +14,6 @@
 #include <QApplication>
 #include <QStyleOptionToolButton>
 #include <QStylePainter>
-#include <QTimer>
 
 namespace AzQtComponents
 {
@@ -67,7 +66,7 @@ namespace AzQtComponents
                 Style::addClass(this, QStringLiteral("close"));
                 break;
             case DockBarButton::MaximizeButton:
-                SetMaximizeRestoreButton();
+                Style::addClass(this, QStringLiteral("maximize"));
                 break;
             case DockBarButton::MinimizeButton:
                 Style::addClass(this, QStringLiteral("minimize"));
@@ -130,30 +129,6 @@ namespace AzQtComponents
         }
 
         emit buttonPressed(m_buttonType);
-
-        // We need to update the Maximize/Restore button to display the right icon, but for
-        // floating windows, the window() maximize state won't be updated until the following
-        // tick, so we need to delay this update until the next check
-        QTimer::singleShot(0, [this] {
-            if (m_buttonType == DockBarButton::MaximizeButton)
-            {
-                SetMaximizeRestoreButton();
-            }
-        });
-    }
-
-    void DockBarButton::SetMaximizeRestoreButton()
-    {
-        if (window() && window()->isMaximized())
-        {
-            Style::removeClass(this, QStringLiteral("maximize"));
-            Style::addClass(this, QStringLiteral("restore"));
-        }
-        else
-        {
-            Style::removeClass(this, QStringLiteral("restore"));
-            Style::addClass(this, QStringLiteral("maximize"));
-        }
     }
 
     bool DockBarButton::drawDockBarButton(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget, const Config& config)

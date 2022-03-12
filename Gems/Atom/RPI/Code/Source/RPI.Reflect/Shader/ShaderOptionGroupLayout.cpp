@@ -35,35 +35,6 @@ namespace AZ
             default: return "<Unknown>";
             }
         }
-        
-        ShaderOptionValues CreateEnumShaderOptionValues(AZStd::span<const AZStd::string_view> enumNames)
-        {
-            ShaderOptionValues values;
-            values.reserve(enumNames.size());
-            for (size_t i = 0; i < enumNames.size(); ++i)
-            {
-                values.emplace_back(Name{enumNames[i]}, i);
-            }
-            return values;
-        }
-        
-        ShaderOptionValues CreateEnumShaderOptionValues(AZStd::initializer_list<AZStd::string_view> enumNames)
-        {
-            return CreateEnumShaderOptionValues(AZStd::span(enumNames.begin(), enumNames.end()));   
-        }
-
-        ShaderOptionValues CreateBoolShaderOptionValues()
-        {
-            return CreateEnumShaderOptionValues({"False", "True"});
-        }
-        
-        ShaderOptionValues CreateIntRangeShaderOptionValues(uint32_t min, uint32_t max)
-        {
-            AZStd::vector<RPI::ShaderOptionValuePair> intOptionRange;
-            intOptionRange.push_back({Name{AZStd::string::format("%u", min)},  RPI::ShaderOptionValue{min}});
-            intOptionRange.push_back({Name{AZStd::string::format("%u", max)}, RPI::ShaderOptionValue{max}});
-            return intOptionRange;
-        }
 
         void ShaderOptionGroupHints::Reflect(ReflectContext* context)
         {
@@ -119,7 +90,7 @@ namespace AZ
                                                        const ShaderOptionType& optionType, 
                                                        uint32_t bitOffset,                                      
                                                        uint32_t order,
-                                                       const ShaderOptionValues& nameIndexList,
+                                                       const AZStd::vector<RPI::ShaderOptionValuePair>& nameIndexList,
                                                        const Name& defaultValue)                        
 
             : m_name{name}
@@ -131,11 +102,6 @@ namespace AZ
             for (auto pair : nameIndexList)
             {   // Registers the pair in the lookup table
                 AddValue(pair.first, pair.second);
-
-                if (m_defaultValue.IsEmpty())
-                {
-                    m_defaultValue = pair.first;
-                }
             }
 
             uint32_t numValues = (m_type == ShaderOptionType::IntegerRange) ? (m_maxValue.GetIndex() - m_minValue.GetIndex() + 1) : (uint32_t) nameIndexList.size();

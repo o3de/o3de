@@ -290,17 +290,17 @@ namespace AzFramework
                     isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
                 if (isPrefabSystemEnabled)
                 {
-                    if (currentEntity->GetEntitySpawnTicketId() > 0)
+                    if (currentEntity->GetSpawnTicketId() > 0)
                     {
                         SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
                         AZ_Assert(spawnableEntitiesInterface != nullptr, "SpawnableEntitiesInterface is not found.");
-                        spawnableEntitiesInterface->RetrieveTicket(
-                            currentEntity->GetEntitySpawnTicketId(),
-                            [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket&& entitySpawnTicket)
+                        spawnableEntitiesInterface->RetrieveEntitySpawnTicket(
+                            currentEntity->GetSpawnTicketId(),
+                            [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket* entitySpawnTicket)
                             {
-                                if (entitySpawnTicket.IsValid())
+                                if (entitySpawnTicket != nullptr)
                                 {
-                                    spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), entitySpawnTicket);
+                                    spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), *entitySpawnTicket);
                                 }
                             });
                         return;

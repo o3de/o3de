@@ -28,20 +28,14 @@ namespace AZ
 
                 ~ScriptProcessorRule() override = default;
 
-                inline const AZStd::string& GetScriptFilename() const override
-                {
-                    return m_scriptFilename;
-                }
+                const AZStd::string& GetScriptFilename() const override;
 
                 inline void SetScriptFilename(AZStd::string scriptFilename)
                 {
                     m_scriptFilename = AZStd::move(scriptFilename);
                 }
 
-                inline DataTypes::ScriptProcessorFallbackLogic GetScriptProcessorFallbackLogic() const override
-                {
-                    return m_fallbackLogic;
-                }
+                DataTypes::ScriptProcessorFallbackLogic GetScriptProcessorFallbackLogic() const override;
 
                 static void Reflect(ReflectContext* context);
 

@@ -11,7 +11,6 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/Motion.h>

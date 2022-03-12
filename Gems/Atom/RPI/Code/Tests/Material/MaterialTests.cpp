@@ -389,9 +389,18 @@ namespace UnitTest
 
     Ptr<ShaderOptionGroupLayout> CreateTestOptionsLayout()
     {
-        AZStd::vector<RPI::ShaderOptionValuePair> enumOptionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
-        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
-        AZStd::vector<RPI::ShaderOptionValuePair> rangeOptionValues = CreateIntRangeShaderOptionValues(1, 10);
+        AZStd::vector<RPI::ShaderOptionValuePair> enumOptionValues;
+        enumOptionValues.push_back({Name("Low"),  RPI::ShaderOptionValue(0)});
+        enumOptionValues.push_back({Name("Med"), RPI::ShaderOptionValue(1)});
+        enumOptionValues.push_back({Name("High"), RPI::ShaderOptionValue(2)});
+
+        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
+        boolOptionValues.push_back({Name("False"),  RPI::ShaderOptionValue(0)});
+        boolOptionValues.push_back({Name("True"), RPI::ShaderOptionValue(1)});
+
+        AZStd::vector<RPI::ShaderOptionValuePair> rangeOptionValues;
+        rangeOptionValues.push_back({Name("1"),  RPI::ShaderOptionValue(1)});
+        rangeOptionValues.push_back({Name("10"), RPI::ShaderOptionValue(10)});
 
         Ptr<ShaderOptionGroupLayout> shaderOptions = ShaderOptionGroupLayout::Create();
         uint32_t order = 0;

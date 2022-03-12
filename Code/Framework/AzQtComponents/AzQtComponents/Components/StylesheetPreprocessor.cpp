@@ -134,7 +134,7 @@ namespace AzQtComponents
             QColor color;
             QString colorName(m_namedVariables.value(name));
 
-            [[maybe_unused]] bool colorSet = false;
+            bool colorSet = false;
             if (QColor::isValidColor(colorName))
             {
                 color.setNamedColor(colorName);

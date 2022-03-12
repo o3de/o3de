@@ -112,6 +112,11 @@ namespace AzToolsFramework
             }
         }
 
+        void EntryDelegate::SetThumbnailContext(const char* thumbnailContext)
+        {
+            m_thumbnailContext = thumbnailContext;
+        }
+
         void EntryDelegate::SetShowSourceControlIcons(bool showSourceControl)
         {
             m_showSourceControl = showSourceControl;
@@ -120,8 +125,8 @@ namespace AzToolsFramework
         int EntryDelegate::DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const
         {
             SharedThumbnail thumbnail;
-            ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey);
-            AZ_Assert(thumbnail, "The shared numbernail was not available from the ThumbnailerRequestBus.");
+            ThumbnailerRequestsBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey, m_thumbnailContext.c_str());
+            AZ_Assert(thumbnail, "The shared numbernail was not available from the ThumbnailerRequestsBus.");
             AZ_Assert(painter, "A null QPainter was passed in to DrawThumbnail.");
             if (!painter || !thumbnail || thumbnail->GetState() == Thumbnail::State::Failed)
             {
@@ -172,6 +177,7 @@ namespace AzToolsFramework
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
+                bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
 
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
@@ -217,6 +223,7 @@ namespace AzToolsFramework
                         // sources with no children should be greyed out.
                         if (sourceEntry->GetChildCount() == 0)
                         {
+                            isEnabled = false; // draw in disabled style.
                             actualPalette.setCurrentColorGroup(QPalette::Disabled);
                         }
                     }
@@ -278,7 +285,7 @@ namespace AzToolsFramework
                 initStyleOption(&optionV4, index);
                 optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
 
-                if (m_assetBrowserFilerModel && m_assetBrowserFilerModel->GetStringFilter()
+                if (m_assetBrowserFilerModel && m_assetBrowserFilerModel->GetStringFilter() 
                     && !m_assetBrowserFilerModel->GetStringFilter()->GetFilterString().isEmpty())
                 {
                     displayString = RichTextHighlighter::HighlightText(displayString, m_assetBrowserFilerModel->GetStringFilter()->GetFilterString());
@@ -309,7 +316,7 @@ namespace AzToolsFramework
                     absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathOneChild;
                     break;
                 }
-                [[maybe_unused]] bool pixmapLoadedSuccess = pixmap.load(absoluteIconPath.c_str());
+                [[maybe_unused]] bool pixmapLoadedSuccess = pixmap.load(absoluteIconPath.c_str()); 
                 AZ_Assert(pixmapLoadedSuccess, "Error loading Branch Icons in SearchEntryDelegate");
 
                 m_branchIcons[static_cast<EntryBranchType>(branchType)] = pixmap;

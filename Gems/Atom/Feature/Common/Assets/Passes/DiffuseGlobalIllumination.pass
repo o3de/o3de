@@ -42,38 +42,6 @@
                         },
                         "LoadAction": "Clear"
                     }
-                },
-                {
-                    "Name": "VisualizationOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        },
-                        "LoadAction": "Clear"
-                    }
-                },
-                {
-                    "Name": "QueryOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "Shader",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        },
-                        "LoadAction": "Clear"
-                    }
                 }
             ],
             "ImageAttachments": [
@@ -105,21 +73,7 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "IrradianceImage"
-                    }
-                },
-                {
-                    "LocalSlot": "VisualizationOutput",
-                    "AttachmentRef": {
-                        "Pass": "DiffuseProbeGridVisualizationRayTracingPass",
-                        "Attachment": "Output"
-                    }
-                },
-                {
-                    "LocalSlot": "QueryOutput",
-                    "AttachmentRef": {
-                        "Pass": "DiffuseProbeGridQueryPass",
-                        "Attachment": "Output"
-                    }
+                     }
                 }
             ],
             "PassRequests": [
@@ -239,22 +193,6 @@
                             }
                         }
                     ]
-                },
-                {
-                    "Name": "DiffuseProbeGridVisualizationPreparePass",
-                    "TemplateName": "DiffuseProbeGridVisualizationPreparePassTemplate"
-                },
-                {
-                    "Name": "DiffuseProbeGridVisualizationAccelerationStructurePass",
-                    "TemplateName": "DiffuseProbeGridVisualizationAccelerationStructurePassTemplate"
-                },
-                {
-                    "Name": "DiffuseProbeGridVisualizationRayTracingPass",
-                    "TemplateName": "DiffuseProbeGridVisualizationRayTracingPassTemplate"
-                },
-                {
-                    "Name": "DiffuseProbeGridQueryPass",
-                    "TemplateName": "DiffuseProbeGridQueryPassTemplate"
                 }
             ]
         }

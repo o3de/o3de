@@ -14,7 +14,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/parallel/shared_mutex.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
@@ -80,9 +79,9 @@ namespace SurfaceData
         ////////////////////////////////////////////////////////////////////////
         // SurfaceDataProviderRequestBus
         void GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const override;
-        void GetSurfacePointsFromList(AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const override;
 
     private:
+        bool DoRayTrace(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const;
         void UpdateMeshData();
         void OnCompositionChanged();
 
@@ -97,12 +96,11 @@ namespace SurfaceData
 
         // cached data
         AZStd::atomic_bool m_refresh{ false };
-        mutable AZStd::shared_mutex m_cacheMutex;
+        mutable AZStd::recursive_mutex m_cacheMutex;
         AZ::Data::Asset<AZ::Data::AssetData> m_meshAssetData;
         AZ::Transform m_meshWorldTM = AZ::Transform::CreateIdentity();
         AZ::Transform m_meshWorldTMInverse = AZ::Transform::CreateIdentity();
         AZ::Vector3 m_meshNonUniformScale = AZ::Vector3::CreateOne();
         AZ::Aabb m_meshBounds = AZ::Aabb::CreateNull();
-        SurfaceTagWeights m_newPointWeights;
     };
 }

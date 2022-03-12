@@ -33,5 +33,4 @@ set(FILES
     Scene.cpp
     CameraState.cpp
     InputTests.cpp
-    DocumentPropertyEditor/AdapterBuilderTests.cpp
 )

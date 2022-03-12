@@ -7,10 +7,16 @@
  */
 #pragma once
 
-#include <type_traits>
+#include <AzCore/std/typetraits/integral_constant.h>
 
 namespace AZStd
 {
-    using std::negation;
-    using std::negation_v;
+    template<class B>
+    struct negation
+        : integral_constant<bool, !B::value>
+    {
+    };
+
+    template<class B>
+    constexpr bool negation_v = negation<B>::value;
 }

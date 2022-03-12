@@ -169,3 +169,5 @@ void CCommentKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
         }
     }
 }
+
+REGISTER_QT_CLASS_DESC(CCommentKeyUIControls, "TrackView.KeyUI.Comment", "TrackViewKeyUI");

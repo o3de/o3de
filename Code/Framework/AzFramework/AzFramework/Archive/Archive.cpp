@@ -1208,7 +1208,7 @@ namespace AZ::IO
 
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
         if (usePrefabSystemForLevels)
         {
@@ -1274,7 +1274,7 @@ namespace AZ::IO
 
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
         AZStd::unique_lock lock(m_csZips);
         for (auto it = m_arrZips.begin(); it != m_arrZips.end();)
@@ -1975,7 +1975,7 @@ namespace AZ::IO
             AZ_Error("Archive", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
             return {};
         }
-        AZ::IAllocator* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
+        AZ::IAllocatorAllocate* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
         AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
         auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
         {

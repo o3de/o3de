@@ -17,12 +17,9 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AtomCore
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::Atom_RPI.Public
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
             Gem::LmbrCentral
@@ -58,7 +55,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME GradientSignal.Editor.Static STATIC
         NAMESPACE Gem
-        AUTOMOC
         FILES_CMAKE
             gradientsignal_editor_files.cmake
         INCLUDE_DIRECTORIES
@@ -142,8 +138,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::LmbrCentral
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
-        RUNTIME_DEPENDENCIES
-            Gem::SurfaceData
     )
     
     ly_add_target(
@@ -164,8 +158,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::LmbrCentral
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
-        RUNTIME_DEPENDENCIES
-            Gem::SurfaceData
     )
     ly_add_googletest(
         NAME Gem::GradientSignal.Tests

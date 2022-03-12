@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/Time/ITime.h>
 
 #include <imgui/imgui.h>
 
@@ -93,7 +92,7 @@ namespace Profiler
             double m_executeDuration = 0;
         };
 
-        ImGuiCpuProfiler();
+        ImGuiCpuProfiler() = default;
         ~ImGuiCpuProfiler() = default;
 
         //! Draws the overall CPU profiling window, defaults to the statistical view
@@ -101,8 +100,7 @@ namespace Profiler
 
     private:
         static constexpr float RowHeight = 35.0f;
-        static constexpr int DefaultFramesToCollect = 60; // 1 second @ 60 fps
-        static constexpr int DefaultUpdateFrequencyMs = 1000; // 1 second
+        static constexpr int DefaultFramesToCollect = 50;
         static constexpr float MediumFrameTimeLimit = 16.6f; // 60 fps
         static constexpr float HighFrameTimeLimit = 33.3f; // 30 fps
 
@@ -171,9 +169,6 @@ namespace Profiler
 
         //  --- Visualizer Members ---
 
-        int m_updateFrequencyMs = DefaultUpdateFrequencyMs;
-        AZ::TimeMs m_currentUpdateTimeMs = AZ::TimeMs{ 0 };
-
         int m_framesToCollect = DefaultFramesToCollect;
 
         // Tally of the number of saved profiling events so far
@@ -187,7 +182,6 @@ namespace Profiler
         // note: we use size_t as a proxy for thread_id because native_thread_id_type differs differs from
         // platform to platform, which causes problems when deserializing saved captures.
         AZStd::unordered_map<size_t, AZStd::vector<TimeRegion>> m_savedData;
-        size_t m_mainThreadId = 0;
 
         // Region color cache
         AZStd::unordered_map<GroupRegionName, ImVec4, CachedTimeRegion::GroupRegionName::Hash> m_regionColorMap;

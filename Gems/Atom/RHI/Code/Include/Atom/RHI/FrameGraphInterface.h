@@ -18,7 +18,7 @@
 #include <Atom/RHI.Reflect/ResolveScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
-#include <AzCore/std/containers/span.h>
+#include <AtomCore/std/containers/array_view.h>
 
 namespace AZ
 {
@@ -79,7 +79,7 @@ namespace AZ
 
             //! Declares an array of image attachments for use on the current scope.
             ResultCode UseAttachments(
-                AZStd::span<const ImageScopeAttachmentDescriptor> descriptors,
+                AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors,
                 ScopeAttachmentAccess access,
                 ScopeAttachmentUsage usage)
             {
@@ -87,7 +87,7 @@ namespace AZ
             }
             
             //! Declares an array of color attachments for use on the current scope.
-            ResultCode UseColorAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
+            ResultCode UseColorAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors)
             {
                 return m_frameGraph.UseColorAttachments(descriptors);
             }
@@ -100,7 +100,7 @@ namespace AZ
             
             //! Declares an array of subpass input attachments for use on the current scope.
             //! See UseSubpassInputAttachment for a definition about a SubpassInput.
-            ResultCode UseSubpassInputAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
+            ResultCode UseSubpassInputAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors)
             {
                 return m_frameGraph.UseSubpassInputAttachments(descriptors);
             }

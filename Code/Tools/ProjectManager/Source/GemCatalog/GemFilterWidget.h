@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
     class FilterCategoryWidget
         : public QWidget
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
     public:
         explicit FilterCategoryWidget(const QString& header,

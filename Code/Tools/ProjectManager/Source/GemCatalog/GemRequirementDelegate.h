@@ -18,7 +18,7 @@ namespace O3DE::ProjectManager
     class GemRequirementDelegate
         : public GemItemDelegate
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
     public:
         explicit GemRequirementDelegate(QAbstractItemModel* model, QObject* parent = nullptr);

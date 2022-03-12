@@ -23,9 +23,19 @@ inline void* CryModuleMallocImpl(size_t size, const char* file, const int line)
 #define CryModuleFree(ptr) CryModuleFreeImpl(ptr, __FILE__, __LINE__)
 #define CryModuleMemalignFree(ptr) CryModuleFreeImpl(ptr, __FILE__, __LINE__)
 
-inline void CryModuleFreeImpl(void* ptr, const char*, const int)
+inline void CryModuleFreeImpl(void* ptr, const char* file, const int line)
 {
-    AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().DeAllocate(ptr, 0, 0);
+
+    AZ::IAllocator& allocator = AZ::AllocatorInstance<AZ::LegacyAllocator>::GetAllocator();
+
+    if (allocator.IsAllocationSourceChanged())
+    {
+        allocator.GetAllocationSource()->DeAllocate(ptr);
+    }
+    else
+    {
+        static_cast<AZ::LegacyAllocator&>(allocator).DeAllocate(ptr, file, line);
+    }
 }
 
 #define CryModuleMemalign(size, alignment) CryModuleMemalignImpl(size, alignment, __FILE__, __LINE__)
@@ -69,5 +79,17 @@ inline void* CryModuleReallocAlignImpl(void* prev, size_t size, size_t alignment
     }
 #endif
 
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().ReAllocate(prev, size, 0);
+    AZ::IAllocator& allocator = AZ::AllocatorInstance<AZ::LegacyAllocator>::GetAllocator();
+    void *ptr;
+
+    if (allocator.IsAllocationSourceChanged())
+    {
+        ptr = allocator.GetAllocationSource()->ReAllocate(prev, size, 0);
+    }
+    else
+    {
+        ptr = static_cast<AZ::LegacyAllocator&>(allocator).ReAllocate(prev, size, 0, file, line);
+    }
+
+    return ptr;
 }

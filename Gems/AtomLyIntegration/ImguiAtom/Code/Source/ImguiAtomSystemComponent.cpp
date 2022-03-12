@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Windowing/WindowBus.h>
+#include <Atom/Feature/ImGui/ImGuiUtils.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 

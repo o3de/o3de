@@ -24,8 +24,6 @@ namespace AZ
         static const uint32_t RayTracingSceneSrgBindingSlot = 1;
         static const uint32_t RayTracingMaterialSrgBindingSlot = 2;
 
-        static const uint32_t RayTracingTlasInstanceElementSize = 64;
-
         enum class RayTracingSubMeshBufferFlags : uint32_t
         {
             None = 0,

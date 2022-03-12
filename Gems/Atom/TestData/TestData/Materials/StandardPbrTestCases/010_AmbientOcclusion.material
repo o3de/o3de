@@ -1,9 +1,12 @@
 {
+    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 3,
     "parentMaterial": "010_OcclusionBase.material",
-    "propertyValues": {
-        "occlusion.diffuseFactor": 2.0,
-        "occlusion.diffuseTextureMap": "TestData/Textures/cc0/Tiles009_1K_AmbientOcclusion.jpg"
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "occlusion": {
+            "diffuseFactor": 2.0,
+            "diffuseTextureMap": "TestData/Textures/cc0/Tiles009_1K_AmbientOcclusion.jpg"
+        }
     }
 }

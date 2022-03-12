@@ -33,16 +33,13 @@ namespace AZ
             RPI::ScenePtr scene,
             RPI::ViewPtr view,
             AZ::Uuid entityContextId,
-            const Data::Asset<RPI::ModelAsset>& modelAsset,
-            const Data::Asset<RPI::MaterialAsset>& materialAsset,
-            const Data::Asset<RPI::AnyAsset>& lightingPresetAsset,
+            const Data::AssetId& modelAssetId,
+            const Data::AssetId& materialAssetId,
+            const Data::AssetId& lightingPresetAssetId,
             const Render::MaterialPropertyOverrideMap& materialPropertyOverrides)
             : m_scene(scene)
             , m_view(view)
             , m_entityContextId(entityContextId)
-            , m_modelAsset(modelAsset)
-            , m_materialAsset(materialAsset)
-            , m_lightingPresetAsset(lightingPresetAsset)
             , m_materialPropertyOverrides(materialPropertyOverrides)
         {
             // Create preview model
@@ -53,6 +50,10 @@ namespace AZ
             m_modelEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
             m_modelEntity->Init();
             m_modelEntity->Activate();
+
+            m_modelAsset.Create(modelAssetId);
+            m_materialAsset.Create(materialAssetId);
+            m_lightingPresetAsset.Create(lightingPresetAssetId);
         }
 
         SharedPreviewContent::~SharedPreviewContent()

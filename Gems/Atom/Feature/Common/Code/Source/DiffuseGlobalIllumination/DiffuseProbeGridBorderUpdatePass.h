@@ -40,7 +40,8 @@ namespace AZ
                             RHI::DispatchDirect& dispatchArgs);
 
             // Pass overrides
-            bool IsEnabled() const override;
+            void FrameBeginInternal(FramePrepareParams params) override;
+
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;

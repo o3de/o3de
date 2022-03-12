@@ -50,7 +50,7 @@ namespace AZ
 
         void DepthOfFieldCopyFocusDepthToCpuPass::BuildInternal()
         {
-            InitScope(RHI::ScopeId(GetPathName()));
+            SetScopeId(RHI::ScopeId(GetPathName()));
         }
 
         void DepthOfFieldCopyFocusDepthToCpuPass::FrameBeginInternal(FramePrepareParams params)

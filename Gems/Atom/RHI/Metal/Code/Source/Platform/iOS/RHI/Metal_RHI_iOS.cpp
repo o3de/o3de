@@ -24,7 +24,7 @@ namespace Platform
     {
         AZ::RHI::PhysicalDeviceList physicalDeviceList;
         AZ::Metal::PhysicalDevice* physicalDevice = aznew AZ::Metal::PhysicalDevice;
-        physicalDevice->Init(MTLCreateSystemDefaultDevice());
+        physicalDevice->Init(nil);
         physicalDeviceList.emplace_back(physicalDevice);
         return physicalDeviceList;
     }

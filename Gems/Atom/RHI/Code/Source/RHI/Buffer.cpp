@@ -42,12 +42,5 @@ namespace AZ
         {
             return Base::GetResourceView(bufferViewDescriptor);
         }
-
-        const HashValue64 Buffer::GetHash() const
-        {
-            HashValue64 hash = HashValue64{ 0 };
-            hash = m_descriptor.GetHash();
-            return hash;
-        }
     }
 }

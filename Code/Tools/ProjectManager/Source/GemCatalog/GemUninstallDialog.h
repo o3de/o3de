@@ -17,7 +17,7 @@ namespace O3DE::ProjectManager
     class GemUninstallDialog
         : public QDialog
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
     public:
         explicit GemUninstallDialog(const QString& gemName, QWidget *parent = nullptr);
         ~GemUninstallDialog() = default;

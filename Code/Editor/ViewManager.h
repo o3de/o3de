@@ -17,6 +17,7 @@
 
 #include "Cry_Geo.h"
 #include "Viewport.h"
+#include "Include/IViewPane.h"
 #include "QtViewPaneManager.h"
 // forward declaration.
 class CLayoutWnd;

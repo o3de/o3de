@@ -121,3 +121,5 @@ void CGotoKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& select
         }
     }
 }
+
+REGISTER_QT_CLASS_DESC(CGotoKeyUIControls, "TrackView.KeyUI.Goto", "TrackViewKeyUI");

@@ -145,15 +145,6 @@ namespace AzToolsFramework
         }
     }
 
-    void TranslationManipulators::InstallSurfaceManipulatorEntityIdsToIgnoreFn(
-        SurfaceManipulator::EntityIdsToIgnoreFn entityIdsToIgnoreFn)
-    {
-        if (m_surfaceManipulator)
-        {
-            m_surfaceManipulator->InstallEntityIdsToIgnoreFn(AZStd::move(entityIdsToIgnoreFn));
-        }
-    }
-
     void TranslationManipulators::SetLocalTransformImpl(const AZ::Transform& localTransform)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_linearManipulators)

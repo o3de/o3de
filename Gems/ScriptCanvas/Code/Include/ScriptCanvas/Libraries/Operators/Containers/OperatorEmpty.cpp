@@ -7,6 +7,7 @@
  */
 
 #include "OperatorEmpty.h"
+#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Contracts/SupportsMethodContract.h>
 
 #include <ScriptCanvas/Utils/SerializationUtils.h>

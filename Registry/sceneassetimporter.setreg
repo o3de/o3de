@@ -8,20 +8,13 @@
 				"SupportedFileTypeExtensions":
 				[
 					".fbx",
-					".stl",
-					".gltf",
-					".glb"
+					".stl"
 				]
 			},
 			"MaterialConverter": 
 			{
 				"Enable": true,
 				"DefaultMaterial": "Materials/Presets/PBR/default_grid.material"
-			},
-			"TangentGenerateComponent":
-			{
-				"DefaultGenerationMethod": "FromSourceScene",
-				"DebugBitangentFlip": false
 			}
 		}
 	}

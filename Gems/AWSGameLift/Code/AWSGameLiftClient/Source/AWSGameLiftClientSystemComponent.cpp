@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <Multiplayer/Session/SessionConfig.h>
+#include <AzFramework/Session/SessionConfig.h>
 
 #include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSCoreBus.h>
@@ -129,7 +129,7 @@ namespace AWSGameLift
                 ->Event("StopMatchmakingAsync", &AWSGameLiftMatchmakingAsyncRequestBus::Events::StopMatchmakingAsync,
                     { { { "StopMatchmakingRequest", "" } } });
 
-            behaviorContext->EBus<Multiplayer::MatchmakingAsyncRequestNotificationBus>("AWSGameLiftMatchmakingAsyncRequestNotificationBus")
+            behaviorContext->EBus<AzFramework::MatchmakingAsyncRequestNotificationBus>("AWSGameLiftMatchmakingAsyncRequestNotificationBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Matchmaking")
                 ->Handler<AWSGameLiftMatchmakingAsyncRequestNotificationBusHandler>();
 
@@ -149,7 +149,7 @@ namespace AWSGameLift
                         { "PlayerId", "" } } })
                 ->Event("StopPolling", &AWSGameLiftMatchmakingEventRequestBus::Events::StopPolling);
 
-            behaviorContext->EBus<Multiplayer::MatchmakingNotificationBus>("AWSGameLiftMatchmakingNotificationBus")
+            behaviorContext->EBus<AzFramework::MatchmakingNotificationBus>("AWSGameLiftMatchmakingNotificationBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Matchmaking")
                 ->Handler<AWSGameLiftMatchmakingNotificationBusHandler>();
         }
@@ -175,7 +175,7 @@ namespace AWSGameLift
                     { { { "SearchSessionsRequest", "" } } })
                 ->Event("LeaveSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::LeaveSessionAsync);
 
-            behaviorContext->EBus<Multiplayer::SessionAsyncRequestNotificationBus>("AWSGameLiftSessionAsyncRequestNotificationBus")
+            behaviorContext->EBus<AzFramework::SessionAsyncRequestNotificationBus>("AWSGameLiftSessionAsyncRequestNotificationBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Session")
                 ->Handler<AWSGameLiftSessionAsyncRequestNotificationBusHandler>();
 
@@ -190,10 +190,10 @@ namespace AWSGameLift
 
     void AWSGameLiftClientSystemComponent::ReflectCreateSessionRequest(AZ::ReflectContext* context)
     {
-        Multiplayer::CreateSessionRequest::Reflect(context);
+        AzFramework::CreateSessionRequest::Reflect(context);
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<Multiplayer::CreateSessionRequest>("CreateSessionRequest")
+            behaviorContext->Class<AzFramework::CreateSessionRequest>("CreateSessionRequest")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 // Expose base type to BehaviorContext, but hide it to be used directly
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
@@ -204,34 +204,34 @@ namespace AWSGameLift
     void AWSGameLiftClientSystemComponent::ReflectSearchSessionsResponse(AZ::ReflectContext* context)
     {
         // As it is a common response type, reflection could be moved to AzFramework to avoid duplication
-        Multiplayer::SessionConfig::Reflect(context);
-        Multiplayer::SearchSessionsResponse::Reflect(context);
+        AzFramework::SessionConfig::Reflect(context);
+        AzFramework::SearchSessionsResponse::Reflect(context);
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<Multiplayer::SessionConfig>("SessionConfig")
+            behaviorContext->Class<AzFramework::SessionConfig>("SessionConfig")
                 ->Attribute(AZ::Script::Attributes::Category, "Session")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
-                ->Property("CreationTime", BehaviorValueProperty(&Multiplayer::SessionConfig::m_creationTime))
-                ->Property("CreatorId", BehaviorValueProperty(&Multiplayer::SessionConfig::m_creatorId))
-                ->Property("CurrentPlayer", BehaviorValueProperty(&Multiplayer::SessionConfig::m_currentPlayer))
-                ->Property("DnsName", BehaviorValueProperty(&Multiplayer::SessionConfig::m_dnsName))
-                ->Property("IpAddress", BehaviorValueProperty(&Multiplayer::SessionConfig::m_ipAddress))
-                ->Property("MaxPlayer", BehaviorValueProperty(&Multiplayer::SessionConfig::m_maxPlayer))
-                ->Property("Port", BehaviorValueProperty(&Multiplayer::SessionConfig::m_port))
-                ->Property("SessionId", BehaviorValueProperty(&Multiplayer::SessionConfig::m_sessionId))
-                ->Property("SessionName", BehaviorValueProperty(&Multiplayer::SessionConfig::m_sessionName))
-                ->Property("SessionProperties", BehaviorValueProperty(&Multiplayer::SessionConfig::m_sessionProperties))
-                ->Property("MatchmakingData", BehaviorValueProperty(&Multiplayer::SessionConfig::m_matchmakingData))
-                ->Property("Status", BehaviorValueProperty(&Multiplayer::SessionConfig::m_status))
-                ->Property("StatusReason", BehaviorValueProperty(&Multiplayer::SessionConfig::m_statusReason))
-                ->Property("TerminationTime", BehaviorValueProperty(&Multiplayer::SessionConfig::m_terminationTime))
+                ->Property("CreationTime", BehaviorValueProperty(&AzFramework::SessionConfig::m_creationTime))
+                ->Property("CreatorId", BehaviorValueProperty(&AzFramework::SessionConfig::m_creatorId))
+                ->Property("CurrentPlayer", BehaviorValueProperty(&AzFramework::SessionConfig::m_currentPlayer))
+                ->Property("DnsName", BehaviorValueProperty(&AzFramework::SessionConfig::m_dnsName))
+                ->Property("IpAddress", BehaviorValueProperty(&AzFramework::SessionConfig::m_ipAddress))
+                ->Property("MaxPlayer", BehaviorValueProperty(&AzFramework::SessionConfig::m_maxPlayer))
+                ->Property("Port", BehaviorValueProperty(&AzFramework::SessionConfig::m_port))
+                ->Property("SessionId", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionId))
+                ->Property("SessionName", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionName))
+                ->Property("SessionProperties", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionProperties))
+                ->Property("MatchmakingData", BehaviorValueProperty(&AzFramework::SessionConfig::m_matchmakingData))
+                ->Property("Status", BehaviorValueProperty(&AzFramework::SessionConfig::m_status))
+                ->Property("StatusReason", BehaviorValueProperty(&AzFramework::SessionConfig::m_statusReason))
+                ->Property("TerminationTime", BehaviorValueProperty(&AzFramework::SessionConfig::m_terminationTime))
                 ;
-            behaviorContext->Class<Multiplayer::SearchSessionsResponse>("SearchSessionsResponse")
+            behaviorContext->Class<AzFramework::SearchSessionsResponse>("SearchSessionsResponse")
                 ->Attribute(AZ::Script::Attributes::Category, "Session")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
-                ->Property("NextToken", BehaviorValueProperty(&Multiplayer::SearchSessionsResponse::m_nextToken))
-                ->Property("SessionConfigs", BehaviorValueProperty(&Multiplayer::SearchSessionsResponse::m_sessionConfigs))
+                ->Property("NextToken", BehaviorValueProperty(&AzFramework::SearchSessionsResponse::m_nextToken))
+                ->Property("SessionConfigs", BehaviorValueProperty(&AzFramework::SearchSessionsResponse::m_sessionConfigs))
                 ;
         }
     }

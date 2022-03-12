@@ -12,7 +12,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Interface/Interface.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Animation/IUiAnimation.h>
 
@@ -64,7 +63,7 @@ namespace LyShine
         AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
         return false;
 #if 0
-        if (!gEnv || gEnv->pRenderer || !AZ::Interface<ILyShine>::Get())
+        if (!gEnv || gEnv->pRenderer || !gEnv->pLyShine)
         {
             return false;
         }
@@ -104,7 +103,7 @@ namespace LyShine
         return false;
         //TODO: gEnv->pRenderer is always null, fix the logic below
 #if 0
-        if (!gEnv || gEnv->pRenderer || !AZ::Interface<ILyShine>::Get())
+        if (!gEnv || gEnv->pRenderer || !gEnv->pLyShine)
         {
             return false;
         }
@@ -141,22 +140,22 @@ namespace LyShine
     void LyShineLoadScreenComponent::UpdateAndRender([[maybe_unused]] float deltaTimeInSeconds)
     {
         AZ_Assert(m_isPlaying, "LyShineLoadScreenComponent should not be connected to LoadScreenUpdateNotificationBus while not playing");
-        AZ_ErrorOnce(nullptr, m_isPlaying && AZ::Interface<ILyShine>::Get(), "UpdateAndRender needs to be removed/ported to use Atom");
+        AZ_ErrorOnce(nullptr, m_isPlaying && gEnv && gEnv->pLyShine, "UpdateAndRender needs to be removed/ported to use Atom");
 
         //TODO: gEnv->pRenderer is always null, fix the logic below
 #if 0
-        if (m_isPlaying && gEnv && AZ::Interface<ILyShine>::Get() && gEnv->pRenderer)
+        if (m_isPlaying && gEnv && gEnv->pLyShine && gEnv->pRenderer)
         {
             AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
 
             // update the animation system
-            AZ::Interface<ILyShine>::Get()->Update(deltaTimeInSeconds);
+            gEnv->pLyShine->Update(deltaTimeInSeconds);
 
             // Render.
             gEnv->pRenderer->SetViewport(0, 0, gEnv->pRenderer->GetOverlayWidth(), gEnv->pRenderer->GetOverlayHeight());
 
             gEnv->pRenderer->BeginFrame();
-            AZ::Interface<ILyShine>::Get()->Render();
+            gEnv->pLyShine->Render();
             gEnv->pRenderer->EndFrame();
         }
 #endif
@@ -178,7 +177,7 @@ namespace LyShine
 
         m_isPlaying = false;
 
-        if (AZ::Interface<ILyShine>::Get())
+        if (gEnv && gEnv->pLyShine)
         {
             AZ::Entity* canvasEntity = nullptr;
 
@@ -188,8 +187,8 @@ namespace LyShine
                 EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, m_gameCanvasEntityId);
                 if (canvasEntity)
                 {
-                    AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_gameCanvasEntityId, false);
-                    AZ::Interface<ILyShine>::Get()->OnLoadScreenUnloaded();
+                    gEnv->pLyShine->ReleaseCanvas(m_gameCanvasEntityId, false);
+                    gEnv->pLyShine->OnLoadScreenUnloaded();
                 }
             }
 
@@ -199,8 +198,8 @@ namespace LyShine
                 EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, m_levelCanvasEntityId);
                 if (canvasEntity)
                 {
-                    AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_levelCanvasEntityId, false);
-                    AZ::Interface<ILyShine>::Get()->OnLoadScreenUnloaded();
+                    gEnv->pLyShine->ReleaseCanvas(m_levelCanvasEntityId, false);
+                    gEnv->pLyShine->OnLoadScreenUnloaded();
                 }
             }
         }
@@ -235,7 +234,7 @@ namespace LyShine
             return AZ::EntityId();
         }
 
-        AZ::EntityId canvasId = AZ::Interface<ILyShine>::Get()->LoadCanvas(path);
+        AZ::EntityId canvasId = gEnv->pLyShine->LoadCanvas(path);
         AZ_Warning("LoadScreenComponent", canvasId.IsValid(), "Can't load canvas: %s", path.c_str());
         if (!canvasId.IsValid())
         {

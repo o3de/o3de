@@ -7,6 +7,7 @@
  */
 
 #include "TypeContract.h"
+#include <ScriptCanvas/Core/ContractBus.h>
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Core/Slot.h>
 
@@ -73,7 +74,7 @@ namespace ScriptCanvas
             return AZ::Success();
         }
 
-        AZStd::string errorMessage = AZStd::string::format("Connection cannot be created between source slot \"%s\" and target slot \"%s\" as the types do not satisfy the type requirement. (%s)\nValid types are:\n"
+        AZStd::string errorMessage = AZStd::string::format("Connection cannot be created between source slot \"%s\" and target slot \"%s\" as the types do not satisfy the type requirement. (%s)\n\rValid types are:\n\r"
             , sourceSlot.GetName().data()
             , targetSlot.GetName().data()
             , RTTI_GetTypeName());

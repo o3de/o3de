@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
@@ -17,10 +18,10 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
-#include <AzToolsFramework/Entity/EntityTypes.h>
-
 namespace AzToolsFramework
 {
+    using EntityIdList = AZStd::vector<AZ::EntityId>;
+
     namespace Prefab
     {
         using CreatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;

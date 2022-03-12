@@ -9,6 +9,7 @@
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 

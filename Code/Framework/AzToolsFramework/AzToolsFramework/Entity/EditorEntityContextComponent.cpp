@@ -227,8 +227,14 @@ namespace AzToolsFramework
     {
         AZ::Entity* entity = CreateEntity(name);
         AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
-        FinalizeEditorEntity(entity);
-
+        if (m_isLegacySliceService)
+        {
+            FinalizeEditorEntity(entity);
+        }
+        else
+        {
+            EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityCreated, entity->GetId());
+        }
         return entity->GetId();
     }
 
@@ -257,7 +263,14 @@ namespace AzToolsFramework
         entity = aznew AZ::Entity(entityId, name);
         AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
         AddEntity(entity);
-        FinalizeEditorEntity(entity);
+        if (m_isLegacySliceService)
+        {
+            FinalizeEditorEntity(entity);
+        }
+        else
+        {
+            EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityCreated, entity->GetId());
+        }
 
         return entity->GetId();
     }
@@ -271,12 +284,10 @@ namespace AzToolsFramework
         {
             return;
         }
+        SetupEditorEntity(entity);
 
         // Store creation undo command.
-        if (m_isLegacySliceService)
         {
-            SetupEditorEntity(entity);
-
             ScopedUndoBatch undoBatch("Create Entity");
 
             EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(entity->GetId()));
@@ -447,7 +458,7 @@ namespace AzToolsFramework
         else
         {
             loadedSuccessfully = static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get())->LoadFromStream(
-                stream, AZStd::string_view(levelPakFile.toUtf8().constData(), levelPakFile.size()) );
+                stream, AZStd::string_view(levelPakFile.toUtf8(), levelPakFile.size()) );
 
         }
         

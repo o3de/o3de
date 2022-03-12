@@ -53,6 +53,8 @@ set(FILES
     Editor/Source/NodeListDumpAction.cpp
     Editor/Source/TSGenerateAction.cpp
     Editor/Source/WrapperMock.cpp
+    Editor/Source/XMLDoc.cpp
+    Editor/Source/XMLDoc.h
 
 # AutomationActions
     Editor/Source/AutomationActions/DynamicSlotFullCreation.cpp

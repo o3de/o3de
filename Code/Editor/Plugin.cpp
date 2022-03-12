@@ -11,6 +11,9 @@
 
 #include "Plugin.h"
 
+// Editor
+#include "Include/IViewPane.h"
+
 #include <QMessageBox>
 
 CClassFactory* CClassFactory::s_pInstance = nullptr;
@@ -144,6 +147,23 @@ IClassDesc* CClassFactory::FindClass(const GUID& rClassID) const
     IClassDesc* pClassDesc = stl::find_in_map(m_guidToClass, rClassID, (IClassDesc*)nullptr);
 
     return pClassDesc;
+}
+
+IViewPaneClass* CClassFactory::FindViewPaneClassByTitle(const char* pPaneTitle) const
+{
+    for (size_t i = 0; i < m_classes.size(); i++)
+    {
+        IViewPaneClass* viewPane = nullptr;
+        IClassDesc* desc = m_classes[i];
+        if (SUCCEEDED(desc->QueryInterface(__az_uuidof(IViewPaneClass), (void**)&viewPane)))
+        {
+            if (QString::compare(viewPane->GetPaneTitle(), pPaneTitle) == 0)
+            {
+                return viewPane;
+            }
+        }
+    }
+    return nullptr;
 }
 
 void CClassFactory::UnregisterClass(const char* pClassName)

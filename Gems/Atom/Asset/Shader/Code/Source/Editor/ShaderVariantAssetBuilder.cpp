@@ -143,12 +143,12 @@ namespace AZ
         //! The "Higher Precedence" path gives the option to game projects to override what variants to generate. If this
         //!     file exists then the "Lower Precedence" path is disregarded.
         //! A .shader full path is located under an AP scan folder.
-        //! Example: "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR_ForwardPass.shader"
-        //!     - In this example the Scan Folder is "<atom-gem-path>/Feature/Common/Assets", while the subfolder is "Materials/Types".
+        //! Example: "<atom-gem-path>/Feature/Common/Assets/Materials/Types/StandardPBR_ForwardPass.shader"
+        //!     - In this example the Scan Folder is "<atom-gem-path>/Gems/Atom/Feature/Common/Assets", while the subfolder is "Materials/Types".
         //! The "Higher Precedence" expected valid location for the .shadervariantlist would be:
-        //!     - <GameProject>/ShaderVariants/Materials/Types/StandardPBR_ForwardPass.shadervariantlist.
+        //!     - <atom-gem-path>/<GameProject>/ShaderVariants/Materials/Types/StandardPBR_ForwardPass.shadervariantlist.
         //! The "Lower Precedence" valid location would be:
-        //!     - @gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR_ForwardPass.shadervariantlist.
+        //!     - <atom-gem-path>/Gems/Atom/Feature/Common/Assets/Materials/Types/StandardPBR_ForwardPass.shadervariantlist.
         //! @shouldExitEarlyFromProcessJob [out] Set to true if ProcessJob should do no work but return successfully.
         //!     Set to false if ProcessJob should do work and create assets.
         //!     When @shaderVariantListFileFullPath is provided by a Gem/Feature instead of the Game Project

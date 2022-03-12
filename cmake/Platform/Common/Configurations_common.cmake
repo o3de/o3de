@@ -62,8 +62,3 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
         ly_set(CMAKE_JOB_POOL_LINK link_job_pool)
     endif()
 endif()
-
-set(CMAKE_POSITION_INDEPENDENT_CODE True)
-
-include(CheckPIESupported)
-check_pie_supported()

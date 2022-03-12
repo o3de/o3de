@@ -713,6 +713,121 @@ namespace EMotionFX
         renderUtil->EnableLighting(oldLightingEnabled);
     }
 
+    void ColliderContainerWidget::RenderColliders(
+        const AzPhysics::ShapeColliderPairList& colliders,
+        const ActorInstance* actorInstance,
+        const Node* node,
+        const AZ::Color& colliderColor)
+    {
+        const size_t nodeIndex = node->GetNodeIndex();
+
+        for (const auto& collider : colliders)
+        {
+#ifndef EMFX_SCALE_DISABLED
+            const AZ::Vector3& worldScale = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex).m_scale;
+#else
+            const AZ::Vector3 worldScale = AZ::Vector3::CreateOne();
+#endif
+
+            const Transform colliderOffsetTransform(collider.first->m_position, collider.first->m_rotation);
+            const Transform& actorInstanceGlobalTransform = actorInstance->GetWorldSpaceTransform();
+            const Transform& emfxNodeGlobalTransform =
+                actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex);
+            const Transform emfxColliderGlobalTransformNoScale =
+                colliderOffsetTransform * emfxNodeGlobalTransform * actorInstanceGlobalTransform;
+
+            AZ::s32 viewportId = -1;
+            EMStudio::ViewportPluginRequestBus::BroadcastResult(viewportId, &EMStudio::ViewportPluginRequestBus::Events::GetViewportId);
+            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, viewportId);
+            AzFramework::DebugDisplayRequests* debugDisplay = nullptr;
+            debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+            if (!debugDisplay)
+            {
+                return;
+            }
+
+            const AZ::TypeId colliderType = collider.second->RTTI_GetType();
+            if (colliderType == azrtti_typeid<Physics::SphereShapeConfiguration>())
+            {
+                Physics::SphereShapeConfiguration* sphere = static_cast<Physics::SphereShapeConfiguration*>(collider.second.get());
+
+                // O3DE Physics scaling rules: The maximum component from the node scale will be multiplied by the radius of the sphere.
+                const float radius = sphere->m_radius *
+                    MCore::Max3<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()),
+                                       static_cast<float>(worldScale.GetZ()));
+
+                debugDisplay->DepthTestOff();
+                debugDisplay->SetColor(colliderColor);
+                debugDisplay->DrawWireSphere(emfxColliderGlobalTransformNoScale.m_position, radius);
+            }
+            else if (colliderType == azrtti_typeid<Physics::CapsuleShapeConfiguration>())
+            {
+                Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
+
+                // O3DE Physics scaling rules: The maximum of the X/Y scale components of the node scale will be multiplied by the radius of
+                // the capsule. The Z component of the entity scale will be multiplied by the height of the capsule.
+                const float radius =
+                    capsule->m_radius * MCore::Max<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()));
+                const float height = capsule->m_height * static_cast<float>(worldScale.GetZ());
+
+                debugDisplay->DepthTestOff();
+                debugDisplay->SetColor(colliderColor);
+                debugDisplay->DrawWireCapsule(
+                    emfxColliderGlobalTransformNoScale.m_position, emfxColliderGlobalTransformNoScale.ToAZTransform().GetBasisZ(), radius, height);
+            }
+            else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
+            {
+                Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
+
+                // O3DE Physics scaling rules: Each component of the box dimensions will be scaled by the node's world scale.
+                AZ::Vector3 dimensions = box->m_dimensions;
+                dimensions *= worldScale;
+
+                debugDisplay->DepthTestOff();
+                debugDisplay->SetColor(colliderColor);
+                debugDisplay->DrawWireBox(
+                    emfxColliderGlobalTransformNoScale.m_position, emfxColliderGlobalTransformNoScale.m_position + dimensions);
+            }
+        }
+    }
+
+    void ColliderContainerWidget::RenderColliders(PhysicsSetup::ColliderConfigType colliderConfigType,
+        const AZ::Color& defaultColor, const AZ::Color& selectedColor)
+    {
+        if (colliderConfigType == PhysicsSetup::Unknown)
+        {
+            return;
+        }
+
+        const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
+
+        const ActorManager* actorManager = GetEMotionFX().GetActorManager();
+        const size_t actorInstanceCount = actorManager->GetNumActorInstances();
+        for (size_t i = 0; i < actorInstanceCount; ++i)
+        {
+            const ActorInstance* actorInstance = actorManager->GetActorInstance(i);
+            const Actor* actor = actorInstance->GetActor();
+            const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
+            const Physics::CharacterColliderConfiguration* colliderConfig = physicsSetup->GetColliderConfigByType(colliderConfigType);
+
+            if (colliderConfig)
+            {
+                for (const Physics::CharacterColliderNodeConfiguration& nodeConfig : colliderConfig->m_nodes)
+                {
+                    const Node* joint = actor->GetSkeleton()->FindNodeByName(nodeConfig.m_name.c_str());
+                    if (joint)
+                    {
+                        const bool jointSelected =
+                            selectedJointIndices.empty() || selectedJointIndices.find(joint->GetNodeIndex()) != selectedJointIndices.end();
+                        const AzPhysics::ShapeColliderPairList& colliders = nodeConfig.m_shapes;
+                        RenderColliders(colliders, actorInstance, joint, jointSelected ? selectedColor : defaultColor);
+                    }
+                }
+            }
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
 
     ColliderContainerWidget::ColliderEditedCallback::ColliderEditedCallback(ColliderContainerWidget* parent, bool executePreUndo, bool executePreCommand)

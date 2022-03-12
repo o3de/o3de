@@ -406,7 +406,7 @@ namespace AZ::IO
         request->CreateFileMetaDataRetrieval(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_FALSE(fileMetaData.m_found);
                 EXPECT_EQ(0, fileMetaData.m_fileSize);
             });
@@ -424,7 +424,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(4_kib, fileMetaData.m_fileSize);
             });
@@ -442,7 +442,7 @@ namespace AZ::IO
         request->CreateFileMetaDataRetrieval(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_FALSE(fileMetaData.m_found);
                 EXPECT_EQ(0, fileMetaData.m_fileSize);
             });
@@ -460,7 +460,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(16_kib, fileMetaData.m_fileSize);
             });
@@ -484,7 +484,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(4_kib, fileMetaData.m_fileSize);
             });
@@ -502,7 +502,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(invalidPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_FALSE(fileExistsCheck.m_found);
             });
@@ -519,7 +519,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_FALSE(fileExistsCheck.m_found);
             });
@@ -535,7 +535,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });
@@ -551,7 +551,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });
@@ -573,7 +573,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });
@@ -603,7 +603,7 @@ namespace AZ::IO
         AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-            auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
+            auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, fileSize);
             EXPECT_STREQ(readRequest.m_path.GetAbsolutePath(), m_dummyFilepath.c_str());
         };
@@ -648,7 +648,7 @@ namespace AZ::IO
         AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-            auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
+            auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, unalignedSize);
             EXPECT_EQ(readRequest.m_offset, unalignedOffset);
             EXPECT_STREQ(readRequest.m_path.GetAbsolutePath(), m_dummyFilepath.c_str());
@@ -796,7 +796,7 @@ namespace AZ::IO
             AZ_POP_DISABLE_WARNING
             {
                 EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-                auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
+                auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
                 EXPECT_EQ(readRequest.m_size, chunkSize);
                 EXPECT_EQ(readRequest.m_offset, i * chunkSize);
             };
@@ -981,7 +981,7 @@ namespace AZ::IO
 
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [&numCallbacks, &waitForReads](FileRequestHandle request)
+            auto callback = [numChunks, &numCallbacks, &waitForReads](FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 IStreamer* streamer = Interface<IStreamer>::Get();
@@ -1052,7 +1052,7 @@ namespace AZ::IO
 
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [&waitForReads, &waitForSingleRead, &numReadCallbacks]([[maybe_unused]] FileRequestHandle request)
+            auto callback = [numChunks, &waitForReads, &waitForSingleRead, &numReadCallbacks]([[maybe_unused]] FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 numReadCallbacks++;
@@ -1076,7 +1076,7 @@ namespace AZ::IO
             cancels.push_back(m_streamer->Cancel(requests[numChunks - i - 1]));
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [&numCancelCallbacks, &waitForCancels](FileRequestHandle request)
+            auto callback = [&numCancelCallbacks, &waitForCancels, numChunks](FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 auto result = Interface<IStreamer>::Get()->GetRequestStatus(request);
@@ -1248,7 +1248,7 @@ namespace Benchmark
 
             AZStd::unique_ptr<char[]> buffer(new char[FileSize]);
     
-            for ([[maybe_unused]] auto _ : state)
+            for (auto _ : state)
             {
                 AZStd::binary_semaphore waitForReads;
                 AZStd::atomic<system_clock::time_point> end;

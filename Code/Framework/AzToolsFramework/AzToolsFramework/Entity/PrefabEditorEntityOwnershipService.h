@@ -12,7 +12,6 @@
 #include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
-#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
@@ -98,6 +97,7 @@ namespace AzToolsFramework
         , private AzFramework::SliceEntityRequestBus::MultiHandler
     {
     public:
+        using EntityList = AzFramework::EntityList;
         using OnEntitiesAddedCallback = AzFramework::OnEntitiesAddedCallback;
         using OnEntitiesRemovedCallback = AzFramework::OnEntitiesRemovedCallback;
         using ValidateEntitiesCallback = AzFramework::ValidateEntitiesCallback;
@@ -169,17 +169,11 @@ namespace AzToolsFramework
         void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
         bool IsRootPrefabAssigned() const override;
 
-        Prefab::InstanceOptionalReference GetInstanceReferenceFromRootAliasPath(Prefab::RootAliasPath rootAliasPath) const override;
-        bool GetInstancesInRootAliasPath(
-            Prefab::RootAliasPath rootAliasPath, const AZStd::function<bool(const Prefab::InstanceOptionalReference)>& callback) const override;
-
     protected:
 
         AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;
 
     private:
-        bool IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const;
-
         struct PlayInEditorData
         {
             AzToolsFramework::Prefab::PrefabConversionUtils::InMemorySpawnableAssetContainer m_assetsCache;

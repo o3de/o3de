@@ -19,6 +19,7 @@
 #include <GraphCanvas/Editor/GraphModelBus.h>
 #include <GraphCanvas/Editor/GraphCanvasProfiler.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.h>
+#include <GraphCanvas/Widgets/Resources/Resources.h>
 
 namespace
 {

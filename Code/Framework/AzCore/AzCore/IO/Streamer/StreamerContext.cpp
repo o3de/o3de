@@ -22,9 +22,6 @@ namespace AZ
         static constexpr char LatePredictionName[] = "Early completions";
         static constexpr char MissedDeadlinesName[] = "Missed deadlines";
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-
-        StreamerContext::StreamerContext() = default;
-
         StreamerContext::~StreamerContext()
         {
             for (FileRequest* entry : m_internalRecycleBin)
@@ -207,7 +204,7 @@ namespace AZ
                                 m_latePredictionsPercentageStat.GetMostRecentSample());
                         }
                     }
-                    auto readRequest = AZStd::get_if<Requests::ReadRequestData>(&top->GetCommand());
+                    auto readRequest = AZStd::get_if<FileRequest::ReadRequestData>(&top->GetCommand());
                     if (readRequest != nullptr)
                     {
                         m_missedDeadlinePercentageStat.PushSample(now < readRequest->m_deadline ? 0.0 : 1.0);
@@ -227,7 +224,7 @@ namespace AZ
                         top->m_onCompletion(*top);
                         AZ_PROFILE_INTERVAL_END(AzCore, top);
                     }
-
+                    
                     if (parent)
                     {
                         AZ_Assert(parent->m_dependencies > 0,

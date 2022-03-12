@@ -8,6 +8,11 @@
             "PassClass": "SsaoParentPass",
             "Slots": [
                 {
+                    "Name": "LinearDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
                     "Name": "Modulate",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
@@ -36,8 +41,8 @@
                         {
                             "LocalSlot": "FullResDepth",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
-                                "Attachment": "DepthLinear"
+                                "Pass": "Parent",
+                                "Attachment": "LinearDepth"
                             }
                         }
                     ]
@@ -84,8 +89,8 @@
                         {
                             "LocalSlot": "FullResDepth",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
-                                "Attachment": "DepthLinear"
+                                "Pass": "Parent",
+                                "Attachment": "LinearDepth"
                             }
                         },
                         {

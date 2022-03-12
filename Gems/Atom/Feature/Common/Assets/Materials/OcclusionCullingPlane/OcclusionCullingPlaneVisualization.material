@@ -1,6 +1,6 @@
 {
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "propertyLayoutVersion": 3,
     "properties": {
         "general": {
             "enableShadows": false,

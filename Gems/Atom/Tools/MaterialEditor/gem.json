@@ -20,6 +20,7 @@
         "Atom_Feature_Common",
         "ImageProcessingAtom",
         "Atom_Component_DebugCamera",
-        "CommonFeaturesAtom"
+        "CommonFeaturesAtom",
+        "LyShine"
     ]
 }

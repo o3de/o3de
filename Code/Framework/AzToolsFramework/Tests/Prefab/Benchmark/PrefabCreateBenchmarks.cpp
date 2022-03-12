@@ -21,7 +21,7 @@ namespace Benchmark
 
         CreateFakePaths(numInstances);
 
-        for ([[maybe_unused]] auto _ : state)
+        for (auto _ : state)
         {
             state.PauseTiming();
 
@@ -60,7 +60,7 @@ namespace Benchmark
     {
         const unsigned int numEntities = static_cast<unsigned int>(state.range());
 
-        for ([[maybe_unused]] auto _ : state)
+        for (auto _ : state)
         {
             state.PauseTiming();
 
@@ -100,7 +100,7 @@ namespace Benchmark
         // plus the instance receiving them
         CreateFakePaths(numInstancesToAdd + 1);
 
-        for ([[maybe_unused]] auto _ : state)
+        for (auto _ : state)
         {
             state.PauseTiming();
 
@@ -150,7 +150,7 @@ namespace Benchmark
         // plus the root instance
         CreateFakePaths(numInstances + 1);
 
-        for ([[maybe_unused]] auto _ : state)
+        for (auto _ : state)
         {
             state.PauseTiming();
 

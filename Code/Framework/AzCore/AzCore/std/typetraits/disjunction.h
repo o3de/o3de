@@ -7,10 +7,29 @@
  */
 #pragma once
 
-#include <type_traits>
+#include <AzCore/std/typetraits/integral_constant.h>
+#include <AzCore/std/typetraits/conditional.h>
 
 namespace AZStd
 {
-    using std::disjunction;
-    using std::disjunction_v;
+    template<class... Bases>
+    struct disjunction
+        : false_type
+    {
+    };
+
+    template<class B1>
+    struct disjunction<B1>
+        : B1
+    {
+    };
+
+    template<class B1, class... Bases>
+    struct disjunction<B1, Bases...>
+        : conditional_t<B1::value, B1, disjunction<Bases...>>
+    {
+    };
+
+    template<class... Bases>
+    constexpr bool disjunction_v = disjunction<Bases...>::value;
 }

@@ -10,7 +10,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <Multiplayer/Session/MatchmakingNotifications.h>
+#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 
 #include <Request/AWSGameLiftRequestBus.h>
 #include <Request/AWSGameLiftSessionRequestBus.h>
@@ -28,7 +28,7 @@ namespace AWSGameLift
 
     // MatchmakingNotificationBus EBus handler for scripting
     class AWSGameLiftMatchmakingNotificationBusHandler
-        : public Multiplayer::MatchmakingNotificationBus::Handler
+        : public AzFramework::MatchmakingNotificationBus::Handler
         , public AZ::BehaviorEBusHandler
     {
     public:
@@ -61,7 +61,7 @@ namespace AWSGameLift
 
     // MatchmakingAsyncRequestNotificationBus EBus handler for scripting
     class AWSGameLiftMatchmakingAsyncRequestNotificationBusHandler
-        : public Multiplayer::MatchmakingAsyncRequestNotificationBus::Handler
+        : public AzFramework::MatchmakingAsyncRequestNotificationBus::Handler
         , public AZ::BehaviorEBusHandler
     {
     public:
@@ -91,7 +91,7 @@ namespace AWSGameLift
 
     // SessionAsyncRequestNotificationBus EBus handler for scripting
     class AWSGameLiftSessionAsyncRequestNotificationBusHandler
-        : public Multiplayer::SessionAsyncRequestNotificationBus::Handler
+        : public AzFramework::SessionAsyncRequestNotificationBus::Handler
         , public AZ::BehaviorEBusHandler
     {
     public:
@@ -109,7 +109,7 @@ namespace AWSGameLift
             Call(FN_OnCreateSessionAsyncComplete, createSessionReponse);
         }
 
-        void OnSearchSessionsAsyncComplete(const Multiplayer::SearchSessionsResponse& searchSessionsResponse) override
+        void OnSearchSessionsAsyncComplete(const AzFramework::SearchSessionsResponse& searchSessionsResponse) override
         {
             Call(FN_OnSearchSessionsAsyncComplete, searchSessionsResponse);
         }
@@ -155,25 +155,25 @@ namespace AWSGameLift
         AZStd::string CreatePlayerId(bool includeBrackets, bool includeDashes) override;
 
         // AWSGameLiftMatchmakingAsyncRequestBus interface implementation
-        void AcceptMatchAsync(const Multiplayer::AcceptMatchRequest& acceptMatchRequest) override;
-        void StartMatchmakingAsync(const Multiplayer::StartMatchmakingRequest& startMatchmakingRequest) override;
-        void StopMatchmakingAsync(const Multiplayer::StopMatchmakingRequest& stopMatchmakingRequest) override;
+        void AcceptMatchAsync(const AzFramework::AcceptMatchRequest& acceptMatchRequest) override;
+        void StartMatchmakingAsync(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest) override;
+        void StopMatchmakingAsync(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest) override;
 
         // AWSGameLiftSessionAsyncRequestBus interface implementation
-        void CreateSessionAsync(const Multiplayer::CreateSessionRequest& createSessionRequest) override;
-        void JoinSessionAsync(const Multiplayer::JoinSessionRequest& joinSessionRequest) override;
-        void SearchSessionsAsync(const Multiplayer::SearchSessionsRequest& searchSessionsRequest) const override;
+        void CreateSessionAsync(const AzFramework::CreateSessionRequest& createSessionRequest) override;
+        void JoinSessionAsync(const AzFramework::JoinSessionRequest& joinSessionRequest) override;
+        void SearchSessionsAsync(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const override;
         void LeaveSessionAsync() override;
 
         // AWSGameLiftMatchmakingRequestBus interface implementation
-        void AcceptMatch(const Multiplayer::AcceptMatchRequest& acceptMatchRequest) override;
-        AZStd::string StartMatchmaking(const Multiplayer::StartMatchmakingRequest& startMatchmakingRequest) override;
-        void StopMatchmaking(const Multiplayer::StopMatchmakingRequest& stopMatchmakingRequest) override;
+        void AcceptMatch(const AzFramework::AcceptMatchRequest& acceptMatchRequest) override;
+        AZStd::string StartMatchmaking(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest) override;
+        void StopMatchmaking(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest) override;
 
         // AWSGameLiftSessionRequestBus interface implementation
-        AZStd::string CreateSession(const Multiplayer::CreateSessionRequest& createSessionRequest) override;
-        bool JoinSession(const Multiplayer::JoinSessionRequest& joinSessionRequest) override;
-        Multiplayer::SearchSessionsResponse SearchSessions(const Multiplayer::SearchSessionsRequest& searchSessionsRequest) const override;
+        AZStd::string CreateSession(const AzFramework::CreateSessionRequest& createSessionRequest) override;
+        bool JoinSession(const AzFramework::JoinSessionRequest& joinSessionRequest) override;
+        AzFramework::SearchSessionsResponse SearchSessions(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const override;
         void LeaveSession() override;
     };
 } // namespace AWSGameLift

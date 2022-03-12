@@ -81,12 +81,12 @@ namespace AZ
         {
         }
 
-        AZStd::span<const Scope* const> FrameGraphExecuteGroup::GetScopes() const
+        AZStd::array_view<const Scope*> FrameGraphExecuteGroup::GetScopes() const
         {
-            return AZStd::span<const Scope* const>(&m_scope, 1);
+            return AZStd::array_view<const Scope*>(&m_scope, 1);
         }
 
-        AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroup::GetCommandLists() const
+        AZStd::array_view<RHI::Ptr<CommandList>> FrameGraphExecuteGroup::GetCommandLists() const
         {
             return m_secondaryCommands;
         }

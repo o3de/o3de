@@ -14,6 +14,7 @@
 
 #include <ScriptCanvas/Core/Contracts/DisallowReentrantExecutionContract.h>
 #include <ScriptCanvas/Core/Contracts/DisplayGroupConnectedSlotLimitContract.h>
+#include <ScriptCanvas/Libraries/Core/FunctionBus.h>
 
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidPropertyEvent.h>
 

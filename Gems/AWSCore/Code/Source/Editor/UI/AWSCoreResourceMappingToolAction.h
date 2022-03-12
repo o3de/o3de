@@ -22,7 +22,7 @@ namespace AWSCore
     {
     public:
         static constexpr const char AWSCoreResourceMappingToolActionName[] = "AWSCoreResourceMappingToolAction";
-        static constexpr const char ResourceMappingToolDirectoryPath[] = "Code/Tools/ResourceMappingTool";
+        static constexpr const char ResourceMappingToolDirectoryPath[] = "Gems/AWSCore/Code/Tools/ResourceMappingTool";
         static constexpr const char ResourceMappingToolLogDirectoryPath[] = "user/log/";
         static constexpr const char EngineWindowsPythonEntryScriptPath[] = AWSCORE_EDITOR_PYTHON_COMMAND;
 

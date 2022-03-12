@@ -467,8 +467,8 @@ namespace Camera
             return AzFramework::CameraState();
         }
 
-        const auto windowSize = viewportContext->GetViewportSize();
-        const auto viewportSize = AzFramework::ScreenSize(windowSize.m_width, windowSize.m_height);
+        auto windowSize = viewportContext->GetViewportSize();
+        auto viewportSize = AzFramework::Vector2FromScreenSize(AzFramework::ScreenSize(windowSize.m_width, windowSize.m_height));
 
         AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(m_atomCamera->GetCameraTransform(), viewportSize);
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, m_atomCamera->GetViewToClipMatrix());

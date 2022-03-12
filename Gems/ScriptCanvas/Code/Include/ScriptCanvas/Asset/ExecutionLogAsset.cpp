@@ -8,7 +8,6 @@
 
 #include "ExecutionLogAsset.h"
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/Path/Path.h>
 
 namespace ScriptCanvas
 {
@@ -84,12 +83,9 @@ namespace ScriptCanvas
         }
     }
 
-    AZ::IO::FixedMaxPath ExecutionLogAsset::GetDefaultDirectoryPath()
+    const char* ExecutionLogAsset::GetDefaultDirectoryRoot()
     {
-        AZ::IO::FixedMaxPath logDirectoryPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(logDirectoryPath,
-            AZ::IO::PathView("@log@/ScriptCanvas/Assets/Logs"));
-        return logDirectoryPath;
+        return AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
     }
 
     ExecutionLogAsset::ExecutionLogAsset(const AZ::Data::AssetId& assetId, AZ::Data::AssetData::AssetStatus status)

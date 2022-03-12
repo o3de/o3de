@@ -87,15 +87,14 @@ namespace ScriptEvents
             : AZ::Data::Asset<ScriptEventsAsset>(loadBehavior)
         {}
 
-        ScriptEventsAssetPtr(const ScriptEventsAssetPtr& scriptEventsAsset) = default;
-        ScriptEventsAssetPtr(ScriptEventsAssetPtr&& scriptEventsAsset) = default;
+        ScriptEventsAssetPtr(const BaseType& scriptEventsAsset)
+            : BaseType(scriptEventsAsset)
+        {}
 
         virtual ~ScriptEventsAssetPtr() = default;
 
         using BaseType::BaseType;
-
-        ScriptEventsAssetPtr& operator=(const ScriptEventsAssetPtr&) = default;
-        ScriptEventsAssetPtr& operator=(ScriptEventsAssetPtr&&) = default;
+        using BaseType::operator=;
 
         static void Reflect(AZ::ReflectContext* context)
         {

@@ -17,6 +17,7 @@
 
 #include "APIArguments.h"
 #include "Logger.h"
+#include "LogReader.h"
 
 namespace ScriptCanvas
 {

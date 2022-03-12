@@ -27,7 +27,6 @@ namespace AZ
             MaterialAsset::Reflect(context);
             MaterialPropertiesLayout::Reflect(context);
             MaterialFunctor::Reflect(context);
-            MaterialNameContext::Reflect(context);
             LuaMaterialFunctor::Reflect(context);
             ReflectMaterialDynamicMetadata(context);
         }

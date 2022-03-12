@@ -54,7 +54,6 @@ namespace AZ
             NativeWindowType* m_nativeWindow = nullptr;
             AZStd::vector<id<CAMetalDrawable>> m_drawables;
             uint32_t m_refreshRate = 0;
-            CGSize m_drawableSize;
         };
     }
 }

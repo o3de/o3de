@@ -51,38 +51,21 @@ namespace AZ
             AZ_Assert(m_shaderResourceGroup, "[DiffuseProbeGridRenderPass '%s']: Failed to create SRG", GetPathName().GetCStr());
         }
 
-        bool DiffuseProbeGridRenderPass::IsEnabled() const
-        {
-            if (!RenderPass::IsEnabled())
-            {
-                return false;
-            }
-
-            RPI::Scene* scene = m_pipeline->GetScene();
-            if (!scene)
-            {
-                return false;
-            }
-
-            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
-            {
-                // no diffuse probe grids
-                return false;
-            }
-
-            return true;
-        }
-
         void DiffuseProbeGridRenderPass::FrameBeginInternal(FramePrepareParams params)
         {
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
+            {
+                // no diffuse probe grids
+                return;
+            }
+
             // get output attachment size
             AZ_Assert(GetInputOutputCount() > 0, "DiffuseProbeGridRenderPass: Could not find output bindings");
-            RPI::PassAttachment* m_outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
+            RPI::PassAttachment* m_outputAttachment = GetInputOutputBinding(0).m_attachment.get();
             AZ_Assert(m_outputAttachment, "DiffuseProbeGridRenderPass: Output binding has no attachment!");
             
             RHI::Size size = m_outputAttachment->m_descriptor.m_image.m_size;
@@ -116,28 +99,17 @@ namespace AZ
                     continue;
                 }
 
-                // grid data
-                {
-                    RHI::BufferScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetGridDataBufferAttachmentId();
-                    desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
-                }
-
                 // probe irradiance image
                 {
-                    RHI::AttachmentId attachmentId = diffuseProbeGrid->GetIrradianceImageAttachmentId();
-                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
+                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked)
                     {
                         // import the irradiance image now, since it is baked and therefore was not imported during the raytracing pass
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetIrradianceImage());
+                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetIrradianceImageAttachmentId(), diffuseProbeGrid->GetIrradianceImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeIrradianceImage");
                     }
 
                     RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = attachmentId;
+                    desc.m_attachmentId = diffuseProbeGrid->GetIrradianceImageAttachmentId();
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeIrradianceImageViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
@@ -146,16 +118,15 @@ namespace AZ
 
                 // probe distance image
                 {
-                    RHI::AttachmentId attachmentId = diffuseProbeGrid->GetDistanceImageAttachmentId();
-                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
+                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked)
                     {
                         // import the distance image now, since it is baked and therefore was not imported during the raytracing pass
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetDistanceImage());
+                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetDistanceImageAttachmentId(), diffuseProbeGrid->GetDistanceImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeDistanceImage");
                     }
 
                     RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = attachmentId;
+                    desc.m_attachmentId = diffuseProbeGrid->GetDistanceImageAttachmentId();
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDistanceImageViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
@@ -164,16 +135,15 @@ namespace AZ
 
                 // probe data image
                 {
-                    RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeDataImageAttachmentId();
-                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
+                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked)
                     {
                         // import the probe data image now, since it is baked and therefore was not imported during the raytracing pass
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetProbeDataImage());
+                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetProbeDataImageAttachmentId(), diffuseProbeGrid->GetProbeDataImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ProbeDataImage");
                     }
 
                     RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = attachmentId;
+                    desc.m_attachmentId = diffuseProbeGrid->GetProbeDataImageAttachmentId();
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDataImageViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
                 

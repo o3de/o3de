@@ -16,7 +16,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/std/containers/span.h>
+#include <AtomCore/std/containers/array_view.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 namespace AZ
@@ -114,14 +114,14 @@ namespace AZ
             }
         }
 
-        AZStd::span<const Data::Instance<RPI::Image>> DecalFeatureProcessor::GetImageArray() const
+        AZStd::array_view<Data::Instance<RPI::Image>> DecalFeatureProcessor::GetImageArray() const
         {
             // [GFX TODO][ATOM-4445] Replace this hardcoded constant with atlasing / bindless so we can have far more than 8 decal textures
             // Note this constant also is defined in View.srg
             const size_t MaxDecals = 8;
             size_t numImages = AZStd::min(MaxDecals, m_decalData.GetDataCount());
 
-            AZStd::span<const ImagePtr> imageArrayView(m_decalData.GetDataVector<1>().begin(), m_decalData.GetDataVector<1>().begin() + numImages);
+            AZStd::array_view<ImagePtr> imageArrayView(m_decalData.GetDataVector<1>().begin(), m_decalData.GetDataVector<1>().begin() + numImages);
             return imageArrayView;
         }
 
@@ -130,8 +130,8 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "DecalFeatureProcessor: Render");
 
-            AZStd::span<const Data::Instance<RPI::Image>> baseMaps = GetImagesFromDecalData<1>();
-            AZStd::span<const Data::Instance<RPI::Image>> opacityMaps = GetImagesFromDecalData<2>();
+            AZStd::array_view<Data::Instance<RPI::Image>> baseMaps = GetImagesFromDecalData<1>();
+            AZStd::array_view<Data::Instance<RPI::Image>> opacityMaps = GetImagesFromDecalData<2>();
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -241,20 +241,6 @@ namespace AZ
             }
         }
 
-        void DecalFeatureProcessor::SetDecalNormalMapOpacity(DecalHandle handle, float opacity)
-        {
-            if (handle.IsValid())
-            {
-                m_decalData.GetData<0>(handle.GetIndex()).m_normalMapOpacity = opacity;
-
-                m_deviceBufferNeedsUpdate = true;
-            }
-            else
-            {
-                AZ_Warning("DecalFeatureProcessor", false, "Invalid handle passed to DecalFeatureProcessor::SetDecalNormalMapOpacity().");
-            }
-        }
-        
         void DecalFeatureProcessor::SetDecalSortKey(DecalHandle handle, uint8_t sortKey)
         {
             if (handle.IsValid())

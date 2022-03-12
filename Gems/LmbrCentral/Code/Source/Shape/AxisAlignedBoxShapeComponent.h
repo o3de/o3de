@@ -33,6 +33,7 @@ namespace LmbrCentral
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         AxisAlignedBoxShape m_aaboxShape; ///< Stores underlying box type for this component.
     };
@@ -64,5 +65,6 @@ namespace LmbrCentral
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 
         BoxShapeConfig m_boxShapeConfig; ///< Stores configuration data for box shape.
+        AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne(); ///< Caches non-uniform scale for this entity.
     };
 } // namespace LmbrCentral

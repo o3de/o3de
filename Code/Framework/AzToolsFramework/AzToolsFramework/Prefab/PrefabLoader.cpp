@@ -331,7 +331,7 @@ namespace AzToolsFramework
             }
 
             PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom, PrefabDomUtils::StoreFlags::StoreLinkIds))
             {
                 return false;
             }
@@ -359,7 +359,7 @@ namespace AzToolsFramework
 
             PrefabDom storedPrefabDom(&savingTemplateDom->get().GetAllocator());
             if (!PrefabDomUtils::StoreInstanceInPrefabDom(savingPrefabInstance, storedPrefabDom,
-                PrefabDomUtils::StoreFlags::StripDefaultValues | PrefabDomUtils::StoreFlags::StripLinkIds))
+                PrefabDomUtils::StoreFlags::StripDefaultValues))
             {
                 return false;
             }

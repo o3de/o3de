@@ -8,6 +8,7 @@
 
 set(FILES
     Include/ImGuiBus.h
+    Include/ImGuiLYCurveEditorBus.h
     Source/ImGuiGem.cpp
     Source/ImGuiColorDefines.h
     Source/ImGuiManager.h
@@ -16,4 +17,6 @@ set(FILES
     Source/LYCommonMenu/ImGuiLYCommonMenu.cpp
     Source/LYCommonMenu/ImGuiLYEntityOutliner.h
     Source/LYCommonMenu/ImGuiLYEntityOutliner.cpp
+    Source/LYCommonMenu/ImGuiLYCurveEditor.h
+    Source/LYCommonMenu/ImGuiLYCurveEditor.cpp
 )

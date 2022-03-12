@@ -17,7 +17,6 @@
 #include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
-#include <AzCore/Math/MathUtils.h>
 
 namespace AzNetworking
 {
@@ -447,7 +446,7 @@ namespace AzNetworking
 
         if (compErr != CompressorError::Ok)
         {
-            AZLOG_ERROR("Decompress failed with error %d this will lead to data read errors!", aznumeric_cast<int32_t>(compErr));
+            AZLOG_ERROR("Decompress failed with error %d this will lead to data read errors!", compErr);
             return false;
         }
 
@@ -540,7 +539,7 @@ namespace AzNetworking
             // Each fragmented packet we send adds an extra fragmented packet header, need to deduct that from our chunk size, otherwise we infinitely loop
             // SSL encryption can also inflate our payload so we pre-emptively deduct an estimated tax
             const uint32_t chunkSize = connection.GetConnectionMtu() - net_FragmentedHeaderOverhead - net_SslInflationOverhead;
-            const uint32_t numChunks = AZ::DivideAndRoundUp(packetSize, chunkSize); // We want to round up on the remainder
+            const uint32_t numChunks = (packetSize + chunkSize - 1) / chunkSize; // We want to round up on the remainder
             const uint8_t* chunkStart = packetData;
             const SequenceId fragmentedSequence = connection.m_fragmentQueue.GetNextFragmentedSequenceId();
             uint32_t bytesRemaining = packetSize;

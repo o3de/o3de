@@ -52,6 +52,7 @@ namespace AZ
 
         GemTestEnvironment::GemTestEnvironment()
         {
+            m_parameters = new Parameters;
         }
 
         void GemTestEnvironment::AddDynamicModulePaths(const AZStd::vector<AZStd::string>& dynamicModulePaths)
@@ -82,8 +83,6 @@ namespace AZ
             UnitTest::TraceBusHook::SetupEnvironment();
 
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
-            m_parameters = new Parameters;
 
             AddGemsAndComponents();
             PreCreateApplication();

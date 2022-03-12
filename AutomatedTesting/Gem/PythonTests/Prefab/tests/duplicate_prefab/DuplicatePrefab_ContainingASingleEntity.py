@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 def DuplicatePrefab_ContainingASingleEntity():
 
-    from pathlib import Path
-    CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
+    CAR_PREFAB_FILE_NAME = 'car_prefab'
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab

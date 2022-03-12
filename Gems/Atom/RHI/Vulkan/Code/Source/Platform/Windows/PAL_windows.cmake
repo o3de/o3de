@@ -7,4 +7,3 @@
 #
 
 set(PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED TRUE)
-set(VULKAN_VALIDATION_LAYER 3rdParty::vulkan-validationlayers)

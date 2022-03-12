@@ -24,6 +24,13 @@ namespace AZ
             AZ_RTTI(AZ::RPI::JsonMaterialPropertyValueSerializer, "{A52B1ED8-C849-4269-9AA7-9D0814D2EC59}", BaseJsonSerializer);
             AZ_CLASS_ALLOCATOR_DECL;
 
+            //! A LoadContext object must be passed down to the serializer via JsonDeserializerContext::GetMetadata().Add(...)
+            struct LoadContext
+            {
+                AZ_TYPE_INFO(JsonMaterialPropertyValueSerializer::LoadContext, "{5E0A891A-27F6-4AD7-88A5-B9EA50F88B45}");
+                uint32_t m_materialTypeVersion; //!< The version number from the .materialtype file
+            };
+
             JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
                 JsonDeserializerContext& context) override;
 

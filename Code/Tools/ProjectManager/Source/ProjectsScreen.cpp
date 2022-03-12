@@ -283,7 +283,7 @@ namespace O3DE::ProjectManager
                     if (projectButtonIter != m_projectButtons.end())
                     {
                         currentButton = projectButtonIter.value();
-                        currentButton->SetState(ProjectButtonState::ReadyToLaunch);
+                        currentButton->RestoreDefaultState();
                     }
                 }
 
@@ -297,7 +297,7 @@ namespace O3DE::ProjectManager
 
                     if (!projectBuiltSuccessfully)
                     {
-                        currentButton->SetState(ProjectButtonState::NeedsToBuild);
+                        currentButton->ShowBuildRequired();
                     }
                 }
             }
@@ -315,7 +315,7 @@ namespace O3DE::ProjectManager
                 if (projectIter != m_projectButtons.end())
                 {
                     projectIter.value()->SetProjectButtonAction(
-                        tr("Cancel queued build"),
+                        tr("Cancel Queued Build"),
                         [this, project]
                         {
                             UnqueueBuildProject(project);
@@ -331,12 +331,11 @@ namespace O3DE::ProjectManager
                 {
                     if (project.m_buildFailed)
                     {
-                        projectIter.value()->SetBuildLogsLink(project.m_logUrl);
-                        projectIter.value()->SetState(ProjectButtonState::BuildFailed);
+                        projectIter.value()->ShowBuildFailed(true, project.m_logUrl);
                     }
                     else
                     {
-                        projectIter.value()->SetState(ProjectButtonState::NeedsToBuild);
+                        projectIter.value()->ShowBuildRequired();
                     }
                 }
             }
@@ -442,7 +441,8 @@ namespace O3DE::ProjectManager
                     ProjectButton* button = qobject_cast<ProjectButton*>(sender());
                     if (button)
                     {
-                        button->SetState(ProjectButtonState::Launching);
+                        button->SetLaunchButtonEnabled(false);
+                        button->SetButtonOverlayText(tr("Opening Editor..."));
                     }
 
                     // enable the button after 3 seconds
@@ -453,7 +453,7 @@ namespace O3DE::ProjectManager
                         {
                             if (button)
                             {
-                                button->SetState(ProjectButtonState::ReadyToLaunch);
+                                button->SetLaunchButtonEnabled(true);
                             }
                         });
                 }

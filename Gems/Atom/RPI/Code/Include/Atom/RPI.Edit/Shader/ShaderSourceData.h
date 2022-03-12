@@ -57,7 +57,6 @@ namespace AZ
             };
 
             AZStd::string m_source;
-            AZStd::vector<AZStd::string> m_definitions;
             RHI::ShaderCompilerArguments m_compiler;
 
             AZStd::string m_drawListName;

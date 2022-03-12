@@ -8,61 +8,49 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 class Tests:
     camera_creation = (
         "Camera Entity successfully created",
-        "P0: Camera Entity failed to be created")
+        "Camera Entity failed to be created")
     camera_component_added = (
         "Camera component was added to entity",
-        "P0: Camera component failed to be added to entity")
+        "Camera component failed to be added to entity")
     camera_component_check = (
         "Entity has a Camera component",
-        "P0: Entity failed to find Camera component")
+        "Entity failed to find Camera component")
     creation_undo = (
         "UNDO Entity creation success",
-        "P0: UNDO Entity creation failed")
+        "UNDO Entity creation failed")
     creation_redo = (
         "REDO Entity creation success",
-        "P0: REDO Entity creation failed")
+        "REDO Entity creation failed")
     decal_creation = (
         "Decal Entity successfully created",
-        "P0: Decal Entity failed to be created")
+        "Decal Entity failed to be created")
     decal_component = (
         "Entity has a Decal component",
-        "P0: Entity failed to find Decal component")
-    decal_component_removed = (
-        "Decal component removed",
-        "P0: Decal component failed to be removed")
+        "Entity failed to find Decal component")
     material_property_set = (
         "Material property set on Decal component",
-        "P0: Couldn't set Material property on Decal component")
-    attenuation_property_set = (
-        "Attenuation Angle property set on Decal component",
-        "P1: Couldn't set Attenuation Angle property on Decal component")
-    opacity_property_set = (
-        "Opacity property set on Decal component",
-        "P1: Coudn't set Opacity property on Decal component")
-    sort_key_property_set = (
-        "Sort Key property set on Decal component",
-        "P1: Couldn't set Sort Key property on Decal component")
+        "Couldn't set Material property on Decal component")
     enter_game_mode = (
         "Entered game mode",
-        "P0: Failed to enter game mode")
+        "Failed to enter game mode")
     exit_game_mode = (
         "Exited game mode",
-        "P0: Couldn't exit game mode")
+        "Couldn't exit game mode")
     is_visible = (
         "Entity is visible",
-        "P0: Entity was not visible")
+        "Entity was not visible")
     is_hidden = (
         "Entity is hidden",
-        "P0: Entity was not hidden")
+        "Entity was not hidden")
     entity_deleted = (
         "Entity deleted",
-        "P0: Entity was not deleted")
+        "Entity was not deleted")
     deletion_undo = (
         "UNDO deletion success",
-        "P0: UNDO deletion failed")
+        "UNDO deletion failed")
     deletion_redo = (
         "REDO deletion success",
-        "P0: REDO deletion failed")
+        "REDO deletion failed")
 
 
 def AtomEditorComponents_Decal_AddedToEntity():
@@ -83,18 +71,14 @@ def AtomEditorComponents_Decal_AddedToEntity():
     2) Add Decal component to Decal entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Set Material property on Decal component.
-    6) Set Attenuation Angle property on Decal component.
-    7) Set Opacity property on Decal component
-    8) Set Sort Key property on Decal Component
-    9) Remove Decal component then UNDO the remove
-    10) Enter/Exit game mode.
-    11) Test IsHidden.
-    12) Test IsVisible.
-    13) Delete Decal entity.
-    14) UNDO deletion.
-    15) REDO deletion.
-    16) Look for errors and asserts.
+    5) Enter/Exit game mode.
+    6) Test IsHidden.
+    7) Test IsVisible.
+    8) Set Material property on Decal component.
+    9) Delete Decal entity.
+    10) UNDO deletion.
+    11) REDO deletion.
+    12) Look for errors and asserts.
 
     :return: None
     """
@@ -111,7 +95,7 @@ def AtomEditorComponents_Decal_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("Graphics", "base_empty")
+        TestHelper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a Decal entity with no components.
@@ -146,69 +130,41 @@ def AtomEditorComponents_Decal_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, decal_entity.exists())
 
-        # 5. Set Material property on Decal component.
-        decal_material_asset_path = os.path.join("materials", "decal", "airship_symbol_decal.azmaterial")
+        # 5. Enter/Exit game mode.
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
+        general.idle_wait_frames(1)
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
+
+        # 6. Test IsHidden.
+        decal_entity.set_visibility_state(False)
+        Report.result(Tests.is_hidden, decal_entity.is_hidden() is True)
+
+        # 7. Test IsVisible.
+        decal_entity.set_visibility_state(True)
+        general.idle_wait_frames(1)
+        Report.result(Tests.is_visible, decal_entity.is_visible() is True)
+
+        # 8. Set Material property on Decal component.
+        decal_material_asset_path = os.path.join("materials", "basic_grey.azmaterial")
         decal_material_asset = Asset.find_asset_by_path(decal_material_asset_path, False)
         decal_component.set_component_property_value(AtomComponentProperties.decal('Material'), decal_material_asset.id)
         get_material_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Material'))
         Report.result(Tests.material_property_set, get_material_property == decal_material_asset.id)
 
-        # 6. Set Attenuation Angle property on Decal component
-        decal_component.set_component_property_value(AtomComponentProperties.decal('Attenuation Angle'), value=0.75)
-        get_attenuation_property = decal_component.get_component_property_value(
-            AtomComponentProperties.decal('Attenuation Angle'))
-        Report.result(Tests.attenuation_property_set, get_attenuation_property == 0.75)
-
-        # 7. Set Opacity property on Decal component
-        decal_component.set_component_property_value(AtomComponentProperties.decal('Opacity'), value=0.5)
-        get_opacity_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Opacity'))
-        Report.result(Tests.opacity_property_set, get_opacity_property == 0.5)
-
-        # 8. Set Sort Key property on Decal component
-        decal_component.set_component_property_value(AtomComponentProperties.decal('Sort Key'), value=255.0)
-        get_sort_key_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Sort Key'))
-        Report.result(Tests.sort_key_property_set, get_sort_key_property == 255.0)
-        decal_component.set_component_property_value(AtomComponentProperties.decal('Sort Key'), value=0)
-        get_sort_key_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Sort Key'))
-        Report.result(Tests.sort_key_property_set, get_sort_key_property == 0)
-
-        # 9. Remove Decal component then UNDO the remove
-        decal_component.remove()
-        general.idle_wait_frames(1)
-        Report.result(Tests.decal_component_removed, not decal_entity.has_component(AtomComponentProperties.decal()))
-        general.undo()
-        general.idle_wait_frames(1)
-        Report.result(Tests.decal_component, decal_entity.has_component(AtomComponentProperties.decal()))
-
-        # 10. Enter/Exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        general.idle_wait_frames(1)
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-
-        # 11. Test IsHidden.
-        decal_entity.set_visibility_state(False)
-        Report.result(Tests.is_hidden, decal_entity.is_hidden() is True)
-
-        # 12. Test IsVisible.
-        decal_entity.set_visibility_state(True)
-        general.idle_wait_frames(1)
-        Report.result(Tests.is_visible, decal_entity.is_visible() is True)
-
-        # 13. Delete Decal entity.
+        # 9. Delete Decal entity.
         decal_entity.delete()
         Report.result(Tests.entity_deleted, not decal_entity.exists())
 
-        # 14. UNDO deletion.
+        # 10. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, decal_entity.exists())
 
-        # 15. REDO deletion.
+        # 11. REDO deletion.
         general.redo()
-        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not decal_entity.exists())
 
-        # 16. Look for errors and asserts.
+        # 12. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

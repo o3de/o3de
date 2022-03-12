@@ -36,8 +36,7 @@ namespace AZ
             explicit DiffuseProbeGridRenderPass(const RPI::PassDescriptor& descriptor);
 
             // Pass behavior overrides...
-            bool IsEnabled() const override;
-            void FrameBeginInternal(FramePrepareParams params) override;
+            virtual void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;

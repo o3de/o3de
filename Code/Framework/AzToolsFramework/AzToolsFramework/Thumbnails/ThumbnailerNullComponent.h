@@ -19,9 +19,11 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
+        class ThumbnailContext;
+
         class ThumbnailerNullComponent
             : public AZ::Component
-            , public AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Handler
+            , public AzToolsFramework::Thumbnailer::ThumbnailerRequestsBus::Handler
         {
         public:
             AZ_COMPONENT(ThumbnailerNullComponent, "{8009D651-3FAA-9815-B99E-AF174A3B29D4}")
@@ -40,12 +42,13 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // ThumbnailerRequests
             //////////////////////////////////////////////////////////////////////////
-            void RegisterThumbnailProvider(AzToolsFramework::Thumbnailer::SharedThumbnailProvider provider) override;
-            void UnregisterThumbnailProvider(const char* providerName) override;
-            AzToolsFramework::Thumbnailer::SharedThumbnail GetThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey) override;
-            bool IsLoading(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey) override;
-            QThreadPool* GetThreadPool() override;
-
+            void RegisterContext(const char* contextName) override;
+            void UnregisterContext(const char* contextName) override;
+            bool HasContext(const char* contextName) const override;
+            void RegisterThumbnailProvider(AzToolsFramework::Thumbnailer::SharedThumbnailProvider provider, const char* contextName) override;
+            void UnregisterThumbnailProvider(const char* providerName, const char* contextName) override;
+            AzToolsFramework::Thumbnailer::SharedThumbnail GetThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, const char* contextName) override;
+            bool IsLoading(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, const char* contextName) override;
         private:
             AzToolsFramework::Thumbnailer::SharedThumbnail m_nullThumbnail;
         };

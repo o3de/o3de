@@ -329,6 +329,7 @@ namespace GridMate
         friend class ReplicaUpdateTaskBase;
         friend class ReplicaDestroyPeerTask;
         friend class SendLimitProcessPolicy;
+        friend class InterestManager;
 
         typedef unordered_map<int, void*> UserContextMapType;
         typedef unordered_map<ReplicaId, ReplicaPtr> ReplicaMap;

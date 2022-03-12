@@ -81,8 +81,6 @@ set(FILES
     Source/TemplateButtonWidget.cpp
     Source/ExternalLinkDialog.h
     Source/ExternalLinkDialog.cpp
-    Source/AdjustableHeaderWidget.h
-    Source/AdjustableHeaderWidget.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

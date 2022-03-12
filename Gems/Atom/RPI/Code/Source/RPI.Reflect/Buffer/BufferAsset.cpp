@@ -49,9 +49,9 @@ namespace AZ
             }
         }
 
-        AZStd::span<const uint8_t> BufferAsset::GetBuffer() const
+        AZStd::array_view<uint8_t> BufferAsset::GetBuffer() const
         {
-            return AZStd::span<const uint8_t>(m_buffer);
+            return AZStd::array_view<uint8_t>(m_buffer);
         }
 
         const RHI::BufferDescriptor& BufferAsset::GetBufferDescriptor() const

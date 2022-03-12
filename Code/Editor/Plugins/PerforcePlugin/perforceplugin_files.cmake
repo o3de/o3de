@@ -13,6 +13,8 @@ set(FILES
     PasswordDlg.h
     PerforcePlugin.cpp
     PerforcePlugin.h
+    PerforcePlugin.qrc
     PerforceSourceControl.cpp
     PerforceSourceControl.h
+    resource.h
 )

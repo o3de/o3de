@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
     class GemDependenciesDialog
         : public QDialog
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
     public:
         explicit GemDependenciesDialog(GemModel* gemModel, QWidget *parent = nullptr);
         ~GemDependenciesDialog() = default;

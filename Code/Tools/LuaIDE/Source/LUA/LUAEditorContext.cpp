@@ -21,11 +21,11 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
-#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -244,7 +244,7 @@ namespace LUAEditor
         }
 
         AZStd::vector<AZStd::string> files;
-        AZ::StringFunc::Tokenize(parameters.c_str(), files, ";");
+        AzFramework::StringFunc::Tokenize(parameters.c_str(), files, ";");
         if (!files.empty())
         {
             for (const auto& file : files)
@@ -669,12 +669,9 @@ namespace LUAEditor
             return;
         }
 
-        const AZ::CommandLine* commandLine = nullptr;
+        const AzFramework::CommandLine* commandLine = nullptr;
 
-        AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* requests)
-            {
-                commandLine = requests->GetAzCommandLine();
-            });
+        EBUS_EVENT_RESULT(commandLine, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
 
         bool forceShow = false;
         bool forceHide = false;
@@ -853,7 +850,7 @@ namespace LUAEditor
         DocumentInfo& info = infoEntry.first->second;
         info.m_assetId = normalizedAssetId;
         info.m_assetName = assetId;
-        AZ::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
+        AzFramework::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
         info.m_bSourceControl_Ready = true;
         info.m_bSourceControl_CanWrite = true;
         info.m_bUntitledDocument = false;
@@ -948,7 +945,7 @@ namespace LUAEditor
             // do not allow SaveAs onto an existing asset, even if it could be checked out and modified "safely."
             // end user must check out and modify contents directly if they want this
 
-            if (AZ::StringFunc::Find(newAssetName.c_str(), ".lua") == AZStd::string::npos)
+            if (AzFramework::StringFunc::Find(newAssetName.c_str(), ".lua") == AZStd::string::npos)
             {
                 newAssetName += ".lua";
             }
@@ -964,7 +961,7 @@ namespace LUAEditor
 
             trySaveAs = false;
             docInfoIter->second.m_bUntitledDocument = false;
-            AZ::StringFunc::Path::GetFullFileName(newAssetName.c_str(), docInfoIter->second.m_displayName);
+            AzFramework::StringFunc::Path::GetFullFileName(newAssetName.c_str(), docInfoIter->second.m_displayName);
 
             // when you 'save as' you can write to it, even if it started out not that way.
             docInfoIter->second.m_bSourceControl_Ready = true;
@@ -1492,7 +1489,7 @@ namespace LUAEditor
 
         DocumentInfo info;
         info.m_assetName = assetIdLower;
-        AZ::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
+        AzFramework::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
         info.m_assetId = assetIdLower;
         info.m_bSourceControl_BusyGettingStats = true;
         info.m_bSourceControl_BusyGettingStats = false;
@@ -1558,10 +1555,7 @@ namespace LUAEditor
         const AZStd::string k_luaScriptFileString = "files";
 
         const AzFramework::CommandLine* commandLine = nullptr;
-        AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* requests)
-            {
-                commandLine = requests->GetAzCommandLine();
-            });
+        EBUS_EVENT_RESULT(commandLine, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
 
         AZStd::string parameters = "";
         size_t numSwitchValues = commandLine->GetNumSwitchValues(k_luaScriptFileString);
@@ -2454,7 +2448,7 @@ namespace LUAEditor
                                     if (matchFound)
                                     {
                                         int lineNumber = 0;
-                                        if (AZ::StringFunc::LooksLikeInt(match[1].str().c_str(), &lineNumber))
+                                        if (AzFramework::StringFunc::LooksLikeInt(match[1].str().c_str(), &lineNumber))
                                         {
                                             errorData->m_lineNumber = lineNumber;
                                             finalMessage = match[2].str().c_str();
@@ -2473,6 +2467,6 @@ namespace LUAEditor
 
     bool Context::IsLuaAsset(const AZStd::string& assetPath)
     {
-        return AZ::StringFunc::Path::IsExtension(assetPath.c_str(), ".lua");
+        return AzFramework::StringFunc::Path::IsExtension(assetPath.c_str(), ".lua");
     }
 }

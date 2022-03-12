@@ -29,5 +29,8 @@
                 "type": "Fragment"
             }
         ]
-    }
+    },
+
+    "ProgramVariants": [
+    ]
 }

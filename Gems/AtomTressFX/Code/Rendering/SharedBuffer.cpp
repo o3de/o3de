@@ -16,8 +16,6 @@
 #include <Rendering/SharedBuffer.h>
 #include <Rendering/HairCommon.h>
 
-#include <numeric>
-
 namespace AZ::Render
 {
     //! Setting the constructor as private will create compile error to remind the developer to set

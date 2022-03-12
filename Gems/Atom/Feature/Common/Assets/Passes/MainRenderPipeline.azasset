@@ -6,7 +6,6 @@
         "Name": "MainPipeline",
         "MainViewTag": "MainCamera",
         "RootPassTemplate": "MainPipeline",
-        "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {
                 "samples": 4

@@ -11,7 +11,7 @@
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImagePoolBase.h>
 
-#include <AzCore/std/containers/span.h>
+#include <AtomCore/std/containers/array_view.h>
 
 namespace AZ
 {
@@ -34,7 +34,7 @@ namespace AZ
         struct StreamingImageMipSlice
         {
             /// An array of subresource datas. The size of this array must match the array size of the image.
-            AZStd::span<const StreamingImageSubresourceData> m_subresources;
+            AZStd::array_view<StreamingImageSubresourceData> m_subresources;
 
             /// The layout of each image in the array.
             ImageSubresourceLayout m_subresourceLayout;
@@ -52,7 +52,7 @@ namespace AZ
             StreamingImageInitRequest(
                 Image& image,
                 const ImageDescriptor& descriptor,
-                AZStd::span<const StreamingImageMipSlice> tailMipSlices);
+                AZStd::array_view<StreamingImageMipSlice> tailMipSlices);
 
             /// The image to initialize.
             Image* m_image = nullptr;
@@ -65,7 +65,7 @@ namespace AZ
              * This should only include the baseline set of mips necessary to render the image at
              * its lowest resolution. The uploads is performed synchronously.
              */
-            AZStd::span<const StreamingImageMipSlice> m_tailMipSlices;
+            AZStd::array_view<StreamingImageMipSlice> m_tailMipSlices;
         };
 
         /**
@@ -83,7 +83,7 @@ namespace AZ
              * remain valid for the duration of the upload (until m_completeCallback
              * is triggered).
              */
-            AZStd::span<const StreamingImageMipSlice> m_mipSlices;
+            AZStd::array_view<StreamingImageMipSlice> m_mipSlices;
 
             /// Whether the function need to wait until the upload is finished.
             bool m_waitForUpload = false;

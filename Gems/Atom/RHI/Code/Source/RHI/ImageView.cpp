@@ -20,9 +20,6 @@ namespace AZ
                 return ResultCode::InvalidOperation;
             }
             m_descriptor = viewDescriptor;
-           
-            m_hash = TypeHash64(image.GetHash(), m_hash);
-            m_hash = m_descriptor.GetHash();
             return ResourceView::Init(image);
         }
 
@@ -71,11 +68,6 @@ namespace AZ
                 (m_descriptor.m_arraySliceMax + 1) >= imageDescriptor.m_arraySize &&
                 m_descriptor.m_mipSliceMin == 0 &&
                 (m_descriptor.m_mipSliceMax + 1) >= imageDescriptor.m_mipLevels;
-        }
-
-        HashValue64 ImageView::GetHash() const
-        {
-            return m_hash;
         }
     }
 }

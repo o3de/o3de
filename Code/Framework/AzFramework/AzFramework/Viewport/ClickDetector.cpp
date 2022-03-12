@@ -50,12 +50,6 @@ namespace AzFramework
                 }
             }
 
-            // callback for when a click or drag may first be initiated
-            if (m_downEventFn)
-            {
-                m_downEventFn();
-            }
-
             m_detectionState = DetectionState::WaitingForMove;
             m_moveAccumulator = 0.0f;
 

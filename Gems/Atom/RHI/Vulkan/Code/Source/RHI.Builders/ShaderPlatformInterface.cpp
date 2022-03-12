@@ -11,7 +11,6 @@
 
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
-#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
@@ -282,9 +281,7 @@ namespace AZ
             args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend header
-            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
-
-            if (graphicsDevMode || BuildHasDebugInfo(shaderCompilerArguments))
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 // dump intermediate "true final HLSL" file (shadername.vulkan.shadersource.prepend)
                 byProducts.m_intermediatePaths.insert(dxcInputFile);
@@ -337,7 +334,7 @@ namespace AZ
                 byProducts.m_dynamicBranchCount = ByProducts::UnknownDynamicBranchCount;
             }
 
-            if (graphicsDevMode || BuildHasDebugInfo(shaderCompilerArguments))
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 byProducts.m_intermediatePaths.emplace(AZStd::move(objectCodeOutputFile));
             }

@@ -10,7 +10,6 @@
 #include <PhysX/EditorColliderComponentRequestBus.h>
 
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/ComponentBus.h>
 
@@ -29,14 +28,10 @@ namespace PhysX
         AZ::Transform worldTransform;
         AZ::TransformBus::EventResult(worldTransform, idPair.GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
-        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-
         AZ::Vector3 colliderOffset;
         PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
 
         m_translationManipulators.SetSpace(worldTransform);
-        m_translationManipulators.SetNonUniformScale(nonUniformScale);
         m_translationManipulators.SetLocalPosition(colliderOffset);
         m_translationManipulators.AddEntityComponentIdPair(idPair);
         m_translationManipulators.Register(AzToolsFramework::g_mainManipulatorManagerId);
@@ -45,19 +40,19 @@ namespace PhysX
         m_translationManipulators.InstallLinearManipulatorMouseMoveCallback([this, idPair](
             const AzToolsFramework::LinearManipulator::Action& action)
         {
-            OnManipulatorMoved(action.m_start.m_localPosition, action.m_current.m_localPositionOffset, idPair);
+            OnManipulatorMoved(action.LocalPosition(), idPair);
         });
 
         m_translationManipulators.InstallPlanarManipulatorMouseMoveCallback([this, idPair](
             const AzToolsFramework::PlanarManipulator::Action& action)
         {
-            OnManipulatorMoved(action.m_start.m_localPosition, action.m_current.m_localOffset, idPair);
+            OnManipulatorMoved(action.LocalPosition(), idPair);
         });
 
         m_translationManipulators.InstallSurfaceManipulatorMouseMoveCallback([this, idPair](
             const AzToolsFramework::SurfaceManipulator::Action& action)
         {
-            OnManipulatorMoved(action.m_start.m_localPosition, action.m_current.m_localOffset, idPair);
+            OnManipulatorMoved(action.LocalPosition(), idPair);
         });
     }
 
@@ -74,14 +69,10 @@ namespace PhysX
         m_translationManipulators.Unregister();
     }
 
-    void ColliderOffsetMode::OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset, const AZ::EntityComponentIdPair& idPair)
+    void ColliderOffsetMode::OnManipulatorMoved(const AZ::Vector3& position, const AZ::EntityComponentIdPair& idPair)
     {
-        AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldTransform, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        const float scale = AZ::GetMax(AZ::MinTransformScale, worldTransform.GetUniformScale());
-        const AZ::Vector3 newPosition = startPosition + offset / scale;
-        m_translationManipulators.SetLocalPosition(newPosition);
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, newPosition);
+        m_translationManipulators.SetLocalPosition(position);
+        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, position);
     }
 
     void ColliderOffsetMode::ResetValues(const AZ::EntityComponentIdPair& idPair)

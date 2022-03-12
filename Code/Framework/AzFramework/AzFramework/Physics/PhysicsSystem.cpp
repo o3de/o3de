@@ -8,7 +8,6 @@
 
 #include <AzFramework/Physics/PhysicsSystem.h>
 
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AzPhysics

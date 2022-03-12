@@ -49,6 +49,18 @@ namespace EMotionFX
     class ClothColliderTestsFixture : public UIFixture
     {
     public:
+        void SetUp() override
+        {
+            SetupQtAndFixtureBase();
+
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+            SystemComponent::Reflect(serializeContext);
+
+            SetupPluginWindows();
+        }
+
         void TearDown() override
         {
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -74,19 +86,6 @@ namespace EMotionFX
         }
 
     protected:
-        bool ShouldReflectPhysicSystem() override { return true; }
-
-        void ReflectMockedSystems() override
-        {
-            UIFixture::ReflectMockedSystems();
-
-            // Reflect the mocked version of the cloth system.
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            SystemComponent::Reflect(serializeContext);
-        }
-
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;
         EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;

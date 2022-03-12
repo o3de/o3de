@@ -24,7 +24,7 @@ namespace Benchmark
             m_pathString);
 
         TemplateId templateToInstantiateId = firstInstance->GetTemplateId();
-        for ([[maybe_unused]] auto _ : state)
+        for (auto _ : state)
         {
             state.PauseTiming();
 

@@ -26,10 +26,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
-
-AZ_DECLARE_BUDGET(MULTIPLAYER);
 
 namespace Multiplayer
 {
@@ -81,8 +78,6 @@ namespace Multiplayer
 
     void EntityReplicationManager::ActivatePendingEntities()
     {
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: ActivatePendingEntities");
-
         AZStd::vector<NetEntityId> notReadyEntities;
 
         const AZ::TimeMs endTimeMs = AZ::GetElapsedTimeMs() + m_entityActivationTimeSliceMs;
@@ -131,23 +126,17 @@ namespace Multiplayer
                 GetRemoteHostId().GetString().c_str()
             );
 
+            // Prep a replication record for send, at this point, everything needs to be sent
+            for (EntityReplicator* replicator : toSendList)
             {
-                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - PrepareSerialization");
-                // Prep a replication record for send, at this point, everything needs to be sent
-                for (EntityReplicator* replicator : toSendList)
-                {
-                    replicator->GetPropertyPublisher()->PrepareSerialization();
-                }
+                replicator->GetPropertyPublisher()->PrepareSerialization();
             }
 
+            // While our to send list is not empty, build up another packet to send
+            do
             {
-                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - SendEntityUpdateMessages");
-                // While our to send list is not empty, build up another packet to send
-                do
-                {
-                    SendEntityUpdateMessages(toSendList);
-                } while (!toSendList.empty());
-            }
+                SendEntityUpdateMessages(toSendList);
+            } while (!toSendList.empty());
         }
 
         SendEntityRpcs(m_deferredRpcMessagesReliable, true);
@@ -174,8 +163,6 @@ namespace Multiplayer
         {
             return EntityReplicatorList();
         }
-
-        AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: GenerateEntityUpdateList");
 
         // Generate a list of all our entities that need updates
         EntityReplicatorList toSendList;
@@ -1139,7 +1126,7 @@ namespace Multiplayer
                 netBindComponent->NotifyServerMigration(GetRemoteHostId());
             }
 
-            [[maybe_unused]] bool didSucceed = true;
+            bool didSucceed = true;
             EntityMigrationMessage message;
             message.m_netEntityId = replicator->GetEntityHandle().GetNetEntityId();
             message.m_prefabEntityId = netBindComponent->GetPrefabEntityId();

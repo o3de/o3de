@@ -8,7 +8,6 @@
 
 #include <AssetBrowser/ui_AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
-#include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -89,14 +88,13 @@ namespace AtomToolsFramework
 
     void AtomToolsAssetBrowser::SelectEntries(const AZStd::string& absolutePath)
     {
-        AZ::TickBus::Handler::BusDisconnect();
-
-        m_pathToSelect = absolutePath;
-        if (ValidateDocumentPath(m_pathToSelect))
+        if (!absolutePath.empty())
         {
             // Selecting a new asset in the browser is not guaranteed to happen immediately.
             // The asset browser model notifications are sent before the model is updated.
             // Instead of relying on the notifications, queue the selection and process it on tick until this change occurs.
+            m_pathToSelect = absolutePath;
+            AzFramework::StringFunc::Path::Normalize(m_pathToSelect);
             AZ::TickBus::Handler::BusConnect();
         }
     }
@@ -105,15 +103,11 @@ namespace AtomToolsFramework
     {
         const AZStd::vector<AssetBrowserEntry*> entries = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
 
-        const bool promptToOpenMultipleFiles =
-            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles", true);
-        const AZ::u64 promptToOpenMultipleFilesThreshold =
-            GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold", 10);
-
-        if (promptToOpenMultipleFiles && promptToOpenMultipleFilesThreshold <= entries.size())
+        const int multiSelectPromptThreshold = 10;
+        if (entries.size() >= multiSelectPromptThreshold)
         {
             QMessageBox::StandardButton result = QMessageBox::question(
-                GetToolMainWindow(),
+                QApplication::activeWindow(),
                 tr("Attemptng to open %1 files").arg(entries.size()),
                 tr("Would you like to open anyway?"),
                 QMessageBox::Yes | QMessageBox::No);
@@ -202,28 +196,25 @@ namespace AtomToolsFramework
         AZ_UNUSED(time);
         AZ_UNUSED(deltaTime);
 
-        if (!ValidateDocumentPath(m_pathToSelect))
+        if (!m_pathToSelect.empty())
         {
-            AZ::TickBus::Handler::BusDisconnect();
-            m_pathToSelect.clear();
-            return;
-        }
+            // Attempt to select the new path
+            AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(
+                &AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Events::SelectFileAtPath, m_pathToSelect);
 
-        // Attempt to select the new path
-        AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(
-            &AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Events::SelectFileAtPath, m_pathToSelect);
-
-        // Iterate over the selected entries to verify if the selection was made
-        for (const AssetBrowserEntry* entry : m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets())
-        {
-            if (entry)
+            // Iterate over the selected entries to verify if the selection was made
+            for (const AssetBrowserEntry* entry : m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets())
             {
-                AZStd::string sourcePath = entry->GetFullPath();
-                if (ValidateDocumentPath(sourcePath) && AZ::StringFunc::Equal(m_pathToSelect, sourcePath))
+                if (entry)
                 {
-                    // Once the selection is confirmed, cancel the operation and disconnect
-                    AZ::TickBus::Handler::BusDisconnect();
-                    m_pathToSelect.clear();
+                    AZStd::string sourcePath = entry->GetFullPath();
+                    AzFramework::StringFunc::Path::Normalize(sourcePath);
+                    if (m_pathToSelect == sourcePath)
+                    {
+                        // Once the selection is confirmed, cancel the operation and disconnect
+                        AZ::TickBus::Handler::BusDisconnect();
+                        m_pathToSelect.clear();
+                    }
                 }
             }
         }

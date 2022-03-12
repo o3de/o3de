@@ -37,6 +37,7 @@
 #include "SvgLabelPage.h"
 #include "TableViewPage.h"
 #include "TabWidgetPage.h"
+#include "TitleBarPage.h"
 #include "ToggleSwitchPage.h"
 #include "ToolBarPage.h"
 #include "TreeViewPage.h"
@@ -100,6 +101,7 @@ ComponentDemoWidget::ComponentDemoWidget(QWidget* parent)
 
     // Pages hidden in 1.25 release - unused components, still need work before being made public, or not interesting for external devs
     //sortedPages.insert("AssetBrowserFolder", new AssetBrowserFolderPage(this));
+    //sortedPages.insert("Titlebar", new TitleBarPage(this));
 
     for (const auto& title : sortedPages.keys())
     {

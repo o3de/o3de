@@ -17,6 +17,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <ImageLoader/ImageLoaders.h>
 #include <Processing/ImageConvert.h>
 #include <Processing/ImageToProcess.h>
@@ -83,15 +84,18 @@ namespace ImageProcessingAtom
         {
             using namespace AzToolsFramework::Thumbnailer;
 
-            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::ImageThumbnailCache));
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::ImageThumbnailCache),
+                ThumbnailContext::DefaultContext);
         }
 
         void ImageThumbnailSystemComponent::TeardownThumbnails()
         {
             using namespace AzToolsFramework::Thumbnailer;
 
-            ThumbnailerRequestBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::ImageThumbnailCache::ProviderName);
+            ThumbnailerRequestsBus::Broadcast(
+                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::ImageThumbnailCache::ProviderName,
+                ThumbnailContext::DefaultContext);
         }
 
         void ImageThumbnailSystemComponent::OnApplicationAboutToStop()

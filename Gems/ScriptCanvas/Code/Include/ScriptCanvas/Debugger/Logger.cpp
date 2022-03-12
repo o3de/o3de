@@ -53,12 +53,14 @@ namespace ScriptCanvas
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
 
-            AZ::IO::FixedMaxPath fullpath = ExecutionLogAsset::GetDefaultDirectoryPath() /path;
+            AZStd::string fullpath = ExecutionLogAsset::GetDefaultDirectoryRoot();
+            fullpath += ExecutionLogAsset::GetDefaultDirectoryPath();
+            fullpath += path;
 
             AZ::IO::FileIOStream fileStream;
             if (!fileStream.Open(fullpath.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeText))
             {
-                AZ_Error("ScriptCanvas", false, "Failed to open path: %s", fullpath.c_str());
+                AZ_Error("ScriptCanvas", false, "Failed to open path: %s", fullpath.data());
                 return {};
             }
 
@@ -68,7 +70,7 @@ namespace ScriptCanvas
             }
             else
             {
-                AZ_Error("ScriptCanvas", false, "Failed to load object: %s", fullpath.c_str());
+                AZ_Error("ScriptCanvas", false, "Failed to load object: %s", fullpath.data());
                 return {};
             }
         }
@@ -79,10 +81,11 @@ namespace ScriptCanvas
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
 
-            AZ::IO::FixedMaxPath fullpath = ExecutionLogAsset::GetDefaultDirectoryPath() / path;
+            AZStd::string fullpath = ExecutionLogAsset::GetDefaultDirectoryRoot();
+            fullpath += ExecutionLogAsset::GetDefaultDirectoryPath();
+            fullpath += path;
 
-            AZ_VerifyError("ScriptCanvas", AZ::Utils::SaveObjectToFile(fullpath.String(), AZ::DataStream::ST_XML, &m_logAsset),
-                "File failed to save: %s", fullpath.c_str());
+            AZ_VerifyError("ScriptCanvas", AZ::Utils::SaveObjectToFile(fullpath, AZ::DataStream::ST_XML, &m_logAsset), "File failed to save: %s", fullpath.data());
         }
 
         void Logger::SetLogExecutionOverride(bool value)

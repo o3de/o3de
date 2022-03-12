@@ -40,13 +40,13 @@ namespace AZ
             return aznew PipelineLibrary;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::PipelineLibraryDescriptor& descriptor)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::PipelineLibraryData* serializedData)
         {
             Device& device = static_cast<Device&>(deviceBase);
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
-            AZStd::span<const uint8_t> bytes;
+            AZStd::array_view<uint8_t> bytes;
 
             bool shouldCreateLibFromSerializedData = true;
             if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
@@ -57,9 +57,9 @@ namespace AZ
             }
 
 
-            if (descriptor.m_serializedData && shouldCreateLibFromSerializedData)
+            if (serializedData && shouldCreateLibFromSerializedData)
             {
-                bytes = descriptor.m_serializedData->GetData();
+                bytes = serializedData->GetData();
             }
 
             Microsoft::WRL::ComPtr<ID3D12PipelineLibraryX> libraryComPtr;
@@ -70,7 +70,7 @@ namespace AZ
 
                 if (SUCCEEDED(hr))
                 {
-                    m_serializedData = descriptor.m_serializedData;
+                    m_serializedData = serializedData;
                 }
                 else
                 {
@@ -136,11 +136,11 @@ namespace AZ
                 if (pipelineStateComPtr)
                 {
                     hr = m_library->StorePipeline(name.c_str(), pipelineStateComPtr.Get());
+
                     if (!AssertSuccess(hr))
                     {
                         return nullptr;
                     }
-                    m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
                 }
             }
             else if (FAILED(hr))
@@ -148,6 +148,7 @@ namespace AZ
                 return nullptr;
             }
 
+            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
             return pipelineStateComPtr.Get();
 #else
             Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
@@ -184,13 +185,14 @@ namespace AZ
                     {
                         return nullptr;
                     }
-                    m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
                 }
             }
             else if (FAILED(hr))
             {
                 return nullptr;
             }
+
+            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
 
             return pipelineStateComPtr.Get();
 #else
@@ -212,7 +214,7 @@ namespace AZ
 #endif
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> pipelineLibraries)
         {
             if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
                 RHI::Factory::Get().IsPixModuleLoaded())
@@ -237,28 +239,24 @@ namespace AZ
                 }
             }
 #endif
-            return RHI::ResultCode::Success;
+            return RHI::ResultCode::Success;           
         }
 
         RHI::ConstPtr<RHI::PipelineLibraryData> PipelineLibrary::GetSerializedDataInternal() const
         {
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-
+     
             AZStd::vector<uint8_t> serializedData(m_library->GetSerializedSize());
-            if (serializedData.size())
+
+            HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
+
+            if (!AssertSuccess(hr))
             {
-            
-                HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
-
-                if (!AssertSuccess(hr))
-                {
-                    return nullptr;
-                }
-
-                return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
+                return nullptr;
             }
-            return nullptr;
+
+            return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
 #else
             return nullptr;
 #endif
@@ -271,14 +269,6 @@ namespace AZ
 #else
             return false;
 #endif
-        }
-
-        bool PipelineLibrary::SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const
-        {
-            // DX12 drivers cannot save serialized data
-            [[maybe_unused]] Device& device = static_cast<Device&>(GetDevice());
-            AZ_Assert(!device.GetFeatures().m_isPsoCacheFileOperationsNeeded, "Explicit PSO cache operations should not be disabled for DX12");
-            return false;
         }
     }
 }

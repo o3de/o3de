@@ -7,7 +7,7 @@
  */
 
 #include <ReflectionProbe/ReflectionProbe.h>
-#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
+#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -115,6 +115,10 @@ namespace AZ
                     // all faces of the cubemap have been rendered, invoke the callback
                     m_callback(m_environmentCubeMapPass->GetTextureData(), m_environmentCubeMapPass->GetTextureFormat());
 
+                    // remove the pipeline
+                    m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
+                    m_environmentCubeMapPass = nullptr;
+
                     // restore exposures
                     sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_previousGlobalIblExposure);
                     sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_previousSkyBoxExposure);
@@ -219,16 +223,6 @@ namespace AZ
             }
         }
 
-        void ReflectionProbe::OnRenderEnd()
-        {
-            if (m_environmentCubeMapPass && m_environmentCubeMapPass->IsFinished())
-            {
-                // remove the cubemap pipeline
-                // Note: this must be done here (not in Simulate) to avoid a race condition with other feature processors
-                m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
-                m_environmentCubeMapPass = nullptr;
-            }
-        }
 
         void ReflectionProbe::SetTransform(const AZ::Transform& transform)
         {
@@ -288,7 +282,7 @@ namespace AZ
 
             AZ::RPI::RenderPipelineDescriptor environmentCubeMapPipelineDesc;
             environmentCubeMapPipelineDesc.m_mainViewTagName = "MainCamera";
-            environmentCubeMapPipelineDesc.m_renderSettings.m_multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+            environmentCubeMapPipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
             environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_width = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
             environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_height = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
 

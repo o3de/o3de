@@ -32,15 +32,6 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
 
-namespace AzToolsFramework
-{
-    namespace AssetBrowser
-    {
-        static constexpr const char* CollapseAllIcon = "Assets/Editor/Icons/AssetBrowser/Collapse_All.svg";
-        static constexpr const char* MenuIcon = ":/Menu/menu.svg";
-    } // namespace AssetBrowser
-} // namespace AzToolsFramework
-
 class ListenerForShowAssetEditorEvent
     : public QObject
     , private AzToolsFramework::EditorEvents::Bus::Handler
@@ -96,22 +87,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_assetBrowserModel->SetFilterModel(m_filterModel.data());
 
-    m_ui->m_collapseAllButton->setAutoRaise(true); // hover highlight
-    m_ui->m_collapseAllButton->setIcon(QIcon(AzAssetBrowser::CollapseAllIcon));
-
-    connect(
-        m_ui->m_collapseAllButton, &QToolButton::clicked, this,
-        [this]()
-        {
-            m_ui->m_assetBrowserTreeViewWidget->collapseAll();
-        });
-
     if (ed_useNewAssetBrowserTableView)
     {
         m_ui->m_toggleDisplayViewBtn->setVisible(true);
-        m_ui->m_toggleDisplayViewBtn->setEnabled(false);
-        m_ui->m_toggleDisplayViewBtn->setAutoRaise(true);
-        m_ui->m_toggleDisplayViewBtn->setIcon(QIcon(AzAssetBrowser::MenuIcon));
+        m_ui->m_toggleDisplayViewBtn->setIcon(QIcon(":/Menu/menu.svg"));
 
         m_tableModel->setFilterRole(Qt::DisplayRole);
         m_tableModel->setSourceModel(m_filterModel.data());
@@ -120,7 +99,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
         connect(
             m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-            &AzAssetBrowserWindow::UpdateWidgetAfterFilter);
+            &AzAssetBrowserWindow::SetTableViewVisibleAfterFilter);
         connect(
             m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
             &AzAssetBrowserWindow::SelectionChangedSlot);
@@ -226,15 +205,15 @@ void AzAssetBrowserWindow::CreateSwitchViewMenu()
 
     m_viewSwitchMenu = new QMenu("Asset Browser Mode Selection", this);
 
-    m_listViewMode = new QAction(tr("List View"), this);
-    m_listViewMode->setCheckable(true);
-    connect(m_listViewMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetListViewMode);
-    m_viewSwitchMenu->addAction(m_listViewMode);
+    m_expandedAssetBrowserMode = new QAction(tr("Expanded"), this);
+    m_expandedAssetBrowserMode->setCheckable(true);
+    connect(m_expandedAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetExpandedAssetBrowserMode);
+    m_viewSwitchMenu->addAction(m_expandedAssetBrowserMode);
 
-    m_treeViewMode = new QAction(tr("Tree View"), this);
-    m_treeViewMode->setCheckable(true);
-    connect(m_treeViewMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetTreeViewMode);
-    m_viewSwitchMenu->addAction(m_treeViewMode);
+    m_defaultAssetBrowserMode = new QAction(tr("Default"), this);
+    m_defaultAssetBrowserMode->setCheckable(true);
+    connect(m_defaultAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetDefaultAssetBrowserMode);
+    m_viewSwitchMenu->addAction(m_defaultAssetBrowserMode);
 
     UpdateDisplayInfo();
 }
@@ -248,29 +227,29 @@ void AzAssetBrowserWindow::UpdateDisplayInfo()
         return;
     }
 
-    m_treeViewMode->setChecked(false);
-    m_listViewMode->setChecked(false);
+    m_expandedAssetBrowserMode->setChecked(false);
+    m_defaultAssetBrowserMode->setChecked(false);
 
     switch (m_assetBrowserDisplayState)
     {
-    case AzAssetBrowser::AssetBrowserDisplayState::TreeViewMode:
+    case AzAssetBrowser::AssetBrowserDisplayState::ExpandedMode:
         {
-            m_treeViewMode->setChecked(true);
+            m_expandedAssetBrowserMode->setChecked(true);
             break;
         }
-    case AzAssetBrowser::AssetBrowserDisplayState::ListViewMode:
+    case AzAssetBrowser::AssetBrowserDisplayState::DefaultMode:
         {
-            m_listViewMode->setChecked(true);
+            m_defaultAssetBrowserMode->setChecked(true);
             break;
         }
     }
 }
 
-void AzAssetBrowserWindow::SetTreeViewMode()
+void AzAssetBrowserWindow::SetExpandedAssetBrowserMode()
 {
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
-    m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::TreeViewMode;
+    m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::ExpandedMode;
 
     if (m_ui->m_assetBrowserTableViewWidget->isVisible())
     {
@@ -279,26 +258,20 @@ void AzAssetBrowserWindow::SetTreeViewMode()
     }
 }
 
-void AzAssetBrowserWindow::SetListViewMode()
+void AzAssetBrowserWindow::SetDefaultAssetBrowserMode()
 {
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
-    m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::ListViewMode;
-    UpdateWidgetAfterFilter();
+    m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::DefaultMode;
+    SetTableViewVisibleAfterFilter();
 }
 
 
-void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
+void AzAssetBrowserWindow::SetTableViewVisibleAfterFilter()
 {
-    namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
-
     const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
-    m_ui->m_toggleDisplayViewBtn->setEnabled(hasFilter);
-    if (m_assetBrowserDisplayState == AzAssetBrowser::AssetBrowserDisplayState::ListViewMode)
-    {
-        m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
-        m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
-    }
+    m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
+    m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
 }
 
 void AzAssetBrowserWindow::UpdatePreview() const

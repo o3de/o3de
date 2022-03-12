@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    class IAllocator;
+    class IAllocatorAllocate;
 
     namespace RHI
     {
@@ -66,7 +66,7 @@ namespace AZ
             DrawPacket() = default;
 
             // The allocator used to release the memory when Release() is called.
-            IAllocator* m_allocator = nullptr;
+            IAllocatorAllocate* m_allocator = nullptr;
 
             // The bit-mask of all active filter tags.
             DrawListMask m_drawListMask = 0;

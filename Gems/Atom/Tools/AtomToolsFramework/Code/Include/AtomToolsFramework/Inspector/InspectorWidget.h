@@ -9,12 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AtomToolsFramework/Inspector/InspectorRequestBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/string/string.h>
+#include <AtomToolsFramework/Inspector/InspectorRequestBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QVBoxLayout>
@@ -40,10 +36,8 @@ namespace AtomToolsFramework
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(InspectorWidget, AZ::SystemAllocator, 0);
-        AZ_RTTI(AtomToolsFramework::InspectorWidget, "{D77A5F5F-0536-4249-916F-328B272E1AAB}");
-        static void Reflect(AZ::ReflectContext* context);
 
-        InspectorWidget(QWidget* parent = nullptr);
+        explicit InspectorWidget(QWidget* parent = nullptr);
         ~InspectorWidget() override;
 
         // InspectorRequestBus::Handler overrides...
@@ -80,8 +74,6 @@ namespace AtomToolsFramework
         void ExpandAll() override;
         void CollapseAll() override;
 
-        void SetGroupSettingsPrefix(const AZStd::string& prefix);
-
     protected:
         virtual bool ShouldGroupAutoExpanded(const AZStd::string& groupName) const;
         virtual void OnGroupExpanded(const AZStd::string& groupName);
@@ -89,15 +81,14 @@ namespace AtomToolsFramework
         virtual void OnHeaderClicked(const AZStd::string& groupName, QMouseEvent* event);
 
     private:
+        QScopedPointer<Ui::InspectorWidget> m_ui;
+
         struct GroupWidgetPair
         {
             InspectorGroupHeaderWidget* m_header;
             QWidget* m_panel;
         };
 
-        QScopedPointer<Ui::InspectorWidget> m_ui;
-        AZStd::string m_collapsedGroupSettingName;
-        AZStd::unordered_set<AZ::u32> m_collapsedGroups;
         AZStd::unordered_map<AZStd::string, GroupWidgetPair> m_groups;
     };
 } // namespace AtomToolsFramework

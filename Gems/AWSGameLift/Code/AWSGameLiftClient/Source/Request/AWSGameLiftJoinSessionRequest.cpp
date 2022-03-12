@@ -15,11 +15,11 @@ namespace AWSGameLift
 {
     void AWSGameLiftJoinSessionRequest::Reflect(AZ::ReflectContext* context)
     {
-        Multiplayer::JoinSessionRequest::Reflect(context);
+        AzFramework::JoinSessionRequest::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AWSGameLiftJoinSessionRequest, Multiplayer::JoinSessionRequest>()
+            serializeContext->Class<AWSGameLiftJoinSessionRequest, AzFramework::JoinSessionRequest>()
                 ->Version(0)
                 ;
 
@@ -34,7 +34,7 @@ namespace AWSGameLift
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<Multiplayer::JoinSessionRequest>("JoinSessionRequest")
+            behaviorContext->Class<AzFramework::JoinSessionRequest>("JoinSessionRequest")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 // Expose base type to BehaviorContext, but hide it to be used directly
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)

@@ -9,30 +9,29 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h>
-#include <Viewport/MaterialViewportSettingsNotificationBus.h>
-
 #include <QAction>
 #include <QToolBar>
+#include <Atom/Viewport/MaterialViewportNotificationBus.h>
 #endif
 
 namespace MaterialEditor
 {
     class MaterialEditorToolBar
         : public QToolBar
-        , public MaterialViewportSettingsNotificationBus::Handler
+        , public MaterialViewportNotificationBus::Handler
     {
         Q_OBJECT
     public:
-        MaterialEditorToolBar(const AZ::Crc32& toolId, QWidget* parent = 0);
+        MaterialEditorToolBar(QWidget* parent = 0);
         ~MaterialEditorToolBar();
 
     private:
-        void OnViewportSettingsChanged() override;
+        // MaterialViewportNotificationBus::Handler overrides...
+        void OnShadowCatcherEnabledChanged([[maybe_unused]] bool enable) override;
+        void OnGridEnabledChanged([[maybe_unused]] bool enable) override;
+        void OnAlternateSkyboxEnabledChanged([[maybe_unused]] bool enable) override;
+        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
 
-        const AZ::Crc32 m_toolId = {};
-        AtomToolsFramework::AssetSelectionComboBox* m_lightingPresetComboBox = {};
-        AtomToolsFramework::AssetSelectionComboBox* m_modelPresetComboBox = {};
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
         QAction* m_toggleAlternateSkybox = {};

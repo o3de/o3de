@@ -15,7 +15,6 @@
 #include <MCore/Source/MultiThreadManager.h>
 #include <EMotionFX/Source/BaseObject.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
-#include <EMotionFX/Source/MotionSet.h>
 
 namespace EMotionFX
 {

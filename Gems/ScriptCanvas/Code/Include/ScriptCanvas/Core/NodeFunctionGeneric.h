@@ -21,40 +21,40 @@
 #include "Node.h"
 #include "Attributes.h"
 
- /**
-  * NodeFunctionGeneric.h
-  *
-  * This file makes it really easy to take a single function and make into a ScriptCanvas node
-  * with all of the necessary plumbing, by using a macro, and adding the result to a node registry.
-  *
-  * Use SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE for a function of any arity that returns [0, N]
-  * arguments, wrapped in a tuple.
-  *
-  * The macros will turn the function name into a ScriptCanvas node with name of the function
-  * with "Node" appended to it.
-  *
-  * \note As much as possible, it best to wrap functions that use 'native' ScriptCanvas types,
-  * and to pass them in/out by value.
+/**
+ * NodeFunctionGeneric.h
+ * 
+ * This file makes it really easy to take a single function and make into a ScriptCanvas node
+ * with all of the necessary plumbing, by using a macro, and adding the result to a node registry.
+ * 
+ * Use SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE for a function of any arity that returns [0, N] 
+ * arguments, wrapped in a tuple.
+ * 
+ * The macros will turn the function name into a ScriptCanvas node with name of the function
+ * with "Node" appended to it.
+ * 
+ * \note As much as possible, it best to wrap functions that use 'native' ScriptCanvas types, 
+ * and to pass them in/out by value.
+ 
+ * You will need to add the nodes to the registry like any other node, and get a component description
+ * from it, in order to have it show up in the editor, etc.
+ * 
+ * It is preferable to use this method for any node that provides ScriptCanvas-only functionality.
+ * If you are creating a node that represents functionality that would be useful in Lua, or any other
+ * client of BehaviorContext, it may be better to expose your functionality to BehaviorContext, unless 
+ * performance in ScriptCanvas is an issue. This method will almost certainly provide faster run-time 
+ * performance than a node that calls into BehaviorContext.
+ * 
+ * A good faith effort to support reference return types has been made. Pointers and references, even in
+ * tuples, are supported. However, if your input or return values is T** or T*&, it won't work, and there
+ * are no plans to support them. If your tuple return value is made up of references remember to return it with
+ * std::forward_as_tuple, and not std::make_tuple.
+ * 
+ * \see MathGenerics.h and Math.cpp for example usage of the macros and generic registrar defined below.
+ *  
+ */
 
-  * You will need to add the nodes to the registry like any other node, and get a component description
-  * from it, in order to have it show up in the editor, etc.
-  *
-  * It is preferable to use this method for any node that provides ScriptCanvas-only functionality.
-  * If you are creating a node that represents functionality that would be useful in Lua, or any other
-  * client of BehaviorContext, it may be better to expose your functionality to BehaviorContext, unless
-  * performance in ScriptCanvas is an issue. This method will almost certainly provide faster run-time
-  * performance than a node that calls into BehaviorContext.
-  *
-  * A good faith effort to support reference return types has been made. Pointers and references, even in
-  * tuples, are supported. However, if your input or return values is T** or T*&, it won't work, and there
-  * are no plans to support them. If your tuple return value is made up of references remember to return it with
-  * std::forward_as_tuple, and not std::make_tuple.
-  *
-  * \see MathGenerics.h and Math.cpp for example usage of the macros and generic registrar defined below.
-  *
-  */
-
-  // this defines helps provide type safe static asserts in the results of the macros below
+// this defines helps provide type safe static asserts in the results of the macros below
 #define SCRIPT_CANVAS_FUNCTION_VAR_ARGS(...) (AZStd::tuple_size<decltype(AZStd::make_tuple(__VA_ARGS__))>::value)
 
 namespace ScriptCanvas
@@ -65,10 +65,10 @@ namespace ScriptCanvas
         struct extended_tuple_size : AZStd::integral_constant<size_t, 1> {};
 
         template<class T>
-        struct extended_tuple_size<T, AZStd::enable_if_t<IsTupleLike<T>::value>> : AZStd::tuple_size<T> {};
+        struct extended_tuple_size<T, AZStd::enable_if_t<IsTupleLike<T>::value>> : AZStd::tuple_size<T>{};
 
         template<>
-        struct extended_tuple_size<void, AZStd::void_t<>> : AZStd::integral_constant<size_t, 0> {};
+        struct extended_tuple_size<void, AZStd::void_t<>>: AZStd::integral_constant<size_t, 0> {};
     }
 }
 
@@ -80,46 +80,17 @@ namespace ScriptCanvas
         using ResultType = FunctionTraits::result_type;\
         static const size_t s_numArgs = FunctionTraits::arity;\
         static const size_t s_numNames = SCRIPT_CANVAS_FUNCTION_VAR_ARGS(__VA_ARGS__);\
-        static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;\
+        /*static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;*/\
         \
-        static AZStd::string GetArgName(size_t i)\
+        static const char* GetArgName(size_t i)\
         {\
-            if constexpr (s_numArgs < 2)\
-            {\
-                return GetName(i);\
-            }\
-            else\
-            {\
-                AZStd::string_view argName = GetName(i);\
-                if (!argName.empty())\
-                {\
-                    return argName;\
-                }\
-                else\
-                {\
-                    return AZStd::string::format("Input [%zu]", i);\
-                }\
-            }\
+            return GetName(i).data();\
         }\
         \
-        static AZStd::string GetResultName(size_t i)\
+        static const char* GetResultName(size_t i)\
         {\
-            AZStd::string_view resultName = GetName(i + s_numArgs);\
-            if (!resultName.empty())\
-            {\
-                return resultName;\
-            }\
-            else\
-            {\
-                if constexpr (s_numResults < 2)\
-                {\
-                    return "Result";\
-                }\
-                else\
-                {\
-                    return AZStd::string::format("Result [%zu]", i);\
-                }\
-            }\
+            AZStd::string_view result = GetName(i + s_numArgs);\
+            return !result.empty() ? result.data() : "Result";\
         }\
         \
         static const char* GetDependency() { return CATEGORY; }\
@@ -210,14 +181,14 @@ namespace ScriptCanvas
         : public Node
     {
     public:
-        AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option") // 'function' : Symbol involving type with internal linkage not defined
-            AZ_RTTI(((NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>), "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
+    AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option") // 'function' : Symbol involving type with internal linkage not defined
+        AZ_RTTI(((NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>), "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGenericMultiReturn);
         AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturn, Node);
-        AZ_POP_DISABLE_WARNING
+    AZ_POP_DISABLE_WARNING
 
 
-            static const char* GetNodeFunctionName()
+        static const char* GetNodeFunctionName()
         {
             return t_Traits::GetNodeName();
         }
@@ -266,7 +237,7 @@ namespace ScriptCanvas
         }
 
         AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot*) const override
-        {
+        { 
             return AZ::Success(AZStd::string(GetNodeFunctionName()));
         }
 
@@ -289,7 +260,7 @@ namespace ScriptCanvas
             slotConfiguration.ConfigureDatum(AZStd::move(Datum(Data::FromAZType(Data::Traits<ArgType>::GetAZType()), Datum::eOriginality::Copy)));
 
             slotConfiguration.SetConnectionType(connectionType);
-            AZ_VerifyError("ScriptCanvas", AddSlot(slotConfiguration).IsValid(), "NodeFunctionGenericMultiReturn failed to add a required data slot");
+            AddSlot(slotConfiguration);
         }
 
         template<typename... t_Args, AZStd::size_t... Is>
@@ -301,20 +272,20 @@ namespace ScriptCanvas
             SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(
                 (CreateDataSlot<t_Args, Is>(ConnectionType::Input))
             );
-        }
+        } 
 
         void ConfigureSlots() override
         {
             {
                 ExecutionSlotConfiguration slotConfiguration("In", ConnectionType::Input);
-                AZ_VerifyError("ScriptCanvas", AddSlot(slotConfiguration).IsValid(), "NodeFunctionGenericMultiReturn failed to add a required Execution In slot");
+                AddSlot(slotConfiguration);
             }
 
             {
                 ExecutionSlotConfiguration slotConfiguration("Out", ConnectionType::Output);
-                AZ_VerifyError("ScriptCanvas", AddSlot(slotConfiguration).IsValid(), "NodeFunctionGenericMultiReturn failed to add a required Execution Out slot");
+                AddSlot(slotConfiguration);
             }
-
+            
             AddInputDatumSlotHelper(typename AZStd::function_traits<t_Func>::arg_sequence{}, AZStd::make_index_sequence<AZStd::function_traits<t_Func>::arity>{});
 
             if (!m_initialized)

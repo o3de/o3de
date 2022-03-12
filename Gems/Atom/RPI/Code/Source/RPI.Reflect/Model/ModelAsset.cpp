@@ -15,7 +15,6 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 
 namespace AZ
 {
@@ -36,15 +35,6 @@ namespace AZ
                     ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
                     ;
-
-                // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
-                //       can open the asset with the preferred asset editor (Scene Settings).
-                if (auto* editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<ModelAsset>("Model Asset", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ;
-                }
             }
         }
 
@@ -92,9 +82,9 @@ namespace AZ
             return m_lodAssets.size();
         }
 
-        AZStd::span<const Data::Asset<ModelLodAsset>> ModelAsset::GetLodAssets() const
+        AZStd::array_view<Data::Asset<ModelLodAsset>> ModelAsset::GetLodAssets() const
         {
-            return AZStd::span<const Data::Asset<ModelLodAsset>>(m_lodAssets);
+            return AZStd::array_view<Data::Asset<ModelLodAsset>>(m_lodAssets);
         }
 
         void ModelAsset::SetReady()
@@ -223,7 +213,7 @@ namespace AZ
                 }
 
                 RHI::BufferViewDescriptor positionBufferViewDesc = positionBufferView->GetBufferViewDescriptor();
-                AZStd::span<const uint8_t> positionRawBuffer = bufferAssetViewPtr->GetBuffer();
+                AZStd::array_view<uint8_t> positionRawBuffer = bufferAssetViewPtr->GetBuffer();
 
                 const uint32_t positionElementSize = positionBufferViewDesc.m_elementSize;
                 const uint32_t positionElementCount = positionBufferViewDesc.m_elementCount;
@@ -237,7 +227,7 @@ namespace AZ
                 }
 
                 RHI::BufferViewDescriptor indexBufferViewDesc = indexBufferView.GetBufferViewDescriptor();
-                AZStd::span<const uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
+                AZStd::array_view<uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
 
                 const AZ::Vector3 rayEnd = rayStart + rayDir;
                 AZ::Vector3 a, b, c;
@@ -307,7 +297,7 @@ namespace AZ
                 {
                     for (const ModelLodAsset::Mesh& mesh : loadAssetPtr->GetMeshes())
                     {
-                        const AZStd::span<const ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
+                        const AZStd::array_view<ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
 
                         // find position semantic
                         const ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;

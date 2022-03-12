@@ -17,11 +17,13 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+using namespace AZStd;
+using namespace UnitTestInternal;
+
+
+
 namespace UnitTest
 {
-    using namespace AZStd;
-    using namespace UnitTestInternal;
-
     template<typename Set>
     class ConcurrentUnorderedSetTestBase
         : public ScopedAllocatorSetupFixture

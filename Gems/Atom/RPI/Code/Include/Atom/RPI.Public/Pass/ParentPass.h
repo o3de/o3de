@@ -23,11 +23,8 @@ namespace AZ
         class ParentPass
             : public Pass
         {
-            friend class PassFactory;
-            friend class PassLibrary;
-            friend class PassSystem;
-            friend class RenderPipeline;
-            friend class UnitTest::PassTests;
+            AZ_RPI_PASS(ParentPass);
+
             friend class Pass;
 
         public:
@@ -62,11 +59,6 @@ namespace AZ
             //! Adds pass to list of children
             void AddChild(const Ptr<Pass>& child);
 
-            //! Inserts a pass at specified position
-            //! If the position is invalid, the child pass won't be added, and the function returns false
-            bool InsertChild(const Ptr<Pass>& child, ChildPassIndex position);
-            bool InsertChild(const Ptr<Pass>& child, uint32_t index);
-
             //! Searches for a child pass with the given name. Returns the child's index if found, null index otherwise
             ChildPassIndex FindChildPassIndex(const Name& passName) const;
 
@@ -77,7 +69,7 @@ namespace AZ
             Ptr<PassType> FindChildPass() const;
 
             //! Gets the list of children. Useful for validating hierarchies
-            AZStd::span<const Ptr<Pass>> GetChildren() const;
+            AZStd::array_view<Ptr<Pass>> GetChildren() const;
 
             //! Searches the tree for the first pass that uses the given DrawListTag.
             const Pass* FindPass(RHI::DrawListTag drawListTag) const;

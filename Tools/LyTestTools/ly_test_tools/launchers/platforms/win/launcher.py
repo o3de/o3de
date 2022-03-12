@@ -89,7 +89,7 @@ class WinLauncher(Launcher):
         self.restore_settings()
         super(WinLauncher, self).teardown()
 
-    def _kill(self):
+    def kill(self):
         """
         This is a hard kill, and then wait to make sure until it actually ended.
 

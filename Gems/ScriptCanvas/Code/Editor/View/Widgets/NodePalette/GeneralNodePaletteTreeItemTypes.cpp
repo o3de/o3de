@@ -86,16 +86,13 @@ namespace ScriptCanvasEditor
 
 
         AZStd::string updatedMethodName;
-        AZStd::string methodContext;
         if (propertyStatus != ScriptCanvas::PropertyStatus::None)
         {
             updatedMethodName = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Get" : "Set";
-            methodContext = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Getter" : "Setter";
         }
-
         updatedMethodName.append(methodName);
 
-        key << "BehaviorClass" << className << "methods" << updatedMethodName << methodContext << "details";
+        key << "BehaviorClass" << className << "methods" << updatedMethodName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
         details.m_name = methodName;

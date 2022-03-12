@@ -10,6 +10,21 @@
 
 // SRGs
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+
+// Pass Output
+#include <Atom/Features/PBR/ForwardSubsurfacePassOutput.azsli>
+
+// Utility
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+// Custom Surface & Lighting
+#include <Atom/Features/PBR/Lighting/EnhancedLighting.azsli>
+
+// Decals
+#include <Atom/Features/PBR/Decals.azsli>
+
 
 // ---------- Material Parameters ----------
 
@@ -34,7 +49,6 @@ COMMON_OPTIONS_DETAIL_MAPS()
 #include "MaterialInputs/TransmissionInput.azsli"
 
 
-<<<<<<< HEAD
 // ---------- Vertex Shader ----------
 
 struct VSInput
@@ -403,15 +417,6 @@ ForwardPassOutput EnhancedPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
     OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
-=======
-#include "MaterialFunctions/EvaluateEnhancedSurface.azsli"
-#include "MaterialFunctions/EvaluateTangentFrame.azsli"
-#include "MaterialFunctions/EnhancedParallaxDepth.azsli"
-#include "MaterialFunctions/StandardGetNormalToWorld.azsli"
-#include "MaterialFunctions/StandardGetObjectToWorld.azsli"
-#include "MaterialFunctions/StandardGetAlphaAndClip.azsli"
-#include "MaterialFunctions/StandardTransformDetailUvs.azsli"
-#include "MaterialFunctions/StandardTransformUvs.azsli"
->>>>>>> development
 
-#include "EnhancedSurface_ForwardPass.azsli"
+    return OUT;
+}

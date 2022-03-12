@@ -997,7 +997,7 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
         EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor.GetA());
 
         AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
-        ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(pathname);
+        ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
 
         EBUS_EVENT_ID(buttonId, UiImageBus, SetSprite, sprite);
         EBUS_EVENT_ID(buttonId, UiImageBus, SetImageType, UiImageInterface::ImageType::Sliced);
@@ -1096,7 +1096,7 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
         EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor.GetA());
 
         AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
-        ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(pathname);
+        ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
 
         EBUS_EVENT_ID(textInputId, UiImageBus, SetSprite, sprite);
         EBUS_EVENT_ID(textInputId, UiImageBus, SetImageType, UiImageInterface::ImageType::Sliced);
@@ -1192,7 +1192,7 @@ static void DestroyTestCanvas()
         delete g_testActionListener2;
         g_testActionListener2 = nullptr;
 
-        AZ::Interface<ILyShine>::Get()->ReleaseCanvas(g_testCanvasId, false);
+        gEnv->pLyShine->ReleaseCanvas(g_testCanvasId, false);
         g_testCanvasId.SetInvalid();
     }
 }
@@ -1216,7 +1216,7 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
     DestroyTestCanvas();
 
     // test creation of canvas and some simple elements
-    AZ::EntityId canvasEntityId = AZ::Interface<ILyShine>::Get()->CreateCanvas();
+    AZ::EntityId canvasEntityId = gEnv->pLyShine->CreateCanvas();
     UiCanvasInterface* canvas = UiCanvasBus::FindFirstHandler(canvasEntityId);
     if (!canvas)
     {

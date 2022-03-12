@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneUI/RowWidgets/HeaderHandler.h>
 
 namespace AZ

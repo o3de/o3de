@@ -43,6 +43,7 @@ namespace AzToolsFramework
         {
             friend class AssetBrowserModel;
             friend class AssetBrowserFilterModel;
+            friend class AssetBrowserEntry;
             friend class RootAssetBrowserEntry;
             friend class FolderAssetBrowserEntry;
             friend class SourceAssetBrowserEntry;

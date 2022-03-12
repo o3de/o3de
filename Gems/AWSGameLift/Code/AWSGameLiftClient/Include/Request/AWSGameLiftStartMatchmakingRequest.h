@@ -10,7 +10,7 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
-#include <Multiplayer/Session/MatchmakingRequests.h>
+#include <AzFramework/Matchmaking/MatchmakingRequests.h>
 
 #include <AWSGameLiftPlayer.h>
 
@@ -21,10 +21,10 @@ namespace AWSGameLift
     //! Uses FlexMatch to create a game match for a group of players based on custom matchmaking rules
     //! StartMatchmakingRequest
     struct AWSGameLiftStartMatchmakingRequest
-        : public Multiplayer::StartMatchmakingRequest
+        : public AzFramework::StartMatchmakingRequest
     {
     public:
-        AZ_RTTI(AWSGameLiftStartMatchmakingRequest, "{D273DF71-9C55-48C1-95F9-8D7B66B9CF3E}", Multiplayer::StartMatchmakingRequest);
+        AZ_RTTI(AWSGameLiftStartMatchmakingRequest, "{D273DF71-9C55-48C1-95F9-8D7B66B9CF3E}", AzFramework::StartMatchmakingRequest);
         static void Reflect(AZ::ReflectContext* context);
 
         AWSGameLiftStartMatchmakingRequest() = default;

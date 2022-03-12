@@ -6,3 +6,4 @@
 #
 #
 
+add_subdirectory(ShaderManagementConsole)

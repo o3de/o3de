@@ -99,6 +99,5 @@ set(FILES
     Tests/EMotionFXBuilderFixture.cpp
     Tests/TestAssetCode/TestActorAssets.h
     Tests/TestAssetCode/TestActorAssets.cpp
-    Tests/Mocks/AtomRenderPlugin.h
     Tests/Mocks/PhysicsSystem.h
 )

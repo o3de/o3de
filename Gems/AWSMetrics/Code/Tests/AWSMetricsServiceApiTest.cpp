@@ -42,43 +42,43 @@ namespace AWSMetrics
 
     TEST_F(AWSMetricsServiceApiTest, OnJsonKey_MetricsEventSuccessResponseRecord_AcceptValidKeys)
     {
-        ServiceAPI::PostMetricsEventsResponseEntry responseRecord;
-        responseRecord.m_result = "ok";
+        ServiceAPI::MetricsEventSuccessResponseRecord responseRecord;
+        responseRecord.result = "ok";
 
-        EXPECT_CALL(JsonReader, Accept(responseRecord.m_result)).Times(1);
-        EXPECT_CALL(JsonReader, Accept(responseRecord.m_errorCode)).Times(1);
+        EXPECT_CALL(JsonReader, Accept(responseRecord.result)).Times(1);
+        EXPECT_CALL(JsonReader, Accept(responseRecord.errorCode)).Times(1);
         EXPECT_CALL(JsonReader, Ignore()).Times(1);
 
-        responseRecord.OnJsonKey(AwsMetricsPostMetricsEventsResponseEntryKeyResult, JsonReader);
-        responseRecord.OnJsonKey(AwsMetricsPostMetricsEventsResponseEntryKeyErrorCode, JsonReader);
+        responseRecord.OnJsonKey(AwsMetricsSuccessResponseRecordKeyResult, JsonReader);
+        responseRecord.OnJsonKey(AwsMetricsSuccessResponseRecordKeyErrorCode, JsonReader);
         responseRecord.OnJsonKey("other", JsonReader);
     }
 
     TEST_F(AWSMetricsServiceApiTest, OnJsonKeyWithEvents_MetricsEventSuccessResponseRecord_AcceptValidKeys)
     {
         // Verifiy that JsonReader accepts valid JSON keys in each event record from a success reponse 
-        ServiceAPI::PostMetricsEventsResponseEntry responseRecord;
-        responseRecord.m_result = "Ok";
+        ServiceAPI::MetricsEventSuccessResponseRecord responseRecord;
+        responseRecord.result = "ok";
 
-        ServiceAPI::PostMetricsEventsResponse response;
-        response.m_responseEntries.emplace_back(responseRecord);
-        response.m_failedRecordCount = 0;
-        response.m_total = 1;
+        ServiceAPI::MetricsEventSuccessResponse response;
+        response.events.emplace_back(responseRecord);
+        response.failedRecordCount = 0;
+        response.total = 1;
 
-        EXPECT_CALL(JsonReader, Accept(response.m_failedRecordCount)).Times(1);
-        EXPECT_CALL(JsonReader, Accept(response.m_total)).Times(1);
+        EXPECT_CALL(JsonReader, Accept(response.failedRecordCount)).Times(1);
+        EXPECT_CALL(JsonReader, Accept(response.total)).Times(1);
         EXPECT_CALL(JsonReader, Accept(::testing::An<AWSCore::JsonArrayHandler>())).Times(1);
         EXPECT_CALL(JsonReader, Ignore()).Times(1);
 
-        response.OnJsonKey(AwsMetricsPostMetricsEventsResponseKeyFailedRecordCount, JsonReader);
-        response.OnJsonKey(AwsMetricsPostMetricsEventsResponseKeyTotal, JsonReader);
-        response.OnJsonKey(AwsMetricsPostMetricsEventsResponseKeyEvents, JsonReader);
+        response.OnJsonKey(AwsMetricsSuccessResponseKeyFailedRecordCount, JsonReader);
+        response.OnJsonKey(AwsMetricsSuccessResponseKeyTotal, JsonReader);
+        response.OnJsonKey(AwsMetricsSuccessResponseKeyEvents, JsonReader);
         response.OnJsonKey("other", JsonReader);
     }
 
     TEST_F(AWSMetricsServiceApiTest, OnJsonKey_Error_AcceptValidKeys)
     {
-        ServiceAPI::PostMetricsEventsError error;
+        ServiceAPI::Error error;
         error.message = "error message";
         error.type = "404";
 
@@ -86,16 +86,16 @@ namespace AWSMetrics
         EXPECT_CALL(JsonReader, Accept(error.type)).Times(1);
         EXPECT_CALL(JsonReader, Ignore()).Times(1);
 
-        error.OnJsonKey(AwsMetricsPostMetricsEventsErrorKeyMessage, JsonReader);
-        error.OnJsonKey(AwsMetricsPostMetricsEventsErrorKeyType, JsonReader);
+        error.OnJsonKey(AwsMetricsErrorKeyMessage, JsonReader);
+        error.OnJsonKey(AwsMetricsErrorKeyType, JsonReader);
         error.OnJsonKey("other", JsonReader);
     }
 
     TEST_F(AWSMetricsServiceApiTest, BuildRequestBody_PostProducerEventsRequest_SerializedMetricsQueue)
     {
-        ServiceAPI::PostMetricsEventsRequest request;
-        request.parameters.m_metricsQueue = MetricsQueue();
-        request.parameters.m_metricsQueue.AddMetrics(MetricsEventBuilder().Build());
+        ServiceAPI::PostProducerEventsRequest request;
+        request.parameters.data = MetricsQueue();
+        request.parameters.data.AddMetrics(MetricsEventBuilder().Build());
 
         AWSCore::RequestBuilder requestBuilder{};
         EXPECT_TRUE(request.parameters.BuildRequest(requestBuilder));
@@ -104,6 +104,6 @@ namespace AWSMetrics
 
         std::istreambuf_iterator<AZStd::string::value_type> eos;
         AZStd::string bodyString{ std::istreambuf_iterator<AZStd::string::value_type>(*bodyContent), eos };
-        EXPECT_TRUE(bodyString.contains(AZStd::string::format("{\"%s\":[{\"event_timestamp\":", AwsMetricsPostMetricsEventsRequestParameterKeyEvents)));
+        EXPECT_TRUE(bodyString.contains(AZStd::string::format("{\"%s\":[{\"event_timestamp\":", AwsMetricsRequestParameterKeyEvents)));
     }
 }

@@ -588,7 +588,7 @@ QMenu* LevelEditorMenuHandler::CreateGameMenu()
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
     if (!usePrefabSystemForLevels)
     {
         // Export to Engine

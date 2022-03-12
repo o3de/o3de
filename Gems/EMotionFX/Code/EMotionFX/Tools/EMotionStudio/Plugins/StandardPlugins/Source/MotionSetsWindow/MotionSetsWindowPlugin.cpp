@@ -18,6 +18,7 @@
 #include <QContextMenuEvent>
 #include <QTableWidget>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
+#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
 #include "../../../../EMStudioSDK/Source/SaveChangedFilesManager.h"
 #include "../../../../EMStudioSDK/Source/FileManager.h"

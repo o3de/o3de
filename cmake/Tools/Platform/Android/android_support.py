@@ -61,7 +61,7 @@ DEFAULT_CONFIG_CHANGES = [
 ]
 
 TEST_RUNNER_PROJECT = 'AzTestRunner'
-TEST_RUNNER_PACKAGE_NAME = 'org.o3de.tests'
+TEST_RUNNER_PACKAGE_NAME = 'com.lumberyard.tests'
 
 # Android Orientation Constants
 ORIENTATION_LANDSCAPE = 1 << 0
@@ -353,15 +353,10 @@ NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR = """
 
 CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR = """
     task copyNativeLibs{config}(type: Copy) {{
-
-        logger.info('Deleting outputs/native-lib/{abi}')
         delete 'outputs/native-lib/{abi}'
 
         from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}', include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so' )
         into  'outputs/native-lib/{abi}'
-        eachFile {{ 
-            logger.info('Copying {{}} to outputs/native-lib/{abi}', it.name)
-        }}
     }}
 
     merge{config}JniLibFolders.dependsOn copyNativeLibs{config}

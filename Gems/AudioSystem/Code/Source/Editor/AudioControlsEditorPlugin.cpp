@@ -63,6 +63,7 @@ CAudioControlsEditorPlugin::~CAudioControlsEditorPlugin()
 //-----------------------------------------------------------------------------------------------//
 void CAudioControlsEditorPlugin::Release()
 {
+    UnregisterQtViewPane<CAudioControlsEditorWindow>();
     // clear connections before releasing the implementation since they hold pointers to data
     // instantiated from the implementation dll.
     CUndoSuspend suspendUndo;
@@ -196,4 +197,16 @@ void CAudioControlsEditorPlugin::OnSystemEvent(ESystemEvent event, [[maybe_unuse
 CImplementationManager* CAudioControlsEditorPlugin::GetImplementationManager()
 {
     return &ms_implementationManager;
+}
+
+//-----------------------------------------------------------------------------------------------//
+template<>
+REFGUID CQtViewClass<AudioControls::CAudioControlsEditorWindow>::GetClassID()
+{
+    // {82AD1635-38A6-4642-A801-EAB7A829411B}
+    static const GUID guid =
+    {
+        0x82AD1635, 0x38A6, 0x4642, { 0xA8, 0x01, 0xEA, 0xB7, 0xA8, 0x29, 0x41, 0x1B }
+    };
+    return guid;
 }

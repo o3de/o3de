@@ -113,7 +113,6 @@ namespace AZ
                 // FeatureProcessor overrides ...
                 void Activate() override;
                 void Deactivate() override;
-                void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
                 void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
                 void Render(const FeatureProcessor::RenderPacket& packet) override;
 
@@ -168,8 +167,6 @@ namespace AZ
 
                 bool HasHairParentPass(RPI::RenderPipeline* renderPipeline);
 
-                bool AddHairParentPass(RPI::RenderPipeline* renderPipeline);
-
                 //! The following will serve to register the FP in the Thumbnail system
                 AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
 
@@ -196,9 +193,6 @@ namespace AZ
                 Data::Instance<HairShortCutGeometryDepthAlphaPass> m_hairShortCutGeometryDepthAlphaPass = nullptr;
                 Data::Instance<HairShortCutGeometryShadingPass> m_hairShortCutGeometryShadingPass = nullptr;
 
-                // Cache the pass request data for creating a hair parent pass
-                AZ::Data::Asset<AZ::RPI::AnyAsset> m_hairPassRequestAsset;
-
                 //--------------------------------------------------------------
                 //                      Per Pass Resources 
                 //--------------------------------------------------------------
@@ -217,6 +211,7 @@ namespace AZ
                 float m_currentDeltaTime = 0.02f;
                 //! flag to disable/enable feature processor adding dispatch calls to compute passes.
                 bool m_addDispatchEnabled = true;
+                bool m_sharedResourcesCreated = false;
                 //! reload / pipeline changes force build dispatches and render items
                 bool m_forceRebuildRenderData = false;      
                 bool m_forceClearRenderData = false;

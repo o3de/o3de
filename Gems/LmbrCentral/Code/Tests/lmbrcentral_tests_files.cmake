@@ -18,6 +18,7 @@ set(FILES
     QuadShapeTest.cpp
     TubeShapeTest.cpp
     LmbrCentralReflectionTest.h
+    LmbrCentralReflectionTest.cpp
     LmbrCentralTest.cpp
     ShapeGeometryUtilTest.cpp
     SpawnerComponentTest.cpp

@@ -170,10 +170,9 @@ namespace Terrain
         // they'll get refreshed the next time we need to draw them.
         for (auto& sector : m_wireframeSectors)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
             if (!dirtyRegion2D.IsValid() || dirtyRegion2D.Overlaps(sector.m_aabb))
             {
-                sector.SetDirty();
+                sector.m_isDirty = true;
             }
         }
     }
@@ -228,12 +227,12 @@ namespace Terrain
         float worldMinZ = worldBounds.GetMin().GetZ();
 
         // Get the terrain height data resolution
-        float heightDataResolution = 1.0f;
+        AZ::Vector2 heightDataResolution = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             heightDataResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
         // Get the size of a wireframe sector in world space
-        const AZ::Vector2 sectorSize = AZ::Vector2(heightDataResolution * SectorSizeInGridPoints);
+        const AZ::Vector2 sectorSize = heightDataResolution * SectorSizeInGridPoints;
 
         // Try to get the current camera position, or default to (0,0) if we can't.
         AZ::Vector3 cameraPos = AZ::Vector3::CreateZero();
@@ -284,13 +283,10 @@ namespace Terrain
                 sectorAabb.Clamp(worldBounds);
 
                 // If the world space box for the sector doesn't match, set it and mark the sector as dirty so we refresh the height data.
+                if (sector.m_aabb != sectorAabb)
                 {
-                    AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
-                    if (sector.m_aabb != sectorAabb)
-                    {
-                        sector.m_aabb = sectorAabb;
-                        sector.SetDirty();
-                    }
+                    sector.m_aabb = sectorAabb;
+                    sector.m_isDirty = true;
                 }
             }
         }
@@ -299,18 +295,12 @@ namespace Terrain
         // (Sectors that are outside the world bounds won't have any valid data, so they'll get skipped)
         for (auto& sector : m_wireframeSectors)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
-            if (sector.m_jobContext)
-            {
-                // The previous async request for this sector has yet to complete.
-                continue;
-            }
-
             if (sector.m_isDirty)
             {
-                RebuildSectorWireframe(sector, heightDataResolution);
+                RebuildSectorWireframe(sector, heightDataResolution, worldMinZ);
             }
-            else if (!sector.m_lineVertices.empty())
+
+            if (!sector.m_lineVertices.empty())
             {
                 const AZ::Color primaryColor = AZ::Color(0.25f, 0.25f, 0.25f, 1.0f);
                 debugDisplay.DrawLines(sector.m_lineVertices, primaryColor);
@@ -327,9 +317,8 @@ namespace Terrain
 
     }
 
-    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, float gridResolution)
+    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ)
     {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
         if (!sector.m_isDirty)
         {
             return;
@@ -348,82 +337,62 @@ namespace Terrain
         // Since we're processing lines based on the grid points and going backwards, this will give us (*--*--*).
 
         AZ::Aabb region = sector.m_aabb;
-        region.SetMax(region.GetMax() + AZ::Vector3(gridResolution, gridResolution, 0.0f));
+        region.SetMax(region.GetMax() + AZ::Vector3(gridResolution.GetX(), gridResolution.GetY(), 0.0f));
 
         // We need 4 vertices for each grid point in our sector to hold the _| shape.
-        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution));
-        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(region.GetExtents().GetY() / gridResolution));
+        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution.GetX()));
+        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(region.GetExtents().GetY() / gridResolution.GetY()));
         sector.m_lineVertices.clear();
         sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
 
         // This keeps track of the height from the previous point for the _ line.
-        sector.m_previousHeight = 0.0f;
+        float previousHeight = 0.0f;
 
         // This keeps track of the heights from the previous row for the | line.
-        sector.m_rowHeights.clear();
-        sector.m_rowHeights.resize(numSamplesX);
+        AZStd::vector<float> rowHeights(numSamplesX);
 
         // For each terrain height value in the region, create the _| grid lines for that point and cache off the height value
         // for use with subsequent grid line calculations.
-        auto ProcessHeightValue = [gridResolution, &sector]
-            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        auto ProcessHeightValue = [gridResolution, &previousHeight, &rowHeights, &sector]
+            (uint32_t xIndex, uint32_t yIndex, const AZ::Vector3& position, [[maybe_unused]] bool terrainExists)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
-            if (sector.m_isDirty)
-            {
-                // Bail out if this sector has become dirty again since the async request started.
-                return;
-            }
-
             // Don't add any vertices for the first column or first row.  These grid lines will be handled by an adjacent sector, if
             // there is one.
             if ((xIndex > 0) && (yIndex > 0))
             {
-                float x = surfacePoint.m_position.GetX() - gridResolution;
-                float y = surfacePoint.m_position.GetY() - gridResolution;
+                float x = position.GetX() - gridResolution.GetX();
+                float y = position.GetY() - gridResolution.GetY();
 
-                sector.m_lineVertices.emplace_back(AZ::Vector3(x, surfacePoint.m_position.GetY(), sector.m_previousHeight));
-                sector.m_lineVertices.emplace_back(surfacePoint.m_position);
+                sector.m_lineVertices.emplace_back(AZ::Vector3(x, position.GetY(), previousHeight));
+                sector.m_lineVertices.emplace_back(position);
 
-                sector.m_lineVertices.emplace_back(AZ::Vector3(surfacePoint.m_position.GetX(), y, sector.m_rowHeights[xIndex]));
-                sector.m_lineVertices.emplace_back(surfacePoint.m_position);
+                sector.m_lineVertices.emplace_back(AZ::Vector3(position.GetX(), y, rowHeights[xIndex]));
+                sector.m_lineVertices.emplace_back(position);
             }
 
             // Save off the heights so that we can use them to draw subsequent columns and rows.
-            sector.m_previousHeight = surfacePoint.m_position.GetZ();
-            sector.m_rowHeights[xIndex] = surfacePoint.m_position.GetZ();
+            previousHeight = position.GetZ();
+            rowHeights[xIndex] = position.GetZ();
         };
 
-        auto completionCallback = [&sector](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+        // This set of nested loops will get replaced with a call to ProcessHeightsFromRegion once the API exists.
+        for (size_t yIndex = 0; yIndex < numSamplesY; yIndex++)
         {
-            // This must happen outside the lock,
-            // otherwise we will get a deadlock if
-            // WireframeSector::Reset is waiting for
-            // the completion event to be signalled.
-            sector.m_jobCompletionEvent->release();
+            float y = region.GetMin().GetY() + (gridResolution.GetY() * yIndex);
+            for (size_t xIndex = 0; xIndex < numSamplesX; xIndex++)
+            {
+                float x = region.GetMin().GetX() + (gridResolution.GetX() * xIndex);
 
-            // Reset the job context once the async request has completed,
-            // clearing the way for future requests to be made for this sector.
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
-            sector.m_jobContext.reset();
-        };
-
-        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
-            = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
-        asyncParams->m_completionCallback = completionCallback;
-
-        sector.m_jobCompletionEvent = AZStd::make_unique<AZStd::semaphore>();
-        AZ::Vector2 stepSize = AZ::Vector2(gridResolution);
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            sector.m_jobContext,
-            &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegionAsync,
-            region,
-            stepSize,
-            ProcessHeightValue,
-            AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
-            asyncParams);
+                float height = worldMinZ;
+                bool terrainExists = false;
+                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                    height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
+                    AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
+                ProcessHeightValue(
+                    aznumeric_cast<uint32_t>(xIndex), aznumeric_cast<uint32_t>(yIndex), AZ::Vector3(x, y, height), terrainExists);
+            }
+        }
     }
-
 
     void TerrainWorldDebuggerComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
@@ -440,76 +409,5 @@ namespace Terrain
         }
     }
 
-    TerrainWorldDebuggerComponent::WireframeSector::WireframeSector(const WireframeSector& other)
-    {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_sectorStateMutex);
-        m_jobContext = other.m_jobContext;
-        m_aabb = other.m_aabb;
-        m_lineVertices = other.m_lineVertices;
-        m_rowHeights = other.m_rowHeights;
-        m_previousHeight = other.m_previousHeight;
-        m_isDirty = other.m_isDirty;
-    }
 
-    TerrainWorldDebuggerComponent::WireframeSector::WireframeSector(WireframeSector&& other)
-    {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_sectorStateMutex);
-        m_jobContext = AZStd::move(other.m_jobContext);
-        m_aabb = AZStd::move(other.m_aabb);
-        m_lineVertices = AZStd::move(other.m_lineVertices);
-        m_rowHeights = AZStd::move(other.m_rowHeights);
-        m_previousHeight = AZStd::move(other.m_previousHeight);
-        m_isDirty = AZStd::move(other.m_isDirty);
-    }
-
-    TerrainWorldDebuggerComponent::WireframeSector& TerrainWorldDebuggerComponent::WireframeSector::operator=(const WireframeSector& other)
-    {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_sectorStateMutex);
-        m_jobContext = other.m_jobContext;
-        m_aabb = other.m_aabb;
-        m_lineVertices = other.m_lineVertices;
-        m_rowHeights = other.m_rowHeights;
-        m_previousHeight = other.m_previousHeight;
-        m_isDirty = other.m_isDirty;
-        return *this;
-    }
-
-    TerrainWorldDebuggerComponent::WireframeSector& TerrainWorldDebuggerComponent::WireframeSector::operator=(WireframeSector&& other)
-    {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_sectorStateMutex);
-        m_jobContext = AZStd::move(other.m_jobContext);
-        m_aabb = AZStd::move(other.m_aabb);
-        m_lineVertices = AZStd::move(other.m_lineVertices);
-        m_rowHeights = AZStd::move(other.m_rowHeights);
-        m_previousHeight = AZStd::move(other.m_previousHeight);
-        m_isDirty = AZStd::move(other.m_isDirty);
-        return *this;
-    }
-
-    void TerrainWorldDebuggerComponent::WireframeSector::Reset()
-    {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_sectorStateMutex);
-        if (m_jobContext)
-        {
-            // Cancel the job and wait until it completes.
-            m_jobContext->Cancel();
-            m_jobCompletionEvent->acquire();
-            m_jobCompletionEvent.reset();
-            m_jobContext.reset();
-        }
-        m_aabb = AZ::Aabb::CreateNull();
-        m_lineVertices.clear();
-        m_rowHeights.clear();
-        m_previousHeight = 0.0f;
-        m_isDirty = true;
-    }
-
-    void TerrainWorldDebuggerComponent::WireframeSector::SetDirty()
-    {
-        m_isDirty = true;
-        if (m_jobContext)
-        {
-            m_jobContext->Cancel();
-        }
-    }
 } // namespace Terrain

@@ -159,10 +159,6 @@ namespace AzToolsFramework
         //! By default the asset picker shows both on an AZ::Asset<> property. You can hide product assets with this flag.
         bool m_hideProductFilesInAssetPicker = false;
 
-        //! True to disable the edit button when there is no asset currently selected.
-        bool m_disableEditButtonWhenNoAssetSelected = false;
-
-        bool m_showEditButton = false;
         bool m_showThumbnail = false;
         bool m_showThumbnailDropDownButton = false;
         EditCallbackType* m_thumbnailCallback = nullptr;
@@ -224,9 +220,6 @@ namespace AzToolsFramework
         void SetHideProductFilesInAssetPicker(bool hide);
         bool GetHideProductFilesInAssetPicker() const;
 
-        void SetDisableEditButtonWhenNoAssetSelected(bool disableEditButtonWhenNoAssetSelected);
-        bool GetDisableEditButtonWhenNoAssetSelected() const;
-
         // Enable and configure a thumbnail widget that displays an asset preview and dropdown arrow for a dropdown menu
         void SetShowThumbnail(bool enable);
         bool GetShowThumbnail() const;
@@ -244,9 +237,8 @@ namespace AzToolsFramework
         void SetCurrentAssetHint(const AZStd::string& hint);
         void SetDefaultAssetID(const AZ::Data::AssetId& defaultID);
         virtual void PopupAssetPicker();
-        virtual void PickAssetSelectionFromDialog(AssetSelectionModel& selection, QWidget* parent);
         void OnClearButtonClicked();
-        virtual void UpdateAssetDisplay();
+        void UpdateAssetDisplay();
         void OnLineEditFocus(bool focus);
         virtual void OnEditButtonClicked();
         void OnThumbnailClicked();
@@ -258,7 +250,6 @@ namespace AzToolsFramework
 
     private:
         void UpdateThumbnail();
-        void UpdateEditButton();
     };
 
     class AssetPropertyHandlerDefault
@@ -281,9 +272,7 @@ namespace AzToolsFramework
         virtual QWidget* CreateGUI(QWidget* pParent) override;
         static void ConsumeAttributeInternal(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
         void ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
-        static void WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node);
         virtual void WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
-        static bool ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node);
         virtual bool ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 

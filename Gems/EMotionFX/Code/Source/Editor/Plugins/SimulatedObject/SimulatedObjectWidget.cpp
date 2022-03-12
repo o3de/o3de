@@ -570,15 +570,17 @@ namespace EMotionFX
         drawData->Unlock();
     }
 
-    void SimulatedObjectWidget::Render(EMotionFX::ActorRenderFlags renderFlags)
+    void SimulatedObjectWidget::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
     {
         if (!m_actor || !m_actorInstance)
         {
             return;
         }
 
+        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
+        const bool renderSimulatedJoints = renderFlags[RENDER_SIMULATEJOINTS];
         const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
-        if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::SimulatedJoints) && !selectedJointIndices.empty())
+        if (renderSimulatedJoints && !selectedJointIndices.empty())
         {
             // Render the joint radius.
             const size_t actorInstanceCount = GetActorManager().GetNumActorInstances();
@@ -609,6 +611,13 @@ namespace EMotionFX
                     }
                 }
             }
+        }
+
+        const bool renderColliders = renderFlags[RENDER_SIMULATEDOBJECT_COLLIDERS];
+        if (renderColliders)
+        {
+            ColliderContainerWidget::RenderColliders(PhysicsSetup::SimulatedObjectCollider,
+                settings.m_simulatedObjectColliderColor, settings.m_selectedSimulatedObjectColliderColor);
         }
     }
 

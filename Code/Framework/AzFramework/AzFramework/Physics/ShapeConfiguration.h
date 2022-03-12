@@ -221,7 +221,7 @@ namespace Physics
         const void* GetCachedNativeHeightfield() const;
         void* GetCachedNativeHeightfield();
         void SetCachedNativeHeightfield(void* cachedNativeHeightfield);
-        const AZ::Vector2& GetGridResolution() const;
+        AZ::Vector2 GetGridResolution() const;
         void SetGridResolution(const AZ::Vector2& gridSpacing);
         int32_t GetNumColumns() const;
         void SetNumColumns(int32_t numColumns);
@@ -235,7 +235,7 @@ namespace Physics
         void SetMaxHeightBounds(float maxBounds);
 
     private:
-        //! The number of meters between each heightfield sample in x and y.
+        //! The number of meters between each heightfield sample.
         AZ::Vector2 m_gridResolution{ 1.0f };
         //! The number of columns in the heightfield sample grid.
         int32_t m_numColumns{ 0 };

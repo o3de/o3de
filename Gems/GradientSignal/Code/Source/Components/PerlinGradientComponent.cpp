@@ -148,12 +148,10 @@ namespace GradientSignal
 
     void PerlinGradientComponent::Deactivate()
     {
+        m_perlinImprovedNoise.reset();
         GradientRequestBus::Handler::BusDisconnect();
         PerlinGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
-
-        AZStd::unique_lock lock(m_transformMutex);
-        m_perlinImprovedNoise.reset();
     }
 
     bool PerlinGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -205,7 +203,7 @@ namespace GradientSignal
         return 0.0f;
     }
 
-    void PerlinGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void PerlinGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

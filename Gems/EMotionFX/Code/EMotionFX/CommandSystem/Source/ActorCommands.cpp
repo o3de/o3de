@@ -9,6 +9,7 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/Recorder.h>
+#include <EMotionFX/Exporters/ExporterLib/Exporter/ExporterFileProcessor.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>

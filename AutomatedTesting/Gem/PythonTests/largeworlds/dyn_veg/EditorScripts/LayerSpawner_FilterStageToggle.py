@@ -42,17 +42,16 @@ def LayerSpawner_FilterStageToggle():
     POSTPROCESS_INSTANCE_COUNT = 19
 
     # Open an existing simple level
-    hydra.open_base_level()
+    helper.init_idle()
+    helper.open_level("Physics", "Base")
 
     general.set_current_view_position(500.49, 498.69, 46.66)
     general.set_current_view_rotation(-42.05, 0.00, -36.33)
 
     # Create a vegetation area with all needed components
     position = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
-    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "SpawnerFilter_PinkFlower")[0]
-    vegetation_entity = dynveg.create_temp_prefab_vegetation_area("vegetation", position, 16.0, 16.0, 16.0,
-                                                                  pink_flower_prefab)
+    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
+    vegetation_entity = dynveg.create_dynamic_slice_vegetation_area("vegetation", position, 16.0, 16.0, 16.0, asset_path)
     vegetation_entity.add_component("Vegetation Altitude Filter")
     vegetation_entity.add_component("Vegetation Position Modifier")
 

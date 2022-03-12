@@ -117,10 +117,6 @@ namespace AZ
             /// Called when a resource is being shut down.
             virtual void ShutdownResourceInternal(Resource& resource);
 
-            /// Compute the memory fragmentation for each constituent heap and store the results in m_memoryUsage. This method is invoked
-            /// when memory statistics gathering is active.
-            virtual void ComputeFragmentation() const = 0;
-
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

@@ -408,7 +408,7 @@ namespace O3DE::ProjectManager
             }
 
             // check if engine path is registered
-            auto allEngines = m_manifest.attr("get_manifest_engines")();
+            auto allEngines = m_manifest.attr("get_engines")();
             if (pybind11::isinstance<pybind11::list>(allEngines))
             {
                 const AZ::IO::FixedMaxPath enginePathFixed(Py_To_String(enginePath));
@@ -459,9 +459,6 @@ namespace O3DE::ProjectManager
             if (!pybind11::isinstance<pybind11::none>(enginePathResult))
             {
                 engineInfo = EngineInfoFromPath(enginePathResult);
-
-                // it is possible an engine is registered in o3de_manifest.json but the engine.json is
-                // missing or corrupt in which case we do not consider it a registered engine
             }
         });
 
@@ -894,7 +891,7 @@ namespace O3DE::ProjectManager
 
         bool result = ExecuteWithLock([&] {
             // external projects
-            for (auto path : m_manifest.attr("get_manifest_projects")())
+            for (auto path : m_manifest.attr("get_projects")())
             {
                 projects.push_back(ProjectInfoFromPath(path));
             }
@@ -1356,18 +1353,11 @@ namespace O3DE::ProjectManager
 
     IPythonBindings::ErrorPair PythonBindings::GetErrorPair()
     {
-        if (const size_t errorSize = m_pythonErrorStrings.size())
-        {
-            AZStd::string detailedString =
-                errorSize == 1 ? "" : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
+        AZStd::string detailedString = m_pythonErrorStrings.size() == 1
+            ? ""
+            : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
 
-            return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
-        }
-        // If no error was found
-        else
-        {
-            return IPythonBindings::ErrorPair(AZStd::string("Unknown Python Bindings Error"), AZStd::string(""));
-        }
+        return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
     }
 
     void PythonBindings::AddErrorString(AZStd::string errorString)

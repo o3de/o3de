@@ -14,6 +14,7 @@
 
 // Qt
 #include <QDialog>
+#include <QTimer>
 
 ModalWindowDismisser::ModalWindowDismisser()
 {
@@ -28,20 +29,36 @@ ModalWindowDismisser::~ModalWindowDismisser()
     }
 }
 
+void ModalWindowDismisser::DismissWindows()
+{
+    for (QDialog* dialog : m_windows)
+    {
+        dialog->close();
+    }
+    m_windows.clear();
+    m_dissmiss = false;
+}
+
 bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
 {
     if (QDialog* dialog = qobject_cast<QDialog*>(object))
     {
         if (dialog->isModal())
         {
-            if (event->type() == QEvent::Paint || event->type() == QEvent::PolishRequest)
+            if (event->type() == QEvent::Show)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
                 {
                     m_windows.push_back(dialog);
                 }
-                dialog->close();
+                if (!m_dissmiss)
+                {
+                    // Closing the window at the same moment is opened leads to crashes and is unstable,
+                    // so do it after a long 1 ms
+                    QTimer::singleShot(1, this, &ModalWindowDismisser::DismissWindows);
+                    m_dissmiss = true;
+                }
             }
             else if (event->type() == QEvent::Close)
             {

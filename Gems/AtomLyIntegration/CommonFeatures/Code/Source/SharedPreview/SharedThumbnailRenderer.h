@@ -35,15 +35,14 @@ namespace AZ
         private:
             struct ThumbnailConfig
             {
-                bool IsValid() const;
-                Data::Asset<RPI::ModelAsset> m_modelAsset;
-                Data::Asset<RPI::MaterialAsset> m_materialAsset;
-                Data::Asset<RPI::AnyAsset> m_lightingAsset;
+                Data::AssetId m_modelId;
+                Data::AssetId m_materialId;
+                Data::AssetId m_lightingId;
             };
 
             ThumbnailConfig GetThumbnailConfig(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey);
 
-            //! ThumbnailerRendererRequestBus::Handler interface overrides...
+            //! ThumbnailerRendererRequestsBus::Handler interface overrides...
             void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
             bool Installed() const override;
 

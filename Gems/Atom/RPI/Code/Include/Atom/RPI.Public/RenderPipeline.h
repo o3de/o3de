@@ -61,25 +61,11 @@ namespace AZ
             RHI::DrawListMask m_drawListMask;
         };
 
-        //! Points to a pass binding for global access through the pipeline using a name for reference
-        struct PipelineGlobalBinding
-        {
-            // The name used to reference this binding in a global manner.
-            Name m_globalName;
-
-            // The referenced binding
-            PassAttachmentBinding* m_binding;
-
-            // The pass that owns the binding. Used to remove the global binding from the list when the pass is orphaned
-            Pass* m_pass;
-        };
-
         //! RenderPipeline describes how to render a scene. It has all the passes and views for rendering.
         //! A scene may have several pipelines. Each pipeline have its own render frequency. 
         //! Pipeline can be disabled and it won't be rendered if it's disabled.
         class RenderPipeline
         {
-            friend class Pass;
             friend class Scene;
 
         public:
@@ -198,39 +184,8 @@ namespace AZ
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
 
-            //! Get the RenderPipelineDescriptor which was used to create this RenderPipeline
-            const RenderPipelineDescriptor& GetDescriptor() const;
-
-            // Helper functions to modify the passes of this render pipeline
-            //! Find a reference pass's location and add the new pass before the reference pass
-            //! After the new pass was inserted, the new pass and the reference pass are siblings
-            bool AddPassBefore(Ptr<Pass> newPass, const AZ::Name& referencePassName);
-            
-            //! Find a reference pass's location and add the new pass after the reference pass
-            //! After the new pass was inserted, the new pass and the reference pass are siblings
-            bool AddPassAfter(Ptr<Pass> newPass, const AZ::Name& referencePassName);
-
-            //! Find the first pass with matching name in the render pipeline
-            //! Note: to find all the passes with matching name in this render pipeline,
-            //! use RPI::PassSystemInterface::Get()->ForEachPass() function instead.
-            Ptr<Pass> FindFirstPass(const AZ::Name& passName);
-
         private:
             RenderPipeline() = default;
-
-            // Adds a pass connection to the list of pipeline connections so it can be reference in a global way
-            // Should be called during the pass build phase
-            void AddPipelineGlobalConnection(const Name& globalName, PassAttachmentBinding* binding, Pass* pass);
-
-            // Removes all pipeline global connections associated with a specific pass
-            void RemovePipelineGlobalConnectionsFromPass(Pass* passOnwer);
-
-            // Retrieves a previously added pipeline global connection via name
-            const PipelineGlobalBinding* GetPipelineGlobalConnection(const Name& globalName) const;
-
-            // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
-            // This is called from the pipeline root pass during the pass reset phase
-            void ClearGlobalBindings();
 
             static void InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc);
 
@@ -269,10 +224,7 @@ namespace AZ
 
             // Pass tree which contains all the passes in this render pipeline.
             Ptr<ParentPass> m_rootPass;
-
-            // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner
-            AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;
-
+            
             PipelineViewMap m_pipelineViewsByTag;
             
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
@@ -286,8 +238,8 @@ namespace AZ
 
             PipelineViewTag m_mainViewTag;
 
-            // Was the pipeline modified by Scene's feature processor
-            bool m_wasModifiedByScene = false;
+            // Whether the pipeline should be removed after one execution
+            bool m_executeOnce = false;
 
             // The window handle associated with this render pipeline if it's created for a window
             AzFramework::NativeWindowHandle m_windowHandle = nullptr;
@@ -295,15 +247,15 @@ namespace AZ
             // Render settings that can be queried by passes to setup things like render target resolution
             PipelineRenderSettings m_activeRenderSettings;
 
+            // Original settings from RenderPipelineDescriptor, used to revert active render settings to original settings from RenderPipelineDescriptor
+            PipelineRenderSettings m_originalRenderSettings;
+
             // A tag to filter draw items submitted by passes of this render pipeline.
             // This tag is allocated when it's added to a scene. It's set to invalid when it's removed to the scene.
             RHI::DrawFilterTag m_drawFilterTag;
             // A mask to filter draw items submitted by passes of this render pipeline.
             // This mask is created from the value of m_drawFilterTag.
-            RHI::DrawFilterMask m_drawFilterMask = 0;
-
-            // The descriptor used to created this render pipeline
-            RenderPipelineDescriptor m_descriptor;
+            RHI::DrawFilterMask m_drawFilterMask = 0; 
         };
 
     } // namespace RPI

@@ -13,6 +13,7 @@
 #include <EMotionFX/CommandSystem/Source/ActorInstanceCommands.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
+#include "../../../../EMStudioSDK/Source/UnitScaleWindow.h"
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <QContextMenuEvent>

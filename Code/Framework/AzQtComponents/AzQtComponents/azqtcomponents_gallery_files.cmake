@@ -106,6 +106,9 @@ set(FILES
     Gallery/TabWidgetPage.ui
     Gallery/TabWidgetPage.cpp
     Gallery/TabWidgetPage.h
+    Gallery/TitleBarPage.ui
+    Gallery/TitleBarPage.cpp
+    Gallery/TitleBarPage.h
     Gallery/ToggleSwitchPage.ui
     Gallery/ToggleSwitchPage.cpp
     Gallery/ToggleSwitchPage.h

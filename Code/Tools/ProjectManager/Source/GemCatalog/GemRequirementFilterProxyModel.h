@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     class GemRequirementFilterProxyModel
         : public QSortFilterProxyModel
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
     public:
         GemRequirementFilterProxyModel(GemModel* sourceModel, QObject* parent = nullptr);

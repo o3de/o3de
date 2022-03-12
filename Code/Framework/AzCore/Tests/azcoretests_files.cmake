@@ -76,7 +76,6 @@ set(FILES
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Settings/CommandLineTests.cpp
-    Settings/ConfigurableStackTests.cpp
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
     Settings/SettingsRegistryMergeUtilsTests.cpp
@@ -141,7 +140,6 @@ set(FILES
     Math/FrustumPerformanceTests.cpp
     Math/IntersectionTests.cpp
     Math/MathIntrinsicsTests.cpp
-    Math/MathStringsTests.cpp
     Math/MathUtilsTests.cpp
     Math/Matrix3x3PerformanceTests.cpp
     Math/Matrix3x3Tests.cpp
@@ -184,7 +182,6 @@ set(FILES
     AZStd/Atomics.cpp
     AZStd/Any.cpp
     AZStd/Bitset.cpp
-    AZStd/ConceptsTests.cpp
     AZStd/CreateDestroy.cpp
     AZStd/ConcurrentAllocators.cpp
     AZStd/ConcurrentContainers.cpp
@@ -208,13 +205,9 @@ set(FILES
     AZStd/Optional.cpp
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
-    AZStd/RangesAlgorithmTests.cpp
-    AZStd/RangesTests.cpp
-    AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp
     AZStd/SmartPtr.cpp
-    AZStd/SpanTests.cpp
     AZStd/String.cpp
     AZStd/TypeTraits.cpp
     AZStd/Tuple.cpp
@@ -222,18 +215,10 @@ set(FILES
     AZStd/Variant.cpp
     AZStd/VariantSerialization.cpp
     AZStd/VectorAndArray.cpp
-    DOM/DomFixtures.cpp
-    DOM/DomFixtures.h
     DOM/DomJsonTests.cpp
     DOM/DomJsonBenchmarks.cpp
-    DOM/DomPathTests.cpp
-    DOM/DomPathBenchmarks.cpp
-    DOM/DomPatchTests.cpp
-    DOM/DomPatchBenchmarks.cpp
     DOM/DomValueTests.cpp
     DOM/DomValueBenchmarks.cpp
-    DOM/DomPrefixTreeTests.cpp
-    DOM/DomPrefixTreeBenchmarks.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

@@ -25,7 +25,6 @@ namespace AZ
                     ->Field("RootPassTemplate", &RenderPipelineDescriptor::m_rootPassTemplate)
                     ->Field("ExecuteOnce", &RenderPipelineDescriptor::m_executeOnce)
                     ->Field("RenderSettings", &RenderPipelineDescriptor::m_renderSettings)
-                    ->Field("AllowModification", &RenderPipelineDescriptor::m_allowModification)
                 ;
             }
         }

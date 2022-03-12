@@ -134,7 +134,7 @@ namespace GuideHelpers
         AZ::Matrix4x4 transform;
         EBUS_EVENT_ID_RESULT(transform, canvasEntityId, UiCanvasBus, GetCanvasToViewportMatrix);
 
-        AZ::Vector2 viewportSize = viewport->GetRenderViewportSize();
+        AZ::Vector2 viewportSize(aznumeric_cast<float>(viewport->size().width()), aznumeric_cast<float>(viewport->size().height()));
 
         AZ::Color guideColor;
         EBUS_EVENT_ID_RESULT(guideColor, canvasEntityId, UiEditorCanvasBus, GetGuideColor);
@@ -167,7 +167,8 @@ namespace GuideHelpers
     void DrawGhostGuideLine(Draw2dHelper& draw2d, AZ::EntityId canvasEntityId, bool guideIsVertical, ViewportWidget* viewport, const AZ::Vector2& canvasPoint)
     {
         AZ::Vector2 viewportPoint = CanvasHelpers::GetViewportPoint(canvasEntityId, canvasPoint);
-        AZ::Vector2 viewportSize = viewport->GetRenderViewportSize();
+
+        AZ::Vector2 viewportSize(aznumeric_cast<float>(viewport->size().width()), aznumeric_cast<float>(viewport->size().height()));
 
         // the line is drawn as the inverse of the background color
         AZ::Color guideColor(1.0f, 1.0f, 1.0f, 1.0f);

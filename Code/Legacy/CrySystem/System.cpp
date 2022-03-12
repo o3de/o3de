@@ -116,6 +116,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <IMovieSystem.h>
 #include <ILog.h>
 #include <IAudioSystem.h>
+#include <IProcess.h>
 
 #include <LoadScreenBus.h>
 
@@ -133,6 +134,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <PNoise3.h>
 
+#include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
 
@@ -1278,7 +1280,10 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
-    [[maybe_unused]] bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);
+#if !defined(NDEBUG)
+    bool bRemoved =
+#endif
+        stl::find_and_erase(m_windowMessageHandlers, pHandler);
     assert(pHandler && bRemoved && "This IWindowMessageHandler was not registered");
 #else
     CRY_ASSERT(false && "This platform does not support window message handlers");
@@ -1369,6 +1374,7 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_ENTERMENULOOP:
     {
+        UiCursorBus::Broadcast(&UiCursorInterface::IncrementVisibleCounter);
         return true;
     }
     case WM_CAPTURECHANGED:
@@ -1386,6 +1392,7 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_EXITMENULOOP:
     {
+        UiCursorBus::Broadcast(&UiCursorInterface::DecrementVisibleCounter);
         return (uMsg != WM_CAPTURECHANGED);
     }
     case WM_SYSKEYUP:

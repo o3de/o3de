@@ -8,13 +8,12 @@
 
 #pragma once
 
-#include <AWSNativeSDKTestManager.h>
+#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzTest/Utils.h>
 
 class AWSGameLiftClientFixture
     : public UnitTest::ScopedAllocatorSetupFixture
@@ -39,12 +38,12 @@ public:
         m_jobContext.reset(aznew AZ::JobContext(*m_jobManager, *m_jobCancelGroup));
         AZ::JobContext::SetGlobalContext(m_jobContext.get());
 
-        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Init();
+        AWSNativeSDKInit::InitializationManager::InitAwsApi();
     }
 
     void TearDown() override
     {
-        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
+        AWSNativeSDKInit::InitializationManager::Shutdown();
 
         AZ::JobContext::SetGlobalContext(nullptr);
         m_jobContext.reset();

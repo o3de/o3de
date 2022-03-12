@@ -42,8 +42,10 @@ class CommandHierarchyItemRename;
 class CommandHierarchyItemReparent;
 class CommandHierarchyItemToggleIsExpanded;
 class CommandHierarchyItemToggleIsSelectable;
+class CommandHierarchyItemToggleIsSelected;
 class CommandHierarchyItemToggleIsVisible;
 class CommandPropertiesChange;
+class CommandViewportInteractionMode;
 class ComponentButton;
 class CoordinateSystemToolbarSection;
 class EditorMenu;
@@ -121,8 +123,10 @@ enum class FusibleCommand
 #include "CommandHierarchyItemReparent.h"
 #include "CommandHierarchyItemToggleIsExpanded.h"
 #include "CommandHierarchyItemToggleIsSelectable.h"
+#include "CommandHierarchyItemToggleIsSelected.h"
 #include "CommandHierarchyItemToggleIsVisible.h"
 #include "CommandPropertiesChange.h"
+#include "CommandViewportInteractionMode.h"
 #include "ComponentButton.h"
 #include "CoordinateSystemToolbarSection.h"
 #include "EditorWindow.h"

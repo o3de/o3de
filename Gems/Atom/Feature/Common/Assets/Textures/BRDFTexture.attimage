@@ -5,16 +5,14 @@
     "ClassData": {
         "m_imageDescriptor": {
             "BindFlags": [
-                "ShaderRead",
-                "ShaderWrite"
-            ],
+		        "ShaderRead",
+		        "ShaderWrite"
+	        ],
             "Size": {
                 "Width": 256,
                 "Height": 256
             },
             "Format": 24
-        },
-        "Name": "$BrdfTexture",
-        "IsUniqueName": true
+	    }
     }
 }

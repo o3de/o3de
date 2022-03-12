@@ -61,8 +61,6 @@ namespace AzToolsFramework
         void InstallSurfaceManipulatorMouseMoveCallback(const SurfaceManipulator::MouseActionCallback& onMouseMoveCallback);
         void InstallSurfaceManipulatorMouseUpCallback(const SurfaceManipulator::MouseActionCallback& onMouseUpCallback);
 
-        void InstallSurfaceManipulatorEntityIdsToIgnoreFn(SurfaceManipulator::EntityIdsToIgnoreFn entityIdsToIgnoreFn);
-
         void SetSpaceImpl(const AZ::Transform& worldFromLocal) override;
         void SetLocalTransformImpl(const AZ::Transform& localTransform) override;
         void SetLocalPositionImpl(const AZ::Vector3& localPosition) override;

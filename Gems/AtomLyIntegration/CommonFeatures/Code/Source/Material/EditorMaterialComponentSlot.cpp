@@ -117,20 +117,6 @@ namespace AZ
                     ->Constructor<const EditorMaterialComponentSlot&>()
                     ->Property("id", BehaviorValueProperty(&EditorMaterialComponentSlot::m_id))
                     ->Property("materialAsset", BehaviorValueProperty(&EditorMaterialComponentSlot::m_materialAsset))
-                    ->Method("GetPreviewPixmapData", &EditorMaterialComponentSlot::GetPreviewPixmapData)
-                    ->Method("GetActiveAssetId", &EditorMaterialComponentSlot::GetActiveAssetId)
-                    ->Method("GetDefaultAssetId", &EditorMaterialComponentSlot::GetDefaultAssetId)
-                    ->Method("GetLabel", &EditorMaterialComponentSlot::GetLabel)
-                    ->Method("HasSourceData", &EditorMaterialComponentSlot::HasSourceData)
-                    ->Method("SetAssetId", static_cast<void (EditorMaterialComponentSlot::*)(const Data::AssetId&)>(&EditorMaterialComponentSlot::SetAsset))
-                    ->Method("SetAsset", static_cast<void (EditorMaterialComponentSlot::*)(const Data::Asset<RPI::MaterialAsset>&)>(&EditorMaterialComponentSlot::SetAsset))
-                    ->Method("Clear", &EditorMaterialComponentSlot::Clear)
-                    ->Method("ClearOverrides", &EditorMaterialComponentSlot::ClearOverrides)
-                    ->Method("OpenMaterialExporter", &EditorMaterialComponentSlot::OpenMaterialExporter)
-                    ->Method("OpenMaterialEditor", &EditorMaterialComponentSlot::OpenMaterialEditor)
-                    ->Method("OpenMaterialInspector", &EditorMaterialComponentSlot::OpenMaterialInspector)
-                    ->Method("OpenUvNameMapInspector", &EditorMaterialComponentSlot::OpenUvNameMapInspector)
-                    ->Method("ExportMaterial", &EditorMaterialComponentSlot::ExportMaterial)
                     ;
             }
         };
@@ -228,7 +214,8 @@ namespace AZ
             // But we still need to allow the user to reconfigure it using the dialog
             EditorMaterialComponentExporter::ExportItemsContainer exportItems;
             {
-                exportItems.emplace_back(GetDefaultAssetId(), GetLabel());
+                EditorMaterialComponentExporter::ExportItem exportItem{ GetDefaultAssetId(), GetLabel() };
+                exportItems.push_back(exportItem);
             }
 
             bool changed = false;
@@ -256,22 +243,6 @@ namespace AZ
             if (changed)
             {
                 OnMaterialChanged();
-            }
-        }
-
-        void EditorMaterialComponentSlot::ExportMaterial(const AZStd::string& exportPath, bool overwrite)
-        {
-            EditorMaterialComponentExporter::ExportItem exportItem(GetDefaultAssetId(), GetLabel(), exportPath);
-            exportItem.SetOverwrite(overwrite);
-
-            if (EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
-            {
-                if (const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0))
-                {
-                    m_materialAsset =
-                        AZ::Data::Asset<AZ::RPI::MaterialAsset>(assetIdOutcome.GetValue(), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
-                    OnMaterialChanged();
-                }
             }
         }
 

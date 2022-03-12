@@ -182,7 +182,6 @@ namespace AZ
 
             //! Returns the TLAS RHI buffer
             virtual const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const = 0;
-            virtual const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const = 0;
 
         private:
             // Platform API

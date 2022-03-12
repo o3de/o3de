@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
@@ -37,6 +38,9 @@ namespace UnitTest
         AzToolsFramework::EntityIdList GetSelectedEntities();
 
         AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzFramework::CameraState m_cameraState;
+
+        inline static const AZ::Vector3 CameraPosition = AZ::Vector3(10.0f, 15.0f, 10.0f);
 
         inline static const char* CityEntityName = "City";
         inline static const char* StreetEntityName = "Street";
@@ -45,11 +49,7 @@ namespace UnitTest
         inline static const char* Passenger1EntityName = "Passenger1";
         inline static const char* Passenger2EntityName = "Passenger2";
 
-        AzFramework::CameraState m_cameraState;
-
-        inline static const AZ::Vector3 CameraPosition = AZ::Vector3(10.0f, 15.0f, 10.0f);
-        inline static AZ::Vector3 s_worldCityEntityPosition = AZ::Vector3(5.0f, 10.0f, 0.0f);
-        inline static AZ::Vector3 s_worldCarEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
+        inline static AZ::Vector3 WorldCarEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
     };
 
 } // namespace UnitTest

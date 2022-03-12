@@ -66,6 +66,4 @@ set(FILES
     ../Common/UnixLike/AzCore/std/time_UnixLike.cpp
     AzCore/Utils/Utils_Linux.cpp
     ../Common/UnixLike/AzCore/Utils/Utils_UnixLike.cpp
-    AzCore/Debug/Profiler_Platform.inl
-    ../Common/Unimplemented/AzCore/Debug/Profiler_Unimplemented.inl
 )

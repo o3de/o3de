@@ -121,8 +121,7 @@ namespace AZ
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Read;
                 break;
             case CommonBufferPoolType::ReadWrite:
-                // Add CopyRead flag too since it's often we need to readback gpu attachment buffers.
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead;
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::ShaderRead;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;

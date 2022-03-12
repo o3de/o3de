@@ -89,7 +89,6 @@
 #include <LmbrCentral/Rendering/EditorCameraCorrectionBus.h>
 
 // Atom
-#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
@@ -585,8 +584,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_renderViewport->SetScene(nullptr);
         break;
 
-    case eNotify_OnEndLoad:
-    case eNotify_OnEndCreate:
+    case eNotify_OnEndSceneOpen:
         UpdateScene();
         SetDefaultCamera();
         break;
@@ -2326,26 +2324,7 @@ void EditorViewportWidget::UpdateScene()
         {
             AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
             m_renderViewport->SetScene(mainScene);
-            auto viewportContext = m_renderViewport->GetViewportContext();
-            AZ::RPI::SceneNotificationBus::Handler::BusConnect(viewportContext->GetRenderScene()->GetId());
-
-            // Don't enable the render pipeline until a level has been loaded
-            // Also show/hide the RenderViewportWidget accordingly so that we get the
-            // expected gradient background when no level is loaded
-            auto renderPipeline = viewportContext->GetCurrentPipeline();
-            if (renderPipeline)
-            {
-                if (GetIEditor()->IsLevelLoaded())
-                {
-                    m_renderViewport->show();
-                    renderPipeline->AddToRenderTick();
-                }
-                else
-                {
-                    m_renderViewport->hide();
-                    renderPipeline->RemoveFromRenderTick();
-                }
-            }
+            AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
         }
     }
 }

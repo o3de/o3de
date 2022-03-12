@@ -5,11 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
-
-#include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 
 namespace EMStudio::ViewportUtil
 {
@@ -33,12 +31,7 @@ namespace EMStudio::ViewportUtil
     float CameraTranslateSmoothness();
     bool CameraRotateSmoothingEnabled();
     bool CameraTranslateSmoothingEnabled();
-    float CameraDefaultOrbitDistance();
 
-    AzFramework::TranslateCameraInputChannelIds TranslateCameraInputChannelIds();
-    AzFramework::InputChannelId RotateCameraInputChannelId();
-    AzFramework::InputChannelId OrbitCameraInputChannelId();
-    AzFramework::InputChannelId OrbitLookCameraInputChannelId();
-    AzFramework::InputChannelId OrbitDollyCameraInputChannelId();
-    AzFramework::InputChannelId PanCameraInputChannelId();
-} // namespace EMStudio::ViewportUtil
+    AzFramework::TranslateCameraInputChannelIds BuildTranslateCameraInputChannelIds();
+    AzFramework::InputChannelId BuildRotateCameraInputId();
+}

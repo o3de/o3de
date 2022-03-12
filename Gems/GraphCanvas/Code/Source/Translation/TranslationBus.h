@@ -41,35 +41,28 @@ namespace GraphCanvas
             return *this;
         }
 
-        bool operator == (const char* keyStr) const
-        {
-            return m_key.compare(keyStr) == 0;
-        }
-
         bool operator == (const TranslationKey& rhs) const
         {
             return m_key.compare(rhs.m_key) == 0;
         }
 
         template <typename T>
-        auto operator<< (T&& value) ->
-            AZStd::enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(AZStd::to_string(value))>>, TranslationKey&>
+        auto operator << (T value) -> AZStd::enable_if_t<AZStd::is_same_v<std::void_t<decltype(AZStd::to_string(value))>, void>, TranslationKey&>
         {
-            AZStd::string valueString = AZStd::to_string(AZStd::forward<T>(value));
-            if (!m_key.empty() && !valueString.empty())
+            if (!m_key.empty() && !AZStd::to_string(value).empty())
             {
                 m_key.append(".");
             }
 
-            if (!valueString.empty())
+            if (!AZStd::to_string(value).empty())
             {
-                m_key.append(valueString);
+                m_key.append(AZStd::to_string(value));
             }
 
             return *this;
         }
 
-        TranslationKey& operator<< (const AZStd::string& value)
+        TranslationKey& operator << (const AZStd::string& value)
         {
             if (!m_key.empty() && !value.empty())
             {
@@ -77,7 +70,7 @@ namespace GraphCanvas
             }
             if (!value.empty())
             {
-                m_key.append(value);
+                m_key.append(value.c_str());
             }
 
             return *this;

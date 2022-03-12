@@ -15,7 +15,7 @@
 
 namespace UnitTest
 {
-    static auto ScreenDimensions = AzFramework::ScreenSize(1280, 720);
+    static auto ScreenDimensions = AZ::Vector2(1280.0f, 720.0f);
 
     class EditorVisibilityFixture : public ToolsApplicationFixture
     {

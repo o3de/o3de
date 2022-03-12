@@ -54,7 +54,6 @@ namespace AZ
             RHI::ResultCode MapBufferInternal(const RHI::BufferMapRequest& mapRequest, RHI::BufferMapResponse& response) override;
             void UnmapBufferInternal(RHI::Buffer& buffer) override;
             RHI::ResultCode StreamBufferInternal(const RHI::BufferStreamRequest& request) override;
-            void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

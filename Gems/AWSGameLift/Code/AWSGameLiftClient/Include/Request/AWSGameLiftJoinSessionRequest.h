@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Multiplayer/Session/SessionRequests.h>
+#include <AzFramework/Session/SessionRequests.h>
 
 namespace AWSGameLift
 {
@@ -17,10 +17,10 @@ namespace AWSGameLift
     //! Once player session has been created successfully in game session, gamelift client manager will
     //! signal Multiplayer Gem to setup networking connection.
     struct AWSGameLiftJoinSessionRequest
-        : public Multiplayer::JoinSessionRequest
+        : public AzFramework::JoinSessionRequest
     {
     public:
-        AZ_RTTI(AWSGameLiftJoinSessionRequest, "{6EED6D15-531A-4956-90D0-2EDA31AC9CBA}", Multiplayer::JoinSessionRequest);
+        AZ_RTTI(AWSGameLiftJoinSessionRequest, "{6EED6D15-531A-4956-90D0-2EDA31AC9CBA}", AzFramework::JoinSessionRequest);
         static void Reflect(AZ::ReflectContext* context);
 
         AWSGameLiftJoinSessionRequest() = default;

@@ -12,7 +12,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Preprocessor/EnumReflectUtils.h>
 
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
@@ -132,10 +131,7 @@ namespace EMotionFX
             return AZ::Edit::PropertyVisibility::Show;
         }
 
-
         //////////////////////////////////////////////////////////////////////////
-        AZ_ENUM_DEFINE_REFLECT_UTILITIES(ActorRenderFlags);
-
         void ActorComponent::Configuration::Reflect(AZ::ReflectContext* context)
         {
             BoundingBoxConfiguration::Reflect(context);
@@ -143,19 +139,19 @@ namespace EMotionFX
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                ActorRenderFlagsReflect(*serializeContext);
-
                 serializeContext->Class<Configuration>()
-                    ->Version(5)
+                    ->Version(4)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
+                    ->Field("RenderSkeleton", &Configuration::m_renderSkeleton)
+                    ->Field("RenderCharacter", &Configuration::m_renderCharacter)
+                    ->Field("RenderBounds", &Configuration::m_renderBounds)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
                     ->Field("LODLevel", &Configuration::m_lodLevel)
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
-                    ->Field("RenderFlags", &Configuration::m_renderFlags)
                 ;
             }
         }
@@ -254,6 +250,8 @@ namespace EMotionFX
             {
                 m_configuration = *configuration;
             }
+
+            m_debugRenderFlags[RENDER_SOLID] = true;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -346,24 +344,20 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         bool ActorComponent::GetRenderCharacter() const
         {
-            return AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
+            return m_configuration.m_renderCharacter;
         }
 
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::SetRenderCharacter(bool enable)
         {
-            if (enable)
+            if (m_configuration.m_renderCharacter != enable)
             {
-                m_configuration.m_renderFlags |= ActorRenderFlags::Solid;
-            }
-            else
-            {
-                m_configuration.m_renderFlags &= ~ActorRenderFlags::Solid;
-            }
+                m_configuration.m_renderCharacter = enable;
 
-            if (m_renderActorInstance)
-            {
-                m_renderActorInstance->SetIsVisible(enable);
+                if (m_renderActorInstance)
+                {
+                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
+                }
             }
         }
 
@@ -400,9 +394,9 @@ namespace EMotionFX
             return m_sceneFinishSimHandler.IsConnected();
         }
 
-        void ActorComponent::SetRenderFlag(ActorRenderFlags renderFlags)
+        void ActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
         {
-            m_configuration.m_renderFlags = renderFlags;
+            m_debugRenderFlags = renderFlags;
         }
 
         void ActorComponent::CheckActorCreation()
@@ -462,7 +456,7 @@ namespace EMotionFX
 
                 if (m_renderActorInstance)
                 {
-                    m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
+                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
                 }
             }
 
@@ -570,20 +564,21 @@ namespace EMotionFX
                 m_renderActorInstance->UpdateBounds();
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
-                const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                const bool renderActorSolid = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
-                m_renderActorInstance->SetIsVisible(isInCameraFrustum && renderActorSolid);
-
                 // Optimization: Set the actor instance invisible when character is out of camera view. This will stop the joint transforms update, except the root joint.
                 // Calling it after the bounds on the render actor updated.
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
-                    // Update the skeleton in case solid mesh rendering or any of the debug visualizations are enabled and the character is in the camera frustum.
-                    const bool updateTransforms = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, s_requireUpdateTransforms);
-                    m_actorInstance->SetIsVisible(isInCameraFrustum && updateTransforms);
+                    const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderCharacter);
                 }
 
-                m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
+                m_renderActorInstance->SetIsVisible(m_debugRenderFlags[RENDER_SOLID]);
+
+                // The configuration stores some debug option. When that is enabled, we override it on top of the render flags.
+                m_debugRenderFlags[RENDER_AABB] = m_debugRenderFlags[RENDER_AABB] || m_configuration.m_renderBounds;
+                m_debugRenderFlags[RENDER_LINESKELETON] = m_debugRenderFlags[RENDER_LINESKELETON] || m_configuration.m_renderSkeleton;
+                m_debugRenderFlags[RENDER_EMFX_DEBUG] = true;
+                m_renderActorInstance->DebugDraw(m_debugRenderFlags);
             }
         }
 

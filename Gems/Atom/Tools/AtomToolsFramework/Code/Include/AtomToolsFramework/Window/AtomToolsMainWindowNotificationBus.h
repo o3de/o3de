@@ -16,8 +16,7 @@ namespace AtomToolsFramework
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        typedef AZ::Crc32 BusIdType;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
         virtual void OnMainWindowClosing(){};
     };

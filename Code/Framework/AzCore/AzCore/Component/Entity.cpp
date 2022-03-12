@@ -230,7 +230,7 @@ namespace AZ
         EBUS_EVENT_ID(m_id, EntityBus, OnEntityDeactivated, m_id);
         EBUS_EVENT(EntitySystemBus, OnEntityDeactivated, m_id);
 
-        AZ_Assert(m_state == State::Active, "Component should be in Active state to be Deactivated!");
+        AZ_Assert(m_state == State::Active, "Component should be in Active state to br Deactivated!");
         SetState(State::Deactivating);
 
         for (ComponentArrayType::reverse_iterator it = m_components.rbegin(); it != m_components.rend(); ++it)
@@ -649,14 +649,14 @@ namespace AZ
         m_stateEvent.Signal(oldState, m_state);
     }
 
-    void Entity::SetEntitySpawnTicketId(u32 entitySpawnTicketId)
+    void Entity::SetSpawnTicketId(u32 spawnTicketId)
     {
-        m_entitySpawnTicketId = entitySpawnTicketId;
+        m_spawnTicketId = spawnTicketId;
     }
 
-    u32 Entity::GetEntitySpawnTicketId() const
+    u32 Entity::GetSpawnTicketId() const
     {
-        return m_entitySpawnTicketId;
+        return m_spawnTicketId;
     }
 
     void Entity::OnNameChanged() const

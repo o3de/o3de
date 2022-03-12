@@ -473,9 +473,9 @@ public: // static member functions
     //! Helper to get the default IDraw2d interface
     static IDraw2d* GetDefaultDraw2d()
     {
-        if (AZ::Interface<ILyShine>::Get())
+        if (gEnv && gEnv->pLyShine) // [LYSHINE_ATOM_TODO][GHI #3569] Remove LyShine global interface pointer from legacy global environment
         {
-            IDraw2d* draw2d = AZ::Interface<ILyShine>::Get()->GetDraw2d();
+            IDraw2d* draw2d = gEnv->pLyShine->GetDraw2d();
             return reinterpret_cast<IDraw2d*>(draw2d);
         }
 
@@ -485,9 +485,9 @@ public: // static member functions
     //! Helper to load a texture
     static AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathName)
     {
-        if (AZ::Interface<ILyShine>::Get())
+        if (gEnv && gEnv->pLyShine) // [LYSHINE_ATOM_TODO][GHI #3569] Remove LyShine global interface pointer from legacy global environment
         {
-            return AZ::Interface<ILyShine>::Get()->LoadTexture(pathName);
+            return gEnv->pLyShine->LoadTexture(pathName);
         }
 
         return nullptr;

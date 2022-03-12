@@ -9,8 +9,6 @@
 set(FILES
     Include/Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h
     Include/Terrain/TerrainDataConstants.h
-    Include/Terrain/Passes/TerrainDetailTextureComputePass.h
-    Include/Terrain/Passes/TerrainMacroTextureComputePass.h
     Source/Components/TerrainHeightGradientListComponent.cpp
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp
@@ -29,20 +27,12 @@ set(FILES
     Source/Components/TerrainWorldDebuggerComponent.h
     Source/Components/TerrainWorldRendererComponent.cpp
     Source/Components/TerrainWorldRendererComponent.h
-    Source/TerrainRaycast/TerrainRaycastContext.cpp
-    Source/TerrainRaycast/TerrainRaycastContext.h
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.cpp
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.cpp
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.h
     Source/TerrainRenderer/Aabb2i.cpp
     Source/TerrainRenderer/Aabb2i.h
-    Source/TerrainRenderer/BindlessImageArrayHandler.cpp
-    Source/TerrainRenderer/BindlessImageArrayHandler.h
-    Source/TerrainRenderer/ClipmapBounds.cpp
-    Source/TerrainRenderer/ClipmapBounds.h
-    Source/TerrainRenderer/Passes/TerrainDetailTextureComputePass.cpp
-    Source/TerrainRenderer/Passes/TerrainMacroTextureComputePass.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainRenderer/TerrainDetailMaterialManager.cpp
@@ -51,6 +41,8 @@ set(FILES
     Source/TerrainRenderer/TerrainMacroMaterialManager.h
     Source/TerrainRenderer/TerrainMeshManager.cpp
     Source/TerrainRenderer/TerrainMeshManager.h
+    Source/TerrainRenderer/BindlessImageArrayHandler.cpp
+    Source/TerrainRenderer/BindlessImageArrayHandler.h
     Source/TerrainRenderer/TerrainAreaMaterialRequestBus.h
     Source/TerrainRenderer/TerrainMacroMaterialBus.cpp
     Source/TerrainRenderer/TerrainMacroMaterialBus.h

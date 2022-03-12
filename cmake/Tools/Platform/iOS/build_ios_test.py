@@ -21,7 +21,7 @@ if ROOT_DEV_PATH not in sys.path:
 
 from cmake.Tools import common
 
-def build_ios_test(build_dir, configuration, device_name):
+def build_ios_test(build_dir, configuration):
     build_path = pathlib.Path(build_dir) if os.path.isabs(build_dir) else pathlib.Path(ROOT_DEV_PATH) / build_dir
     if not build_path.is_dir():
         raise common.LmbrCmdError(f"Invalid build directory '{str(build_path)}'")
@@ -32,8 +32,7 @@ def build_ios_test(build_dir, configuration, device_name):
                               '-scheme', SCHEME_NAME,
                               '-configuration', configuration,
                               '-allowProvisioningUpdates',
-                              '-allowProvisioningDeviceRegistration',
-                              '-destination', f'platform=iOS,name={device_name}']
+                              '-allowProvisioningDeviceRegistration']
                               
     xcode_out = xcode_build.popen(command_line_arguments, cwd=build_path, shell=False)
     while xcode_out.poll() is None:
@@ -46,10 +45,6 @@ def main(args):
     parser.add_argument('-b', '--build-dir',
                         help='The relative build directory to deploy from.',
                         required=True)
-
-    parser.add_argument('--device-name',
-                        help='The name of the iOS device on which to launch.',
-                        required=True)
                         
     parser.add_argument('-c', '--configuration',
                         help='The build configuration from the build directory for the source deployment files',
@@ -58,7 +53,6 @@ def main(args):
     parsed_args = parser.parse_args(args)
 
     build_ios_test(build_dir=parsed_args.build_dir,
-                   device_name=parsed_args.device_name,
                    configuration=parsed_args.configuration)
     return 0
 

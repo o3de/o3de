@@ -11,6 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <SharedPreview/SharedPreviewUtils.h>
 #include <SharedPreview/SharedPreviewer.h>
 
@@ -46,7 +47,11 @@ namespace AZ
 
         void SharedPreviewer::Display(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
         {
-            m_ui->m_previewWidget->SetThumbnailKey(entry->GetThumbnailKey());
+            using namespace AzToolsFramework::AssetBrowser;
+            using namespace AzToolsFramework::Thumbnailer;
+
+            auto thumbnailKey = entry->GetThumbnailKey();
+            m_ui->m_previewWidget->SetThumbnailKey(thumbnailKey, ThumbnailContext::DefaultContext);
             m_fileInfo = QString::fromUtf8(entry->GetName().c_str());
             UpdateFileInfo();
         }
@@ -59,6 +64,7 @@ namespace AZ
         void SharedPreviewer::resizeEvent([[maybe_unused]] QResizeEvent* event)
         {
             m_ui->m_previewWidget->setMaximumHeight(m_ui->m_previewWidget->width());
+
             UpdateFileInfo();
         }
 

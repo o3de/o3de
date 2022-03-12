@@ -6,6 +6,7 @@
  *
  */
 #include "PropertyIntSliderCtrl.hxx"
+#include "DHQSlider.hxx"
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 

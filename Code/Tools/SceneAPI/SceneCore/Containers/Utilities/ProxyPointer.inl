@@ -23,19 +23,9 @@ namespace AZ
             {
                 return m_value;
             }
-            template<typename Type>
-            const Type& ProxyPointer<Type>::operator*() const
-            {
-                return m_value;
-            }
 
             template<typename Type>
             Type* ProxyPointer<Type>::operator->()
-            {
-                return &m_value;
-            }
-            template<typename Type>
-            const Type* ProxyPointer<Type>::operator->() const
             {
                 return &m_value;
             }
@@ -51,19 +41,9 @@ namespace AZ
             {
                 return m_value;
             }
-            template<typename Type>
-            const Type& ProxyPointer<Type&>::operator*() const
-            {
-                return m_value;
-            }
 
             template<typename Type>
             Type* ProxyPointer<Type&>::operator->()
-            {
-                return &m_value;
-            }
-            template<typename Type>
-            const Type* ProxyPointer<Type&>::operator->() const
             {
                 return &m_value;
             }

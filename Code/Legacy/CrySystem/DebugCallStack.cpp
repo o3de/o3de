@@ -47,6 +47,8 @@ extern HMODULE gDLLHandle;
 static HWND hwndException = 0;
 static bool g_bUserDialog = true;         // true=on crash show dialog box, false=supress user interaction
 
+static int  PrintException(EXCEPTION_POINTERS* pex);
+
 static bool IsFloatingPointException(EXCEPTION_POINTERS* pex);
 
 extern LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPointers);
@@ -664,6 +666,8 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
 INT_PTR CALLBACK DebugCallStack::ExceptionDialogProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static EXCEPTION_POINTERS* pex;
+
+    static char errorString[32768] = "";
 
     switch (message)
     {

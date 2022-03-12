@@ -181,7 +181,7 @@ namespace
         EBUS_EVENT_ID_RESULT(handled, canvasEntityId, UiCanvasBus, HandleInputEvent, inputSnapshot, viewportPos, activeModifierKeys);
 
         // Execute events that have been queued during the input event handler
-        AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
+        gEnv->pLyShine->ExecuteQueuedEvents();
 
         return handled;
     }
@@ -192,7 +192,7 @@ namespace
         EBUS_EVENT_ID_RESULT(handled, canvasEntityId, UiCanvasBus, HandleTextEvent, textUTF8);
 
         // Execute events that have been queued during the input event handler
-        AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
+        gEnv->pLyShine->ExecuteQueuedEvents();
 
         return handled;
     }
@@ -265,7 +265,7 @@ ViewportWidget::~ViewportWidget()
 
     // Notify LyShine that this is no longer a valid UiRenderer.
     // Only one viewport/renderer is currently supported in the UI Editor
-    CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
+    CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
     lyShine->SetUiRendererForEditor(nullptr);
 }
 
@@ -276,7 +276,7 @@ void ViewportWidget::InitUiRenderer()
     // Notify LyShine that this is the UiRenderer to be used for rendering
     // UI canvases that are loaded in the UI Editor.
     // Only one viewport/renderer is currently supported in the UI Editor
-    CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
+    CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
     lyShine->SetUiRendererForEditor(m_uiRenderer);
 
     m_draw2d = AZStd::make_shared<CDraw2d>(GetViewportContext());
@@ -349,17 +349,6 @@ void ViewportWidget::ClearUntilSafeToRedraw()
 void ViewportWidget::SetRedrawEnabled(bool enabled)
 {
     m_canvasRenderIsEnabled = enabled;
-}
-
-AZ::Vector2 ViewportWidget::GetRenderViewportSize() const
-{
-    AZ::Vector2 widgetSize(aznumeric_cast<float>(size().width()), aznumeric_cast<float>(size().height()));
-    return widgetSize * WidgetToViewportFactor();
-}
-
-float ViewportWidget::WidgetToViewportFactor() const
-{
-    return GetViewportContext()->GetDpiScalingFactor();
 }
 
 void ViewportWidget::PickItem(AZ::EntityId entityId)
@@ -507,7 +496,7 @@ void ViewportWidget::OnRenderTick()
         return;
     }
 
-    const float dpiScale = WidgetToViewportFactor();
+    const float dpiScale = QtHelpers::GetHighDpiScaleFactor(*this);
     ViewportIcon::SetDpiScaleFactor(dpiScale);
 
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
@@ -519,12 +508,6 @@ void ViewportWidget::OnRenderTick()
     {
         RenderPreviewMode();
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void ViewportWidget::OnViewportDpiScalingChanged(float dpiScale)
-{
-    ViewportIcon::SetDpiScaleFactor(dpiScale);
 }
 
 void ViewportWidget::RefreshTick()
@@ -657,34 +640,27 @@ void ViewportWidget::mouseReleaseEvent(QMouseEvent* ev)
 
 void ViewportWidget::wheelEvent(QWheelEvent* ev)
 {
-    bool handled = false;
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
+    QWheelEvent scaledEvent(
+        WidgetToViewport(ev->position()),
+        ev->globalPosition(),
+        ev->pixelDelta(),
+        ev->angleDelta(),
+        ev->buttons(),
+        ev->modifiers(),
+        ev->phase(),
+        ev->inverted()
+    );
+
     if (editorMode == UiEditorMode::Edit)
     {
-        QWheelEvent scaledEvent(
-            WidgetToViewport(ev->position()),
-            ev->globalPosition(),
-            ev->pixelDelta(),
-            ev->angleDelta(),
-            ev->buttons(),
-            ev->modifiers(),
-            ev->phase(),
-            ev->inverted()
-        );
-
         // in Edit mode just send input to ViewportInteraction
-        handled = m_viewportInteraction->MouseWheelEvent(&scaledEvent);
+        m_viewportInteraction->MouseWheelEvent(&scaledEvent);
     }
 
-    if (handled)
-    {
-        ev->accept();
-        Refresh();
-    }
-    else
-    {
-        RenderViewportWidget::wheelEvent(ev);
-    }
+    RenderViewportWidget::wheelEvent(ev);
+
+    Refresh();
 }
 
 bool ViewportWidget::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
@@ -999,7 +975,8 @@ void ViewportWidget::RenderEditMode()
     EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
 
     // Render this canvas
-    AZ::Vector2 viewportSize = GetRenderViewportSize();
+    QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+    AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
 
     m_draw2d->SetSortKey(topLayerKey);
@@ -1108,12 +1085,15 @@ void ViewportWidget::UpdatePreviewMode(float deltaTime)
 
     if (canvasEntityId.IsValid())
     {
+        QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
+
         // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
         if (canvasSize.GetX() == 0.0f && canvasSize.GetY() == 0.0f)
         {
             // special value of (0,0) means use the viewport size
-            canvasSize = GetRenderViewportSize();;
+            canvasSize = viewportSize;
         }
 
         // Set the target size of the canvas
@@ -1123,7 +1103,7 @@ void ViewportWidget::UpdatePreviewMode(float deltaTime)
         EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, true);
 
         // Execute events that have been queued during the canvas update
-        AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
+        gEnv->pLyShine->ExecuteQueuedEvents();
     }
 }
 
@@ -1147,7 +1127,8 @@ void ViewportWidget::RenderPreviewMode()
 
     if (canvasEntityId.IsValid())
     {
-        AZ::Vector2 viewportSize = GetRenderViewportSize();
+        QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
 
         // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
@@ -1227,13 +1208,13 @@ void ViewportWidget::RenderPreviewMode()
 
 void ViewportWidget::RenderViewportBackground()
 {
-    AZ::Vector2 viewportSize = GetRenderViewportSize();
+    QSize viewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
     AZ::Color backgroundColor = ViewportHelpers::backgroundColorDark;
     const AZ::Data::Instance<AZ::RPI::Image>& image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
 
     Draw2dHelper draw2d(m_draw2d.get());
     draw2d.SetImageColor(backgroundColor.GetAsVector3());
-    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), viewportSize);
+    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(static_cast<float>(viewportSize.width()), static_cast<float>(viewportSize.height())));
 }
 
 void ViewportWidget::SetupShortcuts()

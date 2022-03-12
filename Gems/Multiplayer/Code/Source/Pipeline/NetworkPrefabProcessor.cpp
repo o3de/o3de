@@ -8,7 +8,6 @@
 
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/Components/NetBindComponent.h>
-#include <Multiplayer/MultiplayerConstants.h>
 #include <Pipeline/NetworkPrefabProcessor.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
@@ -96,7 +95,7 @@ namespace Multiplayer
         using namespace AzToolsFramework::Prefab;
 
         AZStd::string uniqueName = prefab.GetName();
-        uniqueName += NetworkSpawnableFileExtension;
+        uniqueName += ".network.spawnable";
 
         auto serializer = [serializationFormat](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool {
             AZ::IO::ByteContainerStream stream(&output);

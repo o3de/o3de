@@ -7,6 +7,7 @@
  */
 
 #include <ScriptCanvas/Libraries/Core/ExtractProperty.h>
+#include <Libraries/Core/MethodUtility.h>
 
 namespace ScriptCanvas
 {

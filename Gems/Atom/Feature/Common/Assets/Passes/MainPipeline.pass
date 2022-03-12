@@ -9,18 +9,10 @@
             "Slots": [
                 {
                     "Name": "SwapChainOutput",
-                    "SlotType": "InputOutput"
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
                 }
             ],
-            "PassData": {
-                "$type": "PassData",
-                "PipelineGlobalConnections": [
-                    {
-                        "GlobalName": "SwapChainOutput",
-                        "Slot": "SwapChainOutput"
-                    }
-                ]
-            },
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",
@@ -64,7 +56,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -91,7 +83,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -118,7 +110,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -138,7 +130,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         },
@@ -221,7 +213,7 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }
@@ -373,35 +365,8 @@
                         {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "DiffuseProbeGridVisualizationCompositePass",
-                    "TemplateName": "DiffuseProbeGridVisualizationCompositePassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "VisualizationInput",
-                            "AttachmentRef": {
-                                "Pass": "OpaquePass",
-                                "Attachment": "DiffuseProbeGridVisualization"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Depth",
-                            "AttachmentRef": {
-                                "Pass": "DepthPrePass",
-                                "Attachment": "Depth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "ColorInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "PostProcessPass",
-                                "Attachment": "Output"
                             }
                         }
                     ]
@@ -414,8 +379,8 @@
                         {
                             "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
-                                "Pass": "DiffuseProbeGridVisualizationCompositePass",
-                                "Attachment": "ColorInputOutput"
+                                "Pass": "PostProcessPass",
+                                "Attachment": "Output"
                             }
                         },
                         {
@@ -500,7 +465,7 @@
                         {
                             "LocalSlot": "Output",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
                         }

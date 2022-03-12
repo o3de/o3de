@@ -20,6 +20,7 @@ set(FILES
     Source/AtomNullFont.cpp
     Source/Module.cpp
     Include/AtomLyIntegration/AtomFont/AtomFont.h
+    Include/AtomLyIntegration/AtomFont/FBitmap.h
     Include/AtomLyIntegration/AtomFont/FFont.h
     Include/AtomLyIntegration/AtomFont/FontRenderer.h
     Include/AtomLyIntegration/AtomFont/FontCommon.h
@@ -27,4 +28,5 @@ set(FILES
     Include/AtomLyIntegration/AtomFont/GlyphBitmap.h
     Include/AtomLyIntegration/AtomFont/GlyphCache.h
     Include/AtomLyIntegration/AtomFont/AtomNullFont.h
+    Include/AtomLyIntegration/AtomFont/resource.h
 )

@@ -8,7 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/Math/MathStringConversions.h>
+#include <AzCore/Math/ToString.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <PhysX/NativeTypeIdentifiers.h>
@@ -220,13 +220,13 @@ namespace PhysX
         {
             AZ_Warning("RigidBody", !computeCenterOfMass,
                 "Rigid body '%s' cannot compute COM because it contains triangle mesh, plane or heightfield shapes, it will default to %s.",
-                GetName().c_str(), AZStd::to_string(DefaultCenterOfMass).c_str());
+                GetName().c_str(), AZ::ToString(DefaultCenterOfMass).c_str());
             AZ_Warning("RigidBody", !computeMass,
                 "Rigid body '%s' cannot compute Mass because it contains triangle mesh, plane or heightfield shapes, it will default to %0.1f.",
                 GetName().c_str(), DefaultMass);
             AZ_Warning("RigidBody", !computeInertiaTensor,
                 "Rigid body '%s' cannot compute Inertia because it contains triangle mesh, plane or heightfield shapes, it will default to %s.",
-                GetName().c_str(), AZStd::to_string(DefaultInertiaTensor.RetrieveScale()).c_str());
+                GetName().c_str(), AZ::ToString(DefaultInertiaTensor.RetrieveScale()).c_str());
 
             SetCenterOfMassOffset(computeCenterOfMass ? DefaultCenterOfMass : centerOfMassOffsetOverride);
             SetMass(computeMass ? DefaultMass : massOverride);

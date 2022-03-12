@@ -9,7 +9,6 @@
 
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Jobs/JobCompletion.h>

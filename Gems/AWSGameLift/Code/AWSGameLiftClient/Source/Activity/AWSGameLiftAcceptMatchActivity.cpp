@@ -69,7 +69,7 @@ namespace AWSGameLift
             }
         }
 
-        bool ValidateAcceptMatchRequest(const Multiplayer::AcceptMatchRequest& AcceptMatchRequest)
+        bool ValidateAcceptMatchRequest(const AzFramework::AcceptMatchRequest& AcceptMatchRequest)
         {
             auto gameliftAcceptMatchRequest = azrtti_cast<const AWSGameLiftAcceptMatchRequest*>(&AcceptMatchRequest);
             bool isValid = gameliftAcceptMatchRequest &&

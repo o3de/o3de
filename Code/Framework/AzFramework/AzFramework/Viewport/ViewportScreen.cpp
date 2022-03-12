@@ -97,7 +97,8 @@ namespace AzFramework
     AZ::Vector3 WorldToScreenNdc(const AZ::Vector3& worldPosition, const AZ::Matrix3x4& cameraView, const AZ::Matrix4x4& cameraProjection)
     {
         // transform the world space position to clip space
-        const auto clipSpacePosition = cameraProjection * AZ::Vector3ToVector4(cameraView.TransformPoint(worldPosition), 1.0f);
+        const auto clipSpacePosition =
+            cameraProjection * AZ::Vector3ToVector4(cameraView.TransformPoint(worldPosition), 1.0f);
         // transform the clip space position to ndc space (perspective divide)
         const auto ndcPosition = clipSpacePosition / clipSpacePosition.GetW();
         // transform ndc space from <-1,1> to <0, 1> range
@@ -108,7 +109,7 @@ namespace AzFramework
         const AZ::Vector3& worldPosition,
         const AZ::Matrix3x4& cameraView,
         const AZ::Matrix4x4& cameraProjection,
-        const ScreenSize& viewportSize)
+        const AZ::Vector2& viewportSize)
     {
         // scale ndc position by screen dimensions to return screen position
         return ScreenPointFromNdc(AZ::Vector3ToVector2(WorldToScreenNdc(worldPosition, cameraView, cameraProjection)), viewportSize);
@@ -139,7 +140,7 @@ namespace AzFramework
         const ScreenPoint& screenPosition,
         const AZ::Matrix3x4& inverseCameraView,
         const AZ::Matrix4x4& inverseCameraProjection,
-        const ScreenSize& viewportSize)
+        const AZ::Vector2& viewportSize)
     {
         return ScreenNdcToWorld(NdcFromScreenPoint(screenPosition, viewportSize), inverseCameraView, inverseCameraProjection);
     }

@@ -25,7 +25,7 @@ namespace AZ
 
         void Matrix3x4SetRowGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            [[maybe_unused]] bool rowIsSet = false;
+            bool rowIsSet = false;
             if (dc.GetNumArguments() >= 5)
             {
                 if (dc.IsNumber(0))
@@ -88,7 +88,7 @@ namespace AZ
 
         void Matrix3x4SetColumnGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            [[maybe_unused]] bool columnIsSet = false;
+            bool columnIsSet = false;
             if (dc.GetNumArguments() >= 4)
             {
                 if (dc.IsNumber(0))
@@ -133,7 +133,7 @@ namespace AZ
 
         void Matrix3x4SetTranslationGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            [[maybe_unused]] bool translationIsSet = false;
+            bool translationIsSet = false;
 
             if (dc.GetNumArguments() == 3 &&
                 dc.IsNumber(0) &&

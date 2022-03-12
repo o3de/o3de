@@ -14,8 +14,6 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <TerrainSystem/TerrainSystem.h>
-#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
-#include <Terrain/Passes/TerrainDetailTextureComputePass.h>
 
 namespace Terrain
 {
@@ -65,33 +63,11 @@ namespace Terrain
         // every time an entity is added or removed to a level.  If this ever changes, the Terrain System ownership could move into
         // the level component.
         m_terrainSystem = new TerrainSystem();
-
-        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-        AZ_Assert(passSystem, "Cannot get the pass system.");
-
-        // Setup handler for load pass templates mappings
-        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
-        passSystem->ConnectEvent(m_loadTemplatesHandler);
-
-        // Register terrain system related passes
-        passSystem->AddPassCreator(AZ::Name("TerrainDetailTextureComputePass"), &TerrainDetailTextureComputePass::Create);
-        passSystem->AddPassCreator(AZ::Name("TerrainMacroTextureComputePass"), &TerrainDetailTextureComputePass::Create);
     }
 
     void TerrainSystemComponent::Deactivate()
     {
-        m_loadTemplatesHandler.Disconnect();
-
         delete m_terrainSystem;
         m_terrainSystem = nullptr;
-    }
-
-    void TerrainSystemComponent::LoadPassTemplateMappings()
-    {
-        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-        AZ_Assert(passSystem, "Cannot get the pass system.");
-
-        const char* passTemplatesFile = "Passes/TerrainPassTemplates.azasset";
-        passSystem->LoadPassTemplateMappings(passTemplatesFile);
     }
 }

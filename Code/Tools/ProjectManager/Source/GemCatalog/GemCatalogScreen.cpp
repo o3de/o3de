@@ -19,10 +19,8 @@
 #include <GemCatalog/GemDependenciesDialog.h>
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
-#include <GemCatalog/GemItemDelegate.h>
 #include <DownloadController.h>
 #include <ProjectUtils.h>
-#include <AdjustableHeaderWidget.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -42,13 +40,6 @@ namespace O3DE::ProjectManager
     GemCatalogScreen::GemCatalogScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
-        // The width of either side panel (filters, inspector) in the catalog
-        constexpr int sidePanelWidth = 240;
-        // Querying qApp about styling reports the scroll bar being larger than it is so define it manually
-        constexpr int verticalScrollBarWidth = 8;
-
-        setObjectName("GemCatalogScreen");
-
         m_gemModel = new GemModel(this);
         m_proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
 
@@ -78,57 +69,30 @@ namespace O3DE::ProjectManager
         hLayout->setMargin(0);
         vLayout->addLayout(hLayout);
 
-        m_rightPanelStack = new QStackedWidget(this);
-        m_rightPanelStack->setFixedWidth(sidePanelWidth);
+        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), this);
 
-        m_gemInspector = new GemInspector(m_gemModel, m_rightPanelStack);
+        m_rightPanelStack = new QStackedWidget(this);
+        m_rightPanelStack->setFixedWidth(240);
+
+        m_gemInspector = new GemInspector(m_gemModel, this);
 
         connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
 
         QWidget* filterWidget = new QWidget(this);
-        filterWidget->setFixedWidth(sidePanelWidth);
+        filterWidget->setFixedWidth(240);
         m_filterWidgetLayout = new QVBoxLayout();
         m_filterWidgetLayout->setMargin(0);
         m_filterWidgetLayout->setSpacing(0);
         filterWidget->setLayout(m_filterWidgetLayout);
 
-        GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
-
-        constexpr int minHeaderSectionWidth = 100;
-        AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
-            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Status") },
-            QVector<int>{
-                GemPreviewImageWidth + AdjustableHeaderWidget::s_headerTextIndent,
-                -GemPreviewImageWidth - AdjustableHeaderWidget::s_headerTextIndent + GemItemDelegate::s_defaultSummaryStartX - 30,
-                0, // Section is set to stretch to fit
-                GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing + GemItemDelegate::s_buttonWidth + GemItemDelegate::s_contentMargins.right()
-            },
-            minHeaderSectionWidth,
-            QVector<QHeaderView::ResizeMode>
-            {
-                QHeaderView::ResizeMode::Fixed,
-                QHeaderView::ResizeMode::Interactive,
-                QHeaderView::ResizeMode::Stretch,
-                QHeaderView::ResizeMode::Fixed
-            },
-            this);
-
-        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, this);
-
-        QHBoxLayout* listHeaderLayout = new QHBoxLayout();
-        listHeaderLayout->setMargin(0);
-        listHeaderLayout->setSpacing(0);
-        listHeaderLayout->addSpacing(GemItemDelegate::s_itemMargins.left());
-        listHeaderLayout->addWidget(listHeaderWidget);
-        listHeaderLayout->addSpacing(GemItemDelegate::s_itemMargins.right() + verticalScrollBarWidth);
+        GemListHeaderWidget* listHeaderWidget = new GemListHeaderWidget(m_proxyModel);
 
         QVBoxLayout* middleVLayout = new QVBoxLayout();
         middleVLayout->setMargin(0);
         middleVLayout->setSpacing(0);
-        middleVLayout->addWidget(catalogHeaderWidget);
-        middleVLayout->addLayout(listHeaderLayout);
+        middleVLayout->addWidget(listHeaderWidget);
         middleVLayout->addWidget(m_gemListView);
 
         hLayout->addWidget(filterWidget);
@@ -233,12 +197,7 @@ namespace O3DE::ProjectManager
             const QVector<GemInfo>& gemInfos = allGemInfosResult.GetValue();
             for (const GemInfo& gemInfo : gemInfos)
             {
-                // ${Name} is a special name used for templates and should be ignored
-                // eventually we should handle this in Python instead of here
-                if (gemInfo.m_name != "${Name}")
-                {
-                    gemInfoHash.insert(gemInfo.m_name, gemInfo);
-                }
+                gemInfoHash.insert(gemInfo.m_name, gemInfo);
             }
         }
 
@@ -508,10 +467,7 @@ namespace O3DE::ProjectManager
             const QVector<GemInfo>& allGemInfos = allGemInfosResult.GetValue();
             for (const GemInfo& gemInfo : allGemInfos)
             {
-                if (gemInfo.m_name != "${Name}")
-                {
-                    m_gemModel->AddGem(gemInfo);
-                }
+                m_gemModel->AddGem(gemInfo);
             }
 
             const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();

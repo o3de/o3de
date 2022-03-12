@@ -49,9 +49,11 @@ AZ_POP_DISABLE_WARNING
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasAssetIdDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasBoolDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasEntityIdDataInterface.h>
+#include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasEnumDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasNumericDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasColorDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasCRCDataInterface.h>
+#include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasReadOnlyDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasStringDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasVectorDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasVariableDataInterface.h>
@@ -712,7 +714,6 @@ namespace ScriptCanvasEditor
         bool rollbackRequired = false;
         nodeEntity->Deactivate();
         RemoveNode(oldNode->GetEntityId());
-
         nodeEntity->RemoveComponent(oldNode);
 
         nodeEntity->AddComponent(newNode);
@@ -3543,9 +3544,11 @@ namespace ScriptCanvasEditor
 
             GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::SignalLoadStart);
 
-            for (auto& saveDataIter : m_graphCanvasSaveData)
+            auto saveDataIter = m_graphCanvasSaveData.find(GetEntityId());
+
+            if (saveDataIter != m_graphCanvasSaveData.end())
             {
-                GraphCanvas::EntitySaveDataRequestBus::Event(graphCanvasGraphId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, (*saveDataIter.second));
+                GraphCanvas::EntitySaveDataRequestBus::Event(graphCanvasGraphId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, (*saveDataIter->second));
             }
 
             ScriptCanvas::NodeIdList nodeList = GetNodes();
@@ -3776,7 +3779,7 @@ namespace ScriptCanvasEditor
             {
                 if (assetSanitizationSet.find(currentIter->first) == assetSanitizationSet.end())
                 {
-                    currentIter->second = ScriptEvents::ScriptEventsAssetPtr{};
+                    currentIter->second = {};
                     currentIter = GetGraphData()->m_scriptEventAssets.erase(currentIter);
                     graphNeedsDirtying = true;
                 }

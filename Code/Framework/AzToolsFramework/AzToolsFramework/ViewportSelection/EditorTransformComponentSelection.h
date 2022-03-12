@@ -20,7 +20,6 @@
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
-#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -35,7 +34,9 @@
 
 namespace AzToolsFramework
 {
-    class EditorVisibleEntityDataCacheInterface;
+    class EditorVisibleEntityDataCache;
+
+    using EntityIdSet = AZStd::unordered_set<AZ::EntityId>; //!< Alias for unordered_set of EntityIds.
 
     //! Entity related data required by manipulators during action.
     struct EntityIdManipulatorLookup
@@ -166,7 +167,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR_DECL
 
         EditorTransformComponentSelection() = default;
-        explicit EditorTransformComponentSelection(const EditorVisibleEntityDataCacheInterface* entityDataCache);
+        explicit EditorTransformComponentSelection(const EditorVisibleEntityDataCache* entityDataCache);
         EditorTransformComponentSelection(const EditorTransformComponentSelection&) = delete;
         EditorTransformComponentSelection& operator=(const EditorTransformComponentSelection&) = delete;
         virtual ~EditorTransformComponentSelection();
@@ -324,8 +325,10 @@ namespace AzToolsFramework
         AZ::EntityId m_currentEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
         AZ::EntityId m_editorCameraComponentEntityId; //!< The EditorCameraComponent EntityId if it is set.
         EntityIdSet m_selectedEntityIds; //!< Represents the current entities in the selection.
-        //! A cache of packed EntityData that can be iterated over efficiently without the need to make individual EBus calls.
-        const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr; 
+
+        const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< A cache of packed EntityData that can be
+                                                                         //!< iterated over efficiently without the need
+                                                                         //!< to make individual EBus calls.
         AZStd::unique_ptr<EditorHelpers> m_editorHelpers; //!< Editor visualization of entities (icons, shapes, debug visuals etc).
         EntityIdManipulators m_entityIdManipulators; //!< Mapping from a Manipulator to potentially many EntityIds.
 

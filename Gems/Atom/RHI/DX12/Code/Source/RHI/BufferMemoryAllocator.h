@@ -35,8 +35,6 @@ namespace AZ
 
             void DeAllocate(const BufferMemoryView& memory);
 
-            float ComputeFragmentation() const;
-
         private:
             BufferMemoryView AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor);
 

@@ -643,9 +643,14 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorEntityModel::SetForceAddEntitiesToBackFlag(bool forceAddToBack)
+    void EditorEntityModel::OnEntitiesAboutToBeCloned()
     {
-        m_forceAddToBack = forceAddToBack;
+        m_forceAddToBack = true;
+    }
+
+    void EditorEntityModel::OnEntitiesCloned()
+    {
+        m_forceAddToBack = false;
     }
 
     void EditorEntityModel::ChildEntityOrderArrayUpdated()

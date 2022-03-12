@@ -1046,12 +1046,7 @@ void CTrackViewDialog::OnAddSequence()
             AzToolsFramework::ScopedUndoBatch undoBatch("Create TrackView Director Node");
             sequenceManager->CreateSequence(sequenceName, sequenceType);
             CTrackViewSequence* newSequence = sequenceManager->GetSequenceByName(sequenceName);
-
-            if (!newSequence)
-            {
-                return;
-            }
-            
+            AZ_Assert(newSequence, "Creating new sequence failed.");
             undoBatch.MarkEntityDirty(newSequence->GetSequenceComponentEntityId());
 
             // make it the currently selected sequence

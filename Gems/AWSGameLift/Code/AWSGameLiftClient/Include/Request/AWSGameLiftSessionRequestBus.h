@@ -10,7 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
-#include <Multiplayer/Session/ISessionRequests.h>
+#include <AzFramework/Session/ISessionRequests.h>
 
 namespace AWSGameLift
 {
@@ -23,7 +23,7 @@ namespace AWSGameLift
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
-    using AWSGameLiftSessionAsyncRequestBus = AZ::EBus<Multiplayer::ISessionAsyncRequests, AWSGameLiftSessionAsyncRequests>;
+    using AWSGameLiftSessionAsyncRequestBus = AZ::EBus<AzFramework::ISessionAsyncRequests, AWSGameLiftSessionAsyncRequests>;
 
     // ISessionRequests EBus wrapper
     class AWSGameLiftSessionRequests
@@ -34,5 +34,5 @@ namespace AWSGameLift
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
-    using AWSGameLiftSessionRequestBus = AZ::EBus<Multiplayer::ISessionRequests, AWSGameLiftSessionRequests>;
+    using AWSGameLiftSessionRequestBus = AZ::EBus<AzFramework::ISessionRequests, AWSGameLiftSessionRequests>;
 } // namespace AWSGameLift

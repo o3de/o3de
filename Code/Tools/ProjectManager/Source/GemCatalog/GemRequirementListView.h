@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
     class GemRequirementListView
         : public QListView
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
     public:
         explicit GemRequirementListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);

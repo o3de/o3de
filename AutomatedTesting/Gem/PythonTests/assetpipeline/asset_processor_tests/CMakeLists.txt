@@ -101,15 +101,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
     )
-
-    ly_add_pytest(
-        NAME AssetPipelineTests.AssetRelocator
-        TEST_SUITE sandbox
-        PATH ${CMAKE_CURRENT_LIST_DIR}/asset_relocator_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessorBatch
-    )
     
     set(SUPPORTED_PLATFORMS "Windows" "Mac")
     if (NOT "${PAL_PLATFORM_NAME}" IN_LIST SUPPORTED_PLATFORMS)
@@ -121,7 +112,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PATH ${CMAKE_CURRENT_LIST_DIR}/bundle_mode_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SERIAL
-        TEST_SUITE sandbox
+        TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             AZ::AssetBundlerBatch

@@ -107,10 +107,6 @@ namespace AZ
             Debug::TraceMessageBus::Handler::BusConnect();
 #endif
             m_descriptor = rpiSystemDescriptor;
-
-            // set the default multisample state to MSAA 4x
-            // the default render pipeline may override this when it is loaded
-            m_multisampleState.m_samples = 4;
         }
 
         void RPISystem::Shutdown()
@@ -374,7 +370,6 @@ namespace AZ
             m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
             if (!m_commonShaderAssetForSrgs.IsReady())
             {
-                AZ_Error("RPI system", false, "Failed to load RPI system asset %s", m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
             m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
@@ -400,7 +395,6 @@ namespace AZ
             m_passSystem.InitPassTemplates();
 
             m_systemAssetsInitialized = true;
-            AZ_TracePrintf("RPI system", "System assets initialized\n");
         }
 
         bool RPISystem::IsInitialized() const
@@ -438,30 +432,6 @@ namespace AZ
         uint64_t RPISystem::GetCurrentTick() const
         {
             return m_renderTick;
-        }
-
-        void RPISystem::SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState)
-        {
-            m_multisampleState = multisampleState;
-
-            bool isNonMsaaPipeline = (m_multisampleState.m_samples == 1);
-            const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
-            AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
-
-            // reinitialize pipelines for all scenes
-            for (auto& scene : m_scenes)
-            {
-                for (auto& renderPipeline : scene->GetRenderPipelines())
-                {
-                    renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
-                    renderPipeline->SetPassNeedsRecreate();
-                }
-            }
-        }
-
-        const RHI::MultisampleState& RPISystem::GetApplicationMultisampleState() const
-        {
-            return m_multisampleState;
         }
 
     } //namespace RPI

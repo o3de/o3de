@@ -42,6 +42,7 @@ namespace EMStudio
     class EMSTUDIO_API EMStudioPlugin
         : public QObject
     {
+        Q_OBJECT
         MCORE_MEMORYOBJECTCATEGORY(EMStudioPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
 
     public:
@@ -96,7 +97,7 @@ namespace EMStudio
         virtual void LegacyRender(RenderPlugin* renderPlugin, RenderInfo* renderInfo)             { MCORE_UNUSED(renderPlugin); MCORE_UNUSED(renderInfo); }
 
         //! Render function will call atom auxGeom internally to render. This is the replacement for LegacyRender function.
-        virtual void Render(EMotionFX::ActorRenderFlags renderFlags)
+        virtual void Render(EMotionFX::ActorRenderFlagBitset renderFlags)
         {
             AZ_UNUSED(renderFlags);
         };

@@ -94,7 +94,9 @@ namespace AzToolsFramework
         void OnEntityStreamLoadBegin() override;
         void OnEntityStreamLoadSuccess() override;
         void OnEntityStreamLoadFailed() override;
-        void SetForceAddEntitiesToBackFlag(bool forceAddToBack) override;
+        void OnEntitiesAboutToBeCloned() override;
+        void OnEntitiesCloned() override;
+
 
         ////////////////////////////////////////////////
         // AzFramework::EntityContextEventBus::Handler
