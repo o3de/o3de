@@ -195,6 +195,6 @@ function(ly_install_run_script SCRIPT)
 endfunction()
 
 if(LY_INSTALL_ENABLED)
-    o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+    o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
     include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 endif()

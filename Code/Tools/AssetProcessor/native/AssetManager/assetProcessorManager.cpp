@@ -2942,11 +2942,20 @@ namespace AssetProcessor
             // File is a source file that has been processed before
             AZStd::string fingerprintFromDatabase = sourceFileItr->m_analysisFingerprint.toUtf8().data();
             AZStd::string_view builderEntries(fingerprintFromDatabase.begin() + s_lengthOfUuid + 1, fingerprintFromDatabase.end());
+            AZStd::string_view dependencyFingerprint(fingerprintFromDatabase.begin(), fingerprintFromDatabase.begin() + s_lengthOfUuid);
             int numBuildersEmittingSourceDependencies = 0;
 
             if (!fingerprintFromDatabase.empty() && AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
             {
                 // Builder(s) have not changed since last time
+                AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(
+                    fileInfo.m_filePath.toUtf8().constData(), sourceFileItr->m_sourceDatabaseName.toUtf8().constData());
+
+                if(dependencyFingerprint != currentFingerprint)
+                {
+                    // Dependencies have changed
+                    return false;
+                }
                 // Success - we can skip this file, nothing has changed!
 
                 // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
@@ -4311,6 +4320,32 @@ namespace AssetProcessor
         }
     }
 
+    AZStd::string AssetProcessorManager::ComputeRecursiveDependenciesFingerprint(const AZStd::string& fileAbsolutePath, const AZStd::string& fileDatabaseName)
+    {
+        AZStd::string concatenatedFingerprints;
+
+        // QSet is not ordered.
+        SourceFilesForFingerprintingContainer knownDependenciesAbsolutePaths;
+        // this automatically adds the input file to the list:
+        QueryAbsolutePathDependenciesRecursive(QString::fromUtf8(fileDatabaseName.c_str()), knownDependenciesAbsolutePaths,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, false);
+        AddMetadataFilesForFingerprinting(QString::fromUtf8(fileAbsolutePath.c_str()), knownDependenciesAbsolutePaths);
+
+        // reserve 17 chars for each since its a 64 bit hex number, and then one more for the dash inbetween each.
+        constexpr int bytesPerFingerprint = (sizeof(AZ::u64) * 2) + 1; // 2 HEX characters per byte +1 for the `-` we will add between each fingerprint
+        concatenatedFingerprints.reserve((knownDependenciesAbsolutePaths.size() * bytesPerFingerprint));
+
+        for (const auto& element : knownDependenciesAbsolutePaths)
+        {
+            // if its a placeholder then don't bother hitting the disk to find it.
+            concatenatedFingerprints.append(AssetUtilities::GetFileFingerprint(element.first, element.second));
+            concatenatedFingerprints.append("-");
+        }
+
+        // to keep this from growing out of hand, we don't use the full string, we use a hash of it:
+        return AZ::Uuid::CreateName(concatenatedFingerprints.c_str()).ToString<AZStd::string>();
+    }
+
     void AssetProcessorManager::FinishAnalysis(AZStd::string fileToCheck)
     {
         using namespace AzToolsFramework::AssetDatabase;
@@ -4378,29 +4413,9 @@ namespace AssetProcessor
         if (found)
         {
             // construct the analysis fingerprint
-            // the format for this data is "modtimefingerprint:builder0:builder1:builder2:...:buildern"
-            source.m_analysisFingerprint.clear();
-            // compute mod times:
-            // get the appropriate modtimes:
-            AZStd::string modTimeArray;
+            // the format for this data is "hashfingerprint:builder0:builder1:builder2:...:buildern"
+            source.m_analysisFingerprint = ComputeRecursiveDependenciesFingerprint(fileToCheck, analysisTracker->m_databaseSourceName);
 
-            // QSet is not ordered.
-            SourceFilesForFingerprintingContainer knownDependenciesAbsolutePaths;
-            // this automatically adds the input file to the list:
-            QueryAbsolutePathDependenciesRecursive(QString::fromUtf8(analysisTracker->m_databaseSourceName.c_str()), knownDependenciesAbsolutePaths, SourceFileDependencyEntry::DEP_Any, false);
-            AddMetadataFilesForFingerprinting(QString::fromUtf8(fileToCheck.c_str()), knownDependenciesAbsolutePaths);
-
-            // reserve 17 chars for each since its a 64 bit hex number, and then one more for the dash inbetween each.
-            modTimeArray.reserve((knownDependenciesAbsolutePaths.size() * 17));
-
-            for (const auto& element : knownDependenciesAbsolutePaths)
-            {
-                // if its a placeholder then don't bother hitting the disk to find it.
-                modTimeArray.append(AssetUtilities::GetFileFingerprint(element.first, element.second));
-                modTimeArray.append("-");
-            }
-            // to keep this from growing out of hand, we don't use the full string, we use a hash of it:
-            source.m_analysisFingerprint = AZ::Uuid::CreateName(modTimeArray.c_str()).ToString<AZStd::string>();
             for (const AZ::Uuid& builderID : analysisTracker->m_buildersInvolved)
             {
                 source.m_analysisFingerprint.append(":");
@@ -4423,7 +4438,7 @@ namespace AssetProcessor
             const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderForFile(fileToCheck.c_str());
 
             scanFolderPk = aznumeric_cast<int>(scanFolder->ScanFolderID());
-            m_platformConfig->ConvertToRelativePath(fileToCheck.c_str(), scanFolder, databaseSourceName);
+            PlatformConfiguration::ConvertToRelativePath(fileToCheck.c_str(), scanFolder, databaseSourceName);
         }
 
         // Record the modtime for the file so we know we processed it

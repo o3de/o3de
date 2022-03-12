@@ -13,7 +13,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
@@ -253,6 +253,22 @@ namespace AZ
             else
             {
                 AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalOpacity().");
+            }
+        }
+
+        void DecalTextureArrayFeatureProcessor::SetDecalNormalMapOpacity(const DecalHandle handle, float opacity)
+        {
+            if (handle.IsValid())
+            {
+                m_decalData.GetData(handle.GetIndex()).m_normalMapOpacity = opacity;
+
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor", false,
+                    "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalOpacity().");
             }
         }
 

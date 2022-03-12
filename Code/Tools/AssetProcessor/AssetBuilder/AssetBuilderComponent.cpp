@@ -13,6 +13,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>

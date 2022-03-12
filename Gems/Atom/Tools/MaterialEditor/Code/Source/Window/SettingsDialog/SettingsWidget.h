@@ -9,8 +9,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Atom/Document/MaterialDocumentSettings.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #endif
@@ -20,7 +18,6 @@ namespace MaterialEditor
     //! Provides controls for viewing and editing settings.
     class SettingsWidget
         : public AtomToolsFramework::InspectorWidget
-        , private AzToolsFramework::IPropertyEditorNotify
     {
         Q_OBJECT
     public:
@@ -32,22 +29,7 @@ namespace MaterialEditor
         void Populate();
 
     private:
-        void AddDocumentSettingsGroup();
-        void AddDocumentSystemSettingsGroup();
-
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
-
-        // AzToolsFramework::IPropertyEditorNotify overrides...
-        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
-        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
-        void SealUndoStack() override {}
-        void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
-        void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
-
-        AZStd::intrusive_ptr<MaterialDocumentSettings> m_documentSettings;
-        AZStd::intrusive_ptr<AtomToolsFramework::AtomToolsDocumentSystemSettings> m_documentSystemSettings;
     };
 } // namespace MaterialEditor

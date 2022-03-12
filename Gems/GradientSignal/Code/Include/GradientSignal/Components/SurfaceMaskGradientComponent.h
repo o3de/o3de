@@ -14,6 +14,7 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceMaskGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace LmbrCentral
@@ -70,7 +71,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
-        void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -81,21 +82,6 @@ namespace GradientSignal
         void AddTag(AZStd::string tag) override;
 
     private:
-        static float GetMaxSurfaceWeight(const SurfaceData::SurfacePointList& points)
-        {
-            float result = 0.0f;
-
-            for (const auto& point : points)
-            {
-                for (const auto& [maskId, weight] : point.m_masks)
-                {
-                    result = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), result);
-                }
-            }
-
-            return result;
-        }
-
         SurfaceMaskGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };

@@ -47,6 +47,8 @@ namespace FastNoiseGem
         AZ::u32 GetFrequencyParameterVisbility() const;
         AZ::u32 GetInterpParameterVisibility() const;
 
+        bool operator==(const FastNoiseGradientConfig& rhs) const;
+
         int m_seed = 1;
         float m_frequency = 1.f;
         FastNoise::Interp m_interp = FastNoise::Interp::Quintic;
@@ -90,6 +92,7 @@ namespace FastNoiseGem
 
         // GradientRequestBus overrides...
         float GetValue(const GradientSignal::GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         FastNoiseGradientConfig m_configuration;

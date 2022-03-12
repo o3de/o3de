@@ -155,7 +155,7 @@ namespace GradientSignal
         return PosterizeValue(input, bands, m_configuration.m_mode);
     }
 
-    void PosterizeGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void PosterizeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

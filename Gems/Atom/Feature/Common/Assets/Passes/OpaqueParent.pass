@@ -50,6 +50,10 @@
                     "Name": "Output",
                     "SlotType": "Output"
                 },
+                {
+                    "Name": "DiffuseProbeGridVisualization",
+                    "SlotType": "Output"
+                },
                 // SwapChain here is only used to reference the frame height and format
                 {
                     "Name": "SwapChainOutput",
@@ -62,6 +66,13 @@
                     "AttachmentRef": {
                         "Pass": "DiffuseSpecularMergePass",
                         "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "DiffuseProbeGridVisualization",
+                    "AttachmentRef": {
+                        "Pass": "DiffuseGlobalIlluminationPass",
+                        "Attachment":  "VisualizationOutput"
                     }
                 }
             ],
@@ -484,13 +495,6 @@
                     "Name": "Ssao",
                     "TemplateName": "SsaoParentTemplate",
                     "Connections": [
-                        {
-                            "LocalSlot": "LinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
                         {
                             "LocalSlot": "Modulate",
                             "AttachmentRef": {

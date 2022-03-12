@@ -205,6 +205,10 @@
             "isTemplated": false
         },
         {
+            "file": "Registry/assetprocessor_settings.setreg",
+            "isTemplated": true
+        },
+        {
             "file": "gem.json",
             "isTemplated": true
         },
@@ -267,6 +271,9 @@
         },
         {
             "dir": "Platform/iOS"
+        },
+        {
+            "dir": "Registry"
         }
     ]
 }

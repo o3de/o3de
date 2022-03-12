@@ -14,7 +14,6 @@
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
-#include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
 #include <Source/Framework/ScriptCanvasTestFixture.h>
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
@@ -84,6 +83,11 @@ public:
     }
 };
 
+TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
+}
+
 TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
     RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
@@ -112,11 +116,6 @@ TEST_F(ScriptCanvasTestFixture, UseRawBehaviorProperties)
 TEST_F(ScriptCanvasTestFixture, StringSanitization)
 {
     RunUnitTestGraph("LY_SC_UnitTest_StringSanitization");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedReadEnumConstant)

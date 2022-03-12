@@ -202,16 +202,12 @@ namespace GradientSignal
 
     float SurfaceAltitudeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
-
-        SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, points);
-
-        return CalculateAltitudeRatio(points, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
+        float result = 0.0f;
+        GetValues(AZStd::span<const AZ::Vector3>(&sampleParams.m_position, 1), AZStd::span<float>(&result, 1));
+        return result;
     }
 
-    void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {
@@ -220,30 +216,27 @@ namespace GradientSignal
         }
 
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
-        bool valuesFound = false;
 
-        // Rather than calling GetSurfacePoints on the EBus repeatedly in a loop, we instead pass a lambda into the EBus that contains
-        // the loop within it so that we can avoid the repeated EBus-calling overhead.
+        SurfaceData::SurfacePointList points;
         SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            [this, positions, &outValues, &valuesFound](SurfaceData::SurfaceDataSystemRequestBus::Events* surfaceDataRequests)
-            {
-                // It's possible that there's nothing connected to the EBus, so keep track of the fact that we have valid results.
-                valuesFound = true;
-                SurfaceData::SurfacePointList points;
+            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
+            points);
 
-                // For each position, call GetSurfacePoints() and turn the height into a 0-1 value based on our min/max altitudes.
-                for (size_t index = 0; index < positions.size(); index++)
-                {
-                    points.clear();
-                    surfaceDataRequests->GetSurfacePoints(positions[index], m_configuration.m_surfaceTagsToSample, points);
-                    outValues[index] = CalculateAltitudeRatio(points, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
-                }
-            });
-
-        if (!valuesFound)
+        // For each position, turn the height into a 0-1 value based on our min/max altitudes.
+        for (size_t index = 0; index < positions.size(); index++)
         {
-            // No surface data, so no output values.
-            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
+            if (!points.IsEmpty(index))
+            {
+                // Get the point with the highest Z value and use that for the altitude.
+                const float highestAltitude = points.GetHighestSurfacePoint(index).m_position.GetZ();
+
+                // Turn the absolute altitude value into a 0-1 value by returning the % of the given altitude range that it falls at.
+                outValues[index] = GetRatio(m_configuration.m_altitudeMin, m_configuration.m_altitudeMax, highestAltitude);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
         }
     }
 

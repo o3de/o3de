@@ -172,7 +172,7 @@ namespace GradientSignal
         return m_configuration.m_smoothStep.GetSmoothedValue(value);
     }
 
-    void SmoothStepGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void SmoothStepGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

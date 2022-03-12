@@ -17,16 +17,9 @@
 
 #if defined(HAVE_BENCHMARK)
 
-#if defined(AZ_COMPILER_CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif // clang
-
+AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations", "-Wdeprecated-declarations")
 #include <benchmark/benchmark.h>
-
-#if defined(AZ_COMPILER_CLANG)
-#pragma clang diagnostic pop
-#endif // clang
+AZ_POP_DISABLE_WARNING
 
 #endif // HAVE_BENCHMARK
 
@@ -165,6 +158,36 @@ namespace UnitTest
             AZ_UNUSED(st);
             TeardownAllocator();
         }
+    };
+
+    /**
+    * RAII wrapper around a BenchmarkEnvironmentBase to encapsulate
+    * the creation and destuction of the SystemAllocator
+    * SetUpBenchmark and TearDownBenchmark can still be used for custom
+    * benchmark environment setup
+    */
+    class ScopedAllocatorBenchmarkEnvironment
+        : public AZ::Test::BenchmarkEnvironmentBase
+    {
+    public:
+        ScopedAllocatorBenchmarkEnvironment()
+        {
+            // Only create the allocator if it doesn't exist
+            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+            {
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+                m_ownsAllocator = true;
+            }
+        }
+        ~ScopedAllocatorBenchmarkEnvironment() override
+        {
+            if (m_ownsAllocator)
+            {
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+            }
+        }
+    private:
+        bool m_ownsAllocator{};
     };
 #endif
 

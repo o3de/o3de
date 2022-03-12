@@ -9,7 +9,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
@@ -54,6 +54,8 @@ namespace AZ
             static const char* DisplayName;
             static const char* Group;
             static const char* Extension;
+            
+            static constexpr uint32_t UnspecifiedMaterialTypeVersion = static_cast<uint32_t>(-1);
 
             static void Reflect(ReflectContext* context);
 
@@ -183,7 +185,7 @@ namespace AZ
             //! determine which updates to apply, but simply as an optimization to ignore the update procedure when the
             //! version numbers match. (We determine which updates to apply by simply checking the property name, and not
             //! allowing the same name to ever be used for two different properties, see MaterialTypeAssetCreator::ValidateMaterialVersion)
-            uint32_t m_materialTypeVersion = 1;
+            uint32_t m_materialTypeVersion = UnspecifiedMaterialTypeVersion;
         };
        
 

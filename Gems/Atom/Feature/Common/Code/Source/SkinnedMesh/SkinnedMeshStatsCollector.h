@@ -33,8 +33,8 @@ namespace AZ
             void ResetAllStats();
             void AddDispatchItemToSceneStats(const AZStd::unique_ptr<SkinnedMeshDispatchItem>& dispatchItem);
             void AddBonesToSceneStats(const Data::Instance<RPI::Buffer>& boneTransformBuffer);
-            void AddReadOnlyBufferViewsToSceneStats(const AZStd::array_view<AZ::RHI::Ptr<RHI::BufferView>>& sourceUnskinnedBufferViews);
-            void AddWritableBufferViewsToSceneStats(const AZStd::array_view<AZ::RHI::Ptr<RHI::BufferView>>& targetSkinnedBufferViews);
+            void AddReadOnlyBufferViewsToSceneStats(const AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>>& sourceUnskinnedBufferViews);
+            void AddWritableBufferViewsToSceneStats(const AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>>& targetSkinnedBufferViews);
             void AddVerticesToSceneStats(size_t vertexCount);
 
             SkinnedMeshSceneStats m_sceneStats;

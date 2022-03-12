@@ -9,6 +9,7 @@
 #ifdef HAVE_BENCHMARK
 
 #include <Tests/GradientSignalTestFixtures.h>
+#include <Tests/GradientSignalTestHelpers.h>
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/PoolAllocator.h>
@@ -16,192 +17,22 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
+#include <AzFramework/Components/TransformComponent.h>
+#include <GradientSignal/Components/ConstantGradientComponent.h>
+#include <GradientSignal/Components/GradientSurfaceDataComponent.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
+
 namespace UnitTest
 {
     class GradientGetValues : public GradientSignalBenchmarkFixture
     {
     public:
-        // We use an enum to list out the different types of GetValue() benchmarks to run so that way we can condense our test cases
-        // to just take the value in as a benchmark argument and switch on it. Otherwise, we would need to write a different benchmark
-        // function for each test case for each gradient.
-        enum GetValuePermutation : int64_t
-        {
-            EBUS_GET_VALUE,
-            EBUS_GET_VALUES,
-            SAMPLER_GET_VALUE,
-            SAMPLER_GET_VALUES,
-        };
-
         // Create an arbitrary size shape for creating our gradients for benchmark runs.
         const float TestShapeHalfBounds = 128.0f;
-
-        void FillQueryPositions(AZStd::vector<AZ::Vector3>& positions, float height, float width)
-        {
-            size_t index = 0;
-            for (float y = 0.0f; y < height; y += 1.0f)
-            {
-                for (float x = 0.0f; x < width; x += 1.0f)
-                {
-                    positions[index++] = AZ::Vector3(x, y, 0.0f);
-                }
-            }
-        }
-
-        void RunEBusGetValueBenchmark(benchmark::State& state, const AZ::EntityId& gradientId, int64_t queryRange)
-        {
-            AZ_PROFILE_FUNCTION(Entity);
-
-            GradientSignal::GradientSampleParams params;
-
-            // Get the height and width ranges for querying from our benchmark parameters
-            const float height = aznumeric_cast<float>(queryRange);
-            const float width = aznumeric_cast<float>(queryRange);
-
-            // Call GetValue() on the EBus for every height and width in our ranges.
-            for (auto _ : state)
-            {
-                for (float y = 0.0f; y < height; y += 1.0f)
-                {
-                    for (float x = 0.0f; x < width; x += 1.0f)
-                    {
-                        float value = 0.0f;
-                        params.m_position = AZ::Vector3(x, y, 0.0f);
-                        GradientSignal::GradientRequestBus::EventResult(
-                            value, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
-                        benchmark::DoNotOptimize(value);
-                    }
-                }
-            }
-        }
-
-        void RunEBusGetValuesBenchmark(benchmark::State& state, const AZ::EntityId& gradientId, int64_t queryRange)
-        {
-            AZ_PROFILE_FUNCTION(Entity);
-
-            // Get the height and width ranges for querying from our benchmark parameters
-            float height = aznumeric_cast<float>(queryRange);
-            float width = aznumeric_cast<float>(queryRange);
-            int64_t totalQueryPoints = queryRange * queryRange;
-
-            // Call GetValues() for every height and width in our ranges.
-            for (auto _ : state)
-            {
-                // Set up our vector of query positions. This is done inside the benchmark timing since we're counting the work to create
-                // each query position in the single GetValue() call benchmarks, and will make the timing more directly comparable.
-                AZStd::vector<AZ::Vector3> positions(totalQueryPoints);
-                FillQueryPositions(positions, height, width);
-
-                // Query and get the results.
-                AZStd::vector<float> results(totalQueryPoints);
-                GradientSignal::GradientRequestBus::Event(
-                    gradientId, &GradientSignal::GradientRequestBus::Events::GetValues, positions, results);
-            }
-        }
-
-        void RunSamplerGetValueBenchmark(benchmark::State& state, const AZ::EntityId& gradientId, int64_t queryRange)
-        {
-            AZ_PROFILE_FUNCTION(Entity);
-
-            // Create a gradient sampler to use for querying our gradient.
-            GradientSignal::GradientSampler gradientSampler;
-            gradientSampler.m_gradientId = gradientId;
-
-            // Get the height and width ranges for querying from our benchmark parameters
-            const float height = aznumeric_cast<float>(queryRange);
-            const float width = aznumeric_cast<float>(queryRange);
-
-            // Call GetValue() through the GradientSampler for every height and width in our ranges.
-            for (auto _ : state)
-            {
-                for (float y = 0.0f; y < height; y += 1.0f)
-                {
-                    for (float x = 0.0f; x < width; x += 1.0f)
-                    {
-                        GradientSignal::GradientSampleParams params;
-                        params.m_position = AZ::Vector3(x, y, 0.0f);
-                        float value = gradientSampler.GetValue(params);
-                        benchmark::DoNotOptimize(value);
-                    }
-                }
-            }
-        }
-
-        void RunSamplerGetValuesBenchmark(benchmark::State& state, const AZ::EntityId& gradientId, int64_t queryRange)
-        {
-            AZ_PROFILE_FUNCTION(Entity);
-
-            // Create a gradient sampler to use for querying our gradient.
-            GradientSignal::GradientSampler gradientSampler;
-            gradientSampler.m_gradientId = gradientId;
-
-            // Get the height and width ranges for querying from our benchmark parameters
-            const float height = aznumeric_cast<float>(queryRange);
-            const float width = aznumeric_cast<float>(queryRange);
-            const int64_t totalQueryPoints = queryRange * queryRange;
-
-            // Call GetValues() through the GradientSampler for every height and width in our ranges.
-            for (auto _ : state)
-            {
-                // Set up our vector of query positions. This is done inside the benchmark timing since we're counting the work to create
-                // each query position in the single GetValue() call benchmarks, and will make the timing more directly comparable.
-                AZStd::vector<AZ::Vector3> positions(totalQueryPoints);
-                FillQueryPositions(positions, height, width);
-
-                // Query and get the results.
-                AZStd::vector<float> results(totalQueryPoints);
-                gradientSampler.GetValues(positions, results);
-            }
-        }
-
-        void RunGetValueOrGetValuesBenchmark(benchmark::State& state, const AZ::EntityId& gradientId)
-        {
-            switch (state.range(0))
-            {
-            case GetValuePermutation::EBUS_GET_VALUE:
-                RunEBusGetValueBenchmark(state, gradientId, state.range(1));
-                break;
-            case GetValuePermutation::EBUS_GET_VALUES:
-                RunEBusGetValuesBenchmark(state, gradientId, state.range(1));
-                break;
-            case GetValuePermutation::SAMPLER_GET_VALUE:
-                RunSamplerGetValueBenchmark(state, gradientId, state.range(1));
-                break;
-            case GetValuePermutation::SAMPLER_GET_VALUES:
-                RunSamplerGetValuesBenchmark(state, gradientId, state.range(1));
-                break;
-            default:
-                AZ_Assert(false, "Benchmark permutation type not supported.");
-            }
-        }
     };
-
-// Because there's no good way to label different enums in the output results (they just appear as integer values), we work around it by
-// registering one set of benchmark runs for each enum value and use ArgNames() to give it a friendly name in the results.
-#define GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(Fixture, Func)                          \
-    BENCHMARK_REGISTER_F(Fixture, Func)                                                         \
-        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUE, 1024 })       \
-        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUE, 2048 })       \
-        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUE, 4096 })       \
-        ->ArgNames({ "EbusGetValue", "size" })                                                  \
-        ->Unit(::benchmark::kMillisecond);                                                      \
-    BENCHMARK_REGISTER_F(Fixture, Func)                                                         \
-        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUES, 1024 })      \
-        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUES, 2048 })      \
-        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUES, 4096 })      \
-        ->ArgNames({ "EbusGetValues", "size" })                                                 \
-        ->Unit(::benchmark::kMillisecond);                                                      \
-    BENCHMARK_REGISTER_F(Fixture, Func)                                                         \
-        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUE, 1024 })    \
-        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUE, 2048 })    \
-        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUE, 4096 })    \
-        ->ArgNames({ "SamplerGetValue", "size" })                                               \
-        ->Unit(::benchmark::kMillisecond);                                                      \
-    BENCHMARK_REGISTER_F(Fixture, Func)                                                         \
-        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUES, 1024 })   \
-        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUES, 2048 })   \
-        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUES, 4096 })   \
-        ->ArgNames({ "SamplerGetValues", "size" })                                              \
-        ->Unit(::benchmark::kMillisecond);
 
     // --------------------------------------------------------------------------------------
     // Base Gradients
@@ -209,32 +40,32 @@ namespace UnitTest
     BENCHMARK_DEFINE_F(GradientGetValues, BM_ConstantGradient)(benchmark::State& state)
     {
         auto entity = BuildTestConstantGradient(TestShapeHalfBounds);
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_ImageGradient)(benchmark::State& state)
     {
         auto entity = BuildTestImageGradient(TestShapeHalfBounds);
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_PerlinGradient)(benchmark::State& state)
     {
         auto entity = BuildTestPerlinGradient(TestShapeHalfBounds);
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_RandomGradient)(benchmark::State& state)
     {
         auto entity = BuildTestRandomGradient(TestShapeHalfBounds);
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_ShapeAreaFalloffGradient)(benchmark::State& state)
     {
         auto entity = BuildTestShapeAreaFalloffGradient(TestShapeHalfBounds);
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_ConstantGradient);
@@ -250,21 +81,21 @@ namespace UnitTest
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestDitherGradient(TestShapeHalfBounds, baseEntity->GetId());
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_InvertGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestDitherGradient(TestShapeHalfBounds, baseEntity->GetId());
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_LevelsGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestLevelsGradient(TestShapeHalfBounds, baseEntity->GetId());
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_MixedGradient)(benchmark::State& state)
@@ -272,35 +103,35 @@ namespace UnitTest
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto mixedEntity = BuildTestConstantGradient(TestShapeHalfBounds);
         auto entity = BuildTestMixedGradient(TestShapeHalfBounds, baseEntity->GetId(), mixedEntity->GetId());
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_PosterizeGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestPosterizeGradient(TestShapeHalfBounds, baseEntity->GetId());
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_ReferenceGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestReferenceGradient(TestShapeHalfBounds, baseEntity->GetId());
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_SmoothStepGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestSmoothStepGradient(TestShapeHalfBounds, baseEntity->GetId());
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_ThresholdGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestThresholdGradient(TestShapeHalfBounds, baseEntity->GetId());
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_DitherGradient);
@@ -317,34 +148,212 @@ namespace UnitTest
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceAltitudeGradient)(benchmark::State& state)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceAltitudeGradient(TestShapeHalfBounds);
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceMaskGradient)(benchmark::State& state)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceMaskGradient(TestShapeHalfBounds);
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceSlopeGradient)(benchmark::State& state)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceSlopeGradient(TestShapeHalfBounds);
-        RunGetValueOrGetValuesBenchmark(state, entity->GetId());
+        GradientSignalTestHelpers::RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
     GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_SurfaceAltitudeGradient);
     GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_SurfaceMaskGradient);
     GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_SurfaceSlopeGradient);
+
+    // --------------------------------------------------------------------------------------
+    // Gradient Surface Data
+
+
+    class GradientSurfaceData : public GradientSignalBenchmarkFixture
+    {
+    public:
+        /* To benchmark the GradientSurfaceDataComponent, we need to create a surface provider in the world, then use
+           the GradientSurfaceDataComponent to modify the surface points.
+
+           For the surface provider, we create a flat box centered in XY that's the XY size of the world.
+           For the GradientSurfaceDataComponent, we'll use a constant gradient as its input, and a sphere centered in XY that's
+           the XY size of the world as its constrained bounds.
+
+           Every surface point within the sphere will have the tags from the provider and the modifier, and every point outside the
+           sphere will only have the provider tags.
+        */
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> CreateBenchmarkEntities(float worldSize)
+        {
+            AZStd::vector<AZStd::unique_ptr<AZ::Entity>> testEntities;
+            float halfWorldSize = worldSize / 2.0f;
+
+            // Create a large flat box with 2 provider tags.
+            {
+                AZStd::unique_ptr<AZ::Entity> surface = AZStd::make_unique<AZ::Entity>();
+                AZ::Vector3 worldPos(halfWorldSize, halfWorldSize, 10.0f);
+
+                auto transform = surface->CreateComponent<AzFramework::TransformComponent>();
+                transform->SetWorldTM(AZ::Transform::CreateTranslation(worldPos));
+
+                LmbrCentral::BoxShapeConfig boxConfig(AZ::Vector3(worldSize, worldSize, 1.0f));
+                auto shapeComponent = surface->CreateComponent(LmbrCentral::BoxShapeComponentTypeId);
+                shapeComponent->SetConfiguration(boxConfig);
+
+                SurfaceData::SurfaceDataShapeConfig surfaceConfig;
+                surfaceConfig.m_providerTags.push_back(SurfaceData::SurfaceTag("surface1"));
+                surfaceConfig.m_providerTags.push_back(SurfaceData::SurfaceTag("surface2"));
+                surface->CreateComponent<SurfaceData::SurfaceDataShapeComponent>(surfaceConfig);
+
+                surface->Init();
+                surface->Activate();
+
+                testEntities.push_back(AZStd::move(surface));
+            }
+
+            // Create a large sphere with a constant gradient and a GradientSurfaceDataComponent.
+            {
+                AZStd::unique_ptr<AZ::Entity> modifier = AZStd::make_unique<AZ::Entity>();
+                AZ::Vector3 worldPos(halfWorldSize, halfWorldSize, 10.0f);
+
+                auto transform = modifier->CreateComponent<AzFramework::TransformComponent>();
+                transform->SetWorldTM(AZ::Transform::CreateTranslation(worldPos));
+
+                GradientSignal::ConstantGradientConfig gradientConfig;
+                gradientConfig.m_value = 0.75f;
+                modifier->CreateComponent<GradientSignal::ConstantGradientComponent>(gradientConfig);
+
+                LmbrCentral::SphereShapeConfig sphereConfig;
+                sphereConfig.m_radius = halfWorldSize;
+                auto shapeComponent = modifier->CreateComponent(LmbrCentral::SphereShapeComponentTypeId);
+                shapeComponent->SetConfiguration(sphereConfig);
+
+                GradientSignal::GradientSurfaceDataConfig modifierConfig;
+                modifierConfig.m_shapeConstraintEntityId = modifier->GetId();
+                modifierConfig.m_modifierTags.push_back(SurfaceData::SurfaceTag("modifier1"));
+                modifierConfig.m_modifierTags.push_back(SurfaceData::SurfaceTag("modifier2"));
+                modifier->CreateComponent<GradientSignal::GradientSurfaceDataComponent>(modifierConfig);
+
+                modifier->Init();
+                modifier->Activate();
+
+                testEntities.push_back(AZStd::move(modifier));
+            }
+
+            return testEntities;
+        }
+
+        SurfaceData::SurfaceTagVector CreateBenchmarkTagFilterList()
+        {
+            SurfaceData::SurfaceTagVector tagFilterList;
+            tagFilterList.emplace_back("surface1");
+            tagFilterList.emplace_back("surface2");
+            tagFilterList.emplace_back("modifier1");
+            tagFilterList.emplace_back("modifier2");
+            return tagFilterList;
+        }
+    };
+    BENCHMARK_DEFINE_F(GradientSurfaceData, BM_GetSurfacePoints)(benchmark::State& state)
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        // Create our benchmark world
+        const float worldSize = aznumeric_cast<float>(state.range(0));
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
+
+        // Query every point in our world at 1 meter intervals.
+        for ([[maybe_unused]] auto _ : state)
+        {
+            // This is declared outside the loop so that the list of points doesn't fully reallocate on every query.
+            SurfaceData::SurfacePointList points;
+
+            for (float y = 0.0f; y < worldSize; y += 1.0f)
+            {
+                for (float x = 0.0f; x < worldSize; x += 1.0f)
+                {
+                    AZ::Vector3 queryPosition(x, y, 0.0f);
+                    points.Clear();
+
+                    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+                        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, filterTags, points);
+                    benchmark::DoNotOptimize(points);
+                }
+            }
+        }
+    }
+
+    BENCHMARK_DEFINE_F(GradientSurfaceData, BM_GetSurfacePointsFromRegion)(benchmark::State& state)
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        // Create our benchmark world
+        float worldSize = aznumeric_cast<float>(state.range(0));
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
+
+        // Query every point in our world at 1 meter intervals.
+        for ([[maybe_unused]] auto _ : state)
+        {
+            SurfaceData::SurfacePointList points;
+
+            AZ::Aabb inRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(worldSize));
+            AZ::Vector2 stepSize(1.0f);
+            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion, inRegion, stepSize, filterTags, points);
+            benchmark::DoNotOptimize(points);
+        }
+    }
+
+    BENCHMARK_DEFINE_F(GradientSurfaceData, BM_GetSurfacePointsFromList)(benchmark::State& state)
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        // Create our benchmark world
+        const float worldSize = aznumeric_cast<float>(state.range(0));
+        const int64_t worldSizeInt = state.range(0);
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
+
+        // Query every point in our world at 1 meter intervals.
+        for ([[maybe_unused]] auto _ : state)
+        {
+            AZStd::vector<AZ::Vector3> queryPositions;
+            queryPositions.reserve(worldSizeInt * worldSizeInt);
+
+            for (float y = 0.0f; y < worldSize; y += 1.0f)
+            {
+                for (float x = 0.0f; x < worldSize; x += 1.0f)
+                {
+                    queryPositions.emplace_back(x, y, 0.0f);
+                }
+            }
+
+            SurfaceData::SurfacePointList points;
+
+            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, queryPositions, filterTags, points);
+            benchmark::DoNotOptimize(points);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(GradientSurfaceData, BM_GetSurfacePoints)
+        ->Arg(1024)
+        ->Arg(2048)
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_REGISTER_F(GradientSurfaceData, BM_GetSurfacePointsFromRegion)
+        ->Arg(1024)
+        ->Arg(2048)
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_REGISTER_F(GradientSurfaceData, BM_GetSurfacePointsFromList)
+        ->Arg(1024)
+        ->Arg(2048)
+        ->Unit(::benchmark::kMillisecond);
+
 
 #endif
 }

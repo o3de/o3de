@@ -40,10 +40,11 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::PipelineLibrary
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineLibraryData* serializedData) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineLibraryDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode MergeIntoInternal(AZStd::array_view<const RHI::PipelineLibrary*> libraries) override;
+            RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary* const> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
+            bool SaveSerializedDataInternal(const AZStd::string& filePath) const override;
             //////////////////////////////////////////////////////////////////////////
 
             VkPipelineCache m_nativePipelineCache = VK_NULL_HANDLE;

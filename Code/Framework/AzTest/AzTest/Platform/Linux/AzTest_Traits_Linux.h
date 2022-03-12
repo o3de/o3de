@@ -15,8 +15,6 @@
 
 #define AZ_TRAIT_DISABLE_FAILED_NATIVE_WINDOWS_TESTS true
 #define AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_TESTS true
-#define AZ_TRAIT_DISABLE_FAILED_DLL_TESTS true
-#define AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS true
 #define AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS true
 
 // Golden perline gradiant values for random seed 7878 for this platform

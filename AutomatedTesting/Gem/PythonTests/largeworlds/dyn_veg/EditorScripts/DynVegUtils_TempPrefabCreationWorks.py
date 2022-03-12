@@ -10,7 +10,7 @@ def DynVegUtils_TempPrefabCreationWorks():
     """
     Summary:
     An existing level is opened. Each Prefab setup to be spawned by Dynamic Vegetation tests is created in memory and
-    validated against existing test slice components/mesh assignments.
+    validated against existing test components/mesh assignments.
 
     Expected Behavior:
     Temporary prefabs contain the expected components/assets.
@@ -39,11 +39,11 @@ def DynVegUtils_TempPrefabCreationWorks():
     with Tracer() as error_tracer:
         # Create dictionary for prefab filenames and paths to create using helper function
         mesh_prefabs = {
-            "PinkFlower": os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel"),
-            "PurpleFlower": os.path.join("assets", "objects", "foliage", "grass_flower_purple.azmodel"),
-            "1m_Cube": os.path.join("objects", "_primitives", "_box_1x1.azmodel"),
-            "CedarTree": os.path.join("assets", "objects", "foliage", "cedar.azmodel"),
-            "Bush": os.path.join("assets", "objects", "foliage", "bush_privet_01.azmodel"),
+            "UtilsTest_PinkFlower": os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel"),
+            "UtilsTest_PurpleFlower": os.path.join("assets", "objects", "foliage", "grass_flower_purple.azmodel"),
+            "UtilsTest_1m_Cube": os.path.join("objects", "_primitives", "_box_1x1.azmodel"),
+            "UtilsTest_CedarTree": os.path.join("assets", "objects", "foliage", "cedar.azmodel"),
+            "UtilsTest_Bush": os.path.join("assets", "objects", "foliage", "bush_privet_01.azmodel"),
                    }
 
         # 1) Open an existing simple level

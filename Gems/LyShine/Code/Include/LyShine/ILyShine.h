@@ -8,6 +8,8 @@
 #pragma once
 
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/PlatformDef.h>
+
 #include <LyShine/UiBase.h>
 #include <AtomCore/Instance/Instance.h>
 
@@ -28,9 +30,9 @@ namespace AZ::RPI
 // LYSHINE_API functions as being imported from a DLL, whereas this DLL sees symbols
 // defined with this macro as being exported.
 #ifdef LYSHINE_EXPORTS
-    #define LYSHINE_API DLL_EXPORT
+    #define LYSHINE_API AZ_DLL_EXPORT
 #else
-    #define LYSHINE_API DLL_IMPORT
+    #define LYSHINE_API AZ_DLL_IMPORT
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +40,10 @@ namespace AZ::RPI
 class ILyShine
 {
 public:
-    virtual ~ILyShine(){}
+    AZ_RTTI(ILyShine, "{652ED9D7-0782-44E8-BCE7-65DD38C90907}");
+
+    ILyShine() = default;
+    virtual ~ILyShine() = default;
 
     //! Delete this object
     virtual void Release() = 0;

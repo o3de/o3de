@@ -57,7 +57,7 @@ namespace UnitTest
         }
 
         template<typename T>
-        void ExpectEqual(AZStd::initializer_list<T> expectedValues, AZStd::array_view<T> arrayView)
+        void ExpectEqual(AZStd::initializer_list<T> expectedValues, AZStd::span<const T> arrayView)
         {
             EXPECT_EQ(expectedValues.size(), arrayView.size());
 
@@ -215,14 +215,14 @@ namespace UnitTest
 
             EXPECT_TRUE(m_srg->SetConstant(inputIndex, true));
             EXPECT_EQ(true, m_srg->GetConstant<bool>(inputIndex));
-            AZStd::array_view<uint8_t> result = m_srg->GetConstantRaw(inputIndex);
-            AZStd::array_view <uint32_t> resultInUint = AZStd::array_view<uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 1);
+            AZStd::span<const uint8_t> result = m_srg->GetConstantRaw(inputIndex);
+            AZStd::span<const uint32_t> resultInUint = AZStd::span<const uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 1);
             ExpectEqual<uint32_t>({ 1 /*true*/ }, resultInUint);
 
             EXPECT_TRUE(m_srg->SetConstant(inputIndex, false));
             EXPECT_EQ(false, m_srg->GetConstant<bool>(inputIndex));
             result = m_srg->GetConstantRaw(inputIndex);
-            resultInUint = AZStd::array_view<uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 1);
+            resultInUint = AZStd::span<const uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 1);
             ExpectEqual<uint32_t>({ 0 /*false*/ }, resultInUint);
         }
 
@@ -232,13 +232,13 @@ namespace UnitTest
             // Check using inputIndex
 
             EXPECT_TRUE(m_srg->SetConstantArray<bool>(inputIndex, AZStd::array<bool, 2>({ true, false })));
-            AZStd::array_view<uint8_t> result = m_srg->GetConstantRaw(inputIndex);
-            AZStd::array_view <uint32_t> resultInUint = AZStd::array_view<uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 2);
+            AZStd::span<const uint8_t> result = m_srg->GetConstantRaw(inputIndex);
+            AZStd::span<const uint32_t> resultInUint = AZStd::span<const uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 2);
             ExpectEqual<uint32_t>({ 1 /*true*/, 0 /*false*/ }, resultInUint);
 
             EXPECT_TRUE(m_srg->SetConstantArray<bool>(inputIndex, AZStd::array<bool, 2>({ false, true })));
             result = m_srg->GetConstantRaw(inputIndex);
-            resultInUint = AZStd::array_view<uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 2);
+            resultInUint = AZStd::span<const uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 2);
             ExpectEqual<uint32_t>({ 0 /*false*/, 1 /*true*/ }, resultInUint);
         }
     }
@@ -263,8 +263,8 @@ namespace UnitTest
 
             const RHI::ShaderInputConstantIndex inputIndex(1);
             EXPECT_TRUE(m_srg->SetConstantArray<bool>(inputIndex, AZStd::array<bool, 2>({ asBools[1], asBools[2] })));
-            AZStd::array_view<uint8_t> result = m_srg->GetConstantRaw(inputIndex);
-            AZStd::array_view <uint32_t> resultInUint = AZStd::array_view<uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 2);
+            AZStd::span<const uint8_t> result = m_srg->GetConstantRaw(inputIndex);
+            AZStd::span<const uint32_t> resultInUint = AZStd::span<const uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 2);
             EXPECT_THAT(resultInUint, testing::ElementsAre(testing::IsTrue(), testing::IsFalse()));
         }
     }
@@ -356,7 +356,7 @@ namespace UnitTest
     {
         using namespace AZ;
 
-        AZStd::array_view<SimpleStruct> values;
+        AZStd::span<const SimpleStruct> values;
         const RHI::ShaderInputConstantIndex inputIndex(17);
 
         // Demonstrate the syntax of setting with a variable, and inputIndex...

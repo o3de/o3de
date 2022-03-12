@@ -20,7 +20,7 @@ namespace UnitTest
     {
     protected:
 
-        void ExpectEq(AZStd::array_view<StreamBufferDescriptor> expected, AZStd::array_view<StreamBufferDescriptor> actual)
+        void ExpectEq(AZStd::span<const StreamBufferDescriptor> expected, AZStd::span<const StreamBufferDescriptor> actual)
         {
             EXPECT_EQ(expected.size(), actual.size());
             for (int i = 0; i < expected.size() && i < actual.size(); ++i)
@@ -31,7 +31,7 @@ namespace UnitTest
             }
         }
 
-        void ExpectEq(AZStd::array_view<StreamChannelDescriptor> expected, AZStd::array_view<StreamChannelDescriptor> actual)
+        void ExpectEq(AZStd::span<const StreamChannelDescriptor> expected, AZStd::span<const StreamChannelDescriptor> actual)
         {
             EXPECT_EQ(expected.size(), actual.size());
             for (int i = 0; i < expected.size() && i < actual.size(); ++i)

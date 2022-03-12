@@ -164,7 +164,7 @@ AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
 
     char s[1024];
     //! Use strftime to build a customized time string.
-    strftime(s, 128, "Logged at %#c\n", today);
+    strftime(s, 128, "Logged at %c\n", today);
     azstrcat(str, length, s);
     sprintf_s(s, "FileVersion: %s\n", sFileVersion);
     azstrcat(str, length, s);

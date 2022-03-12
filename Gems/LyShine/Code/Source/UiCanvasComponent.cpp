@@ -254,9 +254,9 @@ namespace
 
     UiRenderer* GetUiRendererForGame()
     {
-        if (gEnv && gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
             return lyShine->GetUiRenderer();
         }
         return nullptr;
@@ -264,9 +264,9 @@ namespace
 
     UiRenderer* GetUiRendererForEditor()
     {
-        if (gEnv && gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
             return lyShine->GetUiRendererForEditor();
         }
         return nullptr;
@@ -1844,13 +1844,17 @@ void UiCanvasComponent::MarkRenderGraphDirty()
 AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderTargetName, AZ::RHI::Size size)
 {
     // Create a render target that UI elements will render to
-    AZ::RHI::ImageDescriptor imageDesc;
+    AZ::RPI::CreateAttachmentImageRequest createImageRequest;
+    AZ::RHI::ImageDescriptor& imageDesc = createImageRequest.m_imageDescriptor;
     imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::Color | AZ::RHI::ImageBindFlags::ShaderReadWrite;
     imageDesc.m_size = size;
     imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
 
-    AZ::Data::Instance<AZ::RPI::AttachmentImagePool> pool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-    auto attachmentImage = AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, renderTargetName);
+    createImageRequest.m_imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool().get();
+    createImageRequest.m_imageName = renderTargetName;
+    createImageRequest.m_isUniqueName = false;  // Can't use an unique name since the previous render target's release is delayed
+
+    auto attachmentImage = AZ::RPI::AttachmentImage::Create(createImageRequest);
     if (!attachmentImage)
     {
         AZ_Warning("UI", false, "Failed to create render target");

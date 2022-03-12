@@ -162,20 +162,11 @@ namespace GradientSignal
     float SurfaceMaskGradientComponent::GetValue(const GradientSampleParams& params) const
     {
         float result = 0.0f;
-
-        if (!m_configuration.m_surfaceTagList.empty())
-        {
-            SurfaceData::SurfacePointList points;
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-                params.m_position, m_configuration.m_surfaceTagList, points);
-
-            result = GetMaxSurfaceWeight(points);
-        }
-
+        GetValues(AZStd::span<const AZ::Vector3>(&params.m_position, 1), AZStd::span<float>(&result, 1));
         return result;
     }
 
-    void SurfaceMaskGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void SurfaceMaskGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {
@@ -183,34 +174,31 @@ namespace GradientSignal
             return;
         }
 
-        bool valuesFound = false;
+        // Initialize all our output values to 0.
+        AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
 
         if (!m_configuration.m_surfaceTagList.empty())
         {
-            // Rather than calling GetSurfacePoints on the EBus repeatedly in a loop, we instead pass a lambda into the EBus that contains
-            // the loop within it so that we can avoid the repeated EBus-calling overhead.
+            SurfaceData::SurfacePointList points;
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                [this, positions, &outValues, &valuesFound](SurfaceData::SurfaceDataSystemRequestBus::Events* surfaceDataRequests)
-                {
-                    // It's possible that there's nothing connected to the EBus, so keep track of the fact that we have valid results.
-                    valuesFound = true;
-                    SurfaceData::SurfacePointList points;
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagList,
+                points);
 
-                    for (size_t index = 0; index < positions.size(); index++)
-                    {
-                        points.clear();
-                        surfaceDataRequests->GetSurfacePoints(positions[index], m_configuration.m_surfaceTagList, points);
-                        outValues[index] = GetMaxSurfaceWeight(points);
-                    }
+            // For each position, get the max surface weight that matches our filter and that appears at that position.
+            points.EnumeratePoints(
+                [&outValues](
+                    size_t inPositionIndex, [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+                    const SurfaceData::SurfaceTagWeights& masks) -> bool
+                {
+                    masks.EnumerateWeights(
+                        [inPositionIndex, &outValues]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
+                        {
+                            outValues[inPositionIndex] = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), outValues[inPositionIndex]);
+                            return true;
+                        });
+                    return true;
                 });
         }
-
-        if (!valuesFound)
-        {
-            // No surface tags, so no output values.
-            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
-        }
-
     }
 
     size_t SurfaceMaskGradientComponent::GetNumTags() const

@@ -264,7 +264,7 @@ namespace GradientSignal
         return GetDitherValue(scaledCoordinate, value);
     }
 
-    void DitherGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void DitherGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

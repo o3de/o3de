@@ -33,7 +33,7 @@ namespace AzToolsFramework
         }
     }
 
-    QIcon LevelRootUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
+    QIcon LevelRootUiHandler::GenerateItemIcon([[maybe_unused]] AZ::EntityId entityId) const
     {
         return QIcon(m_levelRootIconPath);
     }
@@ -62,17 +62,18 @@ namespace AzToolsFramework
         return infoString;
     }
 
-    bool LevelRootUiHandler::CanToggleLockVisibility(AZ::EntityId /*entityId*/) const
+    bool LevelRootUiHandler::CanToggleLockVisibility([[maybe_unused]] AZ::EntityId entityId) const
     {
         return false;
     }
 
-    bool LevelRootUiHandler::CanRename(AZ::EntityId /*entityId*/) const
+    bool LevelRootUiHandler::CanRename([[maybe_unused]] AZ::EntityId entityId) const
     {
         return false;
     }
 
-    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+    void LevelRootUiHandler::PaintItemBackground(
+        QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
     {
         if (!painter)
         {
@@ -94,8 +95,10 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    bool LevelRootUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
+    bool LevelRootUiHandler::OnOutlinerItemDoubleClick(const QModelIndex& index) const
     {
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+
         if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
             !prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {

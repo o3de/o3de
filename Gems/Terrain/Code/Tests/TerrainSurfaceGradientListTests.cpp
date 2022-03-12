@@ -113,6 +113,68 @@ namespace UnitTest
             index++;
         }
     }
+
+    TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientGetSurfaceWeightsAndGetSurfaceWeightsFromListMatch)
+    {
+        // The GetSurfaceWeights and GetSurfaceWeightsFromList APIs should return the same values for the given inputs.
+
+        auto entity = CreateEntity();
+        AddRequiredComponentsToEntity(entity.get());
+
+        // Create a deterministic but varying result for our mock gradient - return the fractional part of the X position.
+        auto gradientEntity1 = CreateEntity();
+        NiceMock<UnitTest::MockGradientRequests> mockGradientRequests1(gradientEntity1->GetId());
+        ON_CALL(mockGradientRequests1, GetValue)
+            .WillByDefault(
+                [](const GradientSignal::GradientSampleParams& params) -> float
+                {
+                    double intpart;
+                    return aznumeric_cast<float>(modf(params.m_position.GetX(), &intpart));
+                });
+
+        // Return varying result for this mock too, but this time return the Y position fraction.
+        auto gradientEntity2 = CreateEntity();
+        NiceMock<UnitTest::MockGradientRequests> mockGradientRequests2(gradientEntity2->GetId());
+        ON_CALL(mockGradientRequests2, GetValue)
+            .WillByDefault(
+                [](const GradientSignal::GradientSampleParams& params) -> float
+                {
+                    double intpart;
+                    return aznumeric_cast<float>(modf(params.m_position.GetY(), &intpart));
+                });
+
+
+        // Build up a list of input positions to query with.
+        AZStd::vector<AZ::Vector3> inPositions;
+        for (float y = 0.0f; y <= 10.0f; y += 0.1f)
+        {
+            for (float x = 0.0f; x <= 10.0f; x += 0.1f)
+            {
+                inPositions.emplace_back(x, y, 0.0f);
+            }
+        }
+
+        // Call GetSurfaceWeightsFromList to get the set of output SurfaceWeightList values
+        AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> weightsList(inPositions.size());
+        Terrain::TerrainAreaSurfaceRequestBus::Event(
+            entity->GetId(), &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeightsFromList, inPositions, weightsList);
+
+        // For each result returned from GetSurfaceWeightsFromList, verify that it matches the result from GetSurfaceWeights
+        for (size_t index = 0; index < inPositions.size(); index++)
+        {
+            AzFramework::SurfaceData::SurfaceTagWeightList weightList;
+            Terrain::TerrainAreaSurfaceRequestBus::Event(
+                entity->GetId(), &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeights, inPositions[index], weightList);
+
+            // Verify that we're returning the same values in the same order.
+            ASSERT_EQ(weightsList[index].size(), weightList.size());
+            for (size_t weightIndex = 0; weightIndex < weightsList[index].size(); weightIndex++)
+            {
+                ASSERT_EQ(weightsList[index][weightIndex].m_surfaceType, weightList[weightIndex].m_surfaceType);
+                ASSERT_EQ(weightsList[index][weightIndex].m_weight, weightList[weightIndex].m_weight);
+            }
+        }
+    }
 } // namespace UnitTest
 
 

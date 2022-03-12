@@ -163,7 +163,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzFramework
-                AZ::AWSNativeSDKInit
+                AZ::AWSNativeSDKTestLibs
                 Gem::AWSCore.Static
     )
 
@@ -202,7 +202,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Gui
                     3rdParty::Qt::Widgets
                     AZ::AzTest
-                    AZ::AWSNativeSDKInit
+                    AZ::AWSNativeSDKTestLibs
                     Gem::AWSCore.Static
                     Gem::AWSCore.Editor.Static
         )

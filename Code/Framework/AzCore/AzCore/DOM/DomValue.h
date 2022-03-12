@@ -22,6 +22,8 @@
 
 namespace AZ::Dom
 {
+    class PathEntry;
+    class Path;
     using KeyType = AZ::Name;
 
     //! The type of underlying value stored in a value. \see Value
@@ -51,7 +53,6 @@ namespace AZ::Dom
         ValueAllocator()
             : Base("DomValueAllocator", "Allocator for AZ::Dom::Value")
         {
-            DisableOverriding();
         }
     };
 
@@ -221,6 +222,8 @@ namespace AZ::Dom
         explicit Value(T*) = delete;
 
         static Value FromOpaqueValue(const AZStd::any& value);
+        static Value CreateNode(AZ::Name nodeName);
+        static Value CreateNode(AZStd::string_view nodeName);
 
         // Equality / comparison / swap...
         Value& operator=(const Value&);
@@ -268,8 +271,8 @@ namespace AZ::Dom
 
         Object::ConstIterator MemberBegin() const;
         Object::ConstIterator MemberEnd() const;
-        Object::Iterator MemberBegin();
-        Object::Iterator MemberEnd();
+        Object::Iterator MutableMemberBegin();
+        Object::Iterator MutableMemberEnd();
 
         Object::Iterator FindMutableMember(KeyType name);
         Object::Iterator FindMutableMember(AZStd::string_view name);
@@ -289,8 +292,8 @@ namespace AZ::Dom
         void RemoveMember(KeyType name);
         void RemoveMember(AZStd::string_view name);
         Object::Iterator RemoveMember(Object::Iterator pos);
-        Object::Iterator EraseMember(Object::ConstIterator pos);
-        Object::Iterator EraseMember(Object::ConstIterator first, Object::ConstIterator last);
+        Object::Iterator EraseMember(Object::Iterator pos);
+        Object::Iterator EraseMember(Object::Iterator first, Object::Iterator last);
         Object::Iterator EraseMember(KeyType name);
         Object::Iterator EraseMember(AZStd::string_view name);
 
@@ -313,15 +316,15 @@ namespace AZ::Dom
 
         Array::ConstIterator ArrayBegin() const;
         Array::ConstIterator ArrayEnd() const;
-        Array::Iterator ArrayBegin();
-        Array::Iterator ArrayEnd();
+        Array::Iterator MutableArrayBegin();
+        Array::Iterator MutableArrayEnd();
 
         Value& ArrayReserve(size_t newCapacity);
         Value& ArrayPushBack(Value value);
         Value& ArrayPopBack();
 
-        Array::Iterator ArrayErase(Array::ConstIterator pos);
-        Array::Iterator ArrayErase(Array::ConstIterator first, Array::ConstIterator last);
+        Array::Iterator ArrayErase(Array::Iterator pos);
+        Array::Iterator ArrayErase(Array::Iterator first, Array::Iterator last);
 
         Array::ContainerType& GetMutableArray();
         const Array::ContainerType& GetArray() const;
@@ -379,6 +382,17 @@ namespace AZ::Dom
         // Visitor API...
         Visitor::Result Accept(Visitor& visitor, bool copyStrings) const;
         AZStd::unique_ptr<Visitor> GetWriteHandler();
+
+        // Path API...
+        Value& operator[](const PathEntry& entry);
+        const Value& operator[](const PathEntry& entry) const;
+        Value& operator[](const Path& path);
+        const Value& operator[](const Path& path) const;
+
+        const Value* FindChild(const PathEntry& entry) const;
+        Value* FindMutableChild(const PathEntry& entry);
+        const Value* FindChild(const Path& path) const;
+        Value* FindMutableChild(const Path& path);
 
         //! Gets the internal value of this Value. Note that this value's types may not correspond one-to-one with the Type enumeration,
         //! as internally the same type might have different storage mechanisms. Where possible, prefer using the typed API.

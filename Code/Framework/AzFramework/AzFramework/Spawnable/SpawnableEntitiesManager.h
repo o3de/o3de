@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
@@ -47,7 +48,7 @@ namespace AzFramework
         };
 
         SpawnableEntitiesManager();
-        ~SpawnableEntitiesManager() override = default;
+        ~SpawnableEntitiesManager() override;
 
         //
         // The following functions are thread safe
@@ -58,7 +59,10 @@ namespace AzFramework
             EntitySpawnTicket& ticket, AZStd::vector<uint32_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
         void DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs = {}) override;
         void DespawnEntity(AZ::EntityId entityId, EntitySpawnTicket& ticket, DespawnEntityOptionalArgs optionalArgs = {}) override;
-        void RetrieveEntitySpawnTicket(EntitySpawnTicket::Id entitySpawnTicketId, RetrieveEntitySpawnTicketCallback callback) override;
+        void RetrieveTicket(
+            EntitySpawnTicket::Id ticketId,
+            RetrieveEntitySpawnTicketCallback callback,
+            RetrieveTicketOptionalArgs optionalArgs = {}) override;
         void ReloadSpawnable(
             EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs = {}) override;
 
@@ -96,6 +100,7 @@ namespace AzFramework
             AZ_CLASS_ALLOCATOR(Ticket, AZ::ThreadPoolAllocator, 0);
             static constexpr uint32_t Processing = AZStd::numeric_limits<uint32_t>::max();
 
+            AZStd::atomic_int64_t m_referenceCount{ 1 };
             //! Map of prototype entity ids to their associated instance ids.
             //! Tickets can be used to spawn the same prototype entities multiple times, in any order, across multiple calls.
             //! Since prototype entities can reference other entities, this map is used to fix up those references across calls
@@ -115,8 +120,9 @@ namespace AzFramework
             AZStd::vector<AZ::Entity*> m_spawnedEntities;
             AZStd::vector<uint32_t> m_spawnedEntityIndices;
             AZ::Data::Asset<Spawnable> m_spawnable;
-            uint32_t m_nextRequestId{ 0 }; //!< Next id for this ticket.
+            uint32_t m_nextRequestId{ 0 }; //!< Next id to be handed out to command that's using this ticket..
             uint32_t m_currentRequestId { 0 }; //!< The id for the command that should be executed.
+            uint32_t m_ticketId{ 0 }; //!< The unique id that identifies this ticket.
             bool m_loadAll{ true };
         };
 
@@ -208,6 +214,16 @@ namespace AzFramework
             uint32_t m_requestId;
             bool m_checkAliasSpawnables;
         };
+        struct RetrieveTicketCommand final
+        {
+            EntitySpawnTicket::Id m_ticketId;
+            RetrieveEntitySpawnTicketCallback m_callback;
+        };
+        struct RegisterTicketCommand final
+        {
+            Ticket* m_ticket;
+            uint32_t m_requestId;
+        };
         struct DestroyTicketCommand final
         {
             Ticket* m_ticket;
@@ -226,6 +242,8 @@ namespace AzFramework
             ClaimEntitiesCommand,
             BarrierCommand,
             LoadBarrierCommand,
+            RetrieveTicketCommand,
+            RegisterTicketCommand,
             DestroyTicketCommand>;
 
         struct Queue
@@ -237,9 +255,13 @@ namespace AzFramework
 
         template<typename T>
         void QueueRequest(EntitySpawnTicket& ticket, SpawnablePriority priority, T&& request);
-        AZStd::pair<EntitySpawnTicket::Id, void*> CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) override;
-        void DestroyTicket(void* ticket) override;
 
+        void* CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) override;
+        void IncrementTicketReference(void* ticket) override;
+        void DecrementTicketReference(void* ticket) override;
+        EntitySpawnTicket::Id GetTicketId(void* ticket) override;
+        const AZ::Data::Asset<Spawnable>& GetSpawnableOnTicket(void* ticket) override;
+        
         CommandQueueStatus ProcessQueue(Queue& queue);
 
         AZ::Entity* CloneSingleEntity(
@@ -267,6 +289,8 @@ namespace AzFramework
         CommandResult ProcessRequest(ClaimEntitiesCommand& request);
         CommandResult ProcessRequest(BarrierCommand& request);
         CommandResult ProcessRequest(LoadBarrierCommand& request);
+        CommandResult ProcessRequest(RetrieveTicketCommand& request);
+        CommandResult ProcessRequest(RegisterTicketCommand& request);
         CommandResult ProcessRequest(DestroyTicketCommand& request);
 
         //! Generate a base set of original-to-new entity ID mappings to use during spawning.
@@ -287,6 +311,10 @@ namespace AzFramework
         //! SpawnablePriority_Default which gives users a bit of room to fine tune the priorities as this value can be configured
         //! through the Settings Registry under the key "/O3DE/AzFramework/Spawnables/HighPriorityThreshold".
         SpawnablePriority m_highPriorityThreshold { 64 };
+
+        AZStd::unordered_map<EntitySpawnTicket::Id, Ticket*> m_entitySpawnTicketMap;
+        AZStd::atomic_int m_totalTickets{ 0 };
+        AZStd::atomic_int m_ticketsPendingRegistration{ 0 };
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AzFramework::SpawnableEntitiesManager::CommandQueuePriority);

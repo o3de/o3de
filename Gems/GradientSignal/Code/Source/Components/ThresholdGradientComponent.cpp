@@ -141,7 +141,7 @@ namespace GradientSignal
         return (m_configuration.m_gradientSampler.GetValue(sampleParams) <= m_configuration.m_threshold) ? 0.0f : 1.0f;
     }
 
-    void ThresholdGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void ThresholdGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

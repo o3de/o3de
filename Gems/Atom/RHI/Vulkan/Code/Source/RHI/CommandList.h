@@ -17,7 +17,7 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 #include <Atom/RHI.Reflect/Interval.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
@@ -103,7 +103,7 @@ namespace AZ
             bool IsInsideRenderPass() const;
             const Framebuffer* GetActiveFramebuffer() const;
             const RenderPass* GetActiveRenderpass() const;
-            void ExecuteSecondaryCommandLists(const AZStd::array_view<RHI::Ptr<CommandList>>& commands);
+            void ExecuteSecondaryCommandLists(const AZStd::span<const RHI::Ptr<CommandList>>& commands);
 
             uint32_t GetQueueFamilyIndex() const;
 
@@ -183,8 +183,17 @@ namespace AZ
         {
             const PipelineState* pipelineState = static_cast<const PipelineState*>(item.m_pipelineState);
             AZ_Assert(pipelineState, "Pipeline state is null.");
+            if(!pipelineState)
+            {
+                return false;
+            }
+            
             AZ_Assert(pipelineState->GetPipelineLayout(), "Pipeline layout is null.");
-
+            if(!pipelineState->GetPipelineLayout())
+            {
+                return false;
+            }
+            
             // Set the pipeline state first
             BindPipeline(pipelineState);
             const RHI::PipelineStateType pipelineType = pipelineState->GetType();

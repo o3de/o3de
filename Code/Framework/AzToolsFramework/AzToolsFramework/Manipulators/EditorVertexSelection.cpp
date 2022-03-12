@@ -952,19 +952,19 @@ namespace AzToolsFramework
 
         for (auto& manipulator : m_selectionManipulators)
         {
-            manipulator->SetSpace(TransformUniformScale(worldFromLocal));
+            manipulator->SetSpace(worldFromLocal);
             manipulator->SetNonUniformScale(nonUniformScale);
         }
 
         if (m_translationManipulator)
         {
-            m_translationManipulator->m_manipulator.SetSpace(TransformUniformScale(worldFromLocal));
+            m_translationManipulator->m_manipulator.SetSpace(worldFromLocal);
             m_translationManipulator->m_manipulator.SetNonUniformScale(nonUniformScale);
         }
 
         if (m_hoverSelection)
         {
-            m_hoverSelection->SetSpace(TransformUniformScale(worldFromLocal));
+            m_hoverSelection->SetSpace(worldFromLocal);
             m_hoverSelection->SetNonUniformScale(nonUniformScale);
             m_hoverSelection->Refresh();
         }

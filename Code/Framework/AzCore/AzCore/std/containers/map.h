@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_ORDERED_MAP_H
-#define AZSTD_ORDERED_MAP_H 1
+#pragma once
 
 #include <AzCore/std/containers/rbtree.h>
 #include <AzCore/std/containers/node_handle.h>
@@ -79,7 +78,7 @@ namespace AZStd
         typedef typename tree_type::const_reverse_iterator      const_reverse_iterator;
         
         using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename tree_type::node_type, typename tree_type::node_deleter>>;
-        using insert_return_type = insert_return_type<iterator, node_type>;
+        using insert_return_type = AZStd::AssociativeInternal::insert_return_type<iterator, node_type>;
 
         AZ_FORCE_INLINE explicit map(const Compare& comp = Compare(), const Allocator& alloc = Allocator())
             : m_tree(comp, alloc) {}
@@ -392,6 +391,26 @@ namespace AZStd
         return originalSize - container.size();
     }
 
+
+    // deduction guides
+    template<class InputIterator, class Compare = less<iter_key_type<InputIterator>>,
+        class Allocator = allocator>
+        map(InputIterator, InputIterator, Compare = Compare(), Allocator = Allocator())
+        ->map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>, Compare, Allocator>;
+
+    template<class Key, class T, class Compare = less<Key>,
+        class Allocator = allocator>
+        map(initializer_list<pair<Key, T>>, Compare = Compare(), Allocator = Allocator())
+        ->map<Key, T, Compare, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    map(InputIterator, InputIterator, Allocator)
+        ->map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+        less<iter_key_type<InputIterator>>, Allocator>;
+
+    template<class Key, class T, class Allocator>
+    map(initializer_list<pair<Key, T>>, Allocator)->map<Key, T, less<Key>, Allocator>;
+
     /**
     * Ordered multimap container is complaint with \ref C++0x (23.4.2)
     * This is an associative container, key can be equivalent (multiple copies of the same key value).
@@ -684,7 +703,26 @@ namespace AZStd
 
         return originalSize - container.size();
     }
-}
 
-#endif // AZSTD_ORDERED_MAP_H
-#pragma once
+    // deduction guides
+    template<class InputIterator, class Compare = less<iter_key_type<InputIterator>>,
+        class Allocator = allocator>
+        multimap(InputIterator, InputIterator, Compare = Compare(), Allocator = Allocator())
+        ->multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+        Compare, Allocator>;
+
+    template<class Key, class T, class Compare = less<Key>,
+        class Allocator = allocator>
+        multimap(initializer_list<pair<Key, T>>, Compare = Compare(), Allocator = Allocator())
+        ->multimap<Key, T, Compare, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    multimap(InputIterator, InputIterator, Allocator)
+        ->multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+        less<iter_key_type<InputIterator>>, Allocator>;
+
+    template<class Key, class T, class Allocator>
+    multimap(initializer_list<pair<Key, T>>, Allocator)
+        ->multimap<Key, T, less<Key>, Allocator>;
+
+}

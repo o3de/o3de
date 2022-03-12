@@ -12,7 +12,6 @@
 
 #include <GridMate/Carrier/Carrier.h>
 #include <GridMate/Carrier/Compressor.h>
-#include <GridMate/Carrier/Cripter.h>
 #include <GridMate/Carrier/DefaultHandshake.h>
 #include <GridMate/Carrier/DefaultTrafficControl.h>
 #include <GridMate/Carrier/Simulator.h>
@@ -1702,7 +1701,7 @@ CarrierThread::UpdateReceive()
 
                         if (compErr != CompressorError::Ok)
                         {
-                            AZ_Error("GridMate", compErr == CompressorError::Ok, "Decompress failed with error %d this will lead to data read errors!", compErr);
+                            AZ_Error("GridMate", compErr == CompressorError::Ok, "Decompress failed with error %d this will lead to data read errors!", aznumeric_cast<int32_t>(compErr));
                             conn->m_isBadPackets = true;
                             break;  /// stop processing this data
                         }
@@ -1952,8 +1951,8 @@ CarrierThread::ProcessConnections()
 
         bool isHandshakeTimeOut = false;
         bool isConnectionTimeout = false;
-        bool isBadTrafficConditions = false;
-        bool isBadPackets = false;
+        [[maybe_unused]] bool isBadTrafficConditions = false;
+        [[maybe_unused]] bool isBadPackets = false;
         if (connection->m_isBadPackets)
         {
             isBadPackets = true;
@@ -2136,7 +2135,7 @@ bool CarrierThread::SendDatagram(ThreadConnection* connection)
         {
             if (compErr != CompressorError::Ok)
             {
-                AZ_Error("GridMate", compErr == CompressorError::Ok, "Failed to compress chunk with error=%d.\n", static_cast<int>(compErr));
+                AZ_Error("GridMate", compErr == CompressorError::Ok, "Failed to compress chunk with error=%d.\n", aznumeric_cast<int32_t>(compErr));
             }
 
             // we can use writeBuffer directly because we already added the compression hint to indicate that this data is uncompressed

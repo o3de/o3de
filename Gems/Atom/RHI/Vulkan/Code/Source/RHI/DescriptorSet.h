@@ -13,7 +13,7 @@
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/Buffer.h>
 
@@ -39,7 +39,10 @@ namespace AZ
             friend class DescriptorPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(DescriptorSet, AZ::ThreadPoolAllocator, 0);
+            
+            //Using SystemAllocator here instead of ThreadPoolAllocator as it gets slower when
+            //we create thousands of DescriptorSets related to SRGs
+            AZ_CLASS_ALLOCATOR(DescriptorSet, AZ::SystemAllocator, 0);
             AZ_RTTI(DescriptorSet, "06D7FC0A-B53E-46D9-975D-D4E445356645", Base);
 
             struct Descriptor
@@ -57,10 +60,10 @@ namespace AZ
 
             void CommitUpdates();
 
-            void UpdateBufferViews(uint32_t index, const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufViews);
-            void UpdateImageViews(uint32_t index, const AZStd::array_view<RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType);
-            void UpdateSamplers(uint32_t index, const AZStd::array_view<RHI::SamplerState>& samplers);
-            void UpdateConstantData(AZStd::array_view<uint8_t> data);
+            void UpdateBufferViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufViews);
+            void UpdateImageViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType);
+            void UpdateSamplers(uint32_t index, const AZStd::span<const RHI::SamplerState>& samplers);
+            void UpdateConstantData(AZStd::span<const uint8_t> data);
 
             RHI::Ptr<BufferView> GetConstantDataBufferView() const;
 

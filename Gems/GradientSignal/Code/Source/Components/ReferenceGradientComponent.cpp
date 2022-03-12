@@ -134,7 +134,7 @@ namespace GradientSignal
         return m_configuration.m_gradientSampler.GetValue(sampleParams);
     }
 
-    void ReferenceGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void ReferenceGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

@@ -14,7 +14,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/SQLite/SQLiteConnection.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/SQLite/SQLiteQuery.h>
 #include <AzToolsFramework/SQLite/SQLiteBoundColumnSet.h>
 #include <cinttypes>
@@ -818,6 +817,16 @@ namespace AzToolsFramework
 
             static const auto s_queryDirectReverseProductdependenciesBySourceGuidSubId = MakeSqlQuery(QUERY_DIRECT_REVERSE_PRODUCTDEPENDENCIES_BY_SOURCE_GUID_SUB_ID,
                 QUERY_DIRECT_REVERSE_PRODUCTDEPENDENCIES_BY_SOURCE_GUID_SUB_ID_STATEMENT, LOG_NAME, SqlParam<AZ::Uuid>(":dependencySourceGuid"), SqlParam<AZ::s32>(":dependencySubId"));
+
+            static const char* QUERY_DIRECT_REVERSE_PRODUCTDEPENDENCIES_BY_SOURCE_GUID = "AzToolsFramework::AssetDatabase::QueryDirectReverseProductDependenciesBySourceGuid";
+            static const char* QUERY_DIRECT_REVERSE_PRODUCTDEPENDENCIES_BY_SOURCE_GUID_STATEMENT =
+                "SELECT * FROM ProductDependencies "
+                "WHERE DependencySourceGuid = :dependencySourceGuid"
+            ;
+
+            static const auto s_queryDirectReverseProductDependenciesBySourceGuidAllPlatforms = MakeSqlQuery(QUERY_DIRECT_REVERSE_PRODUCTDEPENDENCIES_BY_SOURCE_GUID,
+                QUERY_DIRECT_REVERSE_PRODUCTDEPENDENCIES_BY_SOURCE_GUID_STATEMENT, LOG_NAME,
+                SqlParam<AZ::Uuid>(":dependencySourceGuid"));
 
             static const char* QUERY_ALL_PRODUCTDEPENDENCIES = "AzToolsFramework::AssetDatabase::QueryAllProductDependencies";
             static const char* QUERY_ALL_PRODUCTDEPENDENCIES_STATEMENT =
@@ -1865,6 +1874,7 @@ namespace AzToolsFramework
             
             AddStatement(m_databaseConnection, s_queryDirectProductdependencies);
             AddStatement(m_databaseConnection, s_queryDirectReverseProductdependenciesBySourceGuidSubId);
+            AddStatement(m_databaseConnection, s_queryDirectReverseProductDependenciesBySourceGuidAllPlatforms);
             AddStatement(m_databaseConnection, s_queryAllProductdependencies);
             AddStatement(m_databaseConnection, s_queryUnresolvedProductDependencies);
             AddStatement(m_databaseConnection, s_queryProductDependencyExclusions);
@@ -2594,6 +2604,11 @@ namespace AzToolsFramework
         bool AssetDatabaseConnection::QueryDirectReverseProductDependenciesBySourceGuidSubId(AZ::Uuid dependencySourceGuid, AZ::u32 dependencySubId, productHandler handler)
         {
             return s_queryDirectReverseProductdependenciesBySourceGuidSubId.BindAndQuery(*m_databaseConnection, handler, &GetProductResultSimple, dependencySourceGuid, dependencySubId);
+        }
+
+        bool AssetDatabaseConnection::QueryDirectReverseProductDependenciesBySourceGuidAllPlatforms(AZ::Uuid dependencySourceGuid, productDependencyHandler handler)
+        {
+            return s_queryDirectReverseProductDependenciesBySourceGuidAllPlatforms.BindAndQuery(*m_databaseConnection, handler, &GetProductDependencyResult, dependencySourceGuid);
         }
 
         bool AssetDatabaseConnection::QueryAllProductDependencies(AZ::s64 productID, productHandler handler)

@@ -62,7 +62,6 @@ namespace AzQtComponents
             qreal focusBorderWidth;
             QColor focusBorderColor;
             QColor focusFillColor;
-            QColor headerFillColor;
         };
 
         /*!
@@ -93,7 +92,6 @@ namespace AzQtComponents
 
     private:
         static bool drawHeader(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
-        static bool drawHeaderSection(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
         static bool drawFrameFocusRect(const Style* style, const QStyleOption* option, QPainter* painter, const Config& config);
         static QRect itemViewItemRect(const Style* style, QStyle::SubElement element, const QStyleOptionViewItem* option, const QWidget* widget, const Config& config);
         static QSize sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentsSize, const QWidget* widget, const Config& config);

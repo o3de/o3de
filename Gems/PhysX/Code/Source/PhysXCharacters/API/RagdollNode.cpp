@@ -5,16 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/Physics/PhysicsScene.h>
-#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <PhysXCharacters/API/RagdollNode.h>
+
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/MathConversion.h>
-
 #include <PxPhysicsAPI.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/EditContext.h>
+
 
 namespace PhysX
 {

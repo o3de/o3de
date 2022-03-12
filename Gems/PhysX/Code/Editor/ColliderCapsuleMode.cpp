@@ -8,11 +8,14 @@
 
 #include "ColliderCapsuleMode.h"
 #include <PhysX/EditorColliderComponentRequestBus.h>
+#include <Source/Utils.h>
 
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
 
@@ -34,10 +37,15 @@ namespace PhysX
     void ColliderCapsuleMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         AZ::Transform colliderWorldTransform = AZ::Transform::Identity();
-        PhysX::EditorColliderComponentRequestBus::EventResult(colliderWorldTransform, idPair, &PhysX::EditorColliderComponentRequests::GetColliderWorldTransform);
+        AZ::TransformBus::EventResult(colliderWorldTransform, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
-        SetupRadiusManipulator(idPair, colliderWorldTransform);
-        SetupHeightManipulator(idPair, colliderWorldTransform);
+        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+
+        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
+
+        SetupRadiusManipulator(idPair, colliderWorldTransform, colliderLocalTransform, nonUniformScale);
+        SetupHeightManipulator(idPair, colliderWorldTransform, colliderLocalTransform, nonUniformScale);
 
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(idPair.GetEntityId());
     }
@@ -45,7 +53,12 @@ namespace PhysX
     void ColliderCapsuleMode::Refresh(const AZ::EntityComponentIdPair& idPair)
     {
         AZ::Transform colliderWorldTransform = AZ::Transform::Identity();
-        PhysX::EditorColliderComponentRequestBus::EventResult(colliderWorldTransform, idPair, &PhysX::EditorColliderComponentRequests::GetColliderWorldTransform);
+        AZ::TransformBus::EventResult(colliderWorldTransform, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
+        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+
+        AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
 
         // Read the state of the capsule into manipulators to support undo/redo
         float capsuleHeight = 0.0f;
@@ -55,9 +68,13 @@ namespace PhysX
         PhysX::EditorColliderComponentRequestBus::EventResult(capsuleRadius, idPair, &PhysX::EditorColliderComponentRequests::GetCapsuleRadius);
 
         m_radiusManipulator->SetSpace(colliderWorldTransform);
-        m_radiusManipulator->SetLocalPosition(m_radiusManipulator->GetAxis() * capsuleRadius);
+        m_radiusManipulator->SetLocalTransform(
+            colliderLocalTransform * AZ::Transform::CreateTranslation(m_radiusManipulator->GetAxis() * capsuleRadius));
+        m_radiusManipulator->SetNonUniformScale(nonUniformScale);
         m_heightManipulator->SetSpace(colliderWorldTransform);
-        m_heightManipulator->SetLocalPosition(m_heightManipulator->GetAxis() * capsuleHeight * HalfHeight);
+        m_heightManipulator->SetLocalTransform(
+            colliderLocalTransform * AZ::Transform::CreateTranslation(m_heightManipulator->GetAxis() * capsuleHeight * HalfHeight));
+        m_heightManipulator->SetNonUniformScale(nonUniformScale);
     }
 
     void ColliderCapsuleMode::Teardown(const AZ::EntityComponentIdPair& idPair)
@@ -83,13 +100,23 @@ namespace PhysX
         AZ_UNUSED(debugDisplay);
 
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
-        float radius = m_radiusManipulator->GetLocalPosition().GetLength();
 
-        m_radiusManipulator->SetAxis(cameraState.m_side);
-        m_radiusManipulator->SetLocalPosition(cameraState.m_side * radius);
+        if (!m_radiusManipulator->EntityComponentIdPairs().empty())
+        {
+            const AZ::EntityComponentIdPair idPair = *m_radiusManipulator->EntityComponentIdPairs().begin();
+            float radius = 0.0f;
+            PhysX::EditorColliderComponentRequestBus::EventResult(radius, idPair, &PhysX::EditorColliderComponentRequests::GetCapsuleRadius);
+            const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
+            m_radiusManipulator->SetAxis(cameraState.m_side);
+            m_radiusManipulator->SetLocalTransform(colliderLocalTransform * AZ::Transform::CreateTranslation(cameraState.m_side * radius));
+        }
     }
 
-    void ColliderCapsuleMode::SetupRadiusManipulator(const AZ::EntityComponentIdPair& idPair, const AZ::Transform& worldTransform)
+    void ColliderCapsuleMode::SetupRadiusManipulator(
+        const AZ::EntityComponentIdPair& idPair,
+        const AZ::Transform& worldTransform,
+        const AZ::Transform& localTransform,
+        const AZ::Vector3& nonUniformScale)
     {
         // Radius manipulator
         float capsuleRadius = 0.0f;
@@ -99,7 +126,8 @@ namespace PhysX
         m_radiusManipulator->AddEntityComponentIdPair(idPair);
         m_radiusManipulator->SetAxis(RadiusManipulatorAxis);
         m_radiusManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-        m_radiusManipulator->SetLocalPosition(RadiusManipulatorAxis * capsuleRadius);
+        m_radiusManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(RadiusManipulatorAxis * capsuleRadius));
+        m_radiusManipulator->SetNonUniformScale(nonUniformScale);
 
         {
             AzToolsFramework::ManipulatorViews views;
@@ -114,7 +142,11 @@ namespace PhysX
         });
     }
 
-    void ColliderCapsuleMode::SetupHeightManipulator(const AZ::EntityComponentIdPair& idPair, const AZ::Transform& worldTransform)
+    void ColliderCapsuleMode::SetupHeightManipulator(
+        const AZ::EntityComponentIdPair& idPair,
+        const AZ::Transform& worldTransform,
+        const AZ::Transform& localTransform,
+        const AZ::Vector3& nonUniformScale)
     {
         // Height manipulator
         float capsuleHeight = 0.0f;
@@ -124,7 +156,9 @@ namespace PhysX
         m_heightManipulator->AddEntityComponentIdPair(idPair);
         m_heightManipulator->SetAxis(HeightManipulatorAxis);
         m_heightManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-        m_heightManipulator->SetLocalPosition(HeightManipulatorAxis * capsuleHeight * HalfHeight); // Manipulator positioned at half the capsules height.
+        m_heightManipulator->SetLocalTransform(
+            localTransform * AZ::Transform::CreateTranslation(HeightManipulatorAxis * capsuleHeight * HalfHeight));
+        m_heightManipulator->SetNonUniformScale(nonUniformScale);
 
         {
             AzToolsFramework::ManipulatorViews views;
@@ -137,19 +171,23 @@ namespace PhysX
         {
             OnHeightManipulatorMoved(action, idPair);
         });
-
     }
 
     void ColliderCapsuleMode::OnRadiusManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair)
     {
+        // manipulator action offsets do not take entity transform scale into account, so need to apply it here
+        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
+        const AZ::Vector3 manipulatorPosition = AzToolsFramework::GetPositionInManipulatorFrame(
+            m_radiusManipulator->GetSpace().GetUniformScale(), colliderLocalTransform, action);
+
         // Get the distance the manipulator has moved along the axis.
-        float extent = action.LocalPosition().Dot(action.m_fixed.m_axis);
+        float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
 
         // Clamp radius to a small value.
         extent = AZ::GetMax(extent, MinCapsuleRadius);
 
         // Update the manipulator and capsule radius.
-        m_radiusManipulator->SetLocalPosition(extent * action.m_fixed.m_axis);
+        m_radiusManipulator->SetLocalTransform(colliderLocalTransform * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
 
         // Adjust the height manipulator so it is always clamped to twice the radius.
         AdjustHeightManipulator(idPair, static_cast<float>(extent));
@@ -160,14 +198,19 @@ namespace PhysX
 
     void ColliderCapsuleMode::OnHeightManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair)
     {
+        // manipulator action offsets do not take entity transform scale into account, so need to apply it here
+        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
+        const AZ::Vector3 manipulatorPosition = AzToolsFramework::GetPositionInManipulatorFrame(
+            m_heightManipulator->GetSpace().GetUniformScale(), colliderLocalTransform, action);
+
         // Get the distance the manipulator has moved along the axis.
-        float extent = action.LocalPosition().Dot(action.m_fixed.m_axis);
+        float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
 
         // Ensure capsule's half height is always greater than the radius.
         extent = AZ::GetMax(extent, MinCapsuleHeight);
 
         // Update the manipulator and capsule height.
-        m_heightManipulator->SetLocalPosition(extent * action.m_fixed.m_axis);
+        m_heightManipulator->SetLocalTransform(colliderLocalTransform * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
 
         // The final height of the capsule is twice the manipulator's extent.
         float capsuleHeight = extent / HalfHeight;
@@ -188,7 +231,9 @@ namespace PhysX
         capsuleRadius = AZ::GetMin(capsuleRadius, capsuleHeight * HalfHeight);
 
         // Update manipulator and the capsule radius.
-        m_radiusManipulator->SetLocalPosition(capsuleRadius * m_radiusManipulator->GetAxis());
+        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
+        m_radiusManipulator->SetLocalTransform(
+            colliderLocalTransform * AZ::Transform::CreateTranslation(capsuleRadius * m_radiusManipulator->GetAxis()));
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCapsuleRadius, capsuleRadius);
     }
 
@@ -201,7 +246,9 @@ namespace PhysX
         capsuleHeight = AZ::GetMax(capsuleHeight, capsuleRadius / HalfHeight);
 
         // Update the manipulator and capsule height.
-        m_heightManipulator->SetLocalPosition(capsuleHeight * HalfHeight * m_heightManipulator->GetAxis());
+        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
+        m_heightManipulator->SetLocalTransform(
+            colliderLocalTransform * AZ::Transform::CreateTranslation(capsuleHeight * HalfHeight * m_heightManipulator->GetAxis()));
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCapsuleHeight, capsuleHeight);
     }
 }

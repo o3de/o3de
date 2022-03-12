@@ -370,6 +370,7 @@ namespace AssetProcessor
                 entry.m_dependencySourceGuid = sourceEntry.m_sourceGuid;
                 entry.m_dependencySubID = matchedProduct.m_subID;
                 entry.m_platform = productDependencyDatabaseEntry.m_platform;
+                entry.m_dependencyFlags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad);
 
                 dependencyContainer.push_back(AZStd::move(entry));
 
@@ -412,6 +413,23 @@ namespace AssetProcessor
             SaveResolvedDependencies(
                 sourceEntry, exclusionMaps, sourceNameWithScanFolder, pair.second, searchEntry->m_path, isSourceDependency, matchedProducts,
                 dependencyVector);
+        }
+
+        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer existingDependencies;
+        if (!m_stateData->GetDirectReverseProductDependenciesBySourceGuidAllPlatforms(sourceEntry.m_sourceGuid, existingDependencies))
+        {
+            AZ_Error("PathDependencyManager", false, "Failed to query existing product dependencies for source `%s` (%s)",
+                sourceEntry.m_sourceName.c_str(),
+                sourceEntry.m_sourceGuid.ToString<AZStd::string>().c_str());
+        }
+        else
+        {
+
+            // Remove any existing dependencies from the list of dependencies we're about to save
+            dependencyVector.erase(AZStd::remove_if(dependencyVector.begin(), dependencyVector.end(), [&existingDependencies](const auto& entry) -> bool
+            {
+                return AZStd::find(existingDependencies.begin(), existingDependencies.end(), entry) != existingDependencies.end();
+            }), dependencyVector.end());
         }
 
         // Save everything to the db, this will update matched non-wildcard dependencies and add new records for wildcard matches
