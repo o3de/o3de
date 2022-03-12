@@ -107,8 +107,7 @@ namespace AZ::DocumentPropertyEditor
             Attribute(definition.GetName(), definition.ValueToDom(AZStd::function<CallbackType>(value)));
         }
 
-        template <>
-        void Attribute<AZStd::string_view>(const AttributeDefinition<AZStd::string_view>& definition, AZStd::string_view value)
+        void Attribute(const AttributeDefinition<AZStd::string_view>& definition, AZStd::string_view value)
         {
             Attribute(definition.GetName(), Dom::Value(value, true));
         }
