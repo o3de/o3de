@@ -347,7 +347,7 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                            Directional Lights
 //==============================================================================
-void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
     DirectionalLightShadow::DebugInfo debugInfo = {0, false};
 
@@ -362,8 +362,9 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     {
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
-            lightingData.shadowCoords,
+            surface.position,
             surface.vertexNormal,
+            screenUv,
             debugInfo);
     }
 
@@ -463,10 +464,7 @@ void ApplyLighting(inout Surface surface, inout LightingData lightingData)
 {
     // Shadow coordinates generation for the directional light
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(shadowIndex, surface.position, surface.vertexNormal, lightingData.shadowCoords);
-    }
+
 
     // Light loops application.
     // If culling is used, the order of the calls must match the light types list order 

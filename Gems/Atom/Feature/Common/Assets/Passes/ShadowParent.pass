@@ -12,6 +12,10 @@
                     "Name": "SkinnedMeshes",
                     "SlotType": "Input"
                 },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input"
+                },                
                 // Outputs...
                 {
                     "Name": "DirectionalShadowmap",
@@ -33,6 +37,10 @@
                 {
                     "Name": "SwapChainOutput",
                     "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "FullscreenShadow",
+                    "SlotType": "Output"                
                 }
             ],
             "Connections": [
@@ -63,9 +71,16 @@
                         "Pass": "EsmShadowmapsPassProjected",
                         "Attachment": "EsmShadowmaps"
                     }
-                }
+                },
+                { 
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "FullscreenShadowPass",
+                        "Attachment": "Output"
+                    } 
+                }                  
             ],
-            "PassRequests": [
+            "PassRequests": [          
                 {
                     "Name": "CascadedShadowmapsPass",
                     "TemplateName": "CascadedShadowmapsTemplate",
@@ -135,7 +150,35 @@
                             }
                         }
                     ]
-                }
+                },
+                {
+                    "Name": "FullscreenShadowPass",
+                    "TemplateName": "FullscreenShadowTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthShadowmaps",
+                            "AttachmentRef": {
+                                "Pass": "CascadedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassDirectional",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        },                        
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        }                          
+                                                                   
+                    ]                    
+                }                
             ]
         }
     }

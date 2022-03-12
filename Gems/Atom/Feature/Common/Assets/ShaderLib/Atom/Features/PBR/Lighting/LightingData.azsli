@@ -25,9 +25,6 @@ class LightingData
     float3 diffuseResponse;
     float3 specularResponse;
 
-    // Direction light shadow coordinates
-    float3 shadowCoords[ViewSrg::MaxCascadeCount];
-
     // (N . L) to accept below (N . L = 0) in scattering through thin objects
     float transmissionNdLBias; 
     

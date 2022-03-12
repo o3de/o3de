@@ -141,7 +141,14 @@
                                 "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
-                        }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA" 
+                            }
+                        }                          
                     ]
                 },
                 {
@@ -155,6 +162,13 @@
                                 "Attachment": "DirectionalShadowmap"
                             }
                         },
+                        {
+                            "LocalSlot": "FullscreenShadow",
+                            "AttachmentRef": {
+                                "Pass": "ShadowPass",
+                                "Attachment": "FullscreenShadow"
+                            }
+                        },                         
                         {
                             "LocalSlot": "DirectionalESM",
                             "AttachmentRef": {

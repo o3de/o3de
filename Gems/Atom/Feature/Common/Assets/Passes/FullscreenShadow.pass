@@ -1,0 +1,74 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "FullscreenShadowTemplate",
+            "PassClass": "FullscreenShadowPass", 
+            "Slots": [
+                {
+                    "Name": "DepthShadowmaps",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_directionalLightShadowmap",
+                    "ScopeAttachmentUsage": "Shader"      
+                },    
+                {
+                    "Name": "ExponentialShadowmapDirectional",
+                    "ShaderInputName": "m_directionalLightExponentialShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },               
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depth",
+                    "ScopeAttachmentUsage": "Shader"      
+                },                           
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "StoreAction": "Store"
+                    }             
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Result",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        } 
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16_FLOAT", 
+                        "SharedQueueMask": "Graphics"                      
+                    }                              
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "Result"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
+                },
+                "PipelineViewTag": "MainCamera"                
+            }            
+        }
+    }
+}

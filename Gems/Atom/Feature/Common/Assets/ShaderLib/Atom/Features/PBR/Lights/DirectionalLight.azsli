@@ -11,7 +11,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 
-void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
     DirectionalLightShadow::DebugInfo debugInfo = {0, false};
 
@@ -29,26 +29,20 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     {
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
-            lightingData.shadowCoords,
+            surface.position,
             surface.vertexNormal,
+            screenUv,
             debugInfo);
             
 #if ENABLE_TRANSMISSION
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
-            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
+            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex);
         } 
         else if (o_transmission_mode == TransmissionMode::ThinObject) 
         {
-            // Fetch and use shrinked positions for thin object transmission to ensure they fall onto the object when querying
-            DirectionalLightShadow::GetShadowCoords(
-                shadowIndex,
-                surface.position - lightingData.shrinkFactor * surface.vertexNormal,
-                surface.normal,
-                lightingData.shadowCoords);
-
             // the depth from the shadow map
-            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
+            transmissionDistance = 0;//MKR fix up DirectionalLightShadow::GetThickness(shadowIndex);
         }
 #endif
     }
