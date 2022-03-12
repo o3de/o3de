@@ -809,7 +809,7 @@ try {
         stage('Setup Pipeline') {
             node('controller') {
                 echo "JENKINS_HOME: ${JENKINS_HOME}"
-                echo "ITEM_FULL_NAME: ${ITEM_FULL_NAME}"
+                // echo "ITEM_FULL_NAME: ${ITEM_FULL_NAME}"
                 echo "ITEM_ROOTDIR: ${ITEM_ROOTDIR}"
                 echo "ITEM_FULLNAME: ${ITEM_FULLNAME}"
                 def envVarList = []
