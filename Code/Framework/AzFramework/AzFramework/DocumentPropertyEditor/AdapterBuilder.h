@@ -59,6 +59,9 @@ namespace AZ::DocumentPropertyEditor
         //! Sets an attribute of the last node. Rows, labels, and property editors all support different attributes.
         //! \see DocumentPropertyEditor::Nodes
         void Attribute(Name attribute, Dom::Value value);
+        void OnEditorChanged(AZStd::function<void(const Dom::Path&, const Dom::Value&)> onChangedCallback);
+
+        Dom::Path GetCurrentPath() const;
 
         //! Returns true if an error has been encountered during the build process, 
         bool IsError() const;
@@ -67,6 +70,12 @@ namespace AZ::DocumentPropertyEditor
         //! Ends the build operation and retrieves the builder result.
         //! Operations are no longer valid on this builder once this is called.
         Dom::Value&& FinishAndTakeResult();
+
+        template <class PropertyEditorDefinition>
+        void BeginPropertyEditor(Dom::Value value = {})
+        {
+            BeginPropertyEditor(PropertyEditorDefinition::Name, value);
+        }
 
         template <class NodeDefinition>
         void BeginNode()
@@ -92,12 +101,17 @@ namespace AZ::DocumentPropertyEditor
             Attribute(definition.GetName(), definition.ValueToDom(AZStd::move(value)));
         }
 
+        template <class CallbackType, class Functor>
+        void CallbackAttribute(const CallbackAttributeDefinition<CallbackType>& definition, Functor value)
+        {
+            Attribute(definition.GetName(), definition.ValueToDom(AZStd::function<CallbackType>(value)));
+        }
+
         template <>
         void Attribute<AZStd::string_view>(const AttributeDefinition<AZStd::string_view>& definition, AZStd::string_view value)
         {
             Attribute(definition.GetName(), Dom::Value(value, true));
         }
-
 
     private:
         void Error(AZStd::string_view message);
