@@ -10,9 +10,13 @@ Example method to run these tests:
 
 pytest cmake/Platform/Windows/Packaging/Tests -s \
     --log-file=C:/workspace/test_installer.log \
-    --installer-path=C:/path/to/o3de_installer.exe \
+    --installer-uri=file:///C:/path/to/o3de_installer.exe \
     --install-root=C:/O3DE/0.0.0.0 \
     --project-path=C:/workspace/TestProject
+
+Alternately, the installer-uri can be an s3 or web URL. For example:
+--installer-uri=s3://bucketname/o3de_installer.exe
+--installer-uri=https://o3de.binaries.org/o3de_installer.exe
 
 """
 import pytest
@@ -51,7 +55,7 @@ def test_binaries_exist(test_installer_fixture, context, filename):
 def test_o3de_registers_engine_fixture(test_installer_fixture, context):
     """Engine is registered when o3de.exe is run"""
     try:
-        result = context.run([str(context.engine_bin_path / 'o3de.exe')], timeout=7)
+        result = context.run([str(context.engine_bin_path / 'o3de.exe')], timeout=15)
 
         # o3de.exe should not close with an error code 
         assert result.returncode == 0, f"o3de.exe failed with exit code {result.returncode}"
