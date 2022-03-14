@@ -66,26 +66,6 @@ VSOutput MainVS(VSInput IN)
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-    
-    // Offset the depth of redrawn entities to avoid z fighting with the underlying entity rendered data
-    // A proper programatic solution will be investigated in LYN-10304
-    //OUT.m_position.z *= 1.001;
-
-    //OUT.m_position.z += 0.001;
-
-    /*/
-
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-
-    // Offset the depth of redrawn entities to avoid z fighting with the underlying entity rendered data
-    // A proper programatic solution will be investigated in LYN-10304
-
-    //*/
-
-
-/*
-    For use in LYN-9929
-*/
 
     // NDCs
     float3 ndc = float3(OUT.m_position.x / OUT.m_position.w, OUT.m_position. y/ OUT.m_position.w, OUT.m_position.z / OUT.m_position.w);
