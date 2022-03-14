@@ -20,7 +20,6 @@ namespace AZ
         namespace Platform
         {
             MTLPixelFormat ConvertPixelFormat(RHI::Format format);
-            MTLBlitOption GetBlitOption(RHI::Format format);
             MTLSamplerAddressMode ConvertAddressMode(RHI::AddressMode addressMode);
             MTLResourceOptions CovertStorageMode(MTLStorageMode storageMode);
             MTLStorageMode GetCPUGPUMemoryMode();
@@ -1370,9 +1369,27 @@ namespace AZ
             return Platform::IsDepthStencilSupported(mtlDevice, format);
         }
     
-        MTLBlitOption GetBlitOption(RHI::Format format)
+        MTLBlitOption GetBlitOption(RHI::Format format, RHI::ImageAspect imageAspect)
         {
-            return Platform::GetBlitOption(format);
+            switch(format)
+            {
+                case RHI::Format::PVRTC4_UNORM:
+                case RHI::Format::PVRTC4_UNORM_SRGB:
+                    return MTLBlitOptionRowLinearPVRTC;
+                case RHI::Format::D32_FLOAT_S8X24_UINT:
+                {
+                    if(imageAspect == RHI::ImageAspect::Depth)
+                    {
+                        return MTLBlitOptionDepthFromDepthStencil;
+                    }
+                    else
+                    {
+                        return MTLBlitOptionStencilFromDepthStencil;
+                    }
+                }
+                default:
+                    return MTLBlitOptionNone;
+            }
         }
     
         MTLResourceUsage GetImageResourceUsage(RHI::ShaderInputImageAccess imageAccess)
