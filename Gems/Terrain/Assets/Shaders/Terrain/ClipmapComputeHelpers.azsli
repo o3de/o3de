@@ -6,7 +6,7 @@
  *
  */
 
-#define CLIPMAP_STACK_SIZE 4u
+#define CLIPMAP_STACK_SIZE 5u
 
 // Clipmap levels
 // --------|--------------|-------- level 0 stack 0
@@ -42,7 +42,7 @@ float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapL
     distance.y -= step(0.5, distance.y);
     distance.y += step(distance.y, -0.5);
 
-    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - clipmapLevel));
+    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - 1u clipmapLevel));
     float2 maxRenderSize = PassSrg::m_clipmapData.m_maxRenderSize.xy;
     float2 viewRelativePosition = distance * (maxRenderSize * clipmapScale);
     return PassSrg::m_clipmapData.m_viewPosition.zw + viewRelativePosition;
@@ -62,14 +62,14 @@ float2 GetCurrentWorldPosition(uint2 pixelPosition, uint clipmapLevel)
 
 float2 ddxPosition(uint clipmapLevel)
 {
-    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - clipmapLevel));
+    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - 1u - clipmapLevel));
     float2 dxdy = (PassSrg::m_clipmapData.m_maxRenderSize / PassSrg::m_clipmapData.m_maxRenderSize) * clipmapScale;
     return float2(dxdy.x, 0.0);
 }
 
 float2 ddyPosition(uint clipmapLevel)
 {
-    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - clipmapLevel));
+    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - 1u - clipmapLevel));
     float2 dxdy = (PassSrg::m_clipmapData.m_maxRenderSize / PassSrg::m_clipmapData.m_maxRenderSize) * clipmapScale;
     return float2(0.0, dxdy.y);
 }

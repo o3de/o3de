@@ -91,7 +91,7 @@ void MainCS(
         float2 macroNormal;
         SampleMacroTexture(worldPosition, clipmapLevel, macroColor, macroNormal);
         PassSrg::m_macroColorClipmaps[uint3(dispatchThreadID.xy, clipmapLevel)].rgba = float4(macroColor, 1.0);
-        PassSrg::m_macroNormalClipmaps[uint3(dispatchThreadID.xy, clipmapLevel)].xy = float2(0.0, 0.0);
+        PassSrg::m_macroNormalClipmaps[uint3(dispatchThreadID.xy, clipmapLevel)].xy = macroNormal;
     }
 }
 

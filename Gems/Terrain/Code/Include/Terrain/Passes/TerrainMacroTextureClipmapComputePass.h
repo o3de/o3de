@@ -42,7 +42,7 @@ namespace Terrain
         //! Update ClipmapData every frame when view point is changed.
         void UpdateClipmapData();
 
-        static constexpr uint32_t ClipmapStackSize = 4;
+        static constexpr uint32_t ClipmapStackSize = 5;
         static constexpr uint32_t ClipmapSizeWidth = 1024;
         static constexpr uint32_t ClipmapSizeHeight = 1024;
 
@@ -66,7 +66,7 @@ namespace Terrain
             // xy: previous clipmap centers; zw: current clipmap centers.
             // They are used for toroidal addressing and may move each frame based on the view point movement.
             // The move distance is scaled differently in each layer.
-            AZ::Vector4 m_clipmapCenters[ClipmapStackSize + 1]; // +1 for the first layer of the pyramid
+            AZ::Vector4 m_clipmapCenters[ClipmapStackSize];
 
             void SetPreviousClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel);
             void SetCurrentClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel);
