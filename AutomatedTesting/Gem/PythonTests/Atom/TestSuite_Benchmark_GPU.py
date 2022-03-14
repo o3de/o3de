@@ -23,9 +23,9 @@ def filebeat_service_running():
     """
     result = True
     try:
-        service = psutil.win_service_get('filebeat')
-        service = service.as_dict()
-        if service['status'] == 'stopped':
+        filebeat_service = psutil.win_service_get('filebeat')
+        filebeat_service_info = filebeat_service.as_dict()
+        if filebeat_service_info['status'] == 'stopped':
             result = False
     except psutil.NoSuchProcess:
         result = False
@@ -119,7 +119,7 @@ class TestPerformanceBenchmarkSuite(object):
     def test_AtomFeatureIntegrationBenchmarkTest_SendBenchmarkMetrics_Vulkan(
             self, request, editor, workspace, project, launcher_platform, level):
         """
-        Gathers the DX12 benchmark metrics and uses filebeat to send the metrics data.
+        Gathers the Vulkan benchmark metrics and uses filebeat to send the metrics data.
         """
         aggregator = BenchmarkDataAggregator(workspace, logger, 'main_gpu')
         aggregator.upload_metrics('Vulkan')
