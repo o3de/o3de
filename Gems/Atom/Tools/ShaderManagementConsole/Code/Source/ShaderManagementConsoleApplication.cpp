@@ -7,25 +7,12 @@
  */
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <Document/ShaderManagementConsoleDocument.h>
-#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <ShaderManagementConsoleApplication.h>
-#include <ShaderManagementConsole_Traits_Platform.h>
 
-#include <QDesktopServices>
-#include <QDialog>
-#include <QFile>
-#include <QFileDialog>
-#include <QMenu>
-#include <QMessageBox>
-#include <QUrl>
+#include <Document/ShaderManagementConsoleDocument.h>
+#include <Window/ShaderManagementConsoleTableView.h>
+#include <Window/ShaderManagementConsoleWindow.h>
 
 void InitShaderManagementConsoleResources()
 {
@@ -52,6 +39,7 @@ namespace ShaderManagementConsole
 
         QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Shader Management Console");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
     }
@@ -83,56 +71,16 @@ namespace ShaderManagementConsole
     {
         Base::StartCommon(systemEntity);
 
+        // Overriding default document type info to provide a custom view
+        auto documentTypeInfo = ShaderManagementConsoleDocument::BuildDocumentTypeInfo();
+        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            return m_window->AddDocumentTab(documentId, new ShaderManagementConsoleTableView(toolId, documentId, m_window.get()));
+        };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
-            [](const AZ::Crc32& toolId) { return aznew ShaderManagementConsoleDocument(toolId); });
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
         m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
         m_window->show();
-
-        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
-
-        m_assetBrowserInteractions->RegisterContextMenuActions(
-            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
-            {
-                return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
-            },
-            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
-            {
-                if (AzFramework::StringFunc::Path::IsExtension(
-                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderSourceData::Extension))
-                {
-                    menu->addAction("Generate Shader Variant List", [entries]()
-                        {
-                            const QString script =
-                                "@engroot@/Gems/Atom/Tools/ShaderManagementConsole/Scripts/GenerateShaderVariantListForMaterials.py";
-                            AZStd::vector<AZStd::string_view> pythonArgs{ entries.front()->GetFullPath() };
-                            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(),
-                                pythonArgs);
-                        });
-                }
-
-                if (AzFramework::StringFunc::Path::IsExtension(
-                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderSourceData::Extension) ||
-                    AzFramework::StringFunc::Path::IsExtension(
-                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
-                {
-                    menu->addAction(QObject::tr("Open"), [entries, this]()
-                        {
-                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                                m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument,
-                                entries.front()->GetFullPath());
-                        });
-                }
-                else
-                {
-                    menu->addAction(QObject::tr("Open"), [entries]()
-                        {
-                            QDesktopServices::openUrl(QUrl::fromLocalFile(entries.front()->GetFullPath().c_str()));
-                        });
-                }
-            });
     }
 
     void ShaderManagementConsoleApplication::Destroy()

@@ -26,6 +26,7 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::ImGui.imguilib
             3rdParty::libpng
+            Gem::ProfilerImGui
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

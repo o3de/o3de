@@ -36,7 +36,7 @@ namespace AZ
                 return ParentPass::IsEnabled() && editorModeFeedback->IsEnabled();
             }
 
-            return ParentPass::IsEnabled();
+            return false;
         }
     } // namespace Render
 } // namespace AZ

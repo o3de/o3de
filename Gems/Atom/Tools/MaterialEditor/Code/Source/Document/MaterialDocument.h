@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -16,17 +17,16 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <Document/MaterialDocumentRequestBus.h>
 
 namespace MaterialEditor
 {
-    /**
-     * MaterialDocument provides an API for modifying and saving material document properties.
-     */
+    //! MaterialDocument provides an API for modifying and saving material document properties.
     class MaterialDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public MaterialDocumentRequestBus::Handler
-        , private AZ::TickBus::Handler
+        , public AZ::TickBus::Handler
     {
     public:
         AZ_RTTI(MaterialDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
@@ -36,18 +36,18 @@ namespace MaterialEditor
         static void Reflect(AZ::ReflectContext* context);
 
         MaterialDocument() = default;
-        MaterialDocument(const AZ::Crc32& toolId);
+        MaterialDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo);
         virtual ~MaterialDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
-        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> GetObjectInfo() const override;
-        bool Open(AZStd::string_view loadPath) override;
+        static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
+        AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
+        bool Open(const AZStd::string& loadPath) override;
         bool Save() override;
-        bool SaveAsCopy(AZStd::string_view savePath) override;
-        bool SaveAsChild(AZStd::string_view savePath) override;
+        bool SaveAsCopy(const AZStd::string& savePath) override;
+        bool SaveAsChild(const AZStd::string& savePath) override;
         bool IsOpen() const override;
         bool IsModified() const override;
-        bool IsSavable() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
 

@@ -124,6 +124,10 @@ namespace AZ
                 Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
             }
 
+            // query buffer attachmentId
+            AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
+            m_queryBufferAttachmentId = AZStd::string::format("DiffuseProbeGridQueryBuffer_%s", uuidString.c_str());
+
             EnableSceneNotification();
         }
 
@@ -217,6 +221,31 @@ namespace AZ
             for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
             {
                 diffuseProbeGrid->ResetCullingVisibility();
+            }
+
+            // build the query buffer for the irradiance queries (if any)
+            if (m_irradianceQueries.size())
+            {
+                uint32_t numQueries = aznumeric_cast<uint32_t>(m_irradianceQueries.size());
+                uint32_t elementSize = sizeof(IrradianceQueryVector::value_type);
+                uint32_t bufferSize = elementSize * numQueries;
+
+                // advance to the next buffer in the array
+                m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferFrameCount;
+
+                // create a new buffer
+                RPI::CommonBufferDescriptor desc;
+                desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
+                desc.m_bufferName = "DiffuseQueryBuffer";
+                desc.m_byteCount = bufferSize;
+                desc.m_elementSize = elementSize;
+                m_queryBuffer[m_currentBufferIndex] = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+
+                // populate the buffer with the query position list
+                m_queryBuffer[m_currentBufferIndex]->UpdateData(m_irradianceQueries.data(), bufferSize);
+
+                // create the bufferview descriptor with the new number of elements
+                m_queryBufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, numQueries, elementSize);
             }
         }
 
@@ -524,6 +553,17 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "SetVisualizationSphereRadius called with an invalid handle");
             probeGrid->SetVisualizationSphereRadius(visualizationSphereRadius);
+        }
+
+        uint32_t DiffuseProbeGridFeatureProcessor::AddIrradianceQuery(const AZ::Vector3& position, const AZ::Vector3& direction)
+        {
+            m_irradianceQueries.push_back({ position, direction });
+            return aznumeric_cast<uint32_t>(m_irradianceQueries.size()) - 1;
+        }
+
+        void DiffuseProbeGridFeatureProcessor::ClearIrradianceQueries()
+        {
+            m_irradianceQueries.clear();
         }
 
         void DiffuseProbeGridFeatureProcessor::CreateBoxMesh()
