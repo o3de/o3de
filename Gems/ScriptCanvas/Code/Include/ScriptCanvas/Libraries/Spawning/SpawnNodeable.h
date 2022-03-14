@@ -13,14 +13,13 @@
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
-#include <ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h>
 #include <Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
     //! Node for spawning entities
     class SpawnNodeable
-        : public ScriptCanvas::Nodeable
+        : public Nodeable
         , public AZ::TickBus::Handler
     {
         SCRIPTCANVAS_NODE(SpawnNodeable);
@@ -40,7 +39,7 @@ namespace ScriptCanvas::Nodeables::Spawning
         struct SpawnableResult
         {
             AZStd::vector<Data::EntityIDType> m_entityList;
-            SpawnTicketInstance m_spawnTicket;
+            AzFramework::EntitySpawnTicket m_spawnTicket;
         };
         
         AZStd::vector<SpawnableResult> m_completionResults;

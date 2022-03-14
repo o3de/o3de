@@ -13,13 +13,12 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <Libraries/Spawning/SpawnableAsset.h>
-#include <Libraries/Spawning/SpawnTicketInstance.h>
 #include <Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
     class CreateSpawnTicketNodeable
-        : public ScriptCanvas::Nodeable
+        : public Nodeable
     {
         SCRIPTCANVAS_NODE(CreateSpawnTicketNodeable);
     };

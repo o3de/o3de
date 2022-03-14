@@ -13,7 +13,6 @@
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
-#include <ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.h>
 #include <Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
@@ -37,7 +36,7 @@ namespace ScriptCanvas::Nodeables::Spawning
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
         
     private:
-        AZStd::vector<SpawnTicketInstance> m_despawnedTicketList;
+        AZStd::vector<AzFramework::EntitySpawnTicket> m_despawnedTicketList;
         AZStd::recursive_mutex m_mutex;
     };
 }
