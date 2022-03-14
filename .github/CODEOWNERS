@@ -1,7 +1,6 @@
 
 /cmake/LYTestWrappers.cmake @o3de/sig-testing-reviewers
 
-
 /Code/Framework/AzTest @o3de/sig-testing-reviewers
 /Code/Tools/AzTestRunner/ @o3de/sig-testing-reviewers
 
