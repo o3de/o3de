@@ -8,26 +8,10 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <Viewport/ViewBookmarkLoaderInterface.h>
 
 namespace AzToolsFramework
 {
-    //! @class ViewBookmark
-    //! @brief struct that store viewport camera properties that can be serialized and loaded
-    struct ViewBookmark
-    {
-        AZ_CLASS_ALLOCATOR(ViewBookmark, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(ViewBookmark, "{522A38D9-6FFF-4B96-BECF-B4D0F7ABCD25}");
-
-        ViewBookmark() = default;
-
-        static void Reflect(AZ::ReflectContext* context);
-        bool operator==(const ViewBookmark& other) const { return m_position == other.m_position && m_rotation == other.m_rotation; }
-        bool operator!=(const ViewBookmark& other) const { return m_position != other.m_position || m_rotation != other.m_rotation; }
-
-        AZ::Vector3 m_position = AZ::Vector3::CreateZero();
-        AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();
-    };
-
     //! @class EditorViewBookmarks
     //! @brief struct that stores a vector of View bookmarks
     struct EditorViewBookmarks final

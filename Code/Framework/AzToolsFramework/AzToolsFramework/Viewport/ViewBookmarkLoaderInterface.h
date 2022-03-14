@@ -10,10 +10,52 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Viewport/SharedViewBookmarkComponent.h>
 
 namespace AzToolsFramework
 {
+    //! @class ViewBookmark
+    //! @brief struct that store viewport camera properties that can be serialized and loaded
+    struct ViewBookmark
+    {
+        AZ_CLASS_ALLOCATOR(ViewBookmark, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(ViewBookmark, "{522A38D9-6FFF-4B96-BECF-B4D0F7ABCD25}");
+
+        ViewBookmark() = default;
+
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<ViewBookmark>()
+                    ->Version(0)
+                    ->Field("Position", &ViewBookmark::m_position)
+                    ->Field("Rotation", &ViewBookmark::m_rotation);
+
+                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<ViewBookmark>("ViewBookmark Data", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "ViewBookmark")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_position, "Position", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_rotation, "Rotation", "");
+                }
+            }
+        }
+
+        bool operator==(const ViewBookmark& other) const
+        {
+            return m_position == other.m_position && m_rotation == other.m_rotation;
+        }
+
+        bool operator!=(const ViewBookmark& other) const
+        {
+            return m_position != other.m_position || m_rotation != other.m_rotation;
+        }
+
+        AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();
+    };
+
     //! @class ViewBookmarkIntereface
     //! @brief Interface for saving/loading View Bookmarks.
     class ViewBookmarkLoaderInterface
