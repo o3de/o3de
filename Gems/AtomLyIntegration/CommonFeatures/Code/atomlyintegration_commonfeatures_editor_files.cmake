@@ -62,6 +62,8 @@ set(FILES
     Source/PostProcess/Bloom/EditorBloomComponent.h
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.cpp
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.h
+    Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.cpp
+    Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.h
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.cpp
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.h
     Source/PostProcess/DisplayMapper/EditorDisplayMapperComponent.cpp
