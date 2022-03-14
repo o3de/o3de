@@ -1,8 +1,11 @@
 
-/cmake/LYTestWrappers.cmake @sig-testing
+/cmake/LYTestWrappers.cmake @o3de/sig-testing
 
-/Code/Tools/AzTestRunner/ @sig-testing
 
-/Tools/LyTestTools/ @sig-testing
-/Tools/RemoteConsole/ @sig-testing
+/Code/Framework/AzTest @o3de/sig-testing
+/Code/Tools/AzTestRunner/ @o3de/sig-testing
+
+/Tools/LyTestTools/ @o3de/sig-testing
+# This is being deprecated.
+/Tools/RemoteConsole/ @o3de/sig-testing
 
