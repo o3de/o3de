@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/ViewBookmarkLoaderInterface.h>
 
 namespace AzToolsFramework
@@ -40,11 +41,11 @@ namespace AzToolsFramework
         void SaveBookmarkSettingsFile() override;
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
         bool SaveLocalBookmarkAtIndex(const ViewBookmark& bookmark, int index);
-        bool SaveSharedBookmark(ViewBookmark& bookmark);
+        bool RemoveLocalBookmarkAtIndex(int index);
+        bool SaveSharedBookmark([[maybe_unused]] ViewBookmark& bookmark);
         bool LoadDefaultLocalViewBookmarks();
 
-        template<typename BookmarkComponentType>
-        BookmarkComponentType* RetrieveBookmarkComponent() const;
+        LocalViewBookmarkComponent* RetrieveLocalViewBookmarkComponent() const;
 
         AZStd::string GenerateBookmarkFileName() const;
 
