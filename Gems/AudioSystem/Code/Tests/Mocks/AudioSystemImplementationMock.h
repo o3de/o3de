@@ -23,6 +23,7 @@ namespace Audio
         MOCK_METHOD0(Release, void());
         MOCK_METHOD0(ExternalUpdate, void());
         MOCK_METHOD1(PushRequest, void(AudioRequestVariant&&));
+        MOCK_METHOD1(PushRequests, void(AudioRequestsQueue&));
         MOCK_METHOD1(PushRequestBlocking, void(AudioRequestVariant&&));
         MOCK_METHOD1(PushCallback, void(AudioRequestVariant&&));
         MOCK_CONST_METHOD1(GetAudioTriggerID, TAudioControlID(const char*));

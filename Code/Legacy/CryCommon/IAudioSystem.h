@@ -67,12 +67,13 @@ namespace Audio
         virtual ~AudioRequestBase() = default;
         AZ_DISABLE_COPY(AudioRequestBase);
 
-        EAudioRequestStatus m_status{ EAudioRequestStatus::None };
-
         // The audio object to operate on, if applicable.
         // For audio requests under the Audio::Object namespace, this is applicable.
         // If the audio object id is invalid, the request will operate on the global audio object.
         TAudioObjectID m_audioObjectId{ INVALID_AUDIO_OBJECT_ID };
+
+        EAudioRequestStatus m_status{ EAudioRequestStatus::None };
+        AZ::u32 m_flags{ 0 };
     };
 
     namespace SystemRequest
@@ -374,6 +375,7 @@ namespace Audio
 
 
     using AudioRequestVariant = AZStd::variant<
+        // System Requests
         Audio::SystemRequest::Initialize,
         Audio::SystemRequest::Shutdown,
         Audio::SystemRequest::ReserveObject,
@@ -393,7 +395,7 @@ namespace Audio
         Audio::SystemRequest::DrawDebug,
         Audio::SystemRequest::ChangeLanguage,
         Audio::SystemRequest::SetPanningMode,
-
+        // Object Requests
         Audio::ObjectRequest::ExecuteTrigger,
         Audio::ObjectRequest::ExecuteSourceTrigger,
         Audio::ObjectRequest::PrepareTrigger,
@@ -408,10 +410,13 @@ namespace Audio
         Audio::ObjectRequest::ResetEnvironments,
         Audio::ObjectRequest::Release,
         Audio::ObjectRequest::SetMultiplePositions,
-
+        // Callback Requests
         Audio::CallbackRequest::ReportFinishedEvent,
-
+        // Listener Requests
         Audio::ListenerRequest::SetWorldTransform>;
+
+
+    using AudioRequestsQueue = AZStd::deque<AudioRequestVariant, AZ::AZStdAlloc<AZ::SystemAllocator>>;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -475,6 +480,7 @@ namespace Audio
         virtual void ExternalUpdate() = 0;
 
         virtual void PushRequest(AudioRequestVariant&& request) = 0;
+        virtual void PushRequests(AudioRequestsQueue& requests) = 0;
         virtual void PushRequestBlocking(AudioRequestVariant&& request) = 0;
         virtual void PushCallback(AudioRequestVariant&& callback) = 0;
 

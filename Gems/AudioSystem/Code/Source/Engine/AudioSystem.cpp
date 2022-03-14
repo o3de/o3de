@@ -108,7 +108,17 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::PushRequestBlocking([[maybe_unused]] AudioRequestVariant&& request)
+    void CAudioSystem::PushRequests(AudioRequestsQueue& requests)
+    {
+        AZStd::scoped_lock lock(m_pendingRequestsMutex);
+        for (auto& request : requests)
+        {
+            m_pendingRequestsQueue.push_back(AZStd::move(request));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CAudioSystem::PushRequestBlocking(AudioRequestVariant&& request)
     {
         // Add this request to be processed immediately.
         // Release the m_processingEvent so that when the request is finished the audio thread doesn't
@@ -139,7 +149,7 @@ namespace Audio
         AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::ExternalUpdate - called from non-Main thread!");
 
         {
-            TAudioRequestQueue callbacksToProcess{};
+            AudioRequestsQueue callbacksToProcess{};
             {
                 AZStd::scoped_lock lock(m_pendingCallbacksMutex);
                 callbacksToProcess.swap(AZStd::move(m_pendingCallbacksQueue));
@@ -206,7 +216,7 @@ namespace Audio
             // Normal request processing: lock and swap the pending requests queue
             // so that the queue can be opened for new requests while the current set
             // of requests can be processed.
-            TAudioRequestQueue requestsToProcess{};
+            AudioRequestsQueue requestsToProcess{};
             {
                 AZStd::scoped_lock lock(m_pendingRequestsMutex);
                 requestsToProcess.swap(AZStd::move(m_pendingRequestsQueue));

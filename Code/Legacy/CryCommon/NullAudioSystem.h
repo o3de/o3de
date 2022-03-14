@@ -58,6 +58,7 @@ namespace Audio
         void ExternalUpdate() override {}
 
         void PushRequest(AudioRequestVariant&&) override {}
+        void PushRequests(AudioRequestsQueue&) override {}
         void PushRequestBlocking(AudioRequestVariant&&) override {}
         void PushCallback(AudioRequestVariant&&) override {}
 

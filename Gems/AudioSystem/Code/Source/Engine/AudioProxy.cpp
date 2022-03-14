@@ -58,6 +58,7 @@ namespace Audio
         }
         else
         {
+            reserveObject.m_flags = eARF_SYNC_CALLBACK;
             AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(reserveObject));
 
             // Problem is that even with the blocking request, the callback is still async, so this assert can still hit.
@@ -329,15 +330,15 @@ namespace Audio
     {
         for (auto& requestVariant : m_queuedAudioRequests)
         {
-            // Need to plug in the audio object ID that was assigned, then kick off the requests.
+            // Inject the audio object ID that was assigned, then kick off the requests.
             AZStd::visit(
                 [this](auto&& request)
                 {
                     request.m_audioObjectId = m_nAudioObjectID;
                 },
                 requestVariant);
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(requestVariant));
         }
+        AZ::Interface<IAudioSystem>::Get()->PushRequests(m_queuedAudioRequests);
         m_queuedAudioRequests.clear();
     }
 

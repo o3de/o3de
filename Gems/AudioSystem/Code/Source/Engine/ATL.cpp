@@ -586,7 +586,14 @@ namespace Audio
 
                 if (request.m_callback)
                 {
-                    hasCallback = true;
+                    if (0 != (request.m_flags & eARF_SYNC_CALLBACK))
+                    {
+                        request.m_callback(request);
+                    }
+                    else
+                    {
+                        hasCallback = true;
+                    }
                 }
 
                 return result;

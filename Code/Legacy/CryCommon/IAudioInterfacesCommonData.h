@@ -193,24 +193,12 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     enum EAudioRequestFlags : TATLEnumFlagsType
     {
-        eARF_NONE                   = 0,                // assumes Lowest priority
-        eARF_PRIORITY_NORMAL        = AUDIO_BIT(0),    // will be processed if no high priority requests are pending
-        eARF_PRIORITY_HIGH          = AUDIO_BIT(1),    // will be processed first
-        eARF_EXECUTE_BLOCKING       = AUDIO_BIT(2),    // blocks main thread until the request has been fully handled
-        eARF_SYNC_CALLBACK          = AUDIO_BIT(3),    // callback (ATL's NotifyListener) will happen on the main thread
-        eARF_SYNC_FINISHED_CALLBACK = AUDIO_BIT(4),    // "finished trigger instance" callback will happen on the main thread
-        eARF_THREAD_SAFE_PUSH       = AUDIO_BIT(5),    // use when pushing a request from a non-main thread, e.g. AK::EventManager or AudioThread
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioRequestType : TATLEnumFlagsType
-    {
-        eART_NONE                           = 0,
-        eART_AUDIO_MANAGER_REQUEST          = 1,
-        eART_AUDIO_CALLBACK_MANAGER_REQUEST = 2,
-        eART_AUDIO_OBJECT_REQUEST           = 3,
-        eART_AUDIO_LISTENER_REQUEST         = 4,
-        eART_AUDIO_ALL_REQUESTS             = static_cast<TATLEnumFlagsType>(-1),
+        eARF_NONE           = 0,
+        eARF_SYNC_CALLBACK  = AUDIO_BIT(0), // Indicates the callback will be called on the audio
+                                            // thread immediately after the request has been handled.
+                                            // If it's a blocking request, this means the callback is
+                                            // executed before main thread is unblocked.
+                                            // Care should be taken to avoid any data races.
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +221,6 @@ namespace Audio
         eATS_UNLOADING                  = AUDIO_BIT(3),
         eATS_STARTING                   = AUDIO_BIT(4),
         eATS_WAITING_FOR_REMOVAL        = AUDIO_BIT(5),
-        eATS_CALLBACK_ON_AUDIO_THREAD   = AUDIO_BIT(6),
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

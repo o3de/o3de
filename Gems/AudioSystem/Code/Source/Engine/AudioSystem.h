@@ -77,6 +77,7 @@ namespace Audio
         void Release() override;
 
         void PushRequest(AudioRequestVariant&& request) override;
+        void PushRequests(AudioRequestsQueue& requests) override;
         void PushRequestBlocking(AudioRequestVariant&& request) override;
         void PushCallback(AudioRequestVariant&& callback) override;
 
@@ -120,12 +121,11 @@ namespace Audio
         CAudioTranslationLayer m_oATL;
         CAudioThread m_audioSystemThread;
 
-        using TAudioRequestQueue = AZStd::deque<AudioRequestVariant, Audio::AudioSystemStdAllocator>;
-        TAudioRequestQueue m_pendingRequestsQueue;
-        TAudioRequestQueue m_blockingRequestsQueue;
-        TAudioRequestQueue m_pendingCallbacksQueue;
+        AudioRequestsQueue m_blockingRequestsQueue;
+        AudioRequestsQueue m_pendingRequestsQueue;
+        AudioRequestsQueue m_pendingCallbacksQueue;
+        AZStd::recursive_mutex m_blockingRequestsMutex;
         AZStd::mutex m_pendingRequestsMutex;
-        AZStd::mutex m_blockingRequestsMutex;
         AZStd::mutex m_pendingCallbacksMutex;
 
         // Synchronization objects

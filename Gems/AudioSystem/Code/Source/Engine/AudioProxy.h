@@ -51,8 +51,7 @@ namespace Audio
         void ExecuteQueuedRequests();
         bool HasId() const;
 
-        using QueuedAudioRequests = AZStd::deque<AudioRequestVariant, Audio::AudioSystemStdAllocator>;
-        QueuedAudioRequests m_queuedAudioRequests;
+        AudioRequestsQueue m_queuedAudioRequests;
 
         SATLWorldPosition m_oPosition;
         TAudioObjectID m_nAudioObjectID{ INVALID_AUDIO_OBJECT_ID };
