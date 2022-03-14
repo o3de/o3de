@@ -328,7 +328,7 @@ namespace AzToolsFramework
 
     AZStd::optional<ViewBookmark> ViewBookmarkLoader::LoadLastKnownLocation() const
     {
-        return AZStd::optional<ViewBookmark>(m_lastKnownLocation);
+        return m_lastKnownLocation;
     }
 
     template<typename BookmarkComponentType>
@@ -506,12 +506,11 @@ namespace AzToolsFramework
 
         switch (bookmarkType)
         {
-        default:
         case ViewBookmarkType::Standard:
             finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(m_localBookmarkCount++);
             break;
         case ViewBookmarkType::LastKnownLocation:
-            finalPath = "/" + m_bookmarkfileName + "/" + "LastKnownLocation";
+            finalPath = "/" + m_bookmarkfileName + "/LastKnownLocation";
             break;
         }
 
