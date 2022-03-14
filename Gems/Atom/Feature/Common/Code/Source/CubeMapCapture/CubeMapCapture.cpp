@@ -36,8 +36,10 @@ namespace AZ
             m_transform = transform;
         }
 
-        void CubeMapCapture::RenderCubeMap(RenderCubeMapCallback callback)
+        void CubeMapCapture::RenderCubeMap(RenderCubeMapCallback callback, const AZStd::string& relativePath)
         {
+            m_relativePath = relativePath;
+
             CubeMapRenderer::StartRender(callback, m_transform, m_exposure);
         }
 

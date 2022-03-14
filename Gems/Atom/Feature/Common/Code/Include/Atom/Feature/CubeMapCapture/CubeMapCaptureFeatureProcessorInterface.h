@@ -36,7 +36,7 @@ namespace AZ
             virtual void SetTransform(const CubeMapCaptureHandle& cubeMapCapture, const AZ::Transform& transform) = 0;
             virtual void SetExposure(const CubeMapCaptureHandle& cubeMapCapture, float exposure) = 0;
             virtual void SetRelativePath(const CubeMapCaptureHandle& cubeMapCapture, const AZStd::string& relativePath) = 0;
-            virtual void RenderCubeMap(const CubeMapCaptureHandle& cubeMapCapture, RenderCubeMapCallback callback) = 0;
+            virtual void RenderCubeMap(const CubeMapCaptureHandle& cubeMapCapture, RenderCubeMapCallback callback, const AZStd::string& relativePath) = 0;
             virtual bool IsCubeMapReferenced(const AZStd::string& relativePath) = 0;
         };
     } // namespace Render

@@ -147,13 +147,12 @@ namespace AZ
 
         void CubeMapCaptureComponentController::RenderCubeMap(RenderCubeMapCallback callback, const AZStd::string& relativePath)
         {
-            relativePath;
             if (!m_featureProcessor)
             {
                 return;
             }
 
-            m_featureProcessor->RenderCubeMap(m_handle, callback);
+            m_featureProcessor->RenderCubeMap(m_handle, callback, relativePath);
         }
     } // namespace Render
 } // namespace AZ

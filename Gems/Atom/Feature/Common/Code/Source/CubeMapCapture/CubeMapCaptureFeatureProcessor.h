@@ -32,7 +32,7 @@ namespace AZ
             void SetTransform(const CubeMapCaptureHandle& cubeMapCapture, const AZ::Transform& transform) override;
             void SetExposure(const CubeMapCaptureHandle& cubeMapCapture, float exposure) override;
             void SetRelativePath(const CubeMapCaptureHandle& cubeMapCapture, const AZStd::string& relativePath) override;
-            void RenderCubeMap(const CubeMapCaptureHandle& cubeMapCapture, RenderCubeMapCallback callback) override;
+            void RenderCubeMap(const CubeMapCaptureHandle& cubeMapCapture, RenderCubeMapCallback callback, const AZStd::string& relativePath) override;
             bool IsCubeMapReferenced(const AZStd::string& relativePath) override;
 
             // FeatureProcessor overrides

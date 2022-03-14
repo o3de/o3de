@@ -92,10 +92,10 @@ namespace AZ
             cubeMapCapture->SetTransform(transform);
         }
 
-        void CubeMapCaptureFeatureProcessor::RenderCubeMap(const CubeMapCaptureHandle& cubeMapCapture, RenderCubeMapCallback callback)
+        void CubeMapCaptureFeatureProcessor::RenderCubeMap(const CubeMapCaptureHandle& cubeMapCapture, RenderCubeMapCallback callback, const AZStd::string& relativePath)
         {
             AZ_Assert(cubeMapCapture.get(), "RenderCubeMap called with an invalid handle");
-            cubeMapCapture->RenderCubeMap(callback);
+            cubeMapCapture->RenderCubeMap(callback, relativePath);
         }
 
         bool CubeMapCaptureFeatureProcessor::IsCubeMapReferenced(const AZStd::string& relativePath)

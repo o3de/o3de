@@ -28,7 +28,7 @@ namespace AZ
             void OnRenderEnd();
 
             // initiates the cubeMap render and invokes the callback after all of the faces are rendered
-            void RenderCubeMap(RenderCubeMapCallback callback);
+            void RenderCubeMap(RenderCubeMapCallback callback, const AZStd::string& relativePath);
 
             // called by the feature processor, sets the default view if it's for the cubeMap capture pipeline
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline);
