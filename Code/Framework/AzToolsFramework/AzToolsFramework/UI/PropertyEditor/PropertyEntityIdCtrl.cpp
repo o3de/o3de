@@ -335,6 +335,7 @@ namespace AzToolsFramework
 
     void PropertyEntityIdCtrl::SetCurrentEntityId(const AZ::EntityId& newEntityId, bool emitChange, const AZStd::string& nameOverride)
     {
+        #if 0
         if (GetCheckClearButton() && newEntityId.IsValid())
         {
             // First check if the new entity has a parent.
@@ -352,6 +353,8 @@ namespace AzToolsFramework
                 m_entityIdLineEdit->setClearButtonEnabled(isPrefabEntity ? false : true);
             }
         }
+        #endif
+        m_entityIdLineEdit->setClearButtonEnabled(HasClearButton());
         m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride);
         m_componentsSatisfyingServices.clear();
 
@@ -536,12 +539,12 @@ namespace AzToolsFramework
                 GUI->SetIncompatibleServices(incompatibleServices);
             }
         }
-        else if (attrib == AZ::Edit::Attributes::TransformParentClearButton)
+        else if (attrib == AZ::Edit::Attributes::IsClearButtonRequired)
         {
             bool value;
             if (attrValue->Read<bool>(value))
             {
-                GUI->SetCheckClearButton(value);
+                GUI->SetHasClearButton(value);
             }
         }
     }
