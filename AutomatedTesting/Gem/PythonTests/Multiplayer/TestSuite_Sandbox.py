@@ -6,13 +6,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 """
 
-# This suite consists of all test cases that are under development and have not been verified yet.
-# Once they are verified, please move them to TestSuite_Active.py
-
 import pytest
 import os
 import sys
-from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
+from ly_test_tools.o3de.editor_test import EditorTestSuite
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
@@ -26,19 +23,6 @@ import Tools.LyTestTools.ly_test_tools.environment.waiter as waiter
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
-    ## Seems to be flaky, need to investigate
-    class test_Multiplayer_AutoComponent_NetworkInput(EditorSingleTest):
-        from .tests import Multiplayer_AutoComponent_NetworkInput as test_module
-
-    class test_Multiplayer_AutoComponent_RPC(EditorSingleTest):
-        from .tests import Multiplayer_AutoComponent_RPC as test_module
-
-    class test_Multiplayer_BasicConnectivity_Connects(EditorSingleTest):
-        from .tests import Multiplayer_BasicConnectivity_Connects as test_module
-
-    class test_Multiplayer_SimpleNetworkLevelEntity(EditorSingleTest):
-        from .tests import Multiplayer_SimpleNetworkLevelEntity as test_module
-
     def test_Multiplayer_SimpleGameServerLauncher_ConnectsSuccessfully(self, workspace, launcher_platform):
         unexpected_lines = []
         expected_lines = ["New outgoing connection to remote address:"]

@@ -9,7 +9,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <ShaderManagementConsoleApplication.h>
-#include <ShaderManagementConsole_Traits_Platform.h>
 
 #include <Document/ShaderManagementConsoleDocument.h>
 #include <Window/ShaderManagementConsoleTableView.h>
@@ -40,6 +39,7 @@ namespace ShaderManagementConsole
 
         QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Shader Management Console");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
     }
