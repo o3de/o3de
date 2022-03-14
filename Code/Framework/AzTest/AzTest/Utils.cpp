@@ -10,6 +10,7 @@
 #include <cstring>
 #include <AzCore/base.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
@@ -176,6 +177,39 @@ namespace AZ
             {
                 AZ::SettingsRegistryImpl localRegistry;
                 return AZ::SettingsRegistryMergeUtils::FindEngineRoot(localRegistry).String();
+            }
+        }
+
+        void AddActiveGem(AZStd::string_view gemName, AZ::SettingsRegistryInterface& registry, AZ::IO::FileIOBase* fileIo)
+        {
+            // Merge an empty object to the ActiveGems
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            const auto activeGemEntry = FixedValueString::format("%s/%.*s",
+                AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey, AZ_STRING_ARG(gemName));
+            registry.MergeSettings("{}", AZ::SettingsRegistryInterface::Format::JsonMergePatch,
+                activeGemEntry);
+
+            if (fileIo != nullptr)
+            {
+                auto gemPathEntry = FixedValueString::format("%s/%.*s/Path",
+                    AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey, AZ_STRING_ARG(gemName));
+                if (AZ::IO::FixedMaxPath gemRootPath;  registry.Get(gemRootPath.Native(), gemPathEntry))
+                {
+                    const auto gemAlias{ FixedValueString::format("@gemroot:%.*s@", AZ_STRING_ARG(gemName)) };
+                    const auto gemAliasPath = FixedValueString(gemRootPath);
+                    fileIo->SetAlias(gemAlias.c_str(), gemAliasPath.c_str());
+                }
+                else
+                {
+                    AZ_Error("AzTest", false, "Cannot set @gemroot@ alias for gem \"%.*s\"."
+                        " It does not have a gem root folder path within"
+                        " the \"%s\" section of the SettingsRegistry. Make the sure gem is registered in an"
+                        " o3de manifest (o3de_manifest.json, engine.json, project.json, gem.json)"
+                        " and that the manifest files have been merged to the SettingsRegistry."
+                        " Invoke `AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths`"
+                        " to explicitly merge the gem root folder paths from all manifest to the registry",
+                        AZ_STRING_ARG(gemName), AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
+                }
             }
         }
 

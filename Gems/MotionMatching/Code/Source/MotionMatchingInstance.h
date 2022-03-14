@@ -12,8 +12,6 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
-
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <Feature.h>
 #include <TrajectoryHistory.h>
@@ -59,7 +57,14 @@ namespace EMotionFX::MotionMatching
         // DebugDrawRequestBus::Handler overrides
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        void Update(float timePassedInSeconds, const AZ::Vector3& targetPos, const AZ::Vector3& targetFacingDir, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed);
+        void Update(
+            float timePassedInSeconds,
+            const AZ::Vector3& targetPos,
+            const AZ::Vector3& targetFacingDir,
+            bool useTargetFacingDir,
+            TrajectoryQuery::EMode mode,
+            float pathRadius,
+            float pathSpeed);
         void PostUpdate(float timeDelta);
         void Output(Pose& outputPose);
 
@@ -115,7 +120,5 @@ namespace EMotionFX::MotionMatching
         /// Buffers used for FindLowestCostFrameIndex().
         AZStd::vector<float> m_tempCosts;
         AZStd::vector<float> m_minCosts;
-
-        AZStd::vector<AzFramework::DebugDisplayRequests*> m_debugDisplays;
     };
 } // namespace EMotionFX::MotionMatching

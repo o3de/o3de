@@ -25,12 +25,8 @@ namespace AtomToolsFramework
 
         virtual ~AtomToolsDocumentRequests() = default;
 
-        //! Static function used to describe the document implementing this interface. Every leaf document class needs to implement this
-        //! function for registration with the document system.
-        static DocumentTypeInfo BuildDocumentTypeInfo() { return DocumentTypeInfo(); }
-
-        //! Virtual function to retrieve the document type info for the leaf document class.
-        virtual DocumentTypeInfo GetDocumentTypeInfo() const = 0;
+        //! Get the document type info that was used to create this document.
+        virtual const DocumentTypeInfo& GetDocumentTypeInfo() const = 0;
 
         //! Returns a container describing all reflected objects contained in a document
         virtual DocumentObjectInfoVector GetObjectInfo() const = 0;

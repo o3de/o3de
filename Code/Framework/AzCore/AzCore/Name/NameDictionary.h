@@ -16,11 +16,6 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Name/Name.h>
 
-namespace MaterialEditor
-{
-    class MaterialEditorCoreComponent;
-}
-
 namespace UnitTest
 {
     class NameDictionaryTester;

@@ -204,7 +204,25 @@ class AtomComponentProperties:
         Deferred Fog component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
-          - 'Enable Deferred Fog' Toggle active state of the component True/False
+          - 'Enable Deferred Fog' Toggle active state of the component (bool).
+          - 'Fog Color' Sets the fog color. RGB value set using azlmbr.math.Vector3 tuple.
+          - 'Fog Start Distance' Distance from the viewer where the fog starts (0.0, 5000.0).
+          - 'Fog End Distance' Distance from the viewer where fog masks the background scene (0.0, 5000.0).
+          - 'Fog Bottom Height' Height at which the fog layer starts (-5000.0, 5000.0).
+          - 'Fog Max Height' Height of the fog layer top (-5000.0, 5000.0).
+          - 'Noise Texture' The noise texture used for creating the fog turbulence (Asset.id).
+            This property is not yet implemented for editing and will be fixed in a future sprint.
+          - 'Noise Texture First Octave Scale' Scale of the first noise octave (INF, INF).
+            Higher values indicates higher frequency. Values set using azlmbr.math.Vector2 tuple.
+          - 'Noise Texture First Octave Velocity' Velocity of the first noise octave UV coordinates (INF, INF).
+            Values set using azlmbr.math.Vector2 tuple.
+          - 'Noise Texture Second Octave Scale' Scale of the second noise octave (INF, INF).
+            Higher values indicates higher frequency. Values set using azlmbr.math.Vector2 tuple.
+          - 'Noise Texture Second Octave Velocity' Velocity of the second noise octave UV coordinates (INF, INF).
+            Values set using azlmbr.math.Vector2 tuple.
+          - 'Octaves Blend Factor' Blend factor between the noise octaves (0.0, 1.0).
+          - 'Enable Turbulence Properties' Enables Turbulence Properties (bool).
+          - 'Enable Fog Layer' Enables the fog layer (bool).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -212,6 +230,19 @@ class AtomComponentProperties:
             'name': 'Deferred Fog',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable Deferred Fog': 'Controller|Configuration|Enable Deferred Fog',
+            'Fog Color': 'Controller|Configuration|Fog Color',
+            'Fog Start Distance': 'Controller|Configuration|Fog Start Distance',
+            'Fog End Distance': 'Controller|Configuration|Fog End Distance',
+            'Fog Bottom Height': 'Controller|Configuration|Fog Bottom Height',
+            'Fog Max Height': 'Controller|Configuration|Fog Max Height',
+            'Noise Texture': 'Controller|Configuration|Noise Texture',
+            'Noise Texture First Octave Scale': 'Controller|Configuration|Noise Texture First Octave Scale',
+            'Noise Texture First Octave Velocity': 'Controller|Configuration|Noise Texture First Octave Velocity',
+            'Noise Texture Second Octave Scale': 'Controller|Configuration|Noise Texture Second Octave Scale',
+            'Noise Texture Second Octave Velocity': 'Controller|Configuration|Noise Texture Second Octave Velocity',
+            'Octaves Blend Factor': 'Controller|Configuration|Octaves Blend Factor',
+            'Enable Turbulence Properties': 'Controller|Configuration|Enable Turbulence Properties',
+            'Enable Fog Layer': 'Controller|Configuration|Enable Fog Layer',
         }
         return properties[property]
 
@@ -462,7 +493,10 @@ class AtomComponentProperties:
         Material component properties. Requires one of Actor OR Mesh component.
           - 'requires' a list of component names as strings required by this component.
             Only one of these is required at a time for this component.\n
-          - 'Material Asset': the material Asset.id of the material.
+          - 'Material Asset': the default material Asset.id. Overrides all Model and LOD materials.
+          - 'Enable LOD Materials' toggles the use of LOD Materials.
+          - 'LOD Materials' container property for specified LOD materials. (list of EditorMaterialComponentSlot)
+          - 'Model Materials' container property of materials included with model. (EditorMaterialComponentSlot)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -470,6 +504,9 @@ class AtomComponentProperties:
             'name': 'Material',
             'requires': [AtomComponentProperties.actor(), AtomComponentProperties.mesh()],
             'Material Asset': 'Default Material|Material Asset',
+            'Enable LOD Materials': 'Enable LOD Materials',
+            'LOD Materials': 'LOD Materials',
+            'Model Materials': 'Model Materials',
         }
         return properties[property]
 

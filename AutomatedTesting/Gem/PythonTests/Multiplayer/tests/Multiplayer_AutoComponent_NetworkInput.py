@@ -70,7 +70,7 @@ def Multiplayer_AutoComponent_NetworkInput():
 
     level_name = "AutoComponent_NetworkInput"
     helper.init_idle()
-
+    general.set_cvar_integer('editorsv_port', 33452)
 
     # 1) Open Level
     helper.open_level("Multiplayer", level_name)
