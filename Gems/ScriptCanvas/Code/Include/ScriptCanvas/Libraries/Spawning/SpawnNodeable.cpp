@@ -62,6 +62,12 @@ namespace ScriptCanvas::Nodeables::Spawning
         Data::Vector3Type rotation,
         Data::NumberType scale)
     {
+        if (!spawnTicket.IsValid())
+        {
+            AZ_Error("SpawnNodeable", false, "EntitySpawnTicket is missing or invalid.")
+            return;
+        }
+
         auto preSpawnCB = [this, parentId, translation, rotation, scale](
             [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
             AzFramework::SpawnableEntityContainerView view)
