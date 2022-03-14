@@ -1218,12 +1218,12 @@ TEST_F(ATLTestFixture, AudioProxy_SimulateQueuedCommands_NumCommandsExecutedMatc
     constexpr AZ::u32 numCommands = 2;
     AZ::u32 commandCount = 0;
 
-    // Setup what PushRequest will do when additional commands are queued...
-    EXPECT_CALL(m_sys, PushRequest)
-        .WillRepeatedly(
-            [&commandCount](AudioRequestVariant&&)
+    // Setup what PushRequests will do when additional commands are queued...
+    EXPECT_CALL(m_sys, PushRequests)
+        .WillOnce(
+            [&commandCount](AudioRequestsQueue& queue)
             {
-                ++commandCount;
+                commandCount += aznumeric_cast<AZ::u32>(queue.size());
             });
 
     // 2. Call additional commands on the proxy
@@ -1244,5 +1244,6 @@ TEST_F(ATLTestFixture, AudioProxy_SimulateQueuedCommands_NumCommandsExecutedMatc
     EXPECT_EQ(commandCount, numCommands);
 
     // Resets data on the audio proxy object
+    EXPECT_CALL(m_sys, PushRequest).WillOnce(::testing::Return());
     m_proxy.Release();
 }
