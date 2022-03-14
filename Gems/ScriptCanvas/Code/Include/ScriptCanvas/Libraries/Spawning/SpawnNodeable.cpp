@@ -56,7 +56,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     }
 
     void SpawnNodeable::RequestSpawn(
-        SpawnTicketInstance spawnTicket,
+        AzFramework::EntitySpawnTicket spawnTicket,
         AZ::EntityId parentId,
         Data::Vector3Type translation,
         Data::Vector3Type rotation,
@@ -104,6 +104,6 @@ namespace ScriptCanvas::Nodeables::Spawning
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_preInsertionCallback = AZStd::move(preSpawnCB);
         optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
-        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*spawnTicket.m_ticket, AZStd::move(optionalArgs));
+        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(spawnTicket, AZStd::move(optionalArgs));
     }
 } // namespace ScriptCanvas::Nodeables::Spawning

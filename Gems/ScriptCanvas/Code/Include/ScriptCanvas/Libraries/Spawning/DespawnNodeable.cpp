@@ -38,7 +38,7 @@ namespace ScriptCanvas::Nodeables::Spawning
 
     void DespawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
-        AZStd::vector<SpawnTicketInstance> swappedDespawnedTicketList;
+        AZStd::vector<AzFramework::EntitySpawnTicket> swappedDespawnedTicketList;
         {
             AZStd::lock_guard lock(m_mutex);
             swappedDespawnedTicketList.swap(m_despawnedTicketList);
@@ -50,9 +50,9 @@ namespace ScriptCanvas::Nodeables::Spawning
         }
     }
 
-    void DespawnNodeable::RequestDespawn(SpawnTicketInstance spawnTicket)
+    void DespawnNodeable::RequestDespawn(AzFramework::EntitySpawnTicket spawnTicket)
     {
-        if (!spawnTicket.m_ticket)
+        if (!spawnTicket.IsValid())
         {
             return;
         }
@@ -67,6 +67,6 @@ namespace ScriptCanvas::Nodeables::Spawning
 
         AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(despawnCompleteCB);
-        AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(*spawnTicket.m_ticket, AZStd::move(optionalArgs));
+        AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(spawnTicket, AZStd::move(optionalArgs));
     }
 } // namespace ScriptCanvas::Nodeables::Spawning

@@ -10,10 +10,8 @@
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
-    SpawnTicketInstance CreateSpawnTicketNodeable::CreateTicket(const SpawnableAsset& Prefab)
+    AzFramework::EntitySpawnTicket CreateSpawnTicketNodeable::CreateTicket(const SpawnableAsset& Prefab)
     {
-        SpawnTicketInstance ticketInstance;
-        ticketInstance.m_ticket = AZStd::make_shared<AzFramework::EntitySpawnTicket>(Prefab.m_asset);
-        return ticketInstance;
+        return AzFramework::EntitySpawnTicket(Prefab.m_asset);
     }
 }
