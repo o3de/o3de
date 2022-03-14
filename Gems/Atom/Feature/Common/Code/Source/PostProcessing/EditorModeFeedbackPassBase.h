@@ -15,7 +15,7 @@
 
 // Temporary measure for configuring editor mode feedback effects at runtime until GHI 3455 is implemented
 #define AZ_EDITOR_MODE_PASS_CVAR(TYPE, NAMESPACE, NAME, INITIAL_VALUE)                              \
-    AZ_CVAR(TYPE, ##NAMESPACE##_##NAME, INITIAL_VALUE, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(TYPE, NAMESPACE##_##NAME, INITIAL_VALUE, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
 // Temporary measure for configuring editor mode depth transitions at runtime until GHI 3455 is implemented
 #define AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(NAMESPACE, MIN_VALUE, START, DURATION, FINAL_BLEND)    \
