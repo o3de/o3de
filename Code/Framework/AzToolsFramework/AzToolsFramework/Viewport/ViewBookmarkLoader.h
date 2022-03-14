@@ -41,7 +41,7 @@ namespace AzToolsFramework
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
         bool SaveLocalBookmarkAtIndex(const ViewBookmark& bookmark, int index);
         bool SaveSharedBookmark(ViewBookmark& bookmark);
-        bool InitializeDefaultLocalViewBookmarks();
+        bool LoadDefaultLocalViewBookmarks();
 
         template<typename BookmarkComponentType>
         BookmarkComponentType* RetrieveBookmarkComponent() const;
