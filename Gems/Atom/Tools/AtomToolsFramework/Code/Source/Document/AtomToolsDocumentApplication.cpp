@@ -74,10 +74,7 @@ namespace AtomToolsFramework
                             : QObject::tr("Create %1...").arg(documentType.m_documentTypeName.c_str());
 
                         menu->addAction(createActionName, [entries, documentType, this]() {
-                            const auto& defaultPath = GetUniqueFilePath(AZStd::string::format(
-                                "%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(),
-                                documentType.GetDefaultExtensionToSave().c_str()));
-
+                            const auto& defaultPath = GetUniqueDefaultSaveFilePath(documentType.GetDefaultExtensionToSave().c_str());
                             const auto& savePath = GetSaveFilePath(defaultPath);
                             if (!savePath.empty())
                             {
