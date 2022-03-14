@@ -147,6 +147,13 @@ namespace Terrain
     {
         outSurfaceWeights.clear();
 
+        if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("Terrain", false,
+                "Detected cyclic dependencies with terrain surface entity references on entity '%s'", GetEntity()->GetName().c_str());
+            return;
+        }
+
         const GradientSignal::GradientSampleParams params(inPosition);
 
         for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
@@ -165,6 +172,14 @@ namespace Terrain
     {
         AZ_Assert(
             inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
+
+        if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce(
+                "Terrain", false, "Detected cyclic dependencies with terrain surface entity references on entity '%s'",
+                GetEntity()->GetName().c_str());
+            return;
+        }
 
         AZStd::vector<float> gradientValues(inPositionList.size());
 
