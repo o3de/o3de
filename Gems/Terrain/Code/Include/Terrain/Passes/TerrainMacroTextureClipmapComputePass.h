@@ -39,45 +39,47 @@ namespace Terrain
     private:
         TerrainMacroTextureClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
 
-        void CreateClipmaps();
+        //! Update ClipmapData every frame when view point is changed.
         void UpdateClipmapData();
 
         static constexpr uint32_t ClipmapStackSize = 4;
+        static constexpr uint32_t ClipmapSizeWidth = 1024;
+        static constexpr uint32_t ClipmapSizeHeight = 1024;
 
         struct ClipmapData
         {
-            AZ::Vector3 m_previousViewPosition;
-            AZ::Vector3 m_currentViewPosition;
+            //! The 2D xy-plane view position where the main camera is.
+            //! xy: previous; zw: current.
+            AZ::Vector4 m_viewPosition;
 
-            AZ::Vector3 m_worldBoundsMin;
-            AZ::Vector3 m_worldBoundsMax;
+            // 2D xy-plane world bounds defined by the terrain.
+            // xy: min; zw: max.
+            AZ::Vector4 m_worldBounds;
 
-            AZStd::array<float, 3> m_maxRenderSize;
+            //! The max range that the clipmap is covering.
+            float m_maxRenderSize[2];
 
-            uint32_t m_fullUpdateFlag = 0;
+            //! The size of a single clipmap.
+            float m_clipmapSize[2];
 
+            //! Clipmap centers in normalized UV coordinates [0, 1].
+            // xy: previous clipmap centers; zw: current clipmap centers.
+            // They are used for toroidal addressing and may move each frame based on the view point movement.
+            // The move distance is scaled differently in each layer.
             AZ::Vector4 m_clipmapCenters[ClipmapStackSize + 1]; // +1 for the first layer of the pyramid
 
             void SetPreviousClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel);
             void SetCurrentClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel);
 
-            void SetMaxRenderSize(const AZ::Vector3& maxRenderSize);
+            void SetMaxRenderSize(const AZ::Vector2& maxRenderSize);
         };
 
         ClipmapData m_clipmapData;
 
-        bool m_clearFullUpdateFlag = true;
-
-        AZStd::array<AZ::Data::Instance<AZ::RPI::AttachmentImage>, ClipmapStackSize> m_colorClipmapStacks;
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_colorClipmapPyramid;
-        AZStd::array<AZ::Data::Instance<AZ::RPI::AttachmentImage>, ClipmapStackSize> m_normalClipmapStacks;
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_normalClipmapPyramid;
-
-        AZ::RHI::ShaderInputNameIndex m_colorClipmapStackIndex = "m_macroColorClipmaps";
-        AZ::RHI::ShaderInputNameIndex m_colorClipmapPyramidIndex = "m_macroColorPyramid";
-        AZ::RHI::ShaderInputNameIndex m_normalClipmapStackIndex = "m_macroNormalClipmaps";
-        AZ::RHI::ShaderInputNameIndex m_normalClipmapPyramidIndex = "m_macroNormalPyramid";
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_macroColorClipmaps;
 
         AZ::RHI::ShaderInputNameIndex m_clipmapDataIndex = "m_clipmapData";
+        AZ::RHI::ShaderInputNameIndex m_macroColorClipmapsIndex = "m_macroColorClipmaps";
+        AZ::RHI::ShaderInputNameIndex m_macroNormalClipmapsIndex = "m_macroColorClipmaps";
     };
 } // namespace AZ::Render

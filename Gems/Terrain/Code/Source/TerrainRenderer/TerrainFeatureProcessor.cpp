@@ -454,10 +454,7 @@ namespace Terrain
 
         if (m_terrainSrg && m_forwardPass)
         {
-            if (m_terrainSrg->IsQueuedForCompile())
-            {
-                m_terrainSrg->Compile();
-            }
+            m_terrainSrg->Compile();
             m_forwardPass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
         }
     }

@@ -9,10 +9,8 @@
 #include "ClipmapComputeHelpers.azsli"
 #include <Atom/RPI/TangentSpace.azsli>
 
-void SampleTexture(uint2 pixelPosition, uint clipmapLevel, out float3 macroColor, out float3 macroNormal)
+void SampleMacroTexture(float2 worldPosition, uint clipmapLevel, out float3 macroColor, out float2 macroNormal)
 {
-    float2 worldPosition = GetCurrentWorldPosition(pixelPosition, clipmapLevel);
-    
     uint2 macroGridResolution = uint2(TerrainSrg::m_macroMaterialGrid.m_resolution >> 16, TerrainSrg::m_macroMaterialGrid.m_resolution & 0xFFFF);
     float macroTileSize = TerrainSrg::m_macroMaterialGrid.m_tileSize;
     float2 macroGridOffset = TerrainSrg::m_macroMaterialGrid.m_offset;
@@ -23,7 +21,7 @@ void SampleTexture(uint2 pixelPosition, uint clipmapLevel, out float3 macroColor
     macroTileIndex *= NumMacroMaterialsPerTile;
 
 
-    [unroll] for (uint i = 0; i < NumMacroMaterialsPerTile; ++i)
+    for (uint i = 0; i < NumMacroMaterialsPerTile; ++i)
     {
         TerrainSrg::MacroMaterialData macroMaterialData = TerrainSrg::m_macroMaterialData[macroTileIndex + i];
         if ((macroMaterialData.m_flags & 1) == 0)
@@ -37,18 +35,23 @@ void SampleTexture(uint2 pixelPosition, uint clipmapLevel, out float3 macroColor
         }
 
         float2 macroUvSize = macroMaterialData.m_boundsMax - macroMaterialData.m_boundsMin;
-        macroUvSize.x = -macroUvSize.x;
-        float2 macroUv = (macroMaterialData.m_boundsMin - worldPosition) / macroUvSize;
+        macroUvSize.x = -1.0 / macroUvSize.x;
+        macroUvSize.y = 1.0 / macroUvSize.y;
+        float2 macroUv = (macroMaterialData.m_boundsMin - worldPosition) * macroUvSize;
 
         // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
         // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
-        float2 ddx_macroUv = ddxPosition(pixelPosition, clipmapLevel) / macroUvSize;
-        float2 ddy_macroUv = ddyPosition(pixelPosition, clipmapLevel) / macroUvSize;
+        float2 ddx_macroUv = ddxPosition(clipmapLevel) / macroUvSize;
+        float2 ddy_macroUv = ddyPosition(clipmapLevel) / macroUvSize;
 
         if (macroMaterialData.m_colorMapId != 0xFFFF)
         {
             macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
             macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        }
+        else
+        {
+            macroColor = TerrainMaterialSrg::m_baseColor.rgb;
         }
 
         if (macroMaterialData.m_normalMapId != 0xFFFF)
@@ -57,19 +60,17 @@ void SampleTexture(uint2 pixelPosition, uint clipmapLevel, out float3 macroColor
             bool flipY = macroMaterialData.m_flags & 4;
             float factor = macroMaterialData.m_normalFactor;
 
-            float2 sampledValue = TerrainSrg::m_textures[macroMaterialData.m_normalMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).xy;
+            float2 sampledValue = TerrainSrg::m_textures[macroMaterialData.m_normalMapId][macroUv].xy;
+
+            macroNormal = sampledValue;
+        }
+        else
+        {
 #if AZ_TRAIT_ASTC_COMPRESSION
-            sampledValue =  (sampledValue * 2) - 1;
+            macroNormal = float2(0.5, 0.5);
+#else
+            macroNormal = float2(0.0, 0.0);
 #endif
-            if(flipX)
-            {
-                sampledValue.y = -sampledValue.y;
-            }
-            if(flipY)
-            {
-                sampledValue.x = -sampledValue.x;
-            }
-            macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue, factor));
         }
 
         break;
@@ -78,50 +79,19 @@ void SampleTexture(uint2 pixelPosition, uint clipmapLevel, out float3 macroColor
 
 [numthreads(32,32,1)]
 void MainCS(
-    uint3 dispatchThreadID : SV_DispatchThreadID, 
-    uint3 groupID : SV_GroupID, 
-    uint groupIndex : SV_GroupIndex)
+    uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-    float3 viewPosition = PassSrg::m_clipmapData.m_currentViewPosition;
     uint2 pixelPosition = dispatchThreadID.xy;
 
-    [unroll] for (uint clipmapLevel = 0; clipmapLevel < CLIPMAP_STACK_SIZE; ++clipmapLevel)
-    {
-        uint fullUpdate = (PassSrg::m_clipmapData.m_fullUpdateFlag >> clipmapLevel) & 1;
-        if (!(fullUpdate || NeedsUpdate(pixelPosition, clipmapLevel)))
-        {
-            continue;
-        }
-        
-        float2 worldPosition = GetCurrentWorldPosition(pixelPosition, clipmapLevel);
-
-        float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-        float3 macroNormal = float3(0.0, 0.0, 1.0);
-
-        if (!(any(worldPosition < PassSrg::m_clipmapData.m_worldBoundsMin.xy) || any(worldPosition > PassSrg::m_clipmapData.m_worldBoundsMax.xy)))
-        {
-            SampleTexture(pixelPosition, clipmapLevel, macroColor, macroNormal);
-        }
-
-        PassSrg::m_macroColorClipmaps[clipmapLevel][dispatchThreadID.xy].rgba = float4(macroColor, 1.0);
-        PassSrg::m_macroNormalClipmaps[clipmapLevel][dispatchThreadID.xy].rgba = float4(macroNormal, 1.0);
-    }
-
-    uint fullUpdate = (PassSrg::m_clipmapData.m_fullUpdateFlag >> CLIPMAP_STACK_SIZE) & 1;
-    if (fullUpdate || NeedsUpdate(pixelPosition, CLIPMAP_STACK_SIZE))
+    for (uint clipmapLevel = 0; clipmapLevel < CLIPMAP_STACK_SIZE; ++clipmapLevel)
     {
         float2 worldPosition = GetCurrentWorldPosition(pixelPosition, clipmapLevel);
 
-        float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-        float3 macroNormal = float3(0.0, 0.0, 1.0);
-
-        if (!(any(worldPosition < PassSrg::m_clipmapData.m_worldBoundsMin.xy) || any(worldPosition > PassSrg::m_clipmapData.m_worldBoundsMax.xy)))
-        {
-            SampleTexture(pixelPosition, CLIPMAP_STACK_SIZE, macroColor, macroNormal);
-        }
-
-        PassSrg::m_macroColorClipmapPyramid[dispatchThreadID.xy].rgba = float4(macroColor, 1.0);
-        PassSrg::m_macroNormalClipmapPyramid[dispatchThreadID.xy].rgba = float4(macroNormal, 1.0);
+        float3 macroColor;
+        float2 macroNormal;
+        SampleMacroTexture(worldPosition, clipmapLevel, macroColor, macroNormal);
+        PassSrg::m_macroColorClipmaps[uint3(dispatchThreadID.xy, clipmapLevel)].rgba = float4(macroColor, 1.0);
+        PassSrg::m_macroNormalClipmaps[uint3(dispatchThreadID.xy, clipmapLevel)].xy = float2(0.0, 0.0);
     }
 }
 

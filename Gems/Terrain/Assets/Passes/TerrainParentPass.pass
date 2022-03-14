@@ -16,26 +16,6 @@
                     "Name": "TerrainMacroTextureClipmapGenerationPass",
                     "TemplateName": "TerrainMacroTextureClipmapGenerationPassTemplate",
                     "Enabled": true
-                },
-                {
-                    "Name": "DownsampleClipmapMipChain",
-                    "TemplateName": "DownsampleMipChainTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "MipChainInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "TerrainMacroTextureClipmapGenerationPass",
-                                "Attachment": "MacroColorClipmapOutput4"
-                            }
-                        }
-                    ],
-                    "PassData": {
-                        "$type": "DownsampleMipChainPassData",
-                        "ShaderAsset": {
-                            "FilePath": "Shaders/Terrain/DownsampleClipmapPyramid.shader"
-                        }
-                    }
                 }
             ]
         }

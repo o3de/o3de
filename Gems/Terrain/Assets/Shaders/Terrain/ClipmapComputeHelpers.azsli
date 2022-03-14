@@ -6,8 +6,7 @@
  *
  */
 
-#define CLIPMAP_SIZE 1024
-#define CLIPMAP_STACK_SIZE 4
+#define CLIPMAP_STACK_SIZE 4u
 
 // Clipmap levels
 // --------|--------------|-------- level 0 stack 0
@@ -31,22 +30,22 @@ float2 GetCurrentClipmapCenter(uint clipmapLevel)
 
 float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel)
 {
-    float2 normalizedPixelPosition = float2((float)pixelPosition.x, (float)pixelPosition.y) / ((float)CLIPMAP_SIZE);
+    float2 normalizedPixelPosition = float2(float(pixelPosition.x) + 0.5, float(pixelPosition.y) + 0.5) / PassSrg::m_clipmapData.m_clipmapSize;
     
     float2 distance = normalizedPixelPosition - clipmapCenter;
 
     // Toroidal addressing:
     // If distance is out of the normalized range (-0.5, 0.5), meaning we need to start from the other side.
-    // The logic is equivalent to a modulation. Using step function for accelation.
-    distance.x -= 1.0 * step(0.5, distance.x);
-    distance.x += 1.0 * step(distance.x, -0.5);
-    distance.y -= 1.0 * step(0.5, distance.y);
-    distance.y += 1.0 * step(distance.y, -0.5);
+    // The logic is equivalent to a modulation. Using step function for acceleration.
+    distance.x -= step(0.5, distance.x);
+    distance.x += step(distance.x, -0.5);
+    distance.y -= step(0.5, distance.y);
+    distance.y += step(distance.y, -0.5);
 
-    float clipmapScale = 1.0 / float(1 << (CLIPMAP_STACK_SIZE - clipmapLevel));
+    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - clipmapLevel));
     float2 maxRenderSize = PassSrg::m_clipmapData.m_maxRenderSize.xy;
     float2 viewRelativePosition = distance * (maxRenderSize * clipmapScale);
-    return PassSrg::m_clipmapData.m_currentViewPosition.xy + viewRelativePosition;
+    return PassSrg::m_clipmapData.m_viewPosition.zw + viewRelativePosition;
 }
 
 float2 GetPreviousWorldPosition(uint2 pixelPosition, uint clipmapLevel)
@@ -61,35 +60,16 @@ float2 GetCurrentWorldPosition(uint2 pixelPosition, uint clipmapLevel)
     return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel);
 }
 
-bool NeedsUpdate(uint2 pixelPosition, uint clipmapLevel)
+float2 ddxPosition(uint clipmapLevel)
 {
-    float2 worldPosition = GetPreviousWorldPosition(pixelPosition, clipmapLevel);
-    
-    float2 currentViewPosition = PassSrg::m_clipmapData.m_currentViewPosition.xy;
-    float2 distance = abs(worldPosition - currentViewPosition);
-    
-    float clipmapScale = 1.0 / float(1 << (CLIPMAP_STACK_SIZE - clipmapLevel));
-    float2 maxRenderSize = PassSrg::m_clipmapData.maxRenderSize.xy;
-    
-    float2 clipmapMaxDistance = maxRenderSize * (clipmapScale / 2.0);
-    
-    // If the previous world position of this texel is within the current
-    // range of the clipmap, then we can claim this texel is still valid
-    // and it represents the same world position as the clipmap in the previous
-    // frame.
-    return any(clipmapMaxDistance < distance);
+    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - clipmapLevel));
+    float2 dxdy = (PassSrg::m_clipmapData.m_maxRenderSize / PassSrg::m_clipmapData.m_maxRenderSize) * clipmapScale;
+    return float2(dxdy.x, 0.0);
 }
 
-// Clipmap generation works like a pixel shader, but derivative functions are
-// not available in compute shaders.
-float2 ddxPosition(uint2 pixelPosition, uint clipmapLevel)
+float2 ddyPosition(uint clipmapLevel)
 {
-    uint2 pixelPositionNextX = uint2(pixelPosition.x + 1, pixelPosition.y);
-    return GetCurrentWorldPosition(pixelPositionNextX, clipmapLevel) - GetCurrentWorldPosition(pixelPosition, clipmapLevel);
-}
-
-float2 ddyPosition(uint2 pixelPosition, uint clipmapLevel)
-{
-    uint2 pixelPositionNextY = uint2(pixelPosition.x, pixelPosition.y + 1);
-    return GetCurrentWorldPosition(pixelPositionNextY, clipmapLevel) - GetCurrentWorldPosition(pixelPosition, clipmapLevel);
+    float clipmapScale = 1.0 / (float)(1u << (uint)(CLIPMAP_STACK_SIZE - clipmapLevel));
+    float2 dxdy = (PassSrg::m_clipmapData.m_maxRenderSize / PassSrg::m_clipmapData.m_maxRenderSize) * clipmapScale;
+    return float2(0.0, dxdy.y);
 }

@@ -16,26 +16,21 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     struct ClipmapData
     {
-        // The view position where the main camera is.
-        float3 m_previousViewPosition;
-        [[pad_to(16)]]
-        float3 m_currentViewPosition;
-        [[pad_to(32)]]
+        // The 2D xy-plane view position where the main camera is.
+        // xy: previous; zw: current.
+        float4 m_viewPosition;
 
-        // World bounds defined by the terrain.
-        float3 m_worldBoundsMin;
-        [[pad_to(48)]]
-        float3 m_worldBoundsMax;
-        [[pad_to(64)]]
+        // 2D xy-plane world bounds defined by the terrain.
+        // xy: min; zw: max.
+        float4 m_worldBounds;
 
         // The max range that the clipmap is covering.
-        float3 m_maxRenderSize;
+        float2 m_maxRenderSize;
 
-        // Each bit indicates the owner clipmap should be fully renewed,
-        // possibly caused by starting up or completely moving out of the previous boundaries.
-        uint m_fullUpdateFlag;
+        // The size of a single clipmap.
+        float2 m_clipmapSize;
 
-        // Clipmap ceneters in normalized UV coordinates [0, 1].
+        // Clipmap centers in normalized UV coordinates [0, 1].
         // xy represent previous clipmap centers, zw represent current clipmap centers.
         // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
         // They are used for toroidal addressing and may move each frame based on the view point movement.
@@ -45,8 +40,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
     ClipmapData m_clipmapData;
 
-    RWTexture2D<float4> m_macroColorClipmaps[4];
-    RWTexture2D<float4> m_macroColorClipmapPyramid;
-    RWTexture2D<float4> m_macroNormalClipmaps[4];
-    RWTexture2D<float4> m_macroNormalClipmapPyramid;
+    RWTexture2DArray<float4> m_macroColorClipmaps;
+    RWTexture2DArray<float2> m_macroNormalClipmaps;
 }
