@@ -160,10 +160,13 @@ namespace Terrain
     {
         float maxSample = 0.0f;
         terrainExists = false;
-        AZ_WarningOnce("Terrain", !m_isRequestInProgress, "Detected cyclic dependencies with terrain height entity references");
-        if (!m_isRequestInProgress)
+
+        AZ_WarningOnce(
+            "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with terrain height entity references");
+
+        if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {
-            m_isRequestInProgress = true;
             GradientSignal::GradientSampleParams params(inPosition);
 
             // Right now, when the list contains multiple entries, we will use the highest point from each gradient.
@@ -185,7 +188,6 @@ namespace Terrain
                     maxSample = AZ::GetMax(maxSample, sample);
                 }
             }
-            m_isRequestInProgress = false;
         }
 
         const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
@@ -198,12 +200,12 @@ namespace Terrain
         AZ_Assert(
             inOutPositionList.size() == terrainExistsList.size(), "The position list size doesn't match the terrainExists list size.");
 
-        AZ_WarningOnce("Terrain", !m_isRequestInProgress, "Detected cyclic dependences with terrain height entity references");
+        AZ_WarningOnce(
+            "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with terrain height entity references");
 
-        if (!m_isRequestInProgress)
+        if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {
-            m_isRequestInProgress = true;
-
             // Start by initializing all our terrainExists flags to false.
             AZStd::fill(terrainExistsList.begin(), terrainExistsList.end(), false);
 
@@ -245,8 +247,6 @@ namespace Terrain
                     inOutPositionList[index].SetZ(AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
                 }
             }
-
-            m_isRequestInProgress = false;
         }
     }
 

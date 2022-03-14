@@ -64,7 +64,7 @@ namespace AtomToolsFramework
 
         // Select a default location and unique name for the new document
         UpdateTargetPath(QFileInfo(GetUniqueFilePath(
-            AZStd::string::format("%s/Assets/untitled.%s", m_initialPath.toUtf8().constData(), supportedExtensions.front().toUtf8().constData())).c_str()));
+            AZStd::string::format("%s/untitled.%s", m_initialPath.toUtf8().constData(), supportedExtensions.front().toUtf8().constData())).c_str()));
 
         // When the file selection button is pressed, open a file dialog to select where the document will be saved
         QObject::connect(m_targetSelectionBrowser, &AzQtComponents::BrowseEdit::attachedButtonTriggered, m_targetSelectionBrowser, [this, supportedExtensions]() {
@@ -117,7 +117,7 @@ namespace AtomToolsFramework
         if (!fileInfo.absoluteFilePath().isEmpty())
         {
             m_targetPath = fileInfo.absoluteFilePath();
-            m_targetSelectionBrowser->setText(fileInfo.fileName());
+            m_targetSelectionBrowser->setText(m_targetPath);
         }
     }
 } // namespace AtomToolsFramework

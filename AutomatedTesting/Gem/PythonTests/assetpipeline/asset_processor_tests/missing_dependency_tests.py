@@ -62,7 +62,7 @@ class TestsMissingDependencies_WindowsAndMac(object):
         self._asset_processor.add_source_folder_assets(f"AutomatedTesting\\TestAssets")
         missing_dep_helper.asset_db = os.path.join(asset_processor.temp_asset_root(), "Cache",
                                                    "assetdb.sqlite")
-        self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\Slices")
+        self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\Prefabs")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\Materials")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\textures")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\UI")
@@ -350,7 +350,7 @@ class TestsMissingDependencies_WindowsAndMac(object):
         # fmt:on
         """
         Tests that a file with many dependencies but only one missing has only the one missing dependency reported.
-        This slice file uses entity names with UUIDs and relative paths to resemble references.
+        This file uses entity names with UUIDs and relative paths to resemble references.
         For these references that are valid, all but one have available, matching dependencies. This test is
         primarily meant to verify that the missing dependency reporter checks the product dependency table before
         emitting missing dependencies.
