@@ -346,6 +346,9 @@ class TestAutomation(EditorTestSuite):
     class Physics_UndoRedoWorksOnEntityWithPhysComponents(EditorSharedTest):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
+    class ScriptCanvas_ShapeCast(EditorSharedTest):
+        from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
+
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -358,10 +361,6 @@ class TestAutomationNoPrefab(EditorTestSuite):
     @staticmethod
     def get_number_parallel_editors():
         return 16
-
-    @pytest.mark.xfail(reason="AssertionError: Failed to open level: ScriptCanvas_ShapeCast does not exist or is invalid")
-    class ScriptCanvas_ShapeCast(EditorSharedTest):
-        from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
     @pytest.mark.xfail(reason="AssertionError: Failed to open level: ForceRegion_SliceFileInstantiates does not exist or is invalid")
     class ForceRegion_SliceFileInstantiates(EditorSharedTest):

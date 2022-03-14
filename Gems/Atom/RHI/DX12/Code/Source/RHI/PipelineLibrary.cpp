@@ -136,11 +136,11 @@ namespace AZ
                 if (pipelineStateComPtr)
                 {
                     hr = m_library->StorePipeline(name.c_str(), pipelineStateComPtr.Get());
-
                     if (!AssertSuccess(hr))
                     {
                         return nullptr;
                     }
+                    m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
                 }
             }
             else if (FAILED(hr))
@@ -148,7 +148,6 @@ namespace AZ
                 return nullptr;
             }
 
-            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
             return pipelineStateComPtr.Get();
 #else
             Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
@@ -185,14 +184,13 @@ namespace AZ
                     {
                         return nullptr;
                     }
+                    m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
                 }
             }
             else if (FAILED(hr))
             {
                 return nullptr;
             }
-
-            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
 
             return pipelineStateComPtr.Get();
 #else
