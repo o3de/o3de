@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/StableDynamicArray.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
 namespace AZ
 {
@@ -42,6 +43,9 @@ namespace AZ
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
+
+            //! Returns the object id for a mesh handle.
+            virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
 
             //! Acquires a model with an optional collection of material assignments.
             //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
