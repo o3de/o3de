@@ -790,8 +790,11 @@ namespace Profiler
         const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - frameToFrameTime * m_framesToCollect;
 
         // Remove old frame boundary data
-        auto firstBoundaryToKeepItr = AZStd::upper_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), deleteBeforeTick);
-        m_frameEndTicks.erase(m_frameEndTicks.begin(), firstBoundaryToKeepItr);
+        if (auto firstBoundaryToKeepItr = AZStd::upper_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), deleteBeforeTick);
+            firstBoundaryToKeepItr != m_frameEndTicks.begin())
+        {
+            m_frameEndTicks.erase(m_frameEndTicks.begin(), firstBoundaryToKeepItr);
+        }
 
         // Remove old region data for each thread
         for (auto& [threadId, savedRegions] : m_savedData)
