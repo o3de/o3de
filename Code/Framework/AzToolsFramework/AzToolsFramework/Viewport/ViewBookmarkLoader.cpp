@@ -292,10 +292,13 @@ namespace AzToolsFramework
             AZ_Assert(false, "Shared Bookmark Component functionality not implemented.");
             return AZStd::optional<ViewBookmark>();
         case StorageMode::Local:
-            if (LoadDefaultLocalViewBookmarks())
+
+            if (index >= 0 && index < m_localBookmarks.size())
             {
                 return AZStd::optional<ViewBookmark>(m_localBookmarks.at(index));
             }
+            AZ_Warning("ViewBookmarkLoader", false, "Couldn't load View Bookmark from file.");
+            return AZStd::optional<ViewBookmark>();
         case StorageMode::Invalid:
         default:
             return AZStd::optional<ViewBookmark>();
@@ -323,7 +326,7 @@ namespace AzToolsFramework
         return m_lastKnownLocation;
     }
 
-    LocalViewBookmarkComponent* ViewBookmarkLoader::RetrieveLocalViewBookmarkComponent() const
+    LocalViewBookmarkComponent* ViewBookmarkLoader::RetrieveLocalViewBookmarkComponent()
     {
         AZ::EntityId levelEntityId;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
@@ -422,7 +425,8 @@ namespace AzToolsFramework
                             registry->SetObject(finalPath, ViewBookmark());
                         }
 
-                        return LoadViewBookmarks();
+                        LoadViewBookmarks();
+                        return true;
                     }
                     else
                     {
@@ -462,12 +466,14 @@ namespace AzToolsFramework
 
     bool ViewBookmarkLoader::SaveLocalBookmarkAtIndex(const ViewBookmark& bookmark, int index)
     {
-        if (index < 0 || index >= m_localBookmarkCount)
+
+        if (index < 0 || index > m_localBookmarkCount)
         {
             return false;
         }
 
         LoadDefaultLocalViewBookmarks();
+
 
         AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(index);
 
@@ -488,7 +494,7 @@ namespace AzToolsFramework
 
     bool ViewBookmarkLoader::RemoveLocalBookmarkAtIndex(int index)
     {
-        if (index < 0 || index >= m_localBookmarkCount)
+        if (index < 0 || index > m_localBookmarkCount)
         {
             return false;
         }

@@ -45,7 +45,7 @@ namespace AzToolsFramework
         bool SaveSharedBookmark([[maybe_unused]] ViewBookmark& bookmark);
         bool LoadDefaultLocalViewBookmarks();
 
-        LocalViewBookmarkComponent* RetrieveLocalViewBookmarkComponent() const;
+        LocalViewBookmarkComponent* RetrieveLocalViewBookmarkComponent();
 
         AZStd::string GenerateBookmarkFileName() const;
 
