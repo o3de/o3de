@@ -22,8 +22,8 @@ namespace Benchmark
 
     class PrefabBenchmarkHarness
     {
-        virtual void SetupHarness(const ::benchmark::State& state) = 0;
-        virtual void TeardownHarness(const ::benchmark::State& state) = 0;
+        virtual void SetupHarness(const benchmark::State& state) = 0;
+        virtual void TeardownHarness(const benchmark::State& state) = 0;
     };
 
     class BM_Prefab
@@ -32,8 +32,8 @@ namespace Benchmark
         , public UnitTest::TraceBusRedirector
     {
     public:
-        void SetupHarness(const ::benchmark::State& state) override;
-        void TeardownHarness(const ::benchmark::State& state) override;
+        void SetupHarness(const benchmark::State& state) override;
+        void TeardownHarness(const benchmark::State& state) override;
 
     protected:
         void SetUp(const benchmark::State& state) override

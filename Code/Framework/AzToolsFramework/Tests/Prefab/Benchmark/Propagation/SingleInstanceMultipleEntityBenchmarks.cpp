@@ -65,7 +65,7 @@ namespace Benchmark
         AZStd::unique_ptr<Instance> instanceToUseForPropagation;
     };
 
-    BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateUpdateComponentChange)(::benchmark::State& state)
+    BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateUpdateComponentChange)(benchmark::State& state)
     {
         for (auto _ : state)
         {
@@ -90,7 +90,7 @@ namespace Benchmark
         ->Unit(benchmark::kMillisecond)
         ->Complexity();
     
-    BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateAddComponentChange)(::benchmark::State& state)
+    BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateAddComponentChange)(benchmark::State& state)
     {
         m_entityModify->Deactivate();
         for (auto _ : state)
@@ -125,7 +125,7 @@ namespace Benchmark
         ->Unit(benchmark::kMillisecond)
         ->Complexity();
     
-    BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateRemoveComponentChange)(::benchmark::State& state)
+    BENCHMARK_DEFINE_F(SingleInstanceMultipleEntityBenchmarks, PropagateRemoveComponentChange)(benchmark::State& state)
     {
         m_entityModify->Deactivate();
 
