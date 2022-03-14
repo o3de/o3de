@@ -2,8 +2,8 @@
 /cmake/LYTestWrappers.cmake @o3de/sig-testing
 
 
-/Code/Framework/AzTest @o3de/sig-testing
-/Code/Tools/AzTestRunner/ @o3de/sig-testing
+/Code/Framework/AzTest @o3de/sig-testing-reviewers
+/Code/Tools/AzTestRunner/ @o3de/sig-testing-maintainers
 
 /Tools/LyTestTools/ @o3de/sig-testing
 # This is being deprecated.
