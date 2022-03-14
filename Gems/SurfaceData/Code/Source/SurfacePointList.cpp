@@ -225,7 +225,7 @@ namespace SurfaceData
                 size_t next = index + 1;
                 for (; next < listSize; ++next)
                 {
-                    if (m_surfaceWeightsList[m_sortedSurfacePointIndices[index]].HasAnyMatchingTags(desiredTags))
+                    if (m_surfaceWeightsList[m_sortedSurfacePointIndices[next]].HasAnyMatchingTags(desiredTags))
                     {
                         m_sortedSurfacePointIndices[index] = AZStd::move(m_sortedSurfacePointIndices[next]);
                         m_surfaceCreatorIdList[m_sortedSurfacePointIndices[index]] =
@@ -237,11 +237,11 @@ namespace SurfaceData
                         m_surfaceWeightsList[m_sortedSurfacePointIndices[index]] =
                             AZStd::move(m_surfaceWeightsList[m_sortedSurfacePointIndices[next]]);
 
-                        m_numSurfacePointsPerInput[inputIndex]--;
-
                         ++index;
                     }
                 }
+
+                m_numSurfacePointsPerInput[inputIndex] = index - surfacePointStartIndex;
             }
         }
     }
