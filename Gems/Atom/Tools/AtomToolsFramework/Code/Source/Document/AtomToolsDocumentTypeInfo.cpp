@@ -14,7 +14,12 @@ namespace AtomToolsFramework
 {
     AtomToolsDocumentRequests* DocumentTypeInfo::CreateDocument(const AZ::Crc32& toolId) const
     {
-        return m_documentFactoryCallback ? m_documentFactoryCallback(toolId) : nullptr;
+        return m_documentFactoryCallback ? m_documentFactoryCallback(toolId, *this) : nullptr;
+    }
+
+    bool DocumentTypeInfo::CreateDocumentView(const AZ::Crc32& toolId, const AZ::Uuid& documentId) const
+    {
+        return m_documentViewFactoryCallback ? m_documentViewFactoryCallback(toolId, documentId) : false;
     }
 
     bool DocumentTypeInfo::IsSupportedExtensionToCreate(const AZStd::string& path) const
@@ -32,7 +37,7 @@ namespace AtomToolsFramework
         return IsSupportedExtension(m_supportedExtensionsToSave, path);
     }
 
-    bool DocumentTypeInfo::IsSupportedExtension(const ExtensionInfoVector& supportedExtensions, const AZStd::string& path) const
+    bool DocumentTypeInfo::IsSupportedExtension(const DocumentExtensionInfoVector& supportedExtensions, const AZStd::string& path) const
     {
         return AZStd::any_of(
             supportedExtensions.begin(), supportedExtensions.end(),

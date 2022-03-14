@@ -43,8 +43,6 @@ namespace ScriptCanvasEditor
         , private AzToolsFramework::AssetSystemBus::Handler
     {
     public:
-        
-
         AZ_COMPONENT(SystemComponent, "{1DE7A120-4371-4009-82B5-8140CB1D7B31}");
 
         SystemComponent();

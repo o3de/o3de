@@ -38,7 +38,11 @@
             },
             "Component_[7874177159288365422]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 7874177159288365422
+                "Id": 7874177159288365422,
+                "Child Entity Order": [
+                    "Entity_[272441195238]",
+                    "Entity_[281031129830]"
+                ]
             },
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
@@ -69,16 +73,7 @@
                 },
                 "Component_[14036484285432839222]": {
                     "$type": "EditorInspectorComponent",
-                    "Id": 14036484285432839222,
-                    "ComponentOrderEntryArray": [
-                        {
-                            "ComponentId": 9432950532896492451
-                        },
-                        {
-                            "ComponentId": 16094906495473882735,
-                            "SortIndex": 1
-                        }
-                    ]
+                    "Id": 14036484285432839222
                 },
                 "Component_[17819059404707659501]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -183,16 +178,7 @@
                 },
                 "Component_[835379130070315979]": {
                     "$type": "EditorInspectorComponent",
-                    "Id": 835379130070315979,
-                    "ComponentOrderEntryArray": [
-                        {
-                            "ComponentId": 783042921254971957
-                        },
-                        {
-                            "ComponentId": 3161673553656035328,
-                            "SortIndex": 1
-                        }
-                    ]
+                    "Id": 835379130070315979
                 }
             }
         }

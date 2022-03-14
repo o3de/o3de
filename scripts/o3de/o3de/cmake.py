@@ -65,7 +65,7 @@ def add_gem_dependency(cmake_file: pathlib.Path,
                 # Split the rest of the line on whitespace just in case there are multiple gems in a line
                 gem_name_list = map(lambda gem_name: gem_name.strip('"'), parsed_line.split())
                 if gem_name in gem_name_list:
-                    logger.warning(f'{gem_name} is already enabled in file {str(cmake_file)}.')
+                    logger.info(f'{gem_name} is already enabled in file {str(cmake_file)}.')
                     return 0
 
             t_data.append(line)

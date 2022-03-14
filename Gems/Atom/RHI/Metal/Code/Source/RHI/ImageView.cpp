@@ -122,6 +122,7 @@ namespace AZ
 
         RHI::ResultCode ImageView::InvalidateInternal()
         {
+            ShutdownInternal();
             return InitInternal(GetDevice(), GetResource());
         }
         
