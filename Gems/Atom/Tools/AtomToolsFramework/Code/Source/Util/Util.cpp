@@ -144,9 +144,9 @@ namespace AtomToolsFramework
         return fileInfo.absoluteFilePath().toUtf8().constData();
     }
 
-    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& baseName)
+    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension)
     {
-        return GetUniqueFilePath(AZStd::string::format("%s/Assets/%s", AZ::Utils::GetProjectPath().c_str(), baseName.c_str()));
+        return GetUniqueFilePath(AZStd::string::format("%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), extension.c_str()));
     }
 
     AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath)

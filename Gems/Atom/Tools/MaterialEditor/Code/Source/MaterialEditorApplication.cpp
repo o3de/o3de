@@ -9,7 +9,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <MaterialEditorApplication.h>
-#include <MaterialEditor_Traits_Platform.h>
 
 #include <Document/MaterialDocument.h>
 #include <Window/MaterialEditorWindow.h>
@@ -39,6 +38,7 @@ namespace MaterialEditor
 
         QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Material Editor");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
     }

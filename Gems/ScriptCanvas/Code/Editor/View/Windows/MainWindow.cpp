@@ -1146,7 +1146,10 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string::format("Failed to load graph at %s", fileAssetId.Path().c_str()));
         }
 
-        auto loadedGraph = loadedGraphOutcome.TakeValue();
+        AZ_Warning("ScriptCanvas", loadedGraphOutcome.GetValue().deserializationErrors.empty()
+            , "ScriptCanvas graph loaded with skippable errors: %s", loadedGraphOutcome.GetValue().deserializationErrors.c_str());
+
+        auto loadedGraph = loadedGraphOutcome.GetValue().handle;
         CompleteDescriptionInPlace(loadedGraph);
         outTabIndex = CreateAssetTab(loadedGraph, fileState);
 
@@ -1348,7 +1351,7 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        AZ::Outcome<ScriptCanvasEditor::SourceHandle, AZStd::string> outcome = LoadFromFile(fullPath);
+        auto outcome = LoadFromFile(fullPath);
         if (!outcome.IsSuccess())
         {
             QMessageBox::warning(this, "Invalid Source File"
@@ -1358,9 +1361,14 @@ namespace ScriptCanvasEditor
                 , fullPath, outcome.GetError().c_str());
             return;
         }
+        else
+        {
+            AZ_Warning("ScriptCanvas", outcome.GetValue().deserializationErrors.empty()
+                , "File loaded succesfully with deserialiation errors: %s", outcome.GetValue().deserializationErrors.c_str());
+        }
 
         m_errorFilePath.clear();
-        auto activeGraph = ScriptCanvasEditor::SourceHandle(outcome.TakeValue(), assetInfo.m_assetId.m_guid, fullPath);
+        auto activeGraph = ScriptCanvasEditor::SourceHandle(outcome.GetValue().handle, assetInfo.m_assetId.m_guid, fullPath);
         
         auto openOutcome = OpenScriptCanvasAsset(activeGraph, Tracker::ScriptCanvasFileState::UNMODIFIED);
         if (openOutcome)
