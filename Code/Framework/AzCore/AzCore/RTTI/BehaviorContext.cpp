@@ -107,10 +107,76 @@ namespace AZ
     //=========================================================================
     // BehaviorMethod
     //=========================================================================
-    BehaviorMethod::BehaviorMethod(BehaviorContext* context)
+    BehaviorMethod::BehaviorMethod(BehaviorContext* context, int startArgumentIndex, size_t metadataParameterCount)
         : OnDemandReflectionOwner(*context)
         , m_debugDescription(nullptr)
-    {}
+        , m_startArgumentIndex(startArgumentIndex)
+    {
+        m_metadataParameters.resize(metadataParameterCount);
+    }
+
+    bool BehaviorMethod::AllocateArguments(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter*& arguments, unsigned int numArguments, size_t conversionArgumentIndexBegin) const
+    {
+        size_t totalArguments = GetNumArguments();
+        if (numArguments < totalArguments)
+        {
+            // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
+            // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
+            BehaviorValueParameter* newArguments = reinterpret_cast<BehaviorValueParameter*>(alloca(sizeof(BehaviorValueParameter) * totalArguments));
+            // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
+            size_t argIndex = 0;
+            for (; argIndex < numArguments; ++argIndex)
+            {
+                new(&newArguments[argIndex]) BehaviorValueParameter(arguments[argIndex]);
+            }
+
+            // clone the default parameters if they exist
+            for (; argIndex < totalArguments; ++argIndex)
+            {
+                BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
+                if (!defaultValue)
+                {
+                    AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", numArguments, totalArguments);
+                    return false;
+                }
+                new(&newArguments[argIndex]) BehaviorValueParameter(defaultValue->GetValue());
+            }
+
+            arguments = newArguments;
+        }
+
+        for (size_t i = conversionArgumentIndexBegin; i < parametersSize; ++i)
+        {
+            if (!arguments[i - 1].ConvertTo(parameters[i].m_typeId))
+            {
+                AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)",
+                    m_name.c_str(),
+                    i - 1,
+                    arguments[i - 1].m_name,
+                    arguments[i - 1].m_typeId.template ToString<AZStd::string>().c_str(),
+                    parameters[i].m_name,
+                    parameters[i].m_typeId.template ToString<AZStd::string>().c_str());
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void BehaviorMethod::SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue)
+    {
+        if (index < GetNumArguments())
+        {
+            if (defaultValue && defaultValue->GetValue().m_typeId != GetArgument(index)->m_typeId)
+            {
+                AZ_Assert(
+                    false, "Argument %zu default value type, doesn't match! Default value should be the same type! Current type %s!", index,
+                    defaultValue->GetValue().m_name);
+                return;
+            }
+            m_metadataParameters[index + m_startArgumentIndex].m_defaultValue = defaultValue;
+        }
+    }
 
     //=========================================================================
     // ~BehaviorMethod
@@ -382,6 +448,168 @@ namespace AZ
     // BehaviorContext
     //=========================================================================
     BehaviorContext::BehaviorContext() = default;
+
+    bool BehaviorContext::InternalMethod(
+        AZStd::unordered_map<AZStd::string, BehaviorMethod*>& methods,
+        BehaviorMethod* method,
+        const char* name,
+        const BehaviorParameterOverrides* args,
+        size_t argsSize,
+        const char* deprecatedName,
+        const char* dbgDesc)
+    {
+        method->m_debugDescription = dbgDesc;
+
+        /*
+        ** check to see if the deprecated name is used, and ensure its not duplicated.
+        */
+        if (deprecatedName != nullptr)
+        {
+            auto itr = methods.find(name);
+            if (itr != methods.end())
+            {
+                // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
+                bool isDuplicate = false;
+                for (const auto& i : methods)
+                {
+                    if (i.second->GetDeprecatedName() == deprecatedName)
+                    {
+                        AZ_Warning(
+                            "BehaviorContext", false,
+                            "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name "
+                            "is ignored!",
+                            name, deprecatedName, i.first.c_str());
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate)
+                {
+                    itr->second->SetDeprecatedName(deprecatedName);
+                }
+            }
+            else
+            {
+                AZ_Warning("BehaviorContext", false, "Method %s does not exist, so the deprecated name is ignored!", name, deprecatedName);
+            }
+        }
+
+        auto methodIter = methods.find(name);
+        if (methodIter != methods.end())
+        {
+            if (!methodIter->second->AddOverload(method))
+            {
+                AZ_Error("BehaviorContext", false, "Method incorrectly reflected as C++ overload");
+                delete method;
+                return false;
+            }
+        }
+        else
+        {
+            methods.insert(AZStd::make_pair(name, method));
+        }
+
+        size_t classPtrIndex = method->IsMember() ? 1 : 0;
+        for (size_t i = 0; i < argsSize; ++i)
+        {
+            method->SetArgumentName(i + classPtrIndex, args[i].m_name);
+            method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
+            method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
+            method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
+        }
+
+        return true;
+    }
+
+    BehaviorClass* BehaviorContext::InternalClass(
+        const char* name,
+        const AZ::TypeId& typeUuid,
+        AZ::IRttiHelper* rttiHelper,
+        size_t alignment,
+        size_t size)
+    {
+        AZ_Assert(
+            !typeUuid.IsNull(),
+            "Type %s has no AZ_TYPE_INFO or AZ_RTTI.  Please use an AZ_RTTI or AZ_TYPE_INFO declaration before trying to use it in "
+            "reflection contexts.",
+            name ? name : "<Unknown class>");
+        if (typeUuid.IsNull())
+        {
+            return nullptr;
+        }
+
+        auto classTypeIt = m_typeToClassMap.find(typeUuid);
+        if (IsRemovingReflection())
+        {
+            if (classTypeIt != m_typeToClassMap.end())
+            {
+                // find it in the name category
+                auto nameIt = m_classes.find(name);
+                while (nameIt != m_classes.end())
+                {
+                    if (nameIt->second == classTypeIt->second)
+                    {
+                        m_classes.erase(nameIt);
+                        break;
+                    }
+                }
+                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveClass, name, classTypeIt->second);
+                delete classTypeIt->second;
+                m_typeToClassMap.erase(classTypeIt);
+            }
+            return nullptr;
+        }
+        else
+        {
+            if (classTypeIt != m_typeToClassMap.end())
+            {
+                // class already reflected, display name and uuid
+#if defined(AZ_ENABLE_TRACING)
+                char uuidName[AZ::Uuid::MaxStringBuffer];
+                classTypeIt->first.ToString(uuidName, AZ::Uuid::MaxStringBuffer);
+
+                AZ_Error("Reflection", false, "Class '%s' is already registered using Uuid: %s!", name, uuidName);
+#endif
+                return nullptr;
+            }
+
+            // TODO: make it a set and use the name inside the class
+            if (m_classes.find(name) != m_classes.end())
+            {
+                AZ_Error("Reflection", false, "A class with name '%s' is already registered!", name);
+                return nullptr;
+            }
+
+            BehaviorClass* behaviorClass = aznew BehaviorClass();
+            behaviorClass->m_typeId = typeUuid;
+            behaviorClass->m_azRtti = rttiHelper;
+            behaviorClass->m_alignment = alignment;
+            behaviorClass->m_size = size;
+            behaviorClass->m_name = name;
+
+            // Switch to Set (we store the name in the class)
+            m_classes.emplace(behaviorClass->m_name, behaviorClass);
+            m_typeToClassMap.emplace(behaviorClass->m_typeId, behaviorClass);
+            return behaviorClass;
+        }
+    }
+
+    void BehaviorContext::InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t paramOverridesCount)
+    {
+        if (defaultValues)
+        {
+            AZ_Assert(defaultValues->GetNumValues() <= paramOverridesCount,
+                "You can't have more default values than the number of function arguments");
+            // Copy default values to parameter override structure
+            size_t startArgumentIndex = paramOverridesCount - defaultValues->GetNumValues();
+            for (size_t i = 0; i < defaultValues->GetNumValues(); ++i)
+            {
+                paramOverrides[startArgumentIndex + i].m_defaultValue = defaultValues->GetDefaultValue(i);
+            }
+            delete defaultValues;
+        }
+    }
 
     //=========================================================================
     // ~BehaviorContext

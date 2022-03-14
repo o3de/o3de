@@ -18,7 +18,7 @@
 namespace ScriptEvents
 {
     ScriptEventMethod::ScriptEventMethod(AZ::BehaviorContext* behaviorContext, const ScriptEvent& definition, const AZStd::string eventName)
-        : AZ::BehaviorMethod(behaviorContext)
+        : AZ::BehaviorMethod(behaviorContext, 0, 0)
         , m_busIdType(AZ::Uuid::CreateNull())
         , m_returnType(AZ::Uuid::CreateNull())
         , m_busBindingId()
