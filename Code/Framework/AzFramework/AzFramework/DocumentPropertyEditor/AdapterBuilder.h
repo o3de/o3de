@@ -59,8 +59,12 @@ namespace AZ::DocumentPropertyEditor
         //! Sets an attribute of the last node. Rows, labels, and property editors all support different attributes.
         //! \see DocumentPropertyEditor::Nodes
         void Attribute(Name attribute, Dom::Value value);
+        //! Adds a Nodes::PropertyEditor::OnChanged attribute that will get called with
+        //! the path of the property value and its new value. This path can be used to generate a
+        //! correct Replace patch for submitting NotifyContentsChanged.
         void OnEditorChanged(AZStd::function<void(const Dom::Path&, const Dom::Value&)> onChangedCallback);
 
+        //! Gets the path to the DOM node currently being built within this builder's DOM.
         Dom::Path GetCurrentPath() const;
 
         //! Returns true if an error has been encountered during the build process, 

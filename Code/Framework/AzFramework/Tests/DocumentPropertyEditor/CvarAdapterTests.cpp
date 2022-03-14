@@ -73,10 +73,7 @@ namespace AZ::DocumentPropertyEditor::Tests
             ASSERT_FALSE(row.IsNull());
             auto result = Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(row[1], value);
             EXPECT_TRUE(result.IsSuccess());
-            if (!result.IsSuccess())
-            {
-                EXPECT_EQ("", result.GetError());
-            }
+            AZ_Error("CvarAdapterDpeTests", result.IsSuccess(), "%s", result.GetError().c_str());
         }
 
         AZStd::unique_ptr<AZ::Console> m_console;
