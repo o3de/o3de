@@ -174,6 +174,13 @@ namespace GradientSignal
             return;
         }
 
+        if (GradientRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s'",
+                GetEntity()->GetName().c_str());
+            return;
+        }
+
         // Initialize all our output values to 0.
         AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
 
