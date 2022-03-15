@@ -376,6 +376,10 @@ namespace ScriptCanvasEditor
         AZ::Outcome<ScriptCanvas::Node*, AZStd::string> ReplaceLiveNode(ScriptCanvas::Node&, ScriptCanvas::NodeReplacementConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
         bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
         AZ::Outcome<LiveSlotStates, AZStd::string> GetSlotState(const ScriptCanvas::Node& node) const;
+        const LiveSlotInfo* FindMatchingSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotStates& slotState) const;
+
+        AZ::Outcome<void, AZStd::string> UpdateSlotConnections(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotInfo& slotInfo);
+        AZ::Outcome<void, AZStd::string> UpdateSlotDatum(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotInfo& slotInfo);
         AZ::Outcome<void, AZStd::string> UpdateSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotStates& slotState);
         AZ::Outcome<void, AZStd::string> UpdateSlotState(ScriptCanvas::Node& node, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotStates& slotState);
 

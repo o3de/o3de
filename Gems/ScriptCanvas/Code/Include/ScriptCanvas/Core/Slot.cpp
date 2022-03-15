@@ -421,9 +421,9 @@ namespace ScriptCanvas
         return datum;
     }
 
-    void Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
+    bool Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
     {
-        m_node->FindModifiableDatumView(GetId(), datumView);
+        return m_node->FindModifiableDatumView(GetId(), datumView);
     }
 
     bool Slot::IsVariableReference() const

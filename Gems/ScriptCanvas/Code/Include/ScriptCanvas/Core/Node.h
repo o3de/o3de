@@ -395,7 +395,11 @@ namespace ScriptCanvas
         PropertyStatus m_propertyStatus = PropertyStatus::None;
         AZStd::function<Node*(const Node&)> create;
 
-        bool m_tolerateIndividualSlotUpdateFailures = false;
+        bool m_tolerateIndividualSlotUpdateFailures = true;
+        bool m_tolerateNoMatchingPreviousSlot = true;
+        bool m_tolerateFailureToUpdateData = true;
+        bool m_tolerateFailureToReplaceConnections = true;
+        bool m_warnOnToleratedErrors = true;
 
         bool IsValid()
         {
@@ -570,7 +574,7 @@ namespace ScriptCanvas
         SlotId FindSlotIdForDescriptor(AZStd::string_view slotName, const SlotDescriptor& descriptor) const override;
 
         const Datum* FindDatum(const SlotId& slotId) const override;
-        void FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) override;
+        bool FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) override;
 
         AZStd::vector<SlotId> GetSlotIds(AZStd::string_view slotName) const override;
         const ScriptCanvasId& GetOwningScriptCanvasId() const override { return m_scriptCanvasId; }

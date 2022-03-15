@@ -146,7 +146,7 @@ namespace ScriptCanvas
         bool IsData() const;
 
         const Datum* FindDatum() const;
-        void FindModifiableDatumView(ModifiableDatumView& datumView);
+        bool FindModifiableDatumView(ModifiableDatumView& datumView);
 
         // If you are data. You could be a reference pin(i.e. must be a variable)
         // Or a value data pin.

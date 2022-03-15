@@ -585,6 +585,100 @@ namespace ScriptCanvasEditor
         return AZ::Success(slotStates);
     }
 
+    const EditorGraph::LiveSlotInfo* EditorGraph::FindMatchingSlotState
+        ( [[maybe_unused]] ScriptCanvas::Node& node
+        , ScriptCanvas::Slot& slot
+        , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
+        , const LiveSlotStates& slotState) const
+    {
+        auto slotName = slot.GetName();
+        auto slotType = slot.GetType();
+
+        auto iter = AZStd::find_if(slotState.begin(), slotState.end(), [&slotName, &slotType](const LiveSlotInfo& info)
+        {
+            if (info.state.name == slotName)
+            {
+                if (info.state.type == slotType)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        return iter != slotState.begin() ? iter : nullptr;
+    }
+
+    AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotConnections
+        ( ScriptCanvas::Node& node
+        , ScriptCanvas::Slot& slot
+        , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
+        , const LiveSlotInfo& slotInfo)
+    {
+        const auto graphCanvasGraphId = GetGraphCanvasGraphId();
+        const auto scriptCanvasEndpoint = ScriptCanvas::Endpoint(node.GetEntityId(), slot.GetId());
+        const auto graphCanvasEndpoint = ConvertToGraphCanvasEndpoint(scriptCanvasEndpoint);
+
+        for (const auto& connection : slotInfo.connections)
+        {
+            const auto previouslyConnectedScriptCanvasEndpoint
+                = ScriptCanvas::Endpoint(connection.first->GetEntityId(), connection.second->GetId());
+            const auto previouslyConnectedGraphCanvasEndpoint = ConvertToGraphCanvasEndpoint(previouslyConnectedScriptCanvasEndpoint);
+            GraphCanvas::SlotRequestBus::Event( graphCanvasEndpoint.GetSlotId(), &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint
+                , previouslyConnectedGraphCanvasEndpoint);
+
+            AZ::Entity* unusedEntity{};
+            if (!FindConnection(unusedEntity, scriptCanvasEndpoint, previouslyConnectedScriptCanvasEndpoint))
+            {
+                return AZ::Failure(AZStd::string::format("Failed to restore connection between %s-%s and %s-%s."
+                    , node.GetNodeName().c_str()
+                    , slot.GetName().c_str()
+                    , connection.first->GetNodeName().c_str()
+                    , connection.second->GetName().c_str()));
+            }
+        }
+
+        return AZ::Success();
+    }
+
+    AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotDatum
+        ( ScriptCanvas::Node& node
+        , ScriptCanvas::Slot& slot
+        , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
+        , const LiveSlotInfo& slotInfo)
+    {
+        if (!IsData(slot.GetType()))
+        {
+            return AZ::Success();
+        }
+
+        if (!slotInfo.connections.empty())
+        {
+            return AZ::Success();
+        }
+        else if (slotInfo.state.variableReference.IsValid())
+        {
+            slot.SetVariableReference(slotInfo.state.variableReference);
+            return AZ::Success();
+        }
+        else if (slotInfo.state.value.GetType() == slot.GetDataType())
+        {
+            ScriptCanvas::ModifiableDatumView view;
+            if (slot.FindModifiableDatumView(view))
+            {
+                view.HardCopyDatum(slotInfo.state.value);
+                return AZ::Success();
+            }
+
+            return AZ::Failure(AZStd::string::format("Failed to find datum for %s-%s to copy over data from replaced node."
+                , node.GetNodeName().c_str(), slot.GetName().c_str()));
+        }
+
+        // \todo type change is NOT failure, but expose type change copying over of data perhaps
+        return AZ::Success();
+    }
+
     AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotState
         ( ScriptCanvas::Node& node
         , ScriptCanvas::Slot& slot
@@ -592,8 +686,49 @@ namespace ScriptCanvasEditor
         , const LiveSlotStates& slotState)
     {
         // find a match for the slot in the slot state
+        auto match = FindMatchingSlotState(node, slot, nodeConfig, slotState);
+        if (!match)
+        {
+            const auto msg =
+                AZStd::string::format("No previous slot match found for slot: %s-%s", node.GetNodeName().c_str(), slot.GetName().c_str());
+
+            if (!nodeConfig.m_tolerateNoMatchingPreviousSlot)
+            {
+                return AZ::Failure(msg);
+            }
+
+            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
+        }
+
         // update based on type / values
-        // make new connections if possible
+        auto updateDataOutcome = UpdateSlotDatum(node, slot, nodeConfig, *match);
+        if (!updateDataOutcome.IsSuccess())
+        {
+            auto msg = AZStd::string::format
+                ( "Failed to update slot: %s-%s, from previous slot", node.GetNodeName().c_str(), slot.GetName().c_str());
+
+            if (!nodeConfig.m_tolerateFailureToUpdateData)
+            {
+                return AZ::Failure(msg);
+            }
+
+            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
+        }
+
+        // replace old connections
+        auto updateConnectionsOutcome = UpdateSlotConnections(node, slot, nodeConfig, *match);
+        if (!updateConnectionsOutcome.IsSuccess())
+        {
+            auto msg = AZStd::string::format
+                ( "Failed to update slot connections: %s-%s, from previous slot", node.GetNodeName().c_str(), slot.GetName().c_str());
+
+            if (!nodeConfig.m_tolerateFailureToReplaceConnections)
+            {
+                return AZ::Failure(msg);
+            }
+
+            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
+        }
 
         return AZ::Success();
     }
@@ -609,13 +744,15 @@ namespace ScriptCanvasEditor
         {
             if (!nodeSlot)
             {
-                return AZ::Failure(AZStd::string("null slot in Node %s list: ", node.GetNodeName().c_str()));
+                return AZ::Failure(AZStd::string::format("null slot in Node %s list: ", node.GetNodeName().c_str()));
             }
 
             auto slotOutcome = UpdateSlotState(node, *nodeSlot, nodeConfig, slotState);
             if (!slotOutcome.IsSuccess() && !nodeConfig.m_tolerateIndividualSlotUpdateFailures)
             {
-                return AZ::Failure(AZStd::string("null slot in Node %s list: ", node.GetNodeName().c_str()));
+                return AZ::Failure(AZStd::string::format
+                    ( "Slot failed to update: %s-%s, %s"
+                    , node.GetNodeName().c_str(), nodeSlot->GetName().c_str(), slotOutcome.GetError().c_str()));
             }
         }
 
