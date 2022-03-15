@@ -493,6 +493,10 @@
                 "Path": "Passes/DiffuseProbeGridVisualizationRayTracing.pass"
             },
             {
+                "Name": "DiffuseProbeGridQueryPassTemplate",
+                "Path": "Passes/DiffuseProbeGridQuery.pass"
+            },
+            {
                 "Name": "DiffuseProbeGridVisualizationCompositePassTemplate",
                 "Path": "Passes/DiffuseProbeGridVisualizationComposite.pass"
             },

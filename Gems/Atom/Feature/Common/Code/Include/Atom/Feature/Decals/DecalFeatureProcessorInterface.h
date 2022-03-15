@@ -28,7 +28,6 @@ namespace AZ
                 { 0.0f, 0.0f, 0.0f }
             };
             float m_opacity = 1.0f;
-            float m_normalMapOpacity = 1.0f;
             AZStd::array<float, 4> m_quaternion = {
                 { 0, 0, 0, 1 }
             };
@@ -36,9 +35,9 @@ namespace AZ
                 { 0.5f, 0.5f, 0.5f }
             };
             float m_angleAttenuation = 1.0f;
+            float m_normalMapOpacity = 1.0f;
             // Decals with a larger sort key appear over top of smaller sort keys.
             uint8_t m_sortKey = 0;
-            uint8_t m_padding0[3];
             uint32_t m_textureArrayIndex = UnusedIndex;
             uint32_t m_textureIndex = UnusedIndex;
 

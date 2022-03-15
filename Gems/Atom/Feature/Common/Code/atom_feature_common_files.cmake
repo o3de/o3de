@@ -150,6 +150,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
