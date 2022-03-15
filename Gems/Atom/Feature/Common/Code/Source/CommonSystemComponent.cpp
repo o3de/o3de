@@ -44,6 +44,11 @@
 #include <PostProcessing/BlendColorGradingLutsPass.h>
 #include <PostProcessing/BloomParentPass.h>
 #include <PostProcessing/HDRColorGradingPass.h>
+#include <PostProcessing/EditorModeFeedbackParentPass.h>
+#include <PostProcessing/EditorModeDesaturationPass.h>
+#include <PostProcessing/EditorModeTintPass.h>
+#include <PostProcessing/EditorModeBlurPass.h>
+#include <PostProcessing/EditorModeOutlinePass.h>
 #include <PostProcessing/DepthUpsamplePass.h>
 #include <PostProcessing/DepthOfFieldCompositePass.h>
 #include <PostProcessing/DepthOfFieldBokehBlurPass.h>
@@ -99,6 +104,7 @@
 #include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
@@ -227,6 +233,11 @@ namespace AZ
             passSystem->AddPassCreator(Name("LightCullingTilePreparePass"), &LightCullingTilePreparePass::Create);
             passSystem->AddPassCreator(Name("BlendColorGradingLutsPass"), &BlendColorGradingLutsPass::Create);
             passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);
@@ -288,6 +299,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationAccelerationStructurePass"), &Render::DiffuseProbeGridVisualizationAccelerationStructurePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationRayTracingPass"), &Render::DiffuseProbeGridVisualizationRayTracingPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationCompositePass"), &Render::DiffuseProbeGridVisualizationCompositePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridQueryPass"), &Render::DiffuseProbeGridQueryPass::Create);
 
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
 

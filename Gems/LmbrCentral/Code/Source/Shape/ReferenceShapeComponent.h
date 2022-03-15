@@ -94,8 +94,8 @@ namespace LmbrCentral
 
     private:
         ReferenceShapeConfig m_configuration;
-        bool m_isRequestInProgress = false; //prevent recursion in case user attaches cyclic dependences
         bool AllowRequest() const;
+        bool AllowNotification() const;
         void SetupDependencies();
     };
 }

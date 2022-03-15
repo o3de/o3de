@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -32,6 +33,7 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/AttachmentNode.h>
 #include <MCore/Source/AzCoreConversions.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace EMotionFX
 {
@@ -56,6 +58,7 @@ namespace EMotionFX
                     ->Field("UpdateJointTransformsWhenOutOfView", &EditorActorComponent::m_forceUpdateJointsOOV)
                     ->Field("LodLevel", &EditorActorComponent::m_lodLevel)
                     ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
+                    ->Field("AddMaterialComponentFlag", &EditorActorComponent::m_addMaterialComponentFlag)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -157,6 +160,11 @@ namespace EMotionFX
                         ->DataElement(0, &EditorActorComponent::m_bboxConfig,
                                       "Bounding box configuration", "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnBBoxConfigChanged)
+                        ->DataElement(AZ::Edit::UIHandlers::Button, &EditorActorComponent::m_addMaterialComponentFlag, "Add Material Component", "Add Material Component")
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::AddEditorMaterialComponent)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorActorComponent::GetEditorMaterialComponentVisibility)
                         ;
                 }
             }
@@ -980,6 +988,27 @@ namespace EMotionFX
         void EditorActorComponent::SetRenderFlag(ActorRenderFlags renderFlags)
         {
             m_renderFlags = renderFlags;
+        }
+
+        AZ::Crc32 EditorActorComponent::AddEditorMaterialComponent()
+        {
+            const AZStd::vector<AZ::EntityId> entityList = { GetEntityId() };
+            const AZ::ComponentTypeList componentsToAdd = { AZ::Uuid(AZ::Render::EditorMaterialComponentTypeId) };
+
+            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome =
+                AZ::Failure(AZStd::string("Failed to add AZ::Render::EditorMaterialComponentTypeId"));
+            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(outcome, &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, entityList, componentsToAdd);
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        bool EditorActorComponent::HasEditorMaterialComponent() const
+        {
+            return GetEntity() && GetEntity()->FindComponent(AZ::Uuid(AZ::Render::EditorMaterialComponentTypeId)) != nullptr;
+        }
+
+        AZ::u32 EditorActorComponent::GetEditorMaterialComponentVisibility() const
+        {
+            return HasEditorMaterialComponent() ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
         }
     } //namespace Integration
 } // namespace EMotionFX

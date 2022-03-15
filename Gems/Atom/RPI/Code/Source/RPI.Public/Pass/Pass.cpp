@@ -1224,11 +1224,11 @@ namespace AZ
             // Bindings, inputs and attachments
             CreateBindingsFromTemplate();
             RegisterPipelineGlobalConnections();
-            SetupInputsFromRequest();
             SetupPassDependencies();
             CreateAttachmentsFromTemplate();
             CreateAttachmentsFromRequest();
             SetupInputsFromTemplate();
+            SetupInputsFromRequest();
 
             // Custom pass behavior
             BuildInternal();
@@ -1606,7 +1606,9 @@ namespace AZ
                 PrintIndent(stringOutput, indent);
 
                 stringOutput += "- ";
-                stringOutput += m_name.GetStringView();
+                //stringOutput += m_name.GetStringView();
+                //stringOutput += "- ";
+                stringOutput += m_path.GetStringView();
                 stringOutput += "\n";
             }
         }

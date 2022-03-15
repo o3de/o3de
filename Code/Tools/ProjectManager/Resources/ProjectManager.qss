@@ -453,10 +453,52 @@ QTabBar::tab:focus {
     margin-top:6px;
 }
 
-#projectButton > QFrame > QLabel {
+#projectButton QLabel {
     font-weight:bold;
     font-size:14px;
     qproperty-indent: 0;
+}
+
+#labelButton QPushButton {
+    min-width:140px;
+    max-width:140px;
+    min-height:24px;
+    max-height:24px;
+}
+
+#labelButton #projectActionCancelButton{
+    qproperty-flat: true;
+    border-radius: 3px;
+    margin-left: 1px;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #E32C27, stop: 1.0 #951D21);
+}
+#labelButton #projectActionCancelButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+}
+#labelButton #projectActionCancelButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #951D1F, stop: 1.0 #C92724);
+}
+
+#labelButtonOverlay {
+    background-color: rgba(0,0,0,0.7);
+}
+
+#projectMessageOverlay, #projectSubMessageOverlay {
+    min-width:160px;
+    max-width:160px;
+    min-height:32px;
+    max-height:32px;
+}
+
+#labelButton #projectMessageOverlay {
+    font-size:16px;
+}
+
+#labelButton #projectSubMessageOverlay {
+    font-size:12px;
 }
 
 #projectMenuButton {
@@ -473,19 +515,6 @@ QTabBar::tab:focus {
     max-width:150px;
     min-height:26px;
     max-height:26px;
-}
-
-#projectActionButton, #openEditorButton {
-    min-height:26px;
-    max-height:26px;
-}
-
-#labelButtonOverlay {
-    background-color: rgba(50,50,50,200);
-    min-width:208px;
-    max-width:208px;;
-    min-height:270px;
-    max-height:270px;
 }
 
 QProgressBar {

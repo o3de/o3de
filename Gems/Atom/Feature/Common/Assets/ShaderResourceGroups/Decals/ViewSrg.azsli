@@ -16,10 +16,11 @@ partial ShaderResourceGroup ViewSrg
     {
         float3 m_position;
         float m_opacity;
-        float m_normalMapOpacity;
+        
         float4 m_quaternion;
         float3 m_halfSize;
         float m_angleAttenuation;
+        float m_normalMapOpacity;
         uint m_sortKeyPacked;
         uint m_textureArrayIndex;
         uint m_textureIndex;

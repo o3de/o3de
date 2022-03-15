@@ -222,7 +222,7 @@ namespace ScriptCanvasEditor
                 auto outcome = LoadFromFile(handle.Path().c_str());
                 if (outcome.IsSuccess())
                 {
-                    handle = outcome.TakeValue();
+                    handle = outcome.GetValue().handle;
                 }
             }
         }
