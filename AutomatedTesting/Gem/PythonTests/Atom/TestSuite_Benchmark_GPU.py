@@ -19,16 +19,16 @@ logger = logging.getLogger(__name__)
 def filebeat_service_running():
     """
     Checks if the filebeat service is currently running on the OS.
-    :return: True if filebeat service detected, False otherwise.
+    :return: True if filebeat service detected and running, False otherwise.
     """
-    result = True
+    result = False
     try:
         filebeat_service = psutil.win_service_get('filebeat')
         filebeat_service_info = filebeat_service.as_dict()
-        if filebeat_service_info['status'] == 'stopped':
-            result = False
+        if filebeat_service_info['status'] == 'running':
+            result = True
     except psutil.NoSuchProcess:
-        result = False
+        return result
 
     return result
 
