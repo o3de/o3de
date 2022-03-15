@@ -51,7 +51,7 @@ set(FILES
     Include/Atom/Feature/PostProcess/Bloom/BloomConstants.h
     Include/Atom/Feature/PostProcess/Bloom/BloomParams.inl
     Include/Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h
-	Include/Atom/Feature/PostProcess/Vignette/VignetteConstants.h
+    Include/Atom/Feature/PostProcess/Vignette/VignetteConstants.h
     Include/Atom/Feature/PostProcess/Vignette/VignetteParams.inl
     Include/Atom/Feature/PostProcess/Vignette/VignetteSettingsInterface.h
     Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingParams.inl
