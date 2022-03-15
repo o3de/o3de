@@ -19,9 +19,7 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 //! @note This is not an efficient implementation. Future work will replace this with a multi-pass Gaussian blur.
 float3 Blur(const float2 uv, const float kernalWidth)
 {
-    const float2 maskSize = GetImageSize(PassSrg::m_entityMask);
-    const float2 unormalizedUv = float2(uv.x * maskSize.x, uv.y * maskSize.y);
-    const float2 maskSizeReciprocal = float2(1., 1.0) / maskSize;
+    const float2 unormalizedUv = float2(uv.x * PassSrg::m_maskDimensions.x, uv.y * PassSrg::m_maskDimensions.y);
     float3 outColor = float3(0., 0., 0.);
 
     float weights = 0.;
@@ -30,7 +28,7 @@ float3 Blur(const float2 uv, const float kernalWidth)
         for(float v = -kernalWidth; v <= kernalWidth; v+=1.)
         {
             weights += 1.;
-            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * maskSizeReciprocal).rgb;
+            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * PassSrg::m_maskDimensions.zw).rgb;
         }
     }
 
