@@ -6,20 +6,19 @@
         "PassTemplate": {
             "Name": "TerrainParentPassTemplate",
             "PassClass": "ParentPass",
-            "PassRequests": [			
+            "PassRequests": [
                 {
                     "Name": "TerrainDetailTextureComputePass",
                     "TemplateName": "TerrainDetailTextureComputePassTemplate",
                     "Enabled": false
                 },
                 {
-                    "Name": "TerrainMacroTextureComputePass",
-                    "TemplateName": "TerrainMacroTextureComputePassTemplate",
+                    "Name": "TerrainMacroTextureClipmapGenerationPass",
+                    "TemplateName": "TerrainMacroTextureClipmapGenerationPassTemplate",
                     "Enabled": false
                 }
             ]
         }
     }
 }
- 
 
