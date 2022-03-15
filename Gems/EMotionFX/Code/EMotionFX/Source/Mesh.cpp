@@ -21,7 +21,6 @@
 #include <MCore/Source/LogManager.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/RPI.Reflect/Model/SkinJointIdPadding.h>
 
 namespace EMotionFX
 {
@@ -172,11 +171,21 @@ namespace EMotionFX
     {
         AZ::u32 modelVertexCount = 0;
         AZ::u32 modelIndexCount = 0;
+        
+        // Find the maximum skin influences across all meshes to use when pre-allocating memory
+        AZ::u32 maxSkinInfluences = 0;
         for (const AZ::RPI::ModelLodAsset::Mesh& mesh : sourceModelLod->GetMeshes())
         {
             modelVertexCount += mesh.GetVertexCount();
             modelIndexCount += mesh.GetIndexCount();
+            const AZ::RPI::BufferAssetView* weightView = mesh.GetSemanticBufferAssetView(AZ::Name{"SKIN_WEIGHTS"});
+            if(weightView)
+            {
+                const AZ::u32 meshInfluenceCount = weightView->GetBufferViewDescriptor().m_elementCount / mesh.GetVertexCount();
+                maxSkinInfluences = AZStd::max(maxSkinInfluences, meshInfluenceCount);
+            }
         }
+        AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
 
         // IndicesPerFace defined in atom is 3.
         const AZ::u32 numPolygons = modelIndexCount / 3;
@@ -202,7 +211,6 @@ namespace EMotionFX
         AZ_POP_DISABLE_WARNING_MSVC
 
         // Skinning data from atom are stored in two separate buffer layer.
-        AZ::u8 maxSkinInfluences = 255; // Later we will calculate this value from skinning data.
         const AZ::u16* skinJointIndices = nullptr;
         const float* skinWeights = nullptr;
 
@@ -267,11 +275,6 @@ namespace EMotionFX
             }
             else if (name == AZ::Name("SKIN_WEIGHTS"))
             {
-                // Atom stores joint weights as float (range 0 - 1)
-                size_t influenceCount = elementCountInBytes / sizeof(float);
-                maxSkinInfluences = aznumeric_caster(influenceCount / modelVertexCount);
-                AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
-                AZ_Assert(influenceCount % modelVertexCount == 0, "Expect an equal number of influences for each vertex.");
                 skinWeights = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
             }
         }
@@ -295,38 +298,42 @@ namespace EMotionFX
             skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
             skin2dArray.Resize(modelVertexCount);
 
-            AZ::u32 currentVertex = 0;            
-            AZ::u32 totalJointIdPadding = 0;
+            AZ::u32 currentVertex = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceModelLod->GetMeshes())
             {
                 AZ::u32 meshVertexCount = sourceMesh.GetVertexCount();
+                const AZ::RPI::BufferAssetView* weightView = sourceMesh.GetSemanticBufferAssetView(AZ::Name{"SKIN_WEIGHTS"});
+                const AZ::RPI::BufferAssetView* jointIdView = sourceMesh.GetSemanticBufferAssetView(AZ::Name{"SKIN_JOINTINDICES"});
+                if (weightView && jointIdView)
+                {                    
+                    const AZ::u32 meshInfluenceCount = weightView->GetBufferViewDescriptor().m_elementCount / meshVertexCount;
+                    const AZ::u32 weightOffsetInElements = weightView->GetBufferViewDescriptor().m_elementOffset;
+                    // We multiply by two here since there are two jointId's packed per-element
+                    const AZ::u32 jointIdOffsetInElements = jointIdView->GetBufferViewDescriptor().m_elementOffset * 2;
 
-                // Fill in skinning data from atom buffer
-                for (AZ::u32 v = 0; v < meshVertexCount; ++v)
-                {
-                    for (AZ::u32 i = 0; i < maxSkinInfluences; ++i)
+                    // Fill in skinning data from atom buffer
+                    for (AZ::u32 v = 0; v < meshVertexCount; ++v)
                     {
-                        const float weight = skinWeights[currentVertex * maxSkinInfluences + i];
-                        if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
+                        for (AZ::u32 i = 0; i < meshInfluenceCount; ++i)
                         {
-                            const AZ::u16 skinJointIndex = skinJointIndices[currentVertex * maxSkinInfluences + i + totalJointIdPadding];
-                            if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
+                            const float weight = skinWeights[weightOffsetInElements + v * meshInfluenceCount + i];
+                            if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
                             {
-                                AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
-                                continue;
+                                const AZ::u16 skinJointIndex = skinJointIndices[jointIdOffsetInElements + v * meshInfluenceCount + i];
+                                if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
+                                {
+                                    AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
+                                    continue;
+                                }
+
+                                const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
+                                skinningLayer->AddInfluence(currentVertex, skeltonJointIndex, weight, 0);
                             }
-
-                            const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
-                            skinningLayer->AddInfluence(currentVertex, skeltonJointIndex, weight, 0);
                         }
+
+                        currentVertex++;
                     }
-
-                    currentVertex++;
                 }
-
-                // JointId's are padded on sub-mesh boundaries to ensure each sub-mesh view is 16 byte aligned
-                AZ::u32 jointIdCount = meshVertexCount * maxSkinInfluences;
-                totalJointIdPadding += AZ::RPI::CalculateJointIdPaddingCount(jointIdCount);
             }
         }
 

@@ -120,7 +120,14 @@ namespace AZ
                 AZStd::vector<RPI::PackedCompressedMorphTargetDelta> m_morphTargetVertexData;
 
                 MaterialUid m_materialUid;
-                bool CanBeMerged() const { return m_clothData.empty(); }
+                uint32_t m_influencesPerVertex = 0;
+
+                bool CanBeMerged() const
+                {
+                    // Temporarily disable merging skinned meshes to avoid merging meshes that have different
+                    // per-vertex influence counts. This can be reverted when GHI-7588 is resolved 
+                    return m_clothData.empty() && m_influencesPerVertex == 0;
+                }
             };
             using ProductMeshContentList = AZStd::vector<ProductMeshContent>;
 
@@ -377,12 +384,17 @@ namespace AZ
 
         private:
             //! Collects skinning influences of a vertex from the SceneAPI source mesh and fills them in the resulting mesh
+            uint32_t CalculateMaxUsedSkinInfluencesPerVertex(
+                const SourceMeshContent& sourceMesh,
+                const AZStd::map<uint32_t, uint32_t>& oldToNewIndicesMap,
+                bool& warnedExcessOfSkinInfluences) const;
+
+            //! Collects skinning influences of a vertex from the SceneAPI source mesh and fills them in the resulting mesh
             void GatherVertexSkinningInfluences(
                 const SourceMeshContent& sourceMesh,
                 ProductMeshContent& productMesh,
                 AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
-                size_t vertexIndex,
-                bool& warnedExcessOfSkinInfluences) const;
+                size_t vertexIndex) const;
         };
     } // namespace RPI
 } // namespace AZ

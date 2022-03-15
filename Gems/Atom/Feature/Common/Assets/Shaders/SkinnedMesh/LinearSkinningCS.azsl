@@ -101,9 +101,7 @@ void GetInfluences(in uint weightStartOffsetForVertex, in uint jointIdStartOffse
     // Two indices, 16-bits each, stored in a 32-bit uint
     uint rawIndex = InstanceSrg::m_sourceBlendIndices.Load(jointIdStartOffsetForVertex + influenceIndex);
         
-    // Although the first index in each 32-bit pair is in the most significant bits in the cpu buffer,
-    // the indices get swapped within the 32-bit uint when they are loaded so we treat them
-    // as if the first (even) indices are is in the least significant bits
+    // The first index in each 32-bit pair is in the most significant bits in the buffer
     jointIds.x = rawIndex >> 16 & 0x0000FFFF;
     jointIds.y = rawIndex & 0x0000FFFF;
 }
