@@ -11,6 +11,8 @@ import pytest
 from pathlib import Path, PurePath
 import shutil
 import os
+import io
+import threading
 import urllib.parse
 import urllib.request
 from tempfile import NamedTemporaryFile, mkdtemp
@@ -65,12 +67,25 @@ class SessionContext:
 
         self.cmake_runtime_path = self.install_root / 'cmake' / 'runtime'
 
+        # start a log reader thread to print the output to screen
+        self.log_reader = io.open(self.temp_file.name, 'r', buffering=1)
+        self.log_reader_thread = threading.Thread(target=self._tail_log, daemon=True)
+        self.log_reader_thread.start()
+        self.log_reader_shutdown = False
+    
+    def _tail_log(self):
+        while True:
+            line = self.log_reader.readline()
+            if line == '':
+                if self.log_reader_shutdown:
+                    return
+            else:
+                print(line, end='')
 
     def run(self, command, timeout=None, cwd=None):
         self.temp_file.write(' '.join(command) + '\n')
         self.temp_file.flush()
         return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True)
-
 
     def cleanup(self):
         if self.project_path.is_dir():
@@ -84,6 +99,9 @@ class SessionContext:
             shutil.rmtree(self.project_path)
 
         self.temp_file.close()
+        self.log_reader_shutdown = True
+        self.log_reader_thread.join()
+        self.log_reader.close()
         if self.log_file:
             shutil.copy(self.temp_file.name, Path(self.log_file).resolve())
         os.remove(self.temp_file.name)
