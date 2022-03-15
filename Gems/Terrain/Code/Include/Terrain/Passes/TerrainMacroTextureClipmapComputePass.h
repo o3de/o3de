@@ -9,8 +9,6 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <AZCore/Math/Vector3.h>
-#include <AZCore/Math/Vector4.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
