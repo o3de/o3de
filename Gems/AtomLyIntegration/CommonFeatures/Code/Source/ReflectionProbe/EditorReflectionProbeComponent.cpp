@@ -321,9 +321,8 @@ namespace AZ
             }
 
             AzToolsFramework::ScopedUndoBatch undoBatch("ReflectionProbe Bake");
-            SetDirty();
 
-            return RenderCubeMap(
+            AZ::u32 result = RenderCubeMap(
                 [&](RenderCubeMapCallback callback, AZStd::string& relativePath) { m_controller.BakeReflectionProbe(callback, relativePath); },
                 "Baking Reflection Probe...",
                 GetEntity(),
@@ -331,6 +330,16 @@ namespace AZ
                 configuration.m_bakedCubeMapRelativePath,
                 CubeMapCaptureType::Specular,
                 m_bakedCubeMapQualityLevel);
+
+            // update quality level
+            m_controller.m_configuration.m_bakedCubeMapQualityLevel = m_bakedCubeMapQualityLevel;
+
+            // update UI cubemap path display
+            m_bakedCubeMapRelativePath = configuration.m_bakedCubeMapRelativePath;
+
+            SetDirty();
+
+            return result;
         }
     } // namespace Render
 } // namespace AZ
