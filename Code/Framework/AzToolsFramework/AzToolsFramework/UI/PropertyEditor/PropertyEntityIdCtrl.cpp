@@ -19,8 +19,6 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextPickingBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
@@ -63,8 +61,6 @@ namespace AzToolsFramework
         m_pickButton->setIcon(QIcon(":/stylesheet/img/UI20/picker.svg"));
         m_pickButton->setToolTip("Pick an object in the viewport");
         m_pickButton->setMouseTracking(true);
-
-        m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
 
         pLayout->addWidget(m_entityIdLineEdit);
         pLayout->addWidget(m_pickButton);

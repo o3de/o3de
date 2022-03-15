@@ -108,7 +108,6 @@ namespace AzToolsFramework
         AzFramework::EntityContextId m_acceptedEntityContextId;
         AZStd::list<AZStd::string> m_componentsSatisfyingServices;
 
-        Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         bool m_hasClearButton{ true };
         QIcon m_pickerIcon;
     };
