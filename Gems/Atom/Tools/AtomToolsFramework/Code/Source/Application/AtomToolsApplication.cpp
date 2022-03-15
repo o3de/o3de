@@ -223,6 +223,15 @@ namespace AtomToolsFramework
         QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
 
         m_timer.start();
+
+        // Enable native UI for some low level system popup message when it's not in automated test mode
+        if (!m_isAutoTestMode)
+        {
+            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+            {
+                nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+            }
+        }
     }
 
     void AtomToolsApplication::Tick()

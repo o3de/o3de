@@ -138,6 +138,13 @@ namespace AZ
             //! Indicate that we need to compact the shader visible srv/uav/cbv shader visible heap. 
             void DescriptorHeapCompactionNeeded();
 
+            //! Check the opResult return true if it was success
+            //! If it's device lost, triggers device removal handling
+            bool AssertSuccess(HRESULT opResult);
+
+            // callback function which is called when device was removed
+            void OnDeviceRemoved();
+
         private:
             Device();
 
@@ -163,6 +170,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode InitSubPlatform(RHI::PhysicalDevice& physicalDevice);
+
+            void InitDeviceRemovalHandle();
 
             void InitFeatures();
 
@@ -194,6 +203,11 @@ namespace AZ
 
             // Boolean used to compact the view specific shader visible heap
             bool m_isDescriptorHeapCompactionNeeded = false;
+
+            // device remover fence            
+            RHI::Ptr<ID3D12Fence> m_deviceFence;
+            AZStd::atomic<bool> m_onDeviceRemoved = false;
+            AZStd::mutex m_onDeviceRemovedMutex;
         };
     }
 }
