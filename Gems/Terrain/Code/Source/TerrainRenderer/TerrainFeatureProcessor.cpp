@@ -6,8 +6,6 @@
  *
  */
 
-#include <Terrain/Passes/TerrainDetailTextureComputePass.h>
-#include <Terrain/Passes/TerrainMacroTextureComputePass.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 #include <Atom/Utils/Utils.h>
@@ -54,15 +52,11 @@ namespace Terrain
                 ->Version(0)
                 ;
         }
-
-        TerrainDetailTextureComputePassData::Reflect(context);
-        TerrainMacroTextureComputePassData::Reflect(context);
     }
 
     void TerrainFeatureProcessor::Activate()
     {
         EnableSceneNotification();
-        CacheForwardPass();
 
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
@@ -169,6 +163,11 @@ namespace Terrain
         m_terrainBounds = worldBounds;
         m_sampleSpacing = queryResolution;
         m_heightmapNeedsUpdate = true;
+    }
+
+    void TerrainFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
+    {
+        CacheForwardPass();
     }
 
     void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
@@ -480,7 +479,7 @@ namespace Terrain
             [&](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
             {
                 auto* rasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
-                    
+
                 if (rasterPass && rasterPass->GetDrawListTag() == forwardTag)
                 {
                     m_forwardPass = rasterPass;
@@ -490,6 +489,19 @@ namespace Terrain
             }
         );
     }
-    
 
+    const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> TerrainFeatureProcessor::GetTerrainShaderResourceGroup() const
+    {
+        return m_terrainSrg;
+    }
+
+    const AZ::Aabb& TerrainFeatureProcessor::GetTerrainBounds() const
+    {
+        return m_terrainBounds;
+    }
+
+    const AZ::Data::Instance<AZ::RPI::Material> TerrainFeatureProcessor::GetMaterial() const
+    {
+        return m_materialInstance;
+    }
 }
