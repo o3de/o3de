@@ -159,11 +159,11 @@ namespace Audio
             {
                 AudioRequestVariant& callbackVariant(callbacksToProcess.front());
                 AZStd::visit(
-                    [](auto&& callback)
+                    [](auto&& request)
                     {
-                        if (callback.m_callback)
+                        if (request.m_callback)
                         {
-                            callback.m_callback(callback);
+                            request.m_callback(request);
                         }
                     },
                     callbackVariant);
@@ -397,7 +397,6 @@ namespace Audio
         // Get the controls path and a level-specific preload Id first.
         // This will be passed with the request so that it doesn't have to lookup this data
         // and punch the AudioSystemRequestBus from the Audio Thread.
-        [[maybe_unused]]
         const char* audioControlsPath = GetControlsPath();
 
         Audio::TAudioPreloadRequestID levelPreloadId = INVALID_AUDIO_PRELOAD_REQUEST_ID;

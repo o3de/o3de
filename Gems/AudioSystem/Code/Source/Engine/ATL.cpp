@@ -788,7 +788,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::InitializeImplComponent()
     {
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
 
         AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::Initialize);
         if (eResult == EAudioRequestStatus::Success)
@@ -848,7 +848,7 @@ namespace Audio
 
         m_implSubPath.clear();
 
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
         AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::ShutDown);
 
         // If we allow developers to change the audio implementation module at run-time, these should be at Warning level.
@@ -869,7 +869,7 @@ namespace Audio
         const CATLTrigger* const pTrigger,
         const bool bPrepare)
     {
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
 
         const TAudioObjectID nATLObjectID = pAudioObject->GetID();
         const TObjectTriggerImplStates& rTriggerImplStates = pAudioObject->GetTriggerImpls();
@@ -965,7 +965,7 @@ namespace Audio
         void* const pOwner /* = nullptr */,
         const SATLSourceData* pSourceData /* = nullptr */)
     {
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
 
         if (pAudioObject->HasPosition())
         {
@@ -1061,7 +1061,7 @@ namespace Audio
         CATLAudioObjectBase* const pAudioObject,
         const CATLTrigger* const pTrigger)
     {
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
 
         const TAudioControlID nATLTriggerID = pTrigger->GetID();
 
@@ -1163,7 +1163,7 @@ namespace Audio
         CATLAudioObjectBase* const pAudioObject,
         const CATLSwitchState* const pState)
     {
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
 
         for (auto switchStateImpl : pState->m_cImplPtrs)
         {
@@ -1220,7 +1220,7 @@ namespace Audio
         const CATLRtpc* const pRtpc,
         const float fValue)
     {
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
 
         for (auto rtpcImpl : pRtpc->m_cImplPtrs)
         {
@@ -1343,7 +1343,7 @@ namespace Audio
         const CATLAudioEnvironment* const pEnvironment,
         const float fAmount)
     {
-        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
 
         for (auto environmentImpl : pEnvironment->m_cImplPtrs)
         {

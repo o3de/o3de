@@ -156,8 +156,6 @@ namespace Audio::CVars
             audioSystem != nullptr)
         {
             Audio::SystemRequest::ChangeLanguage changeLanguage;
-            // TODO:
-            // request.nFlags = Audio::eARF_PRIORITY_HIGH;
             audioSystem->PushRequest(AZStd::move(changeLanguage));
         }
     };

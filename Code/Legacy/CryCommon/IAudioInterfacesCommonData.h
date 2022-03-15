@@ -90,7 +90,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //! Converts a boolean value to an EAudioRequestStatus.
     //! @param result The boolean value to convert.
-    //! @return eARS_SUCCESS if result is true, eARS_FAILURE otherwise.
+    //! @return Success if result is true, Failure otherwise.
     inline EAudioRequestStatus BoolToARS(bool result)
     {
         return result ? EAudioRequestStatus::Success : EAudioRequestStatus::Failure;
@@ -206,7 +206,6 @@ namespace Audio
     {
         eAES_NONE               = 0,
         eAES_PLAYING            = 1,
-        eAES_PLAYING_DELAYED    = 2,
         eAES_LOADING            = 3,
         eAES_UNLOADING          = 4,
     };
@@ -220,7 +219,6 @@ namespace Audio
         eATS_LOADING                    = AUDIO_BIT(2),
         eATS_UNLOADING                  = AUDIO_BIT(3),
         eATS_STARTING                   = AUDIO_BIT(4),
-        eATS_WAITING_FOR_REMOVAL        = AUDIO_BIT(5),
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

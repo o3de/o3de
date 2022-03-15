@@ -46,7 +46,6 @@ namespace Audio
             ExecuteQueuedRequests();
         };
 
-        // Seems like we should just do async init all the time.
         // 0: instance-specific initialization (default).  So the bAsync flag is used to determine init type.
         // 1: All initialize sync
         // 2: All initialize async
@@ -61,15 +60,12 @@ namespace Audio
             reserveObject.m_flags = eARF_SYNC_CALLBACK;
             AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(reserveObject));
 
-            // Problem is that even with the blocking request, the callback is still async, so this assert can still hit.
-            // Either remove this check/assert or get true sync callbacks working again.
-
-    #if !defined(AUDIO_RELEASE)
+        #if !defined(AUDIO_RELEASE)
             if (m_nAudioObjectID == INVALID_AUDIO_OBJECT_ID)
             {
                 g_audioLogger.Log(LogType::Assert, "Failed to reserve audio object ID on AudioProxy (%s)!", sObjectName);
             }
-    #endif // !AUDIO_RELEASE
+        #endif // !AUDIO_RELEASE
         }
     }
 

@@ -155,7 +155,7 @@ namespace LmbrCentral
     }
 
     ////////////////////////////////////////////////////////////////////////
-    void AudioSystemComponent::GlobalExecuteAudioTrigger(const char* triggerName, [[maybe_unused]] AZ::EntityId callbackOwnerEntityId)
+    void AudioSystemComponent::GlobalExecuteAudioTrigger(const char* triggerName, AZ::EntityId callbackOwnerEntityId)
     {
         if (triggerName && triggerName[0] != '\0')
         {
@@ -174,7 +174,7 @@ namespace LmbrCentral
     }
 
     ////////////////////////////////////////////////////////////////////////
-    void AudioSystemComponent::GlobalKillAudioTrigger(const char* triggerName, [[maybe_unused]] AZ::EntityId callbackOwnerEntityId)
+    void AudioSystemComponent::GlobalKillAudioTrigger(const char* triggerName, AZ::EntityId callbackOwnerEntityId)
     {
         if (triggerName && triggerName[0] != '\0')
         {
@@ -193,7 +193,7 @@ namespace LmbrCentral
     }
 
     ////////////////////////////////////////////////////////////////////////
-    void AudioSystemComponent::GlobalSetAudioRtpc(const char* rtpcName, [[maybe_unused]] float value)
+    void AudioSystemComponent::GlobalSetAudioRtpc(const char* rtpcName, float value)
     {
         if (rtpcName && rtpcName[0] != '\0')
         {

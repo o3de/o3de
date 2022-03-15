@@ -201,15 +201,19 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::RefreshAudioSystem()
     {
-        QString sLevelName = GetIEditor()->GetLevelName();
-
-        if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+            audioSystem != nullptr)
         {
-            // Rather pass empty QString to indicate that no level is loaded!
-            sLevelName = QString();
-        }
+            QString sLevelName = GetIEditor()->GetLevelName();
 
-        AZ::Interface<Audio::IAudioSystem>::Get()->RefreshAudioSystem(sLevelName.toUtf8().data());
+            if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
+            {
+                // Rather pass empty QString to indicate that no level is loaded!
+                sLevelName = QString();
+            }
+
+            audioSystem->RefreshAudioSystem(sLevelName.toUtf8().data());
+        }
     }
 
     //-------------------------------------------------------------------------------------------//
