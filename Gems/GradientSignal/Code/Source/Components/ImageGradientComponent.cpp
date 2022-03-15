@@ -331,11 +331,14 @@ namespace GradientSignal
                 return;
             }
 
-            // Validate manual scale
+            // Validate manual scale/calculate multiplier and offset
             if (m_configuration.m_customScaleType == CustomScaleType::Manual)
             {
                 m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin, 0.0f, 1.0f);
                 m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax, 0.0f, 1.0f);
+
+                m_multiplier = m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin;
+                m_offset = m_configuration.m_scaleRangeMin;
             }
 
             m_currentChannel = m_configuration.m_channelToUse;
@@ -343,6 +346,8 @@ namespace GradientSignal
         else
         {
             m_currentChannel = ChannelToUse::Red;
+            m_multiplier = 1.0f;
+            m_offset = 0.0f;
         }
 
         m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
@@ -401,14 +406,8 @@ namespace GradientSignal
                     return GetTerrariumPixelValue(x, y);
                 }
 
-                // Handle custom user scale
-                if (m_configuration.m_customScaleType == CustomScaleType::Manual)
-                {
-                    const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
-                    return value * (m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin) + m_configuration.m_scaleRangeMin;
-                }
-
-                return AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+                const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+                return (value * m_multiplier) + m_offset;
             }
         }
 

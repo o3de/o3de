@@ -149,5 +149,7 @@ namespace GradientSignal
         GradientTransform m_gradientTransform;
         AZStd::span<const uint8_t> m_imageData;
         ChannelToUse m_currentChannel = ChannelToUse::Red;
+        float m_multiplier = 1.0f;
+        float m_offset = 0.0f;
     };
 }
