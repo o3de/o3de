@@ -46,7 +46,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "CubeMapCaptureFeatureProcessor: Simulate");
 
             // call Simulate on all cubeMapCaptures
-            for (auto cubeMapCapture : m_cubeMapCaptures)
+            for (auto& cubeMapCapture : m_cubeMapCaptures)
             {
                 AZ_Assert(cubeMapCapture.use_count() > 1, "CubeMapCapture found with no corresponding owner, ensure that RemoveCubeMapCapture() is called before releasing CubeMapCapture handles");
                 cubeMapCapture->Simulate();
@@ -56,7 +56,7 @@ namespace AZ
         void CubeMapCaptureFeatureProcessor::OnRenderEnd()
         {
             // call OnRenderEnd on all cubeMapCaptures
-            for (auto cubeMapCapture : m_cubeMapCaptures)
+            for (auto& cubeMapCapture : m_cubeMapCaptures)
             {
                 AZ_Assert(cubeMapCapture.use_count() > 1, "CubeMapCapture found with no corresponding owner, ensure that RemoveCubeMapCapture() is called before releasing CubeMapCapture handles");
                 cubeMapCapture->OnRenderEnd();
