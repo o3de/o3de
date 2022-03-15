@@ -79,23 +79,22 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
     assert engine_path in manifest_json_data['engines'] , f"Engine path {engine_path} not found in o3de_manifest.json"
     assert engine_name in manifest_json_data['engines_path'], f"{engine_path} not found in manifest engines_path"
     assert manifest_json_data['engines_path'][engine_name] == engine_path, f"Engines path has invalid entry for {engine_name} expected {engine_path}" 
-    print(f"Finished running register engine test")
-
-    # quit here on purpose for testing
-    assert False
+    print(f"\nManifest {manifest_path}.")
+    print(f"Finished running register engine test for engine {engine_name} at path {engine_path}.")
 
 @pytest.fixture(scope="session")
 def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
-    print(f"Begin running create project test")
     """o3de CLI creates a project"""
     o3de_path = context.install_root / 'scripts' / 'o3de.bat'
+    print(f"Begin running create project test using {o3de_path}")
     result = context.run([str(o3de_path),'create-project','--project-path', str(context.project_path)])
     assert result.returncode == 0, f"o3de.bat failed to create a project with exit code {result.returncode}"
 
     project_json_path = Path(context.project_path) / 'project.json'
     assert project_json_path.is_file(), f"No project.json found at {project_json_path}"
-    print(f"End running create project test")
+    print(f"End running create project test for project with json at {project_json_path}")
 
+    assert False, "Stopping for debug purposes"
 
 @pytest.fixture(scope="session")
 def test_compile_project_fixture(test_create_project_fixture, context):
