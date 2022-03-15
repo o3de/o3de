@@ -12,7 +12,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#if defined(USE_NSIGHT_AFTERMATH)
+#if defined(USE_NSIGHT_AFTERMATH)   // To enable nsight aftermath, download and installl Nsight AfterMath and add 'ATOM_AFTERMATH_PATH=%path_to_the_install_folder%' to environment variables
 GpuCrashTracker::~GpuCrashTracker()
 {
     // If initialized, disable GPU crash dumps
