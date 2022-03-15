@@ -464,7 +464,7 @@ namespace Terrain
         AZStd::vector<Physics::HeightMaterialPoint> heightMaterials(gridWidth * gridHeight);
         UpdateHeightsAndMaterials([&heightMaterials, gridWidth](size_t row, size_t col, const Physics::HeightMaterialPoint& point)
         {
-            heightMaterials[row + col * gridWidth] = point;
+            heightMaterials[col + row * gridWidth] = point;
         });
 
         return heightMaterials;
