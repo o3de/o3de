@@ -337,6 +337,12 @@ namespace GradientSignal
                 m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin, 0.0f, 1.0f);
                 m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax, 0.0f, 1.0f);
             }
+
+            m_currentChannel = m_configuration.m_channelToUse;
+        }
+        else
+        {
+            m_currentChannel = ChannelToUse::Red;
         }
 
         m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
@@ -389,29 +395,20 @@ namespace GradientSignal
                 // Flip the y because images are stored in reverse of our world axes
                 y = (height - 1) - y;
 
-                // By default, we will query from the R channel of the image
-                auto channel = ChannelToUse::Red;
-
-                // Advanced handling of channel and scale
-                if (m_configuration.m_advancedMode)
+                // For terrarium, there is a separate algorithm for retrieving the value
+                if (m_currentChannel == ChannelToUse::Terrarium)
                 {
-                    channel = m_configuration.m_channelToUse;
-
-                    // For terrarium, there is a separate algorithm for retrieving the value
-                    if (channel == ChannelToUse::Terrarium)
-                    {
-                        return GetTerrariumPixelValue(x, y);
-                    }
-
-                    // Handle custom user scale
-                    if (m_configuration.m_customScaleType == CustomScaleType::Manual)
-                    {
-                        const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(channel));
-                        return value * (m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin) + m_configuration.m_scaleRangeMin;
-                    }
+                    return GetTerrariumPixelValue(x, y);
                 }
 
-                return AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(channel));
+                // Handle custom user scale
+                if (m_configuration.m_customScaleType == CustomScaleType::Manual)
+                {
+                    const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+                    return value * (m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin) + m_configuration.m_scaleRangeMin;
+                }
+
+                return AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
             }
         }
 

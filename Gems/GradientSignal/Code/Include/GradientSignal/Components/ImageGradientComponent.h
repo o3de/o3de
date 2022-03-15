@@ -148,5 +148,6 @@ namespace GradientSignal
         mutable AZStd::shared_mutex m_imageMutex;
         GradientTransform m_gradientTransform;
         AZStd::span<const uint8_t> m_imageData;
+        ChannelToUse m_currentChannel = ChannelToUse::Red;
     };
 }
