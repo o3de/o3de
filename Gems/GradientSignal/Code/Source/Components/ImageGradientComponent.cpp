@@ -392,8 +392,8 @@ namespace GradientSignal
         // was specified by the user
         if (m_configuration.m_advancedMode)
         {
-            auto numComponents = AZ::RHI::GetFormatComponentCount(format);
-            AZ::u8 channel = aznumeric_cast<AZ::u8>(m_configuration.m_channelToUse);
+            const auto numComponents = AZ::RHI::GetFormatComponentCount(format);
+            const AZ::u8 channel = aznumeric_cast<AZ::u8>(m_configuration.m_channelToUse);
             if (m_configuration.m_channelToUse == ChannelToUse::Terrarium)
             {
                 if (!DoesFormatSupportTerrarium(format))
@@ -405,7 +405,7 @@ namespace GradientSignal
             }
             else if (channel >= numComponents)
             {
-                auto channelOptions = SupportedChannelOptions();
+                const auto channelOptions = SupportedChannelOptions();
                 AZ_Error("GradientSignal", false, "Unable to use channel (%s) because image asset (%s) has pixel format (%s), which only supports %d channels",
                     channelOptions[channel].m_description.c_str(), m_configuration.m_imageAsset.GetHint().c_str(), AZ::RHI::ToString(format), numComponents);
                 return;
@@ -498,9 +498,9 @@ namespace GradientSignal
                     // Handle custom user scale
                     if (m_configuration.m_customScaleType == CustomScaleType::Manual)
                     {
-                        float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(channel));
-                        auto formatRange = GetPixelFormatRange(imageDescriptor.m_format);
-                        float scaleFactor = formatRange.second - formatRange.first;
+                        const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(channel));
+                        const auto formatRange = GetPixelFormatRange(imageDescriptor.m_format);
+                        const float scaleFactor = formatRange.second - formatRange.first;
                         return value * ((m_configuration.m_scaleRangeMax / scaleFactor) - (m_configuration.m_scaleRangeMin / scaleFactor)) + (m_configuration.m_scaleRangeMin / scaleFactor);
                     }
                 }
@@ -521,7 +521,7 @@ namespace GradientSignal
         float b = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::B));
 
         // Convert back to the unsigned 8-bit value
-        float maxValue = aznumeric_cast<float>(std::numeric_limits<AZ::u8>::max());
+        constexpr float maxValue = aznumeric_cast<float>(std::numeric_limits<AZ::u8>::max());
         r *= maxValue;
         g *= maxValue;
         b *= maxValue;
