@@ -428,11 +428,13 @@ namespace AZ
                     auto* currentNode = dredAutoBreadcrumbsOutput.pHeadAutoBreadcrumbNode;
                     while (currentNode)
                     {
+                        bool hasError = false;
                         bool isWide = currentNode->pCommandListDebugNameW;
                         uint32_t completedBreadcrumbCount = currentNode->pLastBreadcrumbValue? (*currentNode->pLastBreadcrumbValue):0;
                         if (completedBreadcrumbCount < currentNode->BreadcrumbCount && completedBreadcrumbCount > 0)
                         {
                             AZ_TracePrintf("Device", "[Error]");
+                            hasError = true;
                         }
                         AZStd::string info;
                         if (isWide)
@@ -461,13 +463,13 @@ namespace AZ
                         }
                         for (uint32_t index = 0; index < currentNode->BreadcrumbCount; index++)
                         {
-                            if (index == completedBreadcrumbCount)
+                            if (hasError && index == completedBreadcrumbCount)
                             {
                                 // where the error happened
                                 AZ_TracePrintf("Device", " ==========================Error start==================================\n");
                             }
                             AZ_TracePrintf("Device", "      %d %s\n", index, GetBreadcrumpOpString(currentNode->pCommandHistory[index]));
-                            if (index == completedBreadcrumbCount)
+                            if (hasError && index == completedBreadcrumbCount)
                             {
                                 // where the error happened
                                 AZ_TracePrintf("Device", " ==========================Error end=============================\n");
