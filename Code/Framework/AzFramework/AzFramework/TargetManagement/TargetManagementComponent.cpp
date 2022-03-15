@@ -461,6 +461,12 @@ namespace AzFramework
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         [[maybe_unused]] AzNetworking::ISerializer& serializer)
     {
+        if (connection->GetRemoteAddress().GetIpString() != TargetServerAddress)
+        {
+            // Only localhost is valid
+            return AzNetworking::PacketDispatchResult::Skipped;
+        }
+
         return AzFrameworkPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
 
