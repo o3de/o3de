@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
