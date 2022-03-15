@@ -1946,7 +1946,7 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
             }
 
             // we always clear to transparent black - the accumulation of alpha in the render target requires it
-            AZ::Color clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            AZ::Color clearColor = AZ::Color::CreateZero();
 
             // Start building the render to texture node in the render graph
             AZ::Vector2 viewportTopLeft = AZ::Vector2::CreateZero();

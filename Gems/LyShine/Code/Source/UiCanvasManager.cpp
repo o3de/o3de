@@ -808,83 +808,91 @@ UiCanvasComponent* UiCanvasManager::FindEditorCanvasComponentByPathname(const AZ
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasManager::HandleInputEventForInWorldCanvases([[maybe_unused]] const AzFramework::InputChannel::Snapshot& inputSnapshot, [[maybe_unused]] const AZ::Vector2& viewportPos)
+bool UiCanvasManager::HandleInputEventForInWorldCanvases(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AZ::Vector2& viewportPos)
 {
-    // First we need to construct a ray from the either the center of the screen or the mouse position.
-    // This requires knowledge of the camera
-    // for initial testing we will just use a ray in the center of the viewport
-
-    if (AZ::Interface<ILyShine>::Get())
+    if (!AZ::Interface<ILyShine>::Get())
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
-        UiRenderer* uiRenderer = lyShine->GetUiRenderer();
-        const AZ::Matrix4x4& matrix = uiRenderer->GetViewportContext()->GetCameraProjectionMatrix();
-        AZ::RPI::ConstViewPtr currentView = uiRenderer->GetViewportContext()->GetDefaultView();
+        return false;
+    }
 
-        // construct a ray from the camera position in the view direction of the camera
-        const float rayLength = 5000.0f;
-        AZ::Vector3 rayOrigin(matrix.GetTranslation());
-        AZ::Vector3 rayDirection = matrix.GetColumnAsVector3(1) * rayLength;
+    // First we need to construct a ray from either the center of the screen or the mouse position
+    CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
+    auto viewportContext = lyShine->GetUiRenderer()->GetViewportContext();
+    AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
 
-        // If the mouse cursor is visible we will assume that the ray should be in the direction of the
-        // mouse pointer. This is a temporary solution. A better solution is to be able to configure the
-        // LyShine system to say how ray input should be handled.
-        bool isCursorVisible = false;
-        UiCursorBus::BroadcastResult(isCursorVisible, &UiCursorInterface::IsUiCursorVisible);
-        if (isCursorVisible)
+    const float rayLength = 500.0f;
+    AZ::Vector3 rayOrigin(0.0f);
+    AZ::Vector3 endpoint(0.0f, rayLength, 0.0f);
+    rayOrigin = cameraTransform.TransformPoint(rayOrigin);
+
+    // If the mouse cursor is visible we will assume that the ray should be in the direction of the
+    // mouse pointer. This is a temporary solution. A better solution is to be able to configure the
+    // LyShine system to say how ray input should be handled.
+    bool isCursorVisible = false;
+    UiCursorBus::BroadcastResult(isCursorVisible, &UiCursorInterface::IsUiCursorVisible);
+    if (!isCursorVisible)
+    {
+        endpoint = cameraTransform.TransformPoint(endpoint);
+    }
+    else
+    {
+        AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
+        AzFramework::ScreenSize screenSize(viewportSize.m_width, viewportSize.m_height);
+        AzFramework::ScreenPoint screenPosition(static_cast<int>(viewportPos.GetX()), static_cast<int>(viewportPos.GetY()));
+
+        AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(cameraTransform, screenSize);
+        const AZ::Matrix4x4& viewToClipMatrix = viewportContext->GetCameraProjectionMatrix();
+        AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, viewToClipMatrix);
+
+        endpoint = AzFramework::ScreenToWorld(
+            screenPosition,
+            cameraState
+        );
+
+        AZ::Vector3 rayDirection = (endpoint - rayOrigin).GetNormalized();
+        rayDirection.SetLength(rayLength);
+        endpoint = rayOrigin + rayDirection;
+    }
+
+    // Check if the ray intersects any entities
+    AzFramework::EntityContextId gameContextId;
+    AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId,
+        &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
+        
+    AzFramework::RenderGeometry::RayRequest request;
+    request.m_startWorldPosition = rayOrigin;
+    request.m_endWorldPosition = endpoint;
+        
+    AzFramework::RenderGeometry::RayResult rayResult;
+    AzFramework::RenderGeometry::IntersectorBus::EventResult(rayResult, gameContextId,
+        &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, request);
+        
+    if (rayResult)
+    {
+        AZ::EntityId hitEntity = rayResult.m_entityAndComponent.GetEntityId();
+        if (hitEntity.IsValid())
         {
-            // build camera state from atom camera transforms
-            AzFramework::WindowSize viewportSize = uiRenderer->GetViewportContext()->GetViewportSize();
-            AzFramework::CameraState cameraState =
-                AzFramework::CreateDefaultCamera(currentView->GetCameraTransform(), AzFramework::ScreenSize(viewportSize.m_width, viewportSize.m_height));
-            AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
-
-            AZ::Vector3 unprojectedPosForward = AzFramework::ScreenToWorld(AzFramework::ScreenPoint(static_cast<int>(viewportPos.GetX()), static_cast<int>(viewportPos.GetY())), cameraState);
-
-            // We want a vector relative to the camera origin
-            AZ::Vector3 rayVec = unprojectedPosForward - rayOrigin;
-        
-            // we want to ensure that the ray is a certain length so normalize it and scale it
-            rayVec.NormalizeSafe();
-            rayDirection = rayVec * rayLength;
-        }
-
-        AzFramework::EntityContextId gameContextId;
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId,
-            &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
-        
-        AzFramework::RenderGeometry::RayRequest request;
-        request.m_startWorldPosition = rayOrigin;
-        request.m_endWorldPosition = rayOrigin + rayDirection;
-        
-        AzFramework::RenderGeometry::RayResult rayResult;
-        AzFramework::RenderGeometry::IntersectorBus::EventResult(rayResult, gameContextId,
-            &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, request);
-        
-        if (rayResult)
-        {
-            AZ::EntityId hitEntity = rayResult.m_entityAndComponent.GetEntityId();
-            if (hitEntity.IsValid())
+            AZ::EntityId canvasEntityId;
+            UiCanvasRefBus::EventResult(canvasEntityId, hitEntity, &UiCanvasRefInterface::GetCanvas);
+            if (canvasEntityId.IsValid())
             {
-                AZ::EntityId canvasEntityId;
-                UiCanvasRefBus::EventResult(canvasEntityId, hitEntity, &UiCanvasRefInterface::GetCanvas);
-                if (canvasEntityId.IsValid())
+                // Checkif the UI canvas referenced by the hit entity supports automatic input
+                bool doesCanvasSupportInput = false;
+                UiCanvasBus::EventResult(doesCanvasSupportInput, canvasEntityId, &UiCanvasInterface::GetIsPositionalInputSupported);
+        
+                if (doesCanvasSupportInput)
                 {
-                    // Checkif the UI canvas referenced by the hit entity supports automatic input
-                    bool doesCanvasSupportInput = false;
-                    UiCanvasBus::EventResult(doesCanvasSupportInput, canvasEntityId, &UiCanvasInterface::GetIsPositionalInputSupported);
+                    // Send the hit details to the hit entity. It will convert into canvas coords and send to canvas.
+                    // TODO: RayResult has a m_uv field but that has not been implemented in Atom yet and is always zero.
+                    // Once this is implemented in Atom, we can pass the result directly, and remove our own UV calculations
+                    // in ProcessHitInputEvent
+                    bool handled = false;
+                    UiCanvasOnMeshBus::EventResult(handled, hitEntity,
+                        &UiCanvasOnMeshInterface::ProcessHitInputEvent, inputSnapshot, request);
         
-                    if (doesCanvasSupportInput)
+                    if (handled)
                     {
-                        // set the hit details to the hit entity, it will convert into canvas coords and send to canvas
-                        bool handled = false;
-                        UiCanvasOnMeshBus::EventResult(handled, hitEntity,
-                            &UiCanvasOnMeshInterface::ProcessHitInputEvent, inputSnapshot, rayResult);
-        
-                        if (handled)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
