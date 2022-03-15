@@ -1678,7 +1678,6 @@ namespace AZ
             "Pool Name, Memory Type (0 == Host : 1 == Device), Allocation Name, Allocation Type (0 == Buffer : "
             "1 == Texture), Byte Size, Flags\n";
         static constexpr const char* MemoryCSVRowFormat = "%s, %i, %s, %i, %" PRIu64 ", %" PRIu32 "\n";
-        static constexpr const int MemoryCSVColumnCount = 6;
 
         void ImGuiGpuMemoryView::SaveToCSV()
         {
@@ -1696,7 +1695,6 @@ namespace AZ
             AZStd::string filename = AZStd::string::format("%s/AtomMemory_%s.csv", m_memoryCapturePath.c_str(), sTemp);
 
             AZ::IO::SystemFile fileOut;
-            // We're ok overwriting a file here because the File Save dialog prompts for overwriting already
             if (!fileOut.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
             {
                 AZ_Error("ImGuiGpuMemoryView", false, "Failed to open file %s for writing", filename.c_str());
