@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #ifdef CRYSYSTEM_EXPORTS
-#define CRYSYSTEM_API DLL_EXPORT
+#define CRYSYSTEM_API AZ_DLL_EXPORT
 #else
-#define CRYSYSTEM_API DLL_IMPORT
+#define CRYSYSTEM_API AZ_DLL_IMPORT
 #endif
 #include <AzCore/IO/SystemFile.h>
 

@@ -187,6 +187,9 @@ namespace AssetProcessor
         bool GetProductDependenciesByProductID(AZ::s64 productID, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& container);
         bool GetDirectProductDependencies(AZ::s64 productID, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container);
         bool GetDirectReverseProductDependenciesBySourceGuidSubId(AZ::Uuid dependencySourceGuid, AZ::u32 dependencySubId, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container);
+        bool GetDirectReverseProductDependenciesBySourceGuidAllPlatforms(
+            AZ::Uuid dependencySourceGuid,
+            AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& container);
         bool GetAllProductDependencies(AZ::s64 productID, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container);
         bool GetUnresolvedProductDependencies(AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& container);
         bool SetProductDependency(AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry);

@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Time/ITime.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+#include <AzNetworking/Serialization/ISerializer.h>
 #include <AzTest/AzTest.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
@@ -40,8 +41,6 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetCurrentBlendFactor, float());
         MOCK_METHOD0(GetNetworkTime, Multiplayer::INetworkTime* ());
         MOCK_METHOD0(GetNetworkEntityManager, Multiplayer::INetworkEntityManager* ());
-        MOCK_METHOD1(SetFilterEntityManager, void(Multiplayer::IFilterEntityManager*));
-        MOCK_METHOD0(GetFilterEntityManager, Multiplayer::IFilterEntityManager* ());
         MOCK_METHOD2(RegisterPlayerIdentifierForRejoin, void(uint64_t, Multiplayer::NetEntityId));
         MOCK_METHOD4(CompleteClientMigration, void(uint64_t, AzNetworking::ConnectionId, const Multiplayer::HostId&, Multiplayer::ClientInputId));
         MOCK_METHOD1(SetShouldSpawnNetworkEntities, void(bool));
@@ -89,6 +88,10 @@ namespace UnitTest
         MOCK_METHOD1(HandleLocalRpcMessage, void(Multiplayer::NetworkEntityRpcMessage&));
         MOCK_METHOD1(HandleEntitiesExitDomain, void(const Multiplayer::NetEntityIdSet&));
         MOCK_METHOD1(ForceAssumeAuthority, void(const Multiplayer::ConstNetworkEntityHandle&));
+        MOCK_METHOD2(MarkAlwaysRelevantToClients, void(const Multiplayer::ConstNetworkEntityHandle&, bool));
+        MOCK_METHOD2(MarkAlwaysRelevantToServers, void(const Multiplayer::ConstNetworkEntityHandle&, bool));
+        const Multiplayer::NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override { static Multiplayer::NetEntityHandleSet value; return value; }
+        const Multiplayer::NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override { static Multiplayer::NetEntityHandleSet value; return value; }
         MOCK_METHOD1(SetMigrateTimeoutTimeMs, void(AZ::TimeMs));
         MOCK_CONST_METHOD0(DebugDraw, void());
     };

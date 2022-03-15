@@ -15,13 +15,13 @@
 
 #include <AtomLyIntegration/AtomFont/GlyphBitmap.h>
 #include <AtomLyIntegration/AtomFont/FFont.h>
+
 #include <ft2build.h>
 #pragma push_macro("generic")
 #define generic GenericFromFreeTypeLibrary
 #include <freetype/freetype.h>
 #undef generic
 #pragma pop_macro("generic")
-
 
 // Corresponds to the Unicode character set. This value covers all versions of the Unicode repertoire,
 // including ASCII and Latin-1. Most fonts include a Unicode charmap, but not all of them.

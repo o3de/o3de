@@ -43,13 +43,6 @@ namespace AZ
                 , context));
 
             result.Combine(ContinueLoadingFromJsonObjectField
-                ( &outputComponent->m_runtimeDataIsValid
-                , azrtti_typeid(outputComponent->m_runtimeDataIsValid)
-                , inputValue
-                , "runtimeDataIsValid"
-                , context));
-
-            result.Combine(ContinueLoadingFromJsonObjectField
                 ( &outputComponent->m_variableOverrides
                 , azrtti_typeid(outputComponent->m_variableOverrides)
                 , inputValue

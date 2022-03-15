@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/optional.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -30,6 +31,8 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
+    enum class CursorInputMode;
+    
     namespace ViewportInteraction
     {
         //! Result of handling mouse interaction.
@@ -322,12 +325,16 @@ namespace AzToolsFramework
             virtual void BeginCursorCapture() = 0;
             //! Restores the cursor and ends locking it in place, allowing it to be moved freely.
             virtual void EndCursorCapture() = 0;
+            //!  Sets the cursor input mode.
+            virtual void SetCursorMode(AzToolsFramework::CursorInputMode mode) = 0;
             //! Is the mouse over the viewport.
             virtual bool IsMouseOver() const = 0;
             //! Set the cursor style override.
             virtual void SetOverrideCursor(CursorStyleOverride cursorStyleOverride) = 0;
             //! Clear the cursor style override.
             virtual void ClearOverrideCursor() = 0;
+            //! Returns the viewport position of the cursor if a valid position exists (the cursor is over the viewport).
+            virtual AZStd::optional<AzFramework::ScreenPoint> MousePosition() const = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;

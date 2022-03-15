@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Source/Debug/MultiplayerDebugAuditTrail.cpp
+    Source/Debug/MultiplayerDebugAuditTrail.h
     Source/Debug/MultiplayerDebugByteReporter.cpp
     Source/Debug/MultiplayerDebugByteReporter.h
     Source/Debug/MultiplayerDebugHierarchyReporter.cpp

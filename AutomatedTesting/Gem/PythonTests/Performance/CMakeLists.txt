@@ -10,30 +10,37 @@ if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED OR NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-ly_add_pytest(
-    NAME AutomatedTesting::EditorLevelLoadingPerfTests_DX12
-    TEST_SUITE periodic
-    TEST_REQUIRES gpu
-    TEST_SERIAL
-    PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_DX12.py
-    RUNTIME_DEPENDENCIES
-        Legacy::Editor
-        AZ::AssetProcessor
-        AutomatedTesting.Assets
-    COMPONENT
-        Performance
-)
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-ly_add_pytest(
-    NAME AutomatedTesting::EditorLevelLoadingPerfTests_Vulkan
-    TEST_SUITE periodic
-    TEST_REQUIRES gpu
-    TEST_SERIAL
-    PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_Vulkan.py
-    RUNTIME_DEPENDENCIES
-        Legacy::Editor
-        AZ::AssetProcessor
-        AutomatedTesting.Assets
-    COMPONENT
-        Performance
-)
+if(PAL_TRAIT_EDITOR_LEVEL_PERF_DX12_TESTS_SUPPORTED)
+    ly_add_pytest(
+        NAME AutomatedTesting::EditorLevelLoadingPerfTests_DX12
+        TEST_SUITE periodic
+        TEST_REQUIRES gpu
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_DX12.py
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Performance
+    )
+endif()
+
+if(PAL_TRAIT_EDITOR_LEVEL_PERF_VULKAN_TESTS_SUPPORTED)
+    ly_add_pytest(
+        NAME AutomatedTesting::EditorLevelLoadingPerfTests_Vulkan
+        TEST_SUITE periodic
+        TEST_REQUIRES gpu
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic_Vulkan.py
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Performance
+    )
+endif()

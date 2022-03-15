@@ -130,6 +130,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
@@ -148,6 +150,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
@@ -222,6 +226,18 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
+    Source/PostProcessing/EditorModeFeedbackParentPass.cpp
+    Source/PostProcessing/EditorModeFeedbackParentPass.h
+    Source/PostProcessing/EditorModeFeedbackPassBase.cpp
+    Source/PostProcessing/EditorModeFeedbackPassBase.h
+    Source/PostProcessing/EditorModeDesaturationPass.cpp
+    Source/PostProcessing/EditorModeDesaturationPass.h
+    Source/PostProcessing/EditorModeTintPass.cpp
+    Source/PostProcessing/EditorModeTintPass.h
+    Source/PostProcessing/EditorModeBlurPass.cpp
+    Source/PostProcessing/EditorModeBlurPass.h
+    Source/PostProcessing/EditorModeOutlinePass.cpp
+    Source/PostProcessing/EditorModeOutlinePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h

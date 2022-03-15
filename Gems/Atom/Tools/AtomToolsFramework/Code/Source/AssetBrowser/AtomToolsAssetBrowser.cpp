@@ -92,7 +92,7 @@ namespace AtomToolsFramework
         AZ::TickBus::Handler::BusDisconnect();
 
         m_pathToSelect = absolutePath;
-        if (!m_pathToSelect.empty() && AzFramework::StringFunc::Path::Normalize(m_pathToSelect))
+        if (ValidateDocumentPath(m_pathToSelect))
         {
             // Selecting a new asset in the browser is not guaranteed to happen immediately.
             // The asset browser model notifications are sent before the model is updated.
@@ -106,14 +106,14 @@ namespace AtomToolsFramework
         const AZStd::vector<AssetBrowserEntry*> entries = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
 
         const bool promptToOpenMultipleFiles =
-            GetSettingOrDefault<bool>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles", true);
+            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles", true);
         const AZ::u64 promptToOpenMultipleFilesThreshold =
-            GetSettingOrDefault<AZ::u64>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold", 10);
+            GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold", 10);
 
         if (promptToOpenMultipleFiles && promptToOpenMultipleFilesThreshold <= entries.size())
         {
             QMessageBox::StandardButton result = QMessageBox::question(
-                QApplication::activeWindow(),
+                GetToolMainWindow(),
                 tr("Attemptng to open %1 files").arg(entries.size()),
                 tr("Would you like to open anyway?"),
                 QMessageBox::Yes | QMessageBox::No);
@@ -202,7 +202,7 @@ namespace AtomToolsFramework
         AZ_UNUSED(time);
         AZ_UNUSED(deltaTime);
 
-        if (m_pathToSelect.empty())
+        if (!ValidateDocumentPath(m_pathToSelect))
         {
             AZ::TickBus::Handler::BusDisconnect();
             m_pathToSelect.clear();
@@ -219,8 +219,7 @@ namespace AtomToolsFramework
             if (entry)
             {
                 AZStd::string sourcePath = entry->GetFullPath();
-                AzFramework::StringFunc::Path::Normalize(sourcePath);
-                if (m_pathToSelect == sourcePath)
+                if (ValidateDocumentPath(sourcePath) && AZ::StringFunc::Equal(m_pathToSelect, sourcePath))
                 {
                     // Once the selection is confirmed, cancel the operation and disconnect
                     AZ::TickBus::Handler::BusDisconnect();

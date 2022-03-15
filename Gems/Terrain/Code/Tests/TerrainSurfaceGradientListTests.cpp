@@ -9,47 +9,23 @@
 #include <Components/TerrainSurfaceGradientListComponent.h>
 #include <Terrain/MockTerrainLayerSpawner.h>
 #include <GradientSignal/Ebuses/MockGradientRequestBus.h>
+#include <TerrainTestFixtures.h>
 
 using ::testing::NiceMock;
 using ::testing::Return;
 
 namespace UnitTest
 {
-    class TerrainSurfaceGradientListTest : public ::testing::Test
+    class TerrainSurfaceGradientListTest
+        : public TerrainTestFixture
     {
     protected:
-        AZ::ComponentApplication m_app;
-
         const AZStd::string surfaceTag1 = "testtag1";
         const AZStd::string surfaceTag2 = "testtag2";
-
-        void SetUp() override
-        {
-            AZ::ComponentApplication::Descriptor appDesc;
-            appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
-            appDesc.m_stackRecordLevels = 20;
-
-            m_app.Create(appDesc);
-        }
-
-        void TearDown() override
-        {
-            m_app.Destroy();
-        }
-
-        AZStd::unique_ptr<AZ::Entity> CreateEntity()
-        {
-            auto entity = AZStd::make_unique<AZ::Entity>();
-            entity->Init();
-            return entity;
-        }
 
         UnitTest::MockTerrainLayerSpawnerComponent* AddRequiredComponentsToEntity(AZ::Entity* entity)
         {
             auto layerSpawnerComponent = entity->CreateComponent<UnitTest::MockTerrainLayerSpawnerComponent>();
-            m_app.RegisterComponentDescriptor(layerSpawnerComponent->CreateDescriptor());
-
             return layerSpawnerComponent;
         }
     };
@@ -57,9 +33,7 @@ namespace UnitTest
     TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientMissingRequirementsActivateFails)
     {
         auto entity = CreateEntity();
-
-        auto terrainSurfaceGradientListComponent = entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>();
-        m_app.RegisterComponentDescriptor(terrainSurfaceGradientListComponent->CreateDescriptor());
+        entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>();
 
         const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
         EXPECT_FALSE(sortOutcome.IsSuccess());
@@ -71,10 +45,8 @@ namespace UnitTest
 
         AddRequiredComponentsToEntity(entity.get());
 
-        auto terrainSurfaceGradientListComponent = entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>();
-        m_app.RegisterComponentDescriptor(terrainSurfaceGradientListComponent->CreateDescriptor());
-
-        entity->Activate();
+        entity->CreateComponent<Terrain::TerrainSurfaceGradientListComponent>();
+        ActivateEntity(entity.get());
 
         EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
     }

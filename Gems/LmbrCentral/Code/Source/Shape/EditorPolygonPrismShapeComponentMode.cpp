@@ -114,7 +114,7 @@ namespace LmbrCentral
         // initialize height manipulator
         m_heightManipulator = LinearManipulator::MakeShared(m_currentTransform);
         m_heightManipulator->AddEntityComponentIdPair(GetEntityComponentIdPair());
-        m_heightManipulator->SetSpace(AzToolsFramework::TransformUniformScale(m_currentTransform));
+        m_heightManipulator->SetSpace(m_currentTransform);
         m_heightManipulator->SetNonUniformScale(m_currentNonUniformScale);
         m_heightManipulator->SetLocalTransform(
             AZ::Transform::CreateTranslation(CalculateHeightManipulatorPosition(*polygonPrism)));
