@@ -15,10 +15,6 @@
 
 #include <Atom/RPI/BitOperations.azsli>
 
-#ifndef ENABLE_DEBUG_ASSERT
-#define ENABLE_DEBUG_ASSERT     1
-#endif
-
 #ifndef ENABLE_SHADER_DEBUGGING
 #define ENABLE_SHADER_DEBUGGING     1
 #endif
