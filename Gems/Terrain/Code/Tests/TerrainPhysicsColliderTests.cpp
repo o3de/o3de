@@ -599,7 +599,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderRequestSubpart
     }
     );
 
-    m_entity->Activate();
+    ActivateEntity(m_entity.get());
 
     // Get the entire array of points
     AZStd::vector<Physics::HeightMaterialPoint> heightsMaterials = m_colliderComponent->GetHeightsAndMaterials();
