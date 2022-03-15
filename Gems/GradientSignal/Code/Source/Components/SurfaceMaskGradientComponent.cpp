@@ -193,14 +193,19 @@ namespace GradientSignal
 
             // For each position, get the max surface weight that matches our filter and that appears at that position.
             points.EnumeratePoints(
-                [&outValues](
+                [this, &outValues](
                     size_t inPositionIndex, [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
                     const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     masks.EnumerateWeights(
-                        [inPositionIndex, &outValues]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
+                        [this, inPositionIndex, &outValues]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
                         {
-                            outValues[inPositionIndex] = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), outValues[inPositionIndex]);
+                            if (AZStd::find(
+                                    m_configuration.m_surfaceTagList.begin(), m_configuration.m_surfaceTagList.end(), surfaceType) !=
+                                m_configuration.m_surfaceTagList.end())
+                            {
+                                outValues[inPositionIndex] = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), outValues[inPositionIndex]);
+                            }
                             return true;
                         });
                     return true;
