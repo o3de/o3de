@@ -817,18 +817,21 @@ namespace AZ
 
         template<class FunctionType>
         struct BehaviorOnDemandReflectHelper;
-        template<class R, class... Args>
-        struct BehaviorOnDemandReflectHelper<R(*)(Args...)>
+        template<class R, class C, class... Args>
+        struct BehaviorOnDemandReflectHelper<R(C, Args...)>
         {
             static void QueueReflect(OnDemandReflectionOwner* onDemandReflection)
             {
                 if (onDemandReflection)
                 {
-                    static constexpr size_t c_functionParameterAndReturnSize = sizeof...(Args) + 1;
+                    static constexpr size_t c_functionParameterAndReturnSize = sizeof...(Args) + 2;
                     // deal with OnDemand reflection
-                    AZ::Uuid argumentTypes[c_functionParameterAndReturnSize] = { AzTypeInfo<R>::Uuid(), (AzTypeInfo<Args>::Uuid())... };
-                    StaticReflectionFunctionPtr reflectHooks[c_functionParameterAndReturnSize] = { OnDemandReflectHook<AZStd::remove_pointer_t<AZStd::decay_t<R>>>::Get(),
-                        (OnDemandReflectHook<AZStd::remove_pointer_t<AZStd::decay_t<Args>>>::Get())... };
+                    AZ::Uuid argumentTypes[c_functionParameterAndReturnSize] = { AzTypeInfo<R>::Uuid(), AZ::Uuid::CreateNull(), (AzTypeInfo<Args>::Uuid())... };
+                    StaticReflectionFunctionPtr reflectHooks[c_functionParameterAndReturnSize] = {
+                        OnDemandReflectHook<AZStd::remove_pointer_t<AZStd::decay_t<R>>>::Get(),
+                        OnDemandReflectHook<AZStd::remove_pointer_t<AZStd::decay_t<C>>>::Get(),
+                        (OnDemandReflectHook<AZStd::remove_pointer_t<AZStd::decay_t<Args>>>::Get())...
+                    };
                     for (size_t i = 0; i < c_functionParameterAndReturnSize; ++i)
                     {
                         if (reflectHooks[i])
@@ -843,9 +846,9 @@ namespace AZ
 #if __cpp_noexcept_function_type
         // C++17 makes exception specifications as part of the type in paper P0012R1
         // Therefore noexcept overloads must be distinguished from non-noexcept overloads
-        template<class R, class... Args>
-        struct BehaviorOnDemandReflectHelper<R(*)(Args...) noexcept>
-            : BehaviorOnDemandReflectHelper<R(*)(Args...)>
+        template<class R, class C, class... Args>
+        struct BehaviorOnDemandReflectHelper<R(C, Args...) noexcept>
+            : BehaviorOnDemandReflectHelper<R(C, Args...)>
         {};
 #endif
 
@@ -1223,6 +1226,9 @@ namespace AZ
         Count
     };
 
+    template<class Function>
+    using BehaviorParameterOverridesArray = AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>;
+
     class BehaviorEBusHandler
     {
     public:
@@ -1318,7 +1324,7 @@ namespace AZ
         void SetEvent(Event e, const char* name);
 
         template<class Event>
-        void SetEvent(Event e, AZStd::string_view name, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Event>::num_args>& args);
+        void SetEvent(Event e, AZStd::string_view name, const BehaviorParameterOverridesArray<Event>& args);
 
         template<class... Args>
         void Call(int index, Args&&... args) const;
@@ -1634,21 +1640,29 @@ namespace AZ
             ClassBuilder* UserData(void *userData);
 
             /// Setup methods
-            ///< \deprecated Use "Method(const char* name, Function f, const AZStd::array<ParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc = nullptr)" instead
+            ///< \deprecated Use "Method(const char* name, Function f, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc = nullptr)" instead
             ///< This method does not support passing in argument names and tooltips nor does it support overriding specific parameter Behavior traits
             template<class Function>
             ClassBuilder* Method(const char* name, Function, BehaviorValues* defaultValues = nullptr, const char* dbgDesc = nullptr);
 
-            ///< \deprecated Use "Method(const char* name, Function f, const char* deprecatedName, const AZStd::array<ParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc = nullptr)" instead
+            ///< \deprecated Use "Method(const char* name, Function f, const char* deprecatedName, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc = nullptr)" instead
             ///< This method does not support passing in argument names and tooltips nor does it support overriding specific parameter Behavior traits
             template<class Function>
             ClassBuilder* Method(const char* name, Function f, const char* deprecatedName, BehaviorValues* defaultValues = nullptr, const char* dbgDesc = nullptr);
 
             template<class Function>
-            ClassBuilder* Method(const char* name, Function f, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc = nullptr);
+            ClassBuilder* Method(const char* name, Function f, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc = nullptr);
 
             template<class Function>
-            ClassBuilder* Method(const char* name, Function f, const char* deprecatedName, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc = nullptr);
+            ClassBuilder* Method(
+                const char* name,
+                Function f,
+                const BehaviorParameterOverrides& classMetadata,
+                const BehaviorParameterOverridesArray<Function>& argsMetadata,
+                const char* dbgDesc = nullptr);
+
+            template<class Function>
+            ClassBuilder* Method(const char* name, Function f, const char* deprecatedName, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc = nullptr);
 
             template<class Getter, class Setter>
             ClassBuilder* Property(const char* name, Getter getter, Setter setter);
@@ -1694,10 +1708,10 @@ namespace AZ
             EBusBuilder* Event(const char* name, Function f, const char* deprecatedName = nullptr);
 
             template<class Function>
-            EBusBuilder* Event(const char* name, Function f, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args);
+            EBusBuilder* Event(const char* name, Function f, const BehaviorParameterOverridesArray<Function>& args);
 
             template<class Function>
-            EBusBuilder* Event(const char* name, Function f, const char* deprecatedName, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args);
+            EBusBuilder* Event(const char* name, Function f, const char* deprecatedName, const BehaviorParameterOverridesArray<Function>& args);
 
             /**
             * Every \ref EBus has two components, sending and receiving. Sending is reflected via \ref BehaviorContext::Event calls and Handler/Received
@@ -1734,21 +1748,21 @@ namespace AZ
          BehaviorContext();
         ~BehaviorContext();
 
-        ///< \deprecated Use "Method(const char*, Function, const AZStd::array<ParameterOverrides, AZStd::function_traits<Function>::num_args>&, const char*)" instead
+        ///< \deprecated Use "Method(const char*, Function, const BehaviorParameterOverridesArray<Function>&, const char*)" instead
         ///< This method does not support passing in argument names and tooltips nor does it support overriding specific parameter Behavior traits
         template<class Function>
         GlobalMethodBuilder Method(const char* name, Function f, BehaviorValues* defaultValues = nullptr, const char* dbgDesc = nullptr);
 
-        ///< \deprecated Use "Method(const char*, Function, const char*, const AZStd::array<ParameterOverrides, AZStd::function_traits<Function>::num_args>&, const char*)" instead
+        ///< \deprecated Use "Method(const char*, Function, const char*, const BehaviorParameterOverridesArray<Function>&, const char*)" instead
         ///< This method does not support passing in argument names and tooltips nor does it support overriding specific parameter Behavior traits
         template<class Function>
         GlobalMethodBuilder Method(const char* name, Function f, const char* deprecatedName, BehaviorValues* defaultValues = nullptr, const char* dbgDesc = nullptr);
 
         template<class Function>
-        GlobalMethodBuilder Method(const char* name, Function f, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc = nullptr);
+        GlobalMethodBuilder Method(const char* name, Function f, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc = nullptr);
 
         template<class Function>
-        GlobalMethodBuilder Method(const char* name, Function f, const char* deprecatedName, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc = nullptr);
+        GlobalMethodBuilder Method(const char* name, Function f, const char* deprecatedName, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc = nullptr);
 
         template<class Getter, class Setter>
         GlobalPropertyBuilder Property(const char* name, Getter getter, Setter setter);
@@ -2810,7 +2824,7 @@ namespace AZ
     }
 
     template<class Event>
-    void BehaviorEBusHandler::SetEvent(Event e, AZStd::string_view name, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Event>::num_args>& args)
+    void BehaviorEBusHandler::SetEvent(Event e, AZStd::string_view name, const BehaviorParameterOverridesArray<Event>& args)
     {
         (void)e;
         int i = GetFunctionIndex(name.data());
@@ -3093,19 +3107,19 @@ namespace AZ
 
 
     //////////////////////////////////////////////////////////////////////////
-    ///< \deprecated Use "Method(const char*, Function, const AZStd::array<ParameterOverrides, AZStd::function_traits<Function>::num_args>&, const char*)" instead
+    ///< \deprecated Use "Method(const char*, Function, const BehaviorParameterOverridesArray<Function>&, const char*)" instead
     template<class Function>
-    BehaviorContext::GlobalMethodBuilder BehaviorContext::Method(const char* name, Function f, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args> & args, const char* dbgDesc)
+    BehaviorContext::GlobalMethodBuilder BehaviorContext::Method(const char* name, Function f, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc)
     {
         return Method(name, f, nullptr, args, dbgDesc);
     }
 
     //////////////////////////////////////////////////////////////////////////
-    ///< \deprecated Use "Method(const char*, Function, const char*, const AZStd::array<ParameterOverrides, AZStd::function_traits<Function>::num_args>&, const char*)" instead
+    ///< \deprecated Use "Method(const char*, Function, const char*, const BehaviorParameterOverridesArray<Function>&, const char*)" instead
     template<class Function>
     BehaviorContext::GlobalMethodBuilder BehaviorContext::Method(const char* name, Function f, const char* deprecatedName, BehaviorValues* defaultValues, const char* dbgDesc)
     {
-        AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args> parameterOverrides;
+        BehaviorParameterOverridesArray<Function> parameterOverrides;
         if (defaultValues)
         {
             AZ_Assert(defaultValues->GetNumValues() <= parameterOverrides.size(), "You can't have more default values than the number of function arguments");
@@ -3121,7 +3135,7 @@ namespace AZ
     }
 
     template<class Function>
-    BehaviorContext::GlobalMethodBuilder BehaviorContext::Method(const char* name, Function f, const char* deprecatedName, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc)
+    BehaviorContext::GlobalMethodBuilder BehaviorContext::Method(const char* name, Function f, const char* deprecatedName, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc)
     {
         if (IsRemovingReflection())
         {
@@ -3203,7 +3217,7 @@ namespace AZ
     template<class Function>
     BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(const char* name, Function f, const char* deprecatedName, BehaviorValues* defaultValues, const char* dbgDesc)
     {
-        AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args> parameterOverrides;
+        BehaviorParameterOverridesArray<Function> parameterOverrides;
         if (defaultValues)
         {
             AZ_Assert(defaultValues->GetNumValues() <= parameterOverrides.size(), "You can't have more default values than the number of function arguments");
@@ -3221,14 +3235,72 @@ namespace AZ
 
     template<class C>
     template<class Function>
-    BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(const char* name, Function f, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc)
+    BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(const char* name, Function f, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc)
     {
         return Method(name, f, nullptr, args, dbgDesc);
     }
 
     template<class C>
     template<class Function>
-    BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(const char* name, Function f, const char* deprecatedName, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args, const char* dbgDesc)
+    BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(
+        const char* name,
+        Function f,
+        const BehaviorParameterOverrides& classMetadata,
+        const BehaviorParameterOverridesArray<Function>& argsMetadata,
+        const char* dbgDesc)
+    {
+        if (m_class)
+        {
+            typedef AZ::Internal::BehaviorMethodImpl<
+                typename AZStd::RemoveFunctionConst<typename AZStd::remove_pointer<Function>::type>::type>
+                BehaviorMethodType;
+            BehaviorMethod* method =
+                aznew BehaviorMethodType(f, Base::m_context, AZStd::string::format("%s::%s", m_class->m_name.c_str(), name));
+            method->m_debugDescription = dbgDesc;
+
+            auto methodIter = m_class->m_methods.find(name);
+            if (methodIter != m_class->m_methods.end())
+            {
+                if (!methodIter->second->AddOverload(method))
+                {
+                    AZ_Error("BehaviorContext", false, "Method incorrectly reflected as C++ overload");
+                    delete method;
+                    return this;
+                }
+            }
+            else
+            {
+                m_class->m_methods.insert(AZStd::make_pair(name, method));
+            }
+
+            size_t classPtrIndex = 0;
+            if (method->IsMember())
+            {
+                method->SetArgumentName(classPtrIndex, classMetadata.m_name);
+                method->SetArgumentToolTip(classPtrIndex, classMetadata.m_toolTip);
+                method->SetDefaultValue(classPtrIndex, classMetadata.m_defaultValue);
+                method->OverrideParameterTraits(classPtrIndex, classMetadata.m_addTraits, classMetadata.m_removeTraits);
+                classPtrIndex++;
+            }
+
+            for (size_t i = 0; i < argsMetadata.size(); ++i)
+            {
+                method->SetArgumentName(i + classPtrIndex, argsMetadata[i].m_name);
+                method->SetArgumentToolTip(i + classPtrIndex, argsMetadata[i].m_toolTip);
+                method->SetDefaultValue(i + classPtrIndex, argsMetadata[i].m_defaultValue);
+                method->OverrideParameterTraits(i + classPtrIndex, argsMetadata[i].m_addTraits, argsMetadata[i].m_removeTraits);
+            }
+
+            // \note we can start returning a context so we can maintain the scope
+            Base::m_currentAttributes = &method->m_attributes;
+        }
+
+        return this;
+    }
+
+    template<class C>
+    template<class Function>
+    BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(const char* name, Function f, const char* deprecatedName, const BehaviorParameterOverridesArray<Function>& args, const char* dbgDesc)
     {
         if (m_class)
         {
@@ -3565,13 +3637,13 @@ namespace AZ
     template<class Function>
     BehaviorContext::EBusBuilder<Bus>* BehaviorContext::EBusBuilder<Bus>::Event(const char* name, Function e, const char *deprecatedName /*=nullptr*/)
     {
-        AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args> parameterOverrides;
+        BehaviorParameterOverridesArray<Function> parameterOverrides;
         return Event(name, e, deprecatedName, parameterOverrides);
     }
 
     template<class Bus>
     template<class Function>
-    BehaviorContext::EBusBuilder<Bus>* BehaviorContext::EBusBuilder<Bus>::Event(const char* name, Function e, const char* deprecatedName, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args)
+    BehaviorContext::EBusBuilder<Bus>* BehaviorContext::EBusBuilder<Bus>::Event(const char* name, Function e, const char* deprecatedName, const BehaviorParameterOverridesArray<Function>& args)
     {
         if (m_ebus)
         {
@@ -3643,7 +3715,7 @@ namespace AZ
 
     template<class Bus>
     template<class Function>
-    BehaviorContext::EBusBuilder<Bus>* BehaviorContext::EBusBuilder<Bus>::Event(const char* name, Function e, const AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args>& args)
+    BehaviorContext::EBusBuilder<Bus>* BehaviorContext::EBusBuilder<Bus>::Event(const char* name, Function e, const BehaviorParameterOverridesArray<Function>& args)
     {
         return Event(name, e, nullptr, args);
     }
@@ -3777,7 +3849,7 @@ namespace AZ
         template<class... Functions>
         inline void OnDemandReflectFunctions(OnDemandReflectionOwner* onDemandReflection, AZStd::Internal::pack_traits_arg_sequence<Functions...>)
         {
-            (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::raw_fp_type>::QueueReflect(onDemandReflection), ...);
+            (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::function_type>::QueueReflect(onDemandReflection), ...);
         }
 
         // Assumes parameters array is big enough to store all parameters
