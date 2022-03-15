@@ -139,87 +139,6 @@ namespace GradientSignal
         return false;
     }
 
-    AZStd::pair<float, float> GetPixelFormatRange(AZ::RHI::Format format)
-    {
-        switch (format)
-        {
-        case AZ::RHI::Format::R8_UNORM:
-        case AZ::RHI::Format::A8_UNORM:
-        case AZ::RHI::Format::R8G8_UNORM:
-        case AZ::RHI::Format::R8G8B8A8_UNORM:
-        case AZ::RHI::Format::A8B8G8R8_UNORM:
-        case AZ::RHI::Format::R8_UNORM_SRGB:
-        case AZ::RHI::Format::R8G8_UNORM_SRGB:
-        case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
-        case AZ::RHI::Format::A8B8G8R8_UNORM_SRGB:
-        case AZ::RHI::Format::R8_UINT:
-        case AZ::RHI::Format::R8G8_UINT:
-        case AZ::RHI::Format::R8G8B8A8_UINT:
-            return AZStd::make_pair(aznumeric_cast<float>(AZStd::numeric_limits<AZ::u8>::lowest()),
-                aznumeric_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
-
-        case AZ::RHI::Format::R8_SNORM:
-        case AZ::RHI::Format::R8G8_SNORM:
-        case AZ::RHI::Format::R8G8B8A8_SNORM:
-        case AZ::RHI::Format::A8B8G8R8_SNORM:
-        case AZ::RHI::Format::R8_SINT:
-        case AZ::RHI::Format::R8G8_SINT:
-        case AZ::RHI::Format::R8G8B8A8_SINT:
-            return AZStd::make_pair(aznumeric_cast<float>(AZStd::numeric_limits<AZ::s8>::lowest()),
-                aznumeric_cast<float>(AZStd::numeric_limits<AZ::s8>::max()));
-
-        case AZ::RHI::Format::D16_UNORM:
-        case AZ::RHI::Format::R16_UNORM:
-        case AZ::RHI::Format::R16G16_UNORM:
-        case AZ::RHI::Format::R16G16B16A16_UNORM:
-        case AZ::RHI::Format::R16_UINT:
-        case AZ::RHI::Format::R16G16_UINT:
-        case AZ::RHI::Format::R16G16B16A16_UINT:
-            return AZStd::make_pair(aznumeric_cast<float>(AZStd::numeric_limits<AZ::u16>::lowest()),
-                aznumeric_cast<float>(AZStd::numeric_limits<AZ::u16>::max()));
-
-        case AZ::RHI::Format::R16_SNORM:
-        case AZ::RHI::Format::R16G16_SNORM:
-        case AZ::RHI::Format::R16G16B16A16_SNORM:
-        case AZ::RHI::Format::R16_SINT:
-        case AZ::RHI::Format::R16G16_SINT:
-        case AZ::RHI::Format::R16G16B16A16_SINT:
-            return AZStd::make_pair(aznumeric_cast<float>(AZStd::numeric_limits<AZ::s16>::lowest()),
-                aznumeric_cast<float>(AZStd::numeric_limits<AZ::s16>::max()));
-
-        case AZ::RHI::Format::R16_FLOAT:
-        case AZ::RHI::Format::R16G16_FLOAT:
-        case AZ::RHI::Format::R16G16B16A16_FLOAT:
-            // 16-bit half-precision floats have a range of +/- 65504.
-            // See https://en.wikipedia.org/wiki/Half-precision_floating-point_format for more details.
-            return AZStd::make_pair(-65504.0f, 65504.0f);
-
-        case AZ::RHI::Format::D32_FLOAT:
-        case AZ::RHI::Format::R32_FLOAT:
-        case AZ::RHI::Format::R32G32_FLOAT:
-        case AZ::RHI::Format::R32G32B32_FLOAT:
-        case AZ::RHI::Format::R32G32B32A32_FLOAT:
-            return AZStd::make_pair(AZStd::numeric_limits<float>::lowest(),
-                AZStd::numeric_limits<float>::max());
-
-        case AZ::RHI::Format::R32_UINT:
-        case AZ::RHI::Format::R32G32_UINT:
-        case AZ::RHI::Format::R32G32B32_UINT:
-        case AZ::RHI::Format::R32G32B32A32_UINT:
-            return AZStd::make_pair(aznumeric_cast<float>(AZStd::numeric_limits<AZ::u32>::lowest()),
-                aznumeric_cast<float>(AZStd::numeric_limits<AZ::u32>::max()));
-
-        case AZ::RHI::Format::R32_SINT:
-        case AZ::RHI::Format::R32G32_SINT:
-        case AZ::RHI::Format::R32G32B32_SINT:
-        case AZ::RHI::Format::R32G32B32A32_SINT:
-            return AZStd::make_pair(aznumeric_cast<float>(AZStd::numeric_limits<AZ::s32>::lowest()),
-                aznumeric_cast<float>(AZStd::numeric_limits<AZ::s32>::max()));
-        }
-
-        return AZStd::make_pair(0.0f, 1.0f);
-    }
-
     void ImageGradientConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
@@ -415,20 +334,8 @@ namespace GradientSignal
             // Validate manual scale
             if (m_configuration.m_customScaleType == CustomScaleType::Manual)
             {
-                m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin,
-                    aznumeric_cast<float>(AZStd::numeric_limits<AZ::u8>::lowest()),
-                    aznumeric_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
-                m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax,
-                    aznumeric_cast<float>(AZStd::numeric_limits<AZ::u8>::lowest()),
-                    aznumeric_cast<float>(AZStd::numeric_limits<AZ::u8>::max()));
-                m_configuration.m_scaleRangeMax = AZStd::max(m_configuration.m_scaleRangeMax, m_configuration.m_scaleRangeMin);
-
-                if (AZ::GetAbs(m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin) < AZStd::numeric_limits<float>::epsilon())
-                {
-                    AZ_Error("GradientSignal", false, "Check min and max ranges! Max (%f) cannot be less than or equal to min (%f).",
-                        m_configuration.m_scaleRangeMax, m_configuration.m_scaleRangeMin);
-                    return;
-                }
+                m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin, 0.0f, 1.0f);
+                m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax, 0.0f, 1.0f);
             }
         }
 
@@ -500,9 +407,7 @@ namespace GradientSignal
                     if (m_configuration.m_customScaleType == CustomScaleType::Manual)
                     {
                         const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(channel));
-                        const auto formatRange = GetPixelFormatRange(imageDescriptor.m_format);
-                        const float scaleFactor = formatRange.second - formatRange.first;
-                        return value * ((m_configuration.m_scaleRangeMax / scaleFactor) - (m_configuration.m_scaleRangeMin / scaleFactor)) + (m_configuration.m_scaleRangeMin / scaleFactor);
+                        return value * (m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin) + m_configuration.m_scaleRangeMin;
                     }
                 }
 

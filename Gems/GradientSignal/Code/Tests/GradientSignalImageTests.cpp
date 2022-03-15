@@ -47,7 +47,7 @@ namespace UnitTest
             GradientSignal::ChannelToUse m_channelToUse = GradientSignal::ChannelToUse::Red;
             GradientSignal::CustomScaleType m_customScaleType = GradientSignal::CustomScaleType::None;
             float m_scaleRangeMin = 0.0f;
-            float m_scaleRangeMax = 255.0f;
+            float m_scaleRangeMax = 1.0f;
 
             static const AZ::Vector2 EndOfList;
         };
@@ -410,6 +410,8 @@ namespace UnitTest
     TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedManualScale)
     {
         // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        const float customMin = 0.0f;
+        const float customMax = 0.5f;
         PixelTestSetup test =
         {
             4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
@@ -420,11 +422,15 @@ namespace UnitTest
             true,                                                       // Enabled the advanced mode
             GradientSignal::ChannelToUse::Red,
             GradientSignal::CustomScaleType::Manual,                    // Enable manual scale
-            0.0f,                                                       // Minimum of 0.0f
-            100.0f                                                      // Maximum of 100.0f
+            customMin,                                                  // Custom min
+            customMax                                                   // Custom max
         };
 
-        RunPixelTest(test, 0.3921568f);
+        // Calculate the expected value for the scaled value
+        const float pixelValue = 1.0f;
+        float expectedValue = pixelValue * (customMax - customMin) + customMin;
+
+        RunPixelTest(test, expectedValue);
     }
 
     TEST_F(GradientSignalImageTestsFixture, GradientTransformComponent_TransformTypes)

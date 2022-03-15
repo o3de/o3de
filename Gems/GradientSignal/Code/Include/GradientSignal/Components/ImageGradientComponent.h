@@ -80,7 +80,7 @@ namespace GradientSignal
         ChannelToUse m_channelToUse = ChannelToUse::Red;
         CustomScaleType m_customScaleType = CustomScaleType::None;
         float m_scaleRangeMin = 0.0f;
-        float m_scaleRangeMax = 255.0f;
+        float m_scaleRangeMax = 1.0f;
     };
 
     static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
