@@ -5,6 +5,8 @@
         "Depth" : { "Enable" : true, "CompareFunc" : "Always" }
     },
 
+    "DrawList" : "editormodemask",
+
     "BlendState" : {
         "Enable" : true,
         "BlendSource" : "AlphaSource",
