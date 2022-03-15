@@ -1184,17 +1184,10 @@ namespace AzToolsFramework
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 
-        bool TransformComponent::IsClearButtonRequired()
+        bool TransformComponent::ShowClearButtonHandler()
         {
-            // Check if the current entity does not have a parent or if it does, the parent is a container. If either, return false.
-            AZ::EntityId thisEntityId = GetParentId();
-            AZ::EntityId parentId;
-            EditorEntityInfoRequestBus::EventResult(parentId, thisEntityId, &EditorEntityInfoRequestBus::Events::GetParent);
-            if (!parentId.IsValid() || (m_focusModeInterface && !m_focusModeInterface->IsInFocusSubTree(parentId)))
-            {
-                return false;
-            }
-            return true;
+            // Hide the clear button if the current entity is the focus root, which is the default value.
+            return(!m_focusModeInterface->IsFocusRoot(GetParentId()));
         }
 
         void TransformComponent::Reflect(AZ::ReflectContext* context)
@@ -1235,7 +1228,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::ChangeValidate, &TransformComponent::ValidatePotentialParent)->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::ParentChangedInspector)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
-                            Attribute(AZ::Edit::Attributes::IsClearButtonRequired, &TransformComponent::IsClearButtonRequired)->
+                            Attribute(AZ::Edit::Attributes::ShowClearButtonHandler, &TransformComponent::ShowClearButtonHandler)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform, "Values", "")->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChangedInspector)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->

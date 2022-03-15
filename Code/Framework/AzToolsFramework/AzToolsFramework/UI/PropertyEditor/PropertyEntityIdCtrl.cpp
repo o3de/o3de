@@ -335,25 +335,6 @@ namespace AzToolsFramework
 
     void PropertyEntityIdCtrl::SetCurrentEntityId(const AZ::EntityId& newEntityId, bool emitChange, const AZStd::string& nameOverride)
     {
-        #if 0
-        if (GetCheckClearButton() && newEntityId.IsValid())
-        {
-            // First check if the new entity has a parent.
-            AZ::EntityId parentId;
-            EditorEntityInfoRequestBus::EventResult(parentId, newEntityId, &EditorEntityInfoRequestBus::Events::GetParent);
-            if (!parentId.IsValid())
-            {
-                // If not then disable the clear button.
-                m_entityIdLineEdit->setClearButtonEnabled(false);
-            }
-            else
-            {
-                bool isPrefabEntity = (m_prefabPublicInterface) ? m_prefabPublicInterface->IsInstanceContainerEntity(newEntityId) : false;
-                // if the parent is a prefab container then disable the clear button else enable it.
-                m_entityIdLineEdit->setClearButtonEnabled(isPrefabEntity ? false : true);
-            }
-        }
-        #endif
         m_entityIdLineEdit->setClearButtonEnabled(HasClearButton());
         m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride);
         m_componentsSatisfyingServices.clear();
@@ -539,7 +520,7 @@ namespace AzToolsFramework
                 GUI->SetIncompatibleServices(incompatibleServices);
             }
         }
-        else if (attrib == AZ::Edit::Attributes::IsClearButtonRequired)
+        else if (attrib == AZ::Edit::Attributes::ShowClearButtonHandler)
         {
             bool value;
             if (attrValue->Read<bool>(value))
