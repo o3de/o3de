@@ -11,8 +11,8 @@
 
 namespace AzToolsFramework
 {
-    //! @class LocalViewBookmarkComponent
-    //! @brief Component that stores the name of the local View bookmark file associated to the prefab
+    //! @class LocalViewBookmarkComponent.
+    //! @brief Component that stores the name of the local View bookmark file associated to the prefab.
     class LocalViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
@@ -24,11 +24,12 @@ namespace AzToolsFramework
         // AZ::Component overrides ...
         void Activate() override{}
         void Deactivate() override{}
+
         const AZStd::string& GetLocalBookmarksFileName() const;
         void SetLocalBookmarksFileName(AZStd::string localBookmarksFileName);
 
     private:
-        //! name of the local View bookmark file associated to the prefab. located in user/SettingsRegistry/ViewBookmarks
+        //! name of the local View bookmark file associated to the prefab. located in project/user/SettingsRegistry/ViewBookmarks.
         AZStd::string m_localBookmarksFileName;
     };
 } // namespace AzToolsFramework

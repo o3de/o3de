@@ -858,9 +858,7 @@ void MainWindow::InitActions()
         AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
         if (!bookmarkLoader)
         {
-            QString tagConsoleText = tr("Couldn't find View Bookmark Loader");
-            GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
-            AZ_Warning("Main Window", false, "goToViewBookmark: Couldn't find View Bookmark Loader");
+            AZ_Warning("Main Window", false, "Couldn't find View Bookmark Loader");
             return false;
         }
 
@@ -876,7 +874,7 @@ void MainWindow::InitActions()
         if (bookmark.value() == ViewBookmark())
         {
             QString tagConsoleText = tr("View Bookmark %1 has not been set yet").arg(index + 1);
-            GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
+            AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
             return false;
         }
 
@@ -900,7 +898,7 @@ void MainWindow::InitActions()
                                      .arg(bookmark->m_position.GetX(), 0, 'f', 2)
                                      .arg(bookmark->m_position.GetY(), 0, 'f', 2)
                                      .arg(bookmark->m_position.GetZ(), 0, 'f', 2);
-        GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
+        AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
         return true;
     };
 
@@ -974,7 +972,7 @@ void MainWindow::InitActions()
                                              .arg(bookmark.m_position.GetX(), 0, 'f', 2)
                                              .arg(bookmark.m_position.GetY(), 0, 'f', 2)
                                              .arg(bookmark.m_position.GetZ(), 0, 'f', 2);
-                GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
+                AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
                 return true;
             }
 
@@ -982,9 +980,7 @@ void MainWindow::InitActions()
             return false;
         }
         QString tagConsoleText = tr("Failed to tag View Bookmark %1").arg(index + 1);
-        GetIEditor()->WriteToConsole(tagConsoleText.toUtf8().data());
-
-        AZ_Warning("Main Window", false, "tagViewBookmark: Couldn't find View Bookmark Loader");
+        AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
         return false;
     };
 

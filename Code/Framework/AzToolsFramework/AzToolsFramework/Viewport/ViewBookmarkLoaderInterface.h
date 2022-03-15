@@ -49,10 +49,12 @@ namespace AzToolsFramework
 
         bool operator!=(const ViewBookmark& other) const
         {
-            return m_position != other.m_position || m_rotation != other.m_rotation;
+            return !(*this == other);
         }
 
         AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+
+        //! Rotation in radians.
         AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();
     };
 

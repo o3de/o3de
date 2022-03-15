@@ -17,12 +17,12 @@
 
 namespace AzToolsFramework
 {
-    static constexpr const char* s_viewBookmarksRegistryPath = "/O3DE/ViewBookmarks/";
-    static constexpr const char* s_localBookmarksKey = "LocalBookmarks";
-    static constexpr const char* s_lastKnownLocationKey = "LastKnownLocation";
+    static constexpr const char* ViewBookmarksRegistryPath = "/O3DE/ViewBookmarks/";
+    static constexpr const char* LocalBookmarksKey = "LocalBookmarks";
+    static constexpr const char* LastKnownLocationKey = "LastKnownLocation";
 
     //Temporary value until there UI to expose the fields.
-    static constexpr int s_numOfDefaultLocationsInLevel = 12;
+    static constexpr int NumOfDefaultLocationsInLevel = 12;
 
     void ViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
     {
@@ -158,7 +158,7 @@ namespace AzToolsFramework
                 AZStd::optional<AZStd::string_view> dataType = AZ::StringFunc::TokenizeLast(path, "/");
                 AZStd::optional<AZStd::string_view> bookmarkIndexStr = AZ::StringFunc::TokenizeLast(path, "/");
                 AZStd::optional<AZStd::string_view> bookmarkType;
-                if (bookmarkIndexStr == s_lastKnownLocationKey)
+                if (bookmarkIndexStr == LastKnownLocationKey)
                 {
                     bookmarkType = bookmarkIndexStr;
                 }
@@ -187,7 +187,7 @@ namespace AzToolsFramework
                         }
                     };
 
-                    if (bookmarkType == s_lastKnownLocationKey)
+                    if (bookmarkType == LastKnownLocationKey)
                     {
                         int currentIndex = stoi(AZStd::string(valueIndex));
                         if (dataType == "Position")
@@ -199,7 +199,7 @@ namespace AzToolsFramework
                             setVec3Fn(m_lastKnownLocation.m_rotation, currentIndex);
                         }
                     }
-                    else if (bookmarkType == s_localBookmarksKey)
+                    else if (bookmarkType == LocalBookmarksKey)
                     {
                         auto existingBookmarkEntry = m_bookmarkMap.find(localBookmarksID.value());
                         if (existingBookmarkEntry != m_bookmarkMap.end())
@@ -261,7 +261,7 @@ namespace AzToolsFramework
                 if (isMerged)
                 {
                     using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-                    AZStd::string bookmarkKey = s_viewBookmarksRegistryPath + m_bookmarkfileName;
+                    AZStd::string bookmarkKey = ViewBookmarksRegistryPath + m_bookmarkfileName;
                     auto viewBookmarkSettingsKey = FixedValueString::format(bookmarkKey.c_str());
                     ViewBookmarkVisitor viewBookmarkVisitor;
 
@@ -290,7 +290,7 @@ namespace AzToolsFramework
         {
         case StorageMode::Shared:
             AZ_Assert(false, "Shared Bookmark Component functionality not implemented.");
-            return AZStd::optional<ViewBookmark>();
+            return AZStd::nullopt;
         case StorageMode::Local:
 
             if (index >= 0 && index < m_localBookmarks.size())
@@ -298,10 +298,10 @@ namespace AzToolsFramework
                 return AZStd::optional<ViewBookmark>(m_localBookmarks.at(index));
             }
             AZ_Warning("ViewBookmarkLoader", false, "Couldn't load View Bookmark from file.");
-            return AZStd::optional<ViewBookmark>();
+            return AZStd::nullopt;
         case StorageMode::Invalid:
         default:
-            return AZStd::optional<ViewBookmark>();
+            return AZStd::nullopt;
         }
     }
 
@@ -418,7 +418,7 @@ namespace AzToolsFramework
 
                         // Initialize default locations to 0. This is a temporary solution to match the 12 locations of the legacy system.
                         // Once there is a UI for the view bookmarks these lines should be removed.
-                        for (int i = 0; i < s_numOfDefaultLocationsInLevel; i++)
+                        for (int i = 0; i < NumOfDefaultLocationsInLevel; i++)
                         {
                             AZStd::string finalPath =
                                 "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(m_localBookmarkCount++);
@@ -447,7 +447,7 @@ namespace AzToolsFramework
                     m_bookmarkfileName = GenerateBookmarkFileName();
 
                     // Initialize default locations to 0
-                    for (int i = 0; i < s_numOfDefaultLocationsInLevel; i++)
+                    for (int i = 0; i < NumOfDefaultLocationsInLevel; i++)
                     {
                         AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(m_localBookmarkCount++);
                         registry->SetObject(finalPath, ViewBookmark());

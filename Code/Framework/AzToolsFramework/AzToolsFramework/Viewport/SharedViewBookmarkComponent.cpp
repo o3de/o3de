@@ -55,11 +55,8 @@ namespace AzToolsFramework
                     ->Class<SharedViewBookmarkComponent>(
                         "Shared View Bookmark Component", "The ViewBookmark Component allows to store bookmarks for a prefab")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
+                    ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
                     ->Attribute(AZ::Edit::Attributes::Category, "View Bookmarks")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &SharedViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
@@ -74,7 +71,7 @@ namespace AzToolsFramework
         {
             return AZStd::optional<ViewBookmark>(m_viewBookmark.m_viewBookmarks[index]);
         }
-        return AZStd::optional<ViewBookmark>();
+        return AZStd::nullopt;
     }
 
     void SharedViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)

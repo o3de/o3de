@@ -28,8 +28,6 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
                     ->Attribute(AZ::Edit::Attributes::Category, "View Bookmarks")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &LocalViewBookmarkComponent::m_localBookmarksFileName, "Local Bookmarks File Name", "");

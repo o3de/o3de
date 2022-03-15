@@ -12,8 +12,8 @@
 
 namespace AzToolsFramework
 {
-    //! @class EditorViewBookmarks
-    //! @brief struct that stores a vector of View bookmarks
+    //! @class EditorViewBookmarks.
+    //! @brief struct that stores a vector of View bookmarks.
     struct EditorViewBookmarks final
     {
         AZ_CLASS_ALLOCATOR(EditorViewBookmarks, AZ::SystemAllocator, 0);
@@ -26,9 +26,9 @@ namespace AzToolsFramework
         AZStd::vector<ViewBookmark> m_viewBookmarks;
     };
 
-    //! @class SharedViewBookmarkComponent
-    //! @brief component that stores a vector of View bookmarks stored in the prefab
-    //! so they can be shared in version control easily
+    //! @class SharedViewBookmarkComponent.
+    //! @brief component that stores a vector of View bookmarks stored in the prefab.
+    //! so they can be shared in version control easily.
     class SharedViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
