@@ -35,7 +35,8 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     Texture2D<float4> m_depth;
 
     //! The entity mask containing the visible fragments of entities of interest.
-    Texture2D<float4> m_entityMask;
+    Texture2D<float2> m_entityMask;
+
     //! Dimensions of mask texture (xy is width and height, zw is 1/width and 1/height).
     float4 m_maskDimensions;
 
