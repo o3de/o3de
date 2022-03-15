@@ -9,22 +9,21 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RPI.Public/Pass/Pass.h>
+#include <AZCore/Math/Vector3.h>
+#include <AZCore/Math/Vector4.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Reflect/Pass/ComputePassData.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
-#include <AZCore/Math/Vector4.h>
-#include <AZCore/Math/Vector3.h>
 
 namespace Terrain
 {
-    class TerrainMacroTextureClipmapGenerationPass
-        : public AZ::RPI::ComputePass
+    class TerrainMacroTextureClipmapGenerationPass : public AZ::RPI::ComputePass
     {
         AZ_RPI_PASS(TerrainMacroTextureClipmapGenerationPass);
 
- public:
+    public:
         AZ_RTTI(Terrain::TerrainMacroTextureClipmapGenerationPass, "{BD504E93-87F4-484E-A17A-E337C3F2279C}", AZ::RPI::ComputePass);
         AZ_CLASS_ALLOCATOR(Terrain::TerrainMacroTextureClipmapGenerationPass, AZ::SystemAllocator, 0);
         virtual ~TerrainMacroTextureClipmapGenerationPass() = default;
@@ -49,29 +48,29 @@ namespace Terrain
         struct ClipmapData
         {
             //! The 2D xy-plane view position where the main camera is.
-            //! xy: previous; zw: current.
-            AZ::Vector4 m_viewPosition;
+            //! 0,1: previous; 2,3: current.
+            AZStd::array<float, 4> m_viewPosition;
 
             // 2D xy-plane world bounds defined by the terrain.
-            // xy: min; zw: max.
-            AZ::Vector4 m_worldBounds;
+            // 0,1: min; 2,3: max.
+            AZStd::array<float, 4> m_worldBounds;
 
             //! The max range that the clipmap is covering.
-            float m_maxRenderSize[2];
+            AZStd::array<float, 2> m_maxRenderSize;
 
             //! The size of a single clipmap.
-            float m_clipmapSize[2];
+            AZStd::array<float, 2> m_clipmapSize;
 
             //! Clipmap centers in normalized UV coordinates [0, 1].
-            // xy: previous clipmap centers; zw: current clipmap centers.
+            // 0,1: previous clipmap centers; 2,3: current clipmap centers.
             // They are used for toroidal addressing and may move each frame based on the view point movement.
             // The move distance is scaled differently in each layer.
-            AZ::Vector4 m_clipmapCenters[ClipmapStackSize];
+            AZStd::array<AZStd::array<float, 4>, ClipmapStackSize> m_clipmapCenters;
 
-            void SetPreviousClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel);
-            void SetCurrentClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel);
-
-            void SetMaxRenderSize(const AZ::Vector2& maxRenderSize);
+            //! A list of reciprocal the clipmap scale [s],
+            //! where 1 pixel in the current layer of clipmap represents s meters.
+            //! Fast lookup list to avoid redundant calculation in shaders.
+            AZStd::array<AZStd::array<float, 4>, ClipmapStackSize> m_clipmapScaleInv;
         };
 
         ClipmapData m_clipmapData;
@@ -79,7 +78,5 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_macroColorClipmaps;
 
         AZ::RHI::ShaderInputNameIndex m_clipmapDataIndex = "m_clipmapData";
-        AZ::RHI::ShaderInputNameIndex m_macroColorClipmapsIndex = "m_macroColorClipmaps";
-        AZ::RHI::ShaderInputNameIndex m_macroNormalClipmapsIndex = "m_macroColorClipmaps";
     };
-} // namespace AZ::Render
+} // namespace Terrain

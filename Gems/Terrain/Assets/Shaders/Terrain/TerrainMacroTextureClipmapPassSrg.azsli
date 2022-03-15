@@ -12,6 +12,8 @@
 #include <TerrainSrg.azsli>
 #include <TerrainMaterialSrg.azsli>
 
+#define CLIPMAP_STACK_SIZE 5u
+
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     struct ClipmapData
@@ -35,7 +37,12 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
         // They are used for toroidal addressing and may move each frame based on the view point movement.
         // The move distance is scaled differently in each layer.
-        float4 m_clipmapCenters[5];
+        float4 m_clipmapCenters[CLIPMAP_STACK_SIZE];
+
+        // A list of reciprocal the clipmap scale [s],
+        // where 1 pixel in the current layer of clipmap represents s meters. 
+        // Fast lookup list to avoid redundant calculation in shaders.
+        float4 m_clipmapScaleInv[CLIPMAP_STACK_SIZE];
     };
 
     ClipmapData m_clipmapData;

@@ -6,13 +6,13 @@
  *
  */
 
-#include <Terrain/Passes/TerrainMacroTextureClipmapComputePass.h>
-#include <TerrainRenderer/TerrainFeatureProcessor.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Terrain/Passes/TerrainMacroTextureClipmapComputePass.h>
+#include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 namespace Terrain
 {
@@ -20,7 +20,7 @@ namespace Terrain
     {
         constexpr const char* colorClipmapName = "MacroColorClipmap";
         constexpr const char* normalClipmapName = "MacroNormalClipmap";
-    }
+    } // namespace MacroClipmap
 
     AZ::RPI::Ptr<TerrainMacroTextureClipmapGenerationPass> TerrainMacroTextureClipmapGenerationPass::Create(
         const AZ::RPI::PassDescriptor& descriptor)
@@ -32,25 +32,6 @@ namespace Terrain
     TerrainMacroTextureClipmapGenerationPass::TerrainMacroTextureClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
         : AZ::RPI::ComputePass(descriptor)
     {
-    }
-
-    void ProcessPassAttachment(
-        AZ::Data::Instance<AZ::RPI::AttachmentImagePool> pool,
-        AZ::RPI::Ptr<AZ::RPI::PassAttachment> passAttachment,
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage)
-    {
-        passAttachment->Update();
-
-        passAttachment->m_lifetime = AZ::RHI::AttachmentLifetimeType::Imported;
-
-        AZ::RHI::ImageDescriptor& imageDesc = passAttachment->m_descriptor.m_image;
-        imageDesc.m_bindFlags |= AZ::RHI::ImageBindFlags::ShaderReadWrite;
-
-        AZ::RHI::ClearValue clearValue = AZ::RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 1.0f);
-        attachmentImage = AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(passAttachment->m_path.GetCStr()), &clearValue, nullptr);
-
-        passAttachment->m_path = attachmentImage->GetAttachmentId();
-        passAttachment->m_importedResource = attachmentImage;
     }
 
     void TerrainMacroTextureClipmapGenerationPass::BuildInternal()
@@ -65,8 +46,8 @@ namespace Terrain
             imageDesc.m_size = AZ::RHI::Size(ClipmapSizeWidth, ClipmapSizeHeight, 1);
             imageDesc.m_arraySize = ClipmapStackSize;
 
-            m_macroColorClipmaps = AZ::RPI::AttachmentImage::Create(
-                *pool.get(), imageDesc, AZ::Name(MacroClipmap::colorClipmapName), nullptr, nullptr);
+            m_macroColorClipmaps =
+                AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::colorClipmapName), nullptr, nullptr);
 
             AttachImageToSlot(AZ::Name(MacroClipmap::colorClipmapName), m_macroColorClipmaps);
         }
@@ -79,8 +60,8 @@ namespace Terrain
             imageDesc.m_size = AZ::RHI::Size(ClipmapSizeWidth, ClipmapSizeHeight, 1);
             imageDesc.m_arraySize = ClipmapStackSize;
 
-            m_macroColorClipmaps = AZ::RPI::AttachmentImage::Create(
-                *pool.get(), imageDesc, AZ::Name(MacroClipmap::normalClipmapName), nullptr, nullptr);
+            m_macroColorClipmaps =
+                AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::normalClipmapName), nullptr, nullptr);
 
             AttachImageToSlot(AZ::Name(MacroClipmap::normalClipmapName), m_macroColorClipmaps);
         }
@@ -91,13 +72,15 @@ namespace Terrain
 
     void TerrainMacroTextureClipmapGenerationPass::InitializeInternal()
     {
-        for (uint32_t clipmapIndex = 0; clipmapIndex <= ClipmapStackSize; ++clipmapIndex)
+        float clipmapScaleInv = 1.0f;
+        for (int32_t clipmapIndex = ClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
-            m_clipmapData.SetPreviousClipmapCenter(AZ::Vector2(0.5f, 0.5f), clipmapIndex);
-            m_clipmapData.SetCurrentClipmapCenter(AZ::Vector2(0.5f, 0.5f), clipmapIndex);
+            AZ::Vector4(0.5f).StoreToFloat4(m_clipmapData.m_clipmapCenters[clipmapIndex].data());
+            AZ::Vector4(clipmapScaleInv).StoreToFloat4(m_clipmapData.m_clipmapScaleInv[clipmapIndex].data());
+            clipmapScaleInv /= 2.0f;
         }
 
-        m_clipmapData.m_viewPosition = AZ::Vector4::CreateZero();
+        AZ::Vector4::CreateZero().StoreToFloat4(m_clipmapData.m_viewPosition.data());
 
         ComputePass::InitializeInternal();
     }
@@ -111,18 +94,19 @@ namespace Terrain
         if (terrainFeatureProcessor)
         {
             const AZ::Aabb worldBounds = terrainFeatureProcessor->GetTerrainBounds();
-            m_clipmapData.m_worldBounds = AZ::Vector4(
-                worldBounds.GetMin().GetX(), worldBounds.GetMin().GetY(),
-                worldBounds.GetMax().GetX(), worldBounds.GetMax().GetY());
+            m_clipmapData.m_worldBounds[0] = worldBounds.GetMin().GetX();
+            m_clipmapData.m_worldBounds[1] = worldBounds.GetMin().GetY();
+            m_clipmapData.m_worldBounds[2] = worldBounds.GetMax().GetX();
+            m_clipmapData.m_worldBounds[3] = worldBounds.GetMax().GetY();
 
             // Use world size for now.
             const AZ::Vector3 worldSize = worldBounds.GetMax() - worldBounds.GetMin();
-            m_clipmapData.SetMaxRenderSize(AZ::Vector2(worldSize.GetX(), worldSize.GetY()));
+            AZ::Vector2(worldSize.GetX(), worldSize.GetY()).StoreToFloat2(m_clipmapData.m_maxRenderSize.data());
         }
         else
         {
-            m_clipmapData.m_worldBounds = AZ::Vector4::CreateZero();
-            m_clipmapData.SetMaxRenderSize(AZ::Vector2::CreateZero());
+            AZ::Vector4::CreateZero().StoreToFloat4(m_clipmapData.m_worldBounds.data());
+            AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_maxRenderSize.data());
         }
 
         m_shaderResourceGroup->SetConstant(m_clipmapDataIndex, m_clipmapData);
@@ -157,45 +141,44 @@ namespace Terrain
         AZ::RPI::ViewPtr view = GetView();
         AZ_Assert(view, "TerrainMacroTextureClipmapGenerationPass should have the MainCamera as the view.");
 
-        m_clipmapData.m_viewPosition.SetX(m_clipmapData.m_viewPosition.GetZ());
-        m_clipmapData.m_viewPosition.SetY(m_clipmapData.m_viewPosition.GetW());
+        // pass current to previous
+        m_clipmapData.m_viewPosition[0] = m_clipmapData.m_viewPosition[2];
+        m_clipmapData.m_viewPosition[1] = m_clipmapData.m_viewPosition[3];
 
+        // set new current
         const AZ::Vector3 currentViewPosition = view->GetViewToWorldMatrix().GetTranslation();
-        m_clipmapData.m_viewPosition.SetZ(currentViewPosition.GetX());
-        m_clipmapData.m_viewPosition.SetW(currentViewPosition.GetY());
+        m_clipmapData.m_viewPosition[2] = currentViewPosition.GetX();
+        m_clipmapData.m_viewPosition[3] = currentViewPosition.GetY();
 
         const AZ::Vector2 maxRenderSize = AZ::Vector2(m_clipmapData.m_maxRenderSize[0], m_clipmapData.m_maxRenderSize[1]);
         const AZ::Vector2 viewTranslation = AZ::Vector2(
-            m_clipmapData.m_viewPosition.GetZ() - m_clipmapData.m_viewPosition.GetX(),
-            m_clipmapData.m_viewPosition.GetW() - m_clipmapData.m_viewPosition.GetY());
+            m_clipmapData.m_viewPosition[2] - m_clipmapData.m_viewPosition[0],
+            m_clipmapData.m_viewPosition[3] - m_clipmapData.m_viewPosition[1]);
         const AZ::Vector2 normalizedViewTranslation = viewTranslation / maxRenderSize;
 
         float clipmapScale = 1.0f;
-        for (int32_t clipmapIndex = ClipmapStackSize; clipmapIndex >= 0; --clipmapIndex)
+        for (int32_t clipmapIndex = ClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
-            m_clipmapData.m_clipmapCenters[clipmapIndex].SetX(m_clipmapData.m_clipmapCenters[clipmapIndex].GetZ());
-            m_clipmapData.m_clipmapCenters[clipmapIndex].SetY(m_clipmapData.m_clipmapCenters[clipmapIndex].GetW());
+            m_clipmapData.m_clipmapCenters[clipmapIndex][0] = m_clipmapData.m_clipmapCenters[clipmapIndex][2];
+            m_clipmapData.m_clipmapCenters[clipmapIndex][1] = m_clipmapData.m_clipmapCenters[clipmapIndex][3];
 
             const AZ::Vector2 scaledTranslation = normalizedViewTranslation * clipmapScale;
             // If normalized translation on a certain level of clipmap goes out of the current clipmap representation,
             // a full update will be triggered and the center will be reset to the center.
             if (AZStd::abs(scaledTranslation.GetX()) >= 1.0f || AZStd::abs(scaledTranslation.GetY()) >= 1.0f)
             {
-                m_clipmapData.SetCurrentClipmapCenter(AZ::Vector2(0.5f, 0.5f), clipmapIndex);
+                m_clipmapData.m_clipmapCenters[clipmapIndex][2] = 0.5f;
+                m_clipmapData.m_clipmapCenters[clipmapIndex][3] = 0.5f;
             }
             else
             {
-                AZ::Vector2 clipmapCenter = AZ::Vector2(
-                    m_clipmapData.m_clipmapCenters[clipmapIndex].GetZ(),
-                    m_clipmapData.m_clipmapCenters[clipmapIndex].GetW());
+                float centerX = m_clipmapData.m_clipmapCenters[clipmapIndex][2] + scaledTranslation.GetX();
+                float centerY = m_clipmapData.m_clipmapCenters[clipmapIndex][3] + scaledTranslation.GetY();
 
-                clipmapCenter = clipmapCenter + scaledTranslation;
-
-                float centerX = clipmapCenter.GetX();
-                float centerY = clipmapCenter.GetY();
-
-                AZ_Assert((centerX > -1.0f) && (centerX < 2.0f) && (centerY > -1.0f) && (centerY < 2.0f),
-                    "The new translated clipmap center should be within this range. Otherwise it should fall into the other if branch and reset the center to (0.5, 0.5).");
+                AZ_Assert(
+                    (centerX > -1.0f) && (centerX < 2.0f) && (centerY > -1.0f) && (centerY < 2.0f),
+                    "The new translated clipmap center should be within this range. Otherwise it should fall into the other if branch and "
+                    "reset the center to (0.5, 0.5).");
 
                 // Equivalent to modulation.
                 // It wraps around to use toroidal addressing.
@@ -205,30 +188,11 @@ namespace Terrain
                 centerY -= centerY > 1.0f ? 1.0f : 0.0f;
                 centerY += centerY < 0.0f ? 1.0f : 0.0f;
 
-                clipmapCenter = AZ::Vector2(centerX, centerY);
-
-                m_clipmapData.SetCurrentClipmapCenter(clipmapCenter, clipmapIndex);
+                m_clipmapData.m_clipmapCenters[clipmapIndex][2] = centerX;
+                m_clipmapData.m_clipmapCenters[clipmapIndex][3] = centerY;
             }
 
             clipmapScale *= 2.0f;
         }
-    }
-
-    void TerrainMacroTextureClipmapGenerationPass::ClipmapData::SetPreviousClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel)
-    {
-        m_clipmapCenters[clipmapLevel].SetX(clipmapCenter.GetX());
-        m_clipmapCenters[clipmapLevel].SetY(clipmapCenter.GetY());
-    }
-
-    void TerrainMacroTextureClipmapGenerationPass::ClipmapData::SetCurrentClipmapCenter(const AZ::Vector2& clipmapCenter, uint32_t clipmapLevel)
-    {
-        m_clipmapCenters[clipmapLevel].SetZ(clipmapCenter.GetX());
-        m_clipmapCenters[clipmapLevel].SetW(clipmapCenter.GetY());
-    }
-
-    void TerrainMacroTextureClipmapGenerationPass::ClipmapData::SetMaxRenderSize(const AZ::Vector2& maxRenderSize)
-    {
-        m_maxRenderSize[0] = maxRenderSize.GetX();
-        m_maxRenderSize[1] = maxRenderSize.GetY();
     }
 } // namespace Terrain

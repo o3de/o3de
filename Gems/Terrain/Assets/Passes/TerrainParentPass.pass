@@ -10,16 +10,15 @@
                 {
                     "Name": "TerrainDetailTextureComputePass",
                     "TemplateName": "TerrainDetailTextureComputePassTemplate",
-                    "Enabled": true
+                    "Enabled": false
                 },
                 {
                     "Name": "TerrainMacroTextureClipmapGenerationPass",
                     "TemplateName": "TerrainMacroTextureClipmapGenerationPassTemplate",
-                    "Enabled": true
+                    "Enabled": false
                 }
             ]
         }
     }
 }
- 
 
