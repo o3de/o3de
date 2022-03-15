@@ -190,7 +190,8 @@ namespace GradientSignal
         case AZ::RHI::Format::R16_FLOAT:
         case AZ::RHI::Format::R16G16_FLOAT:
         case AZ::RHI::Format::R16G16B16A16_FLOAT:
-            // Half float
+            // 16-bit half-precision floats have a range of +/- 65504.
+            // See https://en.wikipedia.org/wiki/Half-precision_floating-point_format for more details.
             return AZStd::make_pair(-65504.0f, 65504.0f);
 
         case AZ::RHI::Format::D32_FLOAT:
