@@ -32,12 +32,6 @@ namespace AzToolsFramework
     class EntityIdQLineEdit;
     class EditorEntityIdContainer;
 
-    namespace Prefab
-    {
-        class PrefabPublicInterface;
-    };
-
-
     //just a test to see how it would work to pop a dialog
 
     class PropertyEntityIdCtrl
@@ -78,8 +72,8 @@ namespace AzToolsFramework
 
         void SetAcceptedEntityContext(AzFramework::EntityContextId contextId);
 
-        void SetHasClearButton(bool value){m_hasClearButton = value;}
-        bool HasClearButton(){return m_hasClearButton;}
+        void SetHasClearButton(bool value){ m_hasClearButton = value; }
+        bool HasClearButton(){ return m_hasClearButton; }
 
     signals:
         void OnEntityIdChanged(AZ::EntityId newEntityId);
