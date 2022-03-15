@@ -231,7 +231,7 @@ namespace GradientSignal
         if (serialize)
         {
             serialize->Class<ImageGradientConfig, AZ::ComponentConfig>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("TilingX", &ImageGradientConfig::m_tilingX)
                 ->Field("TilingY", &ImageGradientConfig::m_tilingY)
                 ->Field("StreamingImageAsset", &ImageGradientConfig::m_imageAsset)
