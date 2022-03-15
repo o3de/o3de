@@ -60,8 +60,10 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
 
         # o3de.exe should not close with an error code 
         assert result.returncode == 0, f"o3de.exe failed with exit code {result.returncode}"
+        print(f"o3de.exe quit with return code {result.returncode}")
     except TimeoutExpired as e:
         # we expect to close the app ourselves
+        print("o3de.exe was closed after exceeding the timeout")
         pass
 
     # the engine is registered
