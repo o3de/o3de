@@ -30,8 +30,10 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     //! The non-linear depth buffer data for fragments in the color buffer.
     Texture2D<float> m_depthLinear;
-    float4 m_depthLinearDimensions; // xy is width and height, zw is 1/width and 1/height
 
+    //! Dimensions of linear depth texture (xy is width and height, zw is 1/width and 1/height).
+    float4 m_depthLinearDimensions;
+    
     Sampler LinearSampler
     {
         MinFilter = Linear;
@@ -41,7 +43,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
-
 }
 
 struct VSInput
@@ -49,7 +50,6 @@ struct VSInput
     // Base fields (required by the template azsli file)...
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
-
 };
 
 struct VSOutput
@@ -57,6 +57,8 @@ struct VSOutput
     // Base fields (required by the template azsli file)...
     // "centroid" is needed for SV_Depth to compile
     precise linear centroid float4 m_position : SV_Position;
+
+    // Depth buffer value
     float m_depth : UV0;
 };
 
@@ -66,15 +68,11 @@ VSOutput MainVS(VSInput IN)
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-
-    // NDCs
-    float3 ndc = float3(OUT.m_position.x / OUT.m_position.w, OUT.m_position. y/ OUT.m_position.w, OUT.m_position.z / OUT.m_position.w);
-
-    // Normalized screenspace UVs
-    float2 uv = float2((ndc.x + 1.0) * 0.5, (ndc.y + 1.0) * 0.5);
+    OUT.m_position.z *= 1.01;
 
     // Fragment depth
-    OUT.m_depth = ndc.z;// * 0.5 + 0.5;
+    float3 ndc = float3(OUT.m_position.x / OUT.m_position.w, OUT.m_position. y/ OUT.m_position.w, OUT.m_position.z / OUT.m_position.w);
+    OUT.m_depth = ndc.z;
     return OUT;
 }
 
@@ -86,9 +84,6 @@ struct PixelOutput
 PixelOutput MainPS(VSOutput IN)
 {
     PixelOutput OUT;
-
-    // Ignore m_maskId for now until LYN-9878 is resolved
-
     // Get Linear Depth
     float2 screenUV = IN.m_position.xy * PassSrg::m_depthLinearDimensions.zw;
     float existingLinearDepth = PassSrg::m_depthLinear.Sample(PassSrg::LinearSampler, screenUV).r;
@@ -97,21 +92,13 @@ PixelOutput MainPS(VSOutput IN)
     existingLinearDepth = abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * existingLinearDepth - ViewSrg::GetFarZ()))); 
     newLinearDepth = abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * newLinearDepth - ViewSrg::GetFarZ()))); 
 
-
-    OUT.m_color.a = 1.0;
     OUT.m_color.g = 1.;
-    OUT.m_color.r =0.0;
-    if((newLinearDepth - existingLinearDepth) <= 0.05)
-    {
-        OUT.m_color.r =1.0;
-    }
-    //existingLinearDepth *= 0.05;
-    //newLinearDepth *= 0.05;
+    OUT.m_color.r = 0.0;
 
-    //OUT.m_color.r = 1.;//float4(1., 1., 1., 1.);
-    // Output Linear Depth
-    // OUT.m_color.rgb = existingLinearDepth.rrr;
-    
+    if((newLinearDepth - existingLinearDepth) <= 0.001)
+    {
+        OUT.m_color.r = 1.0;
+    }
 
     return OUT;
 } 

@@ -45,7 +45,7 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
-    const float4 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
+    const float2 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
@@ -62,10 +62,6 @@ PSOutput MainPS(VSOutput IN)
         outlineMode = outline.g * (1.0 - mask.g);
     }
     else if(PassSrg::m_lineMode == 1.0)
-    {
-        outlineMode = outline.r * (1.0 - mask.g);
-    }
-    else if(PassSrg::m_lineMode == 2.0)
     {
         outlineMode = outline.r * (1.0 - mask.r);
     }
