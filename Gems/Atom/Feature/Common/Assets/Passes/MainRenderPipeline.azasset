@@ -9,7 +9,26 @@
         "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {
-                "samples": 4
+                "samples": 2,
+                "customPositionsCount": 2,
+                "customPositions": [
+                    { "x": 8, "y": 8 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 },
+                    { "x": 0, "y": 0 }
+                ]
             }
         }
     }
