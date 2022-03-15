@@ -21,8 +21,7 @@ namespace AZ
             enum class LineMode : AZ::u32
             {
                 OutlineAlways,
-                OutlineVisible,
-                OutlineVisibleContour
+                OutlineVisible
             };
 
             AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackPassBase);
