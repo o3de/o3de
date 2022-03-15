@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/Features/SrgSemantics.azsli>
+
 #include <viewsrg.srgi>
 #include <scenesrg.srgi>
 
@@ -22,6 +24,25 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     {
         return SceneSrg::GetObjectToWorldMatrix(m_objectId);
     }
+}
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    //! The non-linear depth buffer data for fragments in the color buffer.
+    Texture2D<float> m_depthLinear;
+
+    //! Dimensions of linear depth texture (xy is width and height, zw is 1/width and 1/height).
+    float4 m_depthLinearDimensions;
+    
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
 }
 
 struct VSInput
