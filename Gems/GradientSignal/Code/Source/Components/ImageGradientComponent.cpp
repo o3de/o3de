@@ -520,24 +520,18 @@ namespace GradientSignal
         float g = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
         float b = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
 
-        // Convert back to the unsigned 8-bit value
-        constexpr float maxValue = aznumeric_cast<float>(std::numeric_limits<AZ::u8>::max());
-        r *= maxValue;
-        g *= maxValue;
-        b *= maxValue;
-
         /*
             "Terrarium" is an image-based terrain file format as defined here:  https://www.mapzen.com/blog/terrain-tile-service/
             According to the website:  "Terrarium format PNG tiles contain raw elevation data in meters, in Mercator projection (EPSG:3857).
             All values are positive with a 32,768 offset, split into the red, green, and blue channels, with 16 bits of integer and 8 bits of fraction. To decode:  (red * 256 + green + blue / 256) - 32768"
             This gives a range -32768 to 32768 meters at a constant 1/256 meter resolution. For reference, the lowest point on Earth (Mariana Trench) is at -10911 m, and the highest point (Mt Everest) is at 8848 m.
+            The equation of (red * 256 + green + blue / 256) - 32768 is based on red/green/blue being u8 values, but we are getting float values back
+            in the range of 0.0f - 1.0f, so the multipliers below have been modified slightly to account for that scaling
         */
-        float value = (r * 256.0f) + g + (b / 256.0f) - 32768.0f;
-
-        // Convert back to 0 - 1 range
-        float origMin = -32768.0f;
-        float origMax = 32768.0f;
-        return (value - origMin) / (origMax - origMin);
+        constexpr float redMultiplier = (255.0f * 256.0f) / 65536.0f;
+        constexpr float greenMultiplier = 255.0f / 65536.0f;
+        constexpr float blueMultiplier = (255.0f / 256.0f) / 65536.0f;
+        return (r * redMultiplier) + (g * greenMultiplier) + (b * blueMultiplier);
     }
 
     void ImageGradientComponent::Activate()
