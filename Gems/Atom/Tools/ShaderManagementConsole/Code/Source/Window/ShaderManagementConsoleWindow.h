@@ -24,8 +24,5 @@ namespace ShaderManagementConsole
 
         ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~ShaderManagementConsoleWindow() = default;
-
-    protected:
-        QWidget* CreateDocumentTabView(const AZ::Uuid& documentId) override;
     };
 } // namespace ShaderManagementConsole

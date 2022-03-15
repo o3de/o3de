@@ -9,7 +9,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <MaterialEditorApplication.h>
-#include <MaterialEditor_Traits_Platform.h>
 
 #include <Document/MaterialDocument.h>
 #include <Window/MaterialEditorWindow.h>
@@ -39,6 +38,7 @@ namespace MaterialEditor
 
         QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("O3DE Material Editor");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
     }
@@ -71,9 +71,16 @@ namespace MaterialEditor
     {
         Base::StartCommon(systemEntity);
 
+        // Overriding default document type info to provide a custom view
+        auto documentTypeInfo = MaterialDocument::BuildDocumentTypeInfo();
+        documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            auto emptyWidget = new QWidget(m_window.get());
+            emptyWidget->setContentsMargins(0, 0, 0, 0);
+            emptyWidget->setFixedSize(0, 0);
+            return m_window->AddDocumentTab(documentId, emptyWidget);
+        };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
-            MaterialDocument::BuildDocumentTypeInfo());
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
         m_viewportSettingsSystem.reset(aznew MaterialViewportSettingsSystem(m_toolId));
 

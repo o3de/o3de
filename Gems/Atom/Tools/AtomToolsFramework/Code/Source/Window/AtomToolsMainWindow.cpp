@@ -81,6 +81,7 @@ namespace AtomToolsFramework
         if (!m_shownBefore)
         {
             m_shownBefore = true;
+            m_defaultWindowState = m_advancedDockManager->saveState();
             m_mainWindowWrapper->showFromSettings();
             const AZStd::string windowState =
                 AtomToolsFramework::GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
@@ -118,10 +119,11 @@ namespace AtomToolsFramework
             return false;
         }
 
-        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str());
+        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str(), this);
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        widget->setObjectName(name.c_str());
+        widget->setObjectName(QString("%1_Widget").arg(name.c_str()));
+        widget->setWindowTitle(name.c_str());
         widget->setParent(dockWidget);
         widget->setMinimumSize(QSize(300, 300));
         dockWidget->setWidget(widget);
@@ -222,6 +224,11 @@ namespace AtomToolsFramework
         m_menuEdit->addAction("&Settings...", [this]() {
             OpenSettings();
         }, QKeySequence::Preferences);
+
+        m_menuView->addAction("Default Layout", [this]() {
+            m_advancedDockManager->restoreState(m_defaultWindowState);
+        });
+        m_menuView->addSeparator();
 
         m_menuHelp->addAction("&Help...", [this]() {
             OpenHelp();

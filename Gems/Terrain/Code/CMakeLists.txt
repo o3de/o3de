@@ -111,6 +111,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::GradientSignal.Mocks
                 Gem::Terrain.Mocks
                 Gem::Terrain.Static
+        RUNTIME_DEPENDENCIES
+            Gem::GradientSignal
+            Gem::LmbrCentral
+            Gem::SurfaceData
     )
 
     # Add Terrain.Tests to googletest
@@ -123,29 +127,4 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGET Gem::Terrain.Tests
     )
 
-    # If we are a host platform we want to add tools test like editor tests here
-    if(PAL_TRAIT_BUILD_HOST_TOOLS)
-        # We support Terrain.Editor.Tests on this platform, add Terrain.Editor.Tests target which depends on Terrain.Editor
-        ly_add_target(
-            NAME Terrain.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-            NAMESPACE Gem
-            FILES_CMAKE
-                terrain_editor_tests_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    Tests
-                    Source
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    AZ::AzTest
-                    Gem::LmbrCentral.Mocks
-                    Gem::Terrain.Mocks
-                    Gem::Terrain.Editor
-        )
-
-        # Add Terrain.Editor.Tests to googletest
-        ly_add_googletest(
-            NAME Gem::Terrain.Editor.Tests
-        )
-    endif()
 endif()
