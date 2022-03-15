@@ -442,6 +442,9 @@ namespace AtomToolsFramework
         {
             ExitMainLoop();
         }
+
+        constexpr const char* testModeSwitch = "autotest_mode";
+        m_isAutoTestMode = commandLine.HasSwitch(testModeSwitch);
     }
 
     bool AtomToolsApplication::LaunchLocalServer()

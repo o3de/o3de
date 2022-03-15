@@ -332,8 +332,10 @@ namespace AZ
                 return "D3D12_AUTO_BREADCRUMB_OP_INITIALIZEEXTENSIONCOMMAND";
             case D3D12_AUTO_BREADCRUMB_OP_EXECUTEEXTENSIONCOMMAND:
                 return "D3D12_AUTO_BREADCRUMB_OP_EXECUTEEXTENSIONCOMMAND";
-            case D3D12_AUTO_BREADCRUMB_OP_DISPATCHMESH:
-                return "D3D12_AUTO_BREADCRUMB_OP_DISPATCHMESH";
+
+            // Disable due to the current minimum windows version doesn't have this enum
+            // case D3D12_AUTO_BREADCRUMB_OP_DISPATCHMESH:
+                // return "D3D12_AUTO_BREADCRUMB_OP_DISPATCHMESH";
             }
             return "unkown op";
         }
@@ -352,10 +354,10 @@ namespace AZ
 
         void Device::OnDeviceRemoved()
         {
+            // It's possible this function is called many times at same time from different threads.
+            // We want the other threads are blocked until the device removal is fully handled. 
             AZStd::lock_guard<AZStd::mutex> lock(m_onDeviceRemovedMutex);
 
-            // It's possible this function is called many times at same time from different threads.
-            // We only want it be executed once.
             if (m_onDeviceRemoved)
             {
                 return;
@@ -417,13 +419,12 @@ namespace AZ
             }
            
             // Perform app-specific device removed operation, such as logging or inspecting DRED output
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedData1> pDred;
+            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedData> pDred;
             if (SUCCEEDED(removedDevice->QueryInterface(IID_PPV_ARGS(&pDred))))
             {
-                D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT1 dredAutoBreadcrumbsOutput;
-                D3D12_DRED_PAGE_FAULT_OUTPUT1 dredPageFaultOutput;
+                D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT dredAutoBreadcrumbsOutput;
 
-                if (SUCCEEDED(pDred->GetAutoBreadcrumbsOutput1(&dredAutoBreadcrumbsOutput)))
+                if (SUCCEEDED(pDred->GetAutoBreadcrumbsOutput(&dredAutoBreadcrumbsOutput)))
                 {
                     auto* currentNode = dredAutoBreadcrumbsOutput.pHeadAutoBreadcrumbNode;
                     while (currentNode)
@@ -456,11 +457,6 @@ namespace AZ
 
                         AZ_TracePrintf("Device", "Context\n");
                         
-                        for (uint32_t contextIdx = 0; contextIdx < currentNode->BreadcrumbContextsCount; contextIdx++)
-                        {
-                            currentNode->pBreadcrumbContexts[contextIdx];
-                            AZ_TracePrintf("Device", "%d %S \n", currentNode->pBreadcrumbContexts[contextIdx].BreadcrumbIndex, currentNode->pBreadcrumbContexts[contextIdx].pContextString);
-                        }
                         for (uint32_t index = 0; index < currentNode->BreadcrumbCount; index++)
                         {
                             if (hasError && index == completedBreadcrumbCount)
@@ -480,10 +476,6 @@ namespace AZ
 
                         currentNode = currentNode->pNext;
                     }
-                }
-
-                if (SUCCEEDED(pDred->GetPageFaultAllocationOutput1(&dredPageFaultOutput)))
-                {
                 }
             }
 

@@ -206,7 +206,7 @@ namespace AZ
 
             // device remover fence            
             RHI::Ptr<ID3D12Fence> m_deviceFence;
-            AZStd::atomic<bool> m_onDeviceRemoved = false;
+            bool m_onDeviceRemoved = false;
             AZStd::mutex m_onDeviceRemovedMutex;
         };
     }
