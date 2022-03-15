@@ -66,7 +66,7 @@ namespace GradientSignal
         static void Reflect(AZ::ReflectContext* context);
 
         bool IsAdvancedModeReadOnly() const;
-        bool IsManualScaleReadOnly() const;
+        AZ::Crc32 GetManualScaleVisibility() const;
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_imageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
         float m_tilingX = 1.0f;

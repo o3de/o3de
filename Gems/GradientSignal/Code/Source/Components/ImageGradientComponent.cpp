@@ -264,8 +264,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
 
-                    ->DataElement(0, &ImageGradientConfig::m_advancedMode, "Advanced Mode", "Enables advanced configuration options.")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced")
+                    ->GroupElementToggle("Advanced", &ImageGradientConfig::m_advancedMode)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse, "Channel To Use", "The channel to use from the image.")
@@ -274,11 +273,14 @@ namespace GradientSignal
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_customScaleType, "Custom Scale", "Choose a type of scaling to be applied to the image data.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &SupportedScaleOptions)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMin, "Range Minimum", "The minimum range each value from the image data is scaled against.")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsManualScaleReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMax, "Range Maximum", "The maximum range each value from the image data is scaled against.")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsManualScaleReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
                     ;
             }
         }
@@ -299,9 +301,9 @@ namespace GradientSignal
         return !m_advancedMode;
     }
 
-    bool ImageGradientConfig::IsManualScaleReadOnly() const
+    AZ::Crc32 ImageGradientConfig::GetManualScaleVisibility() const
     {
-        return IsAdvancedModeReadOnly() || (m_customScaleType != CustomScaleType::Manual);
+        return (m_customScaleType == CustomScaleType::Manual) ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     void ImageGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
