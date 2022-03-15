@@ -43,10 +43,14 @@ namespace GradientSignal
 
     enum class ChannelToUse : AZ::u8
     {
-        R,
-        G,
-        B,
-        A,
+        Red,
+        Green,
+        Blue,
+        Alpha,
+        //! "Terrarium" is an image - based terrain file format as defined here:
+        //!     https://www.mapzen.com/blog/terrain-tile-service/
+        //! According to the website : "Terrarium format PNG tiles contain raw elevation
+        //! data in meters, in Mercator projection (EPSG:3857)."
         Terrarium
     };
 
@@ -73,7 +77,7 @@ namespace GradientSignal
         float m_tilingY = 1.0f;
 
         bool m_advancedMode = false;
-        ChannelToUse m_channelToUse = ChannelToUse::R;
+        ChannelToUse m_channelToUse = ChannelToUse::Red;
         CustomScaleType m_customScaleType = CustomScaleType::None;
         float m_scaleRangeMin = 0.0f;
         float m_scaleRangeMax = 255.0f;

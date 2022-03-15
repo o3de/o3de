@@ -44,7 +44,7 @@ namespace UnitTest
             AZ::Vector2 m_expectedPixels[32];
 
             bool m_advancedMode = false;
-            GradientSignal::ChannelToUse m_channelToUse = GradientSignal::ChannelToUse::R;
+            GradientSignal::ChannelToUse m_channelToUse = GradientSignal::ChannelToUse::Red;
             GradientSignal::CustomScaleType m_customScaleType = GradientSignal::CustomScaleType::None;
             float m_scaleRangeMin = 0.0f;
             float m_scaleRangeMax = 255.0f;
@@ -333,7 +333,7 @@ namespace UnitTest
             4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
             { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
             true,                                                       // Enabled the advanced mode
-            GradientSignal::ChannelToUse::R                             // Use default R channel
+            GradientSignal::ChannelToUse::Red                           // Use default Red channel
         };
 
         RunPixelTest(test);
@@ -350,7 +350,7 @@ namespace UnitTest
             4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
             { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
             true,                                                       // Enabled the advanced mode
-            GradientSignal::ChannelToUse::G                             // Use G channel
+            GradientSignal::ChannelToUse::Green                         // Use Green channel
         };
 
         RunPixelTest(test);
@@ -367,7 +367,7 @@ namespace UnitTest
             4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
             { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
             true,                                                       // Enabled the advanced mode
-            GradientSignal::ChannelToUse::B                             // Use B channel
+            GradientSignal::ChannelToUse::Blue                          // Use Blue channel
         };
 
         RunPixelTest(test);
@@ -384,7 +384,7 @@ namespace UnitTest
             4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
             { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
             true,                                                       // Enabled the advanced mode
-            GradientSignal::ChannelToUse::A                             // Use A channel
+            GradientSignal::ChannelToUse::Alpha                         // Use Alpha channel
         };
 
         RunPixelTest(test);
@@ -418,7 +418,7 @@ namespace UnitTest
             4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
             { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
             true,                                                       // Enabled the advanced mode
-            GradientSignal::ChannelToUse::R,
+            GradientSignal::ChannelToUse::Red,
             GradientSignal::CustomScaleType::Manual,                    // Enable manual scale
             0.0f,                                                       // Minimum of 0.0f
             100.0f                                                      // Maximum of 100.0f

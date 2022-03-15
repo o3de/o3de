@@ -106,10 +106,10 @@ namespace GradientSignal
     {
         AZStd::vector<AZ::Edit::EnumConstant<ChannelToUse>> options;
 
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::R, "Red"));
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::G, "Green"));
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::B, "Blue"));
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::A, "Alpha"));
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Red, "Red"));
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Green, "Green"));
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Blue, "Blue"));
+        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Alpha, "Alpha"));
         options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Terrarium, "Terrarium"));
 
         return options;
@@ -482,7 +482,7 @@ namespace GradientSignal
                 y = (height - 1) - y;
 
                 // By default, we will query from the R channel of the image
-                auto channel = ChannelToUse::R;
+                auto channel = ChannelToUse::Red;
 
                 // Advanced handling of channel and scale
                 if (m_configuration.m_advancedMode)
@@ -516,9 +516,9 @@ namespace GradientSignal
     {
         const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
 
-        float r = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::R));
-        float g = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::G));
-        float b = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::B));
+        float r = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
+        float g = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
+        float b = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
 
         // Convert back to the unsigned 8-bit value
         constexpr float maxValue = aznumeric_cast<float>(std::numeric_limits<AZ::u8>::max());
