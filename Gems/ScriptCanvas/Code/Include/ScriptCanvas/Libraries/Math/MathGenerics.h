@@ -28,7 +28,7 @@ namespace ScriptCanvas
             return AZStd::stof(stringValue);
         }
 
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(StringToNumber, k_categoryName, "{FD2D9758-5EA2-45A3-B293-A748D951C4A3}", "Converts the given string to it's numeric representation if possible.", "", "");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(StringToNumber, k_categoryName, "{FD2D9758-5EA2-45A3-B293-A748D951C4A3}", "Converts the given string to it's numeric representation if possible.", "String Value");
 
         AZ_INLINE AZStd::tuple<ScriptCanvas::Data::Vector3Type, ScriptCanvas::Data::StringType, ScriptCanvas::Data::BooleanType>
             ThreeGeneric(const ScriptCanvas::Data::Vector3Type& v, const ScriptCanvas::Data::StringType& s, const ScriptCanvas::Data::BooleanType& b)

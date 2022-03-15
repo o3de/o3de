@@ -17,6 +17,7 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
+#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Framework/ScriptCanvasGraphUtilities.h>
 #include <Editor/Settings.h>
 #include <Editor/SystemComponent.h>
@@ -35,8 +36,6 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
-
 
 namespace ScriptCanvasEditor
 {
@@ -172,11 +171,6 @@ namespace ScriptCanvasEditor
         asyncFunction->Start();
     }
 
-    void SystemComponent::GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes)
-    {
-        outCreatableTypes.insert(m_creatableTypes.begin(), m_creatableTypes.end());
-    }
-
     void SystemComponent::CreateEditorComponentsOnEntity(AZ::Entity* entity, [[maybe_unused]] const AZ::Data::AssetType& assetType)
     {
         if (entity)
@@ -184,6 +178,11 @@ namespace ScriptCanvasEditor
             auto graph = entity->CreateComponent<EditorGraph>();
             entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
         }
+    }
+
+    void SystemComponent::GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes)
+    {
+        outCreatableTypes.insert(m_creatableTypes.begin(), m_creatableTypes.end());
     }
 
     void SystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags)
@@ -250,19 +249,19 @@ namespace ScriptCanvasEditor
                             {
                                 continue;
                             }
- 
+
                             entityMenu->setEnabled(true);
- 
+
                             usedIds.insert(assetId);
- 
+
                             AZStd::string rootPath;
                             AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
- 
+
                             AZStd::string displayName;
                             AZ::StringFunc::Path::GetFileName(assetInfo.m_relativePath.c_str(), displayName);
- 
+
                             action = entityMenu->addAction(QString("%1").arg(QString(displayName.c_str())));
- 
+
                             QObject::connect(action, &QAction::triggered, [assetInfo]
                             {
                                 AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
@@ -331,16 +330,16 @@ namespace ScriptCanvasEditor
                 if (fullDetails)
                 {
                     AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
- 
+
                     AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::OpenViewPane, "Script Canvas");
                     GeneralRequestBus::BroadcastResult(openOutcome
                         , &GeneralRequests::OpenScriptCanvasAsset
                         , SourceHandle(nullptr, sourceUUIDInCall, ""), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
                 }
             };
- 
+
             openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath()), scriptCanvasEditorCallback });
-         }
+        }
     }
 
     void SystemComponent::OnStartPlayInEditor()
@@ -386,19 +385,19 @@ namespace ScriptCanvasEditor
         }
     }
 
+    Reporter SystemComponent::RunAssetGraph(SourceHandle asset, ScriptCanvas::ExecutionMode mode)
+    {
+        Reporter reporter;
+        RunEditorAsset(asset, reporter, mode);
+        return reporter;
+    }
+
     Reporter SystemComponent::RunGraph(AZStd::string_view path, ScriptCanvas::ExecutionMode mode)
     {
         RunGraphSpec runGraphSpec;
         runGraphSpec.graphPath = path;
         runGraphSpec.runSpec.execution = mode;
         return ScriptCanvasEditor::RunGraph(runGraphSpec).front();
-    }
-
-    Reporter SystemComponent::RunAssetGraph(SourceHandle asset, ScriptCanvas::ExecutionMode mode)
-    {
-        Reporter reporter;
-        RunEditorAsset(asset, reporter, mode);
-        return reporter;
     }
 
     AzToolsFramework::AssetSeedManagerRequests::AssetTypePairs SystemComponent::GetAssetTypeMapping()

@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Color.h>
 #include <AzFramework/Font/FontInterface.h>
+#include <AzFramework/Physics/DebugDraw/CharacterPhysicsDebugDraw.h>
 #include <Integration/Rendering/RenderFlag.h>
 #include <Integration/Rendering/RenderActorInstance.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -38,8 +39,24 @@ namespace AZ::Render
     class AtomActorDebugDraw
     {
     public:
+        AZ_CLASS_ALLOCATOR(AtomActorDebugDraw, AZ::SystemAllocator, 0)
+
+        struct TrajectoryPathParticle
+        {
+            EMotionFX::Transform m_worldTm;
+        };
+
+        struct TrajectoryTracePath
+        {
+            AZ_CLASS_ALLOCATOR(AtomActorDebugDraw::TrajectoryTracePath, AZ::SystemAllocator, 0)
+            AZStd::vector<TrajectoryPathParticle> m_traceParticles;
+            const EMotionFX::ActorInstance* m_actorInstance = nullptr;
+            float m_timePassed = 0.0f;
+        };
+
         AtomActorDebugDraw(AZ::EntityId entityId);
 
+        void UpdateActorInstance(EMotionFX::ActorInstance* actorInstance, float deltaTime);
         void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags, EMotionFX::ActorInstance* instance);
 
     private:
@@ -85,38 +102,13 @@ namespace AZ::Render
             float size,                 //!< The size value in units is used to control the scaling of the axis. */
             bool selected,              //!< Set to true if you want to render the axis using the selection color. */
             bool renderAxisName = false);
-
-        void RenderColliders(AzFramework::DebugDisplayRequests* debugDisplay,
-            const AzPhysics::ShapeColliderPairList& colliders,
+        void RenderTrajectoryPath(
+            AzFramework::DebugDisplayRequests* debugDisplay,
             const EMotionFX::ActorInstance* actorInstance,
-            const EMotionFX::Node* node,
-            const AZ::Color& colliderColor) const;
-
-        void RenderColliders(AzFramework::DebugDisplayRequests* debugDisplay,
-            EMotionFX::PhysicsSetup::ColliderConfigType colliderConfigType,
-            EMotionFX::ActorInstance* actorInstance,
-            const AZ::Color& defaultColor,
-            const AZ::Color& selectedColor) const;
-
-        void RenderJointFrame(AzFramework::DebugDisplayRequests* debugDisplay,
-            const AzPhysics::JointConfiguration& configuration,
-            const EMotionFX::ActorInstance* actorInstance,
-            const EMotionFX::Node* node,
-            const AZ::Color& color) const;
-
-        // Ragdoll
-        void RenderJointLimit(AzFramework::DebugDisplayRequests* debugDisplay,
-            const AzPhysics::JointConfiguration& configuration,
-            const EMotionFX::ActorInstance* actorInstance,
-            const EMotionFX::Node* node,
-            const EMotionFX::Node* parentNode,
-            const AZ::Color& regularColor,
-            const AZ::Color& violatedColor);
-        void RenderRagdoll(AzFramework::DebugDisplayRequests* debugDisplay,
-            EMotionFX::ActorInstance* actorInstance,
-            bool renderColliders,
-            bool renderJointLimits);
-
+            const AZ::Color& headColor,
+            const AZ::Color& pathColor);
+        // Return a non-owning trajectory path pointer.
+        TrajectoryTracePath* FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance);
         EMotionFX::Mesh* m_currentMesh = nullptr; //!< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                                   //!< NULL in case we haven't pre-calculated any positions yet.
         AZStd::vector<AZ::Vector3> m_worldSpacePositions; //!< The buffer used to store world space positions for rendering normals
@@ -131,21 +123,9 @@ namespace AZ::Render
         AZStd::vector<AZ::Color> m_auxColors;
         EntityId m_entityId;
 
-        // Joint limits
-        static constexpr float s_scale = 0.1f;
-        static constexpr AZ::u32 s_angularSubdivisions = 32;
-        static constexpr AZ::u32 s_radialSubdivisions = 2;
-
-        struct JointLimitRenderData
-        {
-            AZStd::vector<AZ::Vector3>  m_vertexBuffer;
-            AZStd::vector<AZ::u32>      m_indexBuffer;
-            AZStd::vector<AZ::Vector3>  m_lineBuffer;
-            AZStd::vector<bool>         m_lineValidityBuffer;
-
-            void Clear();
-        };
-        JointLimitRenderData m_jointLimitRenderData;
+        Physics::CharacterPhysicsDebugDraw m_characterPhysicsDebugDraw;
+        // Motion extraction paths
+        AZStd::vector<TrajectoryTracePath*> m_trajectoryTracePaths;
 
         AzFramework::TextDrawParameters m_drawParams;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;

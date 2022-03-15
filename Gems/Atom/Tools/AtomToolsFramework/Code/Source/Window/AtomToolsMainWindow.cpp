@@ -8,25 +8,32 @@
 
 #include <Atom/RHI/Factory.h>
 #include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
+#include <QCloseEvent>
 #include <QFileDialog>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QStatusBar>
 #include <QVBoxLayout>
 
 namespace AtomToolsFramework
 {
     AtomToolsMainWindow::AtomToolsMainWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : AzQtComponents::DockMainWindow(parent)
+        : Base(parent)
         , m_toolId(toolId)
         , m_advancedDockManager(new AzQtComponents::FancyDocking(this))
+        , m_mainWindowWrapper(new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons))
     {
+        setObjectName(QApplication::applicationName().append(" MainWindow"));
+
         setDockNestingEnabled(true);
         setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -52,7 +59,13 @@ namespace AtomToolsFramework
 
         SetupMetrics();
         UpdateWindowTitle();
+
         resize(1280, 1024);
+
+        // Manage saving window geometry, restoring state window is shown for the first time
+        m_mainWindowWrapper->setGuest(this);
+        m_mainWindowWrapper->enableSaveRestoreGeometry(
+            QApplication::organizationName(), QApplication::applicationName(), "mainWindowGeometry");
 
         AtomToolsMainWindowRequestBus::Handler::BusConnect(m_toolId);
     }
@@ -61,6 +74,34 @@ namespace AtomToolsFramework
     {
         PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
         AtomToolsMainWindowRequestBus::Handler::BusDisconnect();
+    }
+
+    void AtomToolsMainWindow::showEvent(QShowEvent* showEvent)
+    {
+        if (!m_shownBefore)
+        {
+            m_shownBefore = true;
+            m_defaultWindowState = m_advancedDockManager->saveState();
+            m_mainWindowWrapper->showFromSettings();
+            const AZStd::string windowState =
+                AtomToolsFramework::GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
+            m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+        }
+
+        Base::showEvent(showEvent);
+    }
+
+    void AtomToolsMainWindow::closeEvent(QCloseEvent* closeEvent)
+    {
+        if (closeEvent->isAccepted())
+        {
+            const QByteArray windowState = m_advancedDockManager->saveState();
+            AtomToolsFramework::SetSettingsObject(
+                "/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
+            AtomToolsMainWindowNotificationBus::Event(m_toolId, &AtomToolsMainWindowNotifications::OnMainWindowClosing);
+        }
+
+        Base::closeEvent(closeEvent);
     }
 
     void AtomToolsMainWindow::ActivateWindow()
@@ -78,10 +119,11 @@ namespace AtomToolsFramework
             return false;
         }
 
-        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str());
+        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str(), this);
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        widget->setObjectName(name.c_str());
+        widget->setObjectName(QString("%1_Widget").arg(name.c_str()));
+        widget->setWindowTitle(name.c_str());
         widget->setParent(dockWidget);
         widget->setMinimumSize(QSize(300, 300));
         dockWidget->setWidget(widget);
@@ -183,6 +225,11 @@ namespace AtomToolsFramework
             OpenSettings();
         }, QKeySequence::Preferences);
 
+        m_menuView->addAction("Default Layout", [this]() {
+            m_advancedDockManager->restoreState(m_defaultWindowState);
+        });
+        m_menuView->addSeparator();
+
         m_menuHelp->addAction("&Help...", [this]() {
             OpenHelp();
         });
@@ -202,8 +249,8 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::OpenAbout()
     {
+        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
     }
-
 
     void AtomToolsMainWindow::SetupMetrics()
     {

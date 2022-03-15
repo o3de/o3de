@@ -547,9 +547,11 @@ namespace AzFramework
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
             // Get asset root from application.
+            AZStd::string assetRoot;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Get(m_assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+
+                settingsRegistry->Get(assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
             }
 
             // Reflect registry for serialization.
@@ -561,7 +563,7 @@ namespace AzFramework
                 AssetRegistry::ReflectSerialize(serializeContext);
             }
 
-            AZ_TracePrintf("AssetCatalog", "Initializing asset catalog with root \"%s\"", m_assetRoot.c_str());
+            AZ_TracePrintf("AssetCatalog", "Initializing asset catalog with root \"%s\"", assetRoot.c_str());
 
             // even though this could be a chunk of memory to allocate and deallocate, this is many times faster and more efficient
             // in terms of memory AND fragmentation than allowing it to perform thousands of reads on physical media.

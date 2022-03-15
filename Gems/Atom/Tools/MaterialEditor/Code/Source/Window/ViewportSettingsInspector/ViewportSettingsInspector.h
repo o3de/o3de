@@ -14,8 +14,8 @@
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-#include <Viewport/MaterialViewportNotificationBus.h>
 #include <Viewport/MaterialViewportSettings.h>
+#include <Viewport/MaterialViewportSettingsNotificationBus.h>
 #endif
 
 namespace MaterialEditor
@@ -24,13 +24,13 @@ namespace MaterialEditor
     class ViewportSettingsInspector
         : public AtomToolsFramework::InspectorWidget
         , private AzToolsFramework::IPropertyEditorNotify
-        , private MaterialViewportNotificationBus::Handler
+        , private MaterialViewportSettingsNotificationBus::Handler
     {
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(ViewportSettingsInspector, AZ::SystemAllocator, 0);
 
-        explicit ViewportSettingsInspector(QWidget* parent = nullptr);
+        ViewportSettingsInspector(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~ViewportSettingsInspector() override;
 
     private:
@@ -53,7 +53,7 @@ namespace MaterialEditor
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
 
-        // MaterialViewportNotificationBus::Handler overrides...
+        // MaterialViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
@@ -65,10 +65,9 @@ namespace MaterialEditor
         void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
         void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
 
-        AZStd::string GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const;
-
         AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
 
+        const AZ::Crc32 m_toolId = {};
         AZ::Render::ModelPreset m_modelPreset;
         AZ::Render::LightingPreset m_lightingPreset;
         MaterialViewportSettings m_viewportSettings;

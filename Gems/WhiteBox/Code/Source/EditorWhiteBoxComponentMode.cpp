@@ -434,7 +434,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponentMode::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
-        m_worldFromLocal = AzToolsFramework::TransformUniformScale(world);
+        m_worldFromLocal = world;
     }
 
     void EditorWhiteBoxComponentMode::OnDefaultShapeTypeChanged([[maybe_unused]] const DefaultShapeType defaultShape)

@@ -99,6 +99,9 @@ namespace AZ
             //! Called when the pool is shutting down.
             void ShutdownInternal() override;
 
+            //! Fragmentation is not an issue (or measured) for the swapchain image pool.
+            void ComputeFragmentation() const override { }
+
             //////////////////////////////////////////////////////////////////////////
 
             //! Shutdown and clear all the images.

@@ -208,6 +208,8 @@ namespace AtomToolsFramework
 
         LoadSettings();
 
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
         if (editorPythonEventsInterface)
         {
@@ -237,6 +239,7 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::Destroy()
     {
+        m_assetBrowserInteractions.reset();
         m_styleManager.reset();
 
         // Save application settings to settings registry file
@@ -323,7 +326,8 @@ namespace AtomToolsFramework
         if (!failedAssets.empty())
         {
             QMessageBox::critical(
-                activeWindow(), QString("Failed to compile critical assets"),
+                GetToolMainWindow(),
+                QString("Failed to compile critical assets"),
                 QString("Failed to compile the following critical assets:\n%1\n%2")
                 .arg(failedAssets.join(",\n"))
                 .arg("Make sure this is an Atom project."));

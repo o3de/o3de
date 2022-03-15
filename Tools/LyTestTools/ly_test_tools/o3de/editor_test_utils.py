@@ -25,7 +25,7 @@ def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     :return: None
     """
     LY_PROCESSES = [
-        'Editor', 'Profiler', 'RemoteConsole', 'o3de'
+        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher'
     ]
     AP_PROCESSES = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'
@@ -180,6 +180,10 @@ def _check_log_errors_warnings(log_path: str) -> bool:
     :param log_path: The full path to the asset log file to read
     :return: True if the regex finds an error or warning, else False
     """
+    regex_match = None
+    if not os.path.exists(log_path):
+        logger.warning(f"Could not find path {log_path} during asset log collection.")
+        return False
     log_regex = "(\\d+) errors, (\\d+) warnings"
     with open(log_path, 'r') as opened_asset_log:
         for log_line in opened_asset_log:

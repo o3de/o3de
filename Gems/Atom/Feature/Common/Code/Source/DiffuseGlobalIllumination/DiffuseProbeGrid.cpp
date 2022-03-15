@@ -295,6 +295,11 @@ namespace AZ
             return m_visualizationTlasUpdateRequired || m_remainingRelocationIterations > 0;
         }
 
+        bool DiffuseProbeGrid::ContainsPosition(const AZ::Vector3& position) const
+        {
+            return m_obbWs.Contains(position);
+        }
+
         uint32_t DiffuseProbeGrid::GetTotalProbeCount() const
         {
             return m_probeCountX * m_probeCountY * m_probeCountZ;
@@ -894,6 +899,39 @@ namespace AZ
             // output
             imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_output"));
             m_visualizationRayTraceSrg->SetImageView(imageIndex, outputImageView);
+        }
+
+        void DiffuseProbeGrid::UpdateQuerySrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
+        {
+            if (!m_querySrg)
+            {
+                m_querySrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
+                AZ_Error("DiffuseProbeGrid", m_querySrg.get(), "Failed to create Query shader resource group");
+            }
+
+            RHI::ShaderInputConstantIndex constantIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+            RHI::ShaderInputImageIndex imageIndex;
+
+            // grid data
+            bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_gridData"));
+            m_querySrg->SetBufferView(bufferIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+
+            // probe irradiance
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeIrradiance"));
+            m_querySrg->SetImageView(imageIndex, GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+
+            // probe distance
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeDistance"));
+            m_querySrg->SetImageView(imageIndex, GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+
+            // probe data
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_querySrg->SetImageView(imageIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            // ambient multiplier
+            constantIndex = layout->FindShaderInputConstantIndex(Name("m_ambientMultiplier"));
+            m_querySrg->SetConstant(constantIndex, m_ambientMultiplier);
         }
 
         void DiffuseProbeGrid::UpdateCulling()

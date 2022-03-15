@@ -36,6 +36,10 @@ set(FILES
     Source/CoreLights/SimpleSpotLightDelegate.cpp
     Source/CoreLights/SphereLightDelegate.h
     Source/CoreLights/SphereLightDelegate.cpp
+    Source/CubeMapCapture/CubeMapCaptureComponent.h
+    Source/CubeMapCapture/CubeMapCaptureComponent.cpp
+    Source/CubeMapCapture/CubeMapCaptureComponentController.h
+    Source/CubeMapCapture/CubeMapCaptureComponentController.cpp
     Source/Debug/RenderDebugComponent.cpp
     Source/Debug/RenderDebugComponent.h
     Source/Debug/RenderDebugComponentConfig.cpp

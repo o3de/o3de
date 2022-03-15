@@ -10,6 +10,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -827,7 +828,15 @@ namespace EMotionFX
             using namespace AzToolsFramework;
 
             // Construct data folder that is used by the tool for loading assets (images etc.).
-            auto editorAssetsPath = (AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Gems/EMotionFX/Assets/Editor").LexicallyNormal();
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            AZ::IO::FixedMaxPath editorAssetsPath;
+            if (settingsRegistry && settingsRegistry->Get(editorAssetsPath.Native(),
+                FixedValueString::format("%s/EMotionFX/Path",AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey)))
+            {
+                editorAssetsPath /= "Assets/Editor";
+                editorAssetsPath = editorAssetsPath.LexicallyNormal();
+            }
 
             // Re-initialize EMStudio.
             int argc = 0;

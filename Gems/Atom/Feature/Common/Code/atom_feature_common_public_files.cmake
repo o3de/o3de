@@ -18,6 +18,7 @@ set(FILES
     Include/Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/ShadowConstants.h
+    Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/Debug/RenderDebugConstants.h
     Include/Atom/Feature/Debug/RenderDebugFeatureProcessorInterface.h
     Include/Atom/Feature/Debug/RenderDebugParams.inl
