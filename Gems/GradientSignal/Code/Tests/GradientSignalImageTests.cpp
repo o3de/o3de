@@ -404,7 +404,21 @@ namespace UnitTest
             GradientSignal::ChannelToUse::Terrarium                     // Use Terrarium format
         };
 
-        RunPixelTest(test, 0.999985f);
+        // Calculate expepcted value based on Terrarium file format equation:
+        // (red * 256 + green + blue / 256) - 32768
+        // More information can be found here:  https://www.mapzen.com/blog/terrain-tile-service/
+        // The R/G/B AZ::u8 values start at 255.0f (the max for this type) and then are
+        // decremented by 1 so that the tests can differentiate when switching
+        // between different channels
+        const float r = 1.0f;
+        const float g = 254.0f / 255.0f;
+        const float b = 253.0f / 255.0f;
+        constexpr float redMultiplier = (255.0f * 256.0f) / 65536.0f;
+        constexpr float greenMultiplier = 255.0f / 65536.0f;
+        constexpr float blueMultiplier = (255.0f / 256.0f) / 65536.0f;
+        float expectedValue = (r * redMultiplier) + (g * greenMultiplier) + (b * blueMultiplier);
+
+        RunPixelTest(test, expectedValue);
     }
 
     TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedManualScale)
