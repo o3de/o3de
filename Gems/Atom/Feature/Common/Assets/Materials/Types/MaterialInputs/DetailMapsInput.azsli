@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/Features/Debug.azsli>
+
 // This file provides utilities for common handling of inputs for a detail layer of PBR materials.
 // This layer includes alternate base color, roughness, normal, etc maps that are tiled on top of the materialtype's main maps.
 
@@ -110,6 +112,9 @@ float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormalWS,
 {
     float3 normal;
     
+    useDetailNormalMap = useDetailNormalMap && AreDetailNormalMapsEnabled();
+    useMainNormalMap = useMainNormalMap && AreNormalMapsEnabled();
+
     if(useDetailNormalMap)
     {
         // Get normal in tangent space

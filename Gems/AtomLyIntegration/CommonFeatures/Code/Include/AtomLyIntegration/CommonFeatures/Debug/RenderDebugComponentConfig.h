@@ -33,6 +33,12 @@ namespace AZ::Render
 
         void CopySettingsFrom(RenderDebugSettingsInterface* settings);
         void CopySettingsTo(RenderDebugSettingsInterface* settings);
+
+        bool IsBaseColorReadOnly() { return !GetOverrideBaseColor(); }
+        bool IsRoughnessReadOnly() { return !GetOverrideRoughness(); }
+        bool IsMetallicReadOnly() { return !GetOverrideMetallic(); }
+        bool IsDebugLightReadOnly() { return GetRenderDebugLightingSource() != RenderDebugLightingSource::DebugLight; }
+
     };
 
 }

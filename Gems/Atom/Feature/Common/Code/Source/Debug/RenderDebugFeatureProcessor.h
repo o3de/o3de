@@ -32,9 +32,8 @@ namespace AZ::Render
 
         //! RenderDebugFeatureProcessorInterface overrides...
         RenderDebugSettingsInterface* GetSettingsInterface() override;
-        RenderDebugSettingsInterface* GetOrCreateSettingsInterface() override;
-        void RemoveSettingsInterface() override;
-        void OnPostProcessSettingsChanged() override;
+        void OnRenderDebugComponentAdded() override;
+        void OnRenderDebugComponentRemoved() override;
 
         // FeatureProcessor overrides ...
         void Activate() override;
@@ -60,14 +59,16 @@ namespace AZ::Render
         RHI::ShaderInputNameIndex m_renderDebugViewModeIndex = "m_renderDebugViewMode";
 
         // Scene SRG members
-        RHI::ShaderInputNameIndex m_debugOverrideAlbedoIndex = "m_debugOverrideAlbedo";
+        RHI::ShaderInputNameIndex m_debuggingEnabledIndex = "m_debuggingEnabled";
+        RHI::ShaderInputNameIndex m_debugOverrideBaseColorIndex = "m_debugOverrideBaseColor";
         RHI::ShaderInputNameIndex m_debugOverrideRoughnessIndex = "m_debugOverrideRoughness";
         RHI::ShaderInputNameIndex m_debugOverrideMetallicIndex = "m_debugOverrideMetallic";
         RHI::ShaderInputNameIndex m_debugLightingDirectionIndex = "m_debugLightingDirection";
         RHI::ShaderInputNameIndex m_debugLightingIntensityIndex = "m_debugLightingIntensity";
 
+        Name m_shaderDebugEnableOptionName = Name("o_shader_debugging_enabled");
 
-
+        u32 m_debugComponentCount = 0;
     };
 
 } // namespace AZ::Render

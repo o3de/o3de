@@ -16,14 +16,21 @@ namespace AZ::Render
     // Options controlling various aspects of the rendering
     enum class RenderDebugOptions : u32
     {
-        UseVertexNormal,
-        IgnoreDetailNormal,
+        DebugEnabled,
 
-        OverrideAlbedo,
+        OverrideBaseColor,
         OverrideRoughness,
         OverrideMetallic,
 
         UseDebugLight,
+
+        EnableNormalMaps,
+        EnableDetailNormalMaps,
+
+        EnableDiffuseLighting,
+        EnableSpecularLighting,
+        EnableDirectLighting,
+        EnableIndirectLighting,
 
         Count
     };
@@ -38,13 +45,28 @@ namespace AZ::Render
         Tangent,
         Bitangent,
 
+        BaseColor,
         Albedo,
         Roughness,
         Metallic,
 
-        DiffuseLighting,
-        SpecularLighting,
+        Count
+    };
 
+    enum class RenderDebugLightingType : u32
+    {
+        DiffuseAndSpecular,
+        Diffuse,
+        Specular,
+        Count
+    };
+
+    enum class RenderDebugLightingSource : u32
+    {
+        DirectAndIndirect,
+        Direct,
+        Indirect,
+        DebugLight,
         Count
     };
 

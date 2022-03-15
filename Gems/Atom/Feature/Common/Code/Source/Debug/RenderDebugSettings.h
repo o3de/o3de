@@ -29,8 +29,7 @@ namespace AZ::Render
         RenderDebugSettings(RenderDebugFeatureProcessor* featureProcessor);
         ~RenderDebugSettings() = default;
 
-        // RenderDebugSettingsInterface overrides...
-        void OnConfigChanged() override;
+        u32 GetRenderDebugOptions() { return m_optionsMask; }
 
         // Generate getters and setters.
 #include <Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl>
@@ -46,9 +45,10 @@ namespace AZ::Render
 
         RenderDebugFeatureProcessor* m_featureProcessor = nullptr;
 
-        void Simulate(float deltaTime);
+        void Simulate();
+        void UpdateOptionsMask();
 
-        float m_deltaTime = 0.0f;
+        u32 m_optionsMask = 0;
     };
 
 }

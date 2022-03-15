@@ -253,6 +253,7 @@ set(FILES
     ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_NonSeparable.azsli
     ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli
     ShaderLib/Atom/Features/BlendUtility.azsli
+    ShaderLib/Atom/Features/Debug.azsli
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
     ShaderLib/Atom/Features/ParallaxMapping.azsli
@@ -270,7 +271,6 @@ set(FILES
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_Srgb.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/Srgb_To_LinearSrgb.azsli
     ShaderLib/Atom/Features/CoreLights/PhotometricValue.azsli
-    ShaderLib/Atom/Features/Debug/Debug.azsli
     ShaderLib/Atom/Features/Decals/DecalTextureUtil.azsli
     ShaderLib/Atom/Features/LightCulling/LightCullingShared.azsli
     ShaderLib/Atom/Features/LightCulling/LightCullingTileIterator.azsli

@@ -13,7 +13,7 @@
 //                                              bitMaskLength ^
 uint GetBitMask(uint bitMaskLength)
 {
-    uint bitmask = (1 << bitMaskLength) - 1;
+    uint bitmask = (1u << bitMaskLength) - 1u;
     return bitmask;
 }
 
@@ -37,7 +37,7 @@ uint GetBitMask(uint startBitIncluded, uint endBitExcluded)
 // 
 uint GetBit(uint input, uint bitIndex)
 {
-    return ((input >> bit) & 1);
+    return ((input >> bitIndex) & 1u);
 }
 
 // Returns the specified bit from the input uint shifted to the lowest bit
@@ -49,7 +49,7 @@ uint GetBit(uint input, uint bitIndex)
 // 
 uint GetBits(uint input, uint startBitIncluded, uint endBitExcluded)
 {
-    uint diff = end - start;
+    uint diff = endBitExcluded - startBitIncluded;
     uint bitmask = GetBitMask(diff);
     return ((input >> startBitIncluded) & bitmask);
 }

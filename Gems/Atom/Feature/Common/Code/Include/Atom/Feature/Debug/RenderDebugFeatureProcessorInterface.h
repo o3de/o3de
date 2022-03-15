@@ -24,14 +24,11 @@ namespace AZ {
             //! Retrieves existing settings. If none found, returns nullptr.
             virtual RenderDebugSettingsInterface* GetSettingsInterface() = 0;
 
-            //! Retrieves existing settings. If none found, creates a new instance.
-            virtual RenderDebugSettingsInterface* GetOrCreateSettingsInterface() = 0;
+            //! Called when a render debug level component is added
+            virtual void OnRenderDebugComponentAdded() = 0;
 
-            //! Removes settings for corresponding entity ID.
-            virtual void RemoveSettingsInterface() = 0;
-
-            //! Called to notify the feature processor that changes have been made to it's owned post process settings
-            virtual void OnPostProcessSettingsChanged() = 0;
+            //! Called when a render debug level component is removed
+            virtual void OnRenderDebugComponentRemoved() = 0;
         };
 
     } // namespace Render

@@ -36,8 +36,12 @@ partial ShaderResourceGroup SceneSrg
     float4 m_iblOrientation;
     float m_iblExposure;
     
+    // --- Debugging ---
+
+    bool m_debuggingEnabled;
+
     // Material debug overrides...
-    float3 m_debugOverrideAlbedo;
+    float3 m_debugOverrideBaseColor;
     float m_debugOverrideRoughness;
     float m_debugOverrideMetallic;
 

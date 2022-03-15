@@ -12,17 +12,29 @@
 // Whether to turn on render debugging
 AZ_GFX_BOOL_PARAM(Enabled, m_enabled, true)
 
-// Debug options and view mode
-AZ_GFX_UINT32_PARAM(RenderDebugOptions, m_renderDebugOptions, 0)
+// Debug view mode
 AZ_GFX_COMMON_PARAM(AZ::Render::RenderDebugViewMode, RenderDebugViewMode, m_renderDebugViewMode, AZ::Render::RenderDebugViewMode::None)
 
-// Material Overrides
-AZ_GFX_VEC3_PARAM(MaterialAlbedoOverride, m_materialAlbedoOverride, Vector3(1, 1, 1))
-AZ_GFX_FLOAT_PARAM(MaterialRoughnessOverride, m_materialRoughnessOverride, 0.5f)
-AZ_GFX_FLOAT_PARAM(MaterialMetallicOverride, m_materialMetallicOverride, 0.0f)
+// Lighting Views
+AZ_GFX_COMMON_PARAM(AZ::Render::RenderDebugLightingType, RenderDebugLightingType, m_renderDebugLightingType, AZ::Render::RenderDebugLightingType::DiffuseAndSpecular)
+AZ_GFX_COMMON_PARAM(AZ::Render::RenderDebugLightingSource, RenderDebugLightingSource, m_renderDebugLightingSource, AZ::Render::RenderDebugLightingSource::DirectAndIndirect)
 
 // Lighting Overrides
 AZ_GFX_FLOAT_PARAM(DebugLightingAzimuth, m_debugLightingAzimuth, 0.0f)
-AZ_GFX_FLOAT_PARAM(DebugLightingElevation, m_debugLightingElevation, 90.0f)
-AZ_GFX_VEC3_PARAM(DebugLightingIntensity, m_debugLightingIntensity, Vector3(1, 1, 1))
+AZ_GFX_FLOAT_PARAM(DebugLightingElevation, m_debugLightingElevation, 60.0f)
+AZ_GFX_VEC3_PARAM(DebugLightingColor, m_debugLightingColor, Vector3(1, 1, 1))
+AZ_GFX_FLOAT_PARAM(DebugLightingIntensity, m_debugLightingIntensity, 2)
+
+// Debug options
+AZ_GFX_BOOL_PARAM(OverrideBaseColor,        m_overrideBaseColor,           false)
+AZ_GFX_BOOL_PARAM(OverrideRoughness,        m_overrideRoughness,        false)
+AZ_GFX_BOOL_PARAM(OverrideMetallic,         m_overrideMetallic,         false)
+AZ_GFX_BOOL_PARAM(EnableNormalMaps,         m_enableNormalMaps,         true)
+AZ_GFX_BOOL_PARAM(EnableDetailNormalMaps,   m_enableDetailNormalMaps,   true)
+
+// Material Overrides
+AZ_GFX_VEC3_PARAM(MaterialBaseColorOverride, m_materialBaseColorOverride, Vector3(0.5, 0.5, 0.5))
+AZ_GFX_FLOAT_PARAM(MaterialRoughnessOverride, m_materialRoughnessOverride, 0.5f)
+AZ_GFX_FLOAT_PARAM(MaterialMetallicOverride, m_materialMetallicOverride, 0.0f)
+
 

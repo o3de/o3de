@@ -25,7 +25,6 @@ namespace AZ {
 #include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-            virtual void OnConfigChanged() = 0;
         };
 
     }

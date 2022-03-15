@@ -11,6 +11,7 @@
 
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 
 namespace AZ {
     namespace Render {
@@ -35,28 +36,20 @@ namespace AZ {
             return m_settings.get();
         }
 
-        RenderDebugSettingsInterface* RenderDebugFeatureProcessor::GetOrCreateSettingsInterface()
+        void RenderDebugFeatureProcessor::OnRenderDebugComponentAdded()
         {
-            if (m_settings == nullptr)
-            {
-                m_settings = AZStd::make_unique<RenderDebugSettings>(this);
-            }
-            return m_settings.get();
+            ++m_debugComponentCount;
         }
 
-        void RenderDebugFeatureProcessor::RemoveSettingsInterface()
+        void RenderDebugFeatureProcessor::OnRenderDebugComponentRemoved()
         {
-            m_settings = nullptr;
-        }
-
-        void RenderDebugFeatureProcessor::OnPostProcessSettingsChanged()
-        {
+            --m_debugComponentCount;
         }
 
         void RenderDebugFeatureProcessor::Activate()
         {
             m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
-
+            m_settings = AZStd::make_unique<RenderDebugSettings>(this);
         }
 
         void RenderDebugFeatureProcessor::Deactivate()
@@ -69,6 +62,11 @@ namespace AZ {
         {
             AZ_PROFILE_SCOPE(RPI, "RenderDebugFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
+
+            if (m_settings)
+            {
+                m_settings->Simulate();
+            }
         }
 
         void RenderDebugFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
@@ -76,10 +74,10 @@ namespace AZ {
             AZ_PROFILE_SCOPE(RPI, "RenderDebugFeatureProcessor: Render");
             AZ_UNUSED(packet);
 
-            if (!m_settings)
-            {
-                return;
-            }
+            // Disable debugging if no render debug level component is active
+            bool debugEnabled = (m_debugComponentCount > 0) && m_settings->GetEnabled();
+
+            RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_shaderDebugEnableOptionName, AZ::RPI::ShaderOptionValue{ debugEnabled });
 
             if (GetParentScene())
             {
@@ -87,10 +85,16 @@ namespace AZ {
 
                 if (sceneSrg)
                 {
-                    sceneSrg->SetConstant(m_debugOverrideAlbedoIndex, m_settings->GetMaterialAlbedoOverride());
+                    sceneSrg->SetConstant(m_debuggingEnabledIndex, debugEnabled);
+
+                    // Material overrides...
+                    sceneSrg->SetConstant(m_debugOverrideBaseColorIndex, m_settings->GetMaterialBaseColorOverride());
                     sceneSrg->SetConstant(m_debugOverrideRoughnessIndex, m_settings->GetMaterialRoughnessOverride());
                     sceneSrg->SetConstant(m_debugOverrideMetallicIndex, m_settings->GetMaterialMetallicOverride());
-                    sceneSrg->SetConstant(m_debugLightingIntensityIndex, m_settings->GetDebugLightingIntensity());
+
+                    // Debug Light...
+                    Vector3 debugLightIntensity = m_settings->GetDebugLightingColor() * m_settings->GetDebugLightingIntensity();
+                    sceneSrg->SetConstant(m_debugLightingIntensityIndex, debugLightIntensity);
 
                     float yaw = m_settings->GetDebugLightingAzimuth();
                     float pitch = m_settings->GetDebugLightingElevation();
@@ -99,7 +103,7 @@ namespace AZ {
                     pitch = AZ::DegToRad(pitch);
 
                     Transform lightRotation = Transform::CreateRotationZ(yaw) * Transform::CreateRotationX(pitch);
-                    Vector3 lightDirection = lightRotation.GetBasis(0);
+                    Vector3 lightDirection = lightRotation.GetBasis(1);
                     sceneSrg->SetConstant(m_debugLightingDirectionIndex, lightDirection);
                 }
             }
@@ -112,12 +116,10 @@ namespace AZ {
 
                     if (viewSrg)
                     {
-                        viewSrg->SetConstant(m_renderDebugOptionsIndex, 0);
-                        viewSrg->SetConstant(m_renderDebugViewModeIndex, 0);
+                        viewSrg->SetConstant(m_renderDebugOptionsIndex, m_settings->GetRenderDebugOptions());
+                        viewSrg->SetConstant(m_renderDebugViewModeIndex, m_settings->GetRenderDebugViewMode());
                     }
                 }
-
-                // m_lightBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
             }
         }
 

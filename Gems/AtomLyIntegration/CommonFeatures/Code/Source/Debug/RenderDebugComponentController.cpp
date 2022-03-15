@@ -69,17 +69,24 @@ namespace AZ
             RenderDebugFeatureProcessorInterface* fp = RPI::Scene::GetFeatureProcessorForEntity<RenderDebugFeatureProcessorInterface>(m_entityId);
             if (fp)
             {
-                m_renderDebugSettingsInterface = fp->GetOrCreateSettingsInterface();
+                m_renderDebugSettingsInterface = fp->GetSettingsInterface();
                 if (m_renderDebugSettingsInterface)
                 {
-                    OnConfigChanged();
+                    m_configuration.CopySettingsFrom(m_renderDebugSettingsInterface);
                 }
+                fp->OnRenderDebugComponentAdded();
             }
             RenderDebugRequestBus::Handler::BusConnect(m_entityId);
         }
 
         void RenderDebugComponentController::Deactivate()
         {
+            RenderDebugFeatureProcessorInterface* fp = RPI::Scene::GetFeatureProcessorForEntity<RenderDebugFeatureProcessorInterface>(m_entityId);
+            if (fp)
+            {
+                fp->OnRenderDebugComponentRemoved();
+            }
+
             RenderDebugRequestBus::Handler::BusDisconnect(m_entityId);
             m_renderDebugSettingsInterface = nullptr;
             m_entityId.SetInvalid();
@@ -103,7 +110,6 @@ namespace AZ
             if (m_renderDebugSettingsInterface)
             {
                 m_configuration.CopySettingsTo(m_renderDebugSettingsInterface);
-                m_renderDebugSettingsInterface->OnConfigChanged();
             }
         }
 
@@ -121,8 +127,7 @@ namespace AZ
             if(m_renderDebugSettingsInterface)                                                          \
             {                                                                                           \
                 m_renderDebugSettingsInterface->Set##Name(val);                                         \
-                m_renderDebugSettingsInterface->OnConfigChanged();                                      \
-                m_configuration.MemberName = m_renderDebugSettingsInterface->Get##Name();               \
+                m_configuration.CopySettingsFrom(m_renderDebugSettingsInterface);                       \
             }                                                                                           \
             else                                                                                        \
             {                                                                                           \
@@ -141,7 +146,7 @@ namespace AZ
             if(m_renderDebugSettingsInterface)                                                          \
             {                                                                                           \
                 m_renderDebugSettingsInterface->Set##Name##Override(val);                               \
-                m_renderDebugSettingsInterface->OnConfigChanged();                                      \
+                m_configuration.CopySettingsFrom(m_renderDebugSettingsInterface);                       \
             }                                                                                           \
         }                                                                                               \
 
