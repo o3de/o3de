@@ -447,6 +447,30 @@ namespace UnitTest
         RunPixelTest(test, expectedValue);
     }
 
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedAutoScale)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Green,                        // Use Green channel
+            GradientSignal::CustomScaleType::Auto                       // Enable Auto scale
+        };
+
+        // The green channel value is 254/255, and the minimum is still 0, so we can
+        // calculate the expected auto scale value from that
+        const float minimum = 0.0f;
+        constexpr float value = (254.0f / 255.0f);
+        const float multiplier = value - minimum;
+        float expectedValue = (value * multiplier) + minimum;
+        RunPixelTest(test, expectedValue);
+    }
+
     TEST_F(GradientSignalImageTestsFixture, GradientTransformComponent_TransformTypes)
     {
         // Verify that each transform type for the transform component works correctly.

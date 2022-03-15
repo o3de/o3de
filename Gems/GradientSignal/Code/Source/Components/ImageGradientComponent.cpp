@@ -120,6 +120,7 @@ namespace GradientSignal
         AZStd::vector<AZ::Edit::EnumConstant<CustomScaleType>> options;
 
         options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::None, "None"));
+        options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::Auto, "Auto"));
         options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::Manual, "Manual"));
 
         return options;
@@ -331,23 +332,29 @@ namespace GradientSignal
                 return;
             }
 
-            // Validate manual scale/calculate multiplier and offset
-            if (m_configuration.m_customScaleType == CustomScaleType::Manual)
-            {
-                m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin, 0.0f, 1.0f);
-                m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax, 0.0f, 1.0f);
-
-                m_multiplier = m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin;
-                m_offset = m_configuration.m_scaleRangeMin;
-            }
-
             m_currentChannel = m_configuration.m_channelToUse;
+
+            // Calculate the multiplier and offset based on our custom scale type
+            switch (m_configuration.m_customScaleType)
+            {
+            case CustomScaleType::Auto:
+                SetupAutoScaleMultiplierAndOffset();
+                break;
+
+            case CustomScaleType::Manual:
+                SetupManualScaleMultiplierAndOffset();
+                break;
+
+            case CustomScaleType::None:
+            default:
+                SetupDefaultMultiplierAndOffset();
+                break;
+            }
         }
         else
         {
             m_currentChannel = ChannelToUse::Red;
-            m_multiplier = 1.0f;
-            m_offset = 0.0f;
+            SetupDefaultMultiplierAndOffset();
         }
 
         m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
@@ -434,6 +441,40 @@ namespace GradientSignal
         constexpr float greenMultiplier = 255.0f / 65536.0f;
         constexpr float blueMultiplier = (255.0f / 256.0f) / 65536.0f;
         return (r * redMultiplier) + (g * greenMultiplier) + (b * blueMultiplier);
+    }
+
+    void ImageGradientComponent::SetupDefaultMultiplierAndOffset()
+    {
+        m_multiplier = 1.0f;
+        m_offset = 0.0f;
+    }
+
+    void ImageGradientComponent::SetupAutoScaleMultiplierAndOffset()
+    {
+        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
+        auto width = imageDescriptor.m_size.m_width;
+        auto height = imageDescriptor.m_size.m_height;
+
+        // Retrieve all the pixel values from our image data
+        AZStd::vector<float> pixelValues(width * height);
+        auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
+        auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(width, height);
+        AZ::RPI::GetSubImagePixelValues(m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues, aznumeric_cast<AZ::u8>(m_currentChannel));
+
+        // Retrieve the min/max values from our image data
+        auto [min, max] = AZStd::minmax_element(pixelValues.begin(), pixelValues.end());
+
+        m_multiplier = *max -*min;
+        m_offset = *min;
+    }
+
+    void ImageGradientComponent::SetupManualScaleMultiplierAndOffset()
+    {
+        m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin, 0.0f, 1.0f);
+        m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax, 0.0f, 1.0f);
+
+        m_multiplier = m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin;
+        m_offset = m_configuration.m_scaleRangeMin;
     }
 
     void ImageGradientComponent::Activate()

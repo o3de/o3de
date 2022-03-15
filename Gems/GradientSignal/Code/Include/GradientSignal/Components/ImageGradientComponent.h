@@ -58,6 +58,7 @@ namespace GradientSignal
     enum class CustomScaleType : AZ::u8
     {
         None,                   //! Data left as-is, no scaling calculation performed
+        Auto,                   //! Automatically scale based on the min/max values in the data
         Manual                  //! Scale according to m_scaleRangeMin and m_scaleRangeMax
     };
 
@@ -131,6 +132,9 @@ namespace GradientSignal
         void GetSubImageData();
         float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
         float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
+        void SetupDefaultMultiplierAndOffset();
+        void SetupAutoScaleMultiplierAndOffset();
+        void SetupManualScaleMultiplierAndOffset();
 
         // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;
