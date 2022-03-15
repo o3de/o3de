@@ -22,8 +22,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/sort.h>
 
-#include <cstdio>
-#include <filesystem>
 #include <inttypes.h>
 #include <sstream>
 
@@ -1075,15 +1073,13 @@ namespace AZ
 
         ImGuiGpuMemoryView::ImGuiGpuMemoryView()
         {
-            std::filesystem::path path = AZ::Utils::GetO3deLogsDirectory().c_str();
+            AZ::IO::Path path = AZ::Utils::GetO3deLogsDirectory().c_str();
+
             path /= "MemoryCaptures";
 
-            if (!std::filesystem::exists(path))
-            {
-                std::filesystem::create_directory(path);
-            }
+            AZ::IO::SystemFile::CreateDir(path.c_str());
 
-            m_memoryCapturePath = path.string().c_str();
+            m_memoryCapturePath = path.c_str();
         }
 
         ImGuiGpuMemoryView::~ImGuiGpuMemoryView()
@@ -1432,24 +1428,18 @@ namespace AZ
 
                 if (ImGui::BeginPopupModal(LoadMemoryCaptureTitle, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
                 {
-                    struct CaptureInfo
-                    {
-                        AZStd::string path;
-                        std::filesystem::file_time_type time;
-                    };
-                    AZStd::vector<CaptureInfo> captures;
+                    AZStd::vector<AZ::IO::Path> captures;
 
                     // Enumerate files in the capture folder
-                    for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator{ m_memoryCapturePath.c_str() })
-                    {
-                        if (entry.is_regular_file())
+                    auto* base = AZ::IO::FileIOBase::GetInstance();
+                    base->FindFiles(
+                        m_memoryCapturePath.c_str(), "*.csv",
+                        [&captures](const char* path)
                         {
-                            if (entry.path().extension() == ".csv")
-                            {
-                                captures.push_back(CaptureInfo{ entry.path().string().c_str(), entry.last_write_time() });
-                            }
-                        }
-                    }
+                            
+                            captures.emplace_back(path);
+                            return true;
+                        });
 
                     if (captures.empty())
                     {
@@ -1462,9 +1452,9 @@ namespace AZ
                         // Sort captures in reverse-chronological order
                         AZStd::sort(
                             captures.begin(), captures.end(),
-                            [](const CaptureInfo& lhs, const CaptureInfo& rhs)
+                            [base](const AZ::IO::Path& lhs, const AZ::IO::Path& rhs)
                             {
-                                return rhs.time < lhs.time;
+                                return base->ModificationTime(rhs.c_str()) < base->ModificationTime(lhs.c_str());
                             });
 
                         // Display 10 entries in a scrolling list box
@@ -1475,7 +1465,7 @@ namespace AZ
                             for (size_t i = 0; i != captures.size(); ++i)
                             {
                                 bool selected = i == m_captureSelection;
-                                if (ImGui::Selectable(captures[i].path.c_str(), selected))
+                                if (ImGui::Selectable(captures[i].c_str(), selected))
                                 {
                                     m_captureSelection = i;
                                 }
@@ -1490,7 +1480,7 @@ namespace AZ
 
                         if (ImGui::Button("Open"))
                         {
-                            LoadFromCSV(captures[m_captureSelection].path);
+                            LoadFromCSV(captures[m_captureSelection].c_str());
                             ImGui::CloseCurrentPopup();
                         }
                     }
@@ -1685,8 +1675,8 @@ namespace AZ
         }
 
         static constexpr const char* MemoryCSVHeader =
-            "\"Pool Name\", \"Memory Type (0 == Host : 1 == Device)\", \"Allocation Name\", \"Allocation Type (0 == Buffer : "
-            "1 == Texture)\", \"Byte Size\", \"Flags\"\n";
+            "Pool Name, Memory Type (0 == Host : 1 == Device), Allocation Name, Allocation Type (0 == Buffer : "
+            "1 == Texture), Byte Size, Flags\n";
         static constexpr const char* MemoryCSVRowFormat = "%s, %i, %s, %i, %" PRIu64 ", %" PRIu32 "\n";
         static constexpr const int MemoryCSVColumnCount = 6;
 
@@ -1759,21 +1749,21 @@ namespace AZ
             {
                 if constexpr (AZStd::is_same_v<T, int>)
                 {
-                    if (sscanf_s(field.c_str(), "%i", &out) != 1)
+                    if (azsscanf(field.c_str(), "%i", &out) != 1)
                     {
                         return false;
                     }
                 }
                 else if constexpr (AZStd::is_same_v<T, uint32_t>)
                 {
-                    if (sscanf_s(field.c_str(), "%" PRIu32, &out) != 1)
+                    if (azsscanf(field.c_str(), "%" PRIu32, &out) != 1)
                     {
                         return false;
                     }
                 }
                 else if constexpr (AZStd::is_same_v<T, uint64_t>)
                 {
-                    if (sscanf_s(field.c_str(), "%" PRIu64, &out) != 1)
+                    if (azsscanf(field.c_str(), "%" PRIu64, &out) != 1)
                     {
                         return false;
                     }
