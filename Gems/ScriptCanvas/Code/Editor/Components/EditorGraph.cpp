@@ -491,33 +491,39 @@ namespace ScriptCanvasEditor
         , ScriptCanvas::NodeReplacementConfiguration& nodeConfig
         , [[maybe_unused]] ScriptCanvas::NodeUpdateSlotReport& nodeSlotUpdateReport)
     {
+        const auto slotStateOutcome = GetSlotState(oldNode);
+        if (!slotStateOutcome.IsSuccess())
+        {
+            return AZ::Failure(AZStd::string::format
+                ( "ReplaceLiveNode: Failure to get slot state from to-be-replaced Node: %s", slotStateOutcome.GetError().c_str()));
+        }
+
         ScriptCanvas::Node* returnNode = nodeConfig.create ? nodeConfig.create(oldNode) : nullptr;
         if (!returnNode)
         {
-            return AZ::Failure(AZStd::string("Failure to create replacement node from replacement configuration create function"));
+            return AZ::Failure(AZStd::string("ReplaceLiveNode: Failure to create replacement node from replacement configuration create function"));
         }
 
         AZ::EntityId graphCanvasGraphId = GetGraphCanvasGraphId();
         AZ::EntityId oldNodeGraphCanvasId;
         SceneMemberMappingRequestBus::EventResult(oldNodeGraphCanvasId, oldNode.GetEntityId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
 
+        const auto wasDisabled = oldNode.GetNodeDisabledFlag();
         AZ::Vector2 position(0, 0);
         GraphCanvas::GeometryRequestBus::EventResult(position, oldNodeGraphCanvasId, &GraphCanvas::GeometryRequests::GetPosition);
         AZStd::unordered_set<AZ::EntityId> oldNodeGraphCanvasIds;
         oldNodeGraphCanvasIds.insert(oldNodeGraphCanvasId);
         GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, oldNodeGraphCanvasIds);
-
-        const auto slotState = GetSlotState(oldNode);
-        returnNode->SetNodeDisabledFlag(oldNode.GetNodeDisabledFlag());
-
+        // ScriptCanvas::Node& oldNode is now deleted
         AZ::EntityId newNodeGraphCanvasId;
         SceneMemberMappingRequestBus::EventResult(newNodeGraphCanvasId, returnNode->GetEntityId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
         GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, newNodeGraphCanvasId, position, false);
+        returnNode->SetNodeDisabledFlag(wasDisabled);
 
-        auto slotStateUpdateOutcome = UpdateSlotState(*returnNode, nodeConfig, slotState.GetValue());
+        auto slotStateUpdateOutcome = UpdateSlotState(*returnNode, nodeConfig, slotStateOutcome.GetValue());
         if (slotStateUpdateOutcome.IsSuccess())
         {
-            return AZ::Failure(slotStateUpdateOutcome.TakeError());
+            return AZ::Failure(AZStd::string::format("EditorGraph::ReplaceLiveNode %s", slotStateUpdateOutcome.GetError().c_str()));
         }
 
         return AZ::Success(returnNode);
@@ -532,7 +538,7 @@ namespace ScriptCanvasEditor
         slotState.type = nodeSlot.GetType();
         slotState.name = nodeSlot.GetName();
 
-        if (slotState.type == ScriptCanvas::CombinedSlotType::DataIn || slotState.type == ScriptCanvas::CombinedSlotType::DataOut)
+        if (IsData(slotState.type))
         {
             slotState.value.SetType(nodeSlot.GetDataType());
             
@@ -540,20 +546,23 @@ namespace ScriptCanvasEditor
             {
                 slotState.variableReference = nodeSlot.GetVariableReference();
             }
-            else if (!nodeSlot.IsConnected())
+            else if (slotState.type == ScriptCanvas::CombinedSlotType::DataIn)
             {
-                if (auto datum = nodeSlot.FindDatum())
+                if (!nodeSlot.IsConnected())
                 {
-                    slotState.value.DeepCopyDatum(*datum);
+                    if (auto datum = nodeSlot.FindDatum())
+                    {
+                        slotState.value.DeepCopyDatum(*datum);
+                    }
+                    else
+                    {
+                        return AZ::Failure(AZStd::string::format("Failed to copy over required value from Slot: %s", slotState.name.c_str()));
+                    }
                 }
                 else
                 {
-                    return AZ::Failure(AZStd::string::format("Failed to copy over required value from Slot: %s", slotState.name.c_str()));
+                    slotState.value.SetToDefaultValueOfType();
                 }
-            }
-            else
-            {
-                slotState.value.SetToDefaultValueOfType();
             }
         }
 
@@ -692,12 +701,16 @@ namespace ScriptCanvasEditor
             const auto msg =
                 AZStd::string::format("No previous slot match found for slot: %s-%s", node.GetNodeName().c_str(), slot.GetName().c_str());
 
-            if (!nodeConfig.m_tolerateNoMatchingPreviousSlot)
+            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
+
+            if (nodeConfig.m_tolerateNoMatchingPreviousSlot)
+            {
+                return AZ::Success();
+            }
+            else
             {
                 return AZ::Failure(msg);
             }
-
-            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
         }
 
         // update based on type / values
