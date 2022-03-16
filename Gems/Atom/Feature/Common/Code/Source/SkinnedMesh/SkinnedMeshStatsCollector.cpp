@@ -30,9 +30,12 @@ namespace AZ
 
             for (const SkinnedMeshRenderProxy& renderProxy : m_featureProcessor->m_renderProxies)
             {
-                for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& dispatchItem : renderProxy.GetDispatchItems())
+                for (uint32_t lodIndex = 0; lodIndex < renderProxy.GetLodCount(); ++lodIndex)
                 {
-                    AddDispatchItemToSceneStats(dispatchItem);
+                    for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& dispatchItem : renderProxy.GetDispatchItems(lodIndex))
+                    {
+                        AddDispatchItemToSceneStats(dispatchItem);
+                    }
                 }
             }
 
@@ -58,7 +61,7 @@ namespace AZ
             AddBonesToSceneStats(dispatchItem->GetBoneTransforms());
             AddReadOnlyBufferViewsToSceneStats(dispatchItem->GetSourceUnskinnedBufferViews());
             AddWritableBufferViewsToSceneStats(dispatchItem->GetTargetSkinnedBufferViews());
-            AddVerticesToSceneStats(dispatchItem->GetVertexCount());
+            AddVerticesToSceneStats(aznumeric_cast<size_t>(dispatchItem->GetVertexCount()));
         }
 
         void SkinnedMeshStatsCollector::AddBonesToSceneStats(const Data::Instance<RPI::Buffer>& boneTransformBuffer)
