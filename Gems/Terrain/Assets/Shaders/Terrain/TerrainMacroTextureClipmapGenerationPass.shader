@@ -1,5 +1,5 @@
 {
-    "Source": "TerrainMacroTextureComputePass.azsl",
+    "Source": "TerrainMacroTextureClipmapGenerationPass.azsl",
 
     "ProgramSettings":
     {

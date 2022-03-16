@@ -262,9 +262,13 @@ namespace AZ
         public:
             // Draw the overall GPU memory profiling window.
             void DrawGpuMemoryWindow(bool& draw);
+            ImGuiGpuMemoryView();
             ~ImGuiGpuMemoryView();
 
         private:
+            // Collate data from RHI and update memory view tables and treemap
+            void PerformCapture();
+
             // Draw the heap usage pie chart
             void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
 
@@ -279,6 +283,10 @@ namespace AZ
             // Sort the table according to the appropriate column.
             void SortPoolTable(ImGuiTableSortSpecs* sortSpecs);
             void SortResourceTable(ImGuiTableSortSpecs* sortSpecs);
+
+            // Save and load data to and from CSV files
+            void SaveToCSV();
+            void LoadFromCSV(const AZStd::string& fileName);
 
             struct PoolTableRow
             {
@@ -316,6 +324,12 @@ namespace AZ
             Profiler::ImGuiTreemap* m_deviceTreemap = nullptr;
             bool m_showHostTreemap = false;
             bool m_showDeviceTreemap = false;
+
+            AZStd::string m_memoryCapturePath;
+            AZStd::string m_loadedCapturePath;
+            AZStd::string m_captureMessage;
+            char m_captureInput[AZ::IO::MaxPathLength] = { '\0' };
+            size_t m_captureSelection = 0;
         };
 
         class ImGuiGpuProfiler

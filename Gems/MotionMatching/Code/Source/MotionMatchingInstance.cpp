@@ -355,11 +355,8 @@ namespace EMotionFX::MotionMatching
                 }
 
                 // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
-                const float originalTime = m_motionInstance->GetCurrentTime();
-                m_motionInstance->SetCurrentTime(newMotionTime);
                 PoseDataJointVelocities* velocityPoseData = m_queryPose.GetAndPreparePoseData<PoseDataJointVelocities>(m_actorInstance);
-                velocityPoseData->CalculateVelocity(m_motionInstance, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
-                m_motionInstance->SetCurrentTime(originalTime);
+                velocityPoseData->CalculateVelocity(m_actorInstance, m_motionInstance->GetMotion(), newMotionTime, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
             }
 
             const FeatureMatrix& featureMatrix = m_data->GetFeatureMatrix();
@@ -386,7 +383,7 @@ namespace EMotionFX::MotionMatching
                 // Store the current motion instance state, so we can sample this as source pose.
                 m_prevMotionInstance->SetMotion(m_motionInstance->GetMotion());
                 m_prevMotionInstance->SetMirrorMotion(m_motionInstance->GetMirrorMotion());
-                m_prevMotionInstance->SetCurrentTime(newMotionTime, true);
+                m_prevMotionInstance->SetCurrentTime(newMotionTime);
                 m_prevMotionInstance->SetLastCurrentTime(m_prevMotionInstance->GetCurrentTime() - timePassedInSeconds);
 
                 m_lowestCostFrameIndex = lowestCostFrameIndex;
@@ -397,8 +394,8 @@ namespace EMotionFX::MotionMatching
                 // The new motion time will become the current time after this frame while the current time
                 // becomes the last current time. As we just start playing at the search frame, calculate
                 // the last time based on the time delta.
-                m_motionInstance->SetCurrentTime(lowestCostFrame.GetSampleTime() -  timePassedInSeconds, true);
                 m_newMotionTime = lowestCostFrame.GetSampleTime();
+                m_motionInstance->SetCurrentTime(m_newMotionTime - timePassedInSeconds);
             }
 
             // Do this always, else wise we search for the lowest cost frame index too many times.
