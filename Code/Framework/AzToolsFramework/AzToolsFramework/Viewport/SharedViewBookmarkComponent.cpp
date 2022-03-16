@@ -15,8 +15,6 @@ namespace AzToolsFramework
 {
     void EditorViewBookmarks::Reflect(AZ::ReflectContext* context)
     {
-        ViewBookmark::Reflect(context);
-
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorViewBookmarks>()->Field("ViewBookmarks", &EditorViewBookmarks::m_viewBookmarks);

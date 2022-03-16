@@ -28,21 +28,20 @@ namespace AzToolsFramework
         void RegisterViewBookmarkLoaderInterface();
         void UnregisterViewBookmarkLoaderInterface();
 
-        bool SaveBookmark(ViewBookmark bookmark, const StorageMode mode) override;
-        bool ModifyBookmarkAtIndex(ViewBookmark bookmark, int index, const StorageMode mode) override;
+        bool SaveBookmark(ViewBookmark bookmark) override;
+        bool ModifyBookmarkAtIndex(ViewBookmark bookmark, int index) override;
 
         bool SaveLastKnownLocation(ViewBookmark bookmark) override;
         bool LoadViewBookmarks() override;
-        AZStd::optional<ViewBookmark> GetBookmarkAtIndex(int index, const StorageMode mode) override;
+        AZStd::optional<ViewBookmark> LoadBookmarkAtIndex(int index) override;
         AZStd::optional<ViewBookmark> LoadLastKnownLocation() const override;
-        bool RemoveBookmarkAtIndex(int index, const StorageMode mode) override;
+        bool RemoveBookmarkAtIndex(int index) override;
 
     private:
         void SaveBookmarkSettingsFile() override;
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
         bool SaveLocalBookmarkAtIndex(const ViewBookmark& bookmark, int index);
         bool RemoveLocalBookmarkAtIndex(int index);
-        bool SaveSharedBookmark([[maybe_unused]] ViewBookmark& bookmark);
         bool LoadDefaultLocalViewBookmarks();
 
         LocalViewBookmarkComponent* RetrieveLocalViewBookmarkComponent();

@@ -8,12 +8,15 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
 
 namespace AzToolsFramework
 {
     void LocalViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
     {
+        ViewBookmark::Reflect(context);
+
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<LocalViewBookmarkComponent, EditorComponentBase>()->Field(

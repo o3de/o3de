@@ -18,7 +18,7 @@ namespace AzToolsFramework
     struct ViewBookmark
     {
         AZ_CLASS_ALLOCATOR(ViewBookmark, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(ViewBookmark, "{522A38D9-6FFF-4B96-BECF-B4D0F7ABCD25}");
+        AZ_TYPE_INFO(ViewBookmark, "{9D6601B9-922F-4E90-BEB2-4D3D709DADD7}");
 
         ViewBookmark() = default;
 
@@ -65,23 +65,13 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(ViewBookmarkLoaderInterface, "{71E7E178-4107-4975-A6E6-1C4B005C981A}")
 
-        //! Choose storage mode for ViewBookmarks
-        //! Shared are stored in the prefab.
-        //! Local are stored in the Settings Registry.
-        enum class StorageMode : int
-        {
-            Shared = 0,
-            Local = 1,
-            Invalid = -1
-        };
-
-        virtual bool SaveBookmark(ViewBookmark bookmark, const StorageMode mode) = 0;
-        virtual bool ModifyBookmarkAtIndex(ViewBookmark bookmark, int index, const StorageMode mode) = 0;
+        virtual bool SaveBookmark(ViewBookmark bookmark) = 0;
+        virtual bool ModifyBookmarkAtIndex(ViewBookmark bookmark, int index) = 0;
         virtual bool SaveLastKnownLocation(ViewBookmark bookmark) = 0;
         virtual bool LoadViewBookmarks() = 0;
-        virtual AZStd::optional<ViewBookmark> GetBookmarkAtIndex(int index, const StorageMode mode) = 0;
+        virtual AZStd::optional<ViewBookmark> LoadBookmarkAtIndex(int index) = 0;
         virtual AZStd::optional<ViewBookmark> LoadLastKnownLocation() const = 0;
-        virtual bool RemoveBookmarkAtIndex(int index, const StorageMode mode) = 0;
+        virtual bool RemoveBookmarkAtIndex(int index) = 0;
 
     private:
         virtual void SaveBookmarkSettingsFile() = 0;
