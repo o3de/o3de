@@ -69,6 +69,11 @@ namespace EMotionFX
 
     JointSelectionWidget::~JointSelectionWidget()
     {
+        // Disconnecting Reinit slot to avoid getting called 
+        // by qt after the skeleton model calls Resets in its destructor.
+        // By the time Reinit is called the skeleton model unique pointer
+        // has been destroyed.
+        disconnect(m_skeletonModel.get(), &QAbstractItemModel::modelReset, this, &JointSelectionWidget::Reinit);
     }
 
     void JointSelectionWidget::SetFilterState(const QString& category, const QString& displayName, bool enabled)
@@ -126,13 +131,6 @@ namespace EMotionFX
 
     void JointSelectionWidget::Reinit()
     {
-        // This function can be called by qt after the skeleton model
-        // calls Resets in its destructor. By the time this Reinit is
-        // called the skeleton model unique pointer has been destroyed.
-        if (!m_skeletonModel)
-        {
-            return;
-        }
         
         ActorInstance* actorInstance = m_skeletonModel->GetActorInstance();
         if (actorInstance)
