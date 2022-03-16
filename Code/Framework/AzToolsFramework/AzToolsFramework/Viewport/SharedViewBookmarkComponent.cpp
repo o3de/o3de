@@ -74,7 +74,7 @@ namespace AzToolsFramework
 
     void SharedViewBookmarkComponent::AddBookmark(ViewBookmark viewBookmark)
     {
-        m_viewBookmark.m_viewBookmarks.push_back(viewBookmark);
+        m_viewBookmark.m_viewBookmarks.push_back(AZStd::move(viewBookmark));
     }
 
     bool SharedViewBookmarkComponent::RemoveBookmarkAtIndex(int index)

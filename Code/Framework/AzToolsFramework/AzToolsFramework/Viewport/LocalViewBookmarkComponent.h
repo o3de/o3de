@@ -21,10 +21,6 @@ namespace AzToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
-        // AZ::Component overrides ...
-        void Activate() override{}
-        void Deactivate() override{}
-
         const AZStd::string& GetLocalBookmarksFileName() const;
         void SetLocalBookmarksFileName(AZStd::string localBookmarksFileName);
 

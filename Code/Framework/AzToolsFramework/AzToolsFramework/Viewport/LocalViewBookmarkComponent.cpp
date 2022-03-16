@@ -29,7 +29,7 @@ namespace AzToolsFramework
                         "The Local View Bookmark Component allows the user to store bookmarks in a custom setreg file.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Local View Bookmarks")
                     ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::Category, "View Bookmarks")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(

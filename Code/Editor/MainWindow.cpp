@@ -953,35 +953,38 @@ void MainWindow::InitActions()
 
     const auto tagViewBookmarkFn = [](int index)
     {
-        if (AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get())
+        AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
+        if (!bookmarkLoader)
         {
-            bool found = false;
-            AzFramework::CameraState cameraState;
-            Camera::EditorCameraRequestBus::BroadcastResult(
-                found, &Camera::EditorCameraRequestBus::Events::GetActiveCameraState, cameraState);
-            if (found)
-            {
-                ViewBookmark bookmark;
-                bookmark.m_position = cameraState.m_position;
-                bookmark.m_rotation =
-                    AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up));
+            QString tagConsoleText = tr("Failed to tag View Bookmark %1").arg(index + 1);
+            AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
+            return false;
+        }
 
-                bookmarkLoader->ModifyBookmarkAtIndex(bookmark, index);
-                QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
-                                             .arg(index + 1)
-                                             .arg(bookmark.m_position.GetX(), 0, 'f', 2)
-                                             .arg(bookmark.m_position.GetY(), 0, 'f', 2)
-                                             .arg(bookmark.m_position.GetZ(), 0, 'f', 2);
-                AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
-                return true;
-            }
+        bool found = false;
+        AzFramework::CameraState cameraState;
+        Camera::EditorCameraRequestBus::BroadcastResult(
+            found, &Camera::EditorCameraRequestBus::Events::GetActiveCameraState, cameraState);
 
+        if (!found)
+        {
             AZ_Warning("Main Window", false, "tagLocation: Couldn't find Active Camera State.");
             return false;
         }
-        QString tagConsoleText = tr("Failed to tag View Bookmark %1").arg(index + 1);
-        AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
-        return false;
+
+        ViewBookmark bookmark;
+        bookmark.m_position = cameraState.m_position;
+        bookmark.m_rotation =
+            AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up));
+
+        bookmarkLoader->ModifyBookmarkAtIndex(bookmark, index);
+        QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
+                                     .arg(index + 1)
+                                     .arg(bookmark.m_position.GetX(), 0, 'f', 2)
+                                     .arg(bookmark.m_position.GetY(), 0, 'f', 2)
+                                     .arg(bookmark.m_position.GetZ(), 0, 'f', 2);
+        AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
+        return true;
     };
 
     am->AddAction(ID_TAG_LOC1, tr("Location 1"))

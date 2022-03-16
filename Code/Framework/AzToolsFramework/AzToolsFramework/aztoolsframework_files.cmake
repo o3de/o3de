@@ -492,8 +492,8 @@ set(FILES
     Viewport/LocalViewBookmarkComponent.cpp
     Viewport/SharedViewBookmarkComponent.h
     Viewport/SharedViewBookmarkComponent.cpp
-    Viewport/ViewBookmarkLoader.h
-    Viewport/ViewBookmarkLoader.cpp
+    Viewport/LocalViewBookmarkLoader.h
+    Viewport/LocalViewBookmarkLoader.cpp
     Viewport/ViewBookmarkLoaderInterface.h
     Viewport/ViewBookmarkSystemComponent.h
     Viewport/ViewBookmarkSystemComponent.cpp

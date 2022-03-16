@@ -9,10 +9,12 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <Viewport/ViewBookmarkLoader.h>
+#include <Viewport/LocalViewBookmarkLoader.h>
 
 namespace AzToolsFramework
 {
+    //! @class ViewBookmarkSystemComponent
+    //! @brief System Component that holds functionality for the ViewBookmarks
     class ViewBookmarkSystemComponent final : public AZ::Component
     {
     public:
@@ -31,6 +33,6 @@ namespace AzToolsFramework
 
     private:
         //! Used for loading/saving Prefab View Bookmarks.
-        ViewBookmarkLoader m_viewBookmarkLoader;
+        LocalViewBookmarkLoader m_viewBookmarkLoader;
     };
 } // namespace AzToolsFramework
