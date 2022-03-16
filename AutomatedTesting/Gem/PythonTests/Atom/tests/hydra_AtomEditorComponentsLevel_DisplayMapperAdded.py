@@ -383,7 +383,6 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
                     AtomComponentProperties.display_mapper('Cinema Limit (white)')),
                 cinema_limit_white_presets[DISPLAY_MAPPER_PRESET[preset]], TOLERANCE))
 
-
         # 20. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
