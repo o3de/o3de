@@ -24,6 +24,7 @@ import json
 from pathlib import Path
 from subprocess import TimeoutExpired
 
+
 @pytest.fixture(scope="session")
 def test_installer_fixture(context):
     """Installer executable succeeds"""
@@ -38,6 +39,7 @@ def test_installer_fixture(context):
     # the install root is created
     assert context.install_root.is_dir(), f"Invalid install root {context.install_root}"
 
+
 @pytest.mark.parametrize(
     "filename", [
         pytest.param('Editor.exe'),
@@ -49,6 +51,7 @@ def test_installer_fixture(context):
 def test_binaries_exist(test_installer_fixture, context, filename):
     """Installer key binaries exist"""
     assert (context.engine_bin_path / filename).is_file(), f"{filename} not found in {context.engine_bin_path}"
+
 
 @pytest.fixture(scope="session")
 def test_o3de_registers_engine_fixture(test_installer_fixture, context):
@@ -62,7 +65,6 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
         # we expect to close the app ourselves
         pass
 
-    # the engine is registered
     engine_json_path = context.install_root / 'engine.json'
     with engine_json_path.open('r') as f:
         engine_json_data = json.load(f)
@@ -74,9 +76,12 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
         manifest_json_data = json.load(f)
     
     engine_path = Path(context.install_root).as_posix()
+
+    # the engine is completely registered (not just partially)
     assert engine_path in manifest_json_data['engines'] , f"Engine path {engine_path} not found in {manifest_path}"
     assert engine_name in manifest_json_data['engines_path'], f"{engine_path} not found in {manifest_path} engines_path"
     assert manifest_json_data['engines_path'][engine_name] == engine_path, f"Engines path has invalid entry for {engine_name} expected {engine_path}" 
+
 
 @pytest.fixture(scope="session")
 def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
@@ -87,6 +92,7 @@ def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
 
     project_json_path = Path(context.project_path) / 'project.json'
     assert project_json_path.is_file(), f"No project.json found at {project_json_path}"
+
 
 @pytest.fixture(scope="session")
 def test_compile_project_fixture(test_create_project_fixture, context):
@@ -105,6 +111,7 @@ def test_compile_project_fixture(test_create_project_fixture, context):
     assert result.returncode == 0
     assert (context.project_bin_path / f'{launcher_target}.exe').is_file()
 
+
 @pytest.fixture(scope="session")
 def test_run_asset_processor_batch_fixture(test_compile_project_fixture, context):
     """Test asset batch processing before running Editor and Launcher tests which need assets"""
@@ -113,6 +120,7 @@ def test_run_asset_processor_batch_fixture(test_compile_project_fixture, context
         assert result.returncode == 0, f"AssetProcessorBatch.exe failed with exit code {result.returncode}"
     except TimeoutExpired as e:
         pass
+
 
 @pytest.fixture(scope="session")
 def test_run_editor_fixture(test_run_asset_processor_batch_fixture, context):
@@ -149,6 +157,7 @@ def test_run_editor_fixture(test_run_asset_processor_batch_fixture, context):
 
     assert engine_initialized_message_found, "Engine initialized message not found in editor.log"
 
+
 @pytest.fixture(scope="session")
 def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
     """Game launcher can be run without crashing"""
@@ -172,6 +181,7 @@ def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
     
     assert not exception_found, "Exception found in Game.log"
 
+
 @pytest.fixture(scope="session")
 def test_uninstall_fixture(test_run_launcher_fixture, test_run_editor_fixture, context):
     """Uninstall succeeds and unregisters the engine"""
@@ -193,6 +203,7 @@ def test_uninstall_fixture(test_run_launcher_fixture, test_run_editor_fixture, c
     with manifest_path.open('r') as f:
         manifest_json_data = json.load(f)
     
+    # the engine is completely unregistered
     engine_path = Path(context.install_root).as_posix()
     assert engine_path not in manifest_json_data['engines'] , f"Engine path {engine_path} still exists in o3de_manifest.json"
     assert engine_name not in manifest_json_data['engines_path'], f"{engine_path} still exists in manifest engines_path"
