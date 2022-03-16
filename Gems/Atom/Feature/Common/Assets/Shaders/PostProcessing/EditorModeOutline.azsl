@@ -61,22 +61,22 @@ PSOutput MainPS(VSOutput IN)
 
     // Outline effect
     const float lineThickness = lerp(1., PassSrg::m_lineThickness, 1.0 - t);
-    const float2 outlines = Outliner(IN.m_texCoord, lineThickness);
+    const float2 outlines = Outliner(IN.m_texCoord, lineThickness) * (1.0 - mask);
 
     float outline = 0.0;
     if(PassSrg::m_outlineStyle == 0)
     {
         // OutlineStyle::Always
-        outline = outlines.g * (1.0 - mask.g);
+        outline = outlines.g;
     }
     else if(PassSrg::m_outlineStyle == 1)
     {
         // OutlineStyle::Visible
-        outline = outlines.r * (1.0 - mask.r);
+        outline = outlines.r;
     }
 
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outline);
-
+    
     return OUT;
 }
