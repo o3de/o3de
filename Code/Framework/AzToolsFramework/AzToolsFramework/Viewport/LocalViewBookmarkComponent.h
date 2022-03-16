@@ -17,7 +17,7 @@ namespace AzToolsFramework
     {
     public:
 
-        AZ_COMPONENT(LocalViewBookmarkComponent, "{28E5C3B7-3732-4EFB-985E-3F578A83A357}", EditorComponentBase);
+        AZ_EDITOR_COMPONENT(LocalViewBookmarkComponent, "{28E5C3B7-3732-4EFB-985E-3F578A83A357}", EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
 

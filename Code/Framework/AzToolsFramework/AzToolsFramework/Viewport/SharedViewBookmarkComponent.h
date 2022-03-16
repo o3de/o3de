@@ -34,7 +34,7 @@ namespace AzToolsFramework
     public:
         static constexpr const char* const ViewBookmarkComponentTypeId = "{6959832F-9382-4C7D-83AC-380DA9F138DE}";
 
-        AZ_COMPONENT(SharedViewBookmarkComponent, ViewBookmarkComponentTypeId, EditorComponentBase);
+        AZ_EDITOR_COMPONENT(SharedViewBookmarkComponent, ViewBookmarkComponentTypeId, EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
 
