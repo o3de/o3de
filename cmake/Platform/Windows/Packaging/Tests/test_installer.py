@@ -96,8 +96,6 @@ def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
     assert project_json_path.is_file(), f"No project.json found at {project_json_path}"
     print(f"End running create project test for project with json at {project_json_path}")
 
-    assert False, "Stopping for debug purposes"
-
 @pytest.fixture(scope="session")
 def test_compile_project_fixture(test_create_project_fixture, context):
     """Project can be configured and compiled"""

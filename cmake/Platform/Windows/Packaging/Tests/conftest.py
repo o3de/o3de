@@ -17,7 +17,7 @@ import urllib.parse
 import urllib.request
 from tempfile import NamedTemporaryFile, mkdtemp
 from time import sleep
-from subprocess import run
+from subprocess import run, list2cmdline
 import boto3
 
 def pytest_addoption(parser):
@@ -83,9 +83,12 @@ class SessionContext:
                 print(line, end='')
 
     def run(self, command, timeout=None, cwd=None):
-        self.temp_file.write(' '.join(command) + '\n')
+        # prefix all commands with 'cmd /c' to avoid using a cygwin shell
+        # and thus a different environment
+        shell_command = f"cmd /c \"{list2cmdline(command)}\""
+        self.temp_file.write(f"\n{shell_command}\n")
         self.temp_file.flush()
-        return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True)
+        return run(shell_command, shell=True, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True)
 
     def cleanup(self):
         if self.project_path.is_dir():
@@ -104,7 +107,9 @@ class SessionContext:
         self.log_reader.close()
         if self.log_file:
             shutil.copy(self.temp_file.name, Path(self.log_file).resolve())
-        os.remove(self.temp_file.name)
+
+        # do not try to remove the temp file as it might be in use by another process
+        # os.remove(self.temp_file.name)
 
 @pytest.fixture(scope="session")
 def context(request):
