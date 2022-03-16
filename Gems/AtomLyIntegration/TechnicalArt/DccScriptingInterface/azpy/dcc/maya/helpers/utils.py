@@ -254,10 +254,10 @@ class Selection(object):
         print ( '~ Begin Selection Data Output...' )
 
         for key, value in self.selection.items() :
-            print key
+            print(key)
             #This is less explict but allows for expansion easier, lets test it out for a while
             for itemSet in value:
-                print '  ', itemSet
+                print('  ', itemSet)
             #print '  vtx       - ', value[0]
             #print '  edg       - ', value[1]
             #print '  face      - ', value[2]
@@ -303,7 +303,7 @@ class Selection(object):
         selection_list = set()
 
         # To Do: explain what this does
-        for index in xrange(0, 2) :
+        for index in range(0, 2):
 
             sel_part = self.selection[obj][index]
             try:
@@ -377,6 +377,28 @@ class Selection(object):
 
         return index_list
     #----------------------------------------------------------------------
+
+
+    # ----------------------------------------------------------------------
+    def get_object_attributes(self, obj):
+        attribute_list = {}
+        for attr in cmds.listAttr(obj):
+            target_string = f'{obj}.{attr}'
+            try:
+                attr_value = cmds.getAttr(target_string)
+                if attr_value:
+                    attribute_list[attr] = attr_value
+                else:
+                    attribute_list[attr] = ''
+            except RuntimeError:
+                pass
+            except ValueError:
+                pass
+
+        for key, value in attribute_list.items():
+            print(f'AttributeName: {key}  : Value: {value}')
+
+    # ----------------------------------------------------------------------
 # -------------------------------------------------------------------------
 
 
