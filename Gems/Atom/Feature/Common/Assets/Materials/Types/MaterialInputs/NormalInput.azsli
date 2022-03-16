@@ -32,6 +32,11 @@ option bool prefix##o_normal_useTexture;
 //! The returned XY values will be in the range [-1,1].
 float2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv)
 {
+    if (!AreNormalMapsEnabled())
+    {
+        return float2(0, 0);
+    }
+
     float4 sampledValue = map.Sample(mapSampler, uv);
     
 #if AZ_TRAIT_ASTC_COMPRESSION
