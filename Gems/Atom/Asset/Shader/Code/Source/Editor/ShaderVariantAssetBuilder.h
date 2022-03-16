@@ -33,7 +33,7 @@ namespace AZ
         {
             RHI::ShaderPlatformInterface& m_shaderPlatformInterface;
             const AssetBuilderSDK::PlatformInfo& m_platformInfo;
-            const RHI::ShaderCompilerArguments& m_shaderCompilerArguments;
+            const RHI::ShaderBuildArguments& m_shaderBuildArguments;
             //! Used to write temporary files during shader compilation, like *.hlsl, or *.air, or *.metallib, etc.
             const AZStd::string& m_tempDirPath;
             //! Used to synchronize versions of the ShaderAsset and ShaderVariantAsset,
