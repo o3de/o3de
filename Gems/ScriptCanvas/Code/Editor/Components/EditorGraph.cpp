@@ -616,7 +616,7 @@ namespace ScriptCanvasEditor
             return false;
         });
 
-        return iter != slotState.begin() ? iter : nullptr;
+        return iter != slotState.end() ? iter : nullptr;
     }
 
     AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotConnections
@@ -701,10 +701,9 @@ namespace ScriptCanvasEditor
             const auto msg =
                 AZStd::string::format("No previous slot match found for slot: %s-%s", node.GetNodeName().c_str(), slot.GetName().c_str());
 
-            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
-
             if (nodeConfig.m_tolerateNoMatchingPreviousSlot)
             {
+                AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
                 return AZ::Success();
             }
             else
@@ -720,12 +719,15 @@ namespace ScriptCanvasEditor
             auto msg = AZStd::string::format
                 ( "Failed to update slot: %s-%s, from previous slot", node.GetNodeName().c_str(), slot.GetName().c_str());
 
-            if (!nodeConfig.m_tolerateFailureToUpdateData)
+            if (nodeConfig.m_tolerateFailureToUpdateData)
+            {
+                AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
+                return AZ::Success();
+            }
+            else
             {
                 return AZ::Failure(msg);
             }
-
-            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
         }
 
         // replace old connections
@@ -735,12 +737,15 @@ namespace ScriptCanvasEditor
             auto msg = AZStd::string::format
                 ( "Failed to update slot connections: %s-%s, from previous slot", node.GetNodeName().c_str(), slot.GetName().c_str());
 
-            if (!nodeConfig.m_tolerateFailureToReplaceConnections)
+            if (nodeConfig.m_tolerateFailureToReplaceConnections)
+            {
+                AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
+                return AZ::Success();
+            }
+            else
             {
                 return AZ::Failure(msg);
             }
-
-            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
         }
 
         return AZ::Success();
