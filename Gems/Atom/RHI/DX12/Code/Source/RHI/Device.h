@@ -170,6 +170,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode InitSubPlatform(RHI::PhysicalDevice& physicalDevice);
+            void ShutdownSubPlatform();
 
             void InitDeviceRemovalHandle();
 
@@ -208,6 +209,7 @@ namespace AZ
             RHI::Ptr<ID3D12Fence> m_deviceFence;
             bool m_onDeviceRemoved = false;
             AZStd::mutex m_onDeviceRemovedMutex;
+            HANDLE m_waitHandle;
         };
     }
 }

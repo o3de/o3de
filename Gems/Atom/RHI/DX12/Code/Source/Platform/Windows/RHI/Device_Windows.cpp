@@ -25,23 +25,6 @@ namespace AZ
     {
         namespace Platform
         {
-            void DeviceShutdownInternal(ID3D12DeviceX* device)
-            {
-                AZ_UNUSED(device);
-#ifdef AZ_DEBUG_BUILD
-                ID3D12DebugDevice* dx12DebugDevice = nullptr;
-                if (device)
-                {
-                    device->QueryInterface(&dx12DebugDevice);
-                }
-                if (dx12DebugDevice)
-                {
-                    dx12DebugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
-                    dx12DebugDevice->Release();
-                }
-#endif
-            }
-
             void DeviceCompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder, IDXGIAdapterX* dxgiAdapter)
             {
                 DXGI_QUERY_VIDEO_MEMORY_INFO memoryInfo;
@@ -242,6 +225,25 @@ namespace AZ
             m_isAftermathInitialized = Aftermath::InitializeAftermath(m_dx12Device);
 
             return RHI::ResultCode::Success;
+        }
+
+        void Device::ShutdownSubPlatform()
+        {
+            UnregisterWait(m_waitHandle);
+            m_deviceFence.reset();
+
+#ifdef AZ_DEBUG_BUILD
+            ID3D12DebugDevice* dx12DebugDevice = nullptr;
+            if (m_dx12Device)
+            {
+                m_dx12Device->QueryInterface(&dx12DebugDevice);
+            }
+            if (dx12DebugDevice)
+            {
+                dx12DebugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
+                dx12DebugDevice->Release();
+            }
+#endif
         }
 
         const char* GetBreadcrumpOpString(D3D12_AUTO_BREADCRUMB_OP op)
@@ -509,9 +511,8 @@ namespace AZ
             HANDLE deviceRemovedEvent = CreateEventW(NULL, FALSE, FALSE, NULL);
             m_deviceFence->SetEventOnCompletion(UINT64_MAX, deviceRemovedEvent);
 
-            HANDLE waitHandle;
             RegisterWaitForSingleObject(
-              &waitHandle,
+              &m_waitHandle,
               deviceRemovedEvent,
               HandleDeviceRemoved,
               this, // Pass the device as our context
