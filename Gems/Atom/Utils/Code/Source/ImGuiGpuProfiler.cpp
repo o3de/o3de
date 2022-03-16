@@ -1521,7 +1521,7 @@ namespace AZ
 
                 if (!m_captureMessage.empty())
                 {
-                    ImGui::Text(m_captureMessage.c_str());
+                    ImGui::Text("%s", m_captureMessage.c_str());
                 }
 
                 if (m_hostTreemap)
@@ -1752,8 +1752,10 @@ namespace AZ
 
         // C4702: Unreachable code
         // MSVC 2022 believes that `return true;` below is unreacahable, which is not true.
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4702)
+#endif
         template <typename T>
         bool parseCSVField(const AZStd::string& field, T& out)
         {
@@ -1790,7 +1792,9 @@ namespace AZ
 
             return true;
         }
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
         void ImGuiGpuMemoryView::LoadFromCSV(const AZStd::string& fileName)
         {
