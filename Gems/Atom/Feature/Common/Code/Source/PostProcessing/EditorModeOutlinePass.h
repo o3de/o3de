@@ -18,10 +18,10 @@ namespace AZ
             : public EditorModeFeedbackPassBase
         {
         public:
-            enum class LineMode : AZ::u32
+            enum class OutlineStyle : AZ::u32
             {
-                OutlineAlways,
-                OutlineVisible
+                Always,
+                Visible
             };
 
             AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackPassBase);
@@ -39,7 +39,7 @@ namespace AZ
             void SetLineColor(AZ::Color color);
 
             //! Sets the outline mode.
-            void SetLineMode(LineMode mode);
+            void SetOutlineStyle(OutlineStyle mode);
 
         protected:
             EditorModeOutlinePass(const RPI::PassDescriptor& descriptor);
@@ -54,10 +54,10 @@ namespace AZ
 
             RHI::ShaderInputNameIndex m_lineThicknessIndex = "m_lineThickness";
             RHI::ShaderInputNameIndex m_lineColorIndex = "m_lineColor";
-            RHI::ShaderInputNameIndex m_lineModeIndex = "m_lineMode";
+            RHI::ShaderInputNameIndex m_outlineStyleIndex = "m_outlineStyle";
             float m_lineThickness = 3.0f; //!< Default line thickness for the outline effect.
             AZ::Color m_lineColor = AZ::Color(0.96f, 0.65f, 0.13f, 1.0f); //!< Default line color for the outline effect.
-            LineMode m_lineMode = LineMode::OutlineAlways;
+            OutlineStyle m_outlineStyle = OutlineStyle::Always;
         };
     }   // namespace Render
 }   // namespace AZ

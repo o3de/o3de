@@ -17,7 +17,7 @@
 // Temporary measure for setting the outline pass shader parameters at runtime until GHI 3455 is implemented
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeOutlinePass, 0.0f, 0.0f, 10.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeOutlinePass, LineThickness, 3.0f);
-AZ_EDITOR_MODE_PASS_CVAR(AZ::u8, cl_editorModeOutlinePass, LineMode, 0);
+AZ_EDITOR_MODE_PASS_CVAR(AZ::u8, cl_editorModeOutlinePass, OutlineStyle, 0);
 AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Color(0.96f, 0.65f, 0.13f, 1.0f));
 
  namespace AZ
@@ -40,7 +40,7 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Col
             EditorModeFeedbackPassBase::InitializeInternal();
             m_lineThicknessIndex.Reset();
             m_lineColorIndex.Reset();
-            m_lineModeIndex.Reset();
+            m_outlineStyleIndex.Reset();
         }
         
         void EditorModeOutlinePass::FrameBeginInternal(FramePrepareParams params)
@@ -59,9 +59,9 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Col
             m_lineColor = AZStd::move(color);
         }
 
-        void EditorModeOutlinePass::SetLineMode(LineMode mode)
+        void EditorModeOutlinePass::SetOutlineStyle(OutlineStyle mode)
         {
-            m_lineMode = mode;
+            m_outlineStyle = mode;
         }
 
         void EditorModeOutlinePass::SetSrgConstants()
@@ -73,11 +73,11 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Col
             SetFinalBlendAmount(cl_editorModeOutlinePass_FinalBlendAmount);
             SetLineThickness(cl_editorModeOutlinePass_LineThickness);
             SetLineColor(cl_editorModeOutlinePass_LineColor);
-            SetLineMode(static_cast<LineMode>(AZ::u32(cl_editorModeOutlinePass_LineMode)));
+            SetOutlineStyle(static_cast<OutlineStyle>(AZ::u32(cl_editorModeOutlinePass_OutlineStyle)));
 
             m_shaderResourceGroup->SetConstant(m_lineThicknessIndex, m_lineThickness);
             m_shaderResourceGroup->SetConstant(m_lineColorIndex, m_lineColor);
-            m_shaderResourceGroup->SetConstant(m_lineModeIndex, static_cast<float>(m_lineMode));
+            m_shaderResourceGroup->SetConstant(m_outlineStyleIndex, static_cast<AZ::u32>(m_outlineStyle));
         }
     } // namespace Render
 } // namespace AZ
