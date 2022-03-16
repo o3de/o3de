@@ -27,21 +27,6 @@ namespace AzFramework
         {
             serializeContext->Class<SpawnableSystemComponent, AZ::Component>();
             serializeContext->RegisterGenericType<AZ::Data::Asset<Spawnable>>();
-
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<EntitySpawnTicket>("EntitySpawnTicket", "An object used to spawn prefabs with SpawnableEntitiesInterface.");
-            }
-        }
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<EntitySpawnTicket>("EntitySpawnTicket")
-                ->Constructor()
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
-                ->Attribute(AZ::Script::Attributes::Module, "Prefab")
-                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true);
         }
     }
 

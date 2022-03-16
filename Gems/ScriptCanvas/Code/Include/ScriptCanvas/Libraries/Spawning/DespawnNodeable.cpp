@@ -54,7 +54,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         if (!spawnTicket.IsValid())
         {
-            AZ_Error("DespawnNodeable", false, "EntitySpawnTicket is missing or invalid.")
+            AZ_Error("DespawnNodeable", false, "EntitySpawnTicket used for despawning is invalid (make sure the slot is connected).")
             return;
         }
 

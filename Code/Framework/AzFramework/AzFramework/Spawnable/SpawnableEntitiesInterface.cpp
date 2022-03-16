@@ -362,7 +362,9 @@ namespace AzFramework
             
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EntitySpawnTicket>("EntitySpawnTicket", "EntitySpawnTicket is an object used for spawning entities.");
+                editContext->Class<EntitySpawnTicket>(
+                    "EntitySpawnTicket",
+                    "EntitySpawnTicket is an object used to spawn, identify, and track the spawned entities associated with the ticket.");
             }
         }
 
@@ -370,7 +372,10 @@ namespace AzFramework
         {
             behaviorContext->Class<EntitySpawnTicket>("EntitySpawnTicket")
                 ->Constructor()
+                ->Constructor<AZ::Data::Asset<Spawnable>>()
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
+                ->Attribute(AZ::Script::Attributes::Module, "Prefabs")
                 ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true);
         }
     }
