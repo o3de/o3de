@@ -79,33 +79,28 @@ namespace AZ {
 
             RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_shaderDebugEnableOptionName, AZ::RPI::ShaderOptionValue{ debugEnabled });
 
-            if (GetParentScene())
+            if (m_sceneSrg)
             {
-                Data::Instance<RPI::ShaderResourceGroup> sceneSrg = GetParentScene()->GetShaderResourceGroup();
+                m_sceneSrg->SetConstant(m_debuggingEnabledIndex, debugEnabled);
 
-                if (sceneSrg)
-                {
-                    sceneSrg->SetConstant(m_debuggingEnabledIndex, debugEnabled);
+                // Material overrides...
+                m_sceneSrg->SetConstant(m_debugOverrideBaseColorIndex, m_settings->GetMaterialBaseColorOverride());
+                m_sceneSrg->SetConstant(m_debugOverrideRoughnessIndex, m_settings->GetMaterialRoughnessOverride());
+                m_sceneSrg->SetConstant(m_debugOverrideMetallicIndex, m_settings->GetMaterialMetallicOverride());
 
-                    // Material overrides...
-                    sceneSrg->SetConstant(m_debugOverrideBaseColorIndex, m_settings->GetMaterialBaseColorOverride());
-                    sceneSrg->SetConstant(m_debugOverrideRoughnessIndex, m_settings->GetMaterialRoughnessOverride());
-                    sceneSrg->SetConstant(m_debugOverrideMetallicIndex, m_settings->GetMaterialMetallicOverride());
+                // Debug Light...
+                Vector3 debugLightIntensity = m_settings->GetDebugLightingColor() * m_settings->GetDebugLightingIntensity();
+                m_sceneSrg->SetConstant(m_debugLightingIntensityIndex, debugLightIntensity);
 
-                    // Debug Light...
-                    Vector3 debugLightIntensity = m_settings->GetDebugLightingColor() * m_settings->GetDebugLightingIntensity();
-                    sceneSrg->SetConstant(m_debugLightingIntensityIndex, debugLightIntensity);
+                float yaw = m_settings->GetDebugLightingAzimuth();
+                float pitch = m_settings->GetDebugLightingElevation();
 
-                    float yaw = m_settings->GetDebugLightingAzimuth();
-                    float pitch = m_settings->GetDebugLightingElevation();
+                yaw = AZ::DegToRad(yaw);
+                pitch = AZ::DegToRad(pitch);
 
-                    yaw = AZ::DegToRad(yaw);
-                    pitch = AZ::DegToRad(pitch);
-
-                    Transform lightRotation = Transform::CreateRotationZ(yaw) * Transform::CreateRotationX(pitch);
-                    Vector3 lightDirection = lightRotation.GetBasis(1);
-                    sceneSrg->SetConstant(m_debugLightingDirectionIndex, lightDirection);
-                }
+                Transform lightRotation = Transform::CreateRotationZ(yaw) * Transform::CreateRotationX(pitch);
+                Vector3 lightDirection = lightRotation.GetBasis(1);
+                m_sceneSrg->SetConstant(m_debugLightingDirectionIndex, lightDirection);
             }
 
             for (const RPI::ViewPtr& view : packet.m_views)

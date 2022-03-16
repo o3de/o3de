@@ -69,9 +69,4 @@ namespace AZ::Render
         DebugLight,
         Count
     };
-
-    namespace RenderDebug
-    {
-        // static constexpr float DefaultStrength = 1.0f;
-    }
 }

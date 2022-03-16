@@ -6,6 +6,7 @@
 # 
 
 set(FILES
+    ShaderLib/Atom/RPI/BitOperations.azsli
     ShaderLib/Atom/RPI/DummyEntryFunctions.azsli
     ShaderLib/Atom/RPI/Math.azsli
     ShaderLib/Atom/RPI/TangentSpace.azsli

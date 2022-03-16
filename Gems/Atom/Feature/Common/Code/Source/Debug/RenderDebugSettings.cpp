@@ -34,20 +34,20 @@ namespace AZ {
             m_optionsMask = 0;
 
             // Enabled
-            m_optionsMask = m_optionsMask | ((u32)GetEnabled() << (u32)RenderDebugOptions::DebugEnabled);
+            m_optionsMask |= (u32)GetEnabled() << (u32)RenderDebugOptions::DebugEnabled;
 
             // Material Overrides
-            m_optionsMask = m_optionsMask | ((u32)GetOverrideBaseColor() << (u32)RenderDebugOptions::OverrideBaseColor);
-            m_optionsMask = m_optionsMask | ((u32)GetOverrideRoughness() << (u32)RenderDebugOptions::OverrideRoughness);
-            m_optionsMask = m_optionsMask | ((u32)GetOverrideMetallic() << (u32)RenderDebugOptions::OverrideMetallic);
+            m_optionsMask |= (u32)GetOverrideBaseColor() << (u32)RenderDebugOptions::OverrideBaseColor;
+            m_optionsMask |= (u32)GetOverrideRoughness() << (u32)RenderDebugOptions::OverrideRoughness;
+            m_optionsMask |= (u32)GetOverrideMetallic() << (u32)RenderDebugOptions::OverrideMetallic;
 
             // Normal Maps
-            m_optionsMask = m_optionsMask | ((u32)GetEnableNormalMaps() << (u32)RenderDebugOptions::EnableNormalMaps);
-            m_optionsMask = m_optionsMask | ((u32)GetEnableDetailNormalMaps() << (u32)RenderDebugOptions::EnableDetailNormalMaps);
+            m_optionsMask |= (u32)GetEnableNormalMaps() << (u32)RenderDebugOptions::EnableNormalMaps;
+            m_optionsMask |= (u32)GetEnableDetailNormalMaps() << (u32)RenderDebugOptions::EnableDetailNormalMaps;
 
             // Debug Light
             bool useDebugLight = GetRenderDebugLightingSource() == RenderDebugLightingSource::DebugLight;
-            m_optionsMask = m_optionsMask | ((u32)useDebugLight << (u32)RenderDebugOptions::UseDebugLight);
+            m_optionsMask |= (u32)useDebugLight << (u32)RenderDebugOptions::UseDebugLight;
 
             // Direct & Indirect Lighting
 
@@ -73,10 +73,10 @@ namespace AZ {
                 diffuseLightingEnabled = specularLightingEnabled = directLightingEnabled = indirectLightingEnabled = false;
             }
 
-            m_optionsMask = m_optionsMask | ((u32)diffuseLightingEnabled  << (u32)RenderDebugOptions::EnableDiffuseLighting);
-            m_optionsMask = m_optionsMask | ((u32)specularLightingEnabled << (u32)RenderDebugOptions::EnableSpecularLighting);
-            m_optionsMask = m_optionsMask | ((u32)directLightingEnabled   << (u32)RenderDebugOptions::EnableDirectLighting);
-            m_optionsMask = m_optionsMask | ((u32)indirectLightingEnabled << (u32)RenderDebugOptions::EnableIndirectLighting);
+            m_optionsMask |= (u32)diffuseLightingEnabled  << (u32)RenderDebugOptions::EnableDiffuseLighting;
+            m_optionsMask |= (u32)specularLightingEnabled << (u32)RenderDebugOptions::EnableSpecularLighting;
+            m_optionsMask |= (u32)directLightingEnabled   << (u32)RenderDebugOptions::EnableDirectLighting;
+            m_optionsMask |= (u32)indirectLightingEnabled << (u32)RenderDebugOptions::EnableIndirectLighting;
         }
 
     } // namespace Render
