@@ -57,7 +57,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_outlineStyleIndex = "m_outlineStyle";
             float m_lineThickness = 3.0f; //!< Default line thickness for the outline effect.
             AZ::Color m_lineColor = AZ::Color(0.96f, 0.65f, 0.13f, 1.0f); //!< Default line color for the outline effect.
-            OutlineStyle m_outlineStyle = OutlineStyle::Always;
+            OutlineStyle m_outlineStyle = OutlineStyle::Always; //!< Default outline style for the outline effect.
         };
     }   // namespace Render
 }   // namespace AZ
