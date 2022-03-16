@@ -101,7 +101,7 @@ PixelOutput MainPS(VSOutput IN)
     OUT.m_mask.r = 0.0;
 
     // Write out all visible and occluded fragments to the green channel
-    OUT.m_mask.g = 1.;
+    OUT.m_mask.g = 1.0;
 
     // Performing a equal or greater than depth test is still to flakey so we will instead perform a depth test within a small
     // tolerance range in order for this fragment to pass the test

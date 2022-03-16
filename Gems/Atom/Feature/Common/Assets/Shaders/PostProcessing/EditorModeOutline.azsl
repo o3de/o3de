@@ -50,10 +50,11 @@ PSOutput MainPS(VSOutput IN)
     // Only attempt to outline fragments that lie outside of the entity mask
     if((mask.r * mask.g) > 0.0)
     {
+        // Fragment lies with the mask, early exit with passthrough color
         OUT.m_color.rgb = inColor;
         return OUT;
     }
-    
+
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
     float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask.r);
