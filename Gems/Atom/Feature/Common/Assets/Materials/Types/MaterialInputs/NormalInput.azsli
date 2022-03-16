@@ -91,7 +91,7 @@ float3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX
 // Get the input normal in tangent space
 float3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, float3x3 uvMatrix, bool useTexture, float normalStrength)
 {
-    if (useTexture)
+    if (useTexture && AreNormalMapsEnabled())
     {
         float2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
         return GetTangentSpaceNormal(sampledValue, uvMatrix, normalStrength);
