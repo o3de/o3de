@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AZCore/Math/Vector3.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace AZ::Render
 {
