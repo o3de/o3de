@@ -61,8 +61,6 @@ namespace AtomToolsFramework
         void QueueReopenDocuments();
         void ReopenDocuments();
 
-        AZ::Uuid OpenDocumentImpl(const AZStd::string& sourcePath, bool checkIfAlreadyOpen);
-
         const AZ::Crc32 m_toolId = {};
         DocumentTypeInfoVector m_documentTypes;
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AtomToolsDocumentRequests>> m_documentMap;

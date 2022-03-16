@@ -1065,6 +1065,19 @@ namespace ScriptCanvas
             else if (auto functionCallNode = azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
             {
                 auto subgraphInterface = functionCallNode->GetSubgraphInterface();
+                if (!subgraphInterface)
+                {
+                    AddError(node.GetEntityId(), nullptr, ParseErrors::FunctionNodeFailedToReturnInterface);
+                }
+
+                auto interfaceNameOutcome = functionCallNode->GetInterfaceNameFromAssetOrLastSave();
+                if (!interfaceNameOutcome.IsSuccess())
+                {
+                    AddError(node.GetEntityId(), nullptr, ParseErrors::FunctionNodeFailedToReturnUseableName);
+                }
+
+                auto interfaceName = interfaceNameOutcome.GetValue();
+
                 auto requiresCtorParamsForDependencies = subgraphInterface && subgraphInterface->RequiresConstructionParametersForDependencies();
                 auto requiresCtorParams = subgraphInterface && subgraphInterface->RequiresConstructionParameters();
 
@@ -1078,12 +1091,13 @@ namespace ScriptCanvas
                 {
                     Datum nodeableDatum(Data::Type::BehaviorContextObject(azrtti_typeid<Nodeable>()), Datum::eOriginality::Copy);
 
-                    auto nodeableVariable = AddMemberVariable(nodeableDatum, functionCallNode->GetInterfaceName(), node.GetEntityId());
+                    auto nodeableVariable = AddMemberVariable(nodeableDatum, interfaceName, node.GetEntityId());
 
                     auto nodeableParse = AZStd::make_shared<NodeableParse>();
                     nodeableVariable->m_isExposedToConstruction = false;
                     nodeableParse->m_nodeable = nodeableVariable;
-                    nodeableParse->m_simpleName = subgraphInterface->GetName();
+                    nodeableParse->m_isInterpreted = true;
+                    nodeableParse->m_simpleName = interfaceName;
 
                     m_nodeablesByNode.emplace(&node, nodeableParse);
                     m_userNodeables.insert(nodeableVariable);
@@ -2139,7 +2153,7 @@ namespace ScriptCanvas
             return false;
         }
 
-        bool AbstractCodeModel::IsPerEntityDataRequired() const
+        bool AbstractCodeModel::IsClass() const
         {
             return !IsPureLibrary();
         }
@@ -2174,8 +2188,8 @@ namespace ScriptCanvas
 
         bool AbstractCodeModel::IsUserNodeable() const
         {
-            // #functions2 check the subgraph interface for IsUserNodeable vs User variable
-            return !IsPureLibrary();
+            // #functions2 check the subgraph interface for IsUserNodeable vs IsClass
+            return IsClass();
         }
 
         bool AbstractCodeModel::IsUserNodeable(VariableConstPtr variable) const
@@ -2957,6 +2971,10 @@ namespace ScriptCanvas
                     m_activeDefaultObject.insert(&node);
                 }
             }
+            else if (auto functionCallNode = azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
+            {
+                AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
+            }
         }
 
         void AbstractCodeModel::ParseDependenciesAssetIndicies()
@@ -3085,6 +3103,7 @@ namespace ScriptCanvas
             else
             {
                 m_subgraphInterface.MarkExecutionCharacteristics(ExecutionCharacteristics::Object);
+                m_subgraphInterface.MarkBaseClass();
             }
 
             if (m_subgraphInterface.GetExecutionCharacteristics() == ExecutionCharacteristics::Object)

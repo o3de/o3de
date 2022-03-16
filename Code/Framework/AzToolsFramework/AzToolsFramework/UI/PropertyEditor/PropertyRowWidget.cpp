@@ -402,6 +402,12 @@ namespace AzToolsFramework
     {
         Initialize(groupName, pParent, depth, labelWidth);
         ChangeSourceNode(node);
+
+        // Need to invoke RefreshAttributesFromNode manually since it won't be called
+        // by this version of Initialize so that any change notify (along with other attributes)
+        // will be respected when toggling the group element
+        RefreshAttributesFromNode(true);
+
         CreateGroupToggleSwitch();
     }
 

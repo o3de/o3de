@@ -61,7 +61,10 @@ namespace AtomToolsFramework
 
         QPointer<AzQtComponents::FancyDocking> m_advancedDockManager = {};
         AzQtComponents::WindowDecorationWrapper* m_mainWindowWrapper = {};
+
         bool m_shownBefore = {};
+
+        QByteArray m_defaultWindowState;
 
         QLabel* m_statusMessage = {};
         QLabel* m_statusBarFps = {};
