@@ -29,7 +29,7 @@ IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=9)
 IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=7)
 
 :: Default Blender Version
-IF "%BLENDER_VERSION%"=="" (set BLENDER_VERSION=3.0)
+IF "%BLENDER_VERSION%"=="" (set BLENDER_VERSION=3.1)
 
 :: Initialize env
 CALL %~dp0\Env_O3DE_Core.bat
