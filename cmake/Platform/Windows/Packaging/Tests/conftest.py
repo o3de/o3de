@@ -62,6 +62,8 @@ class SessionContext:
         #home_result = run('cmd /c "echo $HOME"', shell=True, text=True, capture_output=True)
         #self.home_path = Path(home_result.stdout.strip())
         self.home_path = Path.home()
+        if 'cygwin' in self.home_path.parts:
+            self.home_path = Path("C:/Users") / self.home_path.name
         print(f"User home folder is {self.home_path}")
 
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
