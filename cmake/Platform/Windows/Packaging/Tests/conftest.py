@@ -61,12 +61,10 @@ class SessionContext:
             # strip the leading slash from the file URI 
             self.installer_path = Path(parsed_uri.path.lstrip('/')).resolve()
 
-        #home_result = run('cmd /c "echo $HOME"', shell=True, text=True, capture_output=True)
-        #self.home_path = Path(home_result.stdout.strip())
-        self.home_path = Path.home()
-        if 'cygwin' in self.home_path.parts:
-            self.home_path = Path("C:/Users") / self.home_path.name
-        print(f"User home folder is {self.home_path}")
+        # we do not use Path.home() or os.path.expanduser() because it may return the 
+        # shell or current environment HOME or HOMEPATH, and we want the user's 
+        # Windows user folder, because that is the normal use case for the installer
+        self.home_path = Path(os.environ["SYSTEMDRIVE"], 'Users', os.getlogin()).resolve()
 
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
         self.project_path = Path(request.config.getoption("--project-path")).resolve()
@@ -92,14 +90,11 @@ class SessionContext:
                 print(line, end='')
 
     def run(self, command, timeout=None, cwd=None):
-        # prefix all commands with 'cmd /c' to avoid using a cygwin shell
-        # and thus a different environment
-        shell_command = f"cmd /c \"{list2cmdline(command)}\""
-        self.temp_file.write(f"\n{shell_command}\n")
+        self.temp_file.write('\n' + list2cmdline(command) + '\n')
         self.temp_file.flush()
-        windows_home_path = str(PurePath(self.home_path))
+        windows_home_path = str(self.home_path)
         shell_env = dict(os.environ, HOME=windows_home_path, HOMEPATH=windows_home_path)
-        return run(shell_command, shell=True, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True, env=shell_env)
+        return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True, env=shell_env)
 
     def cleanup(self):
         if self.project_path.is_dir():

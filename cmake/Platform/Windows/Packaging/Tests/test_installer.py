@@ -21,7 +21,6 @@ Alternately, the installer-uri can be an s3 or web URL. For example:
 """
 import pytest
 import json
-import os
 from pathlib import Path
 from subprocess import TimeoutExpired
 
@@ -53,17 +52,14 @@ def test_binaries_exist(test_installer_fixture, context, filename):
 
 @pytest.fixture(scope="session")
 def test_o3de_registers_engine_fixture(test_installer_fixture, context):
-    print(f"Begin running register engine test")
     """Engine is registered when o3de.exe is run"""
     try:
         result = context.run([str(context.engine_bin_path / 'o3de.exe')], timeout=15)
 
         # o3de.exe should not close with an error code 
         assert result.returncode == 0, f"o3de.exe failed with exit code {result.returncode}"
-        print(f"o3de.exe quit with return code {result.returncode}")
     except TimeoutExpired as e:
         # we expect to close the app ourselves
-        print("o3de.exe was closed after exceeding the timeout")
         pass
 
     # the engine is registered
@@ -81,20 +77,16 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
     assert engine_path in manifest_json_data['engines'] , f"Engine path {engine_path} not found in {manifest_path}"
     assert engine_name in manifest_json_data['engines_path'], f"{engine_path} not found in {manifest_path} engines_path"
     assert manifest_json_data['engines_path'][engine_name] == engine_path, f"Engines path has invalid entry for {engine_name} expected {engine_path}" 
-    print(f"\nManifest {manifest_path}.")
-    print(f"Finished running register engine test for engine {engine_name} at path {engine_path}.")
 
 @pytest.fixture(scope="session")
 def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
     """o3de CLI creates a project"""
     o3de_path = context.install_root / 'scripts' / 'o3de.bat'
-    print(f"Begin running create project test using {o3de_path}")
     result = context.run([str(o3de_path),'create-project','--project-path', str(context.project_path)])
     assert result.returncode == 0, f"o3de.bat failed to create a project with exit code {result.returncode}"
 
     project_json_path = Path(context.project_path) / 'project.json'
     assert project_json_path.is_file(), f"No project.json found at {project_json_path}"
-    print(f"End running create project test for project with json at {project_json_path}")
 
 @pytest.fixture(scope="session")
 def test_compile_project_fixture(test_create_project_fixture, context):
@@ -180,7 +172,8 @@ def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
     
     assert not exception_found, "Exception found in Game.log"
 
-def test_uninstall(test_run_launcher_fixture, test_run_editor_fixture, context):
+@pytest.fixture(scope="session")
+def test_uninstall_fixture(test_run_launcher_fixture, test_run_editor_fixture, context):
     """Uninstall succeeds and unregisters the engine"""
     assert context.installer_path.is_file(), f"Invalid installer path {context.installer_path}"
 
@@ -205,31 +198,6 @@ def test_uninstall(test_run_launcher_fixture, test_run_editor_fixture, context):
     assert engine_name not in manifest_json_data['engines_path'], f"{engine_path} still exists in manifest engines_path"
 
 
-# Convenience functions for running test fixtures from VS Code Test Explorer
-#@pytest.mark.skip(reason="For Test Explorer use only")
-def test_installer(test_installer_fixture):
-    assert True
-
-@pytest.mark.skip(reason="For Test Explorer use only")
-def test_o3de_registers_engine(test_o3de_registers_engine_fixture):
-    assert True
-
-@pytest.mark.skip(reason="For Test Explorer use only")
-def test_create_project(test_create_project_fixture):
-    assert True
-
-@pytest.mark.skip(reason="For Test Explorer use only")
-def test_compile_project(test_compile_project_fixture):
-    assert True
-
-@pytest.mark.skip(reason="For Test Explorer use only")
-def test_run_asset_processor_batch(test_run_asset_processor_batch_fixture):
-    assert True
-
-@pytest.mark.skip(reason="For Test Explorer use only")
-def test_run_editor(test_run_editor_fixture):
-    assert True
-
-@pytest.mark.skip(reason="For Test Explorer use only")
-def test_run_launcher(test_run_launcher_fixture):
+def test_installer(test_uninstall_fixture):
+    """ Change the test_uninstall_fixture param to the specific fixture you want to test during development. """
     assert True
