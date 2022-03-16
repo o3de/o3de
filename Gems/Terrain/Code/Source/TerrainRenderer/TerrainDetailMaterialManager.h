@@ -117,6 +117,7 @@ namespace Terrain
             float m_heightOffset{ 0.0f };
 
             float m_heightBlendFactor{ 0.5f };
+            float m_heightWeightClampFactor{ 0.1f };
 
             // Flags
             DetailTextureFlags m_flags{ 0 };
@@ -134,7 +135,6 @@ namespace Terrain
             // 16 byte aligned
             uint16_t m_padding1{ 0 };
             uint32_t m_padding2{ 0 };
-            uint32_t m_padding3{ 0 };
         };
         static_assert(sizeof(DetailMaterialShaderData) % 16 == 0, "DetailMaterialShaderData must be 16 byte aligned.");
 

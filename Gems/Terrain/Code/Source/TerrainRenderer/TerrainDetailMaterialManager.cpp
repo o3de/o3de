@@ -61,6 +61,7 @@ namespace Terrain
         static const char* const TerrainHeightFactor("terrain.heightScale");
         static const char* const TerrainHeightOffset("terrain.heightOffset");
         static const char* const HeightBlendFactor("terrain.blendFactor");
+        static const char* const HeightWeightClampFactor("terrain.weightClampFactor");
         static const char* const UvCenter("uv.center");
         static const char* const UvScale("uv.scale");
         static const char* const UvTileU("uv.tileU");
@@ -770,6 +771,8 @@ namespace Terrain
             shaderData.m_heightOffset *= 10.0f;
         }
         applyProperty(HeightBlendFactor, shaderData.m_heightBlendFactor);
+        applyProperty(HeightWeightClampFactor, shaderData.m_heightWeightClampFactor);
+        shaderData.m_heightWeightClampFactor = 1.0f / AZStd::GetMax(0.0001f, shaderData.m_heightWeightClampFactor);
 
         AZ::Render::UvTransformDescriptor transformDescriptor;
         applyProperty(UvCenter, transformDescriptor.m_center);
