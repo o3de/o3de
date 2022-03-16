@@ -32,7 +32,7 @@ class SessionContext:
         self.log_file = request.config.getoption("--log-file")
         self.temp_file = NamedTemporaryFile(mode='w+t', delete=False)
 
-        print(f"Running in environment {os.environ}")
+        #print(f"Running in environment {os.environ}")
 
         # download the installer if necessary
         self.installer_uri = request.config.getoption("--installer-uri")
@@ -97,7 +97,9 @@ class SessionContext:
         shell_command = f"cmd /c \"{list2cmdline(command)}\""
         self.temp_file.write(f"\n{shell_command}\n")
         self.temp_file.flush()
-        return run(shell_command, shell=True, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True)
+        windows_home_path = str(PurePath(self.home_path))
+        shell_env = dict(os.environ, HOME=windows_home_path, HOMEPATH=windows_home_path)
+        return run(shell_command, shell=True, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True, env=shell_env)
 
     def cleanup(self):
         if self.project_path.is_dir():
