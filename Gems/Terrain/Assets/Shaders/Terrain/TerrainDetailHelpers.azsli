@@ -129,13 +129,18 @@ uint GetDetailHeightIndex(TerrainSrg::DetailMaterialData materialData)
 
 // Detail material value getters
 
+float4 SampleTexture(uint index, in MaterialContext materialContext)
+{
+    return TerrainSrg::m_textures[index].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy);
+}
+
 float3 GetDetailColor(in MaterialContext materialContext, in float3 macroColor)
 {
     TerrainSrg::DetailMaterialData materialData = TerrainSrg::m_detailMaterialData[materialContext.m_materialId];
     float3 color = materialData.m_baseColor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureBaseColor) > 0)
     {
-        color = TerrainSrg::m_textures[GetDetailColorIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy).rgb;
+        color = SampleTexture(GetDetailColorIndex(materialData), materialContext).rgb;
         color = TransformColor(color, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         color = sqrt(color); // Put in a more perceptual space for blending. This will be undone later.
     }
@@ -169,7 +174,7 @@ float3 GetDetailNormal(in MaterialContext materialContext)
     float2 normal = float2(0.0, 0.0);
     if ((materialData.m_flags & DetailTextureFlags::UseTextureNormal) > 0)
     {
-        normal = TerrainSrg::m_textures[GetDetailNormalIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy).rg;
+        normal = SampleTexture(GetDetailNormalIndex(materialData), materialContext).rg;
     }
     
     // X and Y are inverted here to be consistent with SampleNormalXY in NormalInput.azsli.
@@ -190,7 +195,7 @@ float GetDetailRoughness(in MaterialContext materialContext)
     float roughness = materialData.m_roughnessScale;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureRoughness) > 0)
     {
-        roughness = TerrainSrg::m_textures[GetDetailRoughnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy).r;
+        roughness = SampleTexture(GetDetailRoughnessIndex(materialData), materialContext).r;
         roughness = materialData.m_roughnessBias + roughness * materialData.m_roughnessScale;
     }
     return roughness;
@@ -202,7 +207,7 @@ float GetDetailMetalness(in MaterialContext materialContext)
     float metalness = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureMetallic) > 0)
     {
-        metalness = TerrainSrg::m_textures[GetDetailMetalnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy).r;
+        metalness = SampleTexture(GetDetailMetalnessIndex(materialData), materialContext).r;
     }
     return metalness * materialData.m_metalFactor;
 }
@@ -213,7 +218,7 @@ float GetDetailSpecularF0(in MaterialContext materialContext)
     float specularF0 = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureSpecularF0) > 0)
     {
-        specularF0 = TerrainSrg::m_textures[GetDetailSpecularF0Index(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy).r;
+        specularF0 = SampleTexture(GetDetailSpecularF0Index(materialData), materialContext).r;
     }
     return specularF0 * materialData.m_specularF0Factor;
 }
@@ -224,7 +229,7 @@ float GetDetailOcclusion(in MaterialContext materialContext)
     float occlusion = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureOcclusion) > 0)
     {
-        occlusion = TerrainSrg::m_textures[GetDetailOcclusionIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy).r;
+        occlusion = SampleTexture(GetDetailOcclusionIndex(materialData), materialContext).r;
     }
     return occlusion * materialData.m_occlusionFactor;
 }
@@ -235,7 +240,7 @@ float GetDetailHeight(in MaterialContext materialContext)
     float height = materialData.m_heightFactor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureHeight) > 0)
     {
-        height = TerrainSrg::m_textures[GetDetailHeightIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy).r;
+        height = SampleTexture(GetDetailHeightIndex(materialData), materialContext).r;
         height = materialData.m_heightOffset + height * materialData.m_heightFactor;
     }
     return height;
