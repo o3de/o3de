@@ -418,7 +418,7 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
             general.idle_wait_frames(1)
             # check some value to confirm preset loaded
             test_preset = (f"Preset {preset} loaded expected value",
-                      f"P1: Preset {preset} failed to load values as expected")
+                           f"P1: Preset {preset} failed to load values as expected")
             Report.result(test_preset, Math_IsClose(
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Cinema Limit (white)')),
