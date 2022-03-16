@@ -69,6 +69,6 @@ PSOutput MainPS(VSOutput IN)
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outlineMode);
 
-    //OUT.m_color.rgb = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    OUT.m_color.rgb = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
     return OUT;
 }

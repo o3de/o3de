@@ -28,11 +28,11 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    //! The non-linear depth buffer data for fragments in the color buffer.
-    Texture2D<float> m_depthLinear;
+    //! The existing depth buffer data for fragments in the color buffer.
+    Texture2D<float> m_existingDepth;
 
-    //! Dimensions of linear depth texture (xy is width and height, zw is 1/width and 1/height).
-    float4 m_depthLinearDimensions;
+    //! Dimensions of depth buffer texture (xy is width and height, zw is 1/width and 1/height).
+    float4 m_existingDepthDimensions;
     
     Sampler LinearSampler
     {
@@ -63,40 +63,46 @@ struct VSOutput
 
 VSOutput MainVS(VSInput IN)
 {
-    VSOutput OUT;    
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    VSOutput OUT;
 
+    const float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
     OUT.m_position.z *= 1.01;
 
     // Fragment depth
-    float3 ndc = float3(OUT.m_position.x / OUT.m_position.w, OUT.m_position. y/ OUT.m_position.w, OUT.m_position.z / OUT.m_position.w);
-    OUT.m_depth = ndc.z;
+    OUT.m_depth = OUT.m_position.z / OUT.m_position.w;
     return OUT;
 }
 
 struct PixelOutput
 {
-    float4 m_color : SV_Target0;
+    float4 m_mask : SV_Target0;
 };
+
+//! Returns the linearized depth of the specified non-linear depth value.
+float LinearizeDepth(const float depth)
+{
+    return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * depth - ViewSrg::GetFarZ())));
+}
 
 PixelOutput MainPS(VSOutput IN)
 {
     PixelOutput OUT;
-    // Get Linear Depth
-    float2 screenUV = IN.m_position.xy * PassSrg::m_depthLinearDimensions.zw;
-    float existingLinearDepth = PassSrg::m_depthLinear.Sample(PassSrg::LinearSampler, screenUV).r;
-    float newLinearDepth = IN.m_depth;
 
-    existingLinearDepth = abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * existingLinearDepth - ViewSrg::GetFarZ()))); 
-    newLinearDepth = abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * newLinearDepth - ViewSrg::GetFarZ()))); 
+    const float2 screenUV = IN.m_position.xy * PassSrg::m_existingDepthDimensions.zw;
+    const float existingLinearDepth = LinearizeDepth(PassSrg::m_existingDepth.Sample(PassSrg::LinearSampler, screenUV).r);
+    const float linearDepth = LinearizeDepth(IN.m_depth);
 
-    OUT.m_color.g = 1.;
-    OUT.m_color.r = 0.0;
+    // Do not write out any visible fragments to the red channel unless the depth test below passes
+    OUT.m_mask.r = 0.0;
 
-    if((newLinearDepth - existingLinearDepth) <= 0.001)
+    // Write out all visible and occluded fragments to the green channel
+    OUT.m_mask.g = 1.;
+
+    if((linearDepth - existingLinearDepth) <= 0.0001)
     {
-        OUT.m_color.r = 1.0;
+        // Depth test passed, update the mask with this closest value
+        OUT.m_mask.r = 1.0;
     }
 
     return OUT;

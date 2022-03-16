@@ -8,17 +8,13 @@
             "Name": "EditorModeMaskTemplate",
             "PassClass": "RasterPass",
             "Slots": [
-                {
-                    "Name": "InputDepthLinear",
-                    "SlotType": "Input",
-                    "ShaderInputName": "m_depthLinear",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ShaderImageDimensionsConstant": "m_depthLinearDimensions"
-                },
+                // Depth buffer for existing scene contents to be used for manual depth testing in the fragment shader
                 {
                     "Name": "InputDepth",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ShaderInputName": "m_existingDepth",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_existingDepthDimensions"
                 },
                 {
                     "Name": "OutputEntityMask",
@@ -48,7 +44,8 @@
                         }
                     },
                     "ImageDescriptor": {
-                        // Use R8G8B8A8 format for now, actual format will be determined in LYN-9878 
+                        // Red channel holds visible entities of interest fragments
+                        // Blue channel holds visible and occluded entities of interest
                         "Format": "R8G8_UNORM",
                         "SharedQueueMask": "Graphics"
                     }
@@ -60,13 +57,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "OutputEntityMaskAttachment"
-                    }
-                },
-                {
-                    "LocalSlot": "InputDepthLinear",
-                    "AttachmentRef": {
-                        "Pass": "PipelineGlobal",
-                        "Attachment": "Depth"
                     }
                 }
             ],
