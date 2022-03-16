@@ -27,10 +27,11 @@ namespace Terrain
         if (serialize)
         {
             serialize->Class<DetailMaterialConfiguration>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("UseHeightBasedBlending", &DetailMaterialConfiguration::m_useHeightBasedBlending)
                 ->Field("RenderDistance", &DetailMaterialConfiguration::m_renderDistance)
-                ->Field("MaterialFadeDistance", &DetailMaterialConfiguration::m_fadeDistance)
+                ->Field("FadeDistance", &DetailMaterialConfiguration::m_fadeDistance)
+                ->Field("Scale", &DetailMaterialConfiguration::m_scale)
                 ;
             serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
                 ->Version(1)
@@ -49,6 +50,11 @@ namespace Terrain
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_fadeDistance, "Detail material fade distance", "The distance over which the detail material will fade out into the macro material.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_scale, "Detail material scale", "The scale at which all detail materails are rendered at.")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.1f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                     ;
 
                 editContext->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")

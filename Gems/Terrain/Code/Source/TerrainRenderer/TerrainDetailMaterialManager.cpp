@@ -296,7 +296,7 @@ namespace Terrain
         AZ_Assert(detailTextureFadeDistanceIndex.IsValid(), "Terrain Feature Processor unable to find settings.detailFadeDistance in the terrain material.");
         AZ_Assert(detailTextureFadeLengthIndex.IsValid(), "Terrain Feature Processor unable to find settings.detailFadeLength in the terrain material.");
 
-        m_terrainMaterial->SetPropertyValue(detailTextureMultiplierIndex, 1.0f);
+        m_terrainMaterial->SetPropertyValue(detailTextureMultiplierIndex, m_config.m_scale);
         m_terrainMaterial->SetPropertyValue(detailTextureFadeDistanceIndex, AZStd::GetMax<float>(0.0f, m_config.m_renderDistance - m_config.m_fadeDistance));
         m_terrainMaterial->SetPropertyValue(detailTextureFadeLengthIndex, m_config.m_fadeDistance);
     }

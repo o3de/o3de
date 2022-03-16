@@ -37,6 +37,7 @@ namespace Terrain
         bool m_useHeightBasedBlending = false;
         float m_renderDistance = 512.0f;
         float m_fadeDistance = 64.0f;
+        float m_scale = 1.0f;
     };
 
     class TerrainDetailMaterialManager
