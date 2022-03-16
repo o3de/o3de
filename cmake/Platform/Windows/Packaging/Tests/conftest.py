@@ -108,8 +108,10 @@ class SessionContext:
         if self.project_path.is_dir():
             o3de_path = self.install_root / 'scripts' / 'o3de.bat'
             if o3de_path.is_file():
+                print(f"Unregistering {self.project_path}")
                 self.run([str(o3de_path),'register','--project-path', str(self.project_path), '--remove'])
 
+            print(f"Removing {self.project_path}")
             shutil.rmtree(self.project_path, ignore_errors=True)
 
         self.temp_file.close()
@@ -120,6 +122,7 @@ class SessionContext:
             shutil.copy(self.temp_file.name, Path(self.log_file).resolve())
 
         # delete temporary directory and files
+        print(f"Removing {self.temp_dir}")
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
 @pytest.fixture(scope="session")
