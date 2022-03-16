@@ -36,5 +36,3 @@ AZ_GFX_BOOL_PARAM(EnableDetailNormalMaps,   m_enableDetailNormalMaps,   true)
 AZ_GFX_VEC3_PARAM(MaterialBaseColorOverride, m_materialBaseColorOverride, Vector3(0.5, 0.5, 0.5))
 AZ_GFX_FLOAT_PARAM(MaterialRoughnessOverride, m_materialRoughnessOverride, 0.5f)
 AZ_GFX_FLOAT_PARAM(MaterialMetallicOverride, m_materialMetallicOverride, 0.0f)
-
-

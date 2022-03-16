@@ -9,32 +9,30 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Debug/RenderDebugComponent.h>
 
-namespace AZ {
-    namespace Render {
+namespace AZ::Render
+{
+    RenderDebugComponent::RenderDebugComponent(const RenderDebugComponentConfig& config)
+        : BaseClass(config)
+    {
+    }
 
-        RenderDebugComponent::RenderDebugComponent(const RenderDebugComponentConfig& config)
-            : BaseClass(config)
+    void RenderDebugComponent::Reflect(AZ::ReflectContext* context)
+    {
+        BaseClass::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext->Class<RenderDebugComponent, BaseClass>();
         }
 
-        void RenderDebugComponent::Reflect(AZ::ReflectContext* context)
+        if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
         {
-            BaseClass::Reflect(context);
+            behaviorContext->Class<RenderDebugComponent>()->RequestBus("RenderDebugRequestBus");
 
-            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<RenderDebugComponent, BaseClass>();
-            }
-
-            if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
-            {
-                behaviorContext->Class<RenderDebugComponent>()->RequestBus("RenderDebugRequestBus");
-
-                behaviorContext->ConstantProperty("RenderDebugComponentTypeId", BehaviorConstant(Uuid(RenderDebug::RenderDebugComponentTypeId)))
-                    ->Attribute(AZ::Script::Attributes::Module, "render")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
-            }
+            behaviorContext->ConstantProperty("RenderDebugComponentTypeId", BehaviorConstant(Uuid(RenderDebug::RenderDebugComponentTypeId)))
+                ->Attribute(AZ::Script::Attributes::Module, "render")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
         }
+    }
 
-    } // namespace Render
-} // namespace AZ
+}

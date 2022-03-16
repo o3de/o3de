@@ -14,26 +14,24 @@
 #include <Atom/Feature/Debug/RenderDebugConstants.h>
 #include <Debug/RenderDebugComponentController.h>
 
-namespace AZ {
-    namespace Render {
+namespace AZ::Render
+{
+    namespace RenderDebug
+    {
+        static constexpr const char* const RenderDebugComponentTypeId = "{98A72F68-3DA3-451A-BC79-707370EE4AC0}";
+    }
 
-        namespace RenderDebug
-        {
-            static constexpr const char* const RenderDebugComponentTypeId = "{98A72F68-3DA3-451A-BC79-707370EE4AC0}";
-        }
+    class RenderDebugComponent final
+        : public AzFramework::Components::ComponentAdapter<RenderDebugComponentController, RenderDebugComponentConfig>
+    {
+    public:
+        using BaseClass = AzFramework::Components::ComponentAdapter<RenderDebugComponentController, RenderDebugComponentConfig>;
+        AZ_COMPONENT(AZ::Render::RenderDebugComponent, RenderDebug::RenderDebugComponentTypeId , BaseClass);
 
-        class RenderDebugComponent final
-            : public AzFramework::Components::ComponentAdapter<RenderDebugComponentController, RenderDebugComponentConfig>
-        {
-        public:
-            using BaseClass = AzFramework::Components::ComponentAdapter<RenderDebugComponentController, RenderDebugComponentConfig>;
-            AZ_COMPONENT(AZ::Render::RenderDebugComponent, RenderDebug::RenderDebugComponentTypeId , BaseClass);
+        RenderDebugComponent() = default;
+        RenderDebugComponent(const RenderDebugComponentConfig& config);
 
-            RenderDebugComponent() = default;
-            RenderDebugComponent(const RenderDebugComponentConfig& config);
+        static void Reflect(AZ::ReflectContext* context);
+    };
 
-            static void Reflect(AZ::ReflectContext* context);
-        };
-
-    } // namespace Render
-} // namespace AZ
+}

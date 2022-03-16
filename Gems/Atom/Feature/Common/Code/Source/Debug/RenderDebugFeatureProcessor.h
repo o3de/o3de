@@ -8,17 +8,13 @@
 
 #pragma once
 
-#include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/Feature/Debug/RenderDebugFeatureProcessorInterface.h>
-#include <Atom/RPI.Reflect/Image/ImageAsset.h>
-#include "Atom/RPI.Public/Image/StreamingImage.h"
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <AtomCore/Instance/Instance.h>
+#include <Debug/RenderDebugSettings.h>
 
 namespace AZ::Render
 {
-    class RenderDebugSettings;
-
     class RenderDebugFeatureProcessor final
         : public AZ::Render::RenderDebugFeatureProcessorInterface
     {
@@ -42,11 +38,8 @@ namespace AZ::Render
         void Render(const RPI::FeatureProcessor::RenderPacket& packet) override;
 
     private:
-
-        RenderDebugFeatureProcessor(const RenderDebugFeatureProcessor&) = delete;
-
         static constexpr const char* FeatureProcessorName = "RenderDebugFeatureProcessor";
-
+        RenderDebugFeatureProcessor(const RenderDebugFeatureProcessor&) = delete;
 
         AZStd::unique_ptr<RenderDebugSettings> m_settings = nullptr;
 
@@ -71,4 +64,4 @@ namespace AZ::Render
         u32 m_debugComponentCount = 0;
     };
 
-} // namespace AZ::Render
+}

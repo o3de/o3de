@@ -12,30 +12,28 @@
 #include <Atom/Feature/Debug/RenderDebugConstants.h>
 #include <Debug/RenderDebugComponent.h>
 
-namespace AZ {
-    namespace Render {
+namespace AZ::Render
+{
+    namespace RenderDebug
+    {
+        static constexpr const char* const RenderDebugEditorComponentTypeId = "{235031F8-2AAD-442D-AB4D-F9B5B8337DCD}";
+    }
 
-        namespace RenderDebug
-        {
-            static constexpr const char* const RenderDebugEditorComponentTypeId = "{235031F8-2AAD-442D-AB4D-F9B5B8337DCD}";
-        }
+    class RenderDebugEditorComponent final
+        : public AzToolsFramework::Components::EditorComponentAdapter<RenderDebugComponentController, RenderDebugComponent, RenderDebugComponentConfig>
+    {
+    public:
 
-        class RenderDebugEditorComponent final
-            : public AzToolsFramework::Components::EditorComponentAdapter<RenderDebugComponentController, RenderDebugComponent, RenderDebugComponentConfig>
-        {
-        public:
+        using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<RenderDebugComponentController, RenderDebugComponent, RenderDebugComponentConfig>;
+        AZ_EDITOR_COMPONENT(AZ::Render::RenderDebugEditorComponent, RenderDebug::RenderDebugEditorComponentTypeId, BaseClass);
 
-            using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<RenderDebugComponentController, RenderDebugComponent, RenderDebugComponentConfig>;
-            AZ_EDITOR_COMPONENT(AZ::Render::RenderDebugEditorComponent, RenderDebug::RenderDebugEditorComponentTypeId, BaseClass);
+        static void Reflect(AZ::ReflectContext* context);
 
-            static void Reflect(AZ::ReflectContext* context);
+        RenderDebugEditorComponent() = default;
+        RenderDebugEditorComponent(const RenderDebugComponentConfig& config);
 
-            RenderDebugEditorComponent() = default;
-            RenderDebugEditorComponent(const RenderDebugComponentConfig& config);
+        //! EditorRenderComponentAdapter overrides...
+        AZ::u32 OnConfigurationChanged() override;
+    };
 
-            //! EditorRenderComponentAdapter overrides...
-            AZ::u32 OnConfigurationChanged() override;
-        };
-
-    } // namespace Render
-} // namespace AZ
+}

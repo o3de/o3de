@@ -15,42 +15,41 @@
 #include <Atom/Feature/Debug/RenderDebugSettingsInterface.h>
 #include <Atom/Feature/Debug/RenderDebugFeatureProcessorInterface.h>
 
-namespace AZ {
-    namespace Render {
+namespace AZ::Render
+{
+    class RenderDebugComponentController final
+        : public RenderDebugRequestBus::Handler
+    {
+    public:
+        friend class RenderDebugEditorComponent;
 
-        class RenderDebugComponentController final
-            : public RenderDebugRequestBus::Handler
-        {
-        public:
-            friend class RenderDebugEditorComponent;
+        AZ_TYPE_INFO(AZ::Render::RenderDebugComponentController, "{365E4B90-7145-4803-B990-B6D3E0C4B80B}");
+        static void Reflect(AZ::ReflectContext* context);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-            AZ_TYPE_INFO(AZ::Render::RenderDebugComponentController, "{365E4B90-7145-4803-B990-B6D3E0C4B80B}");
-            static void Reflect(AZ::ReflectContext* context);
-            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        RenderDebugComponentController() = default;
+        RenderDebugComponentController(const RenderDebugComponentConfig& config);
 
-            RenderDebugComponentController() = default;
-            RenderDebugComponentController(const RenderDebugComponentConfig& config);
+        void Activate(EntityId entityId);
+        void Deactivate();
+        void SetConfiguration(const RenderDebugComponentConfig& config);
+        const RenderDebugComponentConfig& GetConfiguration() const;
 
-            void Activate(EntityId entityId);
-            void Deactivate();
-            void SetConfiguration(const RenderDebugComponentConfig& config);
-            const RenderDebugComponentConfig& GetConfiguration() const;
-
-            // Auto-gen function override declarations (functions definitions in .cpp)...
+        // Auto-gen function override declarations (functions definitions in .cpp)...
 #include <Atom/Feature/ParamMacros/StartParamFunctionsOverride.inl>
 #include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-        private:
-            AZ_DISABLE_COPY(RenderDebugComponentController);
+    private:
+        AZ_DISABLE_COPY(RenderDebugComponentController);
 
-            void OnConfigChanged();
+        void OnConfigChanged();
 
-            RenderDebugSettingsInterface* m_renderDebugSettingsInterface = nullptr;
-            RenderDebugComponentConfig m_configuration;
-            EntityId m_entityId;
-        };
-    }
+        RenderDebugSettingsInterface* m_renderDebugSettingsInterface = nullptr;
+        RenderDebugComponentConfig m_configuration;
+        EntityId m_entityId;
+    };
+
 }

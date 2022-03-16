@@ -11,26 +11,25 @@
 #include <AzCore/Component/Component.h>
 #include <Atom/Feature/Debug/RenderDebugConstants.h>
 
-namespace AZ {
-    namespace Render {
+namespace AZ::Render
+{
+    class RenderDebugRequests
+        : public ComponentBus
+    {
+    public:
+        AZ_RTTI(AZ::Render::RenderDebugRequests, "{A5038F75-F397-42E7-B3B5-8EF7226EE1A4}");
 
-        class RenderDebugRequests
-            : public ComponentBus
-        {
-        public:
-            AZ_RTTI(AZ::Render::RenderDebugRequests, "{A5038F75-F397-42E7-B3B5-8EF7226EE1A4}");
+        /// Overrides the default AZ::EBusTraits handler policy to allow one listener only.
+        static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
+        virtual ~RenderDebugRequests() {}
 
-            /// Overrides the default AZ::EBusTraits handler policy to allow one listener only.
-            static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
-            virtual ~RenderDebugRequests() {}
-
-            // Auto-gen virtual getters/setters...
+        // Auto-gen virtual getters/setters...
 #include <Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl>
 #include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-        };
+    };
 
-        typedef AZ::EBus<RenderDebugRequests> RenderDebugRequestBus;
-    }
+    typedef AZ::EBus<RenderDebugRequests> RenderDebugRequestBus;
+
 }
