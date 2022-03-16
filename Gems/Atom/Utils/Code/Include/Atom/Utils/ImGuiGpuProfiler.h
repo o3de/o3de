@@ -326,10 +326,10 @@ namespace AZ
             bool m_showDeviceTreemap = false;
 
             AZStd::string m_memoryCapturePath;
-            AZStd::string m_loadedCapture;
+            AZStd::string m_loadedCapturePath;
+            AZStd::string m_captureMessage;
             char m_captureInput[AZ::IO::MaxPathLength] = { '\0' };
             size_t m_captureSelection = 0;
-            bool m_showingLoadedCapture = false;
         };
 
         class ImGuiGpuProfiler

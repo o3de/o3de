@@ -23,7 +23,6 @@
 #include <AzCore/std/sort.h>
 
 #include <inttypes.h>
-#include <sstream>
 
 namespace AZ
 {
@@ -1398,7 +1397,8 @@ namespace AZ
             {
                 if (ImGui::Button("Capture"))
                 {
-                    m_showingLoadedCapture = false;
+                    m_captureMessage.clear();
+                    m_loadedCapturePath.clear();
                     PerformCapture();
                 }
 
@@ -1408,6 +1408,7 @@ namespace AZ
                 {
                     if (m_savedPools.empty())
                     {
+                        m_captureMessage.clear();
                         PerformCapture();
                     }
 
@@ -1436,7 +1437,6 @@ namespace AZ
                         m_memoryCapturePath.c_str(), "*.csv",
                         [&captures](const char* path)
                         {
-                            
                             captures.emplace_back(path);
                             return true;
                         });
@@ -1514,9 +1514,14 @@ namespace AZ
                     ImGui::EndPopup();
                 }
 
-                if (m_showingLoadedCapture)
+                if (!m_loadedCapturePath.empty())
                 {
-                    ImGui::Text("Viewing data loaded from %s", m_loadedCapture.c_str());
+                    ImGui::Text("Viewing data loaded from %s", m_loadedCapturePath.c_str());
+                }
+
+                if (!m_captureMessage.empty())
+                {
+                    ImGui::Text(m_captureMessage.c_str());
                 }
 
                 if (m_hostTreemap)
@@ -1678,6 +1683,7 @@ namespace AZ
             "Pool Name, Memory Type (0 == Host : 1 == Device), Allocation Name, Allocation Type (0 == Buffer : "
             "1 == Texture), Byte Size, Flags\n";
         static constexpr const char* MemoryCSVRowFormat = "%s, %i, %s, %i, %" PRIu64 ", %" PRIu32 "\n";
+        static constexpr size_t MemoryCSVFieldCount = 6;
 
         void ImGuiGpuMemoryView::SaveToCSV()
         {
@@ -1697,7 +1703,8 @@ namespace AZ
             AZ::IO::SystemFile fileOut;
             if (!fileOut.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
             {
-                AZ_Error("ImGuiGpuMemoryView", false, "Failed to open file %s for writing", filename.c_str());
+                m_captureMessage = AZStd::string::format("Failed to open file %s for writing", filename.c_str());
+                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                 return;
             }
 
@@ -1708,7 +1715,7 @@ namespace AZ
             // Iterate through each resource pool and save individual allocations as separate rows in the CSV file
             for (const auto& pool : m_savedPools)
             {
-                int memoryType;
+                int memoryType = 0;
                 if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_residentInBytes > 0)
                 {
                     memoryType = 0;
@@ -1738,50 +1745,56 @@ namespace AZ
                     fileOut.Write(line.data(), line.size());
                 }
             }
+
+            m_captureMessage = AZStd::string::format("Wrote memory capture to %s", filename.c_str());
         }
 
+
+        // C4702: Unreachable code
+        // MSVC 2022 believes that `return true;` below is unreacahable, which is not true.
+#pragma warning(push)
+#pragma warning(disable: 4702)
         template <typename T>
-        bool parseCSVField(std::istringstream& stream, std::string& field, T& out, char delimiter = ',')
+        bool parseCSVField(const AZStd::string& field, T& out)
         {
-            if (std::getline(stream, field, delimiter))
+            if constexpr (AZStd::is_same_v<T, int>)
             {
-                if constexpr (AZStd::is_same_v<T, int>)
-                {
-                    if (azsscanf(field.c_str(), "%i", &out) != 1)
-                    {
-                        return false;
-                    }
-                }
-                else if constexpr (AZStd::is_same_v<T, uint32_t>)
-                {
-                    if (azsscanf(field.c_str(), "%" PRIu32, &out) != 1)
-                    {
-                        return false;
-                    }
-                }
-                else if constexpr (AZStd::is_same_v<T, uint64_t>)
-                {
-                    if (azsscanf(field.c_str(), "%" PRIu64, &out) != 1)
-                    {
-                        return false;
-                    }
-                }
-                else if constexpr (AZStd::is_same_v<T, AZ::Name>)
-                {
-                    out = AZ::Name{ field.c_str() };
-                    return true;
-                }
-                else
+                if (azsscanf(field.c_str(), "%i", &out) != 1)
                 {
                     return false;
                 }
+            }
+            else if constexpr (AZStd::is_same_v<T, uint32_t>)
+            {
+                if (azsscanf(field.c_str(), "%" PRIu32, &out) != 1)
+                {
+                    return false;
+                }
+            }
+            else if constexpr (AZStd::is_same_v<T, uint64_t>)
+            {
+                if (azsscanf(field.c_str(), "%" PRIu64, &out) != 1)
+                {
+                    return false;
+                }
+            }
+            else if constexpr (AZStd::is_same_v<T, AZ::Name>)
+            {
+                out = AZ::Name{ field.c_str() };
                 return true;
             }
-            return false;
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
+#pragma warning(pop)
 
         void ImGuiGpuMemoryView::LoadFromCSV(const AZStd::string& fileName)
         {
+            m_loadedCapturePath.clear();
             AZ::IO::SystemFile fileIn;
 
             if (!fileIn.Open(fileName.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
@@ -1789,30 +1802,30 @@ namespace AZ
                 return;
             }
 
-            std::string data;
-            data.resize(fileIn.Length());
+            AZStd::string data;
+            data.resize_no_construct(fileIn.Length());
 
             fileIn.Read(fileIn.Length(), data.data());
 
-            std::istringstream lines{ data.c_str() };
+            AZStd::vector<AZStd::string> lines;
+            AZ::StringFunc::Tokenize(data, lines, "\n");
 
-            std::string line;
-            if (!std::getline(lines, line))
+            if (lines.empty())
             {
-                AZ_Error("ImGuiGpuMemoryView", false, "Attempted to load memory data from %s but file was empty", fileName.c_str());
+                m_captureMessage = AZStd::string::format("Attempted to load memory data from %s but file was empty", fileName.c_str());
+                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                 return;
             }
 
-            if (line + '\n' != MemoryCSVHeader)
+            if (lines[0] + '\n' != MemoryCSVHeader)
             {
-                AZ_Error(
-                    "ImGuiGpuMemoryView", false, "Attempted to load memory data from %s but the CSV header (%s) did not match",
-                    fileName.c_str(), MemoryCSVHeader);
+                m_captureMessage = AZStd::string::format(
+                    "Attempted to load memory data from %s but the CSV header (%s) did not match", fileName.c_str(), MemoryCSVHeader);
+                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                 return;
             }
 
-            m_showingLoadedCapture = true;
-            m_loadedCapture = fileName;
+            m_loadedCapturePath = fileName;
             m_savedHeaps.clear();
             m_savedHeaps.resize(2);
             m_savedHeaps[0].m_name = AZ::Name{ "Host Heap" };
@@ -1823,9 +1836,13 @@ namespace AZ
             m_savedPools.clear();
             AZStd::unordered_map<AZ::Name, AZ::RHI::MemoryStatistics::Pool> pools;
 
-            while (std::getline(lines, line))
+            AZStd::vector<AZStd::string> fields;
+            fields.reserve(MemoryCSVFieldCount);
+
+            for (size_t i = 1; i != lines.size(); ++i)
             {
-                std::istringstream lineStream{ line };
+                fields.clear();
+                const AZStd::string& line = lines[i];
                 AZ::Name poolName;
                 int memoryType;
                 AZ::Name resourceName;
@@ -1833,11 +1850,11 @@ namespace AZ
                 uint64_t byteSize;
                 uint32_t bindFlags;
 
-                std::string field;
+                AZ::StringFunc::Tokenize(line, fields, ",\n", true, true);
 
-                if (parseCSVField(lineStream, field, poolName) && parseCSVField(lineStream, field, memoryType) &&
-                    parseCSVField(lineStream, field, resourceName) && parseCSVField(lineStream, field, resourceType) &&
-                    parseCSVField(lineStream, field, byteSize) && parseCSVField(lineStream, field, bindFlags, '\n'))
+                if (fields.size() == MemoryCSVFieldCount && parseCSVField(fields[0], poolName) && parseCSVField(fields[1], memoryType) &&
+                    parseCSVField(fields[2], resourceName) && parseCSVField(fields[3], resourceType) &&
+                    parseCSVField(fields[4], byteSize) && parseCSVField(fields[5], bindFlags))
                 {
                     RHI::MemoryStatistics::Pool* pool;
 
@@ -1855,11 +1872,11 @@ namespace AZ
                     if (memoryType != 0 && memoryType != 1)
                     {
                         // Unknown memory type
-                        AZ_Error(
-                            "ImGuiGpuMemoryView", false,
+                        m_captureMessage = AZStd::string::format(
                             "Attempted to load memory data from %s but an unknown memory type was detected (indicating invalid file "
                             "format)",
                             fileName.c_str());
+                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                         return;
                     }
 
@@ -1890,11 +1907,11 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Error(
-                        "ImGuiGpuMemoryView", false,
+                    m_captureMessage = AZStd::string::format(
                         "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
                         "format)",
                         fileName.c_str());
+                    AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                     return;
                 }
             }
