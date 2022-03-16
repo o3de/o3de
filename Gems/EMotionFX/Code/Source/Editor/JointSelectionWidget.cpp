@@ -126,6 +126,14 @@ namespace EMotionFX
 
     void JointSelectionWidget::Reinit()
     {
+        // This function can be called by qt after the skeleton model
+        // calls Resets in its destructor. By the time this Reinit is
+        // called the skeleton model unique pointer has been destroyed.
+        if (!m_skeletonModel)
+        {
+            return;
+        }
+        
         ActorInstance* actorInstance = m_skeletonModel->GetActorInstance();
         if (actorInstance)
         {
