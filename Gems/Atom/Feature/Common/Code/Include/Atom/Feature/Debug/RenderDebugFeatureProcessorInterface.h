@@ -14,7 +14,8 @@
 namespace AZ {
     namespace Render {
 
-        //! TODO
+        //! Interface for the RenderDebugFeatureProcessor, which handles debug render settings for the scene, such as
+        //! displaying normals to screen or showing only diffuse/specular lighting, etc.
         class RenderDebugFeatureProcessorInterface
             : public RPI::FeatureProcessor
         {
