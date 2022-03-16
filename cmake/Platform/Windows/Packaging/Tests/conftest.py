@@ -59,6 +59,11 @@ class SessionContext:
             # strip the leading slash from the file URI 
             self.installer_path = Path(parsed_uri.path.lstrip('/')).resolve()
 
+        #home_result = run('cmd /c "echo $HOME"', shell=True, text=True, capture_output=True)
+        #self.home_path = Path(home_result.stdout.strip())
+        self.home_path = Path.home()
+        print(f"User home folder is {self.home_path}")
+
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
         self.project_path = Path(request.config.getoption("--project-path")).resolve()
         self.engine_bin_path = self.install_root / 'bin' / 'Windows' / 'profile' / 'Default'

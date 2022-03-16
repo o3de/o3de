@@ -196,7 +196,7 @@ def test_uninstall(test_run_launcher_fixture, test_run_editor_fixture, context):
     # the installer succeeds
     assert result.returncode == 0, f"Installer failed with exit code {result.returncode}"
 
-    manifest_path = Path(os.path.expanduser("~")).resolve() / '.o3de' / 'o3de_manifest.json'
+    manifest_path = context.home_path / '.o3de' / 'o3de_manifest.json'
     with manifest_path.open('r') as f:
         manifest_json_data = json.load(f)
     
@@ -206,7 +206,7 @@ def test_uninstall(test_run_launcher_fixture, test_run_editor_fixture, context):
 
 
 # Convenience functions for running test fixtures from VS Code Test Explorer
-@pytest.mark.skip(reason="For Test Explorer use only")
+#@pytest.mark.skip(reason="For Test Explorer use only")
 def test_installer(test_installer_fixture):
     assert True
 
