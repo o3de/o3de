@@ -237,6 +237,21 @@ namespace AZ
             return m_inputBuffers->GetVertexCount(m_lodIndex, m_meshIndex);
         }
 
+        void SkinnedMeshDispatchItem::Enable()
+        {
+            m_isEnabled = true;
+        }
+
+        void SkinnedMeshDispatchItem::Disable()
+        {
+            m_isEnabled = false;
+        }
+
+        bool SkinnedMeshDispatchItem::IsEnabled() const
+        {
+            return m_isEnabled;
+        }
+
         void SkinnedMeshDispatchItem::OnShaderReinitialized(const CachedSkinnedMeshShaderOptions* cachedShaderOptions)
         {
             m_shaderOptionGroup = cachedShaderOptions->CreateShaderOptionGroup(m_shaderOptions);

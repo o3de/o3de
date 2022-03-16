@@ -11,6 +11,7 @@
 #include <AzCore/Math/PackedVector3.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
 #include <Atom/RHI/RHIUtils.h>
 
 #include <NvCloth/IClothSystem.h>
@@ -195,6 +196,9 @@ namespace NvCloth
             m_meshRemappedVertices);
         m_timeClothSkinningUpdates = 0.0f;
 
+        // Turn off GPU skinning for any sub-meshes simulated by the cloth component
+        DisableSkinning();
+
         m_clothConstraints = ClothConstraints::Create(
             m_meshClothInfo.m_motionConstraints,
             m_config.m_motionConstraintsMaxDistance,
@@ -235,6 +239,9 @@ namespace NvCloth
 
             AZ::Interface<IClothSystem>::Get()->RemoveCloth(m_cloth);
             AZ::Interface<IClothSystem>::Get()->DestroyCloth(m_cloth);
+
+            // Re-enable skinning for any sub-meshes that were previously skinned by the cloth component
+            EnableSkinning();
         }
         m_entityId.SetInvalid();
         m_renderDataBuffer = {};
@@ -783,5 +790,33 @@ namespace NvCloth
             return globalWind + localWind;
         }
         return AZ::Vector3::CreateZero();
+    }
+
+    void ClothComponentMesh::EnableSkinning() const
+    {
+        if (m_actorClothSkinning)
+        {
+            for (const auto& subMeshInfo : m_meshNodeInfo.m_subMeshes)
+            {
+                AZ::Render::SkinnedMeshOverrideRequestBus::Event(
+                    m_entityId,
+                    &AZ::Render::SkinnedMeshOverrideRequestBus::Events::EnableSkinning,
+                        aznumeric_cast<uint32_t>(m_meshNodeInfo.m_lodLevel), aznumeric_cast<uint32_t>(subMeshInfo.m_primitiveIndex));
+            }
+        }
+    }
+
+    void ClothComponentMesh::DisableSkinning() const
+    {
+        if (m_actorClothSkinning)
+        {
+            for (const auto& subMeshInfo : m_meshNodeInfo.m_subMeshes)
+            {
+                AZ::Render::SkinnedMeshOverrideRequestBus::Event(
+                    m_entityId,
+                    &AZ::Render::SkinnedMeshOverrideRequestBus::Events::DisableSkinning,
+                        aznumeric_cast<uint32_t>(m_meshNodeInfo.m_lodLevel), aznumeric_cast<uint32_t>(subMeshInfo.m_primitiveIndex));
+            }
+        }
     }
 } // namespace NvCloth

@@ -44,6 +44,8 @@ namespace AZ
             void SetTransform(const Transform& transform) override;
             void SetSkinningMatrices(const AZStd::vector<float>& data) override;
             void SetMorphTargetWeights(uint32_t lodIndex, const AZStd::vector<float>& weights) override;
+            void EnableSkinning(uint32_t lodIndex, uint32_t meshIndex) override;
+            void DisableSkinning(uint32_t lodIndex, uint32_t meshIndex) override;
 
             uint32_t GetLodCount() const;
             AZStd::span<const AZStd::unique_ptr<SkinnedMeshDispatchItem>> GetDispatchItems(uint32_t lodIndex) const;

@@ -192,6 +192,7 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
         float3 normal = ReadFloat3FromFloatBuffer(InstanceSrg::m_sourceNormals, i);    
         float4 tangent = InstanceSrg::m_sourceTangents[i];      
         float3 bitangent = ReadFloat3FromFloatBuffer(InstanceSrg::m_sourceBiTangents, i);
+        
 
         if(o_applyMorphTargets)
         {

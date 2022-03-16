@@ -74,9 +74,12 @@ namespace AZ
             m_dispatchItemsByLod.emplace_back(AZStd::vector<AZStd::unique_ptr<SkinnedMeshDispatchItem>>());
             m_morphTargetDispatchItemsByLod.emplace_back(AZStd::vector<AZStd::unique_ptr<MorphTargetDispatchItem>>());
 
+            size_t meshCount = m_inputBuffers->GetMeshCount(modelLodIndex);
+            m_dispatchItemsByLod[modelLodIndex].reserve(meshCount);
+
             // Populate the vector with a dispatch item for each mesh
-            for (uint32_t meshIndex = 0; meshIndex < m_inputBuffers->GetMeshCount(modelLodIndex); ++meshIndex)
-            {
+            for (uint32_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
+            {            
                 // Create the skinning dispatch Item
                 m_dispatchItemsByLod[modelLodIndex].emplace_back(
                     aznew SkinnedMeshDispatchItem{
@@ -91,9 +94,9 @@ namespace AZ
             }
 
             AZ_Assert(m_dispatchItemsByLod.size() == modelLodIndex + 1, "Skinned Mesh Feature Processor - Mismatch in size between the fixed vector of dispatch items and the lod being initialized");
-            for (uint32_t meshIndex = 0; meshIndex < m_inputBuffers->GetMeshCount(modelLodIndex); ++meshIndex)
+            for (size_t dispatchIndex = 0; dispatchIndex < m_dispatchItemsByLod[modelLodIndex].size(); ++dispatchIndex)
             {
-                if (!m_dispatchItemsByLod[modelLodIndex][meshIndex]->Init())
+                if (!m_dispatchItemsByLod[modelLodIndex][dispatchIndex]->Init())
                 {
                     return false;
                 }
@@ -103,6 +106,7 @@ namespace AZ
             AZ_Assert(
                 m_inputBuffers->GetMorphTargetComputeMetaDatas(modelLodIndex).size() == morphTargetCount,
                 "SkinnedMeshRenderProxy: Invalid SkinnedMeshInputBuffers have mis-matched morph target input buffers and compute metadata");
+            m_morphTargetDispatchItemsByLod[modelLodIndex].reserve(morphTargetCount);
 
             // Create one dispatch item per morph target, in the order that they were originally added
             // to the skinned mesh to stay in sync with the animation system
@@ -154,6 +158,16 @@ namespace AZ
             {
                 morphTargetDispatchItems[morphIndex]->SetWeight(weights[morphIndex]);
             }
+        }
+
+        void SkinnedMeshRenderProxy::EnableSkinning(uint32_t lodIndex, uint32_t meshIndex)
+        {
+            m_dispatchItemsByLod[lodIndex][meshIndex]->Enable();
+        }
+
+        void SkinnedMeshRenderProxy::DisableSkinning(uint32_t lodIndex, uint32_t meshIndex)
+        {
+            m_dispatchItemsByLod[lodIndex][meshIndex]->Disable();
         }
 
         uint32_t SkinnedMeshRenderProxy::GetLodCount() const

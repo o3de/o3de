@@ -70,6 +70,9 @@ namespace AZ
             AZStd::span<const RHI::Ptr<RHI::BufferView>> GetSourceUnskinnedBufferViews() const;
             AZStd::span<const RHI::Ptr<RHI::BufferView>> GetTargetSkinnedBufferViews() const;
             uint32_t GetVertexCount() const;
+            void Enable();
+            void Disable();
+            bool IsEnabled() const;
         private:
             // SkinnedMeshShaderOptionNotificationBus::Handler
             void OnShaderReinitialized(const CachedSkinnedMeshShaderOptions* cachedShaderOptions) override;
@@ -109,6 +112,9 @@ namespace AZ
             MorphTargetInstanceMetaData m_morphTargetInstanceMetaData;
             // A conservative value for encoding/decoding the accumulated deltas
             float m_morphTargetDeltaIntegerEncoding;
+
+            // Skip the skinning dispatch if this is false
+            bool m_isEnabled = true;
         };
 
         //! The skinned mesh compute shader has Nx1x1 threads per group and dispatches a total number of threads greater than or equal to the number of vertices in the mesh, with one vertex skinned per thread.

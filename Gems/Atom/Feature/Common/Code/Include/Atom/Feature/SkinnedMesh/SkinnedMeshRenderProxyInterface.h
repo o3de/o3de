@@ -25,6 +25,8 @@ namespace AZ
             virtual void SetTransform(const AZ::Transform& transform) = 0;
             virtual void SetSkinningMatrices(const AZStd::vector<float>& data) = 0;
             virtual void SetMorphTargetWeights(uint32_t lodIndex, const AZStd::vector<float>& weights) = 0;
+            virtual void EnableSkinning(uint32_t lodIndex, uint32_t meshIndex) = 0;
+            virtual void DisableSkinning(uint32_t lodIndex, uint32_t meshIndex) = 0;
         };
         using SkinnedMeshRenderProxyInterfaceHandle = StableDynamicArrayHandle<SkinnedMeshRenderProxyInterface>;
 

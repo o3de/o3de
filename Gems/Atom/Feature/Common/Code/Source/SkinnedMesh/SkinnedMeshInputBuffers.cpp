@@ -841,6 +841,9 @@ namespace AZ
                 AZStd::vector<uint32_t> meshPositionHistoryBufferOffsetsInBytes;
                 meshPositionHistoryBufferOffsetsInBytes.reserve(lod.m_meshes.size());
 
+                AZStd::vector<bool> isSkinningEnabledPerMesh;
+                isSkinningEnabledPerMesh.reserve(lod.m_meshes.size());
+
                 SkinnedMeshOutputVertexOffsets currentMeshOffsetsFromStreamStartInBytes = {0};
                 // Iterate over each sub-mesh for the lod to create views into the buffers
                 for (size_t i = 0; i < lod.m_meshes.size(); ++i)
@@ -886,6 +889,9 @@ namespace AZ
                         modelLodCreator.AddMeshStreamBuffer(staticBufferInfo.m_semantic, staticBufferInfo.m_customName, staticBufferInfo.m_bufferAssetView);
                     }
 
+                    // Skip the skinning dispatch if there are no skin influences.
+                    isSkinningEnabledPerMesh.push_back(lod.m_meshes[i].m_skinInfluenceCountPerVertex > 0);
+
                     Aabb localAabb = inputMesh.GetAabb();
                     modelLodCreator.SetMeshAabb(AZStd::move(localAabb));
 
@@ -898,6 +904,7 @@ namespace AZ
                 // Add all the mesh offsets for the lod
                 instance->m_outputStreamOffsetsInBytes.push_back(meshOffsetsFromBufferStartInBytes);
                 instance->m_positionHistoryBufferOffsetsInBytes.push_back(meshPositionHistoryBufferOffsetsInBytes);
+                instance->m_isSkinningEnabled.push_back(isSkinningEnabledPerMesh);
 
                 Data::Asset<RPI::ModelLodAsset> lodAsset;
                 modelLodCreator.End(lodAsset);
