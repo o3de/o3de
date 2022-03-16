@@ -32,6 +32,8 @@ class SessionContext:
         self.log_file = request.config.getoption("--log-file")
         self.temp_file = NamedTemporaryFile(mode='w+t', delete=False)
 
+        print(f"Running in environment {os.environ}")
+
         # download the installer if necessary
         self.installer_uri = request.config.getoption("--installer-uri")
         parsed_uri = urllib.parse.urlparse(self.installer_uri)

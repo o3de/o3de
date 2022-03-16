@@ -78,8 +78,8 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
         manifest_json_data = json.load(f)
     
     engine_path = Path(context.install_root).as_posix()
-    assert engine_path in manifest_json_data['engines'] , f"Engine path {engine_path} not found in o3de_manifest.json"
-    assert engine_name in manifest_json_data['engines_path'], f"{engine_path} not found in manifest engines_path"
+    assert engine_path in manifest_json_data['engines'] , f"Engine path {engine_path} not found in {manifest_path}"
+    assert engine_name in manifest_json_data['engines_path'], f"{engine_path} not found in {manifest_path} engines_path"
     assert manifest_json_data['engines_path'][engine_name] == engine_path, f"Engines path has invalid entry for {engine_name} expected {engine_path}" 
     print(f"\nManifest {manifest_path}.")
     print(f"Finished running register engine test for engine {engine_name} at path {engine_path}.")
