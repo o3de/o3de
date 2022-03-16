@@ -85,6 +85,9 @@ class Tests:
     gamma = (
         "Gamma property set",
         "P1: Gamma property failed to set expected value")
+    display_mapper_type = (
+        "Display Mapper Operation Type is correctly set",
+        "P1: Display Mapper Operation type is not as expected")
 
 
 # IsClose tolerance defaults to , 1e-9, but float values in some tests need a looser tolerance
@@ -112,17 +115,17 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
     5) Set LDR color Grading LUT asset.
     6) Set the Display Mapper Operation Type enumerated in DISPLAY_MAPPER_OPERATION_TYPE for each type
     7) Set Enable LDR color grading LUT property True
-    8) Set Override Defaults to False then True
-    9) Set Alter Surround to True then False
-    10) Set Alter Desaturation to True then False
-    11) Set 'Alter CAT D60 to D65' to True then False
-    12) 'Cinema Limit (black)' max value which is dynamic based on Cinema Limit (white) then min value
-    13) Set 'Cinema Limit (white)' maximum value then minimum, and finally back to default
-    14) 'Min Point (luminance)' set high and low value
-    15) 'Mid Point (luminance)' set high and low value then set default
-    16) 'Max Point (luminance)' set high and low value then set default
-    17) 'Surround Gamma' set high and low value
-    18) 'Gamma' set high and low value
+    8) Toggle Override Defaults
+    9) Toggle Alter Surround
+    10) Toggle Alter Desaturation
+    11) Toggle 'Alter CAT D60 to D65'
+    12) Set 'Cinema Limit (black)' max value which is dynamic based on Cinema Limit (white) then min value
+    13) Set 'Cinema Limit (white)' max value then min, and finally back to default
+    14) Set 'Min Point (luminance)' to high and low value
+    15) Set 'Mid Point (luminance)' to high and low value then set default
+    16) Set 'Max Point (luminance)' to high and low value then set default
+    17) Set 'Surround Gamma' to high and low value
+    18) Set 'Gamma' to high and low value
     19) Enter/Exit game mode.
     20) Select and load each preset
     21) Test IsHidden.
@@ -200,6 +203,7 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         for operation_type in DISPLAY_MAPPER_OPERATION_TYPE.keys():
             # 6. Set the Display Mapper Operation Type enumerated in DISPLAY_MAPPER_OPERATION_TYPE for each type
             # Type property cannot be set currently. as a workaround we are calling an ebus to set the operation type
+            # A fix is in progress
             # display_mapper_component.set_component_property_value(
             #     AtomComponentProperties.display_mapper('Type'), DISPLAY_MAPPER_OPERATION_TYPE[operation_type])
             render.DisplayMapperComponentRequestBus(
@@ -207,6 +211,7 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
             general.idle_wait_frames(3)
             set_type = render.DisplayMapperComponentRequestBus(bus.Broadcast, "GetDisplayMapperOperationType")
             Report.info(f"DiplayMapperOperationType: {set_type}")
+            Report.result(Tests.display_mapper_type, set_type == DISPLAY_MAPPER_OPERATION_TYPE[operation_type])
 
             # 7. Set Enable LDR color grading LUT property True
             display_mapper_component.set_component_property_value(
@@ -216,14 +221,15 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Enable LDR color grading LUT')) is True)
 
-
-            # 8. Set Override Defaults to False
+            # 8. Toggle Override Defaults
+            # Set Override Defaults to False
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Override Defaults'), False)
             Report.result(
                 Tests.override_defaults,
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Override Defaults')) is False)
+					
             # Set Override Defaults to True
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Override Defaults'), True)
@@ -232,13 +238,15 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Override Defaults')) is True)
 
-            # 9. Set Alter Surround to True
+            # 9. Toggle Alter Surround
+            # Set Alter Surround to True
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Alter Surround'), True)
             Report.result(
                 Tests.alter_surround,
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Alter Surround')) is True)
+					
             # Set Alter Surround to False
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Alter Surround'), False)
@@ -247,13 +255,15 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Alter Surround')) is False)
 
-            # 10. Set Alter Desaturation to True
+            # 10. Toggle Alter Desaturation
+            # Set Alter Desaturation to True
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Alter Desaturation'), True)
             Report.result(
                 Tests.alter_desaturation,
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Alter Desaturation')) is True)
+					
             # Set Alter Desaturation to False
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Alter Desaturation'), False)
@@ -262,13 +272,15 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Alter Desaturation')) is False)
 
-            # 11. Set 'Alter CAT D60 to D65' to True
+            # 11. Toggle 'Alter CAT D60 to D65'
+            # Set 'Alter CAT D60 to D65' to True
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Alter CAT D60 to D65'), True)
             Report.result(
                 Tests.alter_cat,
                 display_mapper_component.get_component_property_value(
                     AtomComponentProperties.display_mapper('Alter CAT D60 to D65')) is True)
+					
             # Set 'Alter CAT D60 to D65' to False
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Alter CAT D60 to D65'), False)
@@ -279,86 +291,106 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
 
             general.idle_wait_frames(1)
 
-            # 12. 'Cinema Limit (black)' max value which is dynamic based on Cinema Limit (white) then min value
+            # 12. Set 'Cinema Limit (black)' max value which is dynamic based on Cinema Limit (white) then min value
+            # set max value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (black)'), value=48.0)
             Report.result(Tests.black_level_max, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (black)')), 48.0, TOLERANCE))
-            # 'Cinema Limit (black)' min value
+				
+            # set min value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (black)'), value=0.02)
-            Report.info(display_mapper_component.get_component_property_value(
-                AtomComponentProperties.display_mapper('Cinema Limit (black)')))
             Report.result(Tests.black_level_min, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (black)')), 0.02, TOLERANCE))
 
-            # 13. Set 'Cinema Limit (white)' maximum value then minimum, and finally back to default
+            # 13. Set 'Cinema Limit (white)' maximum value then min, and finally back to default
+            # set max value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (white)'), value=4000.0)
             Report.result(Tests.white_level_max, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (white)')), 4000.0, TOLERANCE))
-            # Set minimum value which is dynamic based on Cinema Limit (black)
+				
+            # Set min value which is dynamic based on Cinema Limit (black)
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (white)'), value=0.02)
-            Report.info(display_mapper_component.get_component_property_value(
-                AtomComponentProperties.display_mapper('Cinema Limit (white)')))
             Report.result(Tests.white_level_min, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (white)')), 0.02, TOLERANCE))
-            # Reset this to the default 48
+				
+            # Reset this to the default 48 so following cycles don't impact Cinema Limit (Black)
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Cinema Limit (white)'), value=48.0)
 
-            # 14. 'Min Point (luminance)' set high and low value
+            # 14. Set 'Min Point (luminance)' to high and low value
+            # set high value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Min Point (luminance)'), value=4.8)
             Report.info(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Min Point (luminance)')))
             Report.result(Tests.luminance_level_min, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Min Point (luminance)')), 4.8, TOLERANCE))
+				
+            # set low value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Min Point (luminance)'), value=0.002)
             Report.result(Tests.luminance_level_min, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Min Point (luminance)')), 0.002, TOLERANCE))
 
-            # 15. 'Mid Point (luminance)' set high and low value then set default
+            # 15. Set 'Mid Point (luminance)' to high and low value then set default
+            # set high value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Mid Point (luminance)'), value=1005.0)
             Report.result(Tests.luminance_level_mid, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Mid Point (luminance)')), 1005.0, TOLERANCE))
+				
+            # set low value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Mid Point (luminance)'), value=0.002)
             Report.result(Tests.luminance_level_mid, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Mid Point (luminance)')), 0.002, TOLERANCE))
+				
+            # restore the default since as this impacts the range of 'Min Point (luminance)'
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Mid Point (luminance)'), value=4.8)
 
-            # 16. 'Max Point (luminance)' set high and low value then set default
+            # 16. Set 'Max Point (luminance)' to high and low value then set default
+            # set a high value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Max Point (luminance)'), value=4000.0)
             Report.result(Tests.luminance_level_max, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Max Point (luminance)')), 4000.0, TOLERANCE))
+				
+            # set a low value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Max Point (luminance)'), value=0.002)
             Report.result(Tests.luminance_level_max, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Max Point (luminance)')), 0.002, TOLERANCE))
+				
+            # restore the default since this impacts the range of 'Mid Point (luminance)'
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Max Point (luminance)'), value=1005.7191162)
 
-            # 17. 'Surround Gamma' set high and low value
+            # 17. Set 'Surround Gamma' to high and low value
+            # set a high value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Surround Gamma'), value=1.2)
             Report.result(Tests.surround_gamma, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Surround Gamma')), 1.2, TOLERANCE))
+				
+            # set a low value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Surround Gamma'), value=0.6)
             Report.result(Tests.surround_gamma, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Surround Gamma')), 0.6, TOLERANCE))
 
-            # 18. 'Gamma' set high and low value
+            # 18. Set 'Gamma' to high and low value
+            # set a high value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Gamma'), value=4.0)
             Report.result(Tests.gamma, Math_IsClose(display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Gamma')), 4.0, TOLERANCE))
+				
+            # set a low value
             display_mapper_component.set_component_property_value(
                 AtomComponentProperties.display_mapper('Gamma'), value=0.2)
             Report.result(Tests.gamma, Math_IsClose(display_mapper_component.get_component_property_value(
@@ -379,6 +411,7 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         for preset in DISPLAY_MAPPER_PRESET.keys():
             # 20. Select and load each preset
             # Preset Selection cannot be set or loaded currently; as a workaround we are calling an ebus to load preset
+            # A fix is in progress
             # display_mapper_component.set_component_property_value(
             #     AtomComponentProperties.display_mapper('Preset Selection'), DISPLAY_MAPPER_PRESET[preset])
             render.DisplayMapperComponentRequestBus(bus.Broadcast, "LoadPreset", DISPLAY_MAPPER_PRESET[preset])
