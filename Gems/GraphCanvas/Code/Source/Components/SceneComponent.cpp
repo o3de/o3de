@@ -4076,7 +4076,6 @@ namespace GraphCanvas
             
             SceneMemberRequestBus::Event(sceneMemberId, &SceneMemberRequests::SetScene, GetEntityId());
 
-            SceneNotificationBus::Event(GetEntityId(), &SceneNotifications::OnSceneMemberAdded, sceneMemberId);
             GeometryNotificationBus::MultiHandler::BusConnect(sceneMemberId);
             VisualNotificationBus::MultiHandler::BusConnect(sceneMemberId);
 

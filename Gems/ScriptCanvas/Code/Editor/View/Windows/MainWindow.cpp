@@ -1001,7 +1001,7 @@ namespace ScriptCanvasEditor
         ( const VariablePaletteRequests::VariableConfigurationInput& input, const QPoint& scenePosition)
     {
         VariablePaletteRequests::VariableConfigurationOutput output;
-        m_slotTypeSelector = new VariableConfigurationWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
+        m_slotTypeSelector = new VariableConfigurationWidget(GetActiveScriptCanvasId(), input, this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
         m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
 
         // Only set the slot name if the user has already configured this slot, so if they are creating

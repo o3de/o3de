@@ -58,11 +58,15 @@ namespace ScriptCanvasEditor
     // VariableConfigurationWidget
     ///////////////////////
 
-    VariableConfigurationWidget::VariableConfigurationWidget(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, QWidget* parent /*= nullptr*/)
+    VariableConfigurationWidget::VariableConfigurationWidget
+        ( const ScriptCanvas::ScriptCanvasId& scriptCanvasId
+        , const VariablePaletteRequests::VariableConfigurationInput& input
+        , QWidget* parent)
         : AzQtComponents::StyledDialog(parent)
         , m_manipulatingSelection(false)
         , ui(new Ui::VariableConfigurationWidget())
         , m_scriptCanvasId(scriptCanvasId)
+        , m_input(input)
     {
         ui->setupUi(this);
 
@@ -204,11 +208,18 @@ namespace ScriptCanvasEditor
         {
             for (const auto& variablePair : (*properties))
             {
-                AZStd::string testName = text.toUtf8().data();
-                if (testName.compare(variablePair.second.GetVariableName()) == 0)
+                if (&variablePair.second != m_input.m_graphVariable)
                 {
-                    nameInUse = true;
-                    ++numInUse;
+                    AZStd::string testName = text.toUtf8().data();
+                    if (testName.compare(variablePair.second.GetVariableName()) == 0)
+                    {
+                        nameInUse = true;
+                        ++numInUse;
+                    }
+                }
+                else
+                {
+                    AZ_TracePrintf("ScriptCanvas", "Allowing 'duplicate' name because the variable in question is the one we're configuring");
                 }
             }
         }

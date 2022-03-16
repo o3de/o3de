@@ -477,7 +477,7 @@ namespace ScriptCanvasEditor
                 for (auto slot : node->ModAllSlots())
                 {
                     // check this one more carefully
-                    if (slot->IsData())
+                    if (slot->IsData() && slot->IsVariableReference() && slot->GetVariableReference() == variableId)
                     {
                         slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
                     }
@@ -521,7 +521,7 @@ namespace ScriptCanvasEditor
         returnNode->SetNodeDisabledFlag(wasDisabled);
 
         auto slotStateUpdateOutcome = UpdateSlotState(*returnNode, nodeConfig, slotStateOutcome.GetValue());
-        if (slotStateUpdateOutcome.IsSuccess())
+        if (!slotStateUpdateOutcome.IsSuccess())
         {
             return AZ::Failure(AZStd::string::format("EditorGraph::ReplaceLiveNode %s", slotStateUpdateOutcome.GetError().c_str()));
         }
