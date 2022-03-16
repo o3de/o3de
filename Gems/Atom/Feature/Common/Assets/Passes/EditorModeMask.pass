@@ -8,7 +8,7 @@
             "Name": "EditorModeMaskTemplate",
             "PassClass": "RasterPass",
             "Slots": [
-                // Depth buffer for existing scene contents to be used for manual depth testing in the fragment shader
+                // Depth buffer of existing scene contents for manual depth testing in the fragment shader
                 {
                     "Name": "InputDepth",
                     "SlotType": "Input",
