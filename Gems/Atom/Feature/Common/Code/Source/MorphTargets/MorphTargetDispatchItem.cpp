@@ -26,12 +26,12 @@ namespace AZ
     {
         MorphTargetDispatchItem::MorphTargetDispatchItem(
             const AZStd::intrusive_ptr<MorphTargetInputBuffers> inputBuffers,
-            const MorphTargetMetaData& morphTargetMetaData,
+            const MorphTargetComputeMetaData& morphTargetComputeMetaData,
             SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphInstanceMetaData,
             float morphDeltaIntegerEncoding)
             : m_inputBuffers(inputBuffers)
-            , m_morphTargetMetaData(morphTargetMetaData)
+            , m_morphTargetComputeMetaData(morphTargetComputeMetaData)
             , m_morphInstanceMetaData(morphInstanceMetaData)
             , m_accumulatedDeltaIntegerEncoding(morphDeltaIntegerEncoding)
         {
@@ -55,7 +55,6 @@ namespace AZ
             AZ::RPI::ShaderOptionGroup shaderOptionGroup = m_morphTargetShader->CreateShaderOptionGroup();
             // In case there are several options you don't care about, it's good practice to initialize them with default values.
             shaderOptionGroup.SetUnspecifiedToDefaultValues();
-            shaderOptionGroup.SetValue(AZ::Name("o_hasColorDeltas"), RPI::ShaderOptionValue{ m_morphTargetMetaData.m_hasColorDeltas });
 
             // Get the shader variant and instance SRG
             RPI::ShaderReloadNotificationBus::Handler::BusConnect(m_morphTargetShader->GetAssetId());
@@ -87,7 +86,7 @@ namespace AZ
                 AZ_Error("MorphTargetDispatchItem", false, outcome.GetError().c_str());
             }
 
-            arguments.m_totalNumberOfThreadsX = m_morphTargetMetaData.m_vertexCount;
+            arguments.m_totalNumberOfThreadsX = m_morphTargetComputeMetaData.m_vertexCount;
             arguments.m_totalNumberOfThreadsY = 1;
             arguments.m_totalNumberOfThreadsZ = 1;
 
@@ -130,8 +129,6 @@ namespace AZ
             AZ_Error("MorphTargetDispatchItem", tangentOffsetIndex.IsValid(), "Could not find root constant 's_targetTangentOffset' in the shader");
             auto bitangentOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetBitangentOffset" });
             AZ_Error("MorphTargetDispatchItem", bitangentOffsetIndex.IsValid(), "Could not find root constant 's_targetBitangentOffset' in the shader");
-            auto colorOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetColorOffset" });
-            AZ_Error("MorphTargetDispatchItem", colorOffsetIndex.IsValid(), "Could not find root constant 's_targetColorOffset' in the shader");
 
             auto minIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_min" });
             AZ_Error("MorphTargetDispatchItem", minIndex.IsValid(), "Could not find root constant 's_min' in the shader");
@@ -143,21 +140,16 @@ namespace AZ
             AZ_Error("MorphTargetDispatchItem", m_weightIndex.IsValid(), "Could not find root constant 's_weight' in the shader");
 
             m_rootConstantData = AZ::RHI::ConstantsData(rootConstantsLayout);
-            m_rootConstantData.SetConstant(minIndex, m_morphTargetMetaData.m_minDelta);
-            m_rootConstantData.SetConstant(maxIndex, m_morphTargetMetaData.m_maxDelta);
+            m_rootConstantData.SetConstant(minIndex, m_morphTargetComputeMetaData.m_minDelta);
+            m_rootConstantData.SetConstant(maxIndex, m_morphTargetComputeMetaData.m_maxDelta);
             m_rootConstantData.SetConstant(morphDeltaIntegerEncodingIndex, m_accumulatedDeltaIntegerEncoding);
             m_rootConstantData.SetConstant(m_weightIndex, 0.0f);
-            m_rootConstantData.SetConstant(vertexCountIndex, m_morphTargetMetaData.m_vertexCount);
+            m_rootConstantData.SetConstant(vertexCountIndex, m_morphTargetComputeMetaData.m_vertexCount);
             // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
             m_rootConstantData.SetConstant(positionOffsetIndex, m_morphInstanceMetaData.m_accumulatedPositionDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(normalOffsetIndex, m_morphInstanceMetaData.m_accumulatedNormalDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(tangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedTangentDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(bitangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
-
-            if (m_morphTargetMetaData.m_hasColorDeltas)
-            {
-                m_rootConstantData.SetConstant(colorOffsetIndex, m_morphInstanceMetaData.m_accumulatedColorDeltaOffsetInBytes / 4);
-            }
 
             m_dispatchItem.m_rootConstantSize = static_cast<uint8_t>(m_rootConstantData.GetConstantData().size());
             m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
@@ -201,36 +193,6 @@ namespace AZ
             {
                 AZ_Error("MorphTargetDispatchItem", false, "Failed to re-initialize after the shader variant was loaded.");
             }
-        }
-
-        float ComputeMorphTargetIntegerEncoding(const AZStd::vector<MorphTargetMetaData>& morphTargetMetaDatas)
-        {
-            // The accumulation buffer must be stored as an int to support InterlockedAdd in AZSL
-            // Conservatively determine the largest value, positive or negative across the entire skinned mesh lod, which is used for encoding/decoding the accumulation buffer
-            float range = 0.0f;
-            for (const MorphTargetMetaData& metaData : morphTargetMetaDatas)
-            {
-                float maxWeight = AZStd::max(std::abs(metaData.m_minWeight), std::abs(metaData.m_maxWeight));
-                float maxDelta = AZStd::max(std::abs(metaData.m_minDelta), std::abs(metaData.m_maxDelta));
-                // Normal, Tangent, and Bitangent deltas can be as high as 2
-                maxDelta = AZStd::max(maxDelta, 2.0f);
-                // Since multiple morphs can be fully active at once, sum the maximum offset in either positive or negative direction
-                // that can be applied each individual morph to get the maximum offset that could be applied across all morphs
-                range += maxWeight * maxDelta;
-            }
-
-            // Protect against divide-by-zero
-            if (range < std::numeric_limits<float>::epsilon())
-            {
-                AZ_Assert(false, "MorphTargetDispatchItem - attempting to create a morph targets that have no min or max for the metadata");
-                range = 1.0f;
-            }
-
-            // Given a conservative maximum value of a delta (minimum if negated), set a value for encoding a float as an integer that maximizes precision
-            // while still being able to represent the entire range of possible offset values for this instance
-            // For example, if at most all the deltas accumulated fell between a -1 and 1 range, we'd encode it as an integer by multiplying it by 2,147,483,647.
-            // If the delta has a larger range, we multiply it by a smaller number, increasing the range of representable values but decreasing the precision
-            return static_cast<float>(std::numeric_limits<int>::max()) / range;
         }
     } // namespace Render
 } // namespace AZ

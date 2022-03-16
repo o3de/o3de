@@ -149,7 +149,15 @@ namespace AZ
                                         if (approxScreenPercentage >= minScreenPercentage && approxScreenPercentage <= maxScreenPercentage)
                                         {
                                             AZStd::lock_guard lock(m_dispatchItemMutex);
-                                            m_skinningDispatches.insert(&renderProxy->m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                                            for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
+                                            {
+                                                // Add one skinning dispatch item for each mesh in the lod
+                                                if (skinnedMeshDispatchItem->IsEnabled())
+                                                {
+                                                    m_skinningDispatches.insert(skinnedMeshDispatchItem->GetRHIDispatchItem());
+                                                }
+                                            }
+                                            
                                             for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy->m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
                                             {
                                                 const MorphTargetDispatchItem* dispatchItem = renderProxy->m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
@@ -210,7 +218,16 @@ namespace AZ
                     {
                         AZStd::lock_guard lock(m_dispatchItemMutex);
                         auto lodIndex = cullable.m_lodData.m_lodConfiguration.m_lodOverride;
-                        m_skinningDispatches.insert(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                        
+                        for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
+                        {
+                            // Add one skinning dispatch item for each mesh in the lod
+                            if (skinnedMeshDispatchItem->IsEnabled())
+                            {
+                                m_skinningDispatches.insert(&skinnedMeshDispatchItem->GetRHIDispatchItem());
+                            }
+                        }
+                        
                         for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
                         {
                             const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
@@ -242,7 +259,15 @@ namespace AZ
                             if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
                             {
                                 AZStd::lock_guard lock(m_dispatchItemMutex);
-                                m_skinningDispatches.insert(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                                for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
+                                {
+                                    // Add one skinning dispatch item for each mesh in the lod
+                                    if (skinnedMeshDispatchItem->IsEnabled())
+                                    {
+                                        m_skinningDispatches.insert(&skinnedMeshDispatchItem->GetRHIDispatchItem());
+                                    }
+                                }
+
                                 for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
                                 {
                                     const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();

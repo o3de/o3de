@@ -13,7 +13,6 @@
 
 option enum class SkinningMethod { LinearSkinning, DualQuaternion } o_skinningMethod = SkinningMethod::LinearSkinning;
 option bool o_applyMorphTargets = false;
-option bool o_applyColorMorphTargets = false;
 
 float3 ReadFloat3FromFloatBuffer(Buffer<float> buffer, uint index)
 {
@@ -92,14 +91,37 @@ void SkinTBN(float3x3 skinToWorldMatrix, inout float3 normal, inout float4 tange
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Skinning support
-void SkinVertexLinear(int4 indices, float4 weights, inout float3 position, inout float3 normal, inout float4 tangent, inout float3 bitangent)
+
+// Get two weights and two joint ids
+void GetInfluences(in uint weightStartOffsetForVertex, in uint jointIdStartOffsetForVertex, in uint influenceIndex, out float2 weights, out uint2 jointIds)
+{
+    weights.x = InstanceSrg::m_sourceBlendWeights[weightStartOffsetForVertex + influenceIndex];
+    weights.y = InstanceSrg::m_sourceBlendWeights[weightStartOffsetForVertex + influenceIndex + 1];
+
+    // Two indices, 16-bits each, stored in a 32-bit uint
+    uint rawIndex = InstanceSrg::m_sourceBlendIndices.Load(jointIdStartOffsetForVertex + influenceIndex);
+        
+    // The first index in each 32-bit pair is in the most significant bits in the buffer
+    jointIds.x = rawIndex >> 16 & 0x0000FFFF;
+    jointIds.y = rawIndex & 0x0000FFFF;
+}
+
+void SkinVertexLinear(uint vertexIndex, inout float3 position, inout float3 normal, inout float4 tangent, inout float3 bitangent)
 {
     float3x4 skinToWorldMatrix = (float3x4)0;
     
-    [unroll]
-    for(uint i = 0; i < 4; ++i)
+    uint weightStartOffsetForVertex = vertexIndex * InstanceSrg::m_numInfluencesPerVertex;
+    // Multiply by two here since the jointId offset is in bytes, and there are two bytes per 16-bit jointId
+    uint jointIdStartOffsetForVertex = vertexIndex * InstanceSrg::m_numInfluencesPerVertex * 2;
+    [loop]
+    for(uint i = 0; i < InstanceSrg::m_numInfluencesPerVertex; i+=2)
     {
-        skinToWorldMatrix += InstanceSrg::m_boneTransformsLinear[ indices[i] ] * weights[i];
+        float2 weights;
+        float2 jointIds;
+        GetInfluences(weightStartOffsetForVertex, jointIdStartOffsetForVertex, i, weights, jointIds);
+
+        skinToWorldMatrix += InstanceSrg::m_boneTransformsLinear[ jointIds.x ] * weights.x;
+        skinToWorldMatrix += InstanceSrg::m_boneTransformsLinear[ jointIds.y ] * weights.y;
     }
 
     position = mul(skinToWorldMatrix, float4(position, 1.0));
@@ -120,14 +142,22 @@ void NormalizeDualQuaternion(inout float2x4 dualQuaternion)
     dualQuaternion *= invLength;
 }
 
-void SkinVertexDualQuaternion(int4 indices, float4 weights, inout float3 position, inout float3 normal, inout float4 tangent, inout float3 bitangent)
+void SkinVertexDualQuaternion(uint vertexIndex, inout float3 position, inout float3 normal, inout float4 tangent, inout float3 bitangent)
 {
     float2x4 skinToWorldDualQuaternion = (float2x4)0;
     
-    [unroll]
-    for(uint i = 0; i < 4; ++i)
-    {
-        AddWeightedDualQuaternion(skinToWorldDualQuaternion, InstanceSrg::m_boneTransformsDualQuaternion[ indices[i] ], weights[i]);
+    uint weightStartOffsetForVertex = vertexIndex * InstanceSrg::m_numInfluencesPerVertex;
+    // Multiply by two here since the jointId offset is in bytes, and there are two bytes per 16-bit jointId
+    uint jointIdStartOffsetForVertex = vertexIndex * InstanceSrg::m_numInfluencesPerVertex * 2;
+    [loop]
+    for(uint i = 0; i < InstanceSrg::m_numInfluencesPerVertex; i+=2)
+    {        
+        float2 weights;
+        float2 jointIds;
+        GetInfluences(weightStartOffsetForVertex, jointIdStartOffsetForVertex, i, weights, jointIds);
+
+        AddWeightedDualQuaternion(skinToWorldDualQuaternion, InstanceSrg::m_boneTransformsDualQuaternion[ jointIds.x ], weights.x);
+        AddWeightedDualQuaternion(skinToWorldDualQuaternion, InstanceSrg::m_boneTransformsDualQuaternion[ jointIds.y ], weights.y);
     }
 
     NormalizeDualQuaternion(skinToWorldDualQuaternion);
@@ -154,46 +184,15 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
     if(i < InstanceSrg::m_numVertices)
     {
         // Moving current vertex position updated last frame to a predefined location to maintain a vertex history between two frames
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 2] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2];
-
-        float4 blendWeights;
-        blendWeights.x = InstanceSrg::m_sourceBlendWeights[i * 4];
-        blendWeights.y = InstanceSrg::m_sourceBlendWeights[i * 4 + 1];
-        blendWeights.z = InstanceSrg::m_sourceBlendWeights[i * 4 + 2];
-        blendWeights.w = InstanceSrg::m_sourceBlendWeights[i * 4 + 3];
-
-        // [TODO ATOM-15288]
-        // Temporary workaround. When all the blend weights of a vertex are zero it means its data is set by the CPU directly
-        // and skinning must be skipped to not overwrite it (e.g. cloth simulation).
-        if(!any(blendWeights))
-        {
-            return;
-        }
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositionHistory + i * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositionHistory + i * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositionHistory + i * 3 + 2] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2];
 
         float3 position = ReadFloat3FromFloatBuffer(InstanceSrg::m_sourcePositions, i);
         float3 normal = ReadFloat3FromFloatBuffer(InstanceSrg::m_sourceNormals, i);    
         float4 tangent = InstanceSrg::m_sourceTangents[i];      
         float3 bitangent = ReadFloat3FromFloatBuffer(InstanceSrg::m_sourceBiTangents, i);
         
-        // Four indices, 16-bits each, stored in 2 32-bit uints
-        uint2 rawIndices = InstanceSrg::m_sourceBlendIndices.Load2(i * 8);
-
-        uint4 blendIndices;
-        // Although the first index in each 32-bit pair is in the most significant bits in the cpu buffer,
-        // the indices get swapped within the 32-bit uint when they are loaded so we treat them
-        // as if the first index is in the least significant bits
-        blendIndices.x = rawIndices.x >> 16;
-        blendIndices.y = rawIndices.x & 0x0000FFFF;
-        blendIndices.z = rawIndices.y >> 16;
-        blendIndices.w = rawIndices.y & 0x0000FFFF;
-        
-
-        // Moving current vertex position updated last frame to a predefined location to maintain a vertex history between two frames
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 2] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2];
 
         if(o_applyMorphTargets)
         {
@@ -202,24 +201,14 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
             ApplyMorphTargetDelta(InstanceSrg::m_morphTargetTangentDeltaOffset, i, tangent.xyz);
             ApplyMorphTargetDelta(InstanceSrg::m_morphTargetBitangentDeltaOffset, i, bitangent);
         }
-
-        if (o_applyColorMorphTargets)
-        {
-            float4 color = InstanceSrg::m_sourceColors[i];
-            ApplyMorphTargetDelta(InstanceSrg::m_morphTargetColorDeltaOffset, i, color);
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4] = color.r;
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 1] = color.g;
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 2] = color.b;
-            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 3] = color.a;
-        }
         
         switch(o_skinningMethod)
         {
         case SkinningMethod::LinearSkinning:
-            SkinVertexLinear(blendIndices, blendWeights, position, normal, tangent, bitangent);
+            SkinVertexLinear(i, position, normal, tangent, bitangent);
             break;
         case SkinningMethod::DualQuaternion:
-            SkinVertexDualQuaternion(blendIndices, blendWeights, position, normal, tangent, bitangent);
+            SkinVertexDualQuaternion(i, position, normal, tangent, bitangent);
             break;
         }
 

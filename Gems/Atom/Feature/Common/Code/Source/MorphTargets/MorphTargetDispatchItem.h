@@ -46,7 +46,7 @@ namespace AZ
             //! Create one dispatch item per morph target
             explicit MorphTargetDispatchItem(
                 const AZStd::intrusive_ptr<MorphTargetInputBuffers> inputBuffers,
-                const MorphTargetMetaData& morphTargetMetaData,
+                const MorphTargetComputeMetaData& morphTargetMetaData,
                 SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
                 MorphTargetInstanceMetaData morphInstanceMetaData,
                 float accumulatedDeltaRange
@@ -83,7 +83,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> m_instanceSrg;
 
             // Metadata used to set the root constants for the shader
-            MorphTargetMetaData m_morphTargetMetaData;
+            MorphTargetComputeMetaData m_morphTargetComputeMetaData;
 
             AZ::RHI::ConstantsData m_rootConstantData;
 
@@ -95,7 +95,5 @@ namespace AZ
             // Keep track of the constant index of m_weight since it is updated frequently
             RHI::ShaderInputConstantIndex m_weightIndex;
         };
-
-        float ComputeMorphTargetIntegerEncoding(const AZStd::vector<MorphTargetMetaData>& morphTargetMetaDatas);
     } // namespace Render
 } // namespace AZ

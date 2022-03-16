@@ -52,15 +52,17 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_vertexDeltaBuffer;
         };
 
-        struct MorphTargetMetaData
+        struct MorphTargetComputeMetaData
         {
             float m_minWeight;
             float m_maxWeight;
             float m_minDelta;
             float m_maxDelta;
             uint32_t m_vertexCount;
-            uint32_t m_positionOffset;
-            bool m_hasColorDeltas;
+            // Each morph target dispatch is associated with a single mesh. We need to keep track of which mesh
+            // so that we can calculate the maximum range a given mesh might be morphed if all of the morph targets
+            // associated with it were active at once.
+            uint32_t m_meshIndex;
         };
 
         namespace MorphTargetConstants
@@ -80,7 +82,6 @@ namespace AZ
             uint32_t m_accumulatedNormalDeltaOffsetInBytes;
             uint32_t m_accumulatedTangentDeltaOffsetInBytes;
             uint32_t m_accumulatedBitangentDeltaOffsetInBytes;
-            uint32_t m_accumulatedColorDeltaOffsetInBytes;
         };
 
     }// Render
