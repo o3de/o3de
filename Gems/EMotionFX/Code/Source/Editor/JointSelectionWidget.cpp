@@ -131,7 +131,6 @@ namespace EMotionFX
 
     void JointSelectionWidget::Reinit()
     {
-        
         ActorInstance* actorInstance = m_skeletonModel->GetActorInstance();
         if (actorInstance)
         {
