@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -29,6 +30,9 @@
 
 namespace EMotionFX::MotionMatching
 {
+    AZ_CVAR(float, mm_debugDrawVelocityScale, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Scaling value used for velocity debug rendering.");
+
     void MotionMatchingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
