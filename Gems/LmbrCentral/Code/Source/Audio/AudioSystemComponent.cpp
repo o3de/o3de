@@ -241,13 +241,12 @@ namespace LmbrCentral
     void AudioSystemComponent::LevelLoadAudio(AZStd::string_view levelName)
     {
         auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
-        const char* controlsPath = audioSystem->GetControlsPath();
-        if (!controlsPath)
+        if (!audioSystem || levelName.empty())
         {
             return;
         }
 
-        AZ::IO::FixedMaxPath levelControlsPath{ controlsPath };
+        AZ::IO::FixedMaxPath levelControlsPath{ audioSystem->GetControlsPath() };
         levelControlsPath /= "levels";
         levelControlsPath /= levelName;
 
@@ -270,18 +269,20 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::LevelUnloadAudio()
     {
-        auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+            audioSystem != nullptr)
+        {
+            // Unload level-specific banks...
+            Audio::SystemRequest::UnloadBanksByScope unloadBanks;
+            unloadBanks.m_scope = eADS_LEVEL_SPECIFIC;
+            audioSystem->PushRequestBlocking(AZStd::move(unloadBanks));
 
-        // Unload level-specific banks...
-        Audio::SystemRequest::UnloadBanksByScope unloadBanks;
-        unloadBanks.m_scope = eADS_LEVEL_SPECIFIC;
-        audioSystem->PushRequestBlocking(AZStd::move(unloadBanks));
-
-        // Now unload level-specific audio config data (controls then preloads)...
-        Audio::SystemRequest::UnloadControls unloadControls;
-        unloadControls.m_scope = eADS_LEVEL_SPECIFIC;
-        // same flags as above
-        audioSystem->PushRequestBlocking(AZStd::move(unloadControls));
+            // Now unload level-specific audio config data (controls then preloads)...
+            Audio::SystemRequest::UnloadControls unloadControls;
+            unloadControls.m_scope = eADS_LEVEL_SPECIFIC;
+            // same flags as above
+            audioSystem->PushRequestBlocking(AZStd::move(unloadControls));
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -303,7 +304,10 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::OnLoadingStart(const char* levelName)
     {
-        LevelLoadAudio(AZStd::string_view{ levelName });
+        if (levelName && levelName[0] != '\0')
+        {
+            LevelLoadAudio(AZStd::string_view{ levelName });
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
