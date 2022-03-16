@@ -6,6 +6,10 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
@@ -17,11 +21,10 @@
 #include <FeatureVelocity.h>
 #include <PoseDataJointVelocities.h>
 
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-
 namespace EMotionFX::MotionMatching
 {
+    AZ_CVAR_EXTERNED(float, mm_debugDrawVelocityScale);
+
     AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator, 0)
 
     void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
@@ -37,10 +40,23 @@ namespace EMotionFX::MotionMatching
 
     void FeatureVelocity::ExtractFeatureValues(const ExtractFeatureContext& context)
     {
-        AZ::Vector3 velocity;
-        CalculateVelocity(context.m_actorInstance, m_jointIndex, m_relativeToNodeIndex, context.m_frameDatabase->GetFrame(context.m_frameIndex), velocity);
-            
-        SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
+        const ActorInstance* actorInstance = context.m_actorInstance;
+        const Frame& frame = context.m_frameDatabase->GetFrame(context.m_frameIndex);
+
+        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
+        AnimGraphPose* tempPose = posePool.RequestPose(actorInstance);
+        {
+            // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
+            PoseDataJointVelocities* velocityPoseData = tempPose->GetPose().GetAndPreparePoseData<PoseDataJointVelocities>(actorInstance);
+            velocityPoseData->CalculateVelocity(actorInstance,
+                frame.GetSourceMotion(),
+                frame.GetSampleTime(),
+                m_relativeToNodeIndex);
+
+            const AZ::Vector3& velocity = velocityPoseData->GetVelocities()[m_jointIndex];
+            SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
+        }
+        posePool.FreePose(tempPose);
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -56,10 +72,9 @@ namespace EMotionFX::MotionMatching
         const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(relativeToJointIndex);
 
         const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
-        const float scale = 0.15f;
-        const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity * scale);
+        const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity);
 
-        DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace, color);
+        DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace * mm_debugDrawVelocityScale, color);
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -80,19 +95,12 @@ namespace EMotionFX::MotionMatching
     {
         PoseDataJointVelocities* velocityPoseData = static_cast<PoseDataJointVelocities*>(context.m_currentPose.GetPoseDataByType(azrtti_typeid<PoseDataJointVelocities>()));
         AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
-        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);
 
+        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);
         const AZ::Vector3 frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
 
-        // Direction difference
-        const float directionDifferenceCost = GetNormalizedDirectionDifference(frameVelocity.GetNormalized(), currentVelocity.GetNormalized());
-
-        // Speed difference
-        // TODO: This needs to be normalized later on, else wise it could be that the direction difference is weights
-        // too heavily or too less compared to what the speed values are
-        const float speedDifferenceCost = frameVelocity.GetLength() - currentVelocity.GetLength();
-
-        return CalcResidual(directionDifferenceCost) + CalcResidual(speedDifferenceCost);
+        const float speedDifferenceCost = (currentVelocity - frameVelocity).GetLength();
+        return CalcResidual(speedDifferenceCost);
     }
 
     void FeatureVelocity::Reflect(AZ::ReflectContext* context)
