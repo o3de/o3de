@@ -73,7 +73,7 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
 
     engine_name = engine_json_data['engine_name']
 
-    manifest_path = Path(os.path.expanduser("~")).resolve() / '.o3de' / 'o3de_manifest.json'
+    manifest_path = context.home_path / '.o3de' / 'o3de_manifest.json'
     with manifest_path.open('r') as f:
         manifest_json_data = json.load(f)
     
