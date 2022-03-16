@@ -75,11 +75,14 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 }
 
                 // Irradiance arround surface point. 
-                // Albedo at front (surface point) is used to approximate irradiance at the back of the object (observation 4 in [Jimenez J. et al, 2010])
-                // Increase angle of influence to smooth transition regions
-                float3 E = surface.albedo * saturate(lightingData.transmissionNdLBias + dot(-surface.normal, dirToLight));
+                // Albedo at front (surface point) is used to approximate irradiance at the back of the 
+                // object (observation 4 in [Jimenez J. et al, 2010])
+                // Increase angle of influence to avoid dark transition regions
+                // (surface.transmission.transmissionParams.y <-- transmission NdL Bias)
+                float3 E = surface.albedo * saturate(surface.transmission.transmissionParams.y + dot(-surface.normal, dirToLight));
 
-                // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter (in this case modulating the distance traversed by the light inside the object)
+                // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter 
+                // (in this case modulating the distance traversed by the light inside the object)
                 const float C = 300.0f;
                 float s = transmissionDistance * C * surface.transmission.thickness;
                 
@@ -95,7 +98,8 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
 #endif
 
                 // Distance attenuation applied to hide artifacts due to low-res projected areas onto shadowmaps (might need some work in the future)
-                result /= max(1.0, attenuationDistance * attenuationDistance * lightingData.distanceAttenuation);
+                // (surface.transmission.transmissionParams.z <-- distance attenuation)
+                result /= max(1.0, attenuationDistance * attenuationDistance * surface.transmission.transmissionParams.z);
             }
             break;
     }
