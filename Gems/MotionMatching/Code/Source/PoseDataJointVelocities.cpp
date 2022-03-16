@@ -158,9 +158,11 @@ namespace EMotionFX::MotionMatching
 
         const size_t numSamples = 3;
         const float timeRange = 0.05f; // secs
+
         const float halfTimeRange = timeRange * 0.5f;
         const float startTime = requestedSampleTime - halfTimeRange;
-        const float frameDelta = timeRange / (numSamples - 1);
+        const float numInbetweens = aznumeric_cast<float>(numSamples - 1); // Number of elements or windows between two keyframes.
+        const float frameDelta = timeRange / numInbetweens;
         const float motionDuration = motion->GetDuration();
 
         // Zero all linear and angular velocities.
@@ -198,11 +200,10 @@ namespace EMotionFX::MotionMatching
             *prevPose = *currentPose;
         }
 
-        const float numSamplesFloat = aznumeric_cast<float>(numSamples - 1);
         for (size_t i = 0; i < numJoints; ++i)
         {
-            m_velocities[i] /= numSamplesFloat;
-            m_angularVelocities[i] /= numSamplesFloat;
+            m_velocities[i] /= numInbetweens;
+            m_angularVelocities[i] /= numInbetweens;
         }
 
         posePool.FreePose(prevPose);

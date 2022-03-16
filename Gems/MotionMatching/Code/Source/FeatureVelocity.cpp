@@ -6,6 +6,10 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
@@ -17,11 +21,10 @@
 #include <FeatureVelocity.h>
 #include <PoseDataJointVelocities.h>
 
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-
 namespace EMotionFX::MotionMatching
 {
+    AZ_CVAR_EXTERNED(float, mm_debugDrawVelocityScale);
+
     AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator, 0)
 
     void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
@@ -71,8 +74,7 @@ namespace EMotionFX::MotionMatching
         const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
         const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity);
 
-        const float scale = 0.1f;
-        DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace * scale, color);
+        DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace * mm_debugDrawVelocityScale, color);
     }
 
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
