@@ -456,6 +456,7 @@ def find_ancestor_file(target_file_name, start_path=os.getcwd()):
             current_path = parent_path
         else:
             # Found the file we wanted
+            candidate_path = os.path.abspath(candidate_path)
             break
 
     if not os.path.exists(candidate_path):
