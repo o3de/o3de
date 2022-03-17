@@ -820,7 +820,9 @@ bool UiCanvasManager::HandleInputEventForInWorldCanvases(const AzFramework::Inpu
     auto viewportContext = lyShine->GetUiRenderer()->GetViewportContext();
     AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
 
-    const float rayLength = 500.0f;
+    // Use a standard far clipping plane value for the ray length. This value could be made
+    // configurable if need be
+    const float rayLength = 1000.0f;
     AZ::Vector3 rayOrigin(0.0f);
     AZ::Vector3 endpoint(0.0f, rayLength, 0.0f);
     rayOrigin = cameraTransform.TransformPoint(rayOrigin);

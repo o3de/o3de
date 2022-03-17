@@ -276,8 +276,8 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
     for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
     {
         // Find position and UV semantics
-        const AZ::Name positionName{ "POSITION" };
-        const AZ::Name uvName{ "UV" };
+        static const AZ::Name positionName = AZ::Name::FromStringLiteral("POSITION");
+        static const AZ::Name uvName = AZ::Name::FromStringLiteral("UV");
         auto streamBufferList = mesh.GetStreamBufferInfoList();
         const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;
         const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo* uvBuffer = nullptr;
