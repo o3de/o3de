@@ -279,7 +279,14 @@ namespace SurfaceData
     {
         AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
 
-        return m_surfacePositionList.size();
+        size_t numValidEntries = 0;
+
+        for (size_t inputIndex = 0; (inputIndex < m_inputPositionSize); inputIndex++)
+        {
+            numValidEntries += m_numSurfacePointsPerInput[inputIndex];
+        }
+
+        return numValidEntries;
     }
 
     size_t SurfacePointList::GetSize(size_t inputPositionIndex) const
