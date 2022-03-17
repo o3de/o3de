@@ -101,12 +101,12 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
     // Assign the new scene to the specified viewport context
     viewportContext->SetRenderScene(atomScene);
 
-    // Create a render pipeline and add it to the scene
-    AZStd::string pipelineAssetPath = "passes/MainRenderPipeline.azasset"; // [LYSHINE_ATOM_TODO][GHI #6272] Use a custom UI pipeline
-    AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(pipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
-    AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext = viewportContext->GetWindowContext();
-    auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *windowContext.get());
-    pipelineAsset.Release();
+    const char* pipelineAssetPath = "passes/MainRenderPipeline.azasset"; // [LYSHINE_ATOM_TODO][GHI #6272] Use a custom UI pipeline
+    AZStd::optional<AZ::RPI::RenderPipelineDescriptor> renderPipelineDesc =
+        AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath, AZStd::string::format("_%i", viewportContext->GetId()));
+    AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
+
+    auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *viewportContext->GetWindowContext().get());
     atomScene->AddRenderPipeline(renderPipeline);
 
     atomScene->Activate();

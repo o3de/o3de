@@ -91,6 +91,8 @@ namespace AZ
                 AZ_Assert(m_format != MTLPixelFormatInvalid, "Invalid pixel format");
             }
 
+            m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
+            m_hash = TypeHash64(m_format, m_hash);
             return RHI::ResultCode::Success;
         }
 
@@ -120,6 +122,7 @@ namespace AZ
 
         RHI::ResultCode ImageView::InvalidateInternal()
         {
+            ShutdownInternal();
             return InitInternal(GetDevice(), GetResource());
         }
         
@@ -135,7 +138,7 @@ namespace AZ
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
             
             RHI::ImageSubresourceRange& range = m_imageSubresourceRange;
-            range.m_mipSliceMin = viewDescriptor.m_mipSliceMin;
+            range.m_mipSliceMin = AZStd::max(viewDescriptor.m_mipSliceMin, static_cast<uint16_t>(image.GetStreamedMipLevel()));
             range.m_mipSliceMax = AZStd::min(viewDescriptor.m_mipSliceMax, static_cast<uint16_t>(imageDesc.m_mipLevels - 1));
             range.m_arraySliceMin = viewDescriptor.m_arraySliceMin;
             range.m_arraySliceMax = AZStd::min(viewDescriptor.m_arraySliceMax, static_cast<uint16_t>(imageDesc.m_arraySize - 1));

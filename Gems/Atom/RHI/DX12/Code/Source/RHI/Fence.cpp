@@ -34,7 +34,7 @@ namespace AZ
         RHI::ResultCode Fence::Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState)
         {
             Microsoft::WRL::ComPtr<ID3D12Fence> fencePtr;
-            if (FAILED(dx12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
+            if (!AssertSuccess(dx12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
             {
                 AZ_Error("Fence", false, "Failed to initialize ID3D12Fence.");
                 return RHI::ResultCode::Fail;

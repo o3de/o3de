@@ -112,7 +112,7 @@ namespace ImageProcessingAtom
         static const PlatformName s_defaultPlatform;
 
         // The relative folder where the default image builder configuration files (builder setting, presets) are. 
-        static const char* s_defaultConfigRelativeFolder;
+        static const char* s_defaultConfigFolder;
         // The relative folder where project's image builder configuration files are
         static const char* s_projectConfigRelativeFolder;
         // Builder setting file name

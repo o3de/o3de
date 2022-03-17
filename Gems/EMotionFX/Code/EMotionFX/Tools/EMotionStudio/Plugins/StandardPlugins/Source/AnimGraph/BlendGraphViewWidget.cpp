@@ -273,6 +273,7 @@ namespace EMStudio
 
         for (QAction* action : m_actions)
         {
+            action->setShortcutContext(Qt::WidgetShortcut);
             addAction(action);
         }
 

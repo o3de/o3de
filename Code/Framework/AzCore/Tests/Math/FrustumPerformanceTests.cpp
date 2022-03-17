@@ -63,7 +63,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathFrustum, SphereIntersect)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& data : m_dataArray)
             {
@@ -75,7 +75,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathFrustum, AabbIntersect)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& data : m_dataArray)
             {

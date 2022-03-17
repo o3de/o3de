@@ -37,6 +37,12 @@ def get_o3de_folder() -> pathlib.Path:
     return o3de_folder
 
 
+def get_o3de_user_folder() -> pathlib.Path:
+    o3de_user_folder = get_home_folder() / 'O3DE'
+    o3de_user_folder.mkdir(parents=True, exist_ok=True)
+    return o3de_user_folder
+
+
 def get_o3de_registry_folder() -> pathlib.Path:
     registry_folder = get_o3de_folder() / 'Registry'
     registry_folder.mkdir(parents=True, exist_ok=True)
@@ -62,19 +68,19 @@ def get_o3de_engines_folder() -> pathlib.Path:
 
 
 def get_o3de_projects_folder() -> pathlib.Path:
-    projects_folder = get_o3de_folder() / 'Projects'
+    projects_folder = get_o3de_user_folder() / 'Projects'
     projects_folder.mkdir(parents=True, exist_ok=True)
     return projects_folder
 
 
 def get_o3de_gems_folder() -> pathlib.Path:
-    gems_folder = get_o3de_folder() / 'Gems'
+    gems_folder = get_o3de_user_folder() / 'Gems'
     gems_folder.mkdir(parents=True, exist_ok=True)
     return gems_folder
 
 
 def get_o3de_templates_folder() -> pathlib.Path:
-    templates_folder = get_o3de_folder() / 'Templates'
+    templates_folder = get_o3de_user_folder() / 'Templates'
     templates_folder.mkdir(parents=True, exist_ok=True)
     return templates_folder
 
@@ -426,6 +432,50 @@ def get_templates_for_generic_creation(project_path: pathlib.Path = None) -> lis
     return generic_templates
 
 
+def get_json_file_path(object_typename: str,
+                       object_path: str or pathlib.Path) -> pathlib.Path:
+    if not object_typename or not object_path:
+        logger.error('Must specify an object typename and object path.')
+        return None
+
+    object_path = pathlib.Path(object_path).resolve()
+    return object_path / f'{object_typename}.json'
+
+
+def get_json_data_file(object_json: pathlib.Path,
+                       object_typename: str,
+                       object_validator: callable) -> dict or None:
+    if not object_typename:
+        logger.error('Missing object typename.')
+        return None
+
+    if not object_json or not object_json.is_file():
+        logger.error(f'Invalid {object_typename} json {object_json} supplied or file missing.')
+        return None
+
+    if not object_validator or not object_validator(object_json):
+        logger.error(f'{object_typename} json {object_json} is not valid or could not be validated.')
+        return None
+
+    with object_json.open('r') as f:
+        try:
+            object_json_data = json.load(f)
+        except json.JSONDecodeError as e:
+            logger.warning(f'{object_json} failed to load: {e}')
+        else:
+            return object_json_data
+
+    return None
+
+
+def get_json_data(object_typename: str,
+                  object_path: str or pathlib.Path,
+                  object_validator: callable) -> dict or None:
+    object_json = get_json_file_path(object_typename, object_path)
+
+    return get_json_data_file(object_json, object_typename, object_validator)
+
+
 def get_engine_json_data(engine_name: str = None,
                          engine_path: str or pathlib.Path = None) -> dict or None:
     if not engine_name and not engine_path:
@@ -435,28 +485,7 @@ def get_engine_json_data(engine_name: str = None,
     if engine_name and not engine_path:
         engine_path = get_registered(engine_name=engine_name)
 
-    if not engine_path:
-        logger.error(f'Engine Path {engine_path} has not been registered.')
-        return None
-
-    engine_path = pathlib.Path(engine_path).resolve()
-    engine_json = engine_path / 'engine.json'
-    if not engine_json.is_file():
-        logger.error(f'Engine json {engine_json} is not present.')
-        return None
-    if not validation.valid_o3de_engine_json(engine_json):
-        logger.error(f'Engine json {engine_json} is not valid.')
-        return None
-
-    with engine_json.open('r') as f:
-        try:
-            engine_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warning(f'{engine_json} failed to load: {str(e)}')
-        else:
-            return engine_json_data
-
-    return None
+    return get_json_data('engine', engine_path, validation.valid_o3de_engine_json)
 
 
 def get_project_json_data(project_name: str = None,
@@ -468,28 +497,7 @@ def get_project_json_data(project_name: str = None,
     if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
 
-    if not project_path:
-        logger.error(f'Project Path {project_path} has not been registered.')
-        return None
-
-    project_path = pathlib.Path(project_path).resolve()
-    project_json = project_path / 'project.json'
-    if not project_json.is_file():
-        logger.error(f'Project json {project_json} is not present.')
-        return None
-    if not validation.valid_o3de_project_json(project_json):
-        logger.error(f'Project json {project_json} is not valid.')
-        return None
-
-    with project_json.open('r') as f:
-        try:
-            project_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warning(f'{project_json} failed to load: {str(e)}')
-        else:
-            return project_json_data
-
-    return None
+    return get_json_data('project', project_path, validation.valid_o3de_project_json)
 
 
 def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
@@ -501,28 +509,10 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name, project_path=project_path)
 
-    if not gem_path:
-        logger.error(f'Gem Path {gem_path} has not been registered.')
-        return None
-
-    gem_path = pathlib.Path(gem_path).resolve()
-    gem_json = gem_path / 'gem.json'
-    if not gem_json.is_file():
-        logger.error(f'Gem json {gem_json} is not present.')
-        return None
-    if not validation.valid_o3de_gem_json(gem_json):
-        logger.error(f'Gem json {gem_json} is not valid.')
-        return None
-
-    with gem_json.open('r') as f:
-        try:
-            gem_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warning(f'{gem_json} failed to load: {str(e)}')
-        else:
-            return gem_json_data
-
-    return None
+    if pathlib.Path(gem_path).is_file():
+        return get_json_data_file(gem_path, 'gem', validation.valid_o3de_gem_json)
+    else:
+        return get_json_data('gem', gem_path, validation.valid_o3de_gem_json)
 
 
 def get_template_json_data(template_name: str = None, template_path: str or pathlib.Path = None,
@@ -534,28 +524,7 @@ def get_template_json_data(template_name: str = None, template_path: str or path
     if template_name and not template_path:
         template_path = get_registered(template_name=template_name, project_path=project_path)
 
-    if not template_path:
-        logger.error(f'Template Path {template_path} has not been registered.')
-        return None
-
-    template_path = pathlib.Path(template_path).resolve()
-    template_json = template_path / 'template.json'
-    if not template_json.is_file():
-        logger.error(f'Template json {template_json} is not present.')
-        return None
-    if not validation.valid_o3de_template_json(template_json):
-        logger.error(f'Template json {template_json} is not valid.')
-        return None
-
-    with template_json.open('r') as f:
-        try:
-            template_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warning(f'{template_json} failed to load: {str(e)}')
-        else:
-            return template_json_data
-
-    return None
+    return get_json_data('template', template_path, validation.valid_o3de_template_json)
 
 
 def get_restricted_json_data(restricted_name: str = None, restricted_path: str or pathlib.Path = None,
@@ -567,28 +536,26 @@ def get_restricted_json_data(restricted_name: str = None, restricted_path: str o
     if restricted_name and not restricted_path:
         restricted_path = get_registered(restricted_name=restricted_name, project_path=project_path)
 
-    if not restricted_path:
-        logger.error(f'Restricted Path {restricted_path} has not been registered.')
+    return get_json_data('restricted', restricted_path, validation.valid_o3de_restricted_json)
+
+
+def get_repo_json_data(repo_uri: str) -> dict or None:
+    if not repo_uri:
+        logger.error('Must specify a Repo Uri.')
         return None
 
-    restricted_path = pathlib.Path(restricted_path).resolve()
-    restricted_json = restricted_path / 'restricted.json'
-    if not restricted_json.is_file():
-        logger.error(f'Restricted json {restricted_json} is not present.')
-        return None
-    if not validation.valid_o3de_restricted_json(restricted_json):
-        logger.error(f'Restricted json {restricted_json} is not valid.')
-        return None
+    repo_json = get_repo_path(repo_uri=repo_uri)
 
-    with restricted_json.open('r') as f:
-        try:
-            restricted_json_data = json.load(f)
-        except json.JSONDecodeError as e:
-            logger.warning(f'{restricted_json} failed to load: {str(e)}')
-        else:
-            return restricted_json_data
+    return get_json_data_file(repo_json, "Repo", validation.valid_o3de_repo_json)
 
-    return None
+
+def get_repo_path(repo_uri: str, cache_folder: str or pathlib.Path = None) -> pathlib.Path:
+    if not cache_folder:
+        cache_folder = get_o3de_cache_folder()
+
+    repo_manifest = f'{repo_uri}/repo.json'
+    repo_sha256 = hashlib.sha256(repo_manifest.encode())
+    return cache_folder / str(repo_sha256.hexdigest() + '.json')
 
 
 def get_registered(engine_name: str = None,
@@ -743,9 +710,7 @@ def get_registered(engine_name: str = None,
     elif isinstance(repo_name, str):
         cache_folder = get_o3de_cache_folder()
         for repo_uri in json_data['repos']:
-            repo_uri = pathlib.Path(repo_uri).resolve()
-            repo_sha256 = hashlib.sha256(repo_uri.encode())
-            cache_file = cache_folder / str(repo_sha256.hexdigest() + '.json')
+            cache_file = get_repo_path(repo_uri=repo_uri, cache_folder=cache_folder)
             if cache_file.is_file():
                 repo = pathlib.Path(cache_file).resolve()
                 with repo.open('r') as f:

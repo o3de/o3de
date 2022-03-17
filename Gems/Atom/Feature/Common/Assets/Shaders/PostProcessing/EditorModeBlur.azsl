@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <EditorModeCommon.azsli>
+#include <EditorModeDepthTransition.azsli>
+
+partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    //! Width of kernal to apply box blur effect.
+    float m_kernalWidth;
+}
+
+//! Applies a box blur of the specified kernal width
+//! @note This is not an efficient implementation. Future work will replace this with a multi-pass Gaussian blur.
+float3 Blur(const float2 uv, const float kernalWidth)
+{
+    const float2 maskSize = GetImageSize(PassSrg::m_entityMask);
+    const float2 unormalizedUv = float2(uv.x * maskSize.x, uv.y * maskSize.y);
+    const float2 maskSizeReciprocal = float2(1., 1.0) / maskSize;
+    float3 outColor = float3(0., 0., 0.);
+
+    float weights = 0.;
+    for(float u = -kernalWidth; u <= kernalWidth; u+=1.)
+    {
+        for(float v = -kernalWidth; v <= kernalWidth; v+=1.)
+        {
+            weights += 1.;
+            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * maskSizeReciprocal).rgb;
+        }
+    }
+
+    return outColor / weights;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    
+    // Blur effect
+    float3 finalEffect = Blur(IN.m_texCoord, PassSrg::m_kernalWidth);
+  
+    // Apply the depth transition to the blend amount
+    const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    const float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
+    
+    // Apply the visual effect to non-mask entities, leaving mask entities untouched
+    OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, finalEffect, t);
+
+    return OUT;
+}

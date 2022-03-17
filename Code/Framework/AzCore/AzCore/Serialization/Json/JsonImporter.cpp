@@ -76,7 +76,7 @@ namespace AZ
                     importAbsPath.Append(importName);
 
                     rapidjson::Value patch;
-                    ResultCode resolveResult = settings.m_importer->ResolveImport(&jsonDoc, patch, importDirective, importAbsPath, allocator);
+                    ResultCode resolveResult = settings.m_importer->ResolveImport(&jsonDoc, patch, importDirective, importAbsPath, allocator, settings);
                     if (resolveResult.GetOutcome() == Outcomes::Catastrophic)
                     {
                         return resolveResult;
@@ -163,7 +163,8 @@ namespace AZ
 
     JsonSerializationResult::ResultCode BaseJsonImporter::ResolveImport(rapidjson::Value* importPtr,
         rapidjson::Value& patch, const rapidjson::Value& importDirective,
-        const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator)
+        const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator,
+        JsonImportSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -185,7 +186,9 @@ namespace AZ
         }
         else
         {
-            return ResultCode(Tasks::Import, Outcomes::Catastrophic);
+            return settings.m_reporting(
+                AZStd::string::format("Failed to import file '%s'. Reason: '%s'", importedFilePath.c_str(), importedObject.GetError().c_str()),
+                ResultCode(Tasks::Import, Outcomes::Catastrophic), importedFilePath.Native());
         }
 
         return ResultCode(Tasks::Import, Outcomes::Success);

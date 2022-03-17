@@ -9,8 +9,12 @@
                 "Path": "Passes/TerrainDetailTextureComputePass.pass"
             },
             {
-                "Name": "TerrainMacroTextureComputePassTemplate",
-                "Path": "Passes/TerrainMacroTextureComputePass.pass"
+                "Name": "TerrainMacroTextureClipmapGenerationPassTemplate",
+                "Path": "Passes/TerrainMacroTextureClipmapGenerationPass.pass"
+            },
+            {
+                "Name": "TerrainParentPassTemplate",
+                "Path": "Passes/TerrainParentPass.pass"
             }
         ]
     }

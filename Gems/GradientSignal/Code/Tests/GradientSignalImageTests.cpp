@@ -43,10 +43,16 @@ namespace UnitTest
             float m_stepSize;
             AZ::Vector2 m_expectedPixels[32];
 
+            bool m_advancedMode = false;
+            GradientSignal::ChannelToUse m_channelToUse = GradientSignal::ChannelToUse::Red;
+            GradientSignal::CustomScaleType m_customScaleType = GradientSignal::CustomScaleType::None;
+            float m_scaleRangeMin = 0.0f;
+            float m_scaleRangeMax = 1.0f;
+
             static const AZ::Vector2 EndOfList;
         };
 
-        void TestPixels(GradientSignal::GradientSampler& sampler, AZ::u32 width, AZ::u32 height, float stepSize, const AZStd::vector<AZ::Vector3>& expectedPoints)
+        void TestPixels(GradientSignal::GradientSampler& sampler, AZ::u32 width, AZ::u32 height, float stepSize, float expectedValue, const AZStd::vector<AZ::Vector3>& expectedPoints)
         {
             AZStd::vector<AZ::Vector3> foundPoints;
 
@@ -58,7 +64,7 @@ namespace UnitTest
                     GradientSignal::GradientSampleParams params;
                     params.m_position = AZ::Vector3(x + texelOffset, y + texelOffset, 0.0f); 
                     float value = sampler.GetValue(params);
-                    if (value == 1.0f)
+                    if (AZ::IsClose(value, expectedValue))
                     {
                         foundPoints.push_back(AZ::Vector3(x, y, 0.0f));
                     }
@@ -80,7 +86,7 @@ namespace UnitTest
             }
         }
 
-        void RunPixelTest(const PixelTestSetup& test)
+        void RunPixelTest(const PixelTestSetup& test, float expectedValue = FLT_MIN)
         {
             // Create the base entity
             auto entity = CreateEntity();
@@ -93,6 +99,11 @@ namespace UnitTest
                 test.m_imageSize, test.m_imageSize, static_cast<AZ::u32>(test.m_pixel.GetX()), static_cast<AZ::u32>(test.m_pixel.GetY()));
             config.m_tilingX = test.m_tiling;
             config.m_tilingY = test.m_tiling;
+            config.m_advancedMode = test.m_advancedMode;
+            config.m_channelToUse = test.m_channelToUse;
+            config.m_customScaleType = test.m_customScaleType;
+            config.m_scaleRangeMin = test.m_scaleRangeMin;
+            config.m_scaleRangeMax = test.m_scaleRangeMax;
             entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);
 
             // Create the Gradient Transform Component.
@@ -106,7 +117,6 @@ namespace UnitTest
 
             // Create a transform that locates our gradient in the center of our desired mock Shape.
             auto transform = entity->CreateComponent<AzFramework::TransformComponent>();
-            transform->SetLocalTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
             transform->SetWorldTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
 
             // All components are created, so activate the entity
@@ -124,10 +134,16 @@ namespace UnitTest
                 expectedPoints.push_back(AZ::Vector3(expectedPoint.GetX(), expectedPoint.GetY(), 0.0f));
             }
 
+            // Calculate the expected value at the non-zero points if an explicit value wasn't specified
+            if (expectedValue == FLT_MIN)
+            {
+                expectedValue = (255 - aznumeric_cast<AZ::u8>(test.m_channelToUse)) / 255.0f;
+            }
+
             // Create a gradient sampler and run through a series of points to see if they match expectations.
             GradientSignal::GradientSampler gradientSampler;
             gradientSampler.m_gradientId = entity->GetId();
-            TestPixels(gradientSampler, test.m_validationSize, test.m_validationSize, test.m_stepSize, expectedPoints);
+            TestPixels(gradientSampler, test.m_validationSize, test.m_validationSize, test.m_stepSize, expectedValue, expectedPoints);
         }
     };
 
@@ -140,7 +156,7 @@ namespace UnitTest
         {
             4, AZ::Vector2( 0, 0 ),                                       // Source image:  4 x 4 with (0, 0) set
             4, 1.0f,                                                      // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
-            GradientSignal::WrappingType::None,     
+            GradientSignal::WrappingType::None,
             4, 1.0f,                                                      // Validate that in 4 x 4 range, only 0, 0 is set
             { AZ::Vector2(0, 0), PixelTestSetup::EndOfList }
         };
@@ -306,6 +322,154 @@ namespace UnitTest
         RunPixelTest(test);
     }
 
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedChannelR)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Red                           // Use default Red channel
+        };
+
+        RunPixelTest(test);
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedChannelG)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Green                         // Use Green channel
+        };
+
+        RunPixelTest(test);
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedChannelB)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Blue                          // Use Blue channel
+        };
+
+        RunPixelTest(test);
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedChannelA)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Alpha                         // Use Alpha channel
+        };
+
+        RunPixelTest(test);
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedTerrarium)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Terrarium                     // Use Terrarium format
+        };
+
+        // Calculate expepcted value based on Terrarium file format equation:
+        // (red * 256 + green + blue / 256) - 32768
+        // More information can be found here:  https://www.mapzen.com/blog/terrain-tile-service/
+        // The R/G/B AZ::u8 values start at 255.0f (the max for this type) and then are
+        // decremented by 1 so that the tests can differentiate when switching
+        // between different channels
+        const float r = 1.0f;
+        const float g = 254.0f / 255.0f;
+        const float b = 253.0f / 255.0f;
+        constexpr float redMultiplier = (255.0f * 256.0f) / 65536.0f;
+        constexpr float greenMultiplier = 255.0f / 65536.0f;
+        constexpr float blueMultiplier = (255.0f / 256.0f) / 65536.0f;
+        float expectedValue = (r * redMultiplier) + (g * greenMultiplier) + (b * blueMultiplier);
+
+        RunPixelTest(test, expectedValue);
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedManualScale)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        const float customMin = 0.0f;
+        const float customMax = 0.5f;
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Red,
+            GradientSignal::CustomScaleType::Manual,                    // Enable manual scale
+            customMin,                                                  // Custom min
+            customMax                                                   // Custom max
+        };
+
+        // Calculate the expected value for the scaled value
+        const float pixelValue = 1.0f;
+        float expectedValue = pixelValue * (customMax - customMin) + customMin;
+
+        RunPixelTest(test, expectedValue);
+    }
+
+    TEST_F(GradientSignalImageTestsFixture, ImageGradientComponentAdvancedAutoScale)
+    {
+        // Set one pixel, map Gradient 1:1 to lookup space, get same pixel back
+        PixelTestSetup test =
+        {
+            4, AZ::Vector2(0, 0),                                       // Source image:  4 x 4 with (0, 0) set
+            4, 1.0f,                                                    // Mapped Shape:  4 x 4 with tiling (1.0, 1.0), unbounded
+            GradientSignal::WrappingType::None,
+            4, 1.0f,                                                    // Validate that in 4 x 4 range, only 0, 0 is set
+            { AZ::Vector2(0, 0), PixelTestSetup::EndOfList },
+            true,                                                       // Enabled the advanced mode
+            GradientSignal::ChannelToUse::Green,                        // Use Green channel
+            GradientSignal::CustomScaleType::Auto                       // Enable Auto scale
+        };
+
+        // The green channel value is 254/255, and the minimum is still 0, so we can
+        // calculate the expected auto scale value from that
+        const float minimum = 0.0f;
+        constexpr float value = (254.0f / 255.0f);
+        const float multiplier = value - minimum;
+        float expectedValue = (value * multiplier) + minimum;
+        RunPixelTest(test, expectedValue);
+    }
 
     TEST_F(GradientSignalImageTestsFixture, GradientTransformComponent_TransformTypes)
     {

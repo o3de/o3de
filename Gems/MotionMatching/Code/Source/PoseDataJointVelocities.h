@@ -15,9 +15,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    /**
-     * Extends a given pose with joint-relative linear and angular velocities.
-     **/
+    //! Extends a given pose with joint-relative linear and angular velocities.
     class EMFX_API PoseDataJointVelocities
         : public PoseData
     {
@@ -32,12 +30,14 @@ namespace EMotionFX::MotionMatching
 
         void LinkToActorInstance(const ActorInstance* actorInstance) override;
         void LinkToActor(const Actor* actor) override;
+
+        //! Zero all linear and angular velocities.
         void Reset() override;
 
         void CopyFrom(const PoseData* from) override;
         void Blend(const Pose* destPose, float weight) override;
 
-        void CalculateVelocity(MotionInstance* motionInstance, size_t relativeToJointIndex);
+        void CalculateVelocity(const ActorInstance* actorInstance, Motion* motion, float requestedSampleTime, size_t relativeToJointIndex);
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color) const override;
 
         AZStd::vector<AZ::Vector3>& GetVelocities()                         { return m_velocities; }

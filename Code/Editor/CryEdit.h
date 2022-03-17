@@ -138,7 +138,6 @@ public:
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);
     ECreateLevelResult CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName);
-    static void InitDirectory();
     bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
@@ -158,11 +157,6 @@ public:
 
     // Print to stdout even if there out has been redirected
     void PrintAlways(const AZStd::string& output);
-
-    //! Launches a detached process
-    //! \param process The path to the process to start
-    //! \param args Space separated list of arguments to pass to the process on start.
-    void StartProcessDetached(const char* process, const char* args);
 
     //! Launches the Lua Editor/Debugger
     //! \param files A space separated list of aliased paths
@@ -371,7 +365,6 @@ private:
     void OnDisplayGotoPosition();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
-    void OnValidatelevel();
     void OnToolsPreferences();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);

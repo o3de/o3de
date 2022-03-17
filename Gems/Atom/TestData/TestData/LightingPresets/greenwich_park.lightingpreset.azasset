@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Greenwich Park",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{774DB244-5F01-50DF-8D62-FE9298357F87}",

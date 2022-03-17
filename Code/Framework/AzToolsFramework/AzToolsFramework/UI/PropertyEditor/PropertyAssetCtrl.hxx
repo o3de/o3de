@@ -244,8 +244,9 @@ namespace AzToolsFramework
         void SetCurrentAssetHint(const AZStd::string& hint);
         void SetDefaultAssetID(const AZ::Data::AssetId& defaultID);
         virtual void PopupAssetPicker();
+        virtual void PickAssetSelectionFromDialog(AssetSelectionModel& selection, QWidget* parent);
         void OnClearButtonClicked();
-        void UpdateAssetDisplay();
+        virtual void UpdateAssetDisplay();
         void OnLineEditFocus(bool focus);
         virtual void OnEditButtonClicked();
         void OnThumbnailClicked();
@@ -280,7 +281,9 @@ namespace AzToolsFramework
         virtual QWidget* CreateGUI(QWidget* pParent) override;
         static void ConsumeAttributeInternal(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
         void ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        static void WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node);
         virtual void WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
+        static bool ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node);
         virtual bool ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 

@@ -104,7 +104,7 @@ namespace EMotionFX
                 ActorComponent::GetRequiredServices(required);
             }
 
-            void SetRenderFlag(ActorRenderFlagBitset renderFlags);
+            void SetRenderFlag(ActorRenderFlags renderFlags);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -114,7 +114,7 @@ namespace EMotionFX
             void OnMaterialChanged();
             void OnMaterialPerActorChanged();
             void OnLODLevelChanged();
-            void OnDebugDrawFlagChanged();
+            void OnRenderFlagChanged();
             void OnSkinningMethodChanged();
             AZ::Crc32 OnAttachmentTypeChanged();
             AZ::Crc32 OnAttachmentTargetChanged();
@@ -124,6 +124,7 @@ namespace EMotionFX
             bool AttachmentTargetJointVisibility();
             AZStd::string AttachmentJointButtonText();
             void InitializeMaterial(ActorAsset& actorAsset);
+            void UpdateRenderFlags();
 
             void LaunchAnimationEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&);
 
@@ -150,6 +151,10 @@ namespace EMotionFX
 
             bool IsAtomDisabled() const;
 
+            AZ::Crc32 AddEditorMaterialComponent();
+            bool HasEditorMaterialComponent() const;
+            AZ::u32 GetEditorMaterialComponentVisibility() const;
+
             AZ::Data::Asset<ActorAsset>         m_actorAsset;               ///< Assigned actor asset.
             AZStd::vector<AZ::EntityId>         m_attachments;              ///< A list of entities that are attached to this entity.
             bool                                m_renderSkeleton;           ///< Toggles rendering of character skeleton.
@@ -164,7 +169,8 @@ namespace EMotionFX
             size_t                              m_lodLevel;
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
-            ActorRenderFlagBitset                 m_debugRenderFlags;         ///< Actor debug render flag
+            ActorRenderFlags                    m_renderFlags;              ///< Actor render flag               
+            bool m_addMaterialComponentFlag = false;                        ///< Flag used for button placement
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.

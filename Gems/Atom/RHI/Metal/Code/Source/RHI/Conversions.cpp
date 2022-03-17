@@ -20,7 +20,6 @@ namespace AZ
         namespace Platform
         {
             MTLPixelFormat ConvertPixelFormat(RHI::Format format);
-            MTLBlitOption GetBlitOption(RHI::Format format);
             MTLSamplerAddressMode ConvertAddressMode(RHI::AddressMode addressMode);
             MTLResourceOptions CovertStorageMode(MTLStorageMode storageMode);
             MTLStorageMode GetCPUGPUMemoryMode();
@@ -176,42 +175,26 @@ namespace AZ
             //! Use MTLStorageModeManaged (Mac only) - If a buffer is populated once by the CPU and accessed frequently by the GPU.
             //! Use MTLStorageModeManaged (Mac only) - If a buffer changes frequently , is relatively large, and is accessed by both the CPU and the GPU. 
 
-            if (RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::Constant))
-            {
-                return MTLStorageModeShared;
-            }
-            
-            //Only HeapMemoryLevel::Device contains a BufferPoolresolver to transfer memory from staging to GPU
+            //Any buffer tagged with HeapMemoryLevel::Device will go to MTLStorageModePrivate and it will be updated via staging
+            //memory so that it does not need to worry about triple buffering.
             if(heapMemoryLevel == RHI::HeapMemoryLevel::Device)
             {
-                if (RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::ShaderWrite))
-                {
-                    return MTLStorageModePrivate;
-                }
-                
-                if (RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::CopyWrite))
-                {
-                    return MTLStorageModePrivate;
-                }
-                
-                if (RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::Indirect))
-                {
-                    return MTLStorageModePrivate;
-                }
+                return MTLStorageModePrivate;
             }
             
-            if (RHI::CheckBitsAll(descriptor.m_bindFlags, RHI::BufferBindFlags::InputAssembly))
-            {
-                return GetCPUGPUMemoryMode();
-            }
-            
-            //This flag is used for IA buffers that is updated frequently and hence shared mmory is the best fit
-            if (RHI::CheckBitsAll(descriptor.m_bindFlags, RHI::BufferBindFlags::DynamicInputAssembly))
+            //All other buffers falls under HeapMemoryLevel::Host tag and should be triple buffered at higher level or you may
+            //run into issues where cpu is writing over memory that has not been consumed by the gpu for the previous frame.
+            //Anything tagged with constant and DynamicInputAssembly will use shared memory as we expect the buffers to be updated
+            //frequently and the buffers should be relatively small.
+            if (RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::Constant | RHI::BufferBindFlags::DynamicInputAssembly))
             {
                 return MTLStorageModeShared;
             }
-                 
-            return GetCPUGPUMemoryMode();
+            else
+            {
+                //Everything else falls under MTLStorageModeManaged memory on Macs and MTLStorageModeShared on ios.
+                return GetCPUGPUMemoryMode();
+            }
         }
     
         MTLCPUCacheMode ConvertBufferCPUCacheMode()
@@ -257,7 +240,6 @@ namespace AZ
             
             return usageFlags;
         }
-        
         
         MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap)
         {
@@ -1387,9 +1369,27 @@ namespace AZ
             return Platform::IsDepthStencilSupported(mtlDevice, format);
         }
     
-        MTLBlitOption GetBlitOption(RHI::Format format)
+        MTLBlitOption GetBlitOption(RHI::Format format, RHI::ImageAspect imageAspect)
         {
-            return Platform::GetBlitOption(format);
+            switch(format)
+            {
+                case RHI::Format::PVRTC4_UNORM:
+                case RHI::Format::PVRTC4_UNORM_SRGB:
+                    return MTLBlitOptionRowLinearPVRTC;
+                case RHI::Format::D32_FLOAT_S8X24_UINT:
+                {
+                    if(imageAspect == RHI::ImageAspect::Depth)
+                    {
+                        return MTLBlitOptionDepthFromDepthStencil;
+                    }
+                    else
+                    {
+                        return MTLBlitOptionStencilFromDepthStencil;
+                    }
+                }
+                default:
+                    return MTLBlitOptionNone;
+            }
         }
     
         MTLResourceUsage GetImageResourceUsage(RHI::ShaderInputImageAccess imageAccess)

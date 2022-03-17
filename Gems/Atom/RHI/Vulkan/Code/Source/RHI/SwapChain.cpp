@@ -525,7 +525,7 @@ namespace AZ
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Swapchain created. Width: %u, Height: %u.", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
+            AZ_TracePrintf("Vulkan", "Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
 
             // Do not recycle the semaphore because they may not ever get signaled and since
             // we can't recycle Vulkan semaphores we just delete them.
@@ -551,13 +551,13 @@ namespace AZ
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-            AZ_TracePrintf("Swapchain", "Obtained presentable images.");
+            AZ_TracePrintf("Swapchain", "Obtained presentable images.\n");
 
             // Acquire the first image
             uint32_t imageIndex = 0;
             result = AcquireNewImage(&imageIndex);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Acquired the first image.");
+            AZ_TracePrintf("Swapchain", "Acquired the first image.\n");
 
             return RHI::ResultCode::Success;
         }

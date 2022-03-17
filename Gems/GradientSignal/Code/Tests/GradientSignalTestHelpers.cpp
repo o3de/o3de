@@ -91,13 +91,19 @@ namespace UnitTest
         {
             for (AZ::u32 x = 0; x < width; ++x)
             {
-                if ((x == static_cast<int>(pixelX)) && (y == static_cast<int>(pixelY)))
+                for (AZ::u32 component = 0; component < pixelSize; ++component)
                 {
-                    image.push_back(pixelValue);
-                }
-                else
-                {
-                    image.push_back(0);
+                    // The specific pixel value will be based on subtracting the
+                    // component index from the max value, for ease of calculating
+                    // the expected specific value based on which component is being tested
+                    if ((x == static_cast<int>(pixelX)) && (y == static_cast<int>(pixelY)))
+                    {
+                        image.push_back(pixelValue - aznumeric_cast<AZ::u8>(component));
+                    }
+                    else
+                    {
+                        image.push_back(0);
+                    }
                 }
             }
         }
@@ -171,7 +177,7 @@ namespace UnitTest
 
         const AZ::u32 arraySize = 1;
         const AZ::u32 mipCountTotal = 1;
-        const auto format = AZ::RHI::Format::R8_UNORM;
+        const auto format = AZ::RHI::Format::R8G8B8A8_UNORM;
         const AZ::u32 pixelSize = AZ::RHI::GetFormatComponentCount(format);
 
         AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildSpecificPixelMipChainAsset(mipCountTotal, arraySize, width, height, pixelSize, pixelX, pixelY);
@@ -259,7 +265,7 @@ namespace UnitTest
         const float width = aznumeric_cast<float>(queryRange);
 
         // Call GetValue() on the EBus for every height and width in our ranges.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (float y = 0.0f; y < height; y += 1.0f)
             {
@@ -285,7 +291,7 @@ namespace UnitTest
         int64_t totalQueryPoints = queryRange * queryRange;
 
         // Call GetValues() for every height and width in our ranges.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Set up our vector of query positions. This is done inside the benchmark timing since we're counting the work to create
             // each query position in the single GetValue() call benchmarks, and will make the timing more directly comparable.
@@ -313,7 +319,7 @@ namespace UnitTest
         const float width = aznumeric_cast<float>(queryRange);
 
         // Call GetValue() through the GradientSampler for every height and width in our ranges.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (float y = 0.0f; y < height; y += 1.0f)
             {
@@ -343,7 +349,7 @@ namespace UnitTest
         const int64_t totalQueryPoints = queryRange * queryRange;
 
         // Call GetValues() through the GradientSampler for every height and width in our ranges.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Set up our vector of query positions. This is done inside the benchmark timing since we're counting the work to create
             // each query position in the single GetValue() call benchmarks, and will make the timing more directly comparable.
