@@ -35,5 +35,3 @@ ly_add_target(
             AZ::AzCore
             AZ::GridMate
 )
-
-ly_add_dependencies(LuaIDE GridHub)

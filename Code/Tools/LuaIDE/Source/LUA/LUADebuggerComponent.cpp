@@ -19,9 +19,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Script/ScriptContext.h>
 
-#include <GridMate/Serialize/Buffer.h>
-#include <GridMate/Serialize/DataMarshal.h>
-
 #include <AzFramework/TargetManagement/TargetManagementAPI.h>
 #include <AzFramework/Script/ScriptDebugMsgReflection.h>
 
@@ -155,7 +152,7 @@ namespace LUADebugger
         if (GetDesiredTarget(targetInfo))
         {
             // its all good!
-            // the target ID (for gridmate) is targetInfo.m_networkID, as a AZ::u32;
+            // the target ID (for connection) is targetInfo.m_networkID, as a AZ::u32;
             // send the script fragment and execute it!
             AzFramework::ScriptDebugRequest request(AZ_CRC("ExecuteScript", 0xc35e01e7), debugName.c_str());
             request.AddCustomBlob(scriptData, strlen(scriptData) + 1);

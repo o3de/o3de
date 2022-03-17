@@ -8,15 +8,18 @@
 
 #include "StandaloneToolsApplication.h"
 
-#include <AzCore/std/containers/array.h>
+#include <AzCore/IO/Streamer/StreamerComponent.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/std/containers/array.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
+#include <AzNetworking/Framework/INetworkInterface.h>
+#include <AzNetworking/Framework/INetworking.h>
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/IPCComponent.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/IO/Streamer/StreamerComponent.h>
 
 namespace StandaloneTools
 {
@@ -36,6 +39,8 @@ namespace StandaloneTools
         LegacyFramework::Application::RegisterCoreComponents();
 
         RegisterComponentDescriptor(LegacyFramework::IPCComponent::CreateDescriptor());
+
+        RegisterComponentDescriptor(AzNetworking::NetworkingSystemComponent::CreateDescriptor());
 
         RegisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
@@ -58,6 +63,7 @@ namespace StandaloneTools
 
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
+        EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
         EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
@@ -69,6 +75,11 @@ namespace StandaloneTools
             if (const auto userSettings = azrtti_cast<AZ::UserSettingsComponent*>(component))
             {
                 userSettingsAdded[userSettings->GetProviderId()] = true;
+            }
+
+            if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
+            {
+                targetManagement->SetTargetAsHost(true);
             }
         }
 
@@ -83,10 +94,31 @@ namespace StandaloneTools
         }
     }
 
+    bool BaseApplication::StartDebugService()
+    {
+        for (auto& networkInterface : AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces())
+        {
+            if (networkInterface.first == AZ::Name("TargetManagement"))
+            {
+                const auto console = AZ::Interface<AZ::IConsole>::Get();
+                uint16_t target_port = AzFramework::DefaultTargetPort;
+
+                if (console->GetCvarValue("target_port", target_port) != AZ::GetValueResult::Success)
+                {
+                    AZ_Assert(false, "TargetManagement port could not be found");
+                }
+
+                networkInterface.second->Listen(target_port);
+                return true;
+            }
+        }
+        return false;
+    }
+
     void BaseApplication::OnApplicationEntityActivated()
     {
-        [[maybe_unused]] bool launched = LaunchDiscoveryService();
-        AZ_Warning("EditorApplication", launched, "Could not launch GridHub; Only replay is available.");
+        [[maybe_unused]] bool launched = StartDebugService();
+        AZ_Warning("EditorApplication", launched, "Could not start hosting; Only replay is available.");
     }
 
     void BaseApplication::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
@@ -131,4 +163,4 @@ namespace StandaloneTools
         AzFramework::StringFunc::Path::Join(userStoragePath.c_str(), fileName.c_str(), userStoragePath);
         return userStoragePath;
     }
-}
+} // namespace StandaloneTools

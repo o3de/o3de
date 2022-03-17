@@ -8,5 +8,4 @@
 
 set(FILES
     ../../Source/Editor/LuaEditor.rc
-    Source/StandaloneApplication_Windows.cpp
 )

@@ -25,4 +25,4 @@ namespace AWSCore
             return ""; // no-op
         }
     } // namespace Platform
-} // namespace GridMate
+} // namespace AWSCore

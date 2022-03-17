@@ -17,6 +17,8 @@
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
+
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -279,6 +281,7 @@ namespace AzToolsFramework
                 azrtti_typeid<Components::EditorLevelComponentAPIComponent>(),
                 azrtti_typeid<Components::EditorEntityActionComponent>(),
                 azrtti_typeid<Components::PropertyManagerComponent>(),
+                azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
                 azrtti_typeid<AzFramework::TargetManagementComponent>(),
                 azrtti_typeid<AssetSystem::AssetSystemComponent>(),
                 azrtti_typeid<PerforceComponent>(),

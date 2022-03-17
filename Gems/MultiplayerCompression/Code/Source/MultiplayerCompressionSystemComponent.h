@@ -17,7 +17,7 @@ namespace MultiplayerCompression
 {
     /**
     * System component whose sole purpose is to own a compression factory and expose it via EBUS
-    * so GridMate/Multiplayer Gem can easily ingest the compressor.
+    * so Multiplayer Gem can easily ingest the compressor.
     */
     class MultiplayerCompressionSystemComponent
         : public AZ::Component

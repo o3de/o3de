@@ -15,19 +15,49 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+#include <AzNetworking/Utilities/TimedThread.h>
 
 namespace AZ
 {
     class SerializeContext;
 }
 
+namespace AzFrameworkPackets
+{
+    class TargetConnect;
+    class TargetMessage;
+}
+
+namespace AzNetworking
+{
+    class INetworkInterface;
+}
+
 namespace AzFramework
 {
+    constexpr uint16_t DefaultTargetPort = 6777;
+
     class TargetManagementNetworkImpl;
     struct TargetManagementSettings;
 
+    //! @class TargetJoinThread
+    //! @brief A class for polling a connection to the host target
+    class TargetJoinThread final : public AzNetworking::TimedThread
+    {
+    public:
+        TargetJoinThread(int updateRate);
+    private:
+        AZ_DISABLE_COPY_MOVE(TargetJoinThread);
+
+        void OnStart() override {};
+        void OnStop() override {};
+        void OnUpdate(AZ::TimeMs updateRateMs) override;
+    };
+
     class TargetManagementComponent
         : public AZ::Component
+        , public AzNetworking::IConnectionListener
         , private TargetManager::Bus::Handler
         , private AZ::SystemTickBus::Handler
     {
@@ -48,6 +78,17 @@ namespace AzFramework
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         //////////////////////////////////////////////////////////////////////////
+
+        bool HandleRequest(
+            AzNetworking::IConnection* connection,
+            const AzNetworking::IPacketHeader& packetHeader,
+            const AzFrameworkPackets::TargetConnect& packet);
+        bool HandleRequest(
+            AzNetworking::IConnection* connection,
+            const AzNetworking::IPacketHeader& packetHeader,
+            const AzFrameworkPackets::TargetMessage& packet);
+
+        void SetTargetAsHost(bool isHost);
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -78,17 +119,35 @@ namespace AzFramework
         void OnMsgParsed(TmMsg** ppMsg, void* classPtr, const AZ::Uuid& classId, const AZ::SerializeContext* sc);
         //////////////////////////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////////////////////////
+        // IConnectionListener interface
+        AzNetworking::ConnectResult ValidateConnect(
+            const AzNetworking::IpAddress& remoteAddress,
+            const AzNetworking::IPacketHeader& packetHeader,
+            AzNetworking::ISerializer& serializer) override;
+        void OnConnect(AzNetworking::IConnection* connection) override;
+        AzNetworking::PacketDispatchResult OnPacketReceived(
+            AzNetworking::IConnection* connection,
+            const AzNetworking::IPacketHeader& packetHeader,
+            AzNetworking::ISerializer& serializer) override;
+        void OnPacketLost(AzNetworking::IConnection* connection, AzNetworking::PacketId packetId) override;
+        void OnDisconnect(
+            AzNetworking::IConnection* connection,
+            AzNetworking::DisconnectReason reason,
+            AzNetworking::TerminationEndpoint endpoint) override;
+        ////////////////////////////////////////////////////////////////////////
+
         // All communication updates run on a separate thread to avoid being blocked by breakpoints
         void TickThread();
 
-        // Joins the hub's neighborhood
-        void JoinNeighborhood();
-
+        TargetInfo                                      m_targetInfo;
         AZStd::intrusive_ptr<TargetManagementSettings>  m_settings;
         TargetContainer                                 m_availableTargets;
-        AZStd::chrono::system_clock::time_point         m_reconnectionTime; // time of next connection attempt
+        AZStd::unique_ptr<TargetJoinThread>             m_targetJoinThread;
+        bool m_isTargetHost = false;
 
         AZStd::vector<char, AZ::OSStdAllocator> m_tmpInboundBuffer;
+        uint32_t m_tmpInboundBufferPos;
 
         TmMsgQueue          m_inbox;
         AZStd::mutex        m_inboxMutex;
@@ -101,13 +160,13 @@ namespace AzFramework
         AZ::SerializeContext*   m_serializeContext;
 
         // these are used for target communication
-        AZStd::atomic_bool              m_stopRequested;
-        AZStd::thread                   m_threadHandle;
-        TargetManagementNetworkImpl*    m_networkImpl;
+        AZStd::atomic_bool                  m_stopRequested;
+        AZStd::thread                       m_threadHandle;
+        TargetManagementNetworkImpl*        m_networkImpl;
+        AzNetworking::INetworkInterface*    m_networkInterface;
     };
 }   // namespace AzFramework
 
 #endif // AZFRAMEWORK_TARGETMANAGEMENTCOMPONENT_H
 #pragma once
-
 

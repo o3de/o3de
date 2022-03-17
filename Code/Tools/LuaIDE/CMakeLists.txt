@@ -32,7 +32,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            AZ::GridMate
+            AZ::AzNetworking
             AZ::AzQtComponents
             ${additional_dependencies}
     COMPILE_DEFINITIONS 

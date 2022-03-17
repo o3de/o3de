@@ -34,7 +34,7 @@ namespace AzFramework
     typedef AZ::u64 MsgSlotId;                          // meant to be a crc32, but using AZ::u64 so it can be other stuff (pointers)
 
     // id for the local application
-    static const AZ::u32 k_selfNetworkId = static_cast<AZ::u32>(-1);
+    static const AZ::u32 k_selfNetworkId = 0xFFFFFFFF;
 
     enum TargetFlags
     {
@@ -67,7 +67,7 @@ namespace AzFramework
         bool  IsValid() const;
         const char* GetDisplayName() const;
         AZ::u32 GetPersistentId() const;
-        int GetNetworkId() const;
+        AZ::u32 GetNetworkId() const;
         AZ::u32 GetStatusFlags() const;
         bool IsIdentityEqualTo(const TargetInfo& other) const;
 
@@ -75,7 +75,7 @@ namespace AzFramework
         time_t          m_lastSeen;     // how long ago was this process seen?  Used internally for filtering and showing the user the GUI even when the target is temporarily disconnected.
         AZStd::string   m_displayName;
         AZ::u32         m_persistentId; // this string is set by the target and its CRC is currently used to determine desired targets.
-        AZ::u32         m_networkId;    // this is the actual connection id, used for gridmate communications, and is NOT persistent.
+        AZ::u32         m_networkId;    // this is the actual connection id, used for AzNetworking communications.
         AZ::u32         m_flags;        // status flags
     };
 
@@ -207,7 +207,7 @@ namespace AzFramework
         MsgCB   m_cb;
     };
 
-    // this is the bus you should implement if you're interested in receiving broadcasts from teh target manager
+    // this is the bus you should implement if you're interested in receiving broadcasts from the target manager
     // about network and target status.
     class TargetManagerClient
         : public AZ::EBusTraits
@@ -236,7 +236,7 @@ namespace AzFramework
         typedef AZ::EBus<TargetManager> Bus;
 
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // there's only one target manager right now
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;  // theres only one target manager right now
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // there's only one target manager right now
         virtual ~TargetManager() { }
 
         // call this function to retrieve the list of currently known targets - this is mainly used for GUIs
