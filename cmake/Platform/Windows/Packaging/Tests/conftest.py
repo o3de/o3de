@@ -20,12 +20,14 @@ from subprocess import run, list2cmdline
 from tempfile import NamedTemporaryFile, mkdtemp
 from time import sleep
 
+
 def pytest_addoption(parser):
     """ Add custom PyTest arguments. """
     parser.addoption("--installer-uri", action="store", default="")
     parser.addoption("--install-root", action="store", default=PurePath('C:/O3DE/0.0.0.0'))
     # we use a directory outside of %TEMP% because otherwise MSB8029 warns it might cause incremental build issues 
     parser.addoption("--project-path", action="store", default=PurePath('C:/Workspace/TestProject'))
+
 
 class SessionContext:
     """ Holder for test session constants and helper functions. """
@@ -54,7 +56,6 @@ class SessionContext:
         self.log_reader_thread = threading.Thread(target=self._tail_log, daemon=True)
         self.log_reader_thread.start()
         self.log_reader_shutdown = False
-
     
     def _tail_log(self):
         """ Tail the log file and print to screen for easy viewing in Jenkins. """
@@ -136,6 +137,7 @@ class SessionContext:
         # uninstall engine in case we failed before the uninstall test has run
         if self.installer_path.is_file():
             self.run([str(self.installer_path) , f"InstallFolder={self.install_root}", "/quiet","/uninstall"], timeout=30*60)
+
 
 @pytest.fixture(scope="session")
 def context(request):

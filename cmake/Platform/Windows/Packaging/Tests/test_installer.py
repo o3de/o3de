@@ -6,9 +6,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Pytest test configuration file.
 
-Example method to run these tests:
+Example command to run these tests:
 
-pytest cmake/Platform/Windows/Packaging/Tests -s \
+pytest cmake/Platform/Windows/Packaging/Tests \
+    --capture=no \
     --log-file=C:/workspace/test_installer.log \
     --installer-uri=file:///C:/path/to/o3de_installer.exe \
     --install-root=C:/O3DE/0.0.0.0 \
