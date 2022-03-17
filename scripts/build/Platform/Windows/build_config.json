@@ -352,11 +352,18 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
-  "installer": {
+  "installer_pipe": { 
     "TAGS": [
       "nightly-clean",
       "nightly-installer"
     ],
+    "steps": [
+      "installer",
+      "installer_test"
+    ]
+  },
+  "installer": {
+    "TAGS": [],
     "PIPELINE_ENV":{
       "NODE_LABEL":"windows-packaging"
     },

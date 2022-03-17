@@ -287,11 +287,17 @@
         "CMAKE_TARGET": "install"
     }
   },
-  "installer": {
+  "installer_pipe": { 
     "TAGS": [
       "nightly-clean",
       "nightly-installer"
     ],
+    "steps": [
+      "installer"
+    ]
+  },
+  "installer": {
+    "TAGS": [],
     "PIPELINE_ENV":{
       "NODE_LABEL":"linux-707531fc7-packaging"
     },
