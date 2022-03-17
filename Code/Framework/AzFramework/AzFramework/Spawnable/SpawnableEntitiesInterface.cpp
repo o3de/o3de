@@ -285,7 +285,10 @@ namespace AzFramework
         : m_payload(rhs.m_payload)
         , m_interface(rhs.m_interface)
     {
-        rhs.m_interface->IncrementTicketReference(rhs.m_payload);
+        if (rhs.IsValid())
+        {
+            rhs.m_interface->IncrementTicketReference(rhs.m_payload);
+        }
     }
 
     EntitySpawnTicket::EntitySpawnTicket(EntitySpawnTicket&& rhs)
