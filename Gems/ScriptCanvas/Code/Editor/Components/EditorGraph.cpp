@@ -450,54 +450,97 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::RefreshVariableReferences(const ScriptCanvas::VariableId& variableId)
     {
+        AZStd::unordered_map<ScriptCanvas::Node*, AZStd::pair<ScriptCanvas::NodeReplacementConfiguration, LiveSlotStates>>
+            replacementInfoByToBeReplacedNode;
+        AZStd::unordered_map<ScriptCanvas::Node*, AZStd::pair<ScriptCanvas::NodeReplacementConfiguration, LiveSlotStates>>
+            replacementInforByNewNode;
+
         auto nodeEntities = GetNodeEntities();
+        AZStd::vector<ScriptCanvas::Node*> nodes;
+        nodes.reserve(nodeEntities.size());
+
+        // first discover all nodes that need a change
+        // get their states, and cache their replacement configuration
         for (auto nodeEntity : nodeEntities)
         {
             if (auto node = FindNode(nodeEntity->GetId()))
             {
                 if (auto configOptional = CreateVariableNodeThatRequiresUpdate(*node, variableId, GetScriptCanvasId()))
                 {
-                    ScriptCanvas::NodeUpdateSlotReport report;
-                    // do a test run, and see what happens, just replace with a new node type in place
-                    // replace all the connections in the function below as well
-                    auto replaceOutcome = ReplaceLiveNode(*node, *configOptional, report);
-                    // all the connections and slots will have to be type checked
-                    if (replaceOutcome.IsSuccess())
+                    auto slotStateOutcome = GetSlotState(*node);
+                    if (!slotStateOutcome.IsSuccess())
                     {
-                        node = replaceOutcome.GetValue();
+                        AZ_Error("ScriptCanvas"
+                            , false
+                            , "Could not complete type change of variable. Failed to get slot state from to-be-replaced Node %s: "
+                            , node->GetNodeName().c_str()
+                            , slotStateOutcome.GetError().c_str());
+                        return;
                     }
-                    else
-                    {
-                        // warn / report
-                        continue;
-                    }
+
+                    replacementInfoByToBeReplacedNode[node] = AZStd::make_pair(*configOptional, slotStateOutcome.TakeValue());
                 }
 
-                // here, sanity check all the connections
-                for (auto slot : node->ModAllSlots())
+                nodes.push_back(node);
+            }
+        }
+
+        // replace all required nodes, update all references to the variable that has been changed
+        for (auto node : nodes)
+        {
+            if (auto iter = replacementInfoByToBeReplacedNode.find(node); iter != replacementInfoByToBeReplacedNode.end())
+            {
+                const auto nodeName = node->GetNodeName();
+
+                ScriptCanvas::NodeUpdateSlotReport report;
+
+                auto replaceOutcome = ReplaceLiveNode(*node, iter->second.first);
+                if (replaceOutcome.IsSuccess())
                 {
-                    // check this one more carefully
-                    if (slot->IsData() && slot->IsVariableReference() && slot->GetVariableReference() == variableId)
-                    {
-                        slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
-                    }
+                    node = replaceOutcome.GetValue();
+                    replacementInforByNewNode[node] = iter->second;
                 }
+                else
+                {
+                    AZ_Error("ScriptCanvas"
+                        , false
+                        , "Could not complete type change of variable. Failed to update node: %s - %s"
+                        , nodeName.c_str()
+                        , replaceOutcome.GetError().c_str());
+                    return;
+                }
+            }
+
+            for (auto slot : node->ModAllSlots())
+            {
+                if (slot->IsData() && slot->IsVariableReference() && slot->GetVariableReference() == variableId)
+                {
+                    slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
+                }
+            }
+        }
+
+        // finally, replace all (possible) connections
+        // only for replaced nodes
+        for (auto replaceInfo : replacementInforByNewNode)
+        {
+            auto slotStateUpdateOutcome = UpdateSlotState(*replaceInfo.first, replaceInfo.second.first, replaceInfo.second.second);
+            if (!slotStateUpdateOutcome.IsSuccess())
+            {
+                AZ_Error("ScriptCanvas"
+                    , false
+                    , "Could not complete type change of variable. Failed to relplace connections for %s: %s"
+                    , replaceInfo.first->GetNodeName().c_str()
+                    , slotStateUpdateOutcome.GetError().c_str());
+                return;
             }
         }
     }
 
     AZ::Outcome<ScriptCanvas::Node*, AZStd::string> EditorGraph::ReplaceLiveNode
         ( ScriptCanvas::Node& oldNode
-        , ScriptCanvas::NodeReplacementConfiguration& nodeConfig
-        , [[maybe_unused]] ScriptCanvas::NodeUpdateSlotReport& nodeSlotUpdateReport)
+        , ScriptCanvas::NodeReplacementConfiguration& nodeConfig)
     {
-        const auto slotStateOutcome = GetSlotState(oldNode);
-        if (!slotStateOutcome.IsSuccess())
-        {
-            return AZ::Failure(AZStd::string::format
-                ( "ReplaceLiveNode: Failure to get slot state from to-be-replaced Node: %s", slotStateOutcome.GetError().c_str()));
-        }
-
         ScriptCanvas::Node* returnNode = nodeConfig.create ? nodeConfig.create(oldNode) : nullptr;
         if (!returnNode)
         {
@@ -515,17 +558,11 @@ namespace ScriptCanvasEditor
         oldNodeGraphCanvasIds.insert(oldNodeGraphCanvasId);
         GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, oldNodeGraphCanvasIds);
         // ScriptCanvas::Node& oldNode is now deleted
+
         AZ::EntityId newNodeGraphCanvasId;
         SceneMemberMappingRequestBus::EventResult(newNodeGraphCanvasId, returnNode->GetEntityId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
         GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::AddNode, newNodeGraphCanvasId, position, false);
         returnNode->SetNodeDisabledFlag(wasDisabled);
-
-        auto slotStateUpdateOutcome = UpdateSlotState(*returnNode, nodeConfig, slotStateOutcome.GetValue());
-        if (!slotStateUpdateOutcome.IsSuccess())
-        {
-            return AZ::Failure(AZStd::string::format("EditorGraph::ReplaceLiveNode %s", slotStateUpdateOutcome.GetError().c_str()));
-        }
-
         return AZ::Success(returnNode);
     }
 
@@ -541,7 +578,7 @@ namespace ScriptCanvasEditor
         if (IsData(slotState.type))
         {
             slotState.value.SetType(nodeSlot.GetDataType());
-            
+
             if (nodeSlot.IsVariableReference())
             {
                 slotState.variableReference = nodeSlot.GetVariableReference();
@@ -564,6 +601,8 @@ namespace ScriptCanvasEditor
                     slotState.value.SetToDefaultValueOfType();
                 }
             }
+
+            info.isGetSetVariableDataSlot = node.GetVariableInputSlot() == &nodeSlot || node.GetVariableOutputSlot() == &nodeSlot;
         }
 
         info.connections = AZStd::move(node.GetConnectedNodes(nodeSlot));
@@ -595,26 +634,22 @@ namespace ScriptCanvasEditor
     }
 
     const EditorGraph::LiveSlotInfo* EditorGraph::FindMatchingSlotState
-        ( [[maybe_unused]] ScriptCanvas::Node& node
+        ( ScriptCanvas::Node& node
         , ScriptCanvas::Slot& slot
         , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
         , const LiveSlotStates& slotState) const
     {
-        auto slotName = slot.GetName();
-        auto slotType = slot.GetType();
+        const bool isGetSetVariableDataSlot = node.GetVariableInputSlot() == &slot || node.GetVariableOutputSlot() == &slot;
+        const auto slotName = slot.GetName();
+        const auto slotType = slot.GetType();
 
-        auto iter = AZStd::find_if(slotState.begin(), slotState.end(), [&slotName, &slotType](const LiveSlotInfo& info)
-        {
-            if (info.state.name == slotName)
+        auto iter = AZStd::find_if(slotState.begin(), slotState.end()
+            , [&slotName, &slotType, &isGetSetVariableDataSlot](const LiveSlotInfo& info)
             {
-                if (info.state.type == slotType)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        });
+                return info.state.type == slotType
+                    && ((info.isGetSetVariableDataSlot && isGetSetVariableDataSlot)
+                        || info.state.name == slotName);
+            });
 
         return iter != slotState.end() ? iter : nullptr;
     }

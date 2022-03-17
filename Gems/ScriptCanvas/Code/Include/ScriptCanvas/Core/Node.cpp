@@ -3536,6 +3536,11 @@ namespace ScriptCanvas
         return {};
     }
 
+    const Slot* Node::GetVariableInputSlot() const
+    {
+        return nullptr;
+    }
+
     const Slot* Node::GetVariableOutputSlot() const
     {
         return nullptr;

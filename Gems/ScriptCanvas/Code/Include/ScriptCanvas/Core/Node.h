@@ -729,6 +729,8 @@ namespace ScriptCanvas
 
         virtual VariableId GetVariableIdWritten(const Slot*) const;
 
+        virtual const Slot* GetVariableInputSlot() const;
+
         virtual const Slot* GetVariableOutputSlot() const;
 
         virtual bool IsFormalLoop() const { return false; }
