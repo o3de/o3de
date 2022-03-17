@@ -36,7 +36,7 @@ namespace AZ
                 RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,
                 const ShaderResourceGroupInfoList& srgInfoList,
                 const RootConstantsInfo& rootConstantsInfo,
-                const RHI::ShaderCompilerArguments& shaderCompilerArguments) override;
+                const RHI::ShaderBuildArguments& shaderBuildArguments) override;
 
             bool CompilePlatformInternal(
                 const AssetBuilderSDK::PlatformInfo& platform,
@@ -45,13 +45,7 @@ namespace AZ
                 RHI::ShaderHardwareStage shaderStage,
                 const AZStd::string& tempFolderPath,
                 StageDescriptor& outputDescriptor,
-                const RHI::ShaderCompilerArguments& shaderCompilerArguments) const override;
-
-            AZStd::string GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const override;
-
-            AZStd::string GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const override;
-
-            bool BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const override;
+                const RHI::ShaderBuildArguments& shaderBuildArguments) const override;
 
             const char* GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const override;
 
@@ -63,7 +57,7 @@ namespace AZ
                 const AZStd::string& tempFolder,
                 const AZStd::string& entryPoint,
                 const RHI::ShaderHardwareStage shaderStageType,
-                const RHI::ShaderCompilerArguments& shaderCompilerArguments,
+                const RHI::ShaderBuildArguments& shaderBuildArguments,
                 AZStd::vector<uint8_t>& m_byteCode,
                 ByProducts& products) const;
 

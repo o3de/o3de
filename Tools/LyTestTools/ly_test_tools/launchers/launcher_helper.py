@@ -8,10 +8,17 @@ Main launchers module, provides a facade for creating launchers.
 """
 
 import logging
+from warnings import warn
 
 import ly_test_tools
 import ly_test_tools._internal.managers.workspace as workspace_manager
 import ly_test_tools.launchers.platforms.base as base_launcher
+
+
+# These are the launchers *currently* supported by the test tools. While other launchers exist, they are not supported
+# by the test tools.
+GAME_LAUNCHERS = ['windows', 'linux', 'android']
+SERVER_LAUNCHERS = ['windows_dedicated', 'linux_dedicated']
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +33,29 @@ def create_launcher(workspace, launcher_platform=ly_test_tools.HOST_OS_PLATFORM,
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
     :return: Launcher instance
     """
+    warn("This method is deprecated and will be removed on 3/31/22. Please use create_game_launcher instead.",
+         DeprecationWarning, stacklevel=2)
     launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
     if not launcher_class:
+        log.warning(f"Using default launcher for '{ly_test_tools.HOST_OS_PLATFORM}' "
+                    f"as no option is available for '{launcher_platform}'")
+        launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_PLATFORM)
+    return launcher_class(workspace, args)
+
+
+def create_game_launcher(workspace, launcher_platform=ly_test_tools.HOST_OS_PLATFORM, args=None):
+    # type: (workspace_manager.AbstractWorkspaceManager, str, list[str]) -> base_launcher.Launcher
+    """
+    Create a GameLauncher compatible with the specified workspace, defaulting to a generic one otherwise.
+
+    :param workspace: lumberyard workspace to use
+    :param launcher_platform: the platform to target for a launcher (i.e. 'windows' or 'android')
+    :param args: List of arguments to pass to the launcher's 'args' argument during construction
+    :return: Launcher instance
+    """
+    if launcher_platform in GAME_LAUNCHERS:
+        launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
+    else:
         log.warning(f"Using default launcher for '{ly_test_tools.HOST_OS_PLATFORM}' "
                     f"as no option is available for '{launcher_platform}'")
         launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_PLATFORM)
@@ -45,8 +73,30 @@ def create_dedicated_launcher(workspace, launcher_platform=ly_test_tools.HOST_OS
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
     :return: Launcher instance
     """
+    warn("This method is deprecated and will be removed on 3/31/22. Please use create_server_launcher instead.",
+         DeprecationWarning, stacklevel=2)
+
     launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
     if not launcher_class:
+        log.warning(f"Using default dedicated launcher for '{ly_test_tools.HOST_OS_DEDICATED_SERVER}' "
+                    f"as no option is available for '{launcher_platform}'")
+        launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_DEDICATED_SERVER)
+    return launcher_class(workspace, args)
+
+
+def create_server_launcher(workspace, launcher_platform=ly_test_tools.HOST_OS_PLATFORM, args=None):
+    # type: (workspace_manager.AbstractWorkspaceManager, str, list[str]) -> base_launcher.Launcher
+    """
+    Create a ServerLauncher compatible with the specified workspace, defaulting to a generic one otherwise.
+
+    :param workspace: lumberyard workspace to use
+    :param launcher_platform: the platform to target for a launcher (i.e. 'windows' or 'android')
+    :param args: List of arguments to pass to the launcher's 'args' argument during construction
+    :return: Launcher instance
+    """
+    if launcher_platform in SERVER_LAUNCHERS:
+        launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
+    else:
         log.warning(f"Using default dedicated launcher for '{ly_test_tools.HOST_OS_DEDICATED_SERVER}' "
                     f"as no option is available for '{launcher_platform}'")
         launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_DEDICATED_SERVER)
@@ -84,6 +134,8 @@ def create_generic_launcher(workspace, launcher_platform, exe_file_name, args=No
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
     :return: Launcher instance.
     """
+    warn("This method is deprecated and will be removed on 3/31/22. Please use another helper method instead.",
+         DeprecationWarning, stacklevel=2)
     launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
     if not launcher_class:
         log.warning(f"Using default generic executable launcher for '{ly_test_tools.HOST_OS_GENERIC_EXECUTABLE}' "

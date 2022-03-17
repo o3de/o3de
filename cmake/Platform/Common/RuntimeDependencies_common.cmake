@@ -7,7 +7,7 @@
 #
 
 set(LY_COPY_PERMISSIONS "OWNER_READ OWNER_WRITE OWNER_EXECUTE")
-set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE APPLICATION)
+set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS UTILITY MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE APPLICATION)
 
 # There are several runtime dependencies to handle:
 # 1. Dependencies to 3rdparty libraries. This involves copying IMPORTED_LOCATION to the folder where the target is. 
@@ -273,8 +273,15 @@ function(ly_delayed_generate_runtime_dependencies)
 
         # Generate the output file, note the STAMP_OUTPUT_FILE need to match with the one defined in LYWrappers.cmake
         set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.stamp)
-        set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
-        set(target_file "$<TARGET_FILE:${target}>")
+        # UTILITY type targets does not have a target file, so the CMAKE_RUNTIME_OUTPUT_DIRECTORY is used
+        if (NOT target_type STREQUAL UTILITY)
+            set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
+            set(target_file "$<TARGET_FILE:${target}>")
+        else()
+            set(target_file_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+            unset(target_file)
+        endif()
+
         ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
         string(CONFIGURE "${LY_COPY_COMMANDS}" LY_COPY_COMMANDS @ONLY)
         string(CONFIGURE "${template_file}" configured_template_file @ONLY)

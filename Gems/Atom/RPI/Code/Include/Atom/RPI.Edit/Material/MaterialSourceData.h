@@ -16,6 +16,7 @@
 #include <AzCore/JSON/document.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 
 namespace AZ
@@ -60,7 +61,7 @@ namespace AZ
             
             AZStd::string m_parentMaterial; //!< The immediate parent of this material
 
-            uint32_t m_materialTypeVersion = 0; //!< The version of the material type that was used to configure this material
+            uint32_t m_materialTypeVersion = MaterialAsset::UnspecifiedMaterialTypeVersion; //!< The version of the material type that was used to configure this material
 
             enum class ApplyVersionUpdatesResult
             {
@@ -105,6 +106,9 @@ namespace AZ
                 AZStd::string_view materialSourceFilePath = "",
                 bool elevateWarnings = true,
                 AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
+
+            //! Inspects the content of the MaterialPropertyValue to see if it is a string that appears to be an image file path.
+            static bool LooksLikeImageFileReference(const MaterialPropertyValue& value);
 
         private:
 

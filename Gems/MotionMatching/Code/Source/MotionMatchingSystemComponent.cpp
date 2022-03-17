@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -29,6 +30,9 @@
 
 namespace EMotionFX::MotionMatching
 {
+    AZ_CVAR(float, mm_debugDrawVelocityScale, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Scaling value used for velocity debug rendering.");
+
     void MotionMatchingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -105,13 +109,15 @@ namespace EMotionFX::MotionMatching
         MotionMatchingRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        // Register the motion matching anim graph node
-        EMotionFX::AnimGraphObject* motionMatchNodeObject = EMotionFX::AnimGraphObjectFactory::Create(azrtti_typeid<EMotionFX::MotionMatching::BlendTreeMotionMatchNode>());
-        auto motionMatchNode = azdynamic_cast<EMotionFX::MotionMatching::BlendTreeMotionMatchNode*>(motionMatchNodeObject);
-        if (motionMatchNode)
+        // Register the motion matching anim graph node.
         {
-            EMotionFX::Integration::EMotionFXRequestBus::Broadcast(&EMotionFX::Integration::EMotionFXRequests::RegisterAnimGraphObjectType, motionMatchNode);
-            delete motionMatchNode;
+            EMotionFX::AnimGraphObject* animGraphObject = EMotionFX::AnimGraphObjectFactory::Create(azrtti_typeid<EMotionFX::MotionMatching::BlendTreeMotionMatchNode>());
+            auto animGraphNode = azdynamic_cast<EMotionFX::MotionMatching::BlendTreeMotionMatchNode*>(animGraphObject);
+            if (animGraphNode)
+            {
+                EMotionFX::Integration::EMotionFXRequestBus::Broadcast(&EMotionFX::Integration::EMotionFXRequests::RegisterAnimGraphObjectType, animGraphNode);
+            }
+            delete animGraphObject;
         }
 
         // Register the joint velocities pose data.

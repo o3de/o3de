@@ -170,6 +170,8 @@ namespace AZ
 
             materialAssetCreator.Begin(assetId, materialTypeAsset, processingMode == MaterialAssetProcessingMode::PreBake);
 
+            materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
+
             if (!m_parentMaterial.empty())
             {
                 auto parentMaterialAsset = AssetUtils::LoadAsset<MaterialAsset>(materialSourceFilePath, m_parentMaterial);
@@ -339,6 +341,8 @@ namespace AZ
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
             materialAssetCreator.Begin(assetId, materialTypeAsset.GetValue(), finalize);
+            
+            materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
 
             while (!parentSourceDataStack.empty())
             {
@@ -361,6 +365,13 @@ namespace AZ
 
             return Failure();
         }
+        
+        /*static*/ bool MaterialSourceData::LooksLikeImageFileReference(const MaterialPropertyValue& value)
+        {
+            // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
+            // the string (for the extension) we can assume it's an Image file path.
+            return value.Is<AZStd::string>() && AzFramework::StringFunc::Contains(value.GetValue<AZStd::string>(), ".");
+        }
 
         void MaterialSourceData::ApplyPropertiesToAssetCreator(
             AZ::RPI::MaterialAssetCreator& materialAssetCreator, const AZStd::string_view& materialSourceFilePath) const
@@ -376,7 +387,7 @@ namespace AZ
                     // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
                     // the string (for the extension) we assume it's an Image and look up the referenced Asset. Otherwise, we can assume
                     // it's an Enum value and just preserve the original string.
-                    if (propertyValue.Is<AZStd::string>() && AzFramework::StringFunc::Contains(propertyValue.GetValue<AZStd::string>(), "."))
+                    if (LooksLikeImageFileReference(propertyValue))
                     {
                         Data::Asset<ImageAsset> imageAsset;
 

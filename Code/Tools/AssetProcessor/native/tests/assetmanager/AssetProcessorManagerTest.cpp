@@ -2150,6 +2150,22 @@ TEST_F(PathDependencyTest, WildcardProductPathDependenciesWithBackSlash_Deferred
         /*buildDependenciesFirst*/ false);
 }
 
+TEST_F(PathDependencyTest, Wildcard_ResolvingTwice_DependenciesNotDuplicated)
+{
+    // Regression test: make sure resolving the dependencies twice doesn't result in duplicate entries in the database
+
+    RunWildcardTest(
+        /*useCorrectDatabaseSeparator*/ true,
+        AssetBuilderSDK::ProductPathDependencyType::ProductFile,
+        /*buildDependenciesFirst*/ true
+    );
+    RunWildcardTest(
+        /*useCorrectDatabaseSeparator*/ true,
+        AssetBuilderSDK::ProductPathDependencyType::ProductFile,
+        /*buildDependenciesFirst*/ false);
+}
+
+
 // Tests product path dependencies using absolute paths to source files
 TEST_F(PathDependencyTest, AbsoluteDependencies_Existing_ResolveCorrectly)
 {
