@@ -9,6 +9,8 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
+#include <Atom/Features/Debug.azsli>
+
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
@@ -140,6 +142,13 @@ float3 SampleGlobalIBL(uint sampleIndex, uint2 screenCoords, float depth, float3
 // Pixel Shader
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
+    if(!IsDiffuseLightingEnabled() || !IsIndirectLightingEnabled())
+    {
+        PSOutput OUT;
+        OUT.m_color = float4(0, 0, 0, 0);
+        return OUT;
+    }
+
     uint2 screenCoords = IN.m_position.xy;
     float imageScaleInverse = 1.0f / PassSrg::m_imageScale;
 

@@ -22,6 +22,8 @@ set(FILES
     Source/CubeMapCapture/EditorCubeMapRenderer.cpp
     Source/CubeMapCapture/EditorCubeMapCaptureComponent.h
     Source/CubeMapCapture/EditorCubeMapCaptureComponent.cpp
+    Source/Debug/RenderDebugEditorComponent.cpp
+    Source/Debug/RenderDebugEditorComponent.h
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
     Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h
