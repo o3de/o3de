@@ -8,25 +8,27 @@ Pytest test configuration file.
 
 """
 import pytest
-from pathlib import Path, PurePath
+import boto3
 import shutil
 import os
 import io
 import threading
 import urllib.parse
 import urllib.request
+from pathlib import Path, PurePath
+from subprocess import run, list2cmdline
 from tempfile import NamedTemporaryFile, mkdtemp
 from time import sleep
-from subprocess import run, list2cmdline
-import boto3
 
 def pytest_addoption(parser):
+    """ Add custom PyTest arguments. """
     parser.addoption("--installer-uri", action="store", default="")
     parser.addoption("--install-root", action="store", default=PurePath('C:/O3DE/0.0.0.0'))
+    # we use a directory outside of %TEMP% because otherwise MSB8029 warns it might cause incremental build issues 
     parser.addoption("--project-path", action="store", default=PurePath('C:/Workspace/TestProject'))
 
 class SessionContext:
-    """Holder for session constants and helper functions"""
+    """ Holder for test session constants and helper functions. """
     def __init__(self, request):
         # setup to capture subprocess output
         self.log_file = request.config.getoption("--log-file")
@@ -41,18 +43,21 @@ class SessionContext:
         self.installer_path = self._get_local_installer_path(request.config.getoption("--installer-uri"))
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
         self.project_path = Path(request.config.getoption("--project-path")).resolve()
+
+        self.cmake_runtime_path = self.install_root / 'cmake' / 'runtime'
         self.engine_bin_path = self.install_root / 'bin' / 'Windows' / 'profile' / 'Default'
         self.project_build_path = self.project_path / 'build' / 'Windows'
         self.project_bin_path = self.project_build_path / 'bin' / 'profile'
-        self.cmake_runtime_path = self.install_root / 'cmake' / 'runtime'
 
         # start a log reader thread to print the output to screen
         self.log_reader = io.open(self.temp_file.name, 'r', buffering=1)
         self.log_reader_thread = threading.Thread(target=self._tail_log, daemon=True)
         self.log_reader_thread.start()
         self.log_reader_shutdown = False
+
     
     def _tail_log(self):
+        """ Tail the log file and print to screen for easy viewing in Jenkins. """
         while True:
             line = self.log_reader.readline()
             if line == '':
@@ -62,7 +67,7 @@ class SessionContext:
                 print(line, end='')
 
     def _get_local_installer_path(self, uri):
-        """ return the local path to the installer, downloading the remote file if necessary """
+        """ Return the local path to the installer, downloading the remote file if necessary """
         parsed_uri = urllib.parse.urlparse(uri)
         if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps', 's3']:
             installer_path = Path(self.temp_dir) / 'installer.exe'
@@ -83,7 +88,7 @@ class SessionContext:
             return Path(parsed_uri.path.lstrip('/')).resolve()
 
     def _verify(self, file):
-        """ assert if signtool.exe exists and cannot verify the given file """
+        """ Assert if signtool.exe exists and cannot verify the given file. """
         try:
             signtool_path_result = run(['powershell','-Command',"(Resolve-Path \"C:\\Program Files (x86)\\Windows Kits\\10\\bin\\*\\x64\" | Select-Object -Last 1).Path"], text=True, capture_output=True)
             if signtool_path_result.returncode == 0:
@@ -94,13 +99,16 @@ class SessionContext:
             pass
 
     def run(self, command, timeout=None, cwd=None):
+        """ Run command with the correct environment and logging settings. """
         self.temp_file.write('\n' + list2cmdline(command) + '\n')
         self.temp_file.flush()
         windows_home_path = str(self.home_path)
-        shell_env = dict(os.environ, HOME=windows_home_path, HOMEPATH=windows_home_path)
-        return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True, env=shell_env)
+        env = dict(os.environ, HOME=windows_home_path, HOMEPATH=windows_home_path)
+        return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True, env=env)
 
     def cleanup(self):
+        """ Clean up temporary testing artifacts. """
+
         # wait a few seconds for processes to stop using resources 
         sleep(5)
 
@@ -124,6 +132,10 @@ class SessionContext:
         # delete temporary directory and files
         print(f"Removing {self.temp_dir}")
         shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+        # uninstall engine in case we failed before the uninstall test has run
+        if self.installer_path.is_file():
+            self.run([str(self.installer_path) , f"InstallFolder={self.install_root}", "/quiet","/uninstall"], timeout=30*60)
 
 @pytest.fixture(scope="session")
 def context(request):

@@ -27,7 +27,7 @@ from subprocess import TimeoutExpired
 
 @pytest.fixture(scope="session")
 def test_installer_fixture(context):
-    """Installer executable succeeds"""
+    """ Installer executable succeeds. """
     assert context.installer_path.is_file(), f"Invalid installer path {context.installer_path}"
 
     # when the installer is run with timeout of 30 minutes
@@ -49,13 +49,13 @@ def test_installer_fixture(context):
     ]
 )
 def test_binaries_exist(test_installer_fixture, context, filename):
-    """Installer key binaries exist"""
+    """ Installer key binaries exist. """
     assert (context.engine_bin_path / filename).is_file(), f"{filename} not found in {context.engine_bin_path}"
 
 
 @pytest.fixture(scope="session")
 def test_o3de_registers_engine_fixture(test_installer_fixture, context):
-    """Engine is registered when o3de.exe is run"""
+    """ Engine is registered when o3de.exe is run. """
     try:
         result = context.run([str(context.engine_bin_path / 'o3de.exe')], timeout=15)
 
@@ -85,7 +85,7 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
 
 @pytest.fixture(scope="session")
 def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
-    """o3de CLI creates a project"""
+    """ o3de.bat CLI creates a project. """
     o3de_path = context.install_root / 'scripts' / 'o3de.bat'
     result = context.run([str(o3de_path),'create-project','--project-path', str(context.project_path)])
     assert result.returncode == 0, f"o3de.bat failed to create a project with exit code {result.returncode}"
@@ -96,7 +96,7 @@ def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
 
 @pytest.fixture(scope="session")
 def test_compile_project_fixture(test_create_project_fixture, context):
-    """Project can be configured and compiled"""
+    """ Project can be configured and compiled. """
     project_name = Path(context.project_path).name
     cmake_path = next(context.cmake_runtime_path.glob('**/cmake.exe'))
     launcher_target = f"{project_name}.GameLauncher"
@@ -106,7 +106,7 @@ def test_compile_project_fixture(test_create_project_fixture, context):
     assert result.returncode == 0
     assert (context.project_build_path / f'{project_name}.sln').is_file()
 
-    # build profile
+    # build profile, release is not yet supported in the current installer
     result = context.run([str(cmake_path),'--build', str(context.project_build_path), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
     assert result.returncode == 0
     assert (context.project_bin_path / f'{launcher_target}.exe').is_file()
@@ -114,7 +114,7 @@ def test_compile_project_fixture(test_create_project_fixture, context):
 
 @pytest.fixture(scope="session")
 def test_run_asset_processor_batch_fixture(test_compile_project_fixture, context):
-    """Test asset batch processing before running Editor and Launcher tests which need assets"""
+    """ AssetProcessorBatch can process assets before running Editor and Launcher tests which use them. """
     try:
         result = context.run([str(context.engine_bin_path / 'AssetProcessorBatch.exe'),f'--project-path="{context.project_path}"','/platform=pc'], timeout=30*60)
         assert result.returncode == 0, f"AssetProcessorBatch.exe failed with exit code {result.returncode}"
@@ -124,8 +124,8 @@ def test_run_asset_processor_batch_fixture(test_compile_project_fixture, context
 
 @pytest.fixture(scope="session")
 def test_run_editor_fixture(test_run_asset_processor_batch_fixture, context):
-    """Editor can be run without crashing"""
-    # write out the attribution shown to avoid the popup stalling editor load
+    """ Editor can be run without crashing. """
+    # write out the attribution shown regset to avoid the modal popup stalling editor load
     aws_attribution_regset = {
             "Amazon": {
                 "AWS": {
@@ -160,7 +160,7 @@ def test_run_editor_fixture(test_run_asset_processor_batch_fixture, context):
 
 @pytest.fixture(scope="session")
 def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
-    """Game launcher can be run without crashing"""
+    """ Game launcher can be run without crashing. """
     project_name = Path(context.project_path).name
     launcher_filename = f"{project_name}.GameLauncher.exe"
     try:
@@ -184,7 +184,7 @@ def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
 
 @pytest.fixture(scope="session")
 def test_uninstall_fixture(test_run_launcher_fixture, test_run_editor_fixture, context):
-    """Uninstall succeeds and unregisters the engine"""
+    """ Uninstall succeeds and unregisters the engine. """
     assert context.installer_path.is_file(), f"Invalid installer path {context.installer_path}"
 
     engine_json_path = context.install_root / 'engine.json'
@@ -210,5 +210,7 @@ def test_uninstall_fixture(test_run_launcher_fixture, test_run_editor_fixture, c
 
 
 def test_installer(test_uninstall_fixture):
-    """ Change the test_uninstall_fixture param to the specific fixture you want to test during development. """
+    """ PyTest needs one non-fixture test. Change the 'test_uninstall_fixture' param to the 
+    specific fixture you want to test during development. 
+    """
     assert True
