@@ -129,7 +129,7 @@ namespace ScriptCanvasEditor
         return result;
     }
 
-    AZ::Outcome<void, AZStd::string> LoadDataFromJson
+    AZ::Outcome<AZStd::string, AZStd::string> LoadDataFromJson
         ( ScriptCanvas::ScriptCanvasData& dataTarget
         , AZStd::string_view source
         , AZ::SerializeContext& serializeContext)
@@ -140,16 +140,17 @@ namespace ScriptCanvasEditor
         AZ::JsonDeserializerSettings settings;
         settings.m_serializeContext = &serializeContext;
         settings.m_metadata.Create<SerializationListeners>();
-
+        AZStd::string deserializationErrors;
         auto loadResult = JSRU::LoadObjectFromStringByType
             ( &dataTarget
             , azrtti_typeid<ScriptCanvasData>()
             , source
+            , deserializationErrors
             , &settings);
 
         if (!loadResult.IsSuccess())
         {
-            return loadResult;
+            return AZ::Failure(loadResult.TakeError());
         }
                     
         if (auto graphData = dataTarget.ModGraph())
@@ -169,9 +170,8 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string("Failed to find graph data after loading source"));
         }
 
-        return AZ::Success();
+        return AZ::Success(deserializationErrors);
     }
-
 
     AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, EditorAssetTree* parent)
     {
@@ -189,7 +189,7 @@ namespace ScriptCanvasEditor
                     , handle.ToString().c_str(), loadAssetOutcome.GetError().c_str()));
             }
 
-            handle = SourceHandle(loadAssetOutcome.GetValue(), handle.Id(), handle.Path().c_str());
+            handle = SourceHandle(loadAssetOutcome.GetValue().handle, handle.Id(), handle.Path().c_str());
         }
 
         AZStd::vector<SourceHandle> dependentAssets;
@@ -210,7 +210,8 @@ namespace ScriptCanvasEditor
                 }
             }
 
-            if (classData->m_typeId == subgraphInterfaceAssetTypeID)
+            const auto azTypeId = classData->m_azRtti->GetTypeId();
+            if (azTypeId == subgraphInterfaceAssetTypeID)
             {
                 auto id = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance)->GetId();
                 dependentAssets.push_back(SourceHandle(nullptr, id.m_guid, {}));
@@ -249,7 +250,7 @@ namespace ScriptCanvasEditor
         return AZ::Success(result);
     }
 
-    AZ::Outcome<ScriptCanvasEditor::SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path)
+    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
 
@@ -273,10 +274,18 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string("no serialize context available to properly parse source file"));
         }
 
+        FileLoadSuccess success;
+
         // attempt JSON deserialization...
         auto jsonResult = LoadDataFromJson(*scriptCanvasData, AZStd::string_view{ asString.begin(), asString.size() }, *serializeContext);
-        if (!jsonResult.IsSuccess())
+
+        if (jsonResult.IsSuccess())
         {
+            success.deserializationErrors = jsonResult.TakeValue();
+        }
+        else
+        {
+            success.deserializationErrors = "JSON deserialization failed. Attempting deprecated ObjectStream read from XML.";
             // ...try legacy xml as a failsafe
             AZ::IO::ByteContainerStream byteStream(&asString);
             if (!AZ::Utils::LoadObjectFromStreamInPlace
@@ -289,21 +298,29 @@ namespace ScriptCanvasEditor
             }
         }
 
-        if (auto entity = scriptCanvasData->GetScriptCanvasEntity())
-        {
-            AZ_Assert(entity->GetState() == AZ::Entity::State::Constructed, "Entity loaded in bad state");
-            ScriptCanvasFileHandlingCpp::MakeGraphComponentEntityIdsUnique(entity, serializeContext);
-            auto graph = entity->FindComponent<ScriptCanvasEditor::EditorGraph>();
-            graph->MarkOwnership(*scriptCanvasData);
-            entity->Init();
-            entity->Activate();
-        }
-        else
+        auto entity = scriptCanvasData->GetScriptCanvasEntity();
+        if (!entity)
         {
             return AZ::Failure(AZStd::string("Loaded script canvas file was missing a necessary Entity."));
         }
+        else if (entity->GetState() != AZ::Entity::State::Constructed)
+        {
+            return AZ::Failure(AZStd::string("Entity loaded in bad state"));
+        }
 
-        return AZ::Success(ScriptCanvasEditor::SourceHandle(scriptCanvasData, path));
+        auto graph = entity->FindComponent<ScriptCanvasEditor::EditorGraph>();
+        if (!graph)
+        {
+            return AZ::Failure(AZStd::string("Entity loaded without required EditorGraph component."));
+        }
+
+        ScriptCanvasFileHandlingCpp::MakeGraphComponentEntityIdsUnique(entity, serializeContext);
+        graph->MarkOwnership(*scriptCanvasData);
+        entity->Init();
+        entity->Activate();
+
+        success.handle = ScriptCanvasEditor::SourceHandle(scriptCanvasData, path);
+        return AZ::Success(success);
     }
 
     AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream)

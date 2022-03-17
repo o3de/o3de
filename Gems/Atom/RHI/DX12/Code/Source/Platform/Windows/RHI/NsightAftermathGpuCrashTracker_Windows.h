@@ -157,6 +157,10 @@ private:
     //! For thread-safe access of GPU crash tracker state.
     mutable AZStd::mutex m_mutex;
 
+    // cache executable folder and project name
+    AZStd::string m_executableFolder;
+    AZStd::string m_projectName;
+
     //! Cache the handles which can be used to output the name of the last executing scope
     AZStd::vector<GFSDK_Aftermath_ContextHandle> m_contextHandles;
 

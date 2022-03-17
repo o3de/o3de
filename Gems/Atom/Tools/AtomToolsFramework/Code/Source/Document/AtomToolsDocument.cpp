@@ -9,6 +9,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -50,8 +51,9 @@ namespace AtomToolsFramework
         }
     }
 
-    AtomToolsDocument::AtomToolsDocument(const AZ::Crc32& toolId)
+    AtomToolsDocument::AtomToolsDocument(const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo)
         : m_toolId(toolId)
+        , m_documentTypeInfo(documentTypeInfo)
     {
         AtomToolsDocumentRequestBus::Handler::BusConnect(m_id);
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentCreated, m_id);
@@ -64,14 +66,9 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
     }
 
-    DocumentTypeInfo AtomToolsDocument::BuildDocumentTypeInfo()
+    const DocumentTypeInfo& AtomToolsDocument::GetDocumentTypeInfo() const
     {
-        return AtomToolsDocumentRequestBus::Handler::BuildDocumentTypeInfo();
-    }
-
-    DocumentTypeInfo AtomToolsDocument::GetDocumentTypeInfo() const
-    {
-        return BuildDocumentTypeInfo();
+        return m_documentTypeInfo;
     }
 
     DocumentObjectInfoVector AtomToolsDocument::GetObjectInfo() const
@@ -94,15 +91,9 @@ namespace AtomToolsFramework
         Clear();
 
         m_absolutePath = loadPath;
-        if (!AzFramework::StringFunc::Path::Normalize(m_absolutePath))
+        if (!ValidateDocumentPath(m_absolutePath))
         {
-            AZ_Error("AtomToolsDocument", false, "Document path could not be normalized: '%s'.", m_absolutePath.c_str());
-            return OpenFailed();
-        }
-
-        if (AzFramework::StringFunc::Path::IsRelative(m_absolutePath.c_str()))
-        {
-            AZ_Error("AtomToolsDocument", false, "Document path must be absolute: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document path is not valid: '%s'.", m_absolutePath.c_str());
             return OpenFailed();
         }
 
@@ -155,15 +146,9 @@ namespace AtomToolsFramework
         }
 
         m_savePathNormalized = m_absolutePath;
-        if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
+        if (!ValidateDocumentPath(m_savePathNormalized))
         {
-            AZ_Error("AtomToolsDocument", false, "Document save path could not be normalized: '%s'.", m_savePathNormalized.c_str());
-            return SaveFailed();
-        }
-
-        if (AzFramework::StringFunc::Path::IsRelative(m_savePathNormalized.c_str()))
-        {
-            AZ_Error("AtomToolsDocument", false, "Document save path must be absolute: '%s'.", m_savePathNormalized.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document save path is not valid: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
@@ -191,15 +176,9 @@ namespace AtomToolsFramework
         }
 
         m_savePathNormalized = savePath;
-        if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
+        if (!ValidateDocumentPath(m_savePathNormalized))
         {
-            AZ_Error("AtomToolsDocument", false, "Document save path could not be normalized: '%s'.", m_savePathNormalized.c_str());
-            return SaveFailed();
-        }
-
-        if (AzFramework::StringFunc::Path::IsRelative(m_savePathNormalized.c_str()))
-        {
-            AZ_Error("AtomToolsDocument", false, "Document save path must be absolute: '%s'.", m_savePathNormalized.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document save path is not valid: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
@@ -221,15 +200,9 @@ namespace AtomToolsFramework
         }
 
         m_savePathNormalized = savePath;
-        if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
+        if (!ValidateDocumentPath(m_savePathNormalized))
         {
-            AZ_Error("AtomToolsDocument", false, "Document save path could not be normalized: '%s'.", m_savePathNormalized.c_str());
-            return SaveFailed();
-        }
-
-        if (AzFramework::StringFunc::Path::IsRelative(m_savePathNormalized.c_str()))
-        {
-            AZ_Error("AtomToolsDocument", false, "Document save path must be absolute: '%s'.", m_savePathNormalized.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document save path is not valid: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 

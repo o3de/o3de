@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/Features/Debug.azsli>
+
 // This file provides utilities for common handling of inputs for "metalness" of PBR materials.
 
 // These macros can be used to declare common shader inputs for this feature. 
@@ -24,6 +26,11 @@ option bool prefix##o_metallic_useTexture;
 
 float GetMetallicInput(Texture2D map, sampler mapSampler, float2 uv, float factor, bool useTexture)
 {
+    if(OverrideMetallicEnabled())
+    {
+        return GetMetallicOverride();
+    }
+
     if (useTexture)
     {
        // [GFX TODO][ATOM-1793]: Figure out how we want our base material to expect channels to be encoded, and apply that to the way we pack metalness.
