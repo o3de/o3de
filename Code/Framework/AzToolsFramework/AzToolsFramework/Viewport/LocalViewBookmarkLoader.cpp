@@ -186,6 +186,7 @@ namespace AzToolsFramework
                             break;
                         default:
                             AZ_Warning("LocalViewBookmarkLoader", false, "Trying to set an invalid index in a Vector3, index = %d", currentIndex);
+                            break;
                         }
                     };
 
@@ -413,7 +414,7 @@ namespace AzToolsFramework
         }
 
         // if the field is not empty then we have a file linked to the prefab.
-        if (bookmarkComponent && !bookmarkComponent->GetLocalBookmarksFileName().empty())
+        if (!bookmarkComponent->GetLocalBookmarksFileName().empty())
         {
             m_bookmarkfileName = bookmarkComponent->GetLocalBookmarksFileName();
 

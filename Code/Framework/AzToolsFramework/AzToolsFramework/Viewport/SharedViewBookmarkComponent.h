@@ -38,10 +38,6 @@ namespace AzToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
-        // AZ::Component overrides ...
-        void Activate() override{};
-        void Deactivate() override{};
-
         AZStd::optional<ViewBookmark> GetBookmarkAtIndex(int index) const;
         void AddBookmark(ViewBookmark viewBookmark);
         bool RemoveBookmarkAtIndex(int index);
