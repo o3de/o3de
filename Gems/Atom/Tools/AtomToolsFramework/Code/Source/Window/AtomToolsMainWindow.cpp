@@ -53,8 +53,14 @@ namespace AtomToolsFramework
         setCentralWidget(centralWidget);
 
         m_assetBrowser = new AtomToolsAssetBrowser(this);
-        AddDockWidget("Asset Browser", m_assetBrowser, Qt::BottomDockWidgetArea, Qt::Horizontal);
-        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
+        AddDockWidget("Asset Browser", m_assetBrowser, Qt::BottomDockWidgetArea);
+
+        m_logPanel = new AzToolsFramework::LogPanel::TracePrintFLogPanel(this);
+        m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Log", "", ""));
+        AddDockWidget("Logging", m_logPanel, Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("Logging", false);
+
+        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea);
         SetDockWidgetVisible("Python Terminal", false);
 
         SetupMetrics();
@@ -74,6 +80,148 @@ namespace AtomToolsFramework
     {
         PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
         AtomToolsMainWindowRequestBus::Handler::BusDisconnect();
+    }
+
+    void AtomToolsMainWindow::ActivateWindow()
+    {
+        show();
+        raise();
+        activateWindow();
+    }
+
+    bool AtomToolsMainWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area)
+    {
+        auto dockWidget = qobject_cast<QDockWidget*>(widget);
+        if (!dockWidget)
+        {
+            dockWidget = new AzQtComponents::StyledDockWidget(name.c_str(), this);
+            dockWidget->setWidget(widget);
+            widget->setObjectName(QString("%1_Widget").arg(name.c_str()));
+            widget->setWindowTitle(name.c_str());
+            widget->setParent(dockWidget);
+            widget->setMinimumSize(QSize(300, 300));
+            widget->setVisible(true);
+        }
+
+        dockWidget->setMinimumSize(QSize(300, 300));
+        dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
+        dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+        dockWidget->setParent(this);
+        dockWidget->setVisible(true);
+
+        addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
+        resizeDocks({ dockWidget }, { 400 }, Qt::Horizontal);
+        resizeDocks({ dockWidget }, { 400 }, Qt::Vertical);
+
+        auto dockAction = m_menuView->addAction(name.c_str(), [this, name](const bool checked) {
+            SetDockWidgetVisible(name, checked);
+        });
+        dockAction->setCheckable(true);
+        dockAction->setChecked(dockWidget->isVisible());
+        connect(dockWidget, &QDockWidget::visibilityChanged, dockAction, &QAction::setChecked);
+        return true;
+    }
+
+    void AtomToolsMainWindow::RemoveDockWidget(const AZStd::string& name)
+    {
+        for (auto dockWidget : findChildren<QDockWidget*>())
+        {
+            if (dockWidget->windowTitle().compare(name.c_str(), Qt::CaseInsensitive) == 0)
+            {
+                delete dockWidget;
+                break;
+            }
+        }
+
+        for (auto action : m_menuView->actions())
+        {
+            if (action->text().compare(name.c_str(), Qt::CaseInsensitive) == 0)
+            {
+                m_menuView->removeAction(action);
+                delete action;
+                break;
+            }
+        }
+    }
+
+    void AtomToolsMainWindow::SetDockWidgetVisible(const AZStd::string& name, bool visible)
+    {
+        for (auto dockWidget : findChildren<QDockWidget*>())
+        {
+            if (dockWidget->windowTitle().compare(name.c_str(), Qt::CaseInsensitive) == 0)
+            {
+                if (auto tabWidget = AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget))
+                {
+                    // If the dock widget is tabbed, then set it as the active tab
+                    int index = tabWidget->indexOf(dockWidget);
+                    if (visible)
+                    {
+                        tabWidget->setCurrentIndex(index);
+                    }
+                    tabWidget->setTabVisible(index, visible);
+                }
+                else
+                {
+                    // Otherwise just show the widget
+                    m_advancedDockManager->restoreDockWidget(dockWidget);
+                }
+
+                dockWidget->setVisible(visible);
+                dockWidget->widget()->setVisible(visible);
+                break;
+            }
+        }
+    }
+
+    bool AtomToolsMainWindow::IsDockWidgetVisible(const AZStd::string& name) const
+    {
+        for (auto dockWidget : findChildren<QDockWidget*>())
+        {
+            if (dockWidget->windowTitle().compare(name.c_str(), Qt::CaseInsensitive) == 0)
+            {
+                return dockWidget->isVisible();
+            }
+        }
+        return false;
+    }
+
+    AZStd::vector<AZStd::string> AtomToolsMainWindow::GetDockWidgetNames() const
+    {
+        AZStd::vector<AZStd::string> names;
+        names.reserve(children().size());
+        for (auto dockWidget : findChildren<QDockWidget*>())
+        {
+            names.push_back(dockWidget->windowTitle().toUtf8().constData());
+        }
+        return names;
+    }
+
+    void AtomToolsMainWindow::SetStatusMessage(const QString& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message));
+    }
+
+    void AtomToolsMainWindow::SetStatusWarning(const QString& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message));
+    }
+
+    void AtomToolsMainWindow::SetStatusError(const QString& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message));
+    }
+
+    void AtomToolsMainWindow::OpenSettings()
+    {
+    }
+
+    void AtomToolsMainWindow::OpenHelp()
+    {
+    }
+
+    void AtomToolsMainWindow::OpenAbout()
+    {
+        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
     }
 
     void AtomToolsMainWindow::showEvent(QShowEvent* showEvent)
@@ -102,100 +250,6 @@ namespace AtomToolsFramework
         }
 
         Base::closeEvent(closeEvent);
-    }
-
-    void AtomToolsMainWindow::ActivateWindow()
-    {
-        show();
-        raise();
-        activateWindow();
-    }
-
-    bool AtomToolsMainWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end() || !widget)
-        {
-            return false;
-        }
-
-        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str(), this);
-        dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
-        dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        widget->setObjectName(QString("%1_Widget").arg(name.c_str()));
-        widget->setWindowTitle(name.c_str());
-        widget->setParent(dockWidget);
-        widget->setMinimumSize(QSize(300, 300));
-        dockWidget->setWidget(widget);
-        addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
-        resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
-        m_dockWidgets[name] = dockWidget;
-
-        m_dockActions[name] = m_menuView->addAction(name.c_str(), [this, name](){
-            SetDockWidgetVisible(name, !IsDockWidgetVisible(name));
-        });
-        return true;
-    }
-
-    void AtomToolsMainWindow::RemoveDockWidget(const AZStd::string& name)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            delete dockWidgetItr->second;
-            m_dockWidgets.erase(dockWidgetItr);
-        }
-        auto dockActionItr = m_dockActions.find(name);
-        if (dockActionItr != m_dockActions.end())
-        {
-            delete dockActionItr->second;
-            m_dockActions.erase(dockActionItr);
-        }
-    }
-
-    void AtomToolsMainWindow::SetDockWidgetVisible(const AZStd::string& name, bool visible)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            dockWidgetItr->second->setVisible(visible);
-        }
-    }
-
-    bool AtomToolsMainWindow::IsDockWidgetVisible(const AZStd::string& name) const
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            return dockWidgetItr->second->isVisible();
-        }
-        return false;
-    }
-
-    AZStd::vector<AZStd::string> AtomToolsMainWindow::GetDockWidgetNames() const
-    {
-        AZStd::vector<AZStd::string> names;
-        names.reserve(m_dockWidgets.size());
-        for (const auto& dockWidgetPair : m_dockWidgets)
-        {
-            names.push_back(dockWidgetPair.first);
-        }
-        return names;
-    }
-
-    void AtomToolsMainWindow::SetStatusMessage(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message));
-    }
-
-    void AtomToolsMainWindow::SetStatusWarning(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message));
-    }
-
-    void AtomToolsMainWindow::SetStatusError(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message));
     }
 
     void AtomToolsMainWindow::AddCommonMenus()
@@ -237,19 +291,6 @@ namespace AtomToolsFramework
         m_menuHelp->addAction("&About...", [this]() {
             OpenAbout();
         });
-    }
-
-    void AtomToolsMainWindow::OpenSettings()
-    {
-    }
-
-    void AtomToolsMainWindow::OpenHelp()
-    {
-    }
-
-    void AtomToolsMainWindow::OpenAbout()
-    {
-        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
     }
 
     void AtomToolsMainWindow::SetupMetrics()

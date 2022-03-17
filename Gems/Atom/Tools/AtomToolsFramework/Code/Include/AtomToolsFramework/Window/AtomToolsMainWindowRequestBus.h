@@ -32,8 +32,7 @@ namespace AtomToolsFramework
         //! @param name title of the dockable window
         //! @param widget docked window content
         //! @param area location of docked window corresponding to Qt::DockWidgetArea
-        //! @param orientation orientation of docked window corresponding to Qt::Orientation
-        virtual bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation) = 0;
+        virtual bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area) = 0;
 
         //! Destroy dockable widget in main window
         //! @param name title of the dockable window
