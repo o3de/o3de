@@ -109,7 +109,9 @@ set(FILES
     Passes/EditorModeMask.pass
     Passes/EditorModeDesaturation.pass
     Passes/EditorModeTint.pass
-    Passes/EditorModeBlur.pass
+    Passes/EditorModeBlurParent.pass
+    Passes/EditorModeBlurHorizontal.pass
+    Passes/EditorModeBlurVertical.pass
     Passes/EditorModeOutline.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass

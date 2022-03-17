@@ -589,8 +589,16 @@
                 "Path": "Passes/EditorModeTint.pass"
             },
             {
-                "Name": "EditorModeBlurTemplate",
-                "Path": "Passes/EditorModeBlur.pass"
+                "Name": "EditorModeBlurParentTemplate",
+                "Path": "Passes/EditorModeBlurParent.pass"
+            },
+            {
+                "Name": "EditorModeBlurHorizontalTemplate",
+                "Path": "Passes/EditorModeBlurHorizontal.pass"
+            },
+            {
+                "Name": "EditorModeBlurVerticalTemplate",
+                "Path": "Passes/EditorModeBlurVertical.pass"
             },
             {
                 "Name": "EditorModeOutlineTemplate",

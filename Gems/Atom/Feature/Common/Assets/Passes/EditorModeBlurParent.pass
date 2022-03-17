@@ -1,0 +1,100 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EditorModeBlurParentTemplate",
+            "PassClass": "EditorModeFeedbackParentPass",
+            "Slots": [
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "InputEntityMask",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "BlurVerticalPass",
+                        "Attachment": "OutputColor"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "InputColor",
+                    "Output" : "OutputColor"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "BlurHorizontalPass",
+                    "TemplateName": "EditorModeBlurHorizontalTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputEntityMask",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputEntityMask"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputColor"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BlurVerticalPass",
+                    "TemplateName": "EditorModeBlurVerticalTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputEntityMask",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputEntityMask"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "BlurHorizontalPass",
+                                "Attachment": "OutputColor"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

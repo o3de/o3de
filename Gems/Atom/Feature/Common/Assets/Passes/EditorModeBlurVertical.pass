@@ -1,11 +1,11 @@
 {
-    // Applies a box blur effect as controlled by the box width
+    // Applies a box blur effect in the vertical direction as controlled by the box width
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeBlurTemplate",
+            "Name": "EditorModeBlurVerticalTemplate",
             "PassClass": "EditorModeBlurPass",
             "Slots": [
                 {
@@ -71,7 +71,16 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "UintMappings": [
+                        {
+                            // Vertical blur
+                            "Name": "m_direction",
+                            "Value": 1
+                        }
+                    ]
+                }
             }
         }
     }
