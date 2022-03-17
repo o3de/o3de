@@ -104,17 +104,10 @@ namespace AzPhysics
 
         DEFAULT = COMPUTE_COM | COMPUTE_INERTIA | COMPUTE_MASS
     };
-    //! Bitwise operators for MassComputeFlags
-    inline MassComputeFlags operator|(MassComputeFlags lhs, MassComputeFlags rhs)
-    {
-        return aznumeric_cast<MassComputeFlags>(aznumeric_cast<AZ::u8>(lhs) | aznumeric_cast<AZ::u8>(rhs));
-    }
 
-    inline MassComputeFlags operator&(MassComputeFlags lhs, MassComputeFlags rhs)
-    {
-        return aznumeric_cast<MassComputeFlags>(aznumeric_cast<AZ::u8>(lhs) & aznumeric_cast<AZ::u8>(rhs));
-    }
-    
+    //! Bitwise operators for MassComputeFlags
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(MassComputeFlags)
+
     //! Variant to allow support for the system to either create the Shape(s) or use the provide Shape(s) that have been created externally.
     //! Can be one of the following.
     //! @code{ .cpp }
