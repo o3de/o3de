@@ -142,24 +142,6 @@ namespace LUADebugger
         }
     }
 
-    void Component::ExecuteScript(const AZStd::string& debugName, const char* scriptData, AZStd::size_t bufferLength)
-    {
-        (void)bufferLength;
-
-        // note that the data is only valid for this call, and when this call returns it may be destroyed.
-        // we are expected to forward the script to the current target, and execute it in that target.
-        AzFramework::TargetInfo targetInfo;
-        if (GetDesiredTarget(targetInfo))
-        {
-            // its all good!
-            // the target ID (for connection) is targetInfo.m_networkID, as a AZ::u32;
-            // send the script fragment and execute it!
-            AzFramework::ScriptDebugRequest request(AZ_CRC("ExecuteScript", 0xc35e01e7), debugName.c_str());
-            request.AddCustomBlob(scriptData, strlen(scriptData) + 1);
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, request);
-        }
-    }
-
     void Component::CreateBreakpoint(const AZStd::string& debugName, int lineNumber)
     {
         // register a breakpoint.

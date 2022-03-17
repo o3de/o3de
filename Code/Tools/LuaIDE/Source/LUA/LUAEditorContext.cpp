@@ -1604,7 +1604,6 @@ namespace LUAEditor
         }
 
         const char* scriptData = docInfoIter->second.m_scriptAsset.c_str();
-        size_t scriptDataSize = docInfoIter->second.m_scriptAsset.size();
 
         EBUS_EVENT(LUAEditor::LUAStackTrackerMessages::Bus, StackClear);
 
@@ -1633,8 +1632,7 @@ namespace LUAEditor
             return;
         }
 
-        // otherwise we've been told to execute it on the debugger remotely:
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, ExecuteScript, debugName, scriptData, scriptDataSize);
+        // otherwise we've been told to execute it on the debugger remotely which is presently unsupported
     }
 
     void Context::SynchronizeBreakpoints()

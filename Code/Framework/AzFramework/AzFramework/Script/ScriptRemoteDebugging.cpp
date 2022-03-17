@@ -618,28 +618,32 @@ namespace AzFramework
                     ScriptDebugRegisteredClassesResult response;
                     dbgContext->EnumRegisteredClasses(&ScriptDebugAgentInternal::EnumClass, &ScriptDebugAgentInternal::EnumClassMethod, &ScriptDebugAgentInternal::EnumClassProperty, &response.m_classes);
                     EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
-                    // ExecuteScript
+                    // enumerates C++ busses that have been exposed to script
                 }
                 else if (request->m_request == AZ_CRC("EnumRegisteredEBuses", 0x8237bde7))
                 {
                     ScriptDebugRegisteredEBusesResult response;
                     dbgContext->EnumRegisteredEBuses(&ScriptDebugAgentInternal::EnumEBus, &ScriptDebugAgentInternal::EnumEBusSender, &response.m_ebusList);
                     EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                    // ExecuteScript
                 }
                 else if (request->m_request == AZ_CRC("ExecuteScript", 0xc35e01e7))
                 {
-                    if (m_executionState == SDA_STATE_RUNNING)
+                    if (sender.IsSelf() && m_debugger.IsSelf() && m_executionState == SDA_STATE_RUNNING)
                     {
                         AZ_Assert(request->GetCustomBlob(), "ScriptDebugAgent was asked to execute a script but script is missing!");
                         ScriptDebugAckExecute response;
                         response.m_moduleName = request->m_context;
-                        response.m_result = m_curContext->Execute(reinterpret_cast<const char*>(request->GetCustomBlob()), request->m_context.c_str());
+                        response.m_result =
+                            m_curContext->Execute(reinterpret_cast<const char*>(request->GetCustomBlob()), request->m_context.c_str());
                         EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
                     }
                     else
                     {
-                        AZ_TracePrintf("LUA", "Command rejected. 'ExecuteScript' cannot be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        AZ_TracePrintf("LUA", "Command rejected. 'ExecuteScript' cannot be issued while on a breakpoint or remotely.\n");
+                        EBUS_EVENT(
+                            TargetManager::Bus, SendTmMessage, sender,
+                            ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
                     }
                     // AttachDebugger
                 }

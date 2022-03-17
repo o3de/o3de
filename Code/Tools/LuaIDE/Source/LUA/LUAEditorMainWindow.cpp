@@ -767,14 +767,6 @@ namespace LUAEditor
         {
             view->UpdateCurrentExecutingLine(-1);
         }
-
-        // cache the lines count of the source, to check for document changes
-        TrackedLUAViewMap::iterator viewInfoIter = m_dOpenLUAView.find(m_lastFocusedAssetId);
-
-        if (viewInfoIter != m_dOpenLUAView.end())
-        {
-            ExecuteScript(false);
-        }
     }
 
     // execution control
