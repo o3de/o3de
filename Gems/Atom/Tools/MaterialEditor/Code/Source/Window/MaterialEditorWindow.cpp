@@ -22,8 +22,6 @@ namespace MaterialEditor
     MaterialEditorWindow::MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, parent)
     {
-        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
-
         m_toolBar = new MaterialEditorToolBar(m_toolId, this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);

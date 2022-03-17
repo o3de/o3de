@@ -1,0 +1,12 @@
+{
+    "AddBuildArguments": {
+        "debug": false,
+        "preprocessor": [],
+        "azslc": ["--namespace=vk"
+                , "--unique-idx"
+        ],
+        "dxc": ["-spirv"
+              , "-fvk-use-dx-layout" // Use the same memory layout as DX12, otherwise some offset of constant may get wrong.
+        ]
+    }
+}

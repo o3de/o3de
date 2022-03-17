@@ -215,15 +215,28 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
         {
         case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
             {
-                AZ::Vector2 normalizedDelta;
-                AZ::Vector2 pos0;
-                ClampPosition(position.GetX(), position.GetY(), pos0, normalizedDelta);
-                const AZ::Vector2 pos1(pos0.GetX() + m_currentSettings.m_heightQueryResolution,
-                    pos0.GetY() + m_currentSettings.m_heightQueryResolution);
-                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos1.GetY(), minHeight));
+                if (InWorldBounds(position.GetX(), position.GetY()))
+                {
+                    AZ::Vector2 normalizedDelta;
+                    AZ::Vector2 pos0;
+                    ClampPosition(position.GetX(), position.GetY(), pos0, normalizedDelta);
+                    const AZ::Vector2 pos1(
+                        pos0.GetX() + m_currentSettings.m_heightQueryResolution, pos0.GetY() + m_currentSettings.m_heightQueryResolution);
+                    outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos1.GetY(), minHeight));
+                }
+                else
+                {
+                    // If the query position isn't within the world bounds, we'll place that position 4x into the query list
+                    // instead of the normal bilinear positions, because we don't want to interpolate between partially inside and
+                    // partially outside. We just want to give it a min height and "terrain doesn't exist".
+                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                }
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
@@ -584,8 +597,10 @@ void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& 
 
         normals[i] = (directionVectors[iteratorIndex + 2] - directionVectors[iteratorIndex + 1]).
                          Cross(directionVectors[iteratorIndex + 3] - directionVectors[iteratorIndex]).GetNormalized();
-        
-        terrainExists[i] = exists[iteratorIndex];
+
+        // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
+        // any of the four points exist, then the terrain exists.
+        terrainExists[i] = exists[iteratorIndex] || exists[iteratorIndex + 1] || exists [iteratorIndex + 2] || exists[iteratorIndex + 3];
     }
 }
 
@@ -611,16 +626,23 @@ AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sample
     const AZ::Vector2 up   (x, y - range);
     const AZ::Vector2 down (x, y + range);
 
-    AZ::Vector3 v1(up.GetX(), up.GetY(), GetHeightSynchronous(up.GetX(), up.GetY(), sampler, &terrainExists));
-    AZ::Vector3 v2(left.GetX(), left.GetY(), GetHeightSynchronous(left.GetX(), left.GetY(), sampler, &terrainExists));
-    AZ::Vector3 v3(right.GetX(), right.GetY(), GetHeightSynchronous(right.GetX(), right.GetY(), sampler, &terrainExists));
-    AZ::Vector3 v4(down.GetX(), down.GetY(), GetHeightSynchronous(down.GetX(), down.GetY(), sampler, &terrainExists));
+    bool terrainExists1 = false;
+    bool terrainExists2 = false;
+    bool terrainExists3 = false;
+    bool terrainExists4 = false;
+
+    AZ::Vector3 v1(up.GetX(), up.GetY(), GetHeightSynchronous(up.GetX(), up.GetY(), sampler, &terrainExists1));
+    AZ::Vector3 v2(left.GetX(), left.GetY(), GetHeightSynchronous(left.GetX(), left.GetY(), sampler, &terrainExists2));
+    AZ::Vector3 v3(right.GetX(), right.GetY(), GetHeightSynchronous(right.GetX(), right.GetY(), sampler, &terrainExists3));
+    AZ::Vector3 v4(down.GetX(), down.GetY(), GetHeightSynchronous(down.GetX(), down.GetY(), sampler, &terrainExists4));
 
     outNormal = (v3 - v2).Cross(v4 - v1).GetNormalized();
 
     if (terrainExistsPtr)
     {
-        *terrainExistsPtr = terrainExists;
+        // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
+        // any of the four points exist, then the terrain exists.
+        *terrainExistsPtr = terrainExists1 || terrainExists2 || terrainExists3 || terrainExists4;
     }
 
     return outNormal;
