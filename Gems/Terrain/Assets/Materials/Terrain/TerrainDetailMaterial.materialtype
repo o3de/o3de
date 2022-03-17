@@ -57,7 +57,7 @@
                     {
                         "name": "blendFactor",
                         "displayName": "Blend factor",
-                        "description": "Determines how hard the blend is between this material and other mateirals (lower is harder).",
+                        "description": "Determines how hard the blend is between this material and other materials (lower is harder).",
                         "type": "float",
                         "defaultValue": 0.5,
                         "min": 0.0,
