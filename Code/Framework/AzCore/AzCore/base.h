@@ -13,19 +13,17 @@
 
 #include <AzCore/AzCore_Traits_Platform.h>
 
-#ifndef AZ_ARRAY_SIZE
 /// Return an array size for static arrays.
 namespace AZ::Internal
 {
-        template<class T>
-        struct StaticArraySize
-        {
-            static_assert(std::is_array_v<T>, "AZ_ARRAY_SIZE can only be used with a C-style array");
-            static constexpr size_t value = sizeof(T) / sizeof(std::remove_extent_t<T>);
-        };
+    template<class T>
+    struct StaticArraySize
+    {
+        static_assert(std::is_array_v<T>, "AZ_ARRAY_SIZE can only be used with a C-style array");
+        static constexpr size_t value = sizeof(T) / sizeof(std::remove_extent_t<T>);
+    };
 }
-#    define AZ_ARRAY_SIZE(__a)  AZ::Internal::StaticArraySize<std::remove_reference_t<decltype(__a)>>::value
-#endif
+#define AZ_ARRAY_SIZE(__a)  AZ::Internal::StaticArraySize<std::remove_reference_t<decltype(__a)>>::value
 
 
 #ifndef AZ_SIZE_ALIGN_UP
