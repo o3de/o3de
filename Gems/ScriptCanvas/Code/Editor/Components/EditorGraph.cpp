@@ -450,6 +450,17 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::RefreshVariableReferences(const ScriptCanvas::VariableId& variableId)
     {
+        // ScopedGraphUndoBlocker undoBlocker(graphId);  use this
+        // before submission to make sure there is only a single, atomic undo spot
+
+        const auto variable = FindVariableById(variableId);
+        if (!variable)
+        {
+            AZ_Warning("ScriptCanvas", false
+                , "EditorGraph::::RefreshVariableReferences called with variableId that did not refe to a variable");
+            return;
+        }
+
         AZStd::unordered_map<ScriptCanvas::Node*, AZStd::pair<ScriptCanvas::NodeReplacementConfiguration, LiveSlotStates>>
             replacementInfoByToBeReplacedNode;
         AZStd::unordered_map<ScriptCanvas::Node*, AZStd::pair<ScriptCanvas::NodeReplacementConfiguration, LiveSlotStates>>
@@ -485,7 +496,9 @@ namespace ScriptCanvasEditor
             }
         }
 
-        // replace all required nodes, update all references to the variable that has been changed
+        const auto variableType = variable->GetDataType();
+
+        // replace all required nodes, update or clear all references to the variable that has been changed
         for (auto node : nodes)
         {
             if (auto iter = replacementInfoByToBeReplacedNode.find(node); iter != replacementInfoByToBeReplacedNode.end())
@@ -515,7 +528,21 @@ namespace ScriptCanvasEditor
             {
                 if (slot->IsData() && slot->IsVariableReference() && slot->GetVariableReference() == variableId)
                 {
-                    slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
+                    // before updating the variable reference, or checking if the new type is accpeted, the
+                    // node slot must be reset to its original, default type
+                    const auto scriptCanvasEndpoint = ScriptCanvas::Endpoint(node->GetEntityId(), slot->GetId());
+                    const auto graphCanvasEndpoint = ConvertToGraphCanvasEndpoint(scriptCanvasEndpoint);
+                    bool convertedToValue = false;
+                    GraphCanvas::DataSlotRequestBus::EventResult(convertedToValue, graphCanvasEndpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToValue);
+                    if (!convertedToValue)
+                    {
+                        AZ_Error("ScriptCanvas", false, "A reference to the type changed variable failed to convert back to value, future type checking will fail");
+                    }
+
+                    if (node->SlotAcceptsType(slot->GetId(), variableType).IsSuccess())
+                    {
+                        slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
+                    }
                 }
             }
         }

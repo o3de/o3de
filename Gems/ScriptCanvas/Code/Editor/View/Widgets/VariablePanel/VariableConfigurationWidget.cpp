@@ -219,7 +219,8 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    AZ_TracePrintf("ScriptCanvas", "Allowing 'duplicate' name because the variable in question is the one we're configuring");
+                    // the variable being renamed is the one being modified, so it can use its own name
+                    break;
                 }
             }
         }

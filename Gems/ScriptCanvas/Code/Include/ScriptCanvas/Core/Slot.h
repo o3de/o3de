@@ -41,8 +41,6 @@ namespace ScriptCanvas
         VariableId variableReference;
         Datum value;
     };
-    //         EndpointsResolved connections;
-
 
     class Slot final
         : public VariableNotificationBus::Handler
