@@ -47,6 +47,10 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::Initialize()
     {
+        m_prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
+        AZ_Assert(m_prefabFocusInterface != nullptr,
+            "Couldn't get prefab focus interface, it's a requirement for PrefabEntityOwnership system to work");
+
         m_prefabSystemComponent = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
         AZ_Assert(m_prefabSystemComponent != nullptr,
             "Couldn't get prefab system component, it's a requirement for PrefabEntityOwnership system to work");
@@ -106,39 +110,11 @@ namespace AzToolsFramework
     {
         AZ_Assert(IsInitialized(), "Tried to add an entity without initializing the Entity Ownership Service");
 
-        // Determine which prefab instance should own this entity
-        AZ::EntityId currentParentId;
-        AZ::TransformBus::EventResult(currentParentId, entity->GetId(), &AZ::TransformInterface::GetParentId);
-
-        Prefab::InstanceOptionalReference newOwningInstance;
-        // If the entity has a parent set, try to find that entity's owning instance and use that.
-        if (currentParentId.IsValid())
-        {
-            auto* instanceEntityMapperInterface = AZ::Interface<Prefab::InstanceEntityMapperInterface>::Get();
-            if (instanceEntityMapperInterface)
-            {
-                newOwningInstance = instanceEntityMapperInterface->FindOwningInstance(currentParentId);
-            }
-        }
-
-        // If no parent was set, the mapper can't be found, or the parent has no owning instance, add to the current focus.
-        if (!newOwningInstance.has_value())
-        {
-            auto* prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
-            if (prefabFocusInterface)
-            {
-                newOwningInstance = prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
-            }
-        }
-
-        // If the focus interface isn't handled, fall back to the root instance
-        if (!newOwningInstance.has_value())
-        {
-            newOwningInstance = *m_rootInstance;
-        }
-
-        // Setup undo node
+        // Setup undo node.
         ScopedUndoBatch undoBatch("Add entity");
+
+        // Determine which prefab instance should own this entity.
+        Prefab::InstanceOptionalReference newOwningInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
         Prefab::PrefabDom instanceDomBeforeUpdate;
         Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(newOwningInstance->get(), instanceDomBeforeUpdate);
 
@@ -150,17 +126,32 @@ namespace AzToolsFramework
             newOwningInstance->get(), "Add entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
     }
 
-    void PrefabEditorEntityOwnershipService::AddEntities(const EntityList& entities)
+     void PrefabEditorEntityOwnershipService::AddEntities(const EntityList& entities)
     {
         AZ_Assert(IsInitialized(), "Tried to add entities without initializing the Entity Ownership Service");
 
-        // Group the undo nodes under a single batch.
+        // Setup undo node.
         ScopedUndoBatch undoBatch("Add entities");
+
+        // Determine which prefab instance should own these entities.
+        Prefab::InstanceOptionalReference newOwningInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
+        Prefab::PrefabDom instanceDomBeforeUpdate;
+        Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(newOwningInstance->get(), instanceDomBeforeUpdate);
 
         for (AZ::Entity* entity : entities)
         {
-            AddEntity(entity);
+            newOwningInstance->get().AddEntity(*entity);
         }
+
+        HandleEntitiesAdded(entities);
+
+        for (AZ::Entity* entity : entities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetParent, newOwningInstance->get().m_containerEntity->GetId());
+        }
+
+        Prefab::PrefabUndoHelpers::UpdatePrefabInstance(
+            newOwningInstance->get(), "Undo adding entities", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
     }
 
     bool PrefabEditorEntityOwnershipService::DestroyEntity(AZ::Entity* entity)
