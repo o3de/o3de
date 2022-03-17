@@ -42,7 +42,7 @@ namespace AzFramework
 
     bool TargetInfo::IsSelf() const
     {
-        return m_flags & TF_SELF && m_persistentId == k_selfNetworkId;
+        return m_flags & TF_SELF && m_networkId == k_selfNetworkId;
     }
 
     bool TargetInfo::IsValid() const
