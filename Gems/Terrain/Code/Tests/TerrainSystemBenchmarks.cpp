@@ -105,9 +105,11 @@ namespace UnitTest
         {
             AZ_PROFILE_FUNCTION(Entity);
 
-            // Get the ranges for querying from our benchmark parameters
+            // Get the ranges for querying from our benchmark parameters.
+            // state.range(1) contains the number of requested surfaces, for consistency with other benchmarks.
+            // It isn't used for this benchmark though - we only set up one surface because we're testing surface complexity
+            // with this benchmark instead of surface quantity.
             float boundsRange = aznumeric_cast<float>(state.range(0));
-            [[maybe_unused]] uint32_t numSurfaces = aznumeric_cast<uint32_t>(state.range(1));
             AzFramework::Terrain::TerrainDataRequests::Sampler sampler =
                 static_cast<AzFramework::Terrain::TerrainDataRequests::Sampler>(state.range(2));
 
@@ -169,8 +171,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -202,8 +203,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -219,6 +219,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -247,8 +248,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -281,8 +281,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -300,6 +299,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
@@ -357,8 +357,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -387,8 +386,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -404,6 +402,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -429,8 +428,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -460,8 +458,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -479,6 +476,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
@@ -534,8 +532,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -564,8 +561,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -581,6 +577,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -606,8 +603,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -637,8 +633,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -656,6 +651,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
@@ -711,8 +707,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -758,6 +753,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -783,8 +779,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -814,8 +809,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -833,6 +827,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
@@ -859,9 +854,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this, state](
-                [[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this, state](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -998,9 +991,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiSurfaceBenchmark(
             state,
-            [this](
-                [[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -1032,9 +1023,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiSurfaceBenchmark(
             state,
-            [this](
-                [[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
@@ -1054,6 +1043,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams =
                     AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams::NumJobsMax;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromListAsync, inPositions, perPositionCallback,
@@ -1080,9 +1070,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiSurfaceBenchmark(
             state,
-            [this, state](
-                [[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
-                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [this, state](float queryResolution, const AZ::Aabb& worldBounds, AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
