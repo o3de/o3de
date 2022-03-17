@@ -9,6 +9,7 @@
 #pragma once
 
 #include <viewsrg.srgi>
+#include <Atom/Features/Debug.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 
@@ -90,6 +91,15 @@ void LightingData::FinalizeLighting()
 {
     specularLighting *= specularOcclusion;
     specularLighting += emissiveLighting;
+
+    if(!IsSpecularLightingEnabled())
+    {
+        specularLighting = float3(0, 0, 0);
+    }
+    if(!IsDiffuseLightingEnabled())
+    {
+        diffuseLighting = float3(0, 0, 0);
+    }
 }
 
 void LightingData::FinalizeLighting(float3 transmissionTint)
