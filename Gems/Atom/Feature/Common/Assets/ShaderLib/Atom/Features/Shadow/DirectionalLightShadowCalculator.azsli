@@ -57,6 +57,8 @@ class DirectionalShadowCalculator
 
     
     float GetVisibility();    
+    float GetThickness();
+    
     float GetVisibilityFromLightNoFilter();  
     float SamplePcfBicubic(const float3 shadowCoord, const uint indexOfCascade);     
     float GetVisibilityFromLightPcf();            
@@ -175,6 +177,40 @@ float DirectionalShadowCalculator::GetVisibility()
     }
                 
     return lit;
+}
+
+float DirectionalShadowCalculator::GetThickness()
+{
+    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
+    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
+
+    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+    if (size <= 1)
+    {
+        return 0.;
+    }
+
+    Texture2DArray<float> shadowmap = m_directionalLightShadowmap;
+    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+    
+    float3 shadowCoord;
+    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+    {  
+        shadowCoord = m_shadowCoords[indexOfCascade];
+        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
+             shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && shadowCoord.z < (1. - DepthMargin))
+        {
+            const float depthBufferValue = shadowmap.Sample(PassSrg::LinearSampler, float3(shadowCoord.xy, indexOfCascade)).r;
+            
+            // Normalized thickness (avoid negative values given by precision errors or shrinking offsets)
+            const float deltaDepth = max(shadowCoord.z - depthBufferValue,0.0);
+
+            const float viewSpaceThickness = ViewSrg::m_directionalLightShadows[m_lightIndex].m_far_minus_near * deltaDepth;            
+            return viewSpaceThickness;
+        }
+    }
+
+    return 0.;
 }
 
 float DirectionalShadowCalculator::GetVisibilityFromLightNoFilter()
