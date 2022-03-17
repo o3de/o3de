@@ -183,6 +183,9 @@ namespace Multiplayer
         float m_tickFactor = 0.0f;
         bool m_spawnNetboundEntities = false;
 
+        //! Executed host or connect commands if they were invoked before we were ready to execute them.
+        void ExecuteDeferredCommands();
+
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;
 #endif

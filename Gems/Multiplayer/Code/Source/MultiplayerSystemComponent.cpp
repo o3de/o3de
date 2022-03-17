@@ -42,8 +42,6 @@
 #include <cmath>
 #include <AzCore/Debug/Profiler.h>
 
-#pragma optimize("", off)
-
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
 namespace AZ::ConsoleTypeHelpers
@@ -185,13 +183,6 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Unregister(this);
     }
 
-    constexpr AZStd::string_view DeferredHostKey = "/O3DE/Runtime/MultiplayerSystem/DeferredHost";
-    constexpr AZStd::string_view DeferredConnectKey = "/O3DE/Runtime/MultiplayerSystem/DeferredConnect";
-    constexpr AZStd::string_view DeferredConnectParameterKey = "/O3DE/Runtime/MultiplayerSystem/DeferredConnectParameters";
-
-    void host(const AZ::ConsoleCommandContainer& arguments);
-    void connect(const AZ::ConsoleCommandContainer& arguments);
-
     void MultiplayerSystemComponent::Activate()
     {
         AZ::TickBus::Handler::BusConnect();
@@ -206,42 +197,7 @@ namespace Multiplayer
         //! Register our gems multiplayer components to assign NetComponentIds
         RegisterMultiplayerComponents();
 
-        // If there were LoadLevel command invocations before the creation of the level system
-        // then those invocations were queued.
-        // load the last level in the queue, since only one level can be loaded at a time
-        if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            if (bool delayedHost = false;
-                settingsRegistry->Get(delayedHost, DeferredHostKey) && delayedHost)
-            {
-                // since this is the constructor any derived classes vtables aren't setup yet
-                // call this class LoadLevel function
-                AZ_TracePrintf("MultiplayerSystemComponent", "The Multiplayer System is now available."
-                    " Hosting now, which could not be loaded earlier\n");
-
-                settingsRegistry->Remove(DeferredHostKey);
-                host({});
-            }
-            else if (bool delayedConnect = false;
-                settingsRegistry->Get(delayedConnect, DeferredConnectKey) && delayedConnect)
-            {
-                settingsRegistry->Remove(DeferredConnectKey);
-
-                if (AZStd::string deferredConnectAddress;
-                    settingsRegistry->Get(deferredConnectAddress, DeferredConnectParameterKey) && !deferredConnectAddress.empty())
-                {
-                    settingsRegistry->Remove(DeferredConnectParameterKey);
-
-                    AZ::ConsoleCommandContainer params;
-                    params.push_back(deferredConnectAddress);
-                    connect(params);
-                }
-                else
-                {
-                    connect({});
-                }
-            }
-        }
+        ExecuteDeferredCommands();
     }
 
     void MultiplayerSystemComponent::Deactivate()
@@ -1266,6 +1222,10 @@ namespace Multiplayer
         }
     }
 
+    constexpr AZStd::string_view DeferredHostKey = "/O3DE/Runtime/MultiplayerSystem/DeferredHost";
+    constexpr AZStd::string_view DeferredConnectKey = "/O3DE/Runtime/MultiplayerSystem/DeferredConnect";
+    constexpr AZStd::string_view DeferredConnectParameterKey = "/O3DE/Runtime/MultiplayerSystem/DeferredConnectParameters";
+
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         if (IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get())
@@ -1275,12 +1235,9 @@ namespace Multiplayer
                 AZLOG_ERROR("Failed to start listening on any allocated port");
             }
         }
-        else
+        else if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-            {
-                settingsRegistry->Set(DeferredHostKey, true);
-            }
+            settingsRegistry->Set(DeferredHostKey, true);
         }
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
@@ -1289,10 +1246,10 @@ namespace Multiplayer
     {
         if (IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get())
         {
-            if (arguments.size() < 1)
+            if (arguments.empty())
             {
                 const AZ::CVarFixedString remoteAddress = cl_serveraddr;
-                AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), cl_serverport);
+                multiplayer->Connect(remoteAddress.c_str(), cl_serverport);
             }
             else
             {
@@ -1300,7 +1257,7 @@ namespace Multiplayer
                 const AZStd::size_t portSeparator = remoteAddress.find_first_of(':');
                 if (portSeparator == AZStd::string::npos)
                 {
-                    AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), cl_serverport);
+                    multiplayer->Connect(remoteAddress.c_str(), cl_serverport);
                 }
                 else
                 {
@@ -1309,23 +1266,16 @@ namespace Multiplayer
                     const char* addressStr = mutableAddress;
                     const char* portStr = &(mutableAddress[portSeparator + 1]);
                     int32_t portNumber = atol(portStr);
-                    AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, static_cast<uint16_t>(portNumber));
+                    multiplayer->Connect(addressStr, static_cast<uint16_t>(portNumber));
                 }
             }
         }
-        else
+        else if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-            {
-                settingsRegistry->Set(DeferredConnectKey, true);
+            settingsRegistry->Set(DeferredConnectKey, true);
 
-                AZStd::string params = "";
-                if (!arguments.empty())
-                {
-                    params = arguments.front();
-                }
-                settingsRegistry->Set(DeferredConnectParameterKey, params.c_str());
-            }
+            const AZ::CVarFixedString params(arguments.empty() ? "" : arguments.front());
+            settingsRegistry->Set(DeferredConnectParameterKey, params.c_str());
         }
     }
     AZ_CONSOLEFREEFUNC(connect, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection to a remote host");
@@ -1335,6 +1285,43 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
-}
 
-#pragma optimize("", on)
+    void MultiplayerSystemComponent::ExecuteDeferredCommands()
+    {
+        // If there were connect or host command invocations before the creation of the Multiplayer system
+        // then those invocations were queued. Executed them now.
+        if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            if (bool delayedHost = false;
+                settingsRegistry->Get(delayedHost, DeferredHostKey) && delayedHost)
+            {
+                settingsRegistry->Remove(DeferredHostKey);
+
+                AZ_TracePrintf("MultiplayerSystemComponent", "The Multiplayer System is now available."
+                    " Hosting now, which could not be done earlier.\n");
+                host({});
+            }
+            else if (bool delayedConnect = false;
+                settingsRegistry->Get(delayedConnect, DeferredConnectKey) && delayedConnect)
+            {
+                settingsRegistry->Remove(DeferredConnectKey);
+
+                AZ_TracePrintf("MultiplayerSystemComponent", "The Multiplayer System is now available."
+                    " Connecting now, which could not be done earlier.\n");
+                if (AZStd::string deferredConnectAddress;
+                    settingsRegistry->Get(deferredConnectAddress, DeferredConnectParameterKey) && !deferredConnectAddress.empty())
+                {
+                    settingsRegistry->Remove(DeferredConnectParameterKey);
+
+                    AZ::ConsoleCommandContainer params;
+                    params.push_back(deferredConnectAddress);
+                    connect(params);
+                }
+                else
+                {
+                    connect({});
+                }
+            }
+        }
+    }
+}
