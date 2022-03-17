@@ -102,6 +102,7 @@
 #include <ImGuiBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
+#include <Editor/EditorViewportCamera.h>
 
 using namespace AZ;
 using namespace AzQtComponents;
