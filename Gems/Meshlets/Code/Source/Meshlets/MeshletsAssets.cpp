@@ -16,8 +16,9 @@
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 
-#include "MeshletsAssets.h"
 #include <vector>
+
+#include "MeshletsAssets.h"
 
 #pragma optimize("", off)
 
@@ -26,14 +27,14 @@ namespace AZ
     namespace Meshlets
     {
         //======================================================================
-        //                            MeshletModel
+        //                            MeshletsModel
         //======================================================================
-        uint32_t MeshletModel::s_modelNumber = 0;
+        uint32_t MeshletsModel::s_modelNumber = 0;
 
         //----------------------------------------------------------------------
         // Meshlets Generation
         //----------------------------------------------------------------------
-        void MeshletModel::debugMarkMeshletsUVs(GeneratorMesh& mesh )	// Results will alter the mesh 
+        void MeshletsModel::debugMarkMeshletsUVs(GeneratorMesh& mesh)	// Results will alter the mesh 
         {
             for (uint32_t meshletId = 0; meshletId < m_meshletsData.meshlets.size(); ++meshletId)
             {
@@ -54,7 +55,32 @@ namespace AZ
             }
         }
 
-        uint32_t MeshletModel::CreateMeshlets(GeneratorMesh& mesh)
+        void debugMarkVertexUVs(GeneratorMesh& mesh)	// Results will alter the mesh 
+        {
+            for (uint32_t vtxIndex = 0; vtxIndex < mesh.vertices.size(); ++vtxIndex)
+            {
+                float tx = (vtxIndex % 5) * 0.25f;
+                float ty = ((vtxIndex / 5) % 5) * 0.25f;
+                mesh.vertices[vtxIndex].tx = tx;
+                mesh.vertices[vtxIndex].ty = ty;
+            }
+        }
+
+        Data::Instance<RPI::ShaderResourceGroup> MeshletsModel::CreateShaderResourceGroup(
+            Data::Instance<RPI::Shader> shader,
+            const char* shaderResourceGroupId,
+            [[maybe_unused]] const char* moduleName)
+        {
+            Data::Instance<RPI::ShaderResourceGroup> srg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), AZ::Name{ shaderResourceGroupId });
+            if (!srg)
+            {
+                AZ_Error(moduleName, false, "Failed to create shader resource group");
+                return nullptr;
+            }
+            return srg;
+        }
+
+        uint32_t MeshletsModel::CreateMeshlets(GeneratorMesh& mesh)
         {
             const size_t max_vertices = 64;
             const size_t max_triangles = 124; // NVidia-recommended 126, rounded down to a multiple of 4
@@ -120,9 +146,10 @@ namespace AZ
         //----------------------------------------------------------------------
         // Enhanced (Meshlet) Model Creation 
         //----------------------------------------------------------------------
-        Data::Asset<RPI::BufferAsset> MeshletModel::CreateBufferAsset(
+        Data::Asset<RPI::BufferAsset> MeshletsModel::CreateBufferAsset(
             const AZStd::string& bufferName,
             const RHI::BufferViewDescriptor& bufferViewDescriptor,
+            RHI::BufferBindFlags bufferBindFlags,
             const void* data
         )
         {
@@ -130,7 +157,7 @@ namespace AZ
             creator.Begin(Uuid::CreateRandom());
 
             RHI::BufferDescriptor bufferDescriptor;
-            bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderRead;
+            bufferDescriptor.m_bindFlags = bufferBindFlags;
             bufferDescriptor.m_byteCount = static_cast<uint64_t>(bufferViewDescriptor.m_elementSize) * static_cast<uint64_t>(bufferViewDescriptor.m_elementCount);
 
             if (data)
@@ -144,12 +171,12 @@ namespace AZ
             Data::Asset<RPI::BufferAsset> bufferAsset;
 
             // The next line is the actual buffer asset creation
-            AZ_Error("Meshlets", creator.End(bufferAsset), "Error -- creating vertex stream %s", bufferName.c_str());
+            AZ_Error("Meshlets", creator.End(bufferAsset), "Error -- creating buffer [%s]", bufferName.c_str());
 
             return bufferAsset;
         }
 
-        bool MeshletModel::ProcessBuffersData(float* position, uint32_t vtxNum)
+        bool MeshletsModel::ProcessBuffersData(float* position, uint32_t vtxNum)
         {
             for (uint32_t vtx = 0; vtx < vtxNum; ++vtx, position += 3)
             {
@@ -173,18 +200,20 @@ namespace AZ
             return m_aabb.IsValid() ? true : false;
         }
 
-        uint32_t MeshletModel::CreateMeshletModel(const RPI::ModelLodAsset::Mesh& meshAsset)
+        // The following method creates a new model out of a given meshLodAsset.
+        // Moving the creator outside calling method and have the new model contain several
+        // Lods did not work as it needs to be local to the block!
+        uint32_t MeshletsModel::CreateMeshletsModel(
+            const RPI::ModelLodAsset::Mesh& meshAsset )
         {
             //-------------------------------------------
-            // The following section is creating a new model, however, this can be moved to
-            // the outside calling method and have the new model contain several Lods and
-            // not have 1:1 relation as it is currently
+            // Start model creation
             RPI::ModelAssetCreator modelAssetCreator;
             Uuid modelId = Uuid::CreateRandom();
             modelAssetCreator.Begin(Uuid::CreateRandom());
             modelAssetCreator.SetName(m_name);
             //-------------------------------------------
-
+            
             // setup a stream layout and shader input contract for the vertex streams
             RHI::Format IndexStreamFormat;// = RHI::Format::R32_UINT;
             RHI::Format PositionStreamFormat;// = RHI::Format::R32G32B32_FLOAT;
@@ -195,42 +224,47 @@ namespace AZ
             RHI::BufferViewDescriptor bufferDescriptors[10];
 
             uint32_t meshletsAmount = 0;
+            RHI::BufferBindFlags defaultBindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderRead;
+//            RHI::BufferBindFlags readWriteBindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite;
 
             // Index buffer
             uint32_t indexCount = 0;
-            const RPI::BufferAssetView* bufferView = &meshAsset.GetIndexBufferAssetView();
-            uint8_t* indices = RetrieveBufferData(bufferView, IndexStreamFormat, 0, indexCount, bufferDescriptors[0]);
-            const auto indicesAsset = CreateBufferAsset(IndicesSemanticName.GetStringView(), bufferDescriptors[0], indices);
+            const RPI::BufferAssetView* bufferAssetView = &meshAsset.GetIndexBufferAssetView();
+            uint8_t* indices = RetrieveBufferData(bufferAssetView, IndexStreamFormat, 0, indexCount, bufferDescriptors[0]);
+
+            // With this flag specified we get an error at buffer pool level in ValidateInitRequest
+//            const auto indicesAsset = CreateBufferAsset(IndicesSemanticName.GetStringView(), bufferDescriptors[0], readWriteBindFlags, indices);
+            const auto indicesAsset = CreateBufferAsset(IndicesSemanticName.GetStringView(), bufferDescriptors[0], defaultBindFlags, indices);
 
             // Vertex streams
             uint32_t vertexCount = 0;
-            bufferView = meshAsset.GetSemanticBufferAssetView(PositionSemanticName);
+            bufferAssetView = meshAsset.GetSemanticBufferAssetView(PositionSemanticName);
             float* positions =
-                (float*)RetrieveBufferData(bufferView, PositionStreamFormat, 0, vertexCount, bufferDescriptors[1]);
-            const auto positionsAsset = CreateBufferAsset(PositionSemanticName.GetStringView(), bufferDescriptors[1], positions);
+                (float*)RetrieveBufferData(bufferAssetView, PositionStreamFormat, 0, vertexCount, bufferDescriptors[1]);
+            const auto positionsAsset = CreateBufferAsset(PositionSemanticName.GetStringView(), bufferDescriptors[1], defaultBindFlags, positions);
 
-            bufferView = meshAsset.GetSemanticBufferAssetView(NormalSemanticName);
+            bufferAssetView = meshAsset.GetSemanticBufferAssetView(NormalSemanticName);
             float* normals = positions ?
-                (float*)RetrieveBufferData(bufferView, NormalStreamFormat, vertexCount, vertexCount, bufferDescriptors[2]) :
+                (float*)RetrieveBufferData(bufferAssetView, NormalStreamFormat, vertexCount, vertexCount, bufferDescriptors[2]) :
                 nullptr;
-            const auto normalsAsset = CreateBufferAsset(NormalSemanticName.GetStringView(), bufferDescriptors[2], normals);
+            const auto normalsAsset = CreateBufferAsset(NormalSemanticName.GetStringView(), bufferDescriptors[2], defaultBindFlags, normals);
 
-            bufferView = meshAsset.GetSemanticBufferAssetView(UVSemanticName);
-            float* texCoords = normals && bufferView ?
-                (float*)RetrieveBufferData(bufferView, UVStreamFormat, vertexCount, vertexCount, bufferDescriptors[3]) :
+            bufferAssetView = meshAsset.GetSemanticBufferAssetView(UVSemanticName);
+            float* texCoords = normals && bufferAssetView ?
+                (float*)RetrieveBufferData(bufferAssetView, UVStreamFormat, vertexCount, vertexCount, bufferDescriptors[3]) :
                 nullptr;
 
-            bufferView = meshAsset.GetSemanticBufferAssetView(TangentSemanticName);
-            [[maybe_unused]] float* tangents = normals && bufferView ?
-                (float*)RetrieveBufferData(bufferView, TangentStreamFormat, vertexCount, vertexCount, bufferDescriptors[4]) :
+            bufferAssetView = meshAsset.GetSemanticBufferAssetView(TangentSemanticName);
+            [[maybe_unused]] float* tangents = normals && bufferAssetView ?
+                (float*)RetrieveBufferData(bufferAssetView, TangentStreamFormat, vertexCount, vertexCount, bufferDescriptors[4]) :
                 nullptr;
-            const auto tangentsAsset = CreateBufferAsset(TangentSemanticName.GetStringView(), bufferDescriptors[4], tangents);
+            const auto tangentsAsset = CreateBufferAsset(TangentSemanticName.GetStringView(), bufferDescriptors[4], defaultBindFlags, tangents);
 
-            bufferView = meshAsset.GetSemanticBufferAssetView(BiTangentSemanticName);
-            [[maybe_unused]] float* bitangents = normals && bufferView ?
-                (float*)RetrieveBufferData(bufferView, BitangentStreamFormat, vertexCount, vertexCount, bufferDescriptors[5]) :
+            bufferAssetView = meshAsset.GetSemanticBufferAssetView(BiTangentSemanticName);
+            [[maybe_unused]] float* bitangents = normals && bufferAssetView ?
+                (float*)RetrieveBufferData(bufferAssetView, BitangentStreamFormat, vertexCount, vertexCount, bufferDescriptors[5]) :
                 nullptr;
-            const auto bitangentsAsset = CreateBufferAsset(BiTangentSemanticName.GetStringView(), bufferDescriptors[5], bitangents);
+            const auto bitangentsAsset = CreateBufferAsset(BiTangentSemanticName.GetStringView(), bufferDescriptors[5], defaultBindFlags, bitangents);
 
             if (!positionsAsset || !normalsAsset || !tangentsAsset || !indicesAsset || !texCoords)
             {
@@ -248,11 +282,12 @@ namespace AZ
             if (!meshletsAmount)
             {
                 AZ_Error("Meshlets", false, "Failed to create meshlet model [%s] - the meshlet creation process failed", m_name.c_str());
-                return 0;
+//                return 0;
             }
 
             // Done only here since we update the UV data to represent meshlets coloring
-            const auto texCoordsAsset = CreateBufferAsset(UVSemanticName.GetStringView(), bufferDescriptors[3], texCoords);
+            const auto texCoordsAsset = CreateBufferAsset(UVSemanticName.GetStringView(), bufferDescriptors[3], defaultBindFlags, texCoords);
+//            const auto texCoordsAsset = CreateBufferAsset(UVSemanticName.GetStringView(), bufferDescriptors[3], readWriteBindFlags, texCoords);
 
             // Model LOD Creation
             {
@@ -282,28 +317,35 @@ namespace AZ
                     }
 
                     // Meshlets data creation
+                    if (meshletsAmount > 0)
                     {
                         // Meshlets descriptors buffer
-                        const auto meshletsDesc = RHI::BufferViewDescriptor::CreateTyped(0, meshletsAmount, RHI::Format::R32G32B32A32_UINT);
-                        const auto meshletsAsset = CreateBufferAsset(MeshletsDescriptorsName.GetCStr(), meshletsDesc, (void*)m_meshletsData.meshlets.data());
+                        const auto meshletsDesc = RHI::BufferViewDescriptor::CreateTyped(
+                            0, meshletsAmount, RHI::Format::R32G32B32A32_UINT);
+                        const auto meshletsAsset = CreateBufferAsset(MeshletsDescriptorsName.GetCStr(), meshletsDesc,
+                            defaultBindFlags, (void*)m_meshletsData.meshlets.data());
                         modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsDescriptorsName }, MeshletsDescriptorsName,
                             RPI::BufferAssetView{ meshletsAsset, meshletsDesc });
 
                         // Meshlets triangles - sending it as uint32 to simplify calculations
-                        const auto meshletsTrisDesc = RHI::BufferViewDescriptor::CreateTyped(0, (uint32_t)m_meshletsData.meshlet_triangles.size() >> 2, RHI::Format::R32_UINT);
-                        const auto meshletsTrisAsset = CreateBufferAsset(MeshletsTrianglesName.GetCStr(), meshletsTrisDesc, (void*)m_meshletsData.meshlet_triangles.data());
+                        const auto meshletsTrisDesc = RHI::BufferViewDescriptor::CreateTyped(
+                            0, (uint32_t)m_meshletsData.meshlet_triangles.size() >> 2, RHI::Format::R32_UINT);
+                        const auto meshletsTrisAsset = CreateBufferAsset(MeshletsTrianglesName.GetCStr(), meshletsTrisDesc,
+                            defaultBindFlags, (void*)m_meshletsData.meshlet_triangles.data());
                         modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsTrianglesName }, MeshletsTrianglesName,
                             RPI::BufferAssetView{ meshletsTrisAsset, meshletsTrisDesc });
 
                         // Meshlets indirect indices buffer
-                        const auto meshletsIndicesDesc = RHI::BufferViewDescriptor::CreateTyped(0, (uint32_t)m_meshletsData.meshlet_vertices.size(), RHI::Format::R32_UINT);
-                        const auto meshletsIndicesAsset = CreateBufferAsset(MeshletsIndicesLookupName.GetCStr(), meshletsIndicesDesc, (void*)m_meshletsData.meshlet_vertices.data());
+                        const auto meshletsIndicesDesc = RHI::BufferViewDescriptor::CreateTyped(
+                            0, (uint32_t)m_meshletsData.meshlet_vertices.size(), RHI::Format::R32_UINT);
+                        const auto meshletsIndicesAsset = CreateBufferAsset(MeshletsIndicesLookupName.GetCStr(), meshletsIndicesDesc,
+                            defaultBindFlags, (void*)m_meshletsData.meshlet_vertices.data());
                         modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsIndicesLookupName }, MeshletsIndicesLookupName,
                             RPI::BufferAssetView{ meshletsIndicesAsset, meshletsIndicesDesc });
                     }
                 }
                 modelLodAssetCreator.EndMesh();
-
+                
                 // Create the model LOD based on the model LOD asset we created
                 Data::Asset<RPI::ModelLodAsset> modelLodAsset;
                 if (!modelLodAssetCreator.End(modelLodAsset))
@@ -315,28 +357,25 @@ namespace AZ
 
                 // Add the LOD model asset created to the model asset.
                 modelAssetCreator.AddLodAsset(AZStd::move(modelLodAsset));
+
+                //-------------------------------------------
+                // Final stage - create the model based on the created assets
+                Data::Asset<RPI::ModelAsset> modelAsset;
+
+                if (!modelAssetCreator.End(modelAsset))
+                {
+                    AZ_Error("Meshlets", false, "Error -- creating model [%s] - model asset was not created", m_name.c_str());
+                    return 0;
+                }
+
+                m_meshletsModel = RPI::Model::FindOrCreate(modelAsset);
+                if (!m_meshletsModel)
+                {
+                    AZ_Error("Meshlets", false, "Error -- creating model [%s] - model could not be found or created", m_name.c_str());
+                    return 0;
+                }
+                //-------------------------------------------
             }
-
-            //-------------------------------------------
-            // Final stage - create the model based on the created assets
-            Data::Asset<RPI::ModelAsset> modelAsset;
-
-            if (!modelAssetCreator.End(modelAsset))
-            {
-                AZ_Error("Meshlets", false, "Error -- creating model [%s] - model asset was not created", m_name.c_str());
-                return 0;
-            }
-
-            m_meshletModel = RPI::Model::FindOrCreate(modelAsset);
-            //-------------------------------------------
-
-            if (!m_meshletModel)
-            {
-                AZ_Error("Meshlets", false, "Error -- creating model [%s] - model could not be found or created", m_name.c_str());
-                return 0;
-            }
-
-            AZ_Warning("Meshlets", false, "Meshlet model [%s] was created", m_name.c_str());
 
             return meshletsAmount;
         }
@@ -345,7 +384,7 @@ namespace AZ
         //----------------------------------------------------------------------
         // Model Traversal and Data Copy for Creation 
         //----------------------------------------------------------------------
-        uint8_t* MeshletModel::RetrieveBufferData(
+        uint8_t* MeshletsModel::RetrieveBufferData(
             const RPI::BufferAssetView* bufferView,
             RHI::Format& format,
             uint32_t expectedAmount, uint32_t &existingAmount,
@@ -369,7 +408,7 @@ namespace AZ
             return (uint8_t *) bufferData.data();
         }
 
-        uint32_t MeshletModel::CreateMeshlets(
+        uint32_t MeshletsModel::CreateMeshlets(
             float* positions, float* normals, float* texCoords, uint32_t vtxNum,
             uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat
         )
@@ -404,8 +443,16 @@ namespace AZ
                 memcpy(mesh.indices.data(), indices, idxNum * 4);
             }
 
-            // The meshlets creation - meshlet data is not stored for now.
-            uint32_t meshletsAmount = CreateMeshlets(mesh);
+            static bool createMeshlets = true;
+            uint32_t meshletsAmount = 0;
+            if (createMeshlets)
+            {
+                meshletsAmount = CreateMeshlets(mesh);
+            }
+            else
+            {
+                debugMarkVertexUVs(mesh);
+            }
 
             // Copy back the altered UVs for visual verification
             for (uint32_t vtx = 0, uvIdx = 0; vtx < vtxNum; ++vtx, uvIdx += 2)
@@ -419,21 +466,25 @@ namespace AZ
             return meshletsAmount;
         }
 
-        uint32_t MeshletModel::CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset)
+        uint32_t MeshletsModel::CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset)
         {
             uint32_t meshletsAmount = 0;
             m_sourceModelAsset = sourceModelAsset;
+
             for (const Data::Asset<RPI::ModelLodAsset>& lodAsset : sourceModelAsset->GetLodAssets())
             {
                 for (const RPI::ModelLodAsset::Mesh& meshAsset : lodAsset->GetMeshes())
                 {
-                    meshletsAmount += CreateMeshletModel(meshAsset);
+                    meshletsAmount += CreateMeshletsModel(meshAsset);
                 }
             }
+
+            AZ_Warning("Meshlets", false, "Meshlet model [%s] was created", m_name.c_str());
+
             return meshletsAmount;
         }
 
-        uint32_t MeshletModel::CreateMeshletsFromModel(Data::Instance<RPI::Model> sourceModel)
+        uint32_t MeshletsModel::CreateMeshletsFromModel(Data::Instance<RPI::Model> sourceModel)
         {
             m_sourceModelAsset = sourceModel->GetModelAsset();
             for (uint32_t lodIdx = 0; lodIdx < sourceModel->GetLodCount(); ++lodIdx)
@@ -442,14 +493,16 @@ namespace AZ
 
                 for (uint32_t meshIdx = 0; meshIdx < currentLod->GetMeshes().size(); ++meshIdx)
                 {
-//                    const RPI::ModelLod::Mesh& mesh = currentLod->GetMeshes()[meshIdx];
+                    [[maybe_unused]]const RPI::ModelLod::Mesh& mesh = currentLod->GetMeshes()[meshIdx];
                     // The next is TBD - harder to get than from the reflected Asset part
+
+
                 }
             }
             return 0;
         }
 
-        MeshletModel::MeshletModel(Data::Asset<RPI::ModelAsset> sourceModelAsset)
+        MeshletsModel::MeshletsModel(Data::Asset<RPI::ModelAsset> sourceModelAsset)
         {
             IndicesSemanticName = Name{ "INDICES" };
             PositionSemanticName = Name{ "POSITION" };
@@ -469,7 +522,7 @@ namespace AZ
             m_meshletsAmount = CreateMeshletsFromModelAsset(sourceModelAsset);
         }
 
-        MeshletModel::~MeshletModel()
+        MeshletsModel::~MeshletsModel()
         {
         }
 

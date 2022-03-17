@@ -455,7 +455,7 @@ namespace AtomSampleViewer
 
         if (!m_meshetModel)
         {
-            m_meshetModel = new AZ::Meshlets::MeshletModel(m_modelAsset);
+            m_meshetModel = new AZ::Meshlets::MeshletsModel(m_modelAsset);
             if (m_meshetModel->GetMeshletModel())
             {
                 static constexpr const char meshletDebugMaterialPath[] = "objects/adi/debugshadermaterial_01.azmaterial";
