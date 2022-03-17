@@ -11,7 +11,6 @@
 
 #include <ATLEntities.h>
 #include <ATLComponents.h>
-#include <AudioInternalInterfaces.h>
 #include <FileCacheManager.h>
 
 #include <ISystem.h>

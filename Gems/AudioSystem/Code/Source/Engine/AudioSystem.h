@@ -11,7 +11,6 @@
 
 #include <ATL.h>
 #include <AudioAllocators.h>
-#include <AudioInternalInterfaces.h>
 
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/std/containers/deque.h>

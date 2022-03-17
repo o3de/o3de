@@ -14,7 +14,6 @@
 
 #include <MathConversion.h>
 
-#include <AudioInternalInterfaces.h>
 #include <SoundCVars.h>
 #include <ATLUtils.h>
 

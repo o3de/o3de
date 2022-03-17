@@ -19,7 +19,6 @@ set(FILES
     Source/Engine/ATLComponents.h
     Source/Engine/ATLEntities.h
     Source/Engine/ATLUtils.h
-    Source/Engine/AudioInternalInterfaces.h
     Source/Engine/AudioProxy.h
     Source/Engine/AudioSystem.h
     Source/Engine/FileCacheManager.h

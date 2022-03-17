@@ -19,7 +19,6 @@
 #include <ATLAudioObject.h>
 #include <ATLEntities.h>
 #include <ATLUtils.h>
-#include <AudioInternalInterfaces.h>
 #include <FileCacheManager.h>
 
 

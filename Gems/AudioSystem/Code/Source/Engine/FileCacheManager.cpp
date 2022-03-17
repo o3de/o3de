@@ -19,7 +19,6 @@
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AudioAllocators.h>
-#include <AudioInternalInterfaces.h>
 #include <IAudioSystemImplementation.h>
 #include <SoundCVars.h>
 #include <AudioSystem_Traits_Platform.h>

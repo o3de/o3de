@@ -44,3 +44,44 @@ namespace Audio::CVars
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio::CVars
+
+
+#if !defined(AUDIO_RELEASE)
+
+// Flags for the debug draw cvars
+namespace Audio::DebugDraw
+{
+    enum Options : AZ::u32
+    {
+        None = 0,
+        DrawObjects = (1 << 0),
+        ObjectLabels = (1 << 1),
+        ObjectTriggers = (1 << 2),
+        ObjectStates = (1 << 3),
+        ObjectRtpcs = (1 << 4),
+        ObjectEnvironments = (1 << 5),
+        DrawRays = (1 << 6),
+        RayLabels = (1 << 7),
+        DrawListener = (1 << 8),
+        ActiveEvents = (1 << 9),
+        ActiveObjects = (1 << 10),
+        FileCacheInfo = (1 << 11),
+        MemoryInfo = (1 << 12),
+    };
+
+} // namespace Audio::DebugDraw
+
+namespace Audio::FileCacheManagerDebugDraw
+{
+    enum Options : AZ::u8
+    {
+        All = 0,
+        Global = (1 << 0),
+        LevelSpecific = (1 << 1),
+        UseCounted = (1 << 2),
+        Loaded = (1 << 3),
+    };
+
+} // namespace Audio::FileCacheManagerDebugDraw
+
+#endif // !AUDIO_RELEASE

@@ -8,8 +8,8 @@
 
 
 #include <SoundCVars.h>
+#include <IAudioSystem.h>
 #include <AudioLogger.h>
-#include <AudioInternalInterfaces.h>
 #include <AudioSystem_Traits_Platform.h>
 
 #include <AzCore/Console/ConsoleTypeHelpers.h>
