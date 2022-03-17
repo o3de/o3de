@@ -45,9 +45,12 @@ def _find_engine_root(initial_path):
 
 
 def _find_project_json(engine_root, project):
-    # type (None) -> str
+    # type (str, str) -> str
     """
     Find the project.json file for this project.
+
+    :param engine_root: The root of the O3DE directory where engine.json exists
+    :param project: The name of the O3DE project
     :return: Full path to the project.json file
     """
     project_json = None
