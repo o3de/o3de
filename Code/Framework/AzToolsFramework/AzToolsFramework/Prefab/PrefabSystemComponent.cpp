@@ -813,21 +813,6 @@ namespace AzToolsFramework
             }
         }
 
-        AZ::IO::PathView PrefabSystemComponent::GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId entityId)
-        {
-            auto hashedPathIterator = m_entityIdToHashedPathMap.find(entityId);
-            if (hashedPathIterator != m_entityIdToHashedPathMap.end())
-            {
-                return hashedPathIterator->second;
-            }
-            return AZ::IO::PathView();
-        }
-
-        void PrefabSystemComponent::SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId entityId, AZ::IO::PathView pathUsedForHashing)
-        {
-            m_entityIdToHashedPathMap[entityId] = pathUsedForHashing;
-        }
-
         bool PrefabSystemComponent::IsTemplateDirty(TemplateId templateId)
         {
             auto templateRef = FindTemplate(templateId);

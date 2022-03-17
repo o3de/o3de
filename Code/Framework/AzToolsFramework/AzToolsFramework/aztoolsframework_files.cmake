@@ -709,6 +709,7 @@ set(FILES
     Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EntityIdPathMapperInterface.h
     Prefab/Spawnable/EntityAliasTypes.h
     Prefab/Spawnable/InMemorySpawnableAssetContainer.h
     Prefab/Spawnable/InMemorySpawnableAssetContainer.cpp

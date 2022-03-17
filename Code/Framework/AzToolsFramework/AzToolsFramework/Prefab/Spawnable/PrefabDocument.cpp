@@ -14,14 +14,15 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     PrefabDocument::PrefabDocument(AZStd::string name)
         : m_name(AZStd::move(name))
-        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>())
+        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AzToolsFramework::Prefab::EntityIdInstanceRelationship::OneToMany))
     {
         m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
     }
 
     PrefabDocument::PrefabDocument(AZStd::string name, InstanceAlias alias)
         : m_name(AZStd::move(name))
-        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>(alias))
+        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>(
+              alias, AzToolsFramework::Prefab::EntityIdInstanceRelationship::OneToMany))
     {
         m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
     }

@@ -39,13 +39,15 @@ namespace AzToolsFramework
         }
 
         InstanceOptionalReference InstanceEntityMapper::FindOwningInstance(const AZ::EntityId& entityId) const
-        {
+        { /*
             auto* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ::IO::Path hashedPathForEntityId = prefabSystemComponentInterface->GetHashedPathUsedForEntityIdGeneration(entityId);
             auto* prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-            InstanceOptionalReference instance = prefabEditorEntityOwnershipInterface->GetInstanceReferenceFromRootAliasPath(hashedPathForEntityId.RemoveFilename());
+            InstanceOptionalReference instance = prefabEditorEntityOwnershipInterface->GetInstanceReferenceFromRootAliasPath(hashedPathForEntityId.RemoveFilename()); return
+            return instance;
+            */
 
-            /*
+            
             auto findResult = m_entityToInstanceMap.find(entityId);
 
             if (findResult != m_entityToInstanceMap.end())
@@ -57,8 +59,7 @@ namespace AzToolsFramework
                 }
             }
 
-            return AZStd::nullopt;*/
-            return instance;
+            return AZStd::nullopt;
         }
     }
 }

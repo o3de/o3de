@@ -13,10 +13,10 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/TypeHash.h>
 
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
+#include <AzToolsFramework/Prefab/Spawnable/EntityIdPathMapperInterface.h>
 
 namespace AzToolsFramework
 {
@@ -49,8 +49,15 @@ namespace AzToolsFramework
                 AliasPath absoluteEntityPath = m_loadingInstance->GetAbsoluteInstanceAliasPath();
                 absoluteEntityPath.Append(inputAlias);
                 absoluteEntityPath = absoluteEntityPath.LexicallyNormal();
-
                 mappedValue = GenerateEntityIdForAliasPath(absoluteEntityPath, m_randomSeed);
+
+                if (m_loadingInstance->m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToMany)
+                {
+                    PrefabConversionUtils::EntityIdPathMapperInterface* entityIdPathMapperInterface =
+                        AZ::Interface<PrefabConversionUtils::EntityIdPathMapperInterface>::Get();
+                    AZ_Assert(entityIdPathMapperInterface != nullptr, "PrefabSystemComponent interface not found.");
+                    entityIdPathMapperInterface->SetHashedPathUsedForEntityIdGeneration(mappedValue, absoluteEntityPath);
+                }
 
                 if (!m_isEntityReference)
                 {
@@ -149,32 +156,36 @@ namespace AzToolsFramework
 
         EntityAlias InstanceEntityIdMapper::ResolveReferenceId(const AZ::EntityId& entityId)
         {
-            /*
-            // Acquire the owning instance of our entity
-            InstanceOptionalReference owningInstanceReference = m_storingInstance->m_instanceEntityMapper->FindOwningInstance(entityId);
-
-            // Start with an empty alias to build out our reference path
-            // If we can't resolve this id we'll return a new alias based on the entity ID instead of a reference path
             AliasPath relativeEntityAliasPath;
-            if (!owningInstanceReference)
+
+            if (m_storingInstance->m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
             {
-                AZ_Warning("Prefabs", false,
-                    "Prefab - EntityIdMapper: Entity with Id %s has no registered owning instance",
-                    entityId.ToString().c_str());
+                // Acquire the owning instance of our entity
+                InstanceOptionalReference owningInstanceReference = m_storingInstance->m_instanceEntityMapper->FindOwningInstance(entityId);
 
-                return {};
+                if (!owningInstanceReference)
+                {
+                    AZ_Warning("Prefabs", false,
+                        "Prefab - EntityIdMapper: Entity with Id %s has no registered owning instance",
+                        entityId.ToString().c_str());
+
+                    return {};
+                }
+
+                Instance* owningInstance = &(owningInstanceReference->get());
+
+                // Build out the absolute path of this alias
+                // so we can compare it to the absolute path of our currently scoped instance
+                relativeEntityAliasPath = owningInstance->GetAbsoluteInstanceAliasPath();
+                relativeEntityAliasPath.Append(owningInstance->GetEntityAlias(entityId)->get());
             }
-
-            Instance* owningInstance = &(owningInstanceReference->get());
-
-            // Build out the absolute path of this alias
-            // so we can compare it to the absolute path of our currently scoped instance
-            relativeEntityAliasPath = owningInstance->GetAbsoluteInstanceAliasPath();
-            relativeEntityAliasPath.Append(owningInstance->GetEntityAlias(entityId)->get());*/
-
-            PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            AZ_Assert(prefabSystemComponentInterface != nullptr, "PrefabSystemComponent interface not found.");
-            AliasPath relativeEntityAliasPath = prefabSystemComponentInterface->GetHashedPathUsedForEntityIdGeneration(entityId);
+            else if (m_storingInstance->m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToMany)
+            {
+                PrefabConversionUtils::EntityIdPathMapperInterface* entityIdPathMapperInterface =
+                    AZ::Interface<PrefabConversionUtils::EntityIdPathMapperInterface>::Get();
+                AZ_Assert(entityIdPathMapperInterface != nullptr, "EntityIdPathMapperInterface interface not found.");
+                relativeEntityAliasPath = entityIdPathMapperInterface->GetHashedPathUsedForEntityIdGeneration(entityId);
+            }
 
             return relativeEntityAliasPath.LexicallyRelative(m_instanceAbsolutePath).String();
         }
@@ -182,16 +193,7 @@ namespace AzToolsFramework
         AZ::EntityId InstanceEntityIdMapper::GenerateEntityIdForAliasPath(const AliasPathView& aliasPath, uint64_t seedKey)
         {
             const AZ::HashValue64 seed = aznumeric_cast<AZ::HashValue64>(seedKey);
-            AZ::EntityId entityId(aznumeric_cast<AZ::u64>((AZ::TypeHash64(aliasPath.Native().data(), seed))));
-
-            if (seedKey == SeedKey)
-            {
-                PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-                AZ_Assert(prefabSystemComponentInterface != nullptr, "PrefabSystemComponent interface not found.");
-                prefabSystemComponentInterface->SetHashedPathUsedForEntityIdGeneration(entityId, aliasPath);
-            }
-            
-            return entityId;
+            return AZ::EntityId(aznumeric_cast<AZ::u64>((AZ::TypeHash64(aliasPath.Native().data(), seed))));
         }
     }
 }

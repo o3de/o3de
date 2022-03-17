@@ -239,10 +239,6 @@ namespace AzToolsFramework
 
             void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) override;
 
-            AZ::IO::PathView GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId) override;
-
-            void SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId, AZ::IO::PathView) override;
-
             /**
              * Updates all Instances owned by a Template.
              *
