@@ -398,6 +398,11 @@ namespace O3DELauncher
             AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
             aznumeric_cast<int>(buildTargetName.size()), buildTargetName.data());
 
+        const bool dedicatedServer = IsDedicatedServer();
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddClientServerTargetSpecialization(*settingsRegistry, dedicatedServer);
+
+        
+
         AZ::SettingsRegistryInterface::FixedValueString pathToAssets;
         if (!settingsRegistry->Get(pathToAssets, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
         {

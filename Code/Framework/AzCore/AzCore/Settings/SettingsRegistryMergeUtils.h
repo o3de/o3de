@@ -130,6 +130,8 @@ namespace AZ::SettingsRegistryMergeUtils
     //! A build system target is the name used by the build system to build a particular executable or library
     void MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(SettingsRegistryInterface& registry, AZStd::string_view targetName);
 
+    void MergeSettingsToRegistry_AddClientServerTargetSpecialization(SettingsRegistryInterface& registry, bool isDedicatedServer);
+
     //! Settings structure which is used to determine how to parse Windows INI style config file(.cfg, .ini, etc...)
     //! It supports being able to supply a custom comment filter and section header filter
     //! The names of section headers are appended to the root Json pointer path member to form new root paths

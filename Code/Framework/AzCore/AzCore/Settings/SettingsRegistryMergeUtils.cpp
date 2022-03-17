@@ -26,6 +26,8 @@
 #include <cinttypes>
 #include <locale>
 
+#pragma optimize("", off)
+
 
 namespace AZ::Internal
 {
@@ -646,6 +648,22 @@ namespace AZ::SettingsRegistryMergeUtils
         auto targetSpecialization = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%.*s",
             SpecializationsRootKey, aznumeric_cast<int>(targetName.size()), targetName.data());
         registry.Set(targetSpecialization, true);
+    }
+
+    void MergeSettingsToRegistry_AddClientServerTargetSpecialization(SettingsRegistryInterface& registry, bool isDedicatedServer)
+    {
+        if (isDedicatedServer)
+        {
+            auto targetSpecialization = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
+                SpecializationsRootKey, "server");
+            registry.Set(targetSpecialization, true);
+        }
+        else
+        {
+            auto targetSpecialization = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%s",
+                SpecializationsRootKey, "client");
+            registry.Set(targetSpecialization, true);
+        }
     }
 
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
@@ -1511,3 +1529,5 @@ namespace AZ::SettingsRegistryMergeUtils
         return visitedAll;
     }
 }
+
+#pragma optimize("", on)
