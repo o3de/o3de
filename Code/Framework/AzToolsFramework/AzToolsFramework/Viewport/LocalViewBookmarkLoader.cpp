@@ -21,7 +21,7 @@ namespace AzToolsFramework
     static constexpr const char* LocalBookmarksKey = "LocalBookmarks";
     static constexpr const char* LastKnownLocationKey = "LastKnownLocation";
 
-    // Temporary value until there UI to expose the fields.
+    // Temporary value until there is UI to expose the fields.
     static constexpr int NumOfDefaultLocationsInLevel = 12;
 
     void LocalViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
@@ -176,13 +176,13 @@ namespace AzToolsFramework
                         switch (currentIndex)
                         {
                         case 0:
-                            inout.SetX(value);
+                            inout.SetX(aznumeric_cast<float>(value));
                             break;
                         case 1:
-                            inout.SetY(value);
+                            inout.SetY(aznumeric_cast<float>(value));
                             break;
                         case 2:
-                            inout.SetZ(value);
+                            inout.SetZ(aznumeric_cast<float>(value));
                             break;
                         default:
                             AZ_Warning("LocalViewBookmarkLoader", false, "Trying to set an invalid index in a Vector3, index = %d", currentIndex);
@@ -213,7 +213,7 @@ namespace AzToolsFramework
                             if (valueIndex == "0" && dataType == "Position")
                             {
                                 ViewBookmark bookmark;
-                                bookmark.m_position.SetX(value);
+                                bookmark.m_position.SetX(aznumeric_cast<float>(value));
                                 bookmarks.push_back(bookmark);
                             }
                             else
@@ -266,7 +266,7 @@ namespace AzToolsFramework
                     m_bookmarkfileName = bookmarkComponent->GetLocalBookmarksFileName();
                     using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
                     AZStd::string bookmarkKey = ViewBookmarksRegistryPath + m_bookmarkfileName;
-                    auto viewBookmarkSettingsKey = FixedValueString::format(bookmarkKey.c_str());
+                    auto viewBookmarkSettingsKey = FixedValueString::format("%s",bookmarkKey.c_str());
                     ViewBookmarkVisitor viewBookmarkVisitor;
 
                     const bool visitedViewBookmarks = registry->Visit(viewBookmarkVisitor, viewBookmarkSettingsKey);
@@ -505,6 +505,8 @@ namespace AzToolsFramework
 
         // If we managed to add the bookmark
         SaveBookmarkSettingsFile();
+
+        //Once we have written into our viewbookmark file let's load the new values.
         LoadViewBookmarks();
 
         return success;

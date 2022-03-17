@@ -32,7 +32,7 @@ namespace AzToolsFramework
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
     private:
-        //! Used for loading/saving Prefab View Bookmarks.
+        //! Used for loading/saving View Bookmarks.
         LocalViewBookmarkLoader m_viewBookmarkLoader;
     };
 } // namespace AzToolsFramework
