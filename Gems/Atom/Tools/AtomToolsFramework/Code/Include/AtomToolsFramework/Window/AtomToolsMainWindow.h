@@ -15,6 +15,7 @@
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzToolsFramework/UI/Logging/TracePrintFLogPanel.h>
 
 #include <QLabel>
 #include <QTimer>
@@ -31,13 +32,9 @@ namespace AtomToolsFramework
         AtomToolsMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
         ~AtomToolsMainWindow();
 
-    protected:
-        void showEvent(QShowEvent* showEvent) override;
-        void closeEvent(QCloseEvent* closeEvent) override;
-
         // AtomToolsMainWindowRequestBus::Handler overrides...
         void ActivateWindow() override;
-        bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation) override;
+        bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area) override;
         void RemoveDockWidget(const AZStd::string& name) override;
         void SetDockWidgetVisible(const AZStd::string& name, bool visible) override;
         bool IsDockWidgetVisible(const AZStd::string& name) const override;
@@ -47,11 +44,15 @@ namespace AtomToolsFramework
         void SetStatusWarning(const QString& message);
         void SetStatusError(const QString& message);
 
-        void AddCommonMenus();
-
         virtual void OpenSettings();
         virtual void OpenHelp();
         virtual void OpenAbout();
+
+    protected:
+        void showEvent(QShowEvent* showEvent) override;
+        void closeEvent(QCloseEvent* closeEvent) override;
+
+        void AddCommonMenus();
 
         virtual void SetupMetrics();
         virtual void UpdateMetrics();
@@ -78,8 +79,6 @@ namespace AtomToolsFramework
         QMenu* m_menuHelp = {};
 
         AtomToolsFramework::AtomToolsAssetBrowser* m_assetBrowser = {};
-
-        AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
-        AZStd::unordered_map<AZStd::string, QAction*> m_dockActions;
+        AzToolsFramework::LogPanel::TracePrintFLogPanel* m_logPanel = {};
     };
 } // namespace AtomToolsFramework
