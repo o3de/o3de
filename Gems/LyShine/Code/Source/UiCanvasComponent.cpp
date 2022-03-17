@@ -1951,7 +1951,8 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
             // Start building the render to texture node in the render graph
             AZ::Vector2 viewportTopLeft = AZ::Vector2::CreateZero();
             AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage;
-            EBUS_EVENT_ID_RESULT(attachmentImage, GetEntityId(), LyShine::RenderToTextureRequestBus, GetRenderTarget, m_attachmentImageId);
+            LyShine::RenderToTextureRequestBus::EventResult(attachmentImage, GetEntityId(),
+                &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_attachmentImageId);
             m_renderGraph.BeginRenderToTexture(attachmentImage, viewportTopLeft, viewportSize, clearColor);
         }
         else
@@ -3629,8 +3630,9 @@ void UiCanvasComponent::CreateRenderTarget()
 
     // Create a render target for the canvas
     AZ::RHI::Size imageSize(static_cast<uint32_t>(m_canvasSize.GetX()), static_cast<uint32_t>(m_canvasSize.GetY()), 1);
-    EBUS_EVENT_ID_RESULT(m_attachmentImageId, GetEntityId(), LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
-    if (m_attachmentImageId.IsEmpty())
+    LyShine::RenderToTextureRequestBus::EventResult(m_attachmentImageId, GetEntityId(),
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    AZ_Warning("UI", !m_attachmentImageId.IsEmpty(), "Failed to create render target for UI canvas: %s", m_pathname.c_str());
     {
         AZ_Warning("UI", false, "Failed to create render target for UI canvas: %s", m_pathname.c_str());
     }
@@ -3641,7 +3643,8 @@ void UiCanvasComponent::DestroyRenderTarget()
 {
     if (!m_attachmentImageId.IsEmpty())
     {
-        EBUS_EVENT_ID(GetEntityId(), LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_attachmentImageId);
+        LyShine::RenderToTextureRequestBus::Event(GetEntityId(),
+            &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_attachmentImageId);
         m_attachmentImageId = AZ::RHI::AttachmentId{};
     }
 }

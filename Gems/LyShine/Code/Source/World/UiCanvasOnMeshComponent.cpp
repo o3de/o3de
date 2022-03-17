@@ -261,6 +261,8 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
     AZ::Vector3 rayEnd = meshWorldTMInverse.TransformPoint(rayRequest.m_endWorldPosition);
     AZ::Vector3 rayDirection = rayEnd - rayOrigin;
 
+    // When a segment intersects a triangle, the returned hit distance will be between [0, 1].
+    // Initialize min hit distance to be greater than 1 so that the first hit will be the new min
     float minResultDistance = 2.0f;
     bool foundResult = false;
 
