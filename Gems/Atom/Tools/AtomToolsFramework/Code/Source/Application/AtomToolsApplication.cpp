@@ -69,25 +69,6 @@ namespace AtomToolsFramework
         m_styleManager.reset(new AzQtComponents::StyleManager(this));
         m_styleManager->initialize(this, engineRootPath);
 
-        const int updateIntervalWhenActive =
-            aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1));
-        const int updateIntervalWhenNotActive =
-            aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 64));
-
-        m_timer.setInterval(updateIntervalWhenActive);
-        connect(&m_timer, &QTimer::timeout, this, [this]()
-        {
-            this->PumpSystemEventLoopUntilEmpty();
-            this->Tick();
-        });
-
-        connect(this, &QGuiApplication::applicationStateChanged, this, [this, updateIntervalWhenActive, updateIntervalWhenNotActive]()
-        {
-            // Limit the update interval when not in focus to reduce power consumption and interference with other applications
-            this->m_timer.setInterval(
-                (applicationState() & Qt::ApplicationActive) ? updateIntervalWhenActive : updateIntervalWhenNotActive);
-        });
-
         AtomToolsMainWindowNotificationBus::Handler::BusConnect(m_toolId);
     }
 
@@ -219,31 +200,13 @@ namespace AtomToolsFramework
             editorPythonEventsInterface->StartPython();
         }
 
-        // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
-
-        m_timer.start();
-
-        // Enable native UI for some low level system popup message when it's not in automated test mode
-        if (!m_isAutoTestMode)
-        {
-            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
-            {
-                nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
-            }
-        }
+        // Delay command line processing until first update 
+        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); OnIdle(); });
     }
-
     void AtomToolsApplication::Tick()
     {
         TickSystem();
         Base::Tick();
-
-        if (WasExitMainLoopRequested())
-        {
-            m_timer.disconnect();
-            quit();
-        }
     }
 
     void AtomToolsApplication::Destroy()
@@ -268,6 +231,23 @@ namespace AtomToolsFramework
 #else
         Base::Destroy();
 #endif
+    }
+
+    void AtomToolsApplication::OnIdle()
+    {
+        if (WasExitMainLoopRequested())
+        {
+            quit();
+            return;
+        }
+
+        PumpSystemEventLoopUntilEmpty();
+        Tick();
+
+        const int updateInterval = (applicationState() & Qt::ApplicationActive)
+            ? aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1))
+            : aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 250));
+        QTimer::singleShot(updateInterval, [this]() { OnIdle(); });
     }
 
     void AtomToolsApplication::OnMainWindowClosing()
@@ -443,8 +423,16 @@ namespace AtomToolsFramework
             ExitMainLoop();
         }
 
+        // Enable native UI for some low level system popup message when it's not in automated test mode
         constexpr const char* testModeSwitch = "autotest_mode";
         m_isAutoTestMode = commandLine.HasSwitch(testModeSwitch);
+        if (!m_isAutoTestMode)
+        {
+            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+            {
+                nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+            }
+        }
     }
 
     bool AtomToolsApplication::LaunchLocalServer()
