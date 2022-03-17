@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
-#include <Atom/Feature/BlendUtility.azsli>
+#include <Atom/Features/BlendUtility.azsli>
 
 enum DetailTextureFlags
 {

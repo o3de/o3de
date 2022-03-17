@@ -40,6 +40,11 @@ set(FILES
     Source/CubeMapCapture/CubeMapCaptureComponent.cpp
     Source/CubeMapCapture/CubeMapCaptureComponentController.h
     Source/CubeMapCapture/CubeMapCaptureComponentController.cpp
+    Source/Debug/RenderDebugComponent.cpp
+    Source/Debug/RenderDebugComponent.h
+    Source/Debug/RenderDebugComponentConfig.cpp
+    Source/Debug/RenderDebugComponentController.cpp
+    Source/Debug/RenderDebugComponentController.h
     Source/Decals/DecalComponent.h
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h
