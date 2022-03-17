@@ -697,7 +697,7 @@ namespace Terrain
         const auto baseColorIndex = getIndex(BaseColorColor);
         if (baseColorIndex.IsValid())
         {
-            AZ::Color baseColor = material->GetPropertyValue(baseColorIndex).GetValue<AZ::Color>();
+            const AZ::Color baseColor = material->GetPropertyValue(baseColorIndex).GetValue<AZ::Color>();
             shaderData.m_baseColorRed = baseColor.GetR();
             shaderData.m_baseColorGreen = baseColor.GetG();
             shaderData.m_baseColorBlue = baseColor.GetB();
