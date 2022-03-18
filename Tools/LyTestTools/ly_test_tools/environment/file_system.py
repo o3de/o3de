@@ -442,7 +442,7 @@ def find_ancestor_file(target_file_name, start_path=os.getcwd()):
     :param start_path: Optional path to start looking for the file.
     :return: Path to the file or None if not found.
     """
-    current_path = os.path.normpath(start_path)
+    current_path = os.path.abspath(start_path)
     candidate_path = os.path.join(current_path, target_file_name)
 
     # Limit the number of directories to traverse, to avoid infinite loop in path cycles
