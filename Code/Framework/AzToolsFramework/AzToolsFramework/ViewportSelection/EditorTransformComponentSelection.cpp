@@ -993,15 +993,6 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
-    // leaves focus mode by focusing on the parent of the current perfab in the entity outliner
-    static void LeaveFocusMode()
-    {
-        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get())
-        {
-            prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityContextId());
-        }
-    }
-
     EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCacheInterface* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
@@ -3759,12 +3750,6 @@ namespace AzToolsFramework
             }
             break;
         case ViewportEditorMode::Focus:
-            {
-                ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode",
-                    LeaveFocusMode);
-            }
-            break;
         case ViewportEditorMode::Default:
         case ViewportEditorMode::Pick:
             // noop
@@ -3773,7 +3758,7 @@ namespace AzToolsFramework
     }
 
     void EditorTransformComponentSelection::OnEditorModeDeactivated(
-        const ViewportEditorModesInterface& editorModeState, const ViewportEditorMode mode)
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, const ViewportEditorMode mode)
     {
         switch (mode)
         {
@@ -3784,24 +3769,9 @@ namespace AzToolsFramework
                 ToolsApplicationNotificationBus::Handler::BusConnect();
                 EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
                 EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
-
-                // note: when leaving component mode, we check if we're still in focus mode (i.e. component mode was
-                // started from within focus mode), if we are, ensure we create/update the viewport border (as leaving
-                // component mode will attempt to remove it)
-                if (editorModeState.IsModeActive(ViewportEditorMode::Focus))
-                {
-                    ViewportUi::ViewportUiRequestBus::Event(
-                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode",
-                        LeaveFocusMode);
-                }
             }
             break;
         case ViewportEditorMode::Focus:
-            {
-                ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
-            }
-            break;
         case ViewportEditorMode::Default:
         case ViewportEditorMode::Pick:
             // noop
