@@ -8,11 +8,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 import os
-import sys
 from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
+# Saves the level cache folder.
+# These artifacts will be saved in the test results so developers can access the level assets
+# to debug should the test ever fail.
 def save_multiplayer_level_cache_folder_artifact(workspace, multiplayer_level):
     level_cache_folder_path = os.path.join(workspace.paths.platform_cache(), "levels", "multiplayer", multiplayer_level)
 
