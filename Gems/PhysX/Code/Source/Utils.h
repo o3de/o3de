@@ -196,6 +196,7 @@ namespace PhysX
             const int32_t row, const int32_t col,
             const int32_t numRows, const int32_t numCols);
 
+        Physics::HeightfieldShapeConfiguration CreateBaseHeightfieldShapeConfiguration(AZ::EntityId entityId);
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId);
 
         void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSelection& materialSelection);

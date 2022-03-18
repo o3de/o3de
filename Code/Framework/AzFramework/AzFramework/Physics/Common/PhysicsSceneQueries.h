@@ -84,15 +84,7 @@ namespace AzPhysics
         };
 
         //! Bitwise operators for HitFlags
-        inline HitFlags operator|(HitFlags lhs, HitFlags rhs)
-        {
-            return static_cast<HitFlags>(static_cast<AZ::u16>(lhs) | static_cast<AZ::u16>(rhs));
-        }
-
-        inline HitFlags operator&(HitFlags lhs, HitFlags rhs)
-        {
-            return static_cast<HitFlags>(static_cast<AZ::u16>(lhs) & static_cast<AZ::u16>(rhs));
-        }
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(HitFlags)
 
         //! Flag used to mark which members are valid in a SceneQueryHit object.
         //! Example: if SceneQueryHit::m_resultFlags & ResultFlags::Distance is true,
@@ -109,21 +101,9 @@ namespace AzPhysics
             Position = (1 << 5),
             Normal = (1 << 6)
         };
+
         //! Bitwise operators for ResultFlags
-        inline ResultFlags operator|(ResultFlags lhs, ResultFlags rhs)
-        {
-            return static_cast<ResultFlags>(static_cast<AZ::u8>(lhs) | static_cast<AZ::u8>(rhs));
-        }
-
-        inline ResultFlags operator|=(ResultFlags& lhs, ResultFlags rhs)
-        {
-            return (lhs = (lhs | rhs));
-        }
-
-        inline ResultFlags operator&(ResultFlags lhs, ResultFlags rhs)
-        {
-            return static_cast<ResultFlags>(static_cast<AZ::u8>(lhs) & static_cast<AZ::u8>(rhs));
-        }
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(ResultFlags)
 
         //! Callback used for directed scene queries: RayCasts and ShapeCasts
         using FilterCallback = AZStd::function<QueryHitType(const SimulatedBody* body, const Physics::Shape* shape)>;

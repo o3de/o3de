@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -29,6 +30,22 @@
 
 namespace EMotionFX::MotionMatching
 {
+    AZ_CVAR(bool, mm_debugDraw, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Global flag for motion matching debug drawing. Feature-wise debug drawing can be enabled or disabled in the anim graph itself.");
+
+    AZ_CVAR(float, mm_debugDrawVelocityScale, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Scaling value used for velocity debug rendering.");
+
+    AZ_CVAR(bool, mm_debugDrawQueryPose, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Draw the query skeletal pose used as input pose for the motion matching search.");
+
+    AZ_CVAR(bool, mm_debugDrawQueryVelocities, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Draw the query joint velocities used as input for the motion matching search.");
+
+    AZ_CVAR(bool, mm_useKdTree, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Use Kd-Tree to accelerate the motion matching search for the best next matching frame. "
+        "Disabling it will heavily slow down performance and should only be done for debugging purposes");
+
     void MotionMatchingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))

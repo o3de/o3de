@@ -1205,7 +1205,7 @@ namespace EMotionFX
         return m_poseDatas;
     }
 
-    PoseData* Pose::GetAndPreparePoseData(const AZ::TypeId& typeId, ActorInstance* linkToActorInstance)
+    PoseData* Pose::GetAndPreparePoseData(const AZ::TypeId& typeId, const ActorInstance* linkToActorInstance)
     {
         PoseData* poseData = GetPoseDataByType(typeId);
         if (!poseData)

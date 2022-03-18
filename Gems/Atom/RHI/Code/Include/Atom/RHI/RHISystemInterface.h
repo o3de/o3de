@@ -76,7 +76,10 @@ namespace AZ
             : public AZ::EBusTraits
         {
         public:
-            virtual void OnFramePrepare(RHI::FrameGraphBuilder& frameGraphBuilder) = 0;
+            virtual void OnFramePrepare(RHI::FrameGraphBuilder& ) {};
+            
+            //! Notify that the input device was removed
+            virtual void OnDeviceRemoved(Device* ) {};
         };
 
         using RHISystemNotificationBus = AZ::EBus<RHISystemNotificiationInterface>;
