@@ -267,9 +267,9 @@ namespace Terrain
             pixels.reserve(updateWidth * updateHeight);
 
             {
-			
-	            // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
-	            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
+
+                // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
+                // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
 
                 auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
                 typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
