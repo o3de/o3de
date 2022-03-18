@@ -115,6 +115,12 @@ namespace AzToolsFramework
 
         // Determine which prefab instance should own this entity.
         Prefab::InstanceOptionalReference newOwningInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
+        if (!newOwningInstance.has_value())
+        {
+            AZ_Assert(false, "Entity Ownership Service could not retrieve currently focused prefab.");
+            return;
+        }
+
         Prefab::PrefabDom instanceDomBeforeUpdate;
         Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(newOwningInstance->get(), instanceDomBeforeUpdate);
 
@@ -126,7 +132,7 @@ namespace AzToolsFramework
             newOwningInstance->get(), "Add entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
     }
 
-     void PrefabEditorEntityOwnershipService::AddEntities(const EntityList& entities)
+    void PrefabEditorEntityOwnershipService::AddEntities(const EntityList& entities)
     {
         AZ_Assert(IsInitialized(), "Tried to add entities without initializing the Entity Ownership Service");
 
@@ -135,6 +141,12 @@ namespace AzToolsFramework
 
         // Determine which prefab instance should own these entities.
         Prefab::InstanceOptionalReference newOwningInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
+        if (!newOwningInstance.has_value())
+        {
+            AZ_Assert(false, "Entity Ownership Service could not retrieve currently focused prefab.");
+            return;
+        }
+
         Prefab::PrefabDom instanceDomBeforeUpdate;
         Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(newOwningInstance->get(), instanceDomBeforeUpdate);
 
