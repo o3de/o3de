@@ -110,19 +110,6 @@ float DirectionalLightShadow::GetThickness(uint lightIndex)
     return calc.GetThickness();
 }
 
-float DirectionalLightShadow::ChooseDimmest(float visDepth[5], float myDepth)
-{
-    float res = visDepth[0];
-    for(int i = 1 ; i < 5 ; ++i)
-    {
-        if (res > visDepth[i])
-        {
-            res = visDepth[i];
-        }
-    }
-    return res;
-}
-
 float DirectionalLightShadow::GetVisibility(
     uint lightIndex,
     float3 worldPos,
@@ -136,15 +123,7 @@ float DirectionalLightShadow::GetVisibility(
     const bool useFullscreenShadow = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;
     if (useFullscreenShadow)
     {
-        float visDepth[5];
-        visDepth[0] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
-        visDepth[1] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(1,0), 0)).x;
-        visDepth[2] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(0,1), 0)).x;
-        visDepth[3] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(-1,0), 0)).x;
-        visDepth[4] = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy + int2(0,-1), 0)).x;
-
-        const float viewSpaceDepth = abs(screenUv.w);
-        return ChooseDimmest(visDepth, viewSpaceDepth);        
+        return PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
     }
     else
     {

@@ -91,13 +91,8 @@ PSOutput MainPS(VSOutput IN)
 {
     const float3 worldNormal = ComputeWorldNormal(IN);    
 
-       
-    float sumDepth = 0;
-    for(int sampleIndex = 0 ; sampleIndex < PassSrg::m_constantData.m_msaaCount ; ++sampleIndex)
-    {
-        sumDepth += PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex);
-    }
-    const float zDepth = sumDepth * PassSrg::m_constantData.m_invMsaaCount;
+    const int sampleIndex = 0; // Note precision is much better is the multisample position is dead center.
+    const float zDepth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex);
     
     const float3 surfacePosWS = WorldPositionFromDepthBuffer(IN.m_texCoord, zDepth).xyz;     
     const float3 surfacePosVS = ViewPositionFromDepthBuffer(IN.m_texCoord, zDepth).xyz;     
