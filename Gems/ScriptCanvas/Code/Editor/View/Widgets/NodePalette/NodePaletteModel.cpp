@@ -136,20 +136,12 @@ namespace
             return;
         }
 
-        // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
-        if (AZ::MethodReturnsAzEventByReferenceOrPointer(method))
-        {
-            const AZ::BehaviorParameter* resultParameter = method.GetResult();
-            ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
-        }
-
         nodePaletteModel.RegisterClassNode(categoryPath, behaviorClass ? behaviorClass->m_name : "", name, &method, &behaviorContext, propertyStatus, isOverloaded);
     }
 
     void RegisterGlobalMethod(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel, const AZ::BehaviorContext& behaviorContext,
         const AZ::BehaviorMethod& behaviorMethod)
     {
-
         AZ_PROFILE_SCOPE(NodePaletteModel, "RegisterGlobalMethod");
 
         const auto isExposableOutcome = ScriptCanvas::IsExposable(behaviorMethod);
@@ -165,13 +157,6 @@ namespace
             return; // skip this method
         }
 
-        // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
-        if (AZ::MethodReturnsAzEventByReferenceOrPointer(behaviorMethod))
-        {
-            const AZ::BehaviorParameter* resultParameter = behaviorMethod.GetResult();
-            ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
-
-        }
         nodePaletteModel.RegisterMethodNode(behaviorContext, behaviorMethod);
     }
 
@@ -683,7 +668,7 @@ namespace
                 }
 
                 const bool isOverload{ false }; // overloaded events are not trivially supported
-                nodePaletteModel.RegisterEBusSenderNodeModelInformation(categoryPath, behaviorEbus.m_name, event.first, ScriptCanvas::EBusBusId(behaviorEbus.m_name.c_str()), ScriptCanvas::EBusEventId(event.first.c_str()), event.second, ScriptCanvas::PropertyStatus::None, isOverload);
+                nodePaletteModel.RegisterEBusSenderNodeModelInformation(categoryPath, behaviorEbus.m_name, event.first, ScriptCanvas::EBusBusId(behaviorEbus.m_name.c_str()), ScriptCanvas::EBusEventId(event.first.c_str()), ScriptCanvas::PropertyStatus::None, isOverload);
             }
         }
     }
@@ -1159,7 +1144,6 @@ namespace ScriptCanvasEditor
         , AZStd::string_view eventName
         , const ScriptCanvas::EBusBusId& busId
         , const ScriptCanvas::EBusEventId& eventId
-        , const AZ::BehaviorEBusEventSender& sender
         , ScriptCanvas::PropertyStatus propertyStatus
         , bool isOverload)
     {
@@ -1193,17 +1177,6 @@ namespace ScriptCanvasEditor
             senderInformation->m_displayName = details.m_name.empty() ? eventName : details.m_name.c_str();
             senderInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
 
-            auto safeRegister = [](AZ::BehaviorMethod* method)
-            {
-                if (method && AZ::MethodReturnsAzEventByReferenceOrPointer(*method))
-                {
-                    const AZ::BehaviorParameter* resultParameter = method->GetResult();
-                    ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
-                }
-            };
-
-            safeRegister(sender.m_event);
-            safeRegister(sender.m_broadcast);
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, senderInformation));
         }
     }

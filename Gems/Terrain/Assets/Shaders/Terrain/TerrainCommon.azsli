@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include <../Materials/Types/MaterialInputs/BaseColorInput.azsli>
 #include <../Materials/Types/MaterialInputs/RoughnessInput.azsli>
 #include <../Materials/Types/MaterialInputs/MetallicInput.azsli>
 #include <../Materials/Types/MaterialInputs/SpecularInput.azsli>
 #include <../Materials/Types/MaterialInputs/NormalInput.azsli>
+#include <TerrainMaterialSrg.azsli>
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
@@ -68,27 +68,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         modelToWorldInverse[2] = m_reflectionProbeData.m_modelToWorldInverse[2];
         return modelToWorldInverse;
     }
-}
-
-ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
-{
-    Sampler m_sampler
-    {
-        AddressU = Wrap;
-        AddressV = Wrap;
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        MaxAnisotropy = 16;
-    };
-
-    // Base Color
-    float3 m_baseColor;
-
-    // Detail Material Properties    
-    float m_detailTextureMultiplier;
-    float m_detailFadeDistance;
-    float m_detailFadeLength;
 }
 
 option bool o_useTerrainSmoothing = false;

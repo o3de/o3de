@@ -63,6 +63,23 @@ MESH_LOD_TYPE = {
     'specific lod': 2,
 }
 
+# Display Mapper type
+DISPLAY_MAPPER_OPERATION_TYPE = {
+    'Aces': 0,
+    'AcesLut': 1,
+    'Passthrough': 2,
+    'GammaSRGB': 3,
+    'Reinhard': 4,
+}
+
+# Display Mapper presets
+DISPLAY_MAPPER_PRESET = {
+    '48Nits': 0,
+    '1000Nits': 1,
+    '2000Nits': 2,
+    '4000Nits': 3,
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -204,7 +221,25 @@ class AtomComponentProperties:
         Deferred Fog component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
-          - 'Enable Deferred Fog' Toggle active state of the component True/False
+          - 'Enable Deferred Fog' Toggle active state of the component (bool).
+          - 'Fog Color' Sets the fog color. RGB value set using azlmbr.math.Vector3 tuple.
+          - 'Fog Start Distance' Distance from the viewer where the fog starts (0.0, 5000.0).
+          - 'Fog End Distance' Distance from the viewer where fog masks the background scene (0.0, 5000.0).
+          - 'Fog Bottom Height' Height at which the fog layer starts (-5000.0, 5000.0).
+          - 'Fog Max Height' Height of the fog layer top (-5000.0, 5000.0).
+          - 'Noise Texture' The noise texture used for creating the fog turbulence (Asset.id).
+            This property is not yet implemented for editing and will be fixed in a future sprint.
+          - 'Noise Texture First Octave Scale' Scale of the first noise octave (INF, INF).
+            Higher values indicates higher frequency. Values set using azlmbr.math.Vector2 tuple.
+          - 'Noise Texture First Octave Velocity' Velocity of the first noise octave UV coordinates (INF, INF).
+            Values set using azlmbr.math.Vector2 tuple.
+          - 'Noise Texture Second Octave Scale' Scale of the second noise octave (INF, INF).
+            Higher values indicates higher frequency. Values set using azlmbr.math.Vector2 tuple.
+          - 'Noise Texture Second Octave Velocity' Velocity of the second noise octave UV coordinates (INF, INF).
+            Values set using azlmbr.math.Vector2 tuple.
+          - 'Octaves Blend Factor' Blend factor between the noise octaves (0.0, 1.0).
+          - 'Enable Turbulence Properties' Enables Turbulence Properties (bool).
+          - 'Enable Fog Layer' Enables the fog layer (bool).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -212,6 +247,19 @@ class AtomComponentProperties:
             'name': 'Deferred Fog',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable Deferred Fog': 'Controller|Configuration|Enable Deferred Fog',
+            'Fog Color': 'Controller|Configuration|Fog Color',
+            'Fog Start Distance': 'Controller|Configuration|Fog Start Distance',
+            'Fog End Distance': 'Controller|Configuration|Fog End Distance',
+            'Fog Bottom Height': 'Controller|Configuration|Fog Bottom Height',
+            'Fog Max Height': 'Controller|Configuration|Fog Max Height',
+            'Noise Texture': 'Controller|Configuration|Noise Texture',
+            'Noise Texture First Octave Scale': 'Controller|Configuration|Noise Texture First Octave Scale',
+            'Noise Texture First Octave Velocity': 'Controller|Configuration|Noise Texture First Octave Velocity',
+            'Noise Texture Second Octave Scale': 'Controller|Configuration|Noise Texture Second Octave Scale',
+            'Noise Texture Second Octave Velocity': 'Controller|Configuration|Noise Texture Second Octave Velocity',
+            'Octaves Blend Factor': 'Controller|Configuration|Octaves Blend Factor',
+            'Enable Turbulence Properties': 'Controller|Configuration|Enable Turbulence Properties',
+            'Enable Fog Layer': 'Controller|Configuration|Enable Fog Layer',
         }
         return properties[property]
 
@@ -281,16 +329,42 @@ class AtomComponentProperties:
     def display_mapper(property: str = 'name') -> str:
         """
         Display Mapper level component properties.
+          - 'Type' specifies the Display Mapper type from atom_constants.py DISPLAY_MAPPER_OPERATION_TYPE
           - 'Enable LDR color grading LUT' toggles the use of LDR color grading LUT
           - 'LDR color Grading LUT' is the Low Definition Range (LDR) color grading for Look-up Textures (LUT) which is
-            an Asset.id value corresponding to a lighting asset file.
+            an Asset.id value corresponding to a LUT asset file.
+          - 'Override Defaults' toggle enables parameter overrides for ACES settings (bool)
+          - 'Alter Surround' toggle applies gamma adjustments for dim surround (bool)
+          - 'Alter Desaturation' toggle applies desaturation adjustment for luminance differences (bool)
+          - 'Alter CAT D60 to D65' toggles conversion referencing black luminance level constant (bool)
+          - 'Preset Selection' select from a list of presets from atom_constants.py DISPLAY_MAPPER_PRESET
+          - 'Cinema Limit (black)' reference black
+          - 'Cinema Limit (white)' reference white
+          - 'Min Point (luminance)' linear extension below this value
+          - 'Mid Point (luminance)' middle gray value
+          - 'Max Point (luminance)' linear extension above this value
+          - 'Surround Gamma' applied to compensate for the condition of the viewing environment
+          - 'Gamma' value applied as the basic Gamma curve Opto-Electrical Transfer Function (OETF)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Display Mapper',
+            'Type': 'Controller|Configuration|Type',
             'Enable LDR color grading LUT': 'Controller|Configuration|Enable LDR color grading LUT',
             'LDR color Grading LUT': 'Controller|Configuration|LDR color Grading LUT',
+            'Override Defaults': 'Controller|Configuration|ACES Parameters|Override Defaults',
+            'Alter Surround': 'Controller|Configuration|ACES Parameters|Alter Surround',
+            'Alter Desaturation': 'Controller|Configuration|ACES Parameters|Alter Desaturation',
+            'Alter CAT D60 to D65': 'Controller|Configuration|ACES Parameters|Alter CAT D60 to D65',
+            'Preset Selection': 'Controller|Configuration|ACES Parameters|Load Preset|Preset Selection',
+            'Cinema Limit (black)': 'Controller|Configuration|ACES Parameters|Cinema Limit (black)',
+            'Cinema Limit (white)': 'Controller|Configuration|ACES Parameters|Cinema Limit (white)',
+            'Min Point (luminance)': 'Controller|Configuration|ACES Parameters|Min Point (luminance)',
+            'Mid Point (luminance)': 'Controller|Configuration|ACES Parameters|Mid Point (luminance)',
+            'Max Point (luminance)': 'Controller|Configuration|ACES Parameters|Max Point (luminance)',
+            'Surround Gamma': 'Controller|Configuration|ACES Parameters|Surround Gamma',
+            'Gamma': 'Controller|Configuration|ACES Parameters|Gamma',
         }
         return properties[property]
 

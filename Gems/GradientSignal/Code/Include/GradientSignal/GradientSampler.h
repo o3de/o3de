@@ -108,16 +108,14 @@ namespace GradientSignal
 
         {
             // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-            // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-            // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-            // (One case where this was previously able to occur was in rapid updating of the Preview widget on the GradientSurfaceDataComponent
-            // in the Editor when moving the threshold sliders back and forth rapidly)
+            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
             auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
             typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
             if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
-                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references on entity id %s",
+                    m_gradientId.ToString().c_str());
             }
             else
             {
@@ -175,16 +173,15 @@ namespace GradientSignal
 
         {
             // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-            // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-            // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-            // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
-            // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
+            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
             auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
             typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
             if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
-                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references");
+                AZ_ErrorOnce(
+                    "GradientSignal", false, "Detected cyclic dependencies with gradient entity references on entity id %s",
+                    m_gradientId.ToString().c_str());
                 ClearOutputValues(outValues);
                 return;
             }

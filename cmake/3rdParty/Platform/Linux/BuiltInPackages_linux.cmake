@@ -12,12 +12,12 @@ ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform            
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
 ly_associate_package(PACKAGE_NAME pybind11-2.4.3-rev3-multiplatform                 TARGETS pybind11                    PACKAGE_HASH dccb5546607b8b31cd207033aaf24ab044ce6e188a9f12411236a010f9e0c4ff)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                        TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
-ly_associate_package(PACKAGE_NAME expat-2.4.2-rev1-linux                            TARGETS expat                       PACKAGE_HASH 07621d684fd909e2768e696a2652cfb1e975093f738193cfdcb60a016a9a9d4e)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                           TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
+ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-linux                            TARGETS expat                       PACKAGE_HASH 755369a919e744b9b3f835d1acc684f02e43987832ad4a1c0b6bbf884e6cd45b)
 ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-linux                           TARGETS assimplib                   PACKAGE_HASH 40d64242d5d32a69af3a25690b76f051f3c1a573c1bafba0782cb771a53dfab7)
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.2-rev1-linux             TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 875a8ee45ab5948b10eedfd9057b14db7f01c4b31820f8f998eb6dee1c05a176)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-linux                          TARGETS TIFF                        PACKAGE_HASH 2377f48b2ebc2d1628d9f65186c881544c92891312abe478a20d10b85877409a)
@@ -31,7 +31,7 @@ ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-linux                   
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-linux                  TARGETS GoogleBenchmark             PACKAGE_HASH 4038878f337fc7e0274f0230f71851b385b2e0327c495fc3dd3d1c18a807928d)
 ly_associate_package(PACKAGE_NAME unwind-1.2.1-linux                                TARGETS unwind                      PACKAGE_HASH 3453265fb056e25432f611a61546a25f60388e315515ad39007b5925dd054a77)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-rev6-linux                              TARGETS Qt                          PACKAGE_HASH a37bd9989f1e8fe57d94b98cbf9bd5c3caaea740e2f314e5162fa77300551531)
-ly_associate_package(PACKAGE_NAME libpng-1.6.37-rev1-linux                          TARGETS libpng                      PACKAGE_HASH 896451999f1de76375599aec4b34ae0573d8d34620d9ab29cc30b8739c265ba6)
+ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-linux                             TARGETS PNG                         PACKAGE_HASH 5c82945a1648905a5c4c5cee30dfb53a01618da1bf58d489610636c7ade5adf5)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux                    TARGETS libsamplerate               PACKAGE_HASH 41643c31bc6b7d037f895f89d8d8d6369e906b92eff42b0fe05ee6a100f06261)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-linux                           TARGETS OpenMesh                    PACKAGE_HASH 805bd0b24911bb00c7f575b8c3f10d7ea16548a5014c40811894a9445f17a126)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-linux                         TARGETS OpenSSL                     PACKAGE_HASH b779426d1e9c5ddf71160d5ae2e639c3b956e0fb5e9fcaf9ce97c4526024e3bc)

@@ -1606,7 +1606,9 @@ namespace AZ
                 PrintIndent(stringOutput, indent);
 
                 stringOutput += "- ";
-                stringOutput += m_name.GetStringView();
+                //stringOutput += m_name.GetStringView();
+                //stringOutput += "- ";
+                stringOutput += m_path.GetStringView();
                 stringOutput += "\n";
             }
         }
