@@ -71,14 +71,20 @@ float3 ComputeWorldNormal(VSOutput IN)
 
     const int2 texCoord = IN.m_position;
 
-    const float2 uv0 = IN.m_texCoord; // center
-    const float2 uv1 = IN.m_texCoord + float2(offset, 0) * invScreenSize; // right 
-    const float2 uv2 = IN.m_texCoord + float2(0, offset) * invScreenSize; // top
+    const float2 RightPixelF = float2(offset, 0);
+    const float2 BottomPixelF = float2(0, offset);
+
+    const int RightPixelI = int2(1,0);
+    const int BottomPixelI = int2(0,1);
+    
+    const float2 uv0 = IN.m_texCoord; 
+    const float2 uv1 = IN.m_texCoord + RightPixelF * invScreenSize; 
+    const float2 uv2 = IN.m_texCoord + BottomPixelF * invScreenSize; 
 
     const int sampleIndex = 0;
     const float depth0 = PassSrg::m_depth.Load(texCoord, sampleIndex);
-    const float depth1 = PassSrg::m_depth.Load(texCoord + int2(1,0), sampleIndex);
-    const float depth2 = PassSrg::m_depth.Load(texCoord + int2(0,1), sampleIndex);
+    const float depth1 = PassSrg::m_depth.Load(texCoord + RightPixelI, sampleIndex);
+    const float depth2 = PassSrg::m_depth.Load(texCoord + BottomPixelI, sampleIndex);
 
     const float3 P0 = WorldPositionFromDepthBuffer(uv0, depth0).xyz;
     const float3 P1 = WorldPositionFromDepthBuffer(uv1, depth1).xyz;
@@ -91,7 +97,7 @@ PSOutput MainPS(VSOutput IN)
 {
     const float3 worldNormal = ComputeWorldNormal(IN);    
 
-    const int sampleIndex = 0; // Note precision is much better is the multisample position is dead center.
+    const int sampleIndex = 0;
     const float zDepth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex);
     
     const float3 surfacePosWS = WorldPositionFromDepthBuffer(IN.m_texCoord, zDepth).xyz;     

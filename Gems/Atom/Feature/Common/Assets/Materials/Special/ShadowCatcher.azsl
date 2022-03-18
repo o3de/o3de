@@ -8,7 +8,14 @@
 
 #include <viewsrg.srgi>
 
-option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode = OpacityMode::Opaque;
+option enum class OpacityMode 
+{
+    Opaque, 
+    Cutout, 
+    Blended, 
+    TintedTransparent
+    
+} o_opacity_mode = OpacityMode::Opaque;
 
 struct VSInput
 {

@@ -61,7 +61,6 @@ namespace AZ
             ShadowFilterMethod m_filterMethod = ShadowFilterMethod::None;
 
             FullscreenShadowPass(const RPI::PassDescriptor& descriptor);
-            AZ::RPI::PassAttachmentBinding GetPassAttachmentBinding(AZ::Name name);
 
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;

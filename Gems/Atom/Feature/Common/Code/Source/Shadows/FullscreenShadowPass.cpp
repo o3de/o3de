@@ -40,43 +40,18 @@ namespace AZ
             FullscreenTrianglePass::CompileResources(context);
         }
 
-        RPI::PassAttachmentBinding FullscreenShadowPass::GetPassAttachmentBinding(AZ::Name name)
-        {
-            for (unsigned int i = 0; i < GetInputCount(); ++i)
-            {
-                auto binding = GetInputBinding(i);
-                if (binding.m_name == name)
-                    return binding;
-            }
-
-            for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
-            {
-                auto binding = GetInputOutputBinding(i);
-                if (binding.m_name == name)
-                    return binding;
-            }
-
-            for (unsigned int i = 0; i < GetOutputCount(); ++i)
-            {
-                auto binding = GetOutputBinding(i);
-                if (binding.m_name == name)
-                    return binding;
-            }
-            return {};
-        }
-
         AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
         {
-            auto outputBinding = GetPassAttachmentBinding(m_outputName);
-            auto outputDim = outputBinding.GetAttachment()->m_descriptor.m_image.m_size;
+            AZ::RPI::PassAttachmentBinding* outputBinding = RPI::Pass::FindAttachmentBinding(m_outputName);
+            auto outputDim = outputBinding->GetAttachment()->m_descriptor.m_image.m_size;
             AZ_Assert(outputDim.m_width > 0 && outputDim.m_height > 0, "Height and width are not valid\n");
             return outputDim;
         }
 
         int FullscreenShadowPass::GetDepthBufferMSAACount()
         {
-            auto outputBinding = GetPassAttachmentBinding(m_depthInputName);
-            return outputBinding.GetAttachment()->m_descriptor.m_image.m_multisampleState.m_samples;
+            AZ::RPI::PassAttachmentBinding* outputBinding = RPI::Pass::FindAttachmentBinding(m_outputName);
+            return outputBinding->GetAttachment()->m_descriptor.m_image.m_multisampleState.m_samples;
         }       
 
         void FullscreenShadowPass::SetConstantData()

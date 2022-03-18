@@ -48,7 +48,7 @@
                         } 
                     },
                     "ImageDescriptor": {
-                        "Format": "R16_FLOAT", 
+                        "Format": "R8_UNORM", 
                         "SharedQueueMask": "Graphics"                      
                     }                              
                 }

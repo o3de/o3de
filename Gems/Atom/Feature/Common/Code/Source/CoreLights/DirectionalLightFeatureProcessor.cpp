@@ -648,6 +648,8 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::CacheCascadedShadowmapsPass()
         {
+            m_cascadedShadowmapsPasses.clear();
+
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("CascadedShadowmapsTemplate"), GetParentScene());
             RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
