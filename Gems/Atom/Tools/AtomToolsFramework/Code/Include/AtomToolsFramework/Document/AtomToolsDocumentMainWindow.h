@@ -81,6 +81,10 @@ namespace AtomToolsFramework
         void AddDocumentMenus();
         void AddDocumentTabBar();
 
+        void AddRecentFilePath(const AZStd::string& absolutePath);
+        void ClearRecentFilePaths();
+        void UpdateRecentFileMenu();
+
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
@@ -93,6 +97,8 @@ namespace AtomToolsFramework
 
         template<typename Functor>
         QAction* CreateAction(const QString& text, Functor functor, const QKeySequence& shortcut = 0);
+
+        QMenu* m_menuOpenRecent = {};
 
         QAction* m_actionNew = {};
         QAction* m_actionOpen = {};
@@ -111,5 +117,7 @@ namespace AtomToolsFramework
         QAction* m_actionPreviousTab = {};
 
         AzQtComponents::TabWidget* m_tabWidget = {};
+
+        static constexpr const char* RecentFilePathsKey = "/O3DE/AtomToolsFramework/Document/RecentFilePaths";
     };
 } // namespace AtomToolsFramework
