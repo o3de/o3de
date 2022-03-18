@@ -292,8 +292,32 @@ namespace AZ
                 if (behaviorMethod->HasResult())
                 {
                     returnBehaviorValue.Set(*behaviorMethod->GetResult());
-                    returnBehaviorValue.m_value =
-                        returnBehaviorValue.m_tempData.allocate(returnBehaviorValue.m_azRtti->GetTypeSize(), 16);
+                    const size_t typeSize = returnBehaviorValue.m_azRtti->GetTypeSize();
+
+                    if (returnBehaviorValue.m_traits & BehaviorParameter::TR_POINTER)
+                    {
+                        // Used to allocate storage to store a copy of a pointer and the allocated memory address in one block.
+                        constexpr size_t PointerAllocationStorage = 2 * sizeof(void*);
+                        void* valueAddress = returnBehaviorValue.m_tempData.allocate(PointerAllocationStorage, 16, 0);
+                        void* valueAddressPtr = reinterpret_cast<AZ::u8*>(valueAddress) + sizeof(void*);
+                        ::memset(valueAddress, 0, sizeof(void*));
+                        *reinterpret_cast<void**>(valueAddressPtr) = valueAddress;
+                        returnBehaviorValue.m_value = valueAddressPtr;
+                    }
+                    else if (returnBehaviorValue.m_traits & BehaviorParameter::TR_REFERENCE)
+                    {
+                        // the reference value will just be assigned
+                        returnBehaviorValue.m_value = nullptr;
+                    }
+                    else if (typeSize < returnBehaviorValue.m_tempData.max_size())
+                    {
+                        returnBehaviorValue.m_value = returnBehaviorValue.m_tempData.allocate(typeSize, 16);
+                    }
+                    else
+                    {
+                        AZ_Warning("SceneAPI", false, "Can't invoke method since the return value is too big; %d bytes", typeSize);
+                        return AZStd::any(false);
+                    }
                 }
 
                 if (!entry->second->Call(behaviorParamList, paramCount, &returnBehaviorValue))

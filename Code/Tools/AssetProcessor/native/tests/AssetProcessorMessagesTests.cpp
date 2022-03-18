@@ -126,18 +126,18 @@ namespace AssetProcessorMessagesTests
             m_batchApplicationManager->InitAssetProcessorManager();
 
             m_assetCatalog = AZStd::make_unique<MockAssetCatalog>(nullptr, m_batchApplicationManager->m_platformConfiguration);
-            
+
             m_batchApplicationManager->m_assetCatalog = m_assetCatalog.get();
             m_batchApplicationManager->InitRCController();
             m_batchApplicationManager->InitFileStateCache();
-            m_batchApplicationManager->InitFileMonitor();
+            m_batchApplicationManager->InitFileMonitor(AZStd::make_unique<FileWatcher>());
             m_batchApplicationManager->InitApplicationServer();
             m_batchApplicationManager->InitConnectionManager();
             // Note this must be constructed after InitConnectionManager is called since it will interact with the connection manager
             m_assetRequestHandler = new MockAssetRequestHandler();
             m_batchApplicationManager->InitAssetRequestHandler(m_assetRequestHandler);
 
-            m_batchApplicationManager->m_fileWatcher.StartWatching();
+            m_batchApplicationManager->m_fileWatcher->StartWatching();
 
             QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ConnectionError, [](unsigned /*connId*/, QString error)
                 {
@@ -205,7 +205,7 @@ namespace AssetProcessorMessagesTests
             AZStd::atomic_bool finished = false;
             auto start = AZStd::chrono::monotonic_clock::now();
 
-            auto thread = AZStd::thread([&finished, &func]()
+            auto thread = AZStd::thread({/*m_name =*/ "MessageTests"}, [&finished, &func]()
                 {
                     func();
                     finished = true;
@@ -222,7 +222,7 @@ namespace AssetProcessorMessagesTests
 
             thread.join();
         }
-        
+
     protected:
 
         MockAssetRequestHandler* m_assetRequestHandler{}; // Not owned, AP will delete this pointer
@@ -246,7 +246,7 @@ namespace AssetProcessorMessagesTests
     {
         // Test that we can successfully send network messages and have them arrive for processing
         // For messages that have a response, it also verifies the response comes back
-        // Note that several harmless warnings will be triggered due to the messages not having any data set 
+        // Note that several harmless warnings will be triggered due to the messages not having any data set
         using namespace AzFramework::AssetSystem;
         using namespace AzToolsFramework::AssetSystem;
 

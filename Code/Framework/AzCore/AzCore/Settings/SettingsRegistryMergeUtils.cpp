@@ -16,7 +16,9 @@
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/writer.h>
 #include <AzCore/PlatformId/PlatformDefaults.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
@@ -24,8 +26,14 @@
 #include <cinttypes>
 #include <locale>
 
+
 namespace AZ::Internal
 {
+    static constexpr AZStd::string_view EngineJsonFilename = "engine.json";
+    static constexpr AZStd::string_view GemJsonFilename = "gem.json";
+    static constexpr AZStd::string_view ProjectJsonFilename = "project.json";
+    static constexpr AZStd::string_view O3DEManifestJsonFilename = "o3de_manifest.json";
+
     static constexpr const char* ProductCacheDirectoryName = "Cache";
 
     AZ::SettingsRegistryInterface::FixedValueString GetEngineMonikerForProject(
@@ -61,14 +69,14 @@ namespace AZ::Internal
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
 
         AZ::IO::FixedMaxPath engineRoot;
-        if (auto engineManifestPath = AZ::Utils::GetEngineManifestPath(); !engineManifestPath.empty())
+        if (auto o3deManifestPath = AZ::Utils::GetO3deManifestPath(); !o3deManifestPath.empty())
         {
             bool manifestLoaded{false};
 
-            if (AZ::IO::SystemFile::Exists(engineManifestPath.c_str()))
+            if (AZ::IO::SystemFile::Exists(o3deManifestPath.c_str()))
             {
                 manifestLoaded = settingsRegistry.MergeSettingsFile(
-                    engineManifestPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, EngineManifestRootKey);
+                    o3deManifestPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, O3deManifestSettingsRootKey);
             }
 
             struct EngineInfo
@@ -85,6 +93,16 @@ namespace AZ::Internal
                     [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
                 {
                     m_enginePaths.emplace_back(EngineInfo{ AZ::IO::FixedMaxPath{value}.LexicallyNormal(), FixedValueString{valueName} });
+                    // Make sure any engine paths read from the manifest are absolute
+                    AZ::IO::FixedMaxPath& recentEnginePath = m_enginePaths.back().m_path;
+                    if (recentEnginePath.IsRelative())
+                    {
+                        if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(recentEnginePath.Native());
+                            engineRootAbsPath.has_value())
+                        {
+                            recentEnginePath = AZStd::move(*engineRootAbsPath);
+                        }
+                    }
                 }
 
                 AZStd::vector<EngineInfo> m_enginePaths{};
@@ -93,7 +111,7 @@ namespace AZ::Internal
             EnginePathsVisitor pathVisitor;
             if (manifestLoaded)
             {
-                auto enginePathsKey = FixedValueString::format("%s/engines_path", EngineManifestRootKey);
+                auto enginePathsKey = FixedValueString::format("%s/engines_path", O3deManifestSettingsRootKey);
                 settingsRegistry.Visit(pathVisitor, enginePathsKey);
             }
 
@@ -103,7 +121,7 @@ namespace AZ::Internal
 
             for (EngineInfo& engineInfo : pathVisitor.m_enginePaths)
             {
-                if (auto engineSettingsPath = AZ::IO::FixedMaxPath{engineInfo.m_path} / "engine.json";
+                if (auto engineSettingsPath = AZ::IO::FixedMaxPath{engineInfo.m_path} / EngineJsonFilename;
                     AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
                 {
                     if (settingsRegistry.MergeSettingsFile(
@@ -115,13 +133,13 @@ namespace AZ::Internal
                             R"(The engine name key "%s" mapped to engine path "%s" within the global manifest of "%s")"
                             R"( does not match the "engine_name" field "%s" in the engine.json)" "\n"
                             "This engine should be re-registered.",
-                            engineInfo.m_moniker.c_str(), engineInfo.m_path.c_str(), engineManifestPath.c_str(),
+                            engineInfo.m_moniker.c_str(), engineInfo.m_path.c_str(), o3deManifestPath.c_str(),
                             engineName.c_str());
                         engineInfo.m_moniker = engineName;
                     }
                 }
 
-                if (auto projectJsonPath = (engineInfo.m_path / projectPath / "project.json").LexicallyNormal();
+                if (auto projectJsonPath = (engineInfo.m_path / projectPath / ProjectJsonFilename).LexicallyNormal();
                     AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
                 {
                     if (auto engineMoniker = Internal::GetEngineMonikerForProject(settingsRegistry, projectJsonPath);
@@ -209,8 +227,15 @@ namespace AZ::Internal
         return {};
     }
 
-    void InjectSettingToCommandLineBack(AZ::SettingsRegistryInterface& settingsRegistry,
-        AZStd::string_view path, AZStd::string_view value)
+    enum class InjectLocation : bool
+    {
+        Front,
+        Back
+    };
+
+    void InjectSettingToCommandLine(AZ::SettingsRegistryInterface& settingsRegistry,
+        AZStd::string_view path, AZStd::string_view value,
+        InjectLocation injectLocation = InjectLocation::Front)
     {
         AZ::CommandLine commandLine;
         AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(settingsRegistry, commandLine);
@@ -219,7 +244,8 @@ namespace AZ::Internal
 
         auto projectPathOverride = AZStd::string::format(R"(--regset="%.*s=%.*s")",
             aznumeric_cast<int>(path.size()), path.data(), aznumeric_cast<int>(value.size()), value.data());
-        paramContainer.emplace(paramContainer.end(), AZStd::move(projectPathOverride));
+        auto emplaceIter = injectLocation == InjectLocation::Front ? paramContainer.begin() : paramContainer.end();
+        paramContainer.emplace(emplaceIter, AZStd::move(projectPathOverride));
         commandLine.Parse(paramContainer);
         AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
     }
@@ -227,6 +253,36 @@ namespace AZ::Internal
 
 namespace AZ::SettingsRegistryMergeUtils
 {
+    //! The algorithm that is used to find the *directory* containing the o3de_manifest.json
+    //! 1. It first checks the "{BootstrapSettingsRootKey}/o3de_manifest_path"
+    //! 2. If that is not set it defaults to the user's home directory with the .o3de folder appended to it
+    //!    equal to "~/.o3de"
+    static AZ::IO::FixedMaxPath FindO3deManifestCachePath(SettingsRegistryInterface& settingsRegistry)
+    {
+        using FixedValueString = SettingsRegistryInterface::FixedValueString;
+
+        constexpr auto o3deManifestPathKey = FixedValueString(BootstrapSettingsRootKey) + "/o3de_manifest_path";
+
+        // Step 1 Check the o3de_manifest_path setting
+        AZ::IO::FixedMaxPath o3deManifestPath;
+        if (!settingsRegistry.Get(o3deManifestPath.Native(), o3deManifestPathKey))
+        {
+            // Step 2 Use the user's home directory
+            o3deManifestPath = AZ::Utils::GetHomeDirectory();
+            o3deManifestPath /= ".o3de";
+        }
+
+        if (o3deManifestPath.IsRelative())
+        {
+            if (auto o3deManifestAbsPath = AZ::Utils::ConvertToAbsolutePath(o3deManifestPath.Native());
+                o3deManifestAbsPath.has_value())
+            {
+                o3deManifestPath = AZStd::move(*o3deManifestAbsPath);
+            }
+        }
+        return o3deManifestPath;
+    }
+
     AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry)
     {
         static constexpr AZStd::string_view InternalScanUpEngineRootKey{ "/O3DE/Runtime/Internal/engine_root_scan_up_path" };
@@ -243,14 +299,27 @@ namespace AZ::SettingsRegistryMergeUtils
         if (settingsRegistry.GetType(InternalScanUpEngineRootKey) == Type::NoType)
         {
             // We can scan up from exe directory to find engine.json, use that for engine root if it exists.
-            engineRoot = Internal::ScanUpRootLocator("engine.json");
+            engineRoot = Internal::ScanUpRootLocator(Internal::EngineJsonFilename);
+            // The Internal ScanUp Engine Root Key will be set as an absolute path
+            if (!engineRoot.empty())
+            {
+                if (engineRoot.IsRelative())
+                {
+                    if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(engineRoot.Native());
+                        engineRootAbsPath.has_value())
+                    {
+                        engineRoot = AZStd::move(*engineRootAbsPath);
+                    }
+                }
+            }
+
             // Set the {InternalScanUpEngineRootKey} to make sure this code path isn't called again for this settings registry
             settingsRegistry.Set(InternalScanUpEngineRootKey, engineRoot.Native());
             if (!engineRoot.empty())
             {
                 settingsRegistry.Set(engineRootKey, engineRoot.Native());
-                // Inject the engine root at the end of the command line settings
-                Internal::InjectSettingToCommandLineBack(settingsRegistry, engineRootKey, engineRoot.Native());
+                // Inject the engine root to the front of the command line settings
+                Internal::InjectSettingToCommandLine(settingsRegistry, engineRootKey, engineRoot.Native());
                 return engineRoot;
             }
         }
@@ -258,6 +327,14 @@ namespace AZ::SettingsRegistryMergeUtils
         // Step 2 check if the engine_path key has been supplied
         if (settingsRegistry.Get(engineRoot.Native(), engineRootKey); !engineRoot.empty())
         {
+            if (engineRoot.IsRelative())
+            {
+                if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(engineRoot.Native());
+                    engineRootAbsPath.has_value())
+                {
+                    engineRoot = AZStd::move(*engineRootAbsPath);
+                }
+            }
             return engineRoot;
         }
 
@@ -297,14 +374,29 @@ namespace AZ::SettingsRegistryMergeUtils
         // SettingsRegistryInterface::GetType is used to check if a key is set
         if (settingsRegistry.GetType(InternalScanUpProjectRootKey) == Type::NoType)
         {
-            projectRoot = Internal::ScanUpRootLocator("project.json");
+            projectRoot = Internal::ScanUpRootLocator(Internal::ProjectJsonFilename);
+            // Convert the path to an absolute path before adding it as a setting to the
+            // InternalScanUpProjectRootKey
+            if (!projectRoot.empty())
+            {
+                if (projectRoot.IsRelative())
+                {
+                    if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectRoot.Native());
+                        projectAbsPath.has_value())
+                    {
+                        projectRoot = AZStd::move(*projectAbsPath);
+                    }
+                }
+            }
+
             // Set the {InternalScanUpProjectRootKey} to make sure this code path isn't called again for this settings registry
             settingsRegistry.Set(InternalScanUpProjectRootKey, projectRoot.Native());
             if (!projectRoot.empty())
             {
                 settingsRegistry.Set(projectRootKey, projectRoot.c_str());
-                // Inject the project root at the end of the command line settings
-                Internal::InjectSettingToCommandLineBack(settingsRegistry, projectRootKey, projectRoot.Native());
+                // Inject the project root at to the front of the command line settings
+                Internal::InjectSettingToCommandLine(settingsRegistry, projectRootKey, projectRoot.Native());
+
                 return projectRoot;
             }
         }
@@ -312,6 +404,18 @@ namespace AZ::SettingsRegistryMergeUtils
         // Step 2 Check the project-path key
         // This is the project path root key, as passed from command-line or *.setreg files.
         settingsRegistry.Get(projectRoot.Native(), projectRootKey);
+        if (!projectRoot.empty())
+        {
+            if (projectRoot.IsRelative())
+            {
+                if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectRoot.Native());
+                    projectAbsPath.has_value())
+                {
+                    projectRoot = AZStd::move(*projectAbsPath);
+                }
+            }
+        }
+
         return projectRoot;
     }
 
@@ -325,13 +429,22 @@ namespace AZ::SettingsRegistryMergeUtils
         constexpr auto projectCachePathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_cache_path";
 
         // Step 1 Check the project-cache-path key
-        if (AZ::IO::FixedMaxPath projectCachePath; settingsRegistry.Get(projectCachePath.Native(), projectCachePathKey))
+        AZ::IO::FixedMaxPath projectCachePath;
+        if (!settingsRegistry.Get(projectCachePath.Native(), projectCachePathKey))
         {
-            return projectCachePath;
+            // Step 2 Append the "Cache" directory to the project-path
+            projectCachePath = projectPath / Internal::ProductCacheDirectoryName;
         }
 
-        // Step 2 Append the "Cache" directory to the project-path
-        return projectPath / Internal::ProductCacheDirectoryName;
+        if (projectCachePath.IsRelative())
+        {
+            if (auto projectCacheAbsPath = AZ::Utils::ConvertToAbsolutePath(projectCachePath.Native());
+                projectCacheAbsPath.has_value())
+            {
+                projectCachePath = AZStd::move(*projectCacheAbsPath);
+            }
+        }
+        return projectCachePath;
     }
 
     //! Set the user directory with the provided path or using <project-path>/user as default
@@ -344,13 +457,22 @@ namespace AZ::SettingsRegistryMergeUtils
         constexpr auto projectUserPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_user_path";
 
         // Step 1 Check the project-user-path key
-        if (AZ::IO::FixedMaxPath projectUserPath; settingsRegistry.Get(projectUserPath.Native(), projectUserPathKey))
+        AZ::IO::FixedMaxPath projectUserPath;
+        if (!settingsRegistry.Get(projectUserPath.Native(), projectUserPathKey))
         {
-            return projectUserPath;
+            // Step 2 Append the "User" directory to the project-path
+            projectUserPath = projectPath / "user";
         }
 
-        // Step 2 Append the "User" directory to the project-path
-        return projectPath / "user";
+        if (projectUserPath.IsRelative())
+        {
+            if (auto projectUserAbsPath = AZ::Utils::ConvertToAbsolutePath(projectUserPath.Native());
+                projectUserAbsPath.has_value())
+            {
+                projectUserPath = AZStd::move(*projectUserAbsPath);
+            }
+        }
+        return projectUserPath;
     }
 
     //! Set the log directory using the settings registry path or using <project-user-path>/log as default
@@ -363,20 +485,37 @@ namespace AZ::SettingsRegistryMergeUtils
         constexpr auto projectLogPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_log_path";
 
         // Step 1 Check the project-user-path key
-        if (AZ::IO::FixedMaxPath projectLogPath; settingsRegistry.Get(projectLogPath.Native(), projectLogPathKey))
+        AZ::IO::FixedMaxPath projectLogPath;
+        if (!settingsRegistry.Get(projectLogPath.Native(), projectLogPathKey))
         {
-            return projectLogPath;
+            // Step 2 Append the "Log" directory to the project-user-path
+            projectLogPath = projectUserPath / "log";
         }
 
-        // Step 2 Append the "Log" directory to the project-user-path
-        return projectUserPath / "log";
+        if (projectLogPath.IsRelative())
+        {
+            if (auto projectLogAbsPath = AZ::Utils::ConvertToAbsolutePath(projectLogPath.Native()))
+            {
+                projectLogPath = AZStd::move(*projectLogAbsPath);
+            }
+        }
+
+        return projectLogPath;
     }
 
     // check for a default write storage path, fall back to the <project-user-path> if not
     static AZ::IO::FixedMaxPath FindDevWriteStoragePath(const AZ::IO::FixedMaxPath& projectUserPath)
     {
         AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
-        return devWriteStorage.has_value() ? *devWriteStorage : projectUserPath;
+        AZ::IO::FixedMaxPath devWriteStoragePath = devWriteStorage.has_value() ? *devWriteStorage : projectUserPath;
+        if (devWriteStoragePath.IsRelative())
+        {
+            if (auto devWriteStorageAbsPath = AZ::Utils::ConvertToAbsolutePath(devWriteStoragePath.Native()))
+            {
+                devWriteStoragePath = AZStd::move(*devWriteStorageAbsPath);
+            }
+        }
+        return devWriteStoragePath;
     }
 
     // check for the project build path, which is a relative path from the project root
@@ -421,7 +560,7 @@ namespace AZ::SettingsRegistryMergeUtils
         constexpr auto projectNameKey = FixedValueString(ProjectSettingsRootKey) + "/project_name";
 
         // Read the project name from the project.json file if it exists
-        if (AZ::IO::FixedMaxPath projectJsonPath = projectPath / "project.json";
+        if (AZ::IO::FixedMaxPath projectJsonPath = projectPath / Internal::ProjectJsonFilename;
             AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
         {
             settingsRegistry.MergeSettingsFile(projectJsonPath.Native(),
@@ -654,6 +793,24 @@ namespace AZ::SettingsRegistryMergeUtils
         return configFileParsed;
     }
 
+    void MergeSettingsToRegistry_ManifestGemsPaths(SettingsRegistryInterface& registry)
+    {
+        auto MergeGemPathToRegistry = [&registry](AZStd::string_view manifestKey,
+            AZStd::string_view gemName,
+            AZStd::string_view gemRootPath)
+        {
+            using FixedValueString = SettingsRegistryInterface::FixedValueString;
+            if (manifestKey == GemNameKey)
+            {
+                const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s/Path",
+                    ManifestGemsRootKey, AZ_STRING_ARG(gemName));
+                registry.Set(manifestGemJsonPath, gemRootPath);
+            }
+        };
+
+        VisitAllManifestGems(registry, MergeGemPathToRegistry);
+    }
+
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry)
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
@@ -662,6 +819,13 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath exePath = AZ::Utils::GetExecutableDirectory();
         registry.Set(FilePathKey_BinaryFolder, exePath.LexicallyNormal().Native());
 
+        // O3de manifest folder
+        if (AZ::IO::FixedMaxPath o3deManifestPath = FindO3deManifestCachePath(registry);
+            !o3deManifestPath.empty())
+        {
+            registry.Set(FilePathKey_O3deManifestRootFolder, o3deManifestPath.LexicallyNormal().Native());
+        }
+
         // Project path - corresponds to the @projectroot@ alias
         // NOTE: We make the project-path in the BootstrapSettingsRootKey absolute first
 
@@ -669,15 +833,6 @@ namespace AZ::SettingsRegistryMergeUtils
         if ([[maybe_unused]] constexpr auto projectPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
             !projectPath.empty())
         {
-            if (projectPath.IsRelative())
-            {
-                if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectPath.Native());
-                    projectAbsPath.has_value())
-                {
-                    projectPath = AZStd::move(*projectAbsPath);
-                }
-            }
-
             projectPath = projectPath.LexicallyNormal();
             AZ_Warning("SettingsRegistryMergeUtils", AZ::IO::SystemFile::Exists(projectPath.c_str()),
                 R"(Project path "%s" does not exist. Is the "%.*s" registry setting set to a valid absolute path?)"
@@ -699,15 +854,6 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
         if (!engineRoot.empty())
         {
-            if (engineRoot.IsRelative())
-            {
-                if (auto engineRootAbsPath = AZ::Utils::ConvertToAbsolutePath(engineRoot.Native());
-                    engineRootAbsPath.has_value())
-                {
-                    engineRoot = AZStd::move(*engineRootAbsPath);
-                }
-            }
-
             engineRoot = engineRoot.LexicallyNormal();
             registry.Set(FilePathKey_EngineRootFolder, engineRoot.Native());
         }
@@ -716,15 +862,6 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath projectCachePath = FindProjectCachePath(registry, projectPath).LexicallyNormal();
         if (!projectCachePath.empty())
         {
-            if (projectCachePath.IsRelative())
-            {
-                if (auto projectCacheAbsPath = AZ::Utils::ConvertToAbsolutePath(projectCachePath.Native());
-                    projectCacheAbsPath.has_value())
-                {
-                    projectCachePath = AZStd::move(*projectCacheAbsPath);
-                }
-            }
-
             projectCachePath = projectCachePath.LexicallyNormal();
             registry.Set(FilePathKey_CacheProjectRootFolder, projectCachePath.Native());
 
@@ -755,15 +892,6 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath projectUserPath = FindProjectUserPath(registry, projectPath);
         if (!projectUserPath.empty())
         {
-            if (projectUserPath.IsRelative())
-            {
-                if (auto projectUserAbsPath = AZ::Utils::ConvertToAbsolutePath(projectUserPath.Native());
-                    projectUserAbsPath.has_value())
-                {
-                    projectUserPath = AZStd::move(*projectUserAbsPath);
-                }
-            }
-
             projectUserPath = projectUserPath.LexicallyNormal();
             registry.Set(FilePathKey_ProjectUserPath, projectUserPath.Native());
         }
@@ -771,14 +899,6 @@ namespace AZ::SettingsRegistryMergeUtils
         // Log folder
         if (AZ::IO::FixedMaxPath projectLogPath = FindProjectLogPath(registry, projectUserPath); !projectLogPath.empty())
         {
-            if (projectLogPath.IsRelative())
-            {
-                if (auto projectLogAbsPath = AZ::Utils::ConvertToAbsolutePath(projectLogPath.Native()))
-                {
-                    projectLogPath = AZStd::move(*projectLogAbsPath);
-                }
-            }
-
             projectLogPath = projectLogPath.LexicallyNormal();
             registry.Set(FilePathKey_ProjectLogPath, projectLogPath.Native());
         }
@@ -786,14 +906,6 @@ namespace AZ::SettingsRegistryMergeUtils
         // Developer Write Storage folder
         if (AZ::IO::FixedMaxPath devWriteStoragePath = FindDevWriteStoragePath(projectUserPath); !devWriteStoragePath.empty())
         {
-            if (devWriteStoragePath.IsRelative())
-            {
-                if (auto devWriteStorageAbsPath = AZ::Utils::ConvertToAbsolutePath(devWriteStoragePath.Native()))
-                {
-                    devWriteStoragePath = AZStd::move(*devWriteStorageAbsPath);
-                }
-            }
-
             devWriteStoragePath = devWriteStoragePath.LexicallyNormal();
             registry.Set(FilePathKey_DevWriteStorage, devWriteStoragePath.Native());
         }
@@ -802,6 +914,9 @@ namespace AZ::SettingsRegistryMergeUtils
         SetProjectBuildPath(registry, projectPath);
         // Set the project name using the "project_name" key
         SetProjectName(registry, projectPath);
+
+        // Read every registry Gem Path into the `ManifestGemsRootKey` object
+        MergeSettingsToRegistry_ManifestGemsPaths(registry);
 
 #if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         // Setup the cache, user, and log paths to platform specific locations when running on non-host platforms
@@ -829,9 +944,9 @@ namespace AZ::SettingsRegistryMergeUtils
             registry.Set(FilePathKey_DevWriteStorage, projectPath.Native());
             registry.Set(FilePathKey_ProjectUserPath, (projectPath / "user").Native());
             registry.Set(FilePathKey_ProjectLogPath, (projectPath / "user" / "log").Native());
-    }
+        }
 #endif // AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-}
+    }
 
     void MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
@@ -878,68 +993,13 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
-        auto pathBuffer = AZ::SettingsRegistryInterface::FixedValueString::format("%s/Gems", OrganizationRootKey);
-        AZStd::string_view gemListPath(pathBuffer);
-
-        AZ::SettingsRegistryInterface::FixedValueString engineRootPath;
-        if (registry.GetType(gemListPath) == SettingsRegistryInterface::Type::Object &&
-            registry.Get(engineRootPath, FilePathKey_EngineRootFolder))
+        auto MergeGemRootRegistryFolder = [&registry, &platform, &specializations, &scratchBuffer]
+        (AZStd::string_view, AZ::IO::FixedMaxPath gemPath)
         {
-            struct Visitor
-                : public SettingsRegistryInterface::Visitor
-            {
-                AZ::IO::FixedMaxPath m_gemPath;
-                SettingsRegistryInterface& m_registry;
-                const AZStd::string_view m_platform;
-                const SettingsRegistryInterface::Specializations& m_specializations;
-                AZStd::vector<char>* m_scratchBuffer{};
-                bool processingSourcePathKey{};
-
-                Visitor(AZ::SettingsRegistryInterface::FixedValueString rootFolder, SettingsRegistryInterface& registry, const AZStd::string_view platform,
-                    const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
-                    : m_gemPath(AZStd::move(rootFolder))
-                    , m_registry(registry)
-                    , m_platform(platform)
-                    , m_specializations(specializations)
-                    , m_scratchBuffer(scratchBuffer)
-                {
-                }
-
-                SettingsRegistryInterface::VisitResponse Traverse([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName,
-                    SettingsRegistryInterface::VisitAction action, [[maybe_unused]] SettingsRegistryInterface::Type type) override
-                {
-                    if (valueName == "SourcePaths")
-                    {
-                        if (action == SettingsRegistryInterface::VisitAction::Begin)
-                        {
-                            // Allows merging of the registry folders within the gem source path array
-                            // via the Visit function
-                            processingSourcePathKey = true;
-                        }
-                        else if (action == SettingsRegistryInterface::VisitAction::End)
-                        {
-                            // The end of the gem source path array has been reached
-                            processingSourcePathKey = false;
-                        }
-                    }
-
-                    return SettingsRegistryInterface::VisitResponse::Continue;
-                }
-
-                using AZ::SettingsRegistryInterface::Visitor::Visit;
-                void Visit(AZStd::string_view, [[maybe_unused]] AZStd::string_view valueName, SettingsRegistryInterface::Type, AZStd::string_view value) override
-                {
-                    if (processingSourcePathKey)
-                    {
-                        m_registry.MergeSettingsFolder((m_gemPath / value / SettingsRegistryInterface::RegistryFolder).Native(),
-                            m_specializations, m_platform, "", m_scratchBuffer);
-                    }
-                }
-            };
-
-            Visitor visitor(AZStd::move(engineRootPath), registry, platform, specializations, scratchBuffer);
-            registry.Visit(visitor, gemListPath);
-        }
+            registry.MergeSettingsFolder((gemPath / SettingsRegistryInterface::RegistryFolder).Native(),
+                specializations, platform, "", scratchBuffer);
+        };
+        VisitActiveGems(registry, MergeGemRootRegistryFolder);
     }
 
     void MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
@@ -1133,19 +1193,21 @@ namespace AZ::SettingsRegistryMergeUtils
         // Provide overrides for the engine root, the project root and the project cache root
         AZStd::array commandOptions = {
             OptionKeyToRegsetKey{
-                "engine-path", AZStd::string::format("%s/engine_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+                "engine-path", AZStd::string::format("%s/engine_path", BootstrapSettingsRootKey)},
             OptionKeyToRegsetKey{
-                "project-path", AZStd::string::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+                "project-path", AZStd::string::format("%s/project_path", BootstrapSettingsRootKey)},
             OptionKeyToRegsetKey{
                 "project-cache-path",
-                AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+                AZStd::string::format("%s/project_cache_path", BootstrapSettingsRootKey)},
             OptionKeyToRegsetKey{
                 "project-user-path",
-                AZStd::string::format("%s/project_user_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+                AZStd::string::format("%s/project_user_path", BootstrapSettingsRootKey)},
             OptionKeyToRegsetKey{
                 "project-log-path",
-                AZStd::string::format("%s/project_log_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+                AZStd::string::format("%s/project_log_path", BootstrapSettingsRootKey)},
             OptionKeyToRegsetKey{"project-build-path", ProjectBuildPath},
+            OptionKeyToRegsetKey{
+                "o3de-manifest-path", AZStd::string::format("%s/o3de_manifest_path", BootstrapSettingsRootKey)},
         };
 
         AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
@@ -1344,4 +1406,108 @@ namespace AZ::SettingsRegistryMergeUtils
         return inputView.empty() || candidateView.IsRelativeTo(inputView) || inputView.IsRelativeTo(candidateView);
     }
 
+    void VisitActiveGems(SettingsRegistryInterface& registry, const GemCallback& activeGemCallback)
+    {
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        using Type = AZ::SettingsRegistryInterface::Type;
+
+        auto VisitGem = [&registry, &activeGemCallback](AZStd::string_view, AZStd::string_view gemName, Type)
+        {
+            // Lookup the Gem Path underneath the `ManifestGemsRootKey/<gem-name>` field
+            const auto gemPathKey = FixedValueString::format("%s/%.*s/Path", ManifestGemsRootKey, AZ_STRING_ARG(gemName));
+
+            if (AZ::IO::FixedMaxPath gemPath; registry.Get(gemPath.Native(), gemPathKey))
+            {
+                activeGemCallback(gemName, gemPath.Native());
+            }
+        };
+        SettingsRegistryVisitorUtils::VisitObject(registry, VisitGem, ActiveGemsRootKey);
+    }
+
+
+    bool VisitManifestJson(const ManifestCallback& gemManifestCallback, AZStd::string_view manifestPath,
+        AZStd::string_view manifestObjectKey)
+    {
+        // Make a local settings registry to load the manifest json data
+        AZ::SettingsRegistryImpl manifestJsonRegistry;
+        if (!manifestJsonRegistry.MergeSettingsFile(manifestPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch))
+        {
+            AZ_Warning("SettingsRegistryMergeUtils", false, "Failed to merge manifest file of %.*s to local registry",
+                AZ_STRING_ARG(manifestPath));
+            return false;
+        }
+
+        // Read the O3DE object name field to validate that it is valid O3DE manifest object
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        FixedValueString manifestObjectName;
+        if (!manifestJsonRegistry.Get(manifestObjectName, manifestObjectKey))
+        {
+            AZ_Warning("SettingsRegistryMergeUtils", false, "Failed to read manifest key of \"%.*s\" from manifest file of %.*s",
+                AZ_STRING_ARG(manifestObjectKey), AZ_STRING_ARG(manifestPath));
+            return false;
+        }
+
+        // Invoke the visitor callback with the tuple of gem name, gem path
+        auto manifestRootDirView = AZ::IO::PathView(manifestPath).ParentPath();
+        gemManifestCallback(manifestObjectKey, manifestObjectName, manifestRootDirView.Native());
+
+        // Visit children external subdirectories
+        using Type = AZ::SettingsRegistryInterface::Type;
+        auto VisitExternalSubdirectories = [&gemManifestCallback, &manifestJsonRegistry, manifestRootDirView]
+        (AZStd::string_view externalSubdirectoryJsonPath, AZStd::string_view, Type)
+        {
+            if (FixedValueString externalSubdirectoryPath;
+                manifestJsonRegistry.Get(externalSubdirectoryPath, externalSubdirectoryJsonPath))
+            {
+                auto gemManifestPath = AZ::IO::FixedMaxPath(manifestRootDirView)
+                    / externalSubdirectoryPath / Internal::GemJsonFilename;
+                if (AZ::IO::SystemFile::Exists(gemManifestPath.c_str()))
+                {
+                    VisitManifestJson(gemManifestCallback, gemManifestPath.Native(), GemNameKey);
+                }
+            }
+        };
+
+        AZ::SettingsRegistryVisitorUtils::VisitArray(manifestJsonRegistry, VisitExternalSubdirectories, ExternalSubdirectoriesKey);
+
+        return true;
+    }
+
+    bool VisitO3deManifestGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback)
+    {
+        AZ::IO::FixedMaxPath o3deManifestPath;
+        if (!registry.Get(o3deManifestPath.Native(), FilePathKey_O3deManifestRootFolder))
+        {
+            o3deManifestPath = AZ::Utils::GetO3deManifestDirectory();
+        }
+        o3deManifestPath /= Internal::O3DEManifestJsonFilename;
+        return AZ::IO::SystemFile::Exists(o3deManifestPath.c_str())
+            && VisitManifestJson(gemManifestCallback, o3deManifestPath.Native(), O3DEManifestNameKey);
+    }
+
+    bool VisitEngineGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback)
+    {
+        AZ::IO::FixedMaxPath engineManifestPath;
+        registry.Get(engineManifestPath.Native(), FilePathKey_EngineRootFolder);
+        engineManifestPath /= Internal::EngineJsonFilename;
+        return AZ::IO::SystemFile::Exists(engineManifestPath.c_str())
+            && VisitManifestJson(gemManifestCallback, engineManifestPath.Native(), EngineNameKey);
+    }
+
+    bool VisitProjectGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback)
+    {
+        AZ::IO::FixedMaxPath projectManifestPath;
+        registry.Get(projectManifestPath.Native(), FilePathKey_ProjectPath);
+        projectManifestPath /= Internal::ProjectJsonFilename;
+        return AZ::IO::SystemFile::Exists(projectManifestPath.c_str())
+            && VisitManifestJson(gemManifestCallback, projectManifestPath.Native(), ProjectNameKey);
+    }
+
+    bool VisitAllManifestGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback)
+    {
+        bool visitedAll = VisitO3deManifestGems(registry, gemManifestCallback);
+        visitedAll = VisitEngineGems(registry, gemManifestCallback) && visitedAll;
+        visitedAll = VisitProjectGems(registry, gemManifestCallback) && visitedAll;
+        return visitedAll;
+    }
 }

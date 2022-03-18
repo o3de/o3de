@@ -166,6 +166,7 @@ namespace GradientSignal
         AZ::TickBus::Handler::BusConnect();
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceAltitudeGradientRequestBus::Handler::BusConnect(GetEntityId());
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
         UpdateFromShape();
         m_dirty = false;
     }
@@ -173,6 +174,7 @@ namespace GradientSignal
     void SurfaceAltitudeGradientComponent::Deactivate()
     {
         m_dependencyMonitor.Reset();
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         GradientRequestBus::Handler::BusDisconnect();
@@ -202,13 +204,9 @@ namespace GradientSignal
 
     float SurfaceAltitudeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
-
-        SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, points);
-
-        return CalculateAltitudeRatio(points, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
+        float result = 0.0f;
+        GetValues(AZStd::span<const AZ::Vector3>(&sampleParams.m_position, 1), AZStd::span<float>(&result, 1));
+        return result;
     }
 
     void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
@@ -219,31 +217,35 @@ namespace GradientSignal
             return;
         }
 
-        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
-        bool valuesFound = false;
-
-        // Rather than calling GetSurfacePoints on the EBus repeatedly in a loop, we instead pass a lambda into the EBus that contains
-        // the loop within it so that we can avoid the repeated EBus-calling overhead.
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            [this, positions, &outValues, &valuesFound](SurfaceData::SurfaceDataSystemRequestBus::Events* surfaceDataRequests)
-            {
-                // It's possible that there's nothing connected to the EBus, so keep track of the fact that we have valid results.
-                valuesFound = true;
-                SurfaceData::SurfacePointList points;
-
-                // For each position, call GetSurfacePoints() and turn the height into a 0-1 value based on our min/max altitudes.
-                for (size_t index = 0; index < positions.size(); index++)
-                {
-                    points.Clear();
-                    surfaceDataRequests->GetSurfacePoints(positions[index], m_configuration.m_surfaceTagsToSample, points);
-                    outValues[index] = CalculateAltitudeRatio(points, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
-                }
-            });
-
-        if (!valuesFound)
+        if (GradientRequestBus::HasReentrantEBusUseThisThread())
         {
-            // No surface data, so no output values.
-            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
+            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
+
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+        SurfaceData::SurfacePointList points;
+        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagsToSample,
+            points);
+
+        // For each position, turn the height into a 0-1 value based on our min/max altitudes.
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            if (!points.IsEmpty(index))
+            {
+                // Get the point with the highest Z value and use that for the altitude.
+                const float highestAltitude = points.GetHighestSurfacePoint(index).m_position.GetZ();
+
+                // Turn the absolute altitude value into a 0-1 value by returning the % of the given altitude range that it falls at.
+                outValues[index] = GetRatio(m_configuration.m_altitudeMin, m_configuration.m_altitudeMax, highestAltitude);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
         }
     }
 
@@ -264,11 +266,29 @@ namespace GradientSignal
 
             //notify observers if content has changed
             if (altitudeMinOld != m_configuration.m_altitudeMin ||
-                altitudeMaxOld != m_configuration.m_altitudeMax)
+                altitudeMaxOld != m_configuration.m_altitudeMax ||
+                m_surfaceDirty)
             {
                 LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
             }
             m_dirty = false;
+            m_surfaceDirty = false;
+        }
+    }
+
+    void SurfaceAltitudeGradientComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds)
+    {
+        // Create a box that's infinite in the XY direction, but contains our altitude range, so that we can compare against the dirty
+        // surface region.
+        const AZ::Aabb altitudeBox = AZ::Aabb::CreateFromMinMaxValues(
+            AZStd::numeric_limits<float>::lowest(), AZStd::numeric_limits<float>::lowest(), m_configuration.m_altitudeMin,
+            AZStd::numeric_limits<float>::max(), AZStd::numeric_limits<float>::max(), m_configuration.m_altitudeMax);
+
+        if (oldBounds.Overlaps(altitudeBox) || newBounds.Overlaps(altitudeBox))
+        {
+            m_dirty = true;
+            m_surfaceDirty = true;
         }
     }
 

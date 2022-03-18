@@ -139,11 +139,11 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
 
         # 7. Set the Attenuation Radius Mode property of the Light component to 1 (automatic).
         light_component.set_component_property_value(
-            AtomComponentProperties.light('Attenuation Radius Mode'), ATTENUATION_RADIUS_MODE['automatic'])
+            AtomComponentProperties.light('Attenuation radius Mode'), ATTENUATION_RADIUS_MODE['automatic'])
         Report.result(
             Tests.light_component_attenuation_radius_property_set,
             light_component.get_component_property_value(
-                AtomComponentProperties.light('Attenuation Radius Mode')) == ATTENUATION_RADIUS_MODE['automatic'])
+                AtomComponentProperties.light('Attenuation radius Mode')) == ATTENUATION_RADIUS_MODE['automatic'])
 
         # 8. Enter game mode and take a screenshot then exit game mode.
         enter_exit_game_mode_take_screenshot("AreaLight_2.ppm", Tests.enter_game_mode, Tests.exit_game_mode)

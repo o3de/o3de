@@ -12,7 +12,9 @@
 #include <AzCore/Component/Component.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceAltitudeGradientRequestBus.h>
+#include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <GradientSignal/Util.h>
@@ -57,6 +59,7 @@ namespace GradientSignal
         , private SurfaceAltitudeGradientRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
         , private AZ::TickBus::Handler
+        , private SurfaceData::SurfaceDataSystemNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -80,6 +83,10 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // DependencyNotificationBus
         void OnCompositionChanged() override;
+
+        //////////////////////////////////////////////////////////////////////////
+        // SurfaceDataSystemNotificationBus
+        void OnSurfaceChanged(const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::TickBus::Handler
@@ -107,24 +114,10 @@ namespace GradientSignal
         void AddTag(AZStd::string tag) override;
 
     private:
-        static float CalculateAltitudeRatio(const SurfaceData::SurfacePointList& points, float altitudeMin, float altitudeMax)
-        {
-            if (points.IsEmpty())
-            {
-                return 0.0f;
-            }
-
-            // GetSurfacePoints (which was used to populate the points list) always returns points in decreasing height order, so the
-            // first point in the list contains the highest altitude.
-            const float highestAltitude = points.GetHighestSurfacePoint().m_position.GetZ();
-
-            // Turn the absolute altitude value into a 0-1 value by returning the % of the given altitude range that it falls at.
-            return GetRatio(altitudeMin, altitudeMax, highestAltitude);
-        }
-
         mutable AZStd::shared_mutex m_cacheMutex;
         SurfaceAltitudeGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
+        AZStd::atomic_bool m_surfaceDirty{ false };
     };
 }

@@ -83,6 +83,11 @@ public:
     }
 };
 
+TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
+}
+
 TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
     RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
@@ -111,11 +116,6 @@ TEST_F(ScriptCanvasTestFixture, UseRawBehaviorProperties)
 TEST_F(ScriptCanvasTestFixture, StringSanitization)
 {
     RunUnitTestGraph("LY_SC_UnitTest_StringSanitization");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedReadEnumConstant)
@@ -938,4 +938,9 @@ TEST_F(ScriptCanvasTestFixture, InterpretedExecutionOutPerformance)
 TEST_F(ScriptCanvasTestFixture, PromotedUserVariables)
 {
     RunUnitTestGraph("LY_SC_UnitTest_PromotedUserVariables", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, UseClassWithDefaultOut)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UseClassWithDefaultOut", ExecutionMode::Interpreted);
 }

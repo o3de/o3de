@@ -23,6 +23,9 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
 
+AZ_CVAR(bool, bg_AssertNetBindOnDeactivationWithoutMarkForRemoval, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "If true, assert when a multiplayer entity is deactivated without first calling MarkForRemoval from NetworkEntityManager.");
+
 namespace Multiplayer
 {
     void NetBindComponent::Reflect(AZ::ReflectContext* context)
@@ -187,10 +190,13 @@ namespace Multiplayer
 
     void NetBindComponent::Deactivate()
     {
-        AZ_Assert(
-            m_needsToBeStopped == false,
-            "Entity (%s) appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.",
-            GetEntity() ? GetEntity()->GetName().c_str() : "null");
+        if (bg_AssertNetBindOnDeactivationWithoutMarkForRemoval)
+        {
+            AZ_Assert(
+                m_needsToBeStopped == false,
+                "Entity (%s) appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.",
+                GetEntity() ? GetEntity()->GetName().c_str() : "null");
+        }
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
         if (NetworkRoleHasController(m_netEntityRole))
         {

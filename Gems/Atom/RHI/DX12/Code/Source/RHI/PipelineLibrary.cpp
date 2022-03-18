@@ -90,6 +90,7 @@ namespace AZ
                         break;
                     case DXGI_ERROR_DEVICE_REMOVED:
                         AZ_Assert(false, "Failed to use pipeline library blob due to DXGI_ERROR_DEVICE_REMOVED.");
+                        device.OnDeviceRemoved();
                         break;
                     default:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob for unknown reason. Contents will be rebuilt.");
@@ -136,11 +137,11 @@ namespace AZ
                 if (pipelineStateComPtr)
                 {
                     hr = m_library->StorePipeline(name.c_str(), pipelineStateComPtr.Get());
-
                     if (!AssertSuccess(hr))
                     {
                         return nullptr;
                     }
+                    m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
                 }
             }
             else if (FAILED(hr))
@@ -148,7 +149,6 @@ namespace AZ
                 return nullptr;
             }
 
-            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
             return pipelineStateComPtr.Get();
 #else
             Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
@@ -185,14 +185,13 @@ namespace AZ
                     {
                         return nullptr;
                     }
+                    m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
                 }
             }
             else if (FAILED(hr))
             {
                 return nullptr;
             }
-
-            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
 
             return pipelineStateComPtr.Get();
 #else
@@ -248,15 +247,19 @@ namespace AZ
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
             AZStd::vector<uint8_t> serializedData(m_library->GetSerializedSize());
-
-            HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
-
-            if (!AssertSuccess(hr))
+            if (serializedData.size())
             {
-                return nullptr;
-            }
+            
+                HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
 
-            return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
+                if (!AssertSuccess(hr))
+                {
+                    return nullptr;
+                }
+
+                return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
+            }
+            return nullptr;
 #else
             return nullptr;
 #endif

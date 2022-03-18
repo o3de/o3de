@@ -156,46 +156,51 @@ namespace LmbrCentral
 
     void ReferenceShapeComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        if (AllowNotification())
+        {
+            LmbrCentral::ShapeComponentNotificationsBus::Event(
+                GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
     }
 
     void ReferenceShapeComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        if (AllowNotification())
+        {
+            LmbrCentral::ShapeComponentNotificationsBus::Event(
+                GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
     }
 
     void ReferenceShapeComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        if (AllowNotification())
+        {
+            LmbrCentral::ShapeComponentNotificationsBus::Event(
+                GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        }
     }
 
     void ReferenceShapeComponent::OnShapeChanged([[maybe_unused]] LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons reasons)
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        if (AllowNotification())
+        {
+            LmbrCentral::ShapeComponentNotificationsBus::Event(
+                GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
     }
 
     AZ::Crc32 ReferenceShapeComponent::GetShapeType()
     {
         AZ::Crc32 result = {};
 
-        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetShapeType);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -205,12 +210,9 @@ namespace LmbrCentral
     {
         AZ::Aabb result = AZ::Aabb::CreateNull();
 
-        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -221,12 +223,9 @@ namespace LmbrCentral
         transform = AZ::Transform::CreateIdentity();
         bounds = AZ::Aabb::CreateNull();
 
-        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::Event(m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetTransformAndLocalBounds, transform, bounds);
-            m_isRequestInProgress = false;
         }
     }
 
@@ -234,12 +233,9 @@ namespace LmbrCentral
     {
         bool result = false;
 
-        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, point);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -249,12 +245,9 @@ namespace LmbrCentral
     {
         float result = FLT_MAX;
 
-        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, point);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -264,12 +257,9 @@ namespace LmbrCentral
     {
         float result = FLT_MAX;
 
-        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceSquaredFromPoint, point);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -279,12 +269,9 @@ namespace LmbrCentral
     {
         AZ::Vector3 result = AZ::Vector3::CreateZero();
 
-        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GenerateRandomPointInside, randomDistribution);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -294,12 +281,9 @@ namespace LmbrCentral
     {
         bool result = false;
 
-        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, src, dir, distance);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -307,7 +291,24 @@ namespace LmbrCentral
 
     bool ReferenceShapeComponent::AllowRequest() const
     {
-        return !m_isRequestInProgress && m_configuration.m_shapeEntityId.IsValid() && m_configuration.m_shapeEntityId != GetEntityId();
+        AZ_ErrorOnce(
+            "Shape", !LmbrCentral::ShapeComponentRequestsBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with shape entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        return !LmbrCentral::ShapeComponentRequestsBus::HasReentrantEBusUseThisThread() && m_configuration.m_shapeEntityId.IsValid() &&
+            m_configuration.m_shapeEntityId != GetEntityId();
+    }
+
+    bool ReferenceShapeComponent::AllowNotification() const
+    {
+        AZ_ErrorOnce(
+            "Shape", !LmbrCentral::ShapeComponentNotificationsBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with shape entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        return !LmbrCentral::ShapeComponentNotificationsBus::HasReentrantEBusUseThisThread() && m_configuration.m_shapeEntityId.IsValid() &&
+            m_configuration.m_shapeEntityId != GetEntityId();
     }
 
     AZ::EntityId ReferenceShapeComponent::GetShapeEntityId() const

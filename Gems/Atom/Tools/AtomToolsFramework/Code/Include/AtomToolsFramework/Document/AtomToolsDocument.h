@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
@@ -13,35 +14,40 @@
 
 namespace AtomToolsFramework
 {
-    /**
-     * AtomToolsDocument provides an API for modifying and saving documents.
-     */
+    //! AtomToolsDocument is intended to be used as a base class for a tools' concrete document types.
+    //! It implements most of the basic functionality expected by AtomToolsDocumentRequestBus, validating file paths, file types, providing
+    //! support for undo, redo, and other operations.
+    //! A derived class should override functions to build document type info, populate object info, load, save, track undo and redo data
+    //! specific to that document type.
     class AtomToolsDocument
         : public AtomToolsDocumentRequestBus::Handler
         , private AzToolsFramework::AssetSystemBus::Handler
     {
     public:
-        AZ_RTTI(AtomToolsDocument, "{8992DF74-88EC-438C-B280-6E71D4C0880B}");
+        AZ_RTTI(AtomToolsDocument, "{7E6CA0C4-077C-4849-B24C-6796AF3B640B}");
         AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(AtomToolsDocument);
+        AZ_DISABLE_COPY_MOVE(AtomToolsDocument);
 
-        AtomToolsDocument();
+        static void Reflect(AZ::ReflectContext* context);
+
+        AtomToolsDocument() = default;
+        AtomToolsDocument(const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo);
         virtual ~AtomToolsDocument();
 
-        const AZ::Uuid& GetId() const;
-
         // AtomToolsDocumentRequestBus::Handler overrides...
-        AZStd::string_view GetAbsolutePath() const override;
-        AZStd::vector<DocumentObjectInfo> GetObjectInfo() const override;
-        bool Open(AZStd::string_view loadPath) override;
+        const DocumentTypeInfo& GetDocumentTypeInfo() const override;
+        DocumentObjectInfoVector GetObjectInfo() const override;
+        const AZ::Uuid& GetId() const override;
+        const AZStd::string& GetAbsolutePath() const override;
+        bool Open(const AZStd::string& loadPath) override;
         bool Reopen() override;
         bool Save() override;
-        bool SaveAsCopy(AZStd::string_view savePath) override;
-        bool SaveAsChild(AZStd::string_view savePath) override;
+        bool SaveAsCopy(const AZStd::string& savePath) override;
+        bool SaveAsChild(const AZStd::string& savePath) override;
         bool Close() override;
         bool IsOpen() const override;
         bool IsModified() const override;
-        bool IsSavable() const override;
+        bool CanSave() const override;
         bool CanUndo() const override;
         bool CanRedo() const override;
         bool Undo() override;
@@ -66,8 +72,12 @@ namespace AtomToolsFramework
         //! This can be overridden to restore additional data.
         virtual bool ReopenRestoreState();
 
+        const AZ::Crc32 m_toolId = {};
+
+        const DocumentTypeInfo m_documentTypeInfo = {};
+
         //! The unique id of this document, used for all bus notifications and requests.
-        AZ::Uuid m_id = AZ::Uuid::CreateRandom();
+        const AZ::Uuid m_id = AZ::Uuid::CreateRandom();
 
         //! The absolute path to the document source file.
         AZStd::string m_absolutePath;
