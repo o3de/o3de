@@ -242,6 +242,12 @@ namespace ImageProcessingAtom
                 return nullptr;
             }
 
+            if ((photometricFormat == PHOTOMETRIC_SEPARATED) && (sampleFormat == SAMPLEFORMAT_IEEEFP))
+            {
+                AZ_Error("Image Processing", false, "Separated Photometric format isn't supported with floating-point images.");
+                return nullptr;
+            }
+
             uint32_t dstChannels = CPixelFormats::GetInstance().GetPixelFormatInfo(outputPixelFormat)->nChannels;
             IImageObject* pRet = IImageObject::CreateImage(inputImageWidth, inputImageHeight, 1, outputPixelFormat);
 
@@ -330,7 +336,8 @@ namespace ImageProcessingAtom
                         maxChannelValue = AZStd::max(maxChannelValue, scaledValue);
                     }
 
-                    dst32[destPixelChannelIndex] = invert ? (1.0f - scaledValue) : scaledValue;
+                    // We ignore the inversion flag for floats, it will always be false.
+                    dst32[destPixelChannelIndex] = scaledValue;
                 }
             };
 
