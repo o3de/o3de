@@ -55,8 +55,5 @@ PSOutput MainPS(VSOutput IN)
     const float lineThickness = lerp(1., PassSrg::m_lineThickness, 1.0 - t);
     const float outline = mask > 0.0 ? 0.0 : Outliner(IN.m_texCoord, lineThickness);
 
-    // Apply the visual effect to non-mask entities, leaving mask entities untouched
-    OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outline);
-
     return OUT;
 }
