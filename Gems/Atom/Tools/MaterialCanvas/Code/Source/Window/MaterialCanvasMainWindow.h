@@ -163,47 +163,10 @@ namespace MaterialCanvas
             const QPoint& screenPoint,
             const QPointF& scenePoint) const;
 
-        // Edit menu
-        void SetupEditMenu();
-        void OnEditCut();
-        void OnEditCopy();
-        void OnEditPaste();
-        void OnEditDuplicate();
-        void OnEditDelete();
-        void OnRemoveUnusedNodes();
-        void OnRemoveUnusedElements();
-        void OnScreenshot();
-        void OnSelectAll();
-        void OnSelectInputs();
-        void OnSelectOutputs();
-        void OnSelectConnected();
-        void OnClearSelection();
-        void OnEnableSelection();
-        void OnDisableSelection();
-        void OnAlignTop();
-        void OnAlignBottom();
-        void OnAlignLeft();
-        void OnAlignRight();
-
-        void AlignSelected(const GraphCanvas::AlignConfig& alignConfig);
-
-        // View Menu
-        void OnShowEntireGraph();
-        void OnZoomIn();
-        void OnZoomOut();
-        void OnZoomToSelection();
-
-        void OnGotoStartOfChain();
-        void OnGotoEndOfChain();
-
-        // Tools menu
-        void OnViewPresetsEditor();
-
-        void RefreshSelection();
-
-        void CreateMenus();
-
     private:
+        void AlignSelected(const GraphCanvas::AlignConfig& alignConfig);
+        void OnViewPresetsEditor();
+        void CreateMenus();
         GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
 
         GraphCanvas::GraphId m_activeGraphId;
