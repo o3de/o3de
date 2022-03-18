@@ -284,15 +284,28 @@ namespace AzToolsFramework::Prefab
         // Refresh the read-only cache, if the interface is initialized.
         if (m_readOnlyEntityQueryInterface)
         {
-            EntityIdList containerEntities;
+            EntityIdList entities;
 
             if (previousFocusedInstance.has_value())
             {
-                containerEntities.push_back(previousFocusedInstance->get().GetContainerEntityId());
+                previousFocusedInstance->get().GetEntities(
+                    [&](AZStd::unique_ptr<AZ::Entity>& entity) -> bool
+                    {
+                        entities.push_back(entity->GetId());
+                        return true;
+                    }
+                );
+                entities.push_back(previousFocusedInstance->get().GetContainerEntityId());
             }
-            containerEntities.push_back(focusedInstance->get().GetContainerEntityId());
+            entities.push_back(focusedInstance->get().GetContainerEntityId());
+            focusedInstance->get().GetEntities(
+                [&](AZStd::unique_ptr<AZ::Entity>& entity) -> bool
+                {
+                    entities.push_back(entity->GetId());
+                    return true;
+                });
 
-            m_readOnlyEntityQueryInterface->RefreshReadOnlyState(containerEntities);
+            m_readOnlyEntityQueryInterface->RefreshReadOnlyState(entities);
         }
 
         // Refresh path variables.
