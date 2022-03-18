@@ -41,6 +41,9 @@ class SessionContext:
         # shell or current environment HOME or HOMEPATH, and we want the user's 
         # Windows user folder, because that is the normal use case for the installer
         self.home_path = Path(os.environ["SYSTEMDRIVE"], 'Users', os.getlogin()).resolve()
+        windows_home_path = str(self.home_path)
+        os.environ['HOME'] = windows_home_path 
+        os.environ['HOMEPATH'] = windows_home_path 
 
         self.installer_path = self._get_local_installer_path(request.config.getoption("--installer-uri"))
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
