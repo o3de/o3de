@@ -41,10 +41,9 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         else if (o_transmission_mode == TransmissionMode::ThinObject) 
         {
             // Fetch and use shrinked positions for thin object transmission to ensure they fall onto the object when querying
-            // (surface.transmission.transmissionParams.x <-- shrink factor)
             DirectionalLightShadow::GetShadowCoords(
                 shadowIndex,
-                surface.position - surface.transmission.transmissionParams.x * surface.vertexNormal,
+                surface.position - surface.transmission.GetShrinkFactor() * surface.vertexNormal,
                 surface.normal,
                 lightingData.shadowCoords);
 

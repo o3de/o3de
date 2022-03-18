@@ -18,6 +18,19 @@ class TransmissionSurfaceData
     float3 scatterDistance;          //!< scatter distance (same as in MaterialSrg) > 
 
     void InitializeToZero();
+
+    // Thick mode getters
+    float GetAttenuationCoefficient() { return transmissionParams.x; }
+    float GetPower() { return transmissionParams.y; }
+    float GetDistortion() { return transmissionParams.z; }
+
+    // Thin mode getters
+    float GetShrinkFactor() { return transmissionParams.x; }
+    float GetTransmissionNdLBias() { return transmissionParams.y; }
+    float GetDistanceAttenuation() { return transmissionParams.z; }
+
+    // Common getters
+    float GetScale() { return transmissionParams.w; }
 };
 
 void TransmissionSurfaceData::InitializeToZero()
