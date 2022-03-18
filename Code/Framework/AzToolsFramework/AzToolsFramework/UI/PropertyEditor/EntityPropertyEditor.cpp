@@ -5692,17 +5692,17 @@ namespace AzToolsFramework
         // We need to wait for the Container Entity System to update before checking
         QTimer::singleShot( 1, this, [this]()
             {
-                bool visible = false;
+                bool enable = true;
                 for (AZ::EntityId entityId : m_overrideSelectedEntityIds)
                 {
-                    if (m_focusModeInterface->IsInFocusSubTree(entityId) &&
-                        !m_containerEntityInterface->IsUnderClosedContainerEntity(entityId))
+                    if (!m_focusModeInterface->IsInFocusSubTree(entityId) ||
+                        m_containerEntityInterface->IsUnderClosedContainerEntity(entityId))
                     {
-                        visible = true;
+                        enable = false;
                         break;
                     }
                 }
-                SetEditorUiEnabled(visible);
+                SetEditorUiEnabled(enable);
             });
     }
 
