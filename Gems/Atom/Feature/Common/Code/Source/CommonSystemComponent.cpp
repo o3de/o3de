@@ -239,15 +239,13 @@ namespace AZ
             passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
             passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
             passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
+            passSystem->AddPassCreator(Name("FullscreenShadowPass"), &FullscreenShadowPass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);
             passSystem->AddPassCreator(Name("SMAAEdgeDetectionPass"), &SMAAEdgeDetectionPass::Create);
             passSystem->AddPassCreator(Name("SMAABlendingWeightCalculationPass"), &SMAABlendingWeightCalculationPass::Create);
             passSystem->AddPassCreator(Name("SMAANeighborhoodBlendingPass"), &SMAANeighborhoodBlendingPass::Create);
-
-            passSystem->AddPassCreator(Name("FullscreenShadowPass"), &FullscreenShadowPass::Create);
-
 
             // Add Depth Downsample/Upsample passes
             passSystem->AddPassCreator(Name("DepthUpsamplePass"), &DepthUpsamplePass::Create);

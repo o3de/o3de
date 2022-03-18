@@ -95,8 +95,6 @@ PSOutput MainPS(VSOutput IN)
     const float zDepth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex);
     
     const float3 surfacePosWS = WorldPositionFromDepthBuffer(IN.m_texCoord, zDepth).xyz;     
-    const float3 surfacePosVS = ViewPositionFromDepthBuffer(IN.m_texCoord, zDepth).xyz;     
-
    
     PSOutput OUT;   
 
