@@ -78,9 +78,9 @@
                         "Pass": "FullscreenShadowPass",
                         "Attachment": "Output"
                     } 
-                }                  
+                }
             ],
-            "PassRequests": [          
+            "PassRequests": [
                 {
                     "Name": "CascadedShadowmapsPass",
                     "TemplateName": "CascadedShadowmapsTemplate",
