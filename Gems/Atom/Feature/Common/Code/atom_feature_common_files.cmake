@@ -118,6 +118,10 @@ set(FILES
     Source/CubeMapCapture/CubeMapCapture.cpp
     Source/CubeMapCapture/CubeMapRenderer.h
     Source/CubeMapCapture/CubeMapRenderer.cpp
+    Source/Debug/RenderDebugFeatureProcessor.h
+    Source/Debug/RenderDebugFeatureProcessor.cpp
+    Source/Debug/RenderDebugSettings.h
+    Source/Debug/RenderDebugSettings.cpp
     Source/Decals/DecalFeatureProcessor.h
     Source/Decals/DecalFeatureProcessor.cpp
     Source/Decals/DecalTextureArray.h
