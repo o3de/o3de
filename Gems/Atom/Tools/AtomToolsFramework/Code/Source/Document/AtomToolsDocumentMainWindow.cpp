@@ -25,6 +25,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QLayout>
 #include <QMenu>
 #include <QMenuBar>
+#include <QTimer>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
 
@@ -84,6 +85,12 @@ namespace AtomToolsFramework
             }
         }, QKeySequence::Open);
         m_menuFile->insertAction(insertPostion, m_actionOpen);
+
+        m_menuOpenRecent = new QMenu("Open Recent", this);
+        connect(m_menuOpenRecent, &QMenu::aboutToShow, this, [this]() {
+            UpdateRecentFileMenu();
+        });
+        m_menuFile->insertMenu(insertPostion, m_menuOpenRecent);
         m_menuFile->insertSeparator(insertPostion);
 
         m_actionSave = CreateAction("&Save", [this]() {
@@ -232,6 +239,48 @@ namespace AtomToolsFramework
         });
 
         centralWidget()->layout()->addWidget(m_tabWidget);
+    }
+
+    void AtomToolsDocumentMainWindow::AddRecentFilePath(const AZStd::string& absolutePath)
+    {
+        if (!absolutePath.empty())
+        {
+            AZStd::vector<AZStd::string> paths = GetSettingsObject(RecentFilePathsKey, AZStd::vector<AZStd::string>());
+            AZStd::erase_if(paths, [&absolutePath](const AZStd::string& currentPath) {
+                return AZ::StringFunc::Equal(currentPath, absolutePath);
+            });
+
+            paths.insert(paths.begin(), absolutePath);
+            if (paths.size() > 10)
+            {
+                paths.resize(10);
+            }
+
+            SetSettingsObject(RecentFilePathsKey, paths);
+        }
+    }
+
+    void AtomToolsDocumentMainWindow::ClearRecentFilePaths()
+    {
+        SetSettingsObject(RecentFilePathsKey, AZStd::vector<AZStd::string>());
+    }
+
+    void AtomToolsDocumentMainWindow::UpdateRecentFileMenu()
+    {
+        m_menuOpenRecent->clear();
+        for (const AZStd::string& path : GetSettingsObject(RecentFilePathsKey, AZStd::vector<AZStd::string>()))
+        {
+            if (QFile::exists(path.c_str()))
+            {
+                m_menuOpenRecent->addAction(tr("&%1: %2").arg(m_menuOpenRecent->actions().size()).arg(path.c_str()), [this, path]() {
+                    AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                });
+            }
+        }
+
+        m_menuOpenRecent->addAction(tr("Clear Recent Files"), [this]() {
+            QTimer::singleShot(0, this, &AtomToolsDocumentMainWindow::ClearRecentFilePaths);
+        });
     }
 
     QString AtomToolsDocumentMainWindow::GetDocumentPath(const AZ::Uuid& documentId) const
@@ -449,8 +498,6 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        UpdateDocumentTab(documentId);
-
         bool isOpen = false;
         AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsDocumentRequestBus::Events::IsOpen);
         bool canSave = false;
@@ -484,6 +531,8 @@ namespace AtomToolsFramework
 
         m_assetBrowser->SelectEntries(absolutePath);
 
+        AddRecentFilePath(absolutePath);
+        UpdateDocumentTab(documentId);
         ActivateWindow();
 
         if (isOpen && !absolutePath.empty())

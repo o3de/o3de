@@ -674,42 +674,6 @@ namespace MaterialCanvas
 
     void MaterialCanvasMainWindow::CreateMenus()
     {
-#if 0
-        // List of recent files.
-        {
-            QMenu* recentMenu = new QMenu("Open &Recent");
-
-            for (int i = 0; i < m_recentActions.size(); ++i)
-            {
-                QAction* action = new QAction(this);
-                action->setVisible(false);
-                m_recentActions[i] = AZStd::make_pair(action, QMetaObject::Connection());
-                recentMenu->addAction(action);
-            }
-
-            connect(recentMenu, &QMenu::aboutToShow, this, &MaterialCanvasMainWindow::UpdateRecentMenu);
-
-            recentMenu->addSeparator();
-
-            // Clear Recent Files.
-            {
-                QAction* action = new QAction("&Clear Recent Files", this);
-
-                connect(
-                    action, &QAction::triggered,
-                    [this](bool /*checked*/)
-                    {
-                        ClearRecentFile();
-                        UpdateRecentMenu();
-                    });
-
-                recentMenu->addAction(action);
-            }
-
-            ui->menuFile->insertMenu(ui->action_Save, recentMenu);
-            ui->menuFile->insertSeparator(ui->action_Save);
-        }
-#endif
         m_menuEdit->addSeparator();
         m_menuEdit->addAction("Cut", [this] {
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::CutSelection);
