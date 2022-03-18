@@ -90,12 +90,14 @@ namespace AzToolsFramework
 
     bool LocalViewBookmarkLoader::ModifyBookmarkAtIndex(const ViewBookmark& bookmark, int index)
     {
+        WriteBookmarksToSettingsRegistry();
+
         if (index < 0 || index >= DefaultViewBookmarkCount)
         {
+            // save Default values to viewbookmarkFile
+            SaveBookmarkSettingsFile();
             return false;
         }
-
-        LoadDefaultLocalViewBookmarks();
 
         AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(index);
 
@@ -105,12 +107,15 @@ namespace AzToolsFramework
             success = registry->SetObject(finalPath, bookmark);
         }
 
-        // If we managed to add the bookmark
-        if (success)
+        if (!success)
         {
-            SaveBookmarkSettingsFile();
-            LoadViewBookmarks();
+            AZ_Warning("LocalViewBookmarkLoader", false, "couldn't remove View Bookmark at index %d", index);
+            return false;
         }
+
+        // if we managed to add the bookmark
+        SaveBookmarkSettingsFile();
+
         return success;
     }
 
@@ -286,6 +291,9 @@ namespace AzToolsFramework
             }
         }
 
+        // remove cached local bookmarks if a view bookmark file could not be loaded
+        m_localBookmarks.clear();
+
         return false;
     }
 
@@ -397,7 +405,7 @@ namespace AzToolsFramework
         return prefabTemplateName.data() + AZStd::string("_") + sTime + ".setreg";
     }
 
-    bool LocalViewBookmarkLoader::LoadDefaultLocalViewBookmarks()
+    bool LocalViewBookmarkLoader::WriteBookmarksToSettingsRegistry()
     {
         // Write to the settings registry
         auto registry = AZ::SettingsRegistry::Get();
@@ -413,6 +421,27 @@ namespace AzToolsFramework
             AZ_Warning("LocalViewBookmarkLoader", false, "Couldn't find a LocalViewBookmarkComponent");
             return false;
         }
+
+        // initialize default locations to 0. This is a temporary solution to match the 12 locations of the legacy system
+        // once there is a UI for the view bookmarks these lines should be removed
+        auto createDefaultBookmarksFn = [this, &registry]()
+        {
+            if (m_localBookmarks.empty())
+            {
+                for (int i = 0; i < DefaultViewBookmarkCount; i++)
+                {
+                    AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(i);
+                    
+                    if (const bool succeed = registry->SetObject(finalPath, ViewBookmark());
+                        !succeed)
+                    {
+                        return false;
+                    }
+                }
+
+            }
+            return true;
+        };
 
         // if the field is not empty then we have a file linked to the prefab
         if (!bookmarkComponent->GetLocalBookmarksFileName().empty())
@@ -431,52 +460,20 @@ namespace AzToolsFramework
                     AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
 
                 outputFile.Open(editorBookmarkFilePath.c_str(), configurationMode);
-
-                // initialize default locations to 0 - this is a temporary solution to match the 12 locations of the legacy system
-                // once there is a UI for the view bookmarks these lines will be removed
-                for (int i = 0; i < DefaultViewBookmarkCount; i++)
-                {
-                    AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(i);
-                    registry->SetObject(finalPath, ViewBookmark());
-                }
-
-                LoadViewBookmarks();
-
-                return true;
-            }
-            else
-            {
-                LoadViewBookmarks();
-
-                for (int i = 0; i < m_localBookmarks.size(); i++)
-                {
-                    AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(i);
-                    registry->SetObject(finalPath, m_localBookmarks.at(i));
-                }
-
-                return true;
             }
         }
         else // if the field is empty, we don't have a file linked to the prefab, so we create one and we save it in the component
         {
             m_bookmarkfileName = GenerateBookmarkFileName();
-
-            // initialize default locations to 0
-            for (int i = 0; i < DefaultViewBookmarkCount; i++)
-            {
-                AZStd::string finalPath = "/" + m_bookmarkfileName + "/LocalBookmarks/" + AZStd::to_string(i);
-                registry->SetObject(finalPath, ViewBookmark());
-            }
-
             bookmarkComponent->SetLocalBookmarksFileName(m_bookmarkfileName);
-
-            return true;
         }
+
+        return createDefaultBookmarksFn();
     }
 
     bool LocalViewBookmarkLoader::SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType)
     {
-        LoadDefaultLocalViewBookmarks();
+        WriteBookmarksToSettingsRegistry();
 
         AZStd::string finalPath;
 
@@ -492,7 +489,7 @@ namespace AzToolsFramework
         }
 
         bool success = false;
-        // Write to the settings registry
+        // write to the settings registry
         if (auto registry = AZ::SettingsRegistry::Get())
         {
             success = registry->SetObject(finalPath, bookmark);
@@ -508,9 +505,6 @@ namespace AzToolsFramework
 
         // if we managed to add the bookmark
         SaveBookmarkSettingsFile();
-
-        // once we have written into our view bookmark file let's load the new values.
-        LoadViewBookmarks();
 
         return success;
     }

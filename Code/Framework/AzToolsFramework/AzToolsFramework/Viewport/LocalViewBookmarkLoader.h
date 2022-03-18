@@ -42,7 +42,7 @@ namespace AzToolsFramework
         bool LoadViewBookmarks() override;
         void SaveBookmarkSettingsFile() override;
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
-        bool LoadDefaultLocalViewBookmarks();
+        bool WriteBookmarksToSettingsRegistry();
 
         LocalViewBookmarkComponent* RetrieveLocalViewBookmarkComponent();
 
