@@ -92,7 +92,7 @@ namespace UnitTest
         }
     };
 
-    // This fixutre is used for benchmarking the terrain system when using a more complicated setup that relies on surface gradients.
+    // This fixture is used for benchmarking the terrain system when using a more complicated setup that relies on surface gradients.
     // By using a "Terrain -> Gradient -> Surface Data" setup, we're fully exercising all of those systems and lets us benchmark our
     // ability to use all of those systems in parallel when calling multiple simultaneous terrain queries.
     class TerrainSurfaceGradientBenchmarkFixture : public TerrainSystemBenchmarkFixture

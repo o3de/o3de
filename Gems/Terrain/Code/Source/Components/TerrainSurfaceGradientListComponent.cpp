@@ -149,8 +149,8 @@ namespace Terrain
 
         if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
         {
-            AZ_ErrorOnce("Terrain", false,
-                "Detected cyclic dependencies with terrain surface entity references on entity '%s'", GetEntity()->GetName().c_str());
+            AZ_ErrorOnce("Terrain", false, "Detected cyclic dependencies with terrain surface entity references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
             return;
         }
 
@@ -176,8 +176,8 @@ namespace Terrain
         if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
         {
             AZ_ErrorOnce(
-                "Terrain", false, "Detected cyclic dependencies with terrain surface entity references on entity '%s'",
-                GetEntity()->GetName().c_str());
+                "Terrain", false, "Detected cyclic dependencies with terrain surface entity references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
             return;
         }
 

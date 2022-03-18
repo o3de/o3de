@@ -220,8 +220,8 @@ namespace GradientSignal
 
         if (GradientRequestBus::HasReentrantEBusUseThisThread())
         {
-            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s'",
-                GetEntity()->GetName().c_str());
+            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
             return;
         }
 

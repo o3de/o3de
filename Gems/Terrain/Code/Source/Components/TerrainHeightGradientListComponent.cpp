@@ -163,7 +163,8 @@ namespace Terrain
 
         AZ_ErrorOnce(
             "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with terrain height entity references on entity '%s'", GetEntity()->GetName().c_str());
+            "Detected cyclic dependencies with terrain height entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
 
         if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {
@@ -202,7 +203,8 @@ namespace Terrain
 
         AZ_ErrorOnce(
             "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with terrain height entity references on entity '%s'", GetEntity()->GetName().c_str());
+            "Detected cyclic dependencies with terrain height entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
 
         if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {
