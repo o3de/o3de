@@ -121,15 +121,16 @@ namespace MaterialCanvas
         qobject_cast<QBoxLayout*>(centralWidget()->layout())->insertWidget(0, m_editorToolbar);
 
         // Screenshot
-        {
-            m_takeScreenshot = new QToolButton();
-            m_takeScreenshot->setToolTip("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard");
-            m_takeScreenshot->setIcon(QIcon(":/MaterialCanvasEditorResources/Resources/scriptcanvas_screenshot.png"));
-            m_takeScreenshot->setEnabled(false);
-
-            m_editorToolbar->AddCustomAction(m_takeScreenshot);
-            connect(m_takeScreenshot, &QToolButton::clicked, this, &MaterialCanvasMainWindow::OnScreenshot);
-        }
+        m_takeScreenshot = new QToolButton();
+        m_takeScreenshot->setToolTip("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard");
+        m_takeScreenshot->setIcon(QIcon(":/MaterialCanvasEditorResources/Resources/scriptcanvas_screenshot.png"));
+        m_takeScreenshot->setEnabled(false);
+        connect(m_takeScreenshot, &QToolButton::clicked, this, [this] {
+            GraphCanvas::ViewId viewId;
+            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+            GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ScreenshotSelection);
+        });
+        m_editorToolbar->AddCustomAction(m_takeScreenshot);
 
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
@@ -674,16 +675,6 @@ namespace MaterialCanvas
     void MaterialCanvasMainWindow::CreateMenus()
     {
 #if 0
-        // File menu
-        connect(ui->action_New_Script, &QAction::triggered, this, &MaterialCanvasMainWindow::OnFileNew);
-        ui->action_New_Script->setShortcut(QKeySequence(QKeySequence::New));
-
-        connect(ui->action_Open, &QAction::triggered, this, &MaterialCanvasMainWindow::OnFileOpen);
-        ui->action_Open->setShortcut(QKeySequence(QKeySequence::Open));
-
-        connect(ui->action_UpgradeTool, &QAction::triggered, this, &MaterialCanvasMainWindow::RunUpgradeTool);
-        ui->action_UpgradeTool->setVisible(true);
-
         // List of recent files.
         {
             QMenu* recentMenu = new QMenu("Open &Recent");
@@ -718,224 +709,135 @@ namespace MaterialCanvas
             ui->menuFile->insertMenu(ui->action_Save, recentMenu);
             ui->menuFile->insertSeparator(ui->action_Save);
         }
-
-        connect(ui->action_Save, &QAction::triggered, this, &MaterialCanvasMainWindow::OnFileSaveCaller);
-        ui->action_Save->setShortcut(QKeySequence(QKeySequence::Save));
-
-        connect(ui->action_Save_As, &QAction::triggered, this, &MaterialCanvasMainWindow::OnFileSaveAsCaller);
-        ui->action_Save_As->setShortcut(QKeySequence(tr("Ctrl+Shift+S", "File|Save As...")));
-
-        connect(
-            ui->action_Close, &QAction::triggered,
-            [this](bool /*checked*/)
-            {
-                m_tabBar->tabCloseRequested(m_tabBar->currentIndex());
-            });
-        ui->action_Close->setShortcut(QKeySequence(QKeySequence::Close));
-
-        // Edit Menu
-        SetupEditMenu();
-
-        // View menu
-        connect(ui->action_ViewNodePalette, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewNodePalette);
-        connect(ui->action_ViewMiniMap, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewMiniMap);
-
-        connect(ui->action_ViewProperties, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewProperties);
-        connect(ui->action_ViewBookmarks, &QAction::triggered, this, &MaterialCanvasMainWindow::OnBookmarks);
-
-        connect(ui->action_ViewVariableManager, &QAction::triggered, this, &MaterialCanvasMainWindow::OnVariableManager);
-        connect(m_variableDockWidget, &QDockWidget::visibilityChanged, this, &MaterialCanvasMainWindow::OnViewVisibilityChanged);
-
-        connect(ui->action_ViewLogWindow, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewLogWindow);
-        connect(m_loggingWindow, &QDockWidget::visibilityChanged, this, &MaterialCanvasMainWindow::OnViewVisibilityChanged);
-
-        connect(ui->action_ViewDebugger, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewDebugger);
-        connect(ui->action_ViewCommandLine, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewCommandLine);
-        connect(ui->action_ViewLog, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewLog);
-
-        connect(ui->action_GraphValidation, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewGraphValidation);
-        connect(ui->action_Debugging, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewDebuggingWindow);
-
-        connect(ui->action_ViewUnitTestManager, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewUnitTestManager);
-        connect(ui->action_NodeStatistics, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewStatisticsPanel);
-        connect(ui->action_PresetsEditor, &QAction::triggered, this, &MaterialCanvasMainWindow::OnViewPresetsEditor);
-
-        connect(ui->action_ViewRestoreDefaultLayout, &QAction::triggered, this, &MaterialCanvasMainWindow::OnRestoreDefaultLayout);
 #endif
-    }
+        m_menuEdit->addSeparator();
+        m_menuEdit->addAction("Cut", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::CutSelection);
+        }, QKeySequence::Cut);
+        m_menuEdit->addAction("Copy", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::CopySelection);
+        }, QKeySequence::Copy);
+        m_menuEdit->addAction("Paste", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::Paste);
+        }, QKeySequence::Paste);
+        m_menuEdit->addAction("Duplicate", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DuplicateSelection);
+        });
+        m_menuEdit->addAction("Delete", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DeleteSelection);
+        }, QKeySequence::Delete);
 
-    void MaterialCanvasMainWindow::SetupEditMenu()
-    {
+        m_menuEdit->addSeparator();
+        m_menuEdit->addAction("Remove Unused Nodes", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::RemoveUnusedNodes);
+        });
+        m_menuEdit->addAction("Remove Unused Elements", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::RemoveUnusedElements);
+        });
+
+        m_menuEdit->addSeparator();
+        m_menuEdit->addAction("Select All", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SelectAll);
+        });
+        m_menuEdit->addAction("Select Inputs", [this] {
+            GraphCanvas::SceneRequestBus::Event(
+                m_activeGraphId, &GraphCanvas::SceneRequests::SelectAllRelative, GraphCanvas::ConnectionType::CT_Input);
+        });
+        m_menuEdit->addAction("Select Outputs", [this] {
+            GraphCanvas::SceneRequestBus::Event(
+                m_activeGraphId, &GraphCanvas::SceneRequests::SelectAllRelative, GraphCanvas::ConnectionType::CT_Output);
+        });
+        m_menuEdit->addAction("Select Connecteed", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SelectConnectedNodes);
+        });
+        m_menuEdit->addAction("Clear Selection", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::ClearSelection);
+        });
+        m_menuEdit->addAction("Enable Selection", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::EnableSelection);
+        });
+        m_menuEdit->addAction("Disable Selection", [this] {
+            GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DisableSelection);
+        });
+
+        m_menuEdit->addSeparator();
+        m_menuEdit->addAction("Screenshot", [this] {
+            GraphCanvas::ViewId viewId;
+            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+            GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ScreenshotSelection);
+        });
+
+        m_menuEdit->addSeparator();
+        m_menuEdit->addAction("Align Top", [this] {
+            GraphCanvas::AlignConfig alignConfig;
+            alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::None;
+            alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::Top;
+            alignConfig.m_alignTime = GetAlignmentTime();
+            AlignSelected(alignConfig);
+        });
+        m_menuEdit->addAction("Align Bottom", [this] {
+            GraphCanvas::AlignConfig alignConfig;
+            alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::None;
+            alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::Bottom;
+            alignConfig.m_alignTime = GetAlignmentTime();
+            AlignSelected(alignConfig);
+        });
+        m_menuEdit->addAction("Align Left", [this] {
+            GraphCanvas::AlignConfig alignConfig;
+            alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::Left;
+            alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::None;
+            alignConfig.m_alignTime = GetAlignmentTime();
+            AlignSelected(alignConfig);
+        });
+        m_menuEdit->addAction("Align Right", [this] {
+            GraphCanvas::AlignConfig alignConfig;
+            alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::Right;
+            alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::None;
+            alignConfig.m_alignTime = GetAlignmentTime();
+            AlignSelected(alignConfig);
+        });
+
+        m_menuView->addSeparator();
+        m_menuView->addAction("Preset Editor", [this] { OnViewPresetsEditor(); });
+
+        m_menuView->addSeparator();
+        m_menuView->addAction("Show Entire Graph", [this] {
+            GraphCanvas::ViewId viewId;
+            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+            GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ShowEntireGraph);
+        });
+        m_menuView->addAction("Zoom In", [this] {
+            GraphCanvas::ViewId viewId;
+            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+            GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ZoomIn);
+        })->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Plus), QKeySequence(Qt::CTRL + Qt::Key_Equal) });;
+        m_menuView->addAction("Zoom Out", [this] {
+            GraphCanvas::ViewId viewId;
+            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+            GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ZoomOut);
+        })->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Minus), QKeySequence(Qt::CTRL + Qt::Key_hyphen) });;
+        m_menuView->addAction("Zoom Selection", [this] {
+            GraphCanvas::ViewId viewId;
+            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+            GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnSelection);
+        });
+
+        m_menuView->addSeparator();
+        m_menuView->addAction("Goto Start Of Chain", [this] {
+            GraphCanvas::ViewId viewId;
+            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+            GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnStartOfChain);
+        });
+        m_menuView->addAction("Goto End Of Chain", [this] {
+            GraphCanvas::ViewId viewId;
+            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
+            GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnEndOfChain);
+        });
+
 #if 0
-        ui->action_Undo->setShortcut(QKeySequence::Undo);
-        ui->action_Cut->setShortcut(QKeySequence(QKeySequence::Cut));
-        ui->action_Copy->setShortcut(QKeySequence(QKeySequence::Copy));
-        ui->action_Paste->setShortcut(QKeySequence(QKeySequence::Paste));
-        ui->action_Delete->setShortcut(QKeySequence(QKeySequence::Delete));
-
         connect(ui->menuEdit, &QMenu::aboutToShow, this, &MaterialCanvasMainWindow::OnEditMenuShow);
-
-        // Edit Menu
-        connect(ui->action_Undo, &QAction::triggered, this, &MaterialCanvasMainWindow::TriggerUndo);
-        connect(ui->action_Redo, &QAction::triggered, this, &MaterialCanvasMainWindow::TriggerRedo);
-        connect(ui->action_Cut, &QAction::triggered, this, &MaterialCanvasMainWindow::OnEditCut);
-        connect(ui->action_Copy, &QAction::triggered, this, &MaterialCanvasMainWindow::OnEditCopy);
-        connect(ui->action_Paste, &QAction::triggered, this, &MaterialCanvasMainWindow::OnEditPaste);
-        connect(ui->action_Duplicate, &QAction::triggered, this, &MaterialCanvasMainWindow::OnEditDuplicate);
-        connect(ui->action_Delete, &QAction::triggered, this, &MaterialCanvasMainWindow::OnEditDelete);
         connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &MaterialCanvasMainWindow::RefreshPasteAction);
-        connect(ui->action_RemoveUnusedNodes, &QAction::triggered, this, &MaterialCanvasMainWindow::OnRemoveUnusedNodes);
-        connect(ui->action_RemoveUnusedVariables, &QAction::triggered, this, &MaterialCanvasMainWindow::OnRemoveUnusedVariables);
-        connect(ui->action_RemoveUnusedElements, &QAction::triggered, this, &MaterialCanvasMainWindow::OnRemoveUnusedElements);
-        connect(ui->action_Screenshot, &QAction::triggered, this, &MaterialCanvasMainWindow::OnScreenshot);
-        connect(ui->action_SelectAll, &QAction::triggered, this, &MaterialCanvasMainWindow::OnSelectAll);
-        connect(ui->action_SelectInputs, &QAction::triggered, this, &MaterialCanvasMainWindow::OnSelectInputs);
-        connect(ui->action_SelectOutputs, &QAction::triggered, this, &MaterialCanvasMainWindow::OnSelectOutputs);
-        connect(ui->action_SelectConnected, &QAction::triggered, this, &MaterialCanvasMainWindow::OnSelectConnected);
-        connect(ui->action_ClearSelection, &QAction::triggered, this, &MaterialCanvasMainWindow::OnClearSelection);
-        connect(ui->action_EnableSelection, &QAction::triggered, this, &MaterialCanvasMainWindow::OnEnableSelection);
-        connect(ui->action_DisableSelection, &QAction::triggered, this, &MaterialCanvasMainWindow::OnDisableSelection);
-        connect(ui->action_AlignTop, &QAction::triggered, this, &MaterialCanvasMainWindow::OnAlignTop);
-        connect(ui->action_AlignBottom, &QAction::triggered, this, &MaterialCanvasMainWindow::OnAlignBottom);
-        connect(ui->action_AlignLeft, &QAction::triggered, this, &MaterialCanvasMainWindow::OnAlignLeft);
-        connect(ui->action_AlignRight, &QAction::triggered, this, &MaterialCanvasMainWindow::OnAlignRight);
-
-        ui->action_ZoomIn->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Plus), QKeySequence(Qt::CTRL + Qt::Key_Equal) });
-
-        // View Menu
-        connect(ui->action_ShowEntireGraph, &QAction::triggered, this, &MaterialCanvasMainWindow::OnShowEntireGraph);
-        connect(ui->action_ZoomIn, &QAction::triggered, this, &MaterialCanvasMainWindow::OnZoomIn);
-        connect(ui->action_ZoomOut, &QAction::triggered, this, &MaterialCanvasMainWindow::OnZoomOut);
-        connect(ui->action_ZoomSelection, &QAction::triggered, this, &MaterialCanvasMainWindow::OnZoomToSelection);
-        connect(ui->action_GotoStartOfChain, &QAction::triggered, this, &MaterialCanvasMainWindow::OnGotoStartOfChain);
-        connect(ui->action_GotoEndOfChain, &QAction::triggered, this, &MaterialCanvasMainWindow::OnGotoEndOfChain);
 #endif
-    }
-
-    void MaterialCanvasMainWindow::OnEditCut()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::CutSelection);
-    }
-
-    void MaterialCanvasMainWindow::OnEditCopy()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::CopySelection);
-    }
-
-    void MaterialCanvasMainWindow::OnEditPaste()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::Paste);
-    }
-
-    void MaterialCanvasMainWindow::OnEditDuplicate()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DuplicateSelection);
-    }
-
-    void MaterialCanvasMainWindow::OnEditDelete()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DeleteSelection);
-    }
-
-    void MaterialCanvasMainWindow::OnRemoveUnusedNodes()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::RemoveUnusedNodes);
-    }
-
-    void MaterialCanvasMainWindow::OnRemoveUnusedElements()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::RemoveUnusedElements);
-    }
-
-    void MaterialCanvasMainWindow::OnScreenshot()
-    {
-        GraphCanvas::ViewId viewId;
-        GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-        GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ScreenshotSelection);
-    }
-
-    void MaterialCanvasMainWindow::OnSelectAll()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SelectAll);
-    }
-
-    void MaterialCanvasMainWindow::OnSelectInputs()
-    {
-        GraphCanvas::SceneRequestBus::Event(
-            m_activeGraphId, &GraphCanvas::SceneRequests::SelectAllRelative, GraphCanvas::ConnectionType::CT_Input);
-    }
-
-    void MaterialCanvasMainWindow::OnSelectOutputs()
-    {
-        GraphCanvas::SceneRequestBus::Event(
-            m_activeGraphId, &GraphCanvas::SceneRequests::SelectAllRelative, GraphCanvas::ConnectionType::CT_Output);
-
-        GraphCanvas::ViewId viewId;
-        GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-    }
-
-    void MaterialCanvasMainWindow::OnSelectConnected()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SelectConnectedNodes);
-    }
-
-    void MaterialCanvasMainWindow::OnClearSelection()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::ClearSelection);
-    }
-
-    void MaterialCanvasMainWindow::OnEnableSelection()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::EnableSelection);
-    }
-
-    void MaterialCanvasMainWindow::OnDisableSelection()
-    {
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DisableSelection);
-    }
-
-    void MaterialCanvasMainWindow::OnAlignTop()
-    {
-        GraphCanvas::AlignConfig alignConfig;
-
-        alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::None;
-        alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::Top;
-        alignConfig.m_alignTime = GetAlignmentTime();
-
-        AlignSelected(alignConfig);
-    }
-
-    void MaterialCanvasMainWindow::OnAlignBottom()
-    {
-        GraphCanvas::AlignConfig alignConfig;
-
-        alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::None;
-        alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::Bottom;
-        alignConfig.m_alignTime = GetAlignmentTime();
-
-        AlignSelected(alignConfig);
-    }
-
-    void MaterialCanvasMainWindow::OnAlignLeft()
-    {
-        GraphCanvas::AlignConfig alignConfig;
-
-        alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::Left;
-        alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::None;
-        alignConfig.m_alignTime = GetAlignmentTime();
-
-        AlignSelected(alignConfig);
-    }
-
-    void MaterialCanvasMainWindow::OnAlignRight()
-    {
-        GraphCanvas::AlignConfig alignConfig;
-
-        alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::Right;
-        alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::None;
-        alignConfig.m_alignTime = GetAlignmentTime();
-
-        AlignSelected(alignConfig);
     }
 
     void MaterialCanvasMainWindow::AlignSelected(const GraphCanvas::AlignConfig& alignConfig)
@@ -943,58 +845,6 @@ namespace MaterialCanvas
         AZStd::vector<GraphCanvas::NodeId> selectedNodes;
         GraphCanvas::SceneRequestBus::EventResult(selectedNodes, m_activeGraphId, &GraphCanvas::SceneRequests::GetSelectedNodes);
         GraphCanvas::GraphUtils::AlignNodes(selectedNodes, alignConfig);
-    }
-
-    void MaterialCanvasMainWindow::OnShowEntireGraph()
-    {
-        GraphCanvas::ViewId viewId;
-        GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-        GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ShowEntireGraph);
-    }
-
-    void MaterialCanvasMainWindow::OnZoomIn()
-    {
-        GraphCanvas::ViewId viewId;
-        GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-        GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ZoomIn);
-    }
-
-    void MaterialCanvasMainWindow::OnZoomOut()
-    {
-        GraphCanvas::ViewId viewId;
-        GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-        GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ZoomOut);
-    }
-
-    void MaterialCanvasMainWindow::OnZoomToSelection()
-    {
-        GraphCanvas::ViewId viewId;
-        GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-        GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnSelection);
-    }
-
-    void MaterialCanvasMainWindow::OnGotoStartOfChain()
-    {
-        GraphCanvas::ViewId viewId;
-        GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-        GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnStartOfChain);
-    }
-
-    void MaterialCanvasMainWindow::OnGotoEndOfChain()
-    {
-        GraphCanvas::ViewId viewId;
-        GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-        GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnEndOfChain);
-    }
-
-    void MaterialCanvasMainWindow::RefreshSelection()
-    {
-        // Get the selected nodes.
-        bool hasCopiableSelection = false;
-        GraphCanvas::SceneRequestBus::EventResult(hasCopiableSelection, m_activeGraphId, &GraphCanvas::SceneRequests::HasCopiableSelection);
-
-        AZStd::vector<AZ::EntityId> selection;
-        GraphCanvas::SceneRequestBus::EventResult(selection, m_activeGraphId, &GraphCanvas::SceneRequests::GetSelectedItems);
     }
 
     void MaterialCanvasMainWindow::OnViewPresetsEditor()
@@ -1025,37 +875,6 @@ namespace MaterialCanvas
             m_presetWrapper->setGeometry(geometry);
         }
     }
-
-#if 0
-    void MaterialCanvasMainWindow::DeleteNodes(const AZ::EntityId& graphId, const AZStd::vector <AZ::EntityId>& nodes)
-    {
-        // clear the selection then delete the nodes that were selected
-        GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::ClearSelection);
-        GraphCanvas::SceneRequestBus::Event(
-            graphId, &GraphCanvas::SceneRequests::Delete, AZStd::unordered_set<AZ::EntityId>{ nodes.begin(), nodes.end() });
-    }
-
-    void MaterialCanvasMainWindow::DeleteConnections(const AZ::EntityId& graphId, const AZStd::vector<AZ::EntityId>& connections)
-    {
-        ScopedVariableSetter<bool> scopedIgnoreSelection(m_ignoreSelection, true);
-        GraphCanvas::SceneRequestBus::Event(
-            graphId, &GraphCanvas::SceneRequests::Delete,
-            AZStd::unordered_set<AZ::EntityId>{ connections.begin(), connections.end() });
-    }
-
-    void MaterialCanvasMainWindow::DisconnectEndpoints(const AZ::EntityId& graphId, const AZStd::vector<GraphCanvas::Endpoint>& endpoints)
-    {
-        AZStd::unordered_set<AZ::EntityId> connections;
-        for (const auto& endpoint : endpoints)
-        {
-            AZStd::vector<AZ::EntityId> endpointConnections;
-            GraphCanvas::SceneRequestBus::EventResult(
-                endpointConnections, graphId, &GraphCanvas::SceneRequests::GetConnectionsForEndpoint, endpoint);
-            connections.insert(endpointConnections.begin(), endpointConnections.end());
-        }
-        DeleteConnections(graphId, { connections.begin(), connections.end() });
-    }
-    #endif
 
     GraphCanvas::GraphCanvasTreeItem* MaterialCanvasMainWindow::GetNodePaletteRootTreeItem() const
     {
