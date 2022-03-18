@@ -40,10 +40,9 @@ class SessionContext:
         # we do not use Path.home() or os.path.expanduser() because it may return the 
         # shell or current environment HOME or HOMEPATH, and we want the user's 
         # Windows user folder, because that is the normal use case for the installer
-        self.home_path = Path(os.environ["SYSTEMDRIVE"], 'Users', os.getlogin()).resolve()
-        windows_home_path = str(self.home_path)
-        os.environ['HOME'] = windows_home_path 
-        os.environ['HOMEPATH'] = windows_home_path 
+        home_path = Path(os.environ["SYSTEMDRIVE"], 'Users', os.getlogin()).resolve()
+        os.environ['HOME'] = str(home_path) 
+        os.environ['HOMEPATH'] = os.environ['HOME'] 
 
         self.installer_path = self._get_local_installer_path(request.config.getoption("--installer-uri"))
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
@@ -106,9 +105,7 @@ class SessionContext:
         """ Run command with the correct environment and logging settings. """
         self.temp_file.write('\n' + list2cmdline(command) + '\n')
         self.temp_file.flush()
-        windows_home_path = str(self.home_path)
-        env = dict(os.environ, HOME=windows_home_path, HOMEPATH=windows_home_path)
-        return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True, env=env)
+        return run(command, timeout=timeout, cwd=cwd, stdout=self.temp_file, stderr=self.temp_file, text=True)
 
     def cleanup(self):
         """ Clean up temporary testing artifacts. """
