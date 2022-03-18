@@ -147,7 +147,6 @@ namespace MaterialCanvas
         ////////////////////////////////////////////////////////////////////////
         // SceneNotificationBus::Handler overrides
         void OnSelectionChanged() override;
-        void OnNodeAdded(const AZ::EntityId& nodeId, bool isPaste) override;
         ////////////////////////////////////////////////////////////////////////
 
         GraphCanvas::Endpoint HandleProposedConnection(
@@ -167,6 +166,7 @@ namespace MaterialCanvas
         void AlignSelected(const GraphCanvas::AlignConfig& alignConfig);
         void OnViewPresetsEditor();
         void CreateMenus();
+        void UpdateMenuActions();
         GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
 
         GraphCanvas::GraphId m_activeGraphId;
@@ -184,11 +184,37 @@ namespace MaterialCanvas
         GraphCanvas::EditorContextMenu* m_createNodeProposalContextMenu = {};
         GraphCanvas::EditorConstructPresets m_constructPresetDefaults;
 
-        QAction* m_cutSelectedAction = {};
-        QAction* m_copySelectedAction = {};
-        QAction* m_pasteSelectedAction = {};
-        QAction* m_duplicateSelectedAction = {};
-        QAction* m_deleteSelectedAction = {};
+        QAction* m_actionCut = {};
+        QAction* m_actionCopy = {};
+        QAction* m_actionPaste = {};
+        QAction* m_actionDelete = {};
+        QAction* m_actionDuplicate = {};
+
+        QAction* m_actionRemoveUnusedNodes = {};
+        QAction* m_actionRemoveUnusedElements = {};
+
+        QAction* m_actionSelectAll = {};
+        QAction* m_actionSelectNone = {};
+        QAction* m_actionSelectInputs = {};
+        QAction* m_actionSelectOutputs = {};
+        QAction* m_actionSelectConnected = {};
+        QAction* m_actionSelectEnable = {};
+        QAction* m_actionSelectDisable = {};
+
+        QAction* m_actionScreenShot = {};
+
+        QAction* m_actionAlignTop = {};
+        QAction* m_actionAlignBottom = {};
+        QAction* m_actionAlignLeft = {};
+        QAction* m_actionAlignRight = {};
+
+        QAction* m_actionPresetEditor = {};
+        QAction* m_actionShowEntireGraph = {};
+        QAction* m_actionZoomIn = {};
+        QAction* m_actionZoomOut = {};
+        QAction* m_actionZoomSelection = {};
+        QAction* m_actionGotoStartOfChain = {};
+        QAction* m_actionGotoEndOfChain = {};
 
         QToolButton* m_takeScreenshot = {};
 
