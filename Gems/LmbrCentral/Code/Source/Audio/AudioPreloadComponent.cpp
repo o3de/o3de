@@ -193,7 +193,7 @@ namespace LmbrCentral
     }
 
     //=========================================================================
-    void AudioPreloadComponent::UnloadPreloadById([[maybe_unused]] Audio::TAudioPreloadRequestID preloadId)
+    void AudioPreloadComponent::UnloadPreloadById(Audio::TAudioPreloadRequestID preloadId)
     {
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {

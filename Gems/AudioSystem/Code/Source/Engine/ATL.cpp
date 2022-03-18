@@ -1149,7 +1149,7 @@ namespace Audio
 
                     if (eSingleResult != EAudioRequestStatus::Success)
                     {
-                        eResult = EAudioRequestStatus::Failure;     // should we report partial failure?
+                        eResult = EAudioRequestStatus::Failure;
                     }
                 }
             }
@@ -1275,7 +1275,7 @@ namespace Audio
     EAudioRequestStatus CAudioTranslationLayer::ResetRtpcs(CATLAudioObjectBase* const pAudioObject)
     {
         const TObjectRtpcMap rRtpcs = pAudioObject->GetRtpcs();
-        EAudioRequestStatus eResult = EAudioRequestStatus::Success;     // why is this one Success?
+        EAudioRequestStatus eResult = EAudioRequestStatus::Success;
 
         for (auto& rtpcPair : rRtpcs)
         {
