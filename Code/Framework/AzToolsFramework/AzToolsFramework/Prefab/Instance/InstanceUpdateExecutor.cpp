@@ -197,8 +197,6 @@ namespace AzToolsFramework
 
             instanceDom.CopyFrom(*instanceDomValueFromSource, instanceDom.GetAllocator());
 
-            PrefabDomUtils::PrintPrefabDomValue("", instanceDom);
-
             // If the focused instance is not an ancestor of our instance, verify if it's a descendant.
             if (domSourceInstance != &focusedInstance->get())
             {
@@ -324,8 +322,6 @@ namespace AzToolsFramework
                             isUpdateSuccessful = false;
                             continue;
                         }
-
-                        PrefabDomUtils::PrintPrefabDomValue("", instanceDomAccordingToFocus);
 
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomAccordingToFocus))
                         {
