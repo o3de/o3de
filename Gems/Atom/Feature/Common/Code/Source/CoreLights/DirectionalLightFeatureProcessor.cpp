@@ -1654,17 +1654,6 @@ namespace AZ
             if (m_fullscreenShadowPass)
             {
                 const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
-
-
-                //RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(
-                //    m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{ shadowFilterMethod });
-
-
-                //RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(
-                //    m_directionalShadowReceiverPlaneBiasEnableName,
-                //    AZ::RPI::ShaderOptionValue{
-                //        m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });
-
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
                 m_fullscreenShadowPass->SetLightIndex(m_shadowingLightHandle.GetIndex());
                 m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_blendBetwenCascades);
