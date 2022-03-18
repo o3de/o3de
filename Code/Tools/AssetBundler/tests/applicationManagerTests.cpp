@@ -135,8 +135,13 @@ namespace AssetBundler
         AZStd::unordered_set<AZStd::string> gemsNameMap{ "GemA", "GemB", "GemC" };
         for (AZStd::string& gemName : gemsNameMap)
         {
-            auto gemSourcePathKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/Gems/%s/SourcePaths/0",
-                AZ::SettingsRegistryMergeUtils::OrganizationRootKey, gemName.c_str());
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;;
+            // Add the gem to the list of active gems
+            AZ::Test::AddActiveGem(gemName, * settingsRegistry);
+
+            // Set the Gem path underneat the o3de Manifest section of the SettingsRegistry
+            auto gemSourcePathKey = FixedValueString::format("%s/%s/Path",
+                AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey, gemName.c_str());
             auto gemSourcePath = AZ::IO::Path(m_data->m_testEngineRoot) / "Gems" / gemName;
             settingsRegistry->Set(gemSourcePathKey, gemSourcePath.Native());
         }

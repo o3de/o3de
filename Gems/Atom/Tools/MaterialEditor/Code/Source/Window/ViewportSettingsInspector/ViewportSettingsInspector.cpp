@@ -98,9 +98,7 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::CreateModelPreset()
     {
-        const AZStd::string defaultPath =
-            AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZStd::string::format("untitled.%s", AZ::Render::ModelPreset::Extension));
-
+        const AZStd::string defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
         const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
         if (!savePath.empty())
         {
@@ -122,7 +120,7 @@ namespace MaterialEditor
         AtomToolsFramework::AssetSelectionGrid dialog("Model Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
             return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
                 AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension);
-        }, QSize(itemSize, itemSize), QApplication::activeWindow());
+        }, QSize(itemSize, itemSize), AtomToolsFramework::GetToolMainWindow());
 
         AZ::Data::AssetId assetId;
         MaterialViewportSettingsRequestBus::EventResult(
@@ -156,8 +154,7 @@ namespace MaterialEditor
 
         if (defaultPath.empty())
         {
-            defaultPath =
-                AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZStd::string::format("untitled.%s", AZ::Render::ModelPreset::Extension));
+            defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
         }
 
         const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
@@ -202,9 +199,7 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::CreateLightingPreset()
     {
-        const AZStd::string defaultPath =
-            AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZStd::string::format("untitled.%s", AZ::Render::LightingPreset::Extension));
-
+        const AZStd::string defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
         const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
         if (!savePath.empty())
         {
@@ -226,7 +221,7 @@ namespace MaterialEditor
         AtomToolsFramework::AssetSelectionGrid dialog("Lighting Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
             return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
                 AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension);
-        }, QSize(itemSize, itemSize), QApplication::activeWindow());
+        }, QSize(itemSize, itemSize), AtomToolsFramework::GetToolMainWindow());
 
         AZ::Data::AssetId assetId;
         MaterialViewportSettingsRequestBus::EventResult(
@@ -260,8 +255,7 @@ namespace MaterialEditor
 
         if (defaultPath.empty())
         {
-            defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(
-                AZStd::string::format("untitled.%s", AZ::Render::LightingPreset::Extension));
+            defaultPath = AtomToolsFramework::GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
         }
 
         const AZStd::string savePath = AtomToolsFramework::GetSaveFilePath(defaultPath);

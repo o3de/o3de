@@ -14,9 +14,9 @@
 
 namespace AZ::DocumentPropertyEditor::Tests
 {
-    using AdapterBuilderTests = DocumentPropertyEditorTestFixture;
+    using AdapterBuilderDpeTests = DocumentPropertyEditorTestFixture;
 
-    TEST_F(AdapterBuilderTests, VisitSimpleStructure)
+    TEST_F(AdapterBuilderDpeTests, VisitSimpleStructure)
     {
         AdapterBuilder builder;
         builder.BeginAdapter();
@@ -54,7 +54,7 @@ namespace AZ::DocumentPropertyEditor::Tests
         EXPECT_TRUE(Dom::Utils::DeepCompareIsEqual(expectedDom, domFromBuilder));
     }
 
-    TEST_F(AdapterBuilderTests, VisitNestedRows)
+    TEST_F(AdapterBuilderDpeTests, VisitNestedRows)
     {
         AdapterBuilder builder;
         builder.BeginAdapter();

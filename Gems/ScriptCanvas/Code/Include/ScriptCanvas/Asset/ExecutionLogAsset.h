@@ -9,6 +9,7 @@
 
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 
 namespace ScriptCanvas
@@ -48,8 +49,7 @@ namespace ScriptCanvas
         static const char* GetGroup() { return "ScriptCanvasLogs"; }
         static const char* GetFileExtension() { return "scriptcanvas_log"; }
         static const char* GetFileFilter() { return "*.scriptcanvas_log"; }
-        static const char* GetDefaultDirectoryRoot();
-        static const char* GetDefaultDirectoryPath() { return "/Gems/ScriptCanvas/Assets/Logs/"; }
+        static AZ::IO::FixedMaxPath GetDefaultDirectoryPath();
 
         ExecutionLogAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded);
         

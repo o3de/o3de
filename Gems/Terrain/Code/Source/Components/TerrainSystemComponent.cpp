@@ -16,6 +16,7 @@
 #include <TerrainSystem/TerrainSystem.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Terrain/Passes/TerrainDetailTextureComputePass.h>
+#include <Terrain/Passes/TerrainMacroTextureClipmapComputePass.h>
 
 namespace Terrain
 {
@@ -75,7 +76,7 @@ namespace Terrain
 
         // Register terrain system related passes
         passSystem->AddPassCreator(AZ::Name("TerrainDetailTextureComputePass"), &TerrainDetailTextureComputePass::Create);
-        passSystem->AddPassCreator(AZ::Name("TerrainMacroTextureComputePass"), &TerrainDetailTextureComputePass::Create);
+        passSystem->AddPassCreator(AZ::Name("TerrainMacroTextureClipmapGenerationPass"), &TerrainMacroTextureClipmapGenerationPass::Create);
     }
 
     void TerrainSystemComponent::Deactivate()
