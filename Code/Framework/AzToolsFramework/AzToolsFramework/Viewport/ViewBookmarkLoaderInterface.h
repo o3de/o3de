@@ -55,10 +55,16 @@ namespace AzToolsFramework
             return !(*this == other);
         }
 
+        bool IsZero() const
+        {
+            return m_position == AZ::Vector3::CreateZero() && m_rotation == AZ::Vector3::CreateZero();
+        }
+
         AZ::Vector3 m_position = AZ::Vector3::CreateZero();
 
         //! Rotation in radians.
         AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();
+
     };
 
     //! @class ViewBookmarkIntereface

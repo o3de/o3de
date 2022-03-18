@@ -872,7 +872,7 @@ void MainWindow::InitActions()
         }
 
         // Check the bookmark we want to load is not exactly 0 
-        if (bookmark.value() == ViewBookmark())
+        if (bookmark.value().IsZero())
         {
             QString tagConsoleText = tr("View Bookmark %1 has not been set yet").arg(index + 1);
             AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
