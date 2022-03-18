@@ -365,9 +365,6 @@ namespace AzToolsFramework
             return bookmarkComponent;
         }
 
-        ScopedUndoBatch undoBatch("AddLocalViewBookmark");
-        undoBatch.MarkEntityDirty(containerEntityId);
-
         // If we didn't find a component then we add it and return it.
         containerEntity->Deactivate();
         bookmarkComponent = containerEntity->CreateComponent<LocalViewBookmarkComponent>();
@@ -421,6 +418,10 @@ namespace AzToolsFramework
             AZ_Warning("LocalViewBookmarkLoader", false, "Couldn't find a LocalViewBookmarkComponent");
             return false;
         }
+
+        // record an undo step if a local view bookmark component is added and configured
+        ScopedUndoBatch undoBatch("SetupLocalViewBookmarks");
+        undoBatch.MarkEntityDirty(bookmarkComponent->GetEntityId());
 
         // initialize default locations to 0. This is a temporary solution to match the 12 locations of the legacy system
         // once there is a UI for the view bookmarks these lines should be removed
