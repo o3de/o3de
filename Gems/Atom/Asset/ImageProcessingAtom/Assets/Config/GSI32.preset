@@ -6,7 +6,7 @@
         "DefaultPreset": {
             "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
             "Name": "GSI32",
-            "PixelFormat": "R32",
+            "PixelFormat": "R32F",
             "DiscardAlpha": true,
             "IsPowerOf2": true,
             "MipMapSetting": {
@@ -17,7 +17,7 @@
             "android": {
                 "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
                 "Name": "GSI32",
-                "PixelFormat": "R32",
+                "PixelFormat": "R32F",
                 "MaxTextureSize": 2048,
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
@@ -28,7 +28,7 @@
             "ios": {
                 "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
                 "Name": "GSI32",
-                "PixelFormat": "R32",
+                "PixelFormat": "R32F",
                 "MaxTextureSize": 2048,
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
@@ -39,7 +39,7 @@
             "mac": {
                 "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
                 "Name": "GSI32",
-                "PixelFormat": "R32",
+                "PixelFormat": "R32F",
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -49,7 +49,7 @@
             "provo": {
                 "UUID": "{604FB174-7165-4F6E-889A-3B91DEC9311C}",
                 "Name": "GSI32",
-                "PixelFormat": "R32",
+                "PixelFormat": "R32F",
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
