@@ -883,26 +883,23 @@ namespace ScriptCanvasEditor
 
              if (output.m_actionIsValid)
              {
-                 bool changeMade = false;
-
-                 if (output.m_nameChanged && !output.m_name.empty())
+                 if ((output.m_nameChanged && !output.m_name.empty()) || (output.m_typeChanged && output.m_type.IsValid()))
                  {
-                     graphVariable->SetVariableName(output.m_name);
-                     changeMade = true;
+                     GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);
+                     GraphCanvas::ScopedGraphUndoBlocker undoBlocker(m_graphCanvasGraphId);
+
+                     if ((output.m_nameChanged && !output.m_name.empty()))
+                     {
+                         graphVariable->SetVariableName(output.m_name);
+                     }
+
+                     if (output.m_typeChanged && output.m_type.IsValid())
+                     {
+                         graphVariable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
+                         ScriptCanvas::GraphRequestBus::Event(m_scriptCanvasId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
+                             , graphVariable->GetVariableId());
+                     }
                  }
-
-                if (output.m_typeChanged && output.m_type.IsValid())
-                {
-                    graphVariable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
-                    ScriptCanvas::GraphRequestBus::Event(m_scriptCanvasId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
-                        , graphVariable->GetVariableId());
-                    changeMade = true;
-                }
-
-                if (changeMade)
-                {
-                    GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);
-                }
              }
          }
     }

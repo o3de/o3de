@@ -528,20 +528,27 @@ namespace ScriptCanvasEditor
             {
                 if (slot->IsData() && slot->IsVariableReference() && slot->GetVariableReference() == variableId)
                 {
-                    // before updating the variable reference, or checking if the new type is accpeted, the
-                    // node slot must be reset to its original, default type
-                    const auto scriptCanvasEndpoint = ScriptCanvas::Endpoint(node->GetEntityId(), slot->GetId());
-                    const auto graphCanvasEndpoint = ConvertToGraphCanvasEndpoint(scriptCanvasEndpoint);
-                    bool convertedToValue = false;
-                    GraphCanvas::DataSlotRequestBus::EventResult(convertedToValue, graphCanvasEndpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToValue);
-                    if (!convertedToValue)
-                    {
-                        AZ_Error("ScriptCanvas", false, "A reference to the type changed variable failed to convert back to value, future type checking will fail");
-                    }
-
-                    if (node->SlotAcceptsType(slot->GetId(), variableType).IsSuccess())
+                    if (azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(node))
                     {
                         slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
+                    }
+                    else
+                    {
+                        // before updating the variable reference, or checking if the new type is accpeted, the
+                        // node slot must be reset to its original, default type
+                        const auto scriptCanvasEndpoint = ScriptCanvas::Endpoint(node->GetEntityId(), slot->GetId());
+                        const auto graphCanvasEndpoint = ConvertToGraphCanvasEndpoint(scriptCanvasEndpoint);
+                        bool convertedToValue = false;
+                        GraphCanvas::DataSlotRequestBus::EventResult(convertedToValue, graphCanvasEndpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToValue);
+                        if (!convertedToValue)
+                        {
+                            AZ_Error("ScriptCanvas", false, "A reference to the type changed variable failed to convert back to value, future type checking will fail");
+                        }
+
+                        if (node->SlotAcceptsType(slot->GetId(), variableType).IsSuccess())
+                        {
+                            slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
+                        }
                     }
                 }
             }

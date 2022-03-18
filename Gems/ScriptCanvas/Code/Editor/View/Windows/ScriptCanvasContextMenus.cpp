@@ -594,22 +594,29 @@ namespace ScriptCanvasEditor
         VariablePaletteRequestBus::BroadcastResult(output, &VariablePaletteRequests::ShowVariableConfigurationWidget
             , selectedSlotSetup, scenePoint);
 
-
         bool changed = false;
+
         if (output.m_actionIsValid)
         {
-            if (output.m_nameChanged && !output.m_name.empty())
+            if ((output.m_nameChanged && !output.m_name.empty()) || (output.m_typeChanged && output.m_type.IsValid()))
             {
-                variable->SetVariableName(output.m_name);
-                changed = true;
-            }
+                GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, scriptCanvasGraphId);
+                GraphCanvas::ScopedGraphUndoBlocker undoBlocker(graphId);
 
-            if (output.m_typeChanged && output.m_type.IsValid())
-            {
-                variable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
-                ScriptCanvas::GraphRequestBus::Event(scriptCanvasGraphId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
-                    , variable->GetVariableId());
+                if ((output.m_nameChanged && !output.m_name.empty()))
+                {
+                    variable->SetVariableName(output.m_name);
+                }
+
+                if (output.m_typeChanged && output.m_type.IsValid())
+                {
+                    variable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
+                    ScriptCanvas::GraphRequestBus::Event(scriptCanvasGraphId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
+                        , variable->GetVariableId());
+                }
+
                 changed = true;
+                // consider returning nothing since the post undo has been performed
             }
         }
 
