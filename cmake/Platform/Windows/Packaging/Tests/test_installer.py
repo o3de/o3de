@@ -72,7 +72,7 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
 
     engine_name = engine_json_data['engine_name']
 
-    manifest_path = context.home_path / '.o3de' / 'o3de_manifest.json'
+    manifest_path = context.home_path / '.o3de/o3de_manifest.json'
     with manifest_path.open('r') as f:
         manifest_json_data = json.load(f)
     
@@ -87,7 +87,7 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
 @pytest.fixture(scope="session")
 def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
     """ o3de.bat CLI creates a project. """
-    o3de_path = context.install_root / 'scripts' / 'o3de.bat'
+    o3de_path = context.install_root / 'scripts/o3de.bat'
     result = context.run([str(o3de_path),'create-project','--project-path', str(context.project_path)])
     assert result.returncode == 0, f"o3de.bat failed to create a project with exit code {result.returncode}"
 
@@ -137,7 +137,7 @@ def test_run_editor_fixture(test_run_asset_processor_batch_fixture, context):
                 }
             }
         }
-    aws_attribution_path = context.project_path / 'user' / 'Registry' / 'editor_aws_preferences.setreg'
+    aws_attribution_path = context.project_path / 'user/Registry/editor_aws_preferences.setreg'
     with aws_attribution_path.open('w') as f:
         json.dump(aws_attribution_regset, f) 
     
@@ -148,7 +148,7 @@ def test_run_editor_fixture(test_run_asset_processor_batch_fixture, context):
     except TimeoutExpired as e:
         pass
 
-    editor_log = context.project_path / 'user'/ 'log'/ 'Editor.log'
+    editor_log = context.project_path / 'user/log/Editor.log'
     assert editor_log.is_file(), "Editor.log file not found"
 
     # expect to find "Engine initialized" in Editor log
@@ -173,7 +173,7 @@ def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
         # deferred console commands are disabled in launcher 
         pass
 
-    game_log = context.project_path / 'user'/ 'log'/ 'Game.log'
+    game_log = context.project_path / 'user/log/Game.log'
     assert game_log.is_file(), "Game.log file not found"
 
     exception_found = False
@@ -200,7 +200,7 @@ def test_uninstall_fixture(test_run_launcher_fixture, test_run_editor_fixture, c
     # the installer succeeds
     assert result.returncode == 0, f"Installer failed with exit code {result.returncode}"
 
-    manifest_path = context.home_path / '.o3de' / 'o3de_manifest.json'
+    manifest_path = context.home_path / '.o3de/o3de_manifest.json'
     with manifest_path.open('r') as f:
         manifest_json_data = json.load(f)
     

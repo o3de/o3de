@@ -46,10 +46,10 @@ class SessionContext:
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
         self.project_path = Path(request.config.getoption("--project-path")).resolve()
 
-        self.cmake_runtime_path = self.install_root / 'cmake' / 'runtime'
-        self.engine_bin_path = self.install_root / 'bin' / 'Windows' / 'profile' / 'Default'
-        self.project_build_path = self.project_path / 'build' / 'Windows'
-        self.project_bin_path = self.project_build_path / 'bin' / 'profile'
+        self.cmake_runtime_path = self.install_root / 'cmake/runtime'
+        self.engine_bin_path = self.install_root / 'bin/Windows/profile/Default'
+        self.project_build_path = self.project_path / 'build/Windows'
+        self.project_bin_path = self.project_build_path / 'bin/profile'
 
         # start a log reader thread to print the output to screen
         self.log_reader = io.open(self.temp_file.name, 'r', buffering=1)
@@ -115,7 +115,7 @@ class SessionContext:
 
         # unregister and delete project
         if self.project_path.is_dir():
-            o3de_path = self.install_root / 'scripts' / 'o3de.bat'
+            o3de_path = self.install_root / 'scripts/o3de.bat'
             if o3de_path.is_file():
                 print(f"Unregistering {self.project_path}")
                 self.run([str(o3de_path),'register','--project-path', str(self.project_path), '--remove'])
