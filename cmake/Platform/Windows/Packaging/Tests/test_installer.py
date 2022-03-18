@@ -24,7 +24,7 @@ import pytest
 import json
 from pathlib import Path
 from subprocess import TimeoutExpired
-
+from o3de import manifest
 
 @pytest.fixture(scope="session")
 def test_installer_fixture(context):
@@ -66,23 +66,17 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
         # we expect to close the app ourselves
         pass
 
-    engine_json_path = context.install_root / 'engine.json'
-    with engine_json_path.open('r') as f:
-        engine_json_data = json.load(f)
+    # a valid engine.json exists
+    engine_json_data = manifest.get_engine_json_data(engine_name=None, engine_path=context.install_root)
+    assert engine_json_data, f"Failed to get engine.json data for engine in {context.install_root}"
+    assert 'engine_name' in engine_json_data, "Engine.json does not contain engine_name key"
 
+    # the engine is registered
     engine_name = engine_json_data['engine_name']
+    engine_registered_path = manifest.get_registered(engine_name = engine_name)
 
-    manifest_path = context.home_path / '.o3de/o3de_manifest.json'
-    with manifest_path.open('r') as f:
-        manifest_json_data = json.load(f)
-    
-    engine_path = Path(context.install_root).as_posix()
-
-    # the engine is completely registered (not just partially)
-    assert engine_path in manifest_json_data['engines'] , f"Engine path {engine_path} not found in {manifest_path}"
-    assert engine_name in manifest_json_data['engines_path'], f"{engine_path} not found in {manifest_path} engines_path"
-    assert manifest_json_data['engines_path'][engine_name] == engine_path, f"Engines path has invalid entry for {engine_name} expected {engine_path}" 
-
+    assert engine_registered_path, f"Failed to get registered engine path for {engine_name}"
+    assert engine_registered_path.resolve() == context.install_root, f"{engine_name} is registered to {engine_registered_path} instead of {context.install_root}"
 
 @pytest.fixture(scope="session")
 def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
@@ -188,11 +182,9 @@ def test_uninstall_fixture(test_run_launcher_fixture, test_run_editor_fixture, c
     """ Uninstall succeeds and unregisters the engine. """
     assert context.installer_path.is_file(), f"Invalid installer path {context.installer_path}"
 
-    engine_json_path = context.install_root / 'engine.json'
-    with engine_json_path.open('r') as f:
-        engine_json_data = json.load(f)
-
-    engine_name = engine_json_data['engine_name']
+    engine_json_data = manifest.get_engine_json_data(engine_name=None, engine_path=context.install_root)
+    assert engine_json_data, f"Failed to get engine.json data for engine in {context.install_root}"
+    assert 'engine_name' in engine_json_data, "Engine.json does not contain the engine_name key"
 
     # when the installer is run with timeout of 30 minutes
     result = context.run([str(context.installer_path) , f"InstallFolder={context.install_root}", "/quiet","/uninstall"], timeout=30*60)
@@ -200,15 +192,10 @@ def test_uninstall_fixture(test_run_launcher_fixture, test_run_editor_fixture, c
     # the installer succeeds
     assert result.returncode == 0, f"Installer failed with exit code {result.returncode}"
 
-    manifest_path = context.home_path / '.o3de/o3de_manifest.json'
-    with manifest_path.open('r') as f:
-        manifest_json_data = json.load(f)
-    
-    # the engine is completely unregistered
-    engine_path = Path(context.install_root).as_posix()
-    assert engine_path not in manifest_json_data['engines'] , f"Engine path {engine_path} still exists in o3de_manifest.json"
-    assert engine_name not in manifest_json_data['engines_path'], f"{engine_path} still exists in manifest engines_path"
-
+    # the engine is no longer registered
+    engine_name = engine_json_data['engine_name']
+    engine_registered_path = manifest.get_registered(engine_name = engine_name)
+    assert not engine_registered_path, f"{engine_name} is still registered with the path {engine_registered_path}"
 
 def test_installer(test_uninstall_fixture):
     """ PyTest needs one non-fixture test. Change the 'test_uninstall_fixture' param to the 
