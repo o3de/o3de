@@ -50,9 +50,7 @@ namespace AzToolsFramework
 
     private:
         AZStd::vector<ViewBookmark> m_localBookmarks;
-        AZStd::optional<ViewBookmark> m_lastKnownLocation = AZStd::nullopt;
-        size_t m_localBookmarkCount = 0;
+        AZStd::optional<ViewBookmark> m_lastKnownLocation;
         AZStd::string m_bookmarkfileName;
     };
-
 } // namespace AzToolsFramework

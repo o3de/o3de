@@ -8,8 +8,8 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
+#include <Viewport/ViewBookmarkLoaderInterface.h>
 
 namespace AzToolsFramework
 {
@@ -19,8 +19,9 @@ namespace AzToolsFramework
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<LocalViewBookmarkComponent, EditorComponentBase>()->Field(
+            serializeContext->Class<LocalViewBookmarkComponent, EditorComponentBase>()->Version(1)->Field(
                 "LocalBookmarkFileName", &LocalViewBookmarkComponent::m_localBookmarksFileName);
+
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext
@@ -28,12 +29,14 @@ namespace AzToolsFramework
                         "Local View Bookmark Component",
                         "The Local View Bookmark Component allows the user to store bookmarks in a custom setreg file.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Local View Bookmarks")
-                    ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
+                    ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
+                    ->Attribute(AZ::Edit::Attributes::RemoveableByUser, false)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::Category, "View Bookmarks")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &LocalViewBookmarkComponent::m_localBookmarksFileName, "Local Bookmarks File Name", "");
+                        AZ::Edit::UIHandlers::Default, &LocalViewBookmarkComponent::m_localBookmarksFileName, "Local Bookmarks File Name",
+                        "");
             }
         }
     }
@@ -47,5 +50,4 @@ namespace AzToolsFramework
     {
         m_localBookmarksFileName = AZStd::move(localBookmarksFileName);
     }
-
 } // namespace AzToolsFramework
