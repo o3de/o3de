@@ -1,0 +1,8 @@
+{
+    "AddBuildArguments": {
+        "debug": false,
+        "preprocessor": [],
+        "azslc": [],
+        "dxc": []
+    }
+}

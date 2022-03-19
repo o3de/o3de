@@ -89,6 +89,9 @@ namespace AZ
 
             /// The list of pools.
             AZStd::vector<Pool> m_pools;
+
+            /// Indicates if detailed memory statistics were captured
+            bool m_detailedCapture;
         };
     }
 }

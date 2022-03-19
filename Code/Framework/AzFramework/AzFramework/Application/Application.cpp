@@ -84,6 +84,7 @@ namespace AzFramework
 
     namespace ApplicationInternal
     {
+        static constexpr const char s_editorModeFeedbackKey[] = "/Amazon/Preferences/EnableEditorModeFeedback";
         static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
@@ -765,6 +766,16 @@ namespace AzFramework
             AZ::SettingsRegistryVisitorUtils::VisitObject(*m_settingsRegistry, SetAliasesFromSettingsRegistry,
                 ApplicationInternal::FilesystemAliasesRoot);
         }
+    }
+
+    bool Application::IsEditorModeFeedbackEnabled() const
+    {
+        bool value = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(value, ApplicationInternal::s_editorModeFeedbackKey);
+        }
+        return value;
     }
 
     bool Application::IsPrefabSystemEnabled() const
