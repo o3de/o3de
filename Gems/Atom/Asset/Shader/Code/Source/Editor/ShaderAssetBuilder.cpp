@@ -525,8 +525,8 @@ namespace AZ
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
-                        ShaderAssetBuilderName, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayoutList, shaderOptionGroupLayout,
-                        bindingDependencies, rootConstantData);
+                        ShaderAssetBuilderName, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayoutList,
+                        shaderOptionGroupLayout, bindingDependencies, rootConstantData);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
 
                     {

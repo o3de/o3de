@@ -8,6 +8,7 @@
 #include <Atom/RHI/ShaderResourceGroupData.h>
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI/BufferPool.h>
 
 namespace AZ
 {
@@ -40,6 +41,12 @@ namespace AZ
         const ShaderResourceGroupLayout* ShaderResourceGroupData::GetLayout() const
         {
             return m_shaderResourceGroupLayout.get();
+        }
+
+        ShaderResourceGroupBindless& ShaderResourceGroupData::GetBindless()
+        {
+            m_bindless.m_parent = this;
+            return m_bindless;
         }
 
         bool ShaderResourceGroupData::ValidateSetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex) const

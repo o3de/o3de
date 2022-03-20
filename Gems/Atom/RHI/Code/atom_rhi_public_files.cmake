@@ -158,11 +158,13 @@ set(FILES
     Source/RHI/ResolveScopeAttachment.cpp
     Source/RHI/ScopeAttachment.cpp
     Include/Atom/RHI/ShaderResourceGroup.h
+    Include/Atom/RHI/ShaderResourceGroupBindless.h
     Include/Atom/RHI/ShaderResourceGroupData.h
     Include/Atom/RHI/ShaderResourceGroupDebug.h
     Include/Atom/RHI/ShaderResourceGroupInvalidateRegistry.h
     Include/Atom/RHI/ShaderResourceGroupPool.h
     Source/RHI/ShaderResourceGroup.cpp
+    Source/RHI/ShaderResourceGroupBindless.cpp
     Source/RHI/ShaderResourceGroupData.cpp
     Source/RHI/ShaderResourceGroupDebug.cpp
     Source/RHI/ShaderResourceGroupInvalidateRegistry.cpp
