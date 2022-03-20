@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <GraphCanvas/Editor/EditorTypes.h>
 
 namespace MaterialCanvas
 {
@@ -18,6 +19,8 @@ namespace MaterialCanvas
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Uuid BusIdType;
+
+        virtual GraphCanvas::GraphId GetGraphId() const = 0;
     };
 
     using MaterialCanvasDocumentRequestBus = AZ::EBus<MaterialCanvasDocumentRequests>;

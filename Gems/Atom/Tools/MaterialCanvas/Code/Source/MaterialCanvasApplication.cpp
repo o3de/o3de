@@ -13,57 +13,7 @@
 #include <Document/MaterialCanvasDocument.h>
 #include <Window/MaterialCanvasMainWindow.h>
 
-#include <GraphCanvas/Components/Nodes/NodeBus.h>
-#include <GraphCanvas/Components/VisualBus.h>
-#include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphCanvas/Styling/StyleManager.h>
-#include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/GeneralMenuActions/GeneralMenuActions.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/BookmarkContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CollapsedNodeGroupContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CommentContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/ConnectionContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/NodeContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/NodeGroupContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SceneContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SlotContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
-#include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h>
-#include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorCentralWidget.h>
-#include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorDockWidget.h>
-#include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
-#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
-#include <StaticLib/GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
-
-#include <GraphCanvas/Components/Connections/ConnectionBus.h>
-#include <GraphCanvas/Components/GeometryBus.h>
-#include <GraphCanvas/Components/GridBus.h>
-#include <GraphCanvas/Components/MimeDataHandlerBus.h>
-#include <GraphCanvas/Components/Nodes/NodeBus.h>
-#include <GraphCanvas/Components/ViewBus.h>
-#include <GraphCanvas/Components/VisualBus.h>
-#include <GraphCanvas/GraphCanvasBus.h>
-
-#include <GraphCanvas/Styling/Parser.h>
-#include <GraphCanvas/Styling/Style.h>
-#include <GraphCanvas/Types/ConstructPresets.h>
-#include <GraphCanvas/Utils/ConversionUtils.h>
-#include <GraphCanvas/Utils/NodeNudgingController.h>
-#include <GraphCanvas/Widgets/AssetEditorToolbar/AssetEditorToolbar.h>
-#include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/BookmarkContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CollapsedNodeGroupContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CommentContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/ConnectionContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/NodeContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/NodeGroupContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SceneContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SlotContextMenu.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
-#include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorCentralWidget.h>
 #include <GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
-#include <GraphCanvas/Widgets/GraphCanvasMimeContainer.h>
-#include <GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h>
 
 void InitMaterialCanvasResources()
 {
@@ -127,21 +77,14 @@ namespace MaterialCanvas
         auto documentTypeInfo = MaterialCanvasDocument::BuildDocumentTypeInfo();
         documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
 
-            AZ::Entity* sceneEntity = {};
-            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(sceneEntity, &GraphCanvas::GraphCanvasRequests::CreateSceneAndActivate);
-
-            AZ::EntityId graphId = sceneEntity->GetId();
-            GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::SetEditorId, toolId);
+            GraphCanvas::GraphId graphId;
+            MaterialCanvasDocumentRequestBus::EventResult(graphId, documentId, &MaterialCanvasDocumentRequestBus::Events::GetGraphId);
 
             GraphCanvas::GraphCanvasGraphicsView* graphicsView = new GraphCanvas::GraphCanvasGraphicsView(m_window.get());
             graphicsView->SetEditorId(toolId);
             graphicsView->SetScene(graphId);
 
             m_window->AddDocumentTab(documentId, graphicsView);
-
-            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PreOnActiveGraphChanged);
-            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnActiveGraphChanged, graphId);
-            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PostOnActiveGraphChanged);
             return true;
         };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
@@ -151,9 +94,6 @@ namespace MaterialCanvas
 
         m_window.reset(aznew MaterialCanvasMainWindow(m_toolId));
         m_window->show();
-
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromType, documentTypeInfo);
     }
 
     void MaterialCanvasApplication::Destroy()

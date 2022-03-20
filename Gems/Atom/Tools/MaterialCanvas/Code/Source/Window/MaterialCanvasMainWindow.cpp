@@ -82,6 +82,8 @@
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+
+#include <Document/MaterialCanvasDocumentRequestBus.h>
 #include <Viewport/MaterialCanvasViewportWidget.h>
 #include <Window/MaterialCanvasMainWindow.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
@@ -206,8 +208,6 @@ namespace MaterialCanvas
         GraphCanvas::AssetEditorNotificationBus::Handler::BusConnect(m_toolId);
         GraphCanvas::AssetEditorRequestBus::Handler::BusConnect(m_toolId);
         GraphCanvas::AssetEditorSettingsRequestBus::Handler::BusConnect(m_toolId);
-        AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
-        AzToolsFramework::AssetSystemBus::Handler::BusConnect();
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
@@ -217,8 +217,7 @@ namespace MaterialCanvas
         GraphCanvas::AssetEditorNotificationBus::Handler::BusDisconnect();
         GraphCanvas::AssetEditorRequestBus::Handler::BusDisconnect();
         GraphCanvas::AssetEditorSettingsRequestBus::Handler::BusDisconnect();
-        AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+        GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
 
         delete m_presetEditor;
     }
@@ -228,46 +227,14 @@ namespace MaterialCanvas
         Base::OnDocumentOpened(documentId);
         m_materialInspector->SetDocumentId(documentId);
 
-#if 0
+        m_activeGraphId = GraphCanvas::GraphId();
+        MaterialCanvasDocumentRequestBus::EventResult(m_activeGraphId, documentId, &MaterialCanvasDocumentRequestBus::Events::GetGraphId);
+
         GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PreOnActiveGraphChanged);
         GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnActiveGraphChanged, m_activeGraphId);
         GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PostOnActiveGraphChanged);
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnGraphLoaded, m_activeGraphId);
-        GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(m_activeGraphId);
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnGraphUnloaded, m_activeGraphId);
 
-        GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(m_activeGraphId);
-        GraphCanvas::AssetEditorNotificationBus::Event(
-            m_toolId, &GraphCanvas::AssetEditorNotifications::OnGraphRefreshed, m_activeGraphId, m_activeGraphId);
-        GraphCanvas::SceneNotificationBus::MultiHandler::BusConnect(m_activeGraphId);
-        //GraphCanvas::SceneMimeDelegateRequestBus::Event(
-        //    m_activeGraphId, &GraphCanvas::SceneMimeDelegateRequests::AddDelegate, m_entityMimeDelegateId);
-        //GraphCanvas::SceneRequestBus::Event(
-        //    m_activeGraphId, &GraphCanvas::SceneRequests::SetMimeType, Widget::NodePaletteDockWidget::GetMimeType());
-        GraphCanvas::SceneMemberNotificationBus::Event(m_activeGraphId, &GraphCanvas::SceneMemberNotifications::OnSceneReady);
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnGraphLoaded, m_activeGraphId);
-
-        // The paste action refreshes based on the scene's mimetype
-        RefreshPasteAction();
-
-        bool enabled = false;
-
-        if (m_activeGraphId.IsValid())
-        {
-            GraphCanvas::ViewId viewId;
-            GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
-
-            if (viewId.IsValid())
-            {
-                enabled = true;
-            }
-            else
-            {
-                AZ_Error("MaterialCanvasEditor", viewId.IsValid(), "SceneRequest must return a valid ViewId");
-            }
-        }
-#endif
-        UpdateMenuActions();
+        UpdateMenus();
     }
 
     void MaterialCanvasMainWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
@@ -480,14 +447,15 @@ namespace MaterialCanvas
     void MaterialCanvasMainWindow::OnActiveGraphChanged(const GraphCanvas::GraphId& graphId)
     {
         m_activeGraphId = graphId;
-        GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect();
-        GraphCanvas::SceneNotificationBus::MultiHandler::BusConnect(m_activeGraphId);
-        UpdateMenuActions();
+        GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
+        GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_activeGraphId);
+        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SetMimeType, "materialcanvas/node-palette-mime-event");
+        UpdateMenus();
     }
 
     void MaterialCanvasMainWindow::OnSelectionChanged()
     {
-        UpdateMenuActions();
+        UpdateMenus();
     }
 
     GraphCanvas::Endpoint MaterialCanvasMainWindow::HandleProposedConnection(
@@ -611,13 +579,12 @@ namespace MaterialCanvas
 
         QAction* result = editorContextMenu.exec(screenPoint);
 
-        GraphCanvas::ContextMenuAction* contextMenuAction = qobject_cast<GraphCanvas::ContextMenuAction*>(result);
-
-        if (contextMenuAction)
+        if (auto contextMenuAction = qobject_cast<GraphCanvas::ContextMenuAction*>(result))
         {
             return contextMenuAction->TriggerAction(m_activeGraphId, sceneVector);
         }
-        else if (editorContextMenu.GetNodePalette())
+
+        if (editorContextMenu.GetNodePalette())
         {
             // Handle creating node from any node palette embedded in an GraphCanvas::EditorContextMenu.
             GraphCanvas::GraphCanvasMimeEvent* mimeEvent = editorContextMenu.GetNodePalette()->GetContextMenuEvent();
@@ -731,7 +698,7 @@ namespace MaterialCanvas
         });
 
         m_menuView->addSeparator();
-        m_actionPresetEditor = m_menuView->addAction(tr("Preset Editor"), [this] { OnViewPresetsEditor(); });
+        m_actionPresetEditor = m_menuView->addAction(tr("Preset Editor"), [this] { OpenPresetsEditor(); });
 
         m_menuView->addSeparator();
         m_actionShowEntireGraph = m_menuView->addAction(tr("Show Entire Graph"), [this] {
@@ -769,12 +736,12 @@ namespace MaterialCanvas
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnEndOfChain);
         });
 
-        UpdateMenuActions();
-        connect(m_menuEdit, &QMenu::aboutToShow, this, &MaterialCanvasMainWindow::UpdateMenuActions);
-        connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &MaterialCanvasMainWindow::UpdateMenuActions);
+        UpdateMenus();
+        connect(m_menuEdit, &QMenu::aboutToShow, this, &MaterialCanvasMainWindow::UpdateMenus);
+        connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &MaterialCanvasMainWindow::UpdateMenus);
     }
 
-    void MaterialCanvasMainWindow::UpdateMenuActions()
+    void MaterialCanvasMainWindow::UpdateMenus()
     {
         const bool hasGraph = m_activeGraphId.IsValid();
 
@@ -793,11 +760,11 @@ namespace MaterialCanvas
         // Enable the Paste action if the clipboard (if any) has a mime type that we support
         AZStd::string copyMimeType;
         GraphCanvas::SceneRequestBus::EventResult(copyMimeType, m_activeGraphId, &GraphCanvas::SceneRequests::GetCopyMimeType);
-        const bool pasteableClipboard = hasGraph && !copyMimeType.empty() && QApplication::clipboard()->mimeData()->hasFormat(copyMimeType.c_str());
+        const bool canPaste = hasGraph && !copyMimeType.empty() && QApplication::clipboard()->mimeData()->hasFormat(copyMimeType.c_str());
 
         m_actionCut->setEnabled(hasCopiableSelection);
         m_actionCopy->setEnabled(hasCopiableSelection);
-        m_actionPaste->setEnabled(pasteableClipboard);
+        m_actionPaste->setEnabled(canPaste);
         m_actionDelete->setEnabled(hasSelection);
         m_actionDuplicate->setEnabled(hasCopiableSelection);
 
@@ -837,7 +804,7 @@ namespace MaterialCanvas
         GraphCanvas::GraphUtils::AlignNodes(selectedNodes, alignConfig);
     }
 
-    void MaterialCanvasMainWindow::OnViewPresetsEditor()
+    void MaterialCanvasMainWindow::OpenPresetsEditor()
     {
         if (m_presetEditor && m_presetWrapper)
         {
