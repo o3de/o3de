@@ -8,6 +8,8 @@
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/IConsole.h>
 
 namespace AZ
@@ -54,6 +56,7 @@ namespace AZ
             m_hasImageGroup = m_descriptor.m_layout->GetGroupSizeForImages() > 0;
             m_hasSamplerGroup = m_descriptor.m_layout->GetGroupSizeForSamplers() > 0;
             m_hasConstants = m_descriptor.m_layout->GetConstantDataSize() > 0;
+
             return ResultCode::Success;
         }
 
@@ -342,12 +345,15 @@ namespace AZ
                 }
             }
 
-            //Modify m_rhiUpdateMask in case a view was modified. This can happen if a view is invalidated
+            // Modify m_rhiUpdateMask in case a view was modified. This can happen if a view is invalidated
             ResetUpdateMaskForModifiedViews(shaderResourceGroup, shaderResourceGroupData);   
             
-            //Check if any part of the Srg was updated before trying to compile it
-            if (shaderResourceGroup.IsAnyResourceTypeUpdated())
+            // Check if any part of the Srg was updated before trying to compile it
+            // Also, force an initial compilation even if no resources were updated to set bindless descriptors
+            if (!m_hasCompiled || shaderResourceGroup.IsAnyResourceTypeUpdated())
             {
+                m_hasCompiled = true;
+
                 ResultCode resultCode = CompileGroupInternal(shaderResourceGroup, shaderResourceGroupData);
                 
                 //Reset update mask if the latency check has been fulfilled

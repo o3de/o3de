@@ -12,4 +12,5 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
+#include <Atom/Features/Bindless.azsli>
 #include <Atom/RPI/DummyEntryFunctions.azsli>

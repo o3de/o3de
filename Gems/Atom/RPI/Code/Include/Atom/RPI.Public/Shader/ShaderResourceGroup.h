@@ -17,6 +17,7 @@
 
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/ShaderResourceGroupBindless.h>
 
 #include <AzCore/std/containers/span.h>
 #include <AtomCore/Instance/InstanceId.h>
@@ -139,6 +140,9 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RHI Image types.
+
+            //! Retrieve helper object used to retain resources accessed via bindless heaps and query indices
+            RHI::ShaderResourceGroupBindless& GetBindless();
 
             /// Sets one image view for the given shader input index.
             bool SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex = 0);

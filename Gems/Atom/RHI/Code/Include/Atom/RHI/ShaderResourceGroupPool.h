@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupPoolDescriptor.h>
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
 #include <Atom/RHI/ShaderResourceGroupInvalidateRegistry.h>
 #include <Atom/RHI/ResourcePool.h>
@@ -149,6 +150,7 @@ namespace AZ
             bool m_hasImageGroup = false;
             bool m_hasSamplerGroup = false;
             bool m_isCompiling = false;
+            bool m_hasCompiled = false;
 
             mutable AZStd::shared_mutex m_groupsToCompileMutex;
             AZStd::vector<ShaderResourceGroup*> m_groupsToCompile;

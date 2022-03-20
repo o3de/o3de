@@ -73,6 +73,32 @@ namespace AZ
             }
         }
 
+        void DescriptorPool::InitPooledRange(DescriptorPool& parent, uint32_t offset, uint32_t count)
+        {
+            m_desc = parent.m_desc;
+            m_descriptorHeap.Attach(parent.GetPlatformHeap());
+            m_stride = parent.m_stride;
+            m_cpuStart = parent.m_cpuStart;
+            m_cpuStart.ptr += m_stride * offset;
+
+            bool shaderVisible = RHI::CheckBitsAll(m_desc.Flags, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+            if (shaderVisible)
+            {
+                m_gpuStart = parent.m_gpuStart;
+                m_gpuStart.ptr += m_stride * offset;
+            }
+
+            // NOTE: The range is currently only used for the static descriptor region of the shader visible heap, so
+            // we leverage the PoolAllocator since these descriptors are allocated one-at-a-time (fragmentation free).
+            RHI::PoolAllocator::Descriptor desc;
+            desc.m_alignmentInBytes = 1;
+            desc.m_elementSize = 1;
+            desc.m_capacityInBytes = count;
+            desc.m_garbageCollectLatency = RHI::Limits::Device::FrameCountMax;
+            m_allocator = AZStd::make_unique<RHI::PoolAllocator>();
+            static_cast<RHI::PoolAllocator*>(m_allocator.get())->Init(desc);
+        }
+
         DescriptorHandle DescriptorPool::AllocateHandle(uint32_t count)
         {
             RHI::VirtualAddress address;

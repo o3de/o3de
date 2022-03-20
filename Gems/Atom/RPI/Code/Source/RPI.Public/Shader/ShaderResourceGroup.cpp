@@ -275,6 +275,11 @@ namespace AZ
             return {};
         }
 
+        RHI::ShaderResourceGroupBindless& ShaderResourceGroup::GetBindless()
+        {
+            return m_data.GetBindless();
+        }
+
         bool ShaderResourceGroup::SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex)
         {
             if (inputIndex.ValidateOrFindImageIndex(GetLayout()))

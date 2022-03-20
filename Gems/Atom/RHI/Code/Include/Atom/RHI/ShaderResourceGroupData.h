@@ -12,6 +12,7 @@
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/ShaderResourceGroupBindless.h>
 
 namespace AZ
 {
@@ -60,6 +61,9 @@ namespace AZ
             ShaderInputImageIndex    FindShaderInputImageIndex(const Name& name) const;
             ShaderInputSamplerIndex  FindShaderInputSamplerIndex(const Name& name) const;
             ShaderInputConstantIndex FindShaderInputConstantIndex(const Name& name) const;
+
+            //! Retrieve helper object used to retain resources accessed via bindless heaps and query indices
+            ShaderResourceGroupBindless& GetBindless();
 
             //! Sets one image view for the given shader input index.
             bool SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex);
@@ -235,6 +239,9 @@ namespace AZ
             AZStd::vector<SamplerState> m_samplers;
             AZStd::vector<ConstPtr<ImageView>> m_imageViewsUnboundedArray;
             AZStd::vector<ConstPtr<BufferView>> m_bufferViewsUnboundedArray;
+
+            //! The backing data store for views bound via indirection constants (bindless)
+            ShaderResourceGroupBindless m_bindless;
 
             //! The backing data store of constants for the shader resource group.
             ConstantsData m_constantsData;
