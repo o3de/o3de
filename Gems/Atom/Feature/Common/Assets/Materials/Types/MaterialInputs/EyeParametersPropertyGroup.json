@@ -8,9 +8,9 @@
             "displayName": "Iris Depth",
             "description": "Distance from the object origin to the plane (XZ) where the iris lays.",
             "type": "float",
-            "defaultValue": 1.4,
+            "defaultValue": 0.48,
             "min": 0.0,
-            "max": 2.0,
+            "softMax": 1.0,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_irisDepth"
@@ -21,9 +21,9 @@
             "displayName": "Iris Radius",
             "description": "Radius of the iris. It extends the iris/sclera mask to get more samples from one or the other (no UV deformation/stretching).",
             "type": "float",
-            "defaultValue": 0.6,
+            "defaultValue": 0.2,
             "min": 0.0,
-            "softMax": 5.0,
+            "softMax": 0.5,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_eyeIrisRadius"
@@ -36,7 +36,7 @@
             "type": "float",
             "defaultValue": 1.336, // http://hyperphysics.phy-astr.gsu.edu/hbase/vision/eyescal.html
             "min": 1.0,
-            "max": 3.0,
+            "softMax": 2.0,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_innerEyeIOR"
