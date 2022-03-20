@@ -251,12 +251,6 @@ namespace AZ::Render
     {
         // The mesh transform is used to determine where the actor instance is actually rendered
         m_meshFeatureProcessor->SetTransform(*m_meshHandle, world); // handle validity is checked internally.
-
-        if (m_skinnedMeshRenderProxy.IsValid())
-        {
-            // The skinned mesh transform is used to determine which Lod needs to be skinned
-            m_skinnedMeshRenderProxy->SetTransform(world);
-        }
     }
 
     void AtomActorInstance::OnMaterialsUpdated(const MaterialAssignmentMap& materials)

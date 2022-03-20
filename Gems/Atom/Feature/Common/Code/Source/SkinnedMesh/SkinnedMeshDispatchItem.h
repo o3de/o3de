@@ -67,8 +67,6 @@ namespace AZ
             const RHI::DispatchItem& GetRHIDispatchItem() const;
 
             Data::Instance<RPI::Buffer> GetBoneTransforms() const;
-            AZStd::span<const RHI::Ptr<RHI::BufferView>> GetSourceUnskinnedBufferViews() const;
-            AZStd::span<const RHI::Ptr<RHI::BufferView>> GetTargetSkinnedBufferViews() const;
             uint32_t GetVertexCount() const;
             void Enable();
             void Disable();
@@ -100,8 +98,7 @@ namespace AZ
             // The per-object shader resource group
             Data::Instance<RPI::ShaderResourceGroup> m_instanceSrg;
 
-            // Writable buffer views used for writing the per-actorInstance skinning data in the skinning shader
-            AZStd::array<AZ::RHI::Ptr<RHI::BufferView>, static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams)> m_actorInstanceBufferViews;
+            // Buffer with the bone transforms
             Data::Instance<RPI::Buffer> m_boneTransforms;
 
             // Options for the skinning shader
