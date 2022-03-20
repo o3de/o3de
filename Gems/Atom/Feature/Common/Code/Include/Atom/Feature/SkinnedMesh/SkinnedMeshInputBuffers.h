@@ -79,34 +79,8 @@ namespace AZ
             //! Get the ModelLodAsset that was used to create this lod
             Data::Asset<RPI::ModelLodAsset> GetModelLodAsset() const;
 
-            //! Set the number of indices for the lod. Must be called before calling CreateIndexBuffer.
-            void SetIndexCount(uint32_t indexCount);
-
-            //! Set the number of vertices for the lod. Must be called before calling CreateSkinningInputBuffer or CreateStaticBuffer.
-            void SetVertexCount(uint32_t vertexCount);
-
             //! Get the number of vertices for the lod
             uint32_t GetVertexCount() const;
-
-            //! Set the index buffer asset
-            void SetIndexBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset);
-
-            //! Create the index buffer. SetIndexCount must be called first as CreateIndexBuffer depends on that to know the number of indices to create.
-            //! @param data The indices to be used for the index buffer. The index buffer is used by the target skinned model, but is not modified during skinning so it is shared between all instances of the same skinned mesh.
-            //! @param bufferName Optional debug name for the buffer. A Uuid will automatically be appended to make it unique. If none is specified, a default name will be used.
-            void CreateIndexBuffer(const uint32_t* data, const AZStd::string& bufferNamePrefix = "");
-
-            //! Create the buffer for the specified inputStream. SetVertexCount must be called first as CreateSkinningInputBuffer depends on that to know the number of vertices to create.
-            //! @param data The per-vertex data to use as input. The stride of data is expected to match the SkinnedMeshVertexStreamInfo::elementSize for the given input stream, and the size of the data buffer should be m_vertexCount * elementSize.
-            //! @param inputStream The input stream this buffer is used for. SkinnedMeshInputVertexStreams are used for input to the skinning shader.
-            //! @param bufferName Optional debug name for the buffer. A Uuid will automatically be appended to make it unique. If none is specified, a default name for the inputStream will be used.
-            void CreateSkinningInputBuffer(void* data, SkinnedMeshInputVertexStreams inputStream, const AZStd::string& bufferNamePrefix = "");
-
-            //! Create the buffer for the specified staticInputStream. SetVertexCount must be called first as CreateSkinningInputBuffer depends on that to know the number of vertices to create.
-            //! @param data The per-vertex data to use as input. The stride of data is expected to match the SkinnedMeshVertexStreamInfo::elementSize for the given input stream, and the size of the data buffer should be m_vertexCount * elementSize.
-            //! @param staticInputStream The static input stream this buffer is used for. SkinnedMeshStaticInputVertexStreams are used by the target skinned ModelLod, but are not modified during skinning so they are shared between all instances of the same skinned mesh.
-            //! @param bufferName Optional debug name for the buffer. A Uuid will automatically be appended to make it unique. If none is specified, a default name for the staticInputStream will be used.
-            void CreateStaticBuffer(void* data, SkinnedMeshStaticVertexStreams staticInputStream, const AZStd::string& bufferNamePrefix = "");
 
             //! Add a single morph target that can be applied to an instance of this skinned mesh
             //! Creates a view into the larger morph target buffer to be used for applying an individual morph
@@ -130,18 +104,6 @@ namespace AZ
 
             //! Check if there are any morph targets that can be applied to a particular sub-mesh
             bool HasMorphTargetsForMesh(uint32_t meshIndex) const;
-
-            //! Sets the input vertex stream from an existing buffer asset.
-            void SetSkinningInputBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset, SkinnedMeshInputVertexStreams inputStream);
-
-            //! Sets the static vertex stream from an existing buffer asset.
-            void SetStaticBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset, SkinnedMeshStaticVertexStreams staticStream);
-
-            //! Returns the BufferAsset of an input vertex stream.
-            const Data::Asset<RPI::BufferAsset>& GetSkinningInputBufferAsset(SkinnedMeshInputVertexStreams stream) const;
-
-            //! Calls RPI::Buffer::WaitForUpload for each buffer in the lod.
-            void WaitForUpload();
 
         private:
             RHI::BufferViewDescriptor CreateInputViewDescriptor(
@@ -168,13 +130,6 @@ namespace AZ
             //! The lod asset from the underlying mesh
             Data::Asset<RPI::ModelLodAsset> m_modelLodAsset;
             Data::Instance<RPI::ModelLod> m_modelLod;
-
-            //! One BufferAsset for each input vertex stream
-            AZStd::array<Data::Asset<RPI::BufferAsset>, static_cast<uint8_t>(SkinnedMeshInputVertexStreams::NumVertexStreams)> m_inputBufferAssets;
-            //! One buffer for each input vertex stream
-            AZStd::array<Data::Instance<RPI::Buffer>, static_cast<uint8_t>(SkinnedMeshInputVertexStreams::NumVertexStreams)> m_inputBuffers;
-            //! One buffer view for each input vertex stream
-            AZStd::array<RHI::Ptr<RHI::BufferView>, static_cast<uint8_t>(SkinnedMeshInputVertexStreams::NumVertexStreams)> m_bufferViews;
             
             //! Per-mesh data for the lod
             AZStd::vector<SkinnedSubMeshProperties> m_meshes;
@@ -182,24 +137,11 @@ namespace AZ
             //! One BufferAsset for each static vertex stream. Not needed as input to the skinning shader, but used to create per-instance models as targets for skinning.
             AZStd::vector<Data::Asset<RPI::BufferAsset>> m_staticBufferAssets;
 
-            //! One buffer for each static vertex stream. Not needed as input to the skinning shader, but used to create per-instance models as targets for skinning.
-            AZStd::array<Data::Instance<RPI::Buffer>, static_cast<uint8_t>(SkinnedMeshStaticVertexStreams::NumVertexStreams)> m_staticBuffers;
-
-            //! One index buffer for the entire lod. Not needed as input to the skinning shader, but used to create per-instance models as targets for skinning.
-            //! Effectively this is one of the SkinnedMeshStaticVertexStreams, but since it is an index buffer it is created slightly differently so it is a special case
-            Data::Asset<RPI::BufferAsset> m_indexBufferAsset;
-            Data::Instance<RPI::Buffer> m_indexBuffer;
-
             //! Container with one MorphTargetMetaData per morph target that can potentially be applied to an instance of this lod
             AZStd::vector<MorphTargetComputeMetaData> m_morphTargetComputeMetaDatas;
 
             //! Container with one MorphTargetInputBuffers per morph target that can potentially be applied to an instance of this lod
             AZStd::vector<AZStd::intrusive_ptr<MorphTargetInputBuffers>> m_morphTargetInputBuffers;
-
-            //! Total number of indices for the entire lod
-            uint32_t m_indexCount = 0;
-            //! Total number of vertices for the entire lod
-            uint32_t m_vertexCount = 0;
 
             SkinnedMeshOutputVertexCounts m_outputVertexCountsByStream;
         };
@@ -220,26 +162,17 @@ namespace AZ
             //! Get the ModelAsset used to create the SkinnedMeshInputBuffers
             Data::Asset<RPI::ModelAsset> GetModelAsset() const;
 
+            //! Get the Model used to as input to the skinning compute shader
+            Data::Instance<RPI::Model> GetModel() const;
+
             //! Get the number of meshes for the lod.
             uint32_t GetMeshCount(uint32_t lodIndex) const;
-
-            //! Set the total number of lods for the SkinnedMeshInputBuffers
-            void SetLodCount(size_t lodCount);
 
             //! Get the total number of lods
             uint32_t GetLodCount() const;
 
-            //! Sets the SkinnedMeshInputLod at the specified index. SetLodCount must be called first.
-            void SetLod(size_t lodIndex, const SkinnedMeshInputLod& lod);
-
             //! Get an individual lod
             const SkinnedMeshInputLod& GetLod(uint32_t lodIndex) const;
-
-            //! Get a span of the buffer views for all the input streams
-            AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> GetInputBufferViews(uint32_t lodIndex) const;
-
-            //! Get the buffer view for a specific input stream
-            AZ::RHI::Ptr<const RHI::BufferView> GetInputBufferView(uint32_t lodIndex, uint8_t inputStream) const;
 
             //! Get the number of vertices for the specified lod.
             uint32_t GetVertexCount(uint32_t lodIndex, uint32_t meshIndex) const;
@@ -249,12 +182,6 @@ namespace AZ
 
             //! Create a model and resource views into the SkinnedMeshOutputBuffer that can be used as a target for the skinned vertices
             AZStd::intrusive_ptr<SkinnedMeshInstance> CreateSkinnedMeshInstance() const;
-
-            //! Calls RPI::Buffer::WaitForUpload for each buffer
-            void WaitForUpload();
-
-            //! Returns true if WaitForUpload has finished, false if it has not been called.
-            bool IsUploadPending() const;
             
             //! Returns the number of influences per vertex for a mesh
             uint32_t GetInfluenceCountPerVertex(uint32_t lodIndex, uint32_t meshIndex) const;
@@ -290,16 +217,9 @@ namespace AZ
             //! and after all morph targets have been added
             void Finalize();
         private:
-            void CreateLod(size_t lodIndex);
             AZStd::fixed_vector<SkinnedMeshInputLod, RPI::ModelLodAsset::LodCountMax> m_lods;
             Data::Asset<RPI::ModelAsset> m_modelAsset;
             Data::Instance<RPI::Model> m_model;
-
-            bool m_isUploadPending = false;
         };
-
-        Data::Asset<RPI::BufferAsset> CreateBufferAsset(
-            const void* data, const RHI::BufferViewDescriptor& viewDescriptor, RHI::BufferBindFlags bindFlags,
-            Data::Asset<RPI::ResourcePoolAsset> resourcePoolAsset, const char* bufferName);
     }// Render
 }// AZ

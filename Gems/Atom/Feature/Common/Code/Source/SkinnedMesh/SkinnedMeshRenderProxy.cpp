@@ -135,12 +135,6 @@ namespace AZ
             return true;
         }
 
-        void SkinnedMeshRenderProxy::SetTransform(const AZ::Transform& transform)
-        {
-            // Set the position to be used for determining lod
-            m_position = transform.GetTranslation();
-        }
-
         void SkinnedMeshRenderProxy::SetSkinningMatrices(const AZStd::vector<float>& data)
         {
             if (m_boneTransforms)

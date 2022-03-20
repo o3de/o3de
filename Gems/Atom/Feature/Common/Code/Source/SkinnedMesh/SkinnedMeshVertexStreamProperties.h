@@ -32,8 +32,6 @@ namespace AZ
             const SkinnedMeshOutputVertexStreamInfo* GetOutputStreamInfo(const RHI::ShaderSemantic& shaderSemantic) const override;
             const SkinnedMeshOutputVertexStreamInfo& GetOutputStreamInfo(SkinnedMeshOutputVertexStreams stream) const override;
 
-            Data::Asset<RPI::ResourcePoolAsset> GetInputStreamResourcePool() const override;
-            Data::Asset<RPI::ResourcePoolAsset> GetStaticStreamResourcePool() const override;
             Data::Asset<RPI::ResourcePoolAsset> GetOutputStreamResourcePool() const override;
 
             uint32_t GetMaxSupportedVertexCount() const override;
@@ -43,8 +41,6 @@ namespace AZ
             AZStd::array<SkinnedMeshVertexStreamInfo, static_cast<uint8_t>(SkinnedMeshStaticVertexStreams::NumVertexStreams)> m_staticStreamInfo;
             AZStd::array<SkinnedMeshOutputVertexStreamInfo, static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams)> m_outputStreamInfo;
             
-            Data::Asset<RPI::ResourcePoolAsset> m_inputStreamResourcePool;
-            Data::Asset<RPI::ResourcePoolAsset> m_staticStreamResourcePool;
             Data::Asset<RPI::ResourcePoolAsset> m_outputStreamResourcePool;
 
             RPI::ShaderInputContract m_computeShaderInputContract;

@@ -121,8 +121,6 @@ namespace AZ
             //! Get the output stream info
             virtual const SkinnedMeshOutputVertexStreamInfo& GetOutputStreamInfo(SkinnedMeshOutputVertexStreams stream) const = 0;
 
-            virtual Data::Asset<RPI::ResourcePoolAsset> GetInputStreamResourcePool() const = 0;
-            virtual Data::Asset<RPI::ResourcePoolAsset> GetStaticStreamResourcePool() const = 0;
             virtual Data::Asset<RPI::ResourcePoolAsset> GetOutputStreamResourcePool() const = 0;
             
             virtual uint32_t GetMaxSupportedVertexCount() const = 0;

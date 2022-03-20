@@ -127,32 +127,6 @@ namespace AZ
                 RHI::ShaderSemantic{Name{"BITANGENT"}},
                 SkinnedMeshInputVertexStreams::BiTangent
             };
-            
-            {
-                auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
-                bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::ShaderRead;
-                // Skinning input buffers have read-only access
-                bufferPoolDesc->m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-
-                RPI::ResourcePoolAssetCreator creator;
-                creator.Begin(Uuid::CreateRandom());
-                creator.SetPoolDescriptor(AZStd::move(bufferPoolDesc));
-                creator.SetPoolName("SkinnedMeshInputStreamPool");
-                creator.End(m_inputStreamResourcePool);
-            }
-
-            {
-                auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
-                // Static buffers that don't change during skinning are used strictly as input assembly buffers
-                bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::InputAssembly;
-                bufferPoolDesc->m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-
-                RPI::ResourcePoolAssetCreator creator;
-                creator.Begin(Uuid::CreateRandom());
-                creator.SetPoolDescriptor(AZStd::move(bufferPoolDesc));
-                creator.SetPoolName("SkinnedMeshStaticStreamPool");
-                creator.End(m_staticStreamResourcePool);
-            }
 
             {
                 auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
@@ -229,16 +203,6 @@ namespace AZ
         const SkinnedMeshOutputVertexStreamInfo& SkinnedMeshVertexStreamProperties::GetOutputStreamInfo(SkinnedMeshOutputVertexStreams stream) const
         {
             return m_outputStreamInfo[static_cast<uint8_t>(stream)];
-        }
-
-        Data::Asset<RPI::ResourcePoolAsset> SkinnedMeshVertexStreamProperties::GetInputStreamResourcePool() const
-        {
-            return m_inputStreamResourcePool;
-        }
-
-        Data::Asset<RPI::ResourcePoolAsset> SkinnedMeshVertexStreamProperties::GetStaticStreamResourcePool() const
-        {
-            return m_staticStreamResourcePool;
         }
 
         Data::Asset<RPI::ResourcePoolAsset> SkinnedMeshVertexStreamProperties::GetOutputStreamResourcePool() const
