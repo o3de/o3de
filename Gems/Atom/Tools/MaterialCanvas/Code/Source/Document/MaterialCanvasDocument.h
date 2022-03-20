@@ -45,11 +45,15 @@ namespace MaterialCanvas
         bool EndEdit() override;
 
         // MaterialCanvasDocumentRequestBus::Handler overrides...
+        GraphCanvas::GraphId GetGraphId() const override;
 
     private:
         // AtomToolsFramework::AtomToolsDocument overrides...
         void Clear() override;
         bool ReopenRecordState() override;
         bool ReopenRestoreState() override;
+
+        AZ::Entity* m_sceneEntity = {};
+        GraphCanvas::GraphId m_graphId;
     };
 } // namespace MaterialCanvas

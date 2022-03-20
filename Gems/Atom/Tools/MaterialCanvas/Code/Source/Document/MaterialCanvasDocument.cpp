@@ -15,6 +15,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Document/MaterialCanvasDocument.h>
 
+#include <GraphCanvas/Components/SceneBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+
 namespace MaterialCanvas
 {
     void MaterialCanvasDocument::Reflect(AZ::ReflectContext* context)
@@ -31,6 +34,7 @@ namespace MaterialCanvas
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialcanvas")
+                ->Event("GetGraphId", &MaterialCanvasDocumentRequests::GetGraphId)
                 ;
         }
     }
@@ -38,12 +42,19 @@ namespace MaterialCanvas
     MaterialCanvasDocument::MaterialCanvasDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
         : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
     {
+        m_sceneEntity = {};
+        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(m_sceneEntity, &GraphCanvas::GraphCanvasRequests::CreateSceneAndActivate);
+
+        m_graphId = m_sceneEntity->GetId();
+        GraphCanvas::SceneRequestBus::Event(m_graphId, &GraphCanvas::SceneRequests::SetEditorId, toolId);
+
         MaterialCanvasDocumentRequestBus::Handler::BusConnect(m_id);
     }
 
     MaterialCanvasDocument::~MaterialCanvasDocument()
     {
         MaterialCanvasDocumentRequestBus::Handler::BusDisconnect();
+        delete m_sceneEntity;
     }
 
     AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::BuildDocumentTypeInfo()
@@ -52,6 +63,7 @@ namespace MaterialCanvas
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo); };
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas", "materialcanvas" });
         documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas", "materialcanvas" });
         documentType.m_supportedExtensionsToSave.push_back({ "Material Canvas", "materialcanvas" });
         return documentType;
@@ -76,7 +88,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        return OpenFailed();
+        return OpenSucceeded();
     }
 
     bool MaterialCanvasDocument::Save()
@@ -88,7 +100,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        return SaveFailed();
+        return SaveSucceeded();
     }
 
     bool MaterialCanvasDocument::SaveAsCopy(const AZStd::string& savePath)
@@ -100,7 +112,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        return SaveFailed();
+        return SaveSucceeded();
     }
 
     bool MaterialCanvasDocument::SaveAsChild(const AZStd::string& savePath)
@@ -112,7 +124,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        return SaveFailed();
+        return SaveSucceeded();
     }
 
     bool MaterialCanvasDocument::IsOpen() const
@@ -135,6 +147,13 @@ namespace MaterialCanvas
     bool MaterialCanvasDocument::EndEdit()
     {
         return true;
+    }
+
+    // MaterialCanvasDocumentRequestBus::Handler overrides...
+
+    inline GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
+    {
+        return m_graphId;
     }
 
     void MaterialCanvasDocument::Clear()

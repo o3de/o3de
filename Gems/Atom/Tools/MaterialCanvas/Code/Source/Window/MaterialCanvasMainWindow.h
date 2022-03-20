@@ -69,12 +69,10 @@ namespace MaterialCanvas
     //! 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
     class MaterialCanvasMainWindow
         : public AtomToolsFramework::AtomToolsDocumentMainWindow
-        , private GraphCanvas::SceneNotificationBus::MultiHandler
+        , private GraphCanvas::SceneNotificationBus::Handler
         , private GraphCanvas::AssetEditorSettingsRequestBus::Handler
         , private GraphCanvas::AssetEditorNotificationBus::Handler
         , private GraphCanvas::AssetEditorRequestBus::Handler
-        , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
-        , private AzToolsFramework::AssetSystemBus::Handler
     {
         Q_OBJECT
     public:
@@ -149,6 +147,7 @@ namespace MaterialCanvas
         void OnSelectionChanged() override;
         ////////////////////////////////////////////////////////////////////////
 
+    private:
         GraphCanvas::Endpoint HandleProposedConnection(
             const GraphCanvas::GraphId& graphId,
             const GraphCanvas::ConnectionId& connectionId,
@@ -162,11 +161,10 @@ namespace MaterialCanvas
             const QPoint& screenPoint,
             const QPointF& scenePoint) const;
 
-    private:
-        void AlignSelected(const GraphCanvas::AlignConfig& alignConfig);
-        void OnViewPresetsEditor();
         void CreateMenus();
-        void UpdateMenuActions();
+        void UpdateMenus();
+        void AlignSelected(const GraphCanvas::AlignConfig& alignConfig);
+        void OpenPresetsEditor();
         GraphCanvas::GraphCanvasTreeItem* GetNodePaletteRootTreeItem() const;
 
         GraphCanvas::GraphId m_activeGraphId;
