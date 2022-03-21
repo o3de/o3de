@@ -172,6 +172,13 @@ namespace EMotionFX
         * @result Vector of unique joint indices used by the skinning info layer.
         */
         AZStd::set<uint16> CalcLocalJointIndices(AZ::u32 numOrgVertices);
+        
+        /**
+        * Calculate the total number of unique indices used by the skin and the highest index
+        * @param numOrgVertices The number of original vertices in the mesh.
+        * @result total unique indices and highest index
+        */
+        AZStd::tuple<uint16, uint16> CalcLocalJointIndexCountAndHighestIndex(AZ::u32 numOrgVertices);
 
         /**
          * Clone the vertex attribute layer.

@@ -2626,7 +2626,7 @@ namespace EMotionFX
                 EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
                     static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
                 const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
-                const size_t numLocalJoints = skinLayer->CalcLocalJointIndices(numOrgVerts).size();
+                const auto [numLocalJoints, highestJointId] = skinLayer->CalcLocalJointIndexCountAndHighestIndex(numOrgVerts);
 
                 // The information about if we want to use dual quat skinning is baked into the mesh chunk and we don't have access to that
                 // anymore. Default to dual quat skinning.
@@ -2635,15 +2635,15 @@ namespace EMotionFX
                 {
                     DualQuatSkinDeformer* skinDeformer = DualQuatSkinDeformer::Create(mesh);
                     jointInfo.m_stack->AddDeformer(skinDeformer);
-                    skinDeformer->ReserveLocalBones(numLocalJoints);
-                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel));
+                    skinDeformer->ReserveLocalBones(aznumeric_caster(numLocalJoints));
+                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel), highestJointId);
                 }
                 else
                 {
                     SoftSkinDeformer* skinDeformer = GetSoftSkinManager().CreateDeformer(mesh);
                     jointInfo.m_stack->AddDeformer(skinDeformer);
-                    skinDeformer->ReserveLocalBones(numLocalJoints); // pre-alloc data to prevent reallocs
-                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel));
+                    skinDeformer->ReserveLocalBones(aznumeric_caster(numLocalJoints)); // pre-alloc data to prevent reallocs
+                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel), highestJointId);
                 }
             }
 

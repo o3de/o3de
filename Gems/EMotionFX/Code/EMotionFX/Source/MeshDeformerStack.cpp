@@ -110,10 +110,15 @@ namespace EMotionFX
         // if we have deformers in the stack
         const size_t numDeformers = m_deformers.size();
 
+        EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
+            (SkinningInfoVertexAttributeLayer*)m_mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
+        const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
+        const auto [numLocalJoints, highestJointId] = skinLayer->CalcLocalJointIndexCountAndHighestIndex(numOrgVerts);
+
         // iterate through the deformers and reinitialize them
         for (size_t i = 0; i < numDeformers; ++i)
         {
-            m_deformers[i]->Reinitialize(actor, node, lodLevel);
+            m_deformers[i]->Reinitialize(actor, node, lodLevel, highestJointId);
         }
     }
 
