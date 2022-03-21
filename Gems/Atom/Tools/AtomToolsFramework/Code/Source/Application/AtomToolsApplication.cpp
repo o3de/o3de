@@ -215,9 +215,12 @@ namespace AtomToolsFramework
         m_styleManager.reset();
 
         // Save application settings to settings registry file
-        AZ::IO::FixedMaxPath savePath = AZ::Utils::GetProjectPath();
-        savePath /= AZStd::string::format("user/Registry/%s.setreg", m_targetName.c_str());
-        SaveSettingsToFile(savePath, { "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) });
+        AZStd::string settingsFileName(AZStd::string::format("usersettings.%s.setreg", m_targetName.c_str()));
+        AZStd::to_lower(settingsFileName.begin(), settingsFileName.end());
+
+        const AZ::IO::FixedMaxPath settingsFilePath(
+            AZStd::string::format("%s/user/Registry/%s", AZ::Utils::GetProjectPath().c_str(), settingsFileName.c_str()));
+        SaveSettingsToFile(settingsFilePath, { "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) });
 
         UnloadSettings();
 
