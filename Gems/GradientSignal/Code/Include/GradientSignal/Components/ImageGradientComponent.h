@@ -13,6 +13,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
@@ -149,7 +150,7 @@ namespace GradientSignal
     private:
         ImageGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
-        mutable AZStd::shared_mutex m_imageMutex;
+        mutable AZStd::shared_mutex m_queryMutex;
         GradientTransform m_gradientTransform;
         AZStd::span<const uint8_t> m_imageData;
         ChannelToUse m_currentChannel = ChannelToUse::Red;

@@ -485,7 +485,6 @@ namespace GradientSignal
         SetupDependencies();
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
 
         // Invoke the QueueLoad before connecting to the AssetBus, so that
         // if the asset is already ready, then OnAssetReady will be triggered immediately
@@ -493,10 +492,16 @@ namespace GradientSignal
         m_configuration.m_imageAsset.QueueLoad();
 
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ImageGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         AZ::Data::AssetBus::Handler::BusDisconnect();
         GradientRequestBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
@@ -504,7 +509,6 @@ namespace GradientSignal
 
         m_dependencyMonitor.Reset();
 
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.Release();
     }
 
@@ -530,7 +534,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -538,7 +542,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -546,7 +550,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
 
         GetSubImageData();
@@ -554,7 +558,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
     {
-        AZStd::unique_lock<decltype(m_imageMutex)> lock(m_imageMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_gradientTransform = newTransform;
     }
 
@@ -563,21 +567,19 @@ namespace GradientSignal
         AZ::Vector3 uvw = sampleParams.m_position;
         bool wasPointRejected = false;
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         // Return immediately if our cached image data hasn't been retrieved yet
         if (m_imageData.empty())
         {
             return 0.0f;
         }
 
+        m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
+
+        if (!wasPointRejected)
         {
-            AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
-
-            m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
-
-            if (!wasPointRejected)
-            {
-                return GetValueFromImageData(uvw, 0.0f);
-            }
+            return GetValueFromImageData(uvw, 0.0f);
         }
 
         return 0.0f;
@@ -591,6 +593,8 @@ namespace GradientSignal
             return;
         }
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         // Return immediately if our cached image data hasn't been retrieved yet
         if (m_imageData.empty())
         {
@@ -599,8 +603,6 @@ namespace GradientSignal
 
         AZ::Vector3 uvw;
         bool wasPointRejected = false;
-
-        AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
 
         for (size_t index = 0; index < positions.size(); index++)
         {
@@ -646,7 +648,10 @@ namespace GradientSignal
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
-                AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+                // Only hold the lock during the actual data changes, to ensure that we aren't mid-query when changing it, but also to
+                // minimize the total lock duration. Also, because we've disconnected from the imageAsset Asset bus prior to locking this,
+                // we won't get any OnAsset* notifications while we're changing out the asset.
+                AZStd::unique_lock lock(m_queryMutex);
 
                 // Clear our cached image data
                 m_imageData = AZStd::span<const uint8_t>();
@@ -675,7 +680,12 @@ namespace GradientSignal
 
     void ImageGradientComponent::SetTilingX(float tilingX)
     {
-        m_configuration.m_tilingX = tilingX;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_tilingX = tilingX;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -686,7 +696,12 @@ namespace GradientSignal
 
     void ImageGradientComponent::SetTilingY(float tilingY)
     {
-        m_configuration.m_tilingY = tilingY;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_tilingY = tilingY;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }

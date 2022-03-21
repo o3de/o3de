@@ -220,16 +220,21 @@ namespace GradientSignal
 
         if (!m_configuration.m_layers.empty())
         {
-            //forcing first layer to always be initialize
+            // Force the first layer to always be 'Initialize'
             m_configuration.m_layers.front().m_operation = MixedGradientLayer::MixingOperation::Initialize;
         }
 
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         MixedGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void MixedGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         m_dependencyMonitor.Reset();
         GradientRequestBus::Handler::BusDisconnect();
         MixedGradientRequestBus::Handler::BusDisconnect();
@@ -257,7 +262,9 @@ namespace GradientSignal
 
     float MixedGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        //accumulate the mixed/combined result of all layers and operations
+        AZStd::shared_lock lock(m_queryMutex);
+
+        // accumulate the mixed/combined result of all layers and operations
         float result = 0.0f;
 
         for (const auto& layer : m_configuration.m_layers)
@@ -291,6 +298,8 @@ namespace GradientSignal
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
             return;
         }
+
+        AZStd::shared_lock lock(m_queryMutex);
 
         // Initialize all of our output data to 0.0f. Layer blends will combine with this, so we need it to have an initial value.
         AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
@@ -351,13 +360,25 @@ namespace GradientSignal
 
     void MixedGradientComponent::AddLayer()
     {
-        m_configuration.AddLayer();
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.AddLayer();
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void MixedGradientComponent::RemoveLayer(int layerIndex)
     {
-        m_configuration.RemoveLayer(layerIndex);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.RemoveLayer(layerIndex);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
