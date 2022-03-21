@@ -22,7 +22,7 @@ namespace AZ
             Base::Init(device);
             m_hardwareQueueClass = hardwareQueueClass;
 
-            device.AssertSuccess(device.GetDevice()->CreateCommandList(1, ConvertHardwareQueueClass(hardwareQueueClass), commandAllocator, nullptr, IID_GRAPHICS_PPV_ARGS(m_commandList.ReleaseAndGetAddressOf())));
+            AssertSuccess(device.GetDevice()->CreateCommandList(1, ConvertHardwareQueueClass(hardwareQueueClass), commandAllocator, nullptr, IID_GRAPHICS_PPV_ARGS(m_commandList.ReleaseAndGetAddressOf())));
             m_isRecording = true;
 
             if (device.IsAftermathInitialized())

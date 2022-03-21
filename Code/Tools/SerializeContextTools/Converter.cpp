@@ -577,7 +577,6 @@ namespace AZ
             AZ::IO::FixedMaxPath gemModuleSourcePath;
             AZ::ModuleManagerRequestBus::Broadcast([&gemModuleSourcePath, &gemName, gemModuleClassId = entity.m_moduleClassId](AZ::ModuleManagerRequests* request)
             {
-                AZ_UNUSED(gemModuleClassId);
                 auto EnumerateGemModules = [&gemModuleSourcePath, &gemName, &gemModuleClassId](const AZ::ModuleData& moduleData) -> bool
                 {
                     AZ::Module* moduleInst = moduleData.GetModule();

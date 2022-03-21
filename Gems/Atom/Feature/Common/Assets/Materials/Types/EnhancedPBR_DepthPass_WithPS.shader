@@ -5,6 +5,10 @@
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
     },
 
+    "CompilerHints" : { 
+        "DisableOptimizations" : false
+    },
+
     "ProgramSettings":
     {
       "EntryPoints":

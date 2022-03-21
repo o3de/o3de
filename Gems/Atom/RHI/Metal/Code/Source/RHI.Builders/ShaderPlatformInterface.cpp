@@ -58,7 +58,7 @@ namespace AZ
             RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,
             const ShaderResourceGroupInfoList& srgInfoList,
             const RootConstantsInfo& rootConstantsInfo,
-            [[maybe_unused]] const RHI::ShaderBuildArguments& shaderBuildArguments)
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments)
         {
             AZ::Metal::PipelineLayoutDescriptor* metalDescriptor = azrtti_cast<AZ::Metal::PipelineLayoutDescriptor*>(pipelineLayoutDescriptor.get());
             AZ_Assert(metalDescriptor, "PipelineLayoutDescriptor should have been created by now");
@@ -152,6 +152,24 @@ namespace AZ
             return (shaderStageType == RHI::ShaderHardwareStage::RayTracing);
         }
 
+        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
+        {
+            // Note: all platforms use DirectX packing rules. We enable vk namespace as well to allow
+            // for vk syntax to carry  through from dxc to spirv-cross.
+            return shaderCompilerArguments.MakeAdditionalAzslcCommandLineString() +
+                " --use-spaces --unique-idx --namespace=mt,vk --root-const=128 --pad-root-const";
+        }
+
+        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
+        {
+            return shaderCompilerArguments.MakeAdditionalAzslcWarningCommandLineString();
+        }
+
+        bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
+        {
+            return shaderCompilerArguments.m_generateDebugInfo;
+        }
+
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
         {
             if(platform.HasTag("mobile"))
@@ -171,7 +189,7 @@ namespace AZ
            RHI::ShaderHardwareStage shaderStage,
            const AZStd::string& tempFolderPath,
            StageDescriptor& outputDescriptor,
-           const RHI::ShaderBuildArguments& shaderBuildArguments) const
+           const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
             for ([[maybe_unused]] auto srgLayout : m_srgLayouts)
             {
@@ -187,7 +205,7 @@ namespace AZ
                 tempFolderPath,                  // AP temp folder for the job
                 functionName,                    // name of function that is the entry point
                 shaderStage,                     // shader stage (vertex shader, pixel shader, ...)
-                shaderBuildArguments,
+                shaderCompilerArguments,
                 shaderSourceCode,                // cross-compiled shader output
                 shaderByteCode,                  // compiled byte code
                 platform,                        // target platform
@@ -223,7 +241,7 @@ namespace AZ
             const AZStd::string& tempFolder,
             const AZStd::string& entryPoint,
             const RHI::ShaderHardwareStage shaderType,
-            const RHI::ShaderBuildArguments& shaderBuildArguments,
+            const RHI::ShaderCompilerArguments& shaderCompilerArguments,
             AZStd::vector<char>& sourceMetalShader,
             AZStd::vector<uint8_t>& compiledByteCode,
             const AssetBuilderSDK::PlatformInfo& platform,
@@ -255,6 +273,21 @@ namespace AZ
             // Output spirv file
             AZStd::string shaderSpirvOutputFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "spirv");
 
+            // Compilation parameters
+            AZStd::string params = shaderCompilerArguments.MakeAdditionalDxcCommandLineString();
+            params += " -spirv"; // Generate SPIRV shader
+
+            // Enable half precision types when shader model >= 6.2
+            int shaderModelMajor = 0;
+            int shaderModelMinor = 0;
+            [[maybe_unused]] int numValuesRead = azsscanf(shaderModelVersion.c_str(), "%d_%d", &shaderModelMajor, &shaderModelMinor);
+            AZ_Assert(numValuesRead == 2, "Unknown shader model version format");
+            if (shaderModelMajor >= 6 && shaderModelMinor >= 2)
+            {
+                params += " -enable-16bit-types";
+            }
+            StringFunc::TrimWhiteSpace(params, true, false);
+
             AZStd::string prependFile;
             if(platform.HasTag("mobile"))
             {
@@ -271,12 +304,11 @@ namespace AZ
             args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);
-            if (BuildHasDebugInfo(shaderBuildArguments))
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 // dump intermediate "true final HLSL" file (shadername.metal.shadersource.prepend)
                 byProducts.m_intermediatePaths.insert(dxcInputFile);
             }
-            const auto params = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_dxcArguments);
             //                                                      1.entry   3.config       5.hlsl-in
             //                                                          |   2.SM  |   4.output   |
             //                                                          |     |   |       |      |
@@ -293,7 +325,7 @@ namespace AZ
                 AZ_Error(MetalShaderPlatformName, false, "DXC failed to create the spirv file");
                 return false;
             }
-            if (BuildHasDebugInfo(shaderBuildArguments))
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 byProducts.m_intermediatePaths.insert(shaderSpirvOutputFile);   // the spirv spit by DXC
             }
@@ -315,8 +347,7 @@ namespace AZ
             // spirv cross compiler executable
             static const char* spirvCrossRelativePath = "Builders/SPIRVCross/spirv-cross";
 
-            const auto userDefinedSpirvCrossAgs = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_spirvCrossArguments);
-            AZStd::string spirvCrossCommandOptions = AZStd::string::format("%s --output \"%s\" \"%s\"", userDefinedSpirvCrossAgs.c_str(), shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
+            AZStd::string spirvCrossCommandOptions = AZStd::string::format("--msl --msl-version 20100 --msl-invariant-float-math --msl-argument-buffers --msl-decoration-binding --msl-texture-buffer-native --output \"%s\" \"%s\"", shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
 
             // Run spirv cross
             if (!RHI::ExecuteShaderCompiler(spirvCrossRelativePath, spirvCrossCommandOptions, shaderSpirvOutputFile, "SpirvCross"))
@@ -331,12 +362,12 @@ namespace AZ
             bool finalizeShaderResult = UpdateCompiledShader(outFileStream, MetalShaderPlatformName, shaderMSLOutputFile.data(), sourceMetalShader);
             AZ_Assert(finalizeShaderResult, "Final compiled shader was not created. Check if %s was created", shaderMSLOutputFile.c_str());
 
-            if (BuildHasDebugInfo(shaderBuildArguments))
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 byProducts.m_intermediatePaths.emplace(AZStd::move(shaderMSLOutputFile));   // .msl metal out of sv-cross
             }
 
-            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform, shaderBuildArguments);
+            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform);
             if (!compileMetalSL)
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to create bytecode");
@@ -374,8 +405,7 @@ namespace AZ
                                                      const AZStd::string& tempFolder,
                                                      AZStd::vector<uint8_t>& compiledByteCode,
                                                      AZStd::vector<char>& sourceMetalShader,
-                                                     const AssetBuilderSDK::PlatformInfo& platform,
-                                                     const RHI::ShaderBuildArguments& shaderBuildArguments) const
+                                                     const AssetBuilderSDK::PlatformInfo& platform) const
         {
             AZStd::string inputMetalFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
 
@@ -393,9 +423,21 @@ namespace AZ
             AZStd::string outputAirFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "air");
             AZStd::string outMetalLibFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metallib");
 
+            //Debug symbols are always enabled at the moment. Need to turn them off for optimized shader assets.
+            AZStd::string shaderDebugInfo = "-gline-tables-only -MO";
+
+            AZStd::string shaderMslToAirOptions = "-fpreserve-invariance";
+
+            //Apply the correct platform sdk option
+            AZStd::string platformSdk = "macosx";
+            if (platform.HasTag("mobile"))
+            {
+                platformSdk = "iphoneos";
+            }
+
             //Convert to air file
-            const auto metalAirArgumentsStr = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_metalAirArguments);
-            const auto mslToAirCommandOptions = AZStd::string::format("%s \"%s\" -o \"%s\"", metalAirArgumentsStr.c_str(), inputMetalFile.c_str(), outputAirFile.c_str());
+            AZStd::string mslToAirCommandOptions = AZStd::string::format("-sdk %s metal \"%s\" %s %s -c -o \"%s\"", platformSdk.c_str(), inputMetalFile.c_str(), shaderDebugInfo.c_str(), shaderMslToAirOptions.c_str(), outputAirFile.c_str());
+
             if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", mslToAirCommandOptions, inputMetalFile, "MslToAir"))
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to convert to AIR file %s", inputMetalFile.c_str());
@@ -403,8 +445,8 @@ namespace AZ
             }
 
             //convert to metallib
-            const auto metalLibArgumentsStr = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_metalLibArguments);
-            const auto airToMetalLibCommandOptions = AZStd::string::format("%s \"%s\" -o \"%s\"", metalLibArgumentsStr.c_str(), outputAirFile.c_str(), outMetalLibFile.c_str());
+            AZStd::string airToMetalLibCommandOptions = AZStd::string::format("-sdk %s metallib \"%s\" -o \"%s\"", platformSdk.c_str(), outputAirFile.c_str(), outMetalLibFile.c_str());
+
             if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", airToMetalLibCommandOptions, outputAirFile, "AirToMetallib"))
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to convert to metallib file");

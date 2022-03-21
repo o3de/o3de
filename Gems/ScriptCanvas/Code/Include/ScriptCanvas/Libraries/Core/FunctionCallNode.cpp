@@ -358,22 +358,9 @@ namespace ScriptCanvas
                 }
             }
 
-            AZ::Outcome<AZStd::string, AZStd::string> FunctionCallNode::GetInterfaceNameFromAssetOrLastSave() const
+            AZStd::string FunctionCallNode::GetInterfaceName() const
             {
-                if (auto subgraphInterface = GetSubgraphInterface())
-                {
-                    if (auto latestName = subgraphInterface->GetName(); latestName.IsSuccess())
-                    {
-                        return latestName;
-                    }
-                }
-
-                if (auto savedName = m_slotExecutionMapSourceInterface.GetName(); savedName.IsSuccess())
-                {
-                    return savedName;
-                }
-
-                return AZ::Failure(AZStd::string("all interface names were empty"));
+                return m_slotExecutionMapSourceInterface.GetName();
             }
 
             bool FunctionCallNode::IsEntryPoint() const
@@ -790,12 +777,7 @@ namespace ScriptCanvas
 
             const Grammar::SubgraphInterface* FunctionCallNode::GetSubgraphInterface() const
             {
-                if (m_asset && m_asset.Get())
-                {
-                    return &m_asset.Get()->m_interfaceData.m_interface;
-                }
-
-                return nullptr;
+                return &m_slotExecutionMapSourceInterface;
             }
 
             AZStd::string FunctionCallNode::GetUpdateString() const

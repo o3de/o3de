@@ -145,6 +145,8 @@ namespace EMotionFX::MotionMatching
         void SetRelativeToNodeIndex(size_t nodeIndex);
 
         static void Reflect(AZ::ReflectContext* context);
+        static void CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outVelocity);
+        static void CalculateVelocity(const ActorInstance* actorInstance, size_t jointIndex, size_t relativeToJointIndex, const Frame& frame, AZ::Vector3& outVelocity);
 
     protected:
         //! Calculate a normalized direction vector difference between the two given vectors.

@@ -109,7 +109,5 @@ namespace AtomToolsFramework
 
         const AZStd::string m_targetName;
         const AZ::Crc32 m_toolId = {};
-
-        bool m_isAutoTestMode = false;
     };
 } // namespace AtomToolsFramework

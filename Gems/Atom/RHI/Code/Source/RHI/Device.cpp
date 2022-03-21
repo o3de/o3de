@@ -8,7 +8,6 @@
 
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
-#include <Atom/RHI/RHISystem.h>
 
 #include <AzCore/std/sort.h>
 
@@ -108,19 +107,6 @@ namespace AZ
                 ShutdownInternal();
                 m_physicalDevice = nullptr;
             }
-        }
-
-        bool Device::WasDeviceRemoved()
-        {
-            return m_wasDeviceRemoved;
-        }
-
-        void Device::SetDeviceRemoved()
-        {
-            m_wasDeviceRemoved = true;
-
-            // set notification
-            RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnDeviceRemoved, this);
         }
 
         ResultCode Device::BeginFrame()

@@ -37,6 +37,7 @@
 
 #include "ShaderPlatformInterfaceRequest.h"
 #include "ShaderBuilder_Traits_Platform.h"
+#include "AtomShaderConfig.h"
 
 #include "SrgLayoutUtility.h"
 
@@ -534,7 +535,7 @@ namespace AZ
 
             RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(
                 [[maybe_unused]] const char* builderName, const RPI::ShaderResourceGroupLayoutList& srgLayoutList, const MapOfStringToStageType& shaderEntryPoints,
-                const RHI::ShaderBuildArguments& shaderBuildArguments, const RootConstantData& rootConstantData,
+                const RHI::ShaderCompilerArguments& shaderCompilerArguments, const RootConstantData& rootConstantData,
                 RHI::ShaderPlatformInterface* shaderPlatformInterface, BindingDependencies& bindingDependencies /*inout*/)
             {
                 PruneNonEntryFunctions(bindingDependencies, shaderEntryPoints);
@@ -623,7 +624,7 @@ namespace AZ
 
                 // Build platform-specific PipelineLayoutDescriptor data, and finalize
                 if (!shaderPlatformInterface->BuildPipelineLayoutDescriptor(
-                        pipelineLayoutDescriptor, srgInfos, rootConstantInfo, shaderBuildArguments))
+                        pipelineLayoutDescriptor, srgInfos, rootConstantInfo, shaderCompilerArguments))
                 {
                     AZ_Error(builderName, false, "Failed to build pipeline layout descriptor");
                     return nullptr;
@@ -882,19 +883,6 @@ namespace AZ
 
                 auto listOfFilePaths = ParseStringAndGetIncludedFiles(hayStack);
                 return AZ::Success(AZStd::move(listOfFilePaths));
-            }
-
-            AZStd::string GetPlatformNameFromPlatformInfo(const AssetBuilderSDK::PlatformInfo& platformInfo)
-            {
-                auto platformId = AZ::PlatformDefaults::PlatformHelper::GetPlatformIdFromName(platformInfo.m_identifier);
-                switch (platformId)
-                {
-                case AZ::PlatformDefaults::PlatformId::PC :
-                case AZ::PlatformDefaults::PlatformId::SERVER : // Fallthrough. "pc" and "server" are both treated as "Windows".
-                    return { "Windows" };
-                default:
-                    return AZ::PlatformDefaults::PlatformIdToPalFolder(platformId);
-                }
             }
 
         }  // namespace ShaderBuilderUtility

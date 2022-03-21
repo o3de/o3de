@@ -224,9 +224,8 @@ namespace Vegetation
 
         bool result = true;
 
-        AZ_ErrorOnce("Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+        AZ_WarningOnce("Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with vegetation entity references");
 
         if (!AreaRequestBus::HasReentrantEBusUseThisThread())
         {
@@ -264,10 +263,9 @@ namespace Vegetation
             return;
         }
 
-        AZ_ErrorOnce(
+        AZ_WarningOnce(
             "Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+            "Detected cyclic dependencies with vegetation entity references");
 
         if (!AreaRequestBus::HasReentrantEBusUseThisThread())
         {
@@ -296,10 +294,9 @@ namespace Vegetation
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZ_ErrorOnce(
+        AZ_WarningOnce(
             "Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+            "Detected cyclic dependencies with vegetation entity references");
 
         if (!AreaRequestBus::HasReentrantEBusUseThisThread())
         {
@@ -323,10 +320,9 @@ namespace Vegetation
             LmbrCentral::ShapeComponentRequestsBus::EventResult(bounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
         }
 
-        AZ_ErrorOnce(
+        AZ_WarningOnce(
             "Vegetation", !AreaInfoBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+            "Detected cyclic dependencies with vegetation entity references");
 
         if (!AreaInfoBus::HasReentrantEBusUseThisThread())
         {
@@ -349,10 +345,9 @@ namespace Vegetation
 
         AZ::u32 count = 0;
 
-        AZ_ErrorOnce(
+        AZ_WarningOnce(
             "Vegetation", !AreaInfoBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+            "Detected cyclic dependencies with vegetation entity references");
 
         if (!AreaInfoBus::HasReentrantEBusUseThisThread())
         {

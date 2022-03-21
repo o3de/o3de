@@ -3,7 +3,7 @@
 
     "CompilerHints":
     {
-        "DisableOptimizations": false
+        "DisableOptimizations":false
     },
     
     "ProgramSettings" : 
@@ -11,7 +11,7 @@
         "EntryPoints":
         [
             {
-                "name":  "MainCS",
+                "name": "MainCS",
                 "type" : "Compute"
             }
         ] 
@@ -21,9 +21,8 @@
     [
         {
             "Name": "NoMSAA",
-            "AddBuildArguments": {
-                "azslc": ["--no-ms"]
-            }
+            "PlusArguments": "--no-ms",
+            "MinusArguments": ""
         }
     ]
 }

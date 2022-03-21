@@ -291,10 +291,9 @@ namespace LmbrCentral
 
     bool ReferenceShapeComponent::AllowRequest() const
     {
-        AZ_ErrorOnce(
+        AZ_WarningOnce(
             "Shape", !LmbrCentral::ShapeComponentRequestsBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with shape entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+            "Detected cyclic dependencies with shape entity references");
 
         return !LmbrCentral::ShapeComponentRequestsBus::HasReentrantEBusUseThisThread() && m_configuration.m_shapeEntityId.IsValid() &&
             m_configuration.m_shapeEntityId != GetEntityId();
@@ -302,10 +301,9 @@ namespace LmbrCentral
 
     bool ReferenceShapeComponent::AllowNotification() const
     {
-        AZ_ErrorOnce(
+        AZ_WarningOnce(
             "Shape", !LmbrCentral::ShapeComponentNotificationsBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with shape entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+            "Detected cyclic dependencies with shape entity references");
 
         return !LmbrCentral::ShapeComponentNotificationsBus::HasReentrantEBusUseThisThread() && m_configuration.m_shapeEntityId.IsValid() &&
             m_configuration.m_shapeEntityId != GetEntityId();

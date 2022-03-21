@@ -1053,10 +1053,7 @@ void* GetModuleShutdownISystemSymbol();
 //   Interface of the DLL.
 extern "C"
 {
-#if !defined(AZ_MONOLITHIC_BUILD)
-    CRYSYSTEM_API
-#endif
-    ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
+    CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
 }
 
 // Description:

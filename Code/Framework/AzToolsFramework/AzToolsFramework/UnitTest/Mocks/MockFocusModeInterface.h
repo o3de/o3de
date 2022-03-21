@@ -25,6 +25,5 @@ namespace UnitTest
         MOCK_METHOD1(GetFocusRoot, AZ::EntityId(AzFramework::EntityContextId entityContextId));
         MOCK_METHOD1(GetFocusedEntities, const AzToolsFramework::EntityIdList&(AzFramework::EntityContextId entityContextId));
         MOCK_CONST_METHOD1(IsInFocusSubTree, bool(AZ::EntityId entityId));
-        MOCK_CONST_METHOD1(IsFocusRoot, bool(AZ::EntityId entityId));
     };
 } // namespace UnitTest

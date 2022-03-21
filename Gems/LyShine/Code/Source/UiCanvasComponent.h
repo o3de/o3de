@@ -49,6 +49,7 @@ class UiCanvasComponent
     , public AZ::EntityBus::Handler
     , public UiAnimationBus::Handler
     , public UiInteractableActiveNotificationBus::Handler
+    , public ISystem::CrySystemNotificationBus::Handler
     , public IUiAnimationListener
     , public UiEditorCanvasBus::Handler
     , public UiCanvasComponentImplementationBus::Handler
@@ -191,6 +192,10 @@ public: // member functions
     void ActiveCancelled() override;
     void ActiveChanged(AZ::EntityId m_newActiveInteractable, bool shouldStayActive) override;
     // ~UiInteractableActiveNotifications
+
+    // ISystem::CrySystemNotifications
+    void OnPreRender() override;
+    //ISystem::CrySystemNotifications
 
     // IUiAnimationListener
     void OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence) override;
@@ -409,6 +414,7 @@ private: // member functions
 
     void CreateRenderTarget();
     void DestroyRenderTarget();
+    void RenderCanvasToTexture();
 
     bool SaveCanvasToFile(const AZStd::string& pathname, AZ::DataStream::StreamType streamType);
     bool SaveCanvasToStream(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType);
@@ -562,8 +568,11 @@ private: // data
     //! The user-specified name for the render target taht we render to if m_renderToTexture is true
     AZStd::string m_renderTargetName;
 
-    //! When rendering to a texture this is the attachment image for the render target
-    AZ::RHI::AttachmentId m_attachmentImageId;
+    //! When rendering to a texture this is the texture ID of the render target
+    int m_renderTargetHandle = -1;
+
+    //! When rendering to a texture this is our depth surface
+    SDepthTexture* m_renderTargetDepthSurface = nullptr;
 
     //! Each canvas has a layout manager to track and recompute layouts
     UiLayoutManager* m_layoutManager = nullptr;

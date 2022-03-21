@@ -100,7 +100,6 @@ set(FILES
     Include/ScriptCanvas/Execution/ExecutionStateDeclarations.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h
-    Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedClassAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedDebugAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.h

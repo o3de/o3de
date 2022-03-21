@@ -15,7 +15,6 @@
 
 #include <AzCore/Component/Component.h>
 
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystem.h>
 
 namespace AZ
@@ -34,7 +33,6 @@ namespace AZ
         class RPISystemComponent final
             : public AZ::Component
             , public AZ::SystemTickBus::Handler
-            , public AZ::RHI::RHISystemNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -54,9 +52,6 @@ namespace AZ
 
             // SystemTickBus overrides...
             void OnSystemTick() override;
-                        
-            // RHISystemNotificationBus::Handler
-            void OnDeviceRemoved(RHI::Device* device) override;
 
             RPISystem m_rpiSystem;
 

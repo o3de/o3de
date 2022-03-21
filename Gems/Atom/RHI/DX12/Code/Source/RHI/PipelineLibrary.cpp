@@ -90,7 +90,6 @@ namespace AZ
                         break;
                     case DXGI_ERROR_DEVICE_REMOVED:
                         AZ_Assert(false, "Failed to use pipeline library blob due to DXGI_ERROR_DEVICE_REMOVED.");
-                        device.OnDeviceRemoved();
                         break;
                     default:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob for unknown reason. Contents will be rebuilt.");

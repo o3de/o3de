@@ -102,44 +102,6 @@ namespace GradientSignal
 
     AZ_CLASS_ALLOCATOR_IMPL(JsonImageGradientConfigSerializer, AZ::SystemAllocator, 0);
 
-    AZStd::vector<AZ::Edit::EnumConstant<ChannelToUse>> SupportedChannelOptions()
-    {
-        AZStd::vector<AZ::Edit::EnumConstant<ChannelToUse>> options;
-
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Red, "Red"));
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Green, "Green"));
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Blue, "Blue"));
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Alpha, "Alpha"));
-        options.push_back(AZ::Edit::EnumConstant<ChannelToUse>(ChannelToUse::Terrarium, "Terrarium"));
-
-        return options;
-    }
-
-    AZStd::vector<AZ::Edit::EnumConstant<CustomScaleType>> SupportedScaleOptions()
-    {
-        AZStd::vector<AZ::Edit::EnumConstant<CustomScaleType>> options;
-
-        options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::None, "None"));
-        options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::Auto, "Auto"));
-        options.push_back(AZ::Edit::EnumConstant<CustomScaleType>(CustomScaleType::Manual, "Manual"));
-
-        return options;
-    }
-
-    bool DoesFormatSupportTerrarium(AZ::RHI::Format format)
-    {
-        // The terrarium type is only supported by 8-bit formats that have
-        // at least RGB
-        switch (format)
-        {
-        case AZ::RHI::Format::R8G8B8A8_UNORM:
-        case AZ::RHI::Format::R8G8B8A8_UNORM_SRGB:
-            return true;
-        }
-
-        return false;
-    }
-
     void ImageGradientConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
@@ -151,15 +113,10 @@ namespace GradientSignal
         if (serialize)
         {
             serialize->Class<ImageGradientConfig, AZ::ComponentConfig>()
-                ->Version(3)
+                ->Version(2)
                 ->Field("TilingX", &ImageGradientConfig::m_tilingX)
                 ->Field("TilingY", &ImageGradientConfig::m_tilingY)
                 ->Field("StreamingImageAsset", &ImageGradientConfig::m_imageAsset)
-                ->Field("AdvancedMode", &ImageGradientConfig::m_advancedMode)
-                ->Field("ChannelToUse", &ImageGradientConfig::m_channelToUse)
-                ->Field("CustomScale", &ImageGradientConfig::m_customScaleType)
-                ->Field("ScaleRangeMin", &ImageGradientConfig::m_scaleRangeMin)
-                ->Field("ScaleRangeMax", &ImageGradientConfig::m_scaleRangeMax)
                 ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -184,24 +141,6 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
-
-                    ->GroupElementToggle("Advanced", &ImageGradientConfig::m_advancedMode)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse, "Channel To Use", "The channel to use from the image.")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
-                    ->Attribute(AZ::Edit::Attributes::EnumValues, &SupportedChannelOptions)
-
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_customScaleType, "Custom Scale", "Choose a type of scaling to be applied to the image data.")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->Attribute(AZ::Edit::Attributes::EnumValues, &SupportedScaleOptions)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMin, "Range Minimum", "The minimum range each value from the image data is scaled against.")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMax, "Range Maximum", "The maximum range each value from the image data is scaled against.")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
                     ;
             }
         }
@@ -215,16 +154,6 @@ namespace GradientSignal
                 ->Property("tilingY", BehaviorValueProperty(&ImageGradientConfig::m_tilingY))
                 ;
         }
-    }
-
-    bool ImageGradientConfig::IsAdvancedModeReadOnly() const
-    {
-        return !m_advancedMode;
-    }
-
-    AZ::Crc32 ImageGradientConfig::GetManualScaleVisibility() const
-    {
-        return (m_customScaleType == CustomScaleType::Manual) ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     void ImageGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -309,58 +238,10 @@ namespace GradientSignal
             return;
         }
 
-        // Prevent loading of the image data if an invalid advanced configuration
-        // was specified by the user
-        if (m_configuration.m_advancedMode)
-        {
-            const auto numComponents = AZ::RHI::GetFormatComponentCount(format);
-            const AZ::u8 channel = aznumeric_cast<AZ::u8>(m_configuration.m_channelToUse);
-            if (m_configuration.m_channelToUse == ChannelToUse::Terrarium)
-            {
-                if (!DoesFormatSupportTerrarium(format))
-                {
-                    AZ_Error("GradientSignal", false, "Unable to interpret image as Terrarium because image asset (%s) has pixel format (%s), which only supports %d channels",
-                        m_configuration.m_imageAsset.GetHint().c_str(), AZ::RHI::ToString(format), numComponents);
-                    return;
-                }
-            }
-            else if (channel >= numComponents)
-            {
-                const auto channelOptions = SupportedChannelOptions();
-                AZ_Error("GradientSignal", false, "Unable to use channel (%s) because image asset (%s) has pixel format (%s), which only supports %d channels",
-                    channelOptions[channel].m_description.c_str(), m_configuration.m_imageAsset.GetHint().c_str(), AZ::RHI::ToString(format), numComponents);
-                return;
-            }
-
-            m_currentChannel = m_configuration.m_channelToUse;
-
-            // Calculate the multiplier and offset based on our custom scale type
-            switch (m_configuration.m_customScaleType)
-            {
-            case CustomScaleType::Auto:
-                SetupAutoScaleMultiplierAndOffset();
-                break;
-
-            case CustomScaleType::Manual:
-                SetupManualScaleMultiplierAndOffset();
-                break;
-
-            case CustomScaleType::None:
-            default:
-                SetupDefaultMultiplierAndOffset();
-                break;
-            }
-        }
-        else
-        {
-            m_currentChannel = ChannelToUse::Red;
-            SetupDefaultMultiplierAndOffset();
-        }
-
         m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
     }
 
-    float ImageGradientComponent::GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const
+    float ImageGradientComponent::GetValueFromImageData(const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue) const
     {
         if (!m_imageData.empty())
         {
@@ -391,8 +272,8 @@ namespace GradientSignal
                 // A 16x16 pixel image and tilingX = tilingY = 1  maps the uv range of 0-1 to 0-16 pixels.  
                 // A 16x16 pixel image and tilingX = tilingY = 1.5 maps the uv range of 0-1 to 0-24 pixels.
 
-                const AZ::Vector3 tiledDimensions((width * m_configuration.m_tilingX),
-                    (height * m_configuration.m_tilingY),
+                const AZ::Vector3 tiledDimensions((width * tilingX),
+                    (height * tilingY),
                     0.0f);
 
                 // Convert from uv space back to pixel space
@@ -407,74 +288,11 @@ namespace GradientSignal
                 // Flip the y because images are stored in reverse of our world axes
                 y = (height - 1) - y;
 
-                // For terrarium, there is a separate algorithm for retrieving the value
-                if (m_currentChannel == ChannelToUse::Terrarium)
-                {
-                    return GetTerrariumPixelValue(x, y);
-                }
-
-                const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
-                return (value * m_multiplier) + m_offset;
+                return AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y);
             }
         }
 
         return defaultValue;
-    }
-
-    float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const
-    {
-        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-
-        float r = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
-        float g = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
-        float b = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
-
-        /*
-            "Terrarium" is an image-based terrain file format as defined here:  https://www.mapzen.com/blog/terrain-tile-service/
-            According to the website:  "Terrarium format PNG tiles contain raw elevation data in meters, in Mercator projection (EPSG:3857).
-            All values are positive with a 32,768 offset, split into the red, green, and blue channels, with 16 bits of integer and 8 bits of fraction. To decode:  (red * 256 + green + blue / 256) - 32768"
-            This gives a range -32768 to 32768 meters at a constant 1/256 meter resolution. For reference, the lowest point on Earth (Mariana Trench) is at -10911 m, and the highest point (Mt Everest) is at 8848 m.
-            The equation of (red * 256 + green + blue / 256) - 32768 is based on red/green/blue being u8 values, but we are getting float values back
-            in the range of 0.0f - 1.0f, so the multipliers below have been modified slightly to account for that scaling
-        */
-        constexpr float redMultiplier = (255.0f * 256.0f) / 65536.0f;
-        constexpr float greenMultiplier = 255.0f / 65536.0f;
-        constexpr float blueMultiplier = (255.0f / 256.0f) / 65536.0f;
-        return (r * redMultiplier) + (g * greenMultiplier) + (b * blueMultiplier);
-    }
-
-    void ImageGradientComponent::SetupDefaultMultiplierAndOffset()
-    {
-        m_multiplier = 1.0f;
-        m_offset = 0.0f;
-    }
-
-    void ImageGradientComponent::SetupAutoScaleMultiplierAndOffset()
-    {
-        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-        auto width = imageDescriptor.m_size.m_width;
-        auto height = imageDescriptor.m_size.m_height;
-
-        // Retrieve all the pixel values from our image data
-        AZStd::vector<float> pixelValues(width * height);
-        auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
-        auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(width, height);
-        AZ::RPI::GetSubImagePixelValues(m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues, aznumeric_cast<AZ::u8>(m_currentChannel));
-
-        // Retrieve the min/max values from our image data
-        auto [min, max] = AZStd::minmax_element(pixelValues.begin(), pixelValues.end());
-
-        m_multiplier = *max -*min;
-        m_offset = *min;
-    }
-
-    void ImageGradientComponent::SetupManualScaleMultiplierAndOffset()
-    {
-        m_configuration.m_scaleRangeMin = AZStd::clamp(m_configuration.m_scaleRangeMin, 0.0f, 1.0f);
-        m_configuration.m_scaleRangeMax = AZStd::clamp(m_configuration.m_scaleRangeMax, 0.0f, 1.0f);
-
-        m_multiplier = m_configuration.m_scaleRangeMax - m_configuration.m_scaleRangeMin;
-        m_offset = m_configuration.m_scaleRangeMin;
     }
 
     void ImageGradientComponent::Activate()
@@ -576,7 +394,8 @@ namespace GradientSignal
 
             if (!wasPointRejected)
             {
-                return GetValueFromImageData(uvw, 0.0f);
+                return GetValueFromImageData(
+                    uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
             }
         }
 
@@ -608,7 +427,8 @@ namespace GradientSignal
 
             if (!wasPointRejected)
             {
-                outValues[index] = GetValueFromImageData(uvw, 0.0f);
+                outValues[index] = GetValueFromImageData(
+                    uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
             }
             else
             {

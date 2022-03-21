@@ -25,6 +25,7 @@ namespace AZ
     {
         namespace Platform
         {
+            void DeviceShutdownInternal(ID3D12DeviceX* device);
             void DeviceCompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder, IDXGIAdapterX* dxgiAdapter);
         }
 
@@ -103,6 +104,7 @@ namespace AZ
         {
             // Any containers that maintain references to DeviceObjects need to be cleared here to ensure the device
             // refcount reaches 0 before shutdown.
+
             m_samplerCache.Clear();
             m_commandListAllocator.Shutdown();
             m_asyncUploadQueue.Shutdown();
@@ -111,6 +113,8 @@ namespace AZ
 
         void Device::ShutdownInternal()
         {
+            
+
             m_allocationInfoCache.Clear();
 
             m_stagingMemoryAllocator.Shutdown();
@@ -124,7 +128,7 @@ namespace AZ
             m_dxgiFactory = nullptr;
             m_dxgiAdapter = nullptr;
 
-            ShutdownSubPlatform();
+            Platform::DeviceShutdownInternal(m_dx12Device.get());
 
             m_dx12Device = nullptr;
         }

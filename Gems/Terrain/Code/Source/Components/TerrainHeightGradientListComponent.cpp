@@ -161,10 +161,9 @@ namespace Terrain
         float maxSample = 0.0f;
         terrainExists = false;
 
-        AZ_ErrorOnce(
+        AZ_WarningOnce(
             "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with terrain height entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+            "Detected cyclic dependencies with terrain height entity references");
 
         if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {
@@ -201,10 +200,9 @@ namespace Terrain
         AZ_Assert(
             inOutPositionList.size() == terrainExistsList.size(), "The position list size doesn't match the terrainExists list size.");
 
-        AZ_ErrorOnce(
+        AZ_WarningOnce(
             "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with terrain height entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
-            GetEntityId().ToString().c_str());
+            "Detected cyclic dependencies with terrain height entity references");
 
         if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {

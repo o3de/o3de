@@ -69,7 +69,6 @@ namespace UnitTest
 
         // Create an entity with a sphere shape and a transform.
         AZStd::unique_ptr<AZ::Entity> CreateTestSphereEntity(float shapeRadius) const;
-        AZStd::unique_ptr<AZ::Entity> CreateTestSphereEntity(float shapeRadius, const AZ::Vector3& center) const;
 
         // Create and activate an entity with a gradient component of the requested type, initialized with test data.
         AZStd::unique_ptr<AZ::Entity> CreateAndActivateTestRandomGradient(const AZ::Aabb& spawnerBox, uint32_t randomSeed) const;
@@ -86,12 +85,11 @@ namespace UnitTest
             AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f))) const;
 
         void CreateTestTerrainSystem(const AZ::Aabb& worldBounds, float queryResolution, uint32_t numSurfaces);
-        void CreateTestTerrainSystemWithSurfaceGradients(const AZ::Aabb& worldBounds, float queryResolution);
         void DestroyTestTerrainSystem();
 
     protected:
         // State data for a full test terrain system setup.
-        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> m_heightGradientEntities;
+        AZStd::unique_ptr<AZ::Entity> m_heightGradientEntity;
         AZStd::vector<AZStd::unique_ptr<AZ::Entity>> m_surfaceGradientEntities;
         AZStd::unique_ptr<AZ::Entity> m_terrainLayerSpawnerEntity;
         AZStd::unique_ptr<Terrain::TerrainSystem> m_terrainSystem;

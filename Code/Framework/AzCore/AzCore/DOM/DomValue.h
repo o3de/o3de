@@ -159,9 +159,6 @@ namespace AZ::Dom
     class Value final
     {
     public:
-        AZ_TYPE_INFO(Value, "{3E20677F-3B8E-4F89-B665-ED41D74F4799}");
-        AZ_CLASS_ALLOCATOR(Value, ValueAllocator, 0);
-
         // Determine the short string buffer size based on the size of our largest internal type (string_view)
         // minus the size of the short string size field.
         static constexpr const size_t ShortStringSize = sizeof(AZStd::string_view) - 2;
@@ -202,6 +199,8 @@ namespace AZ::Dom
         Value(const Value&);
         Value(Value&&) noexcept;
         Value(AZStd::string_view stringView, bool copy);
+        explicit Value(const ValueType&);
+        explicit Value(ValueType&&);
         explicit Value(SharedStringType sharedString);
 
         explicit Value(int8_t value);

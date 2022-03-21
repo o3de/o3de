@@ -129,82 +129,77 @@ namespace EMotionFX::MotionMatching
                 const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
 
                 const AZ::Vector3& velocity = m_velocities[i];
-                const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity);
 
-                const float scale = 0.1f;
-                DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace * scale, color);
+                const float scale = 0.15f;
+                const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity * scale);
+
+                DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace, color);
             }
         }
     }
 
-    void PoseDataJointVelocities::CalculateVelocity(const ActorInstance* actorInstance, Motion* motion, float requestedSampleTime, size_t relativeToJointIndex)
+    void PoseDataJointVelocities::CalculateVelocity(MotionInstance* motionInstance, size_t relativeToJointIndex)
     {
-        MotionDataSampleSettings sampleSettings;
-        sampleSettings.m_actorInstance = actorInstance;
-        sampleSettings.m_inPlace = false;
-        sampleSettings.m_mirror = false;
-        sampleSettings.m_retarget = false;
-        sampleSettings.m_inputPose = sampleSettings.m_actorInstance->GetTransformData()->GetBindPose();
-
         const size_t numJoints = m_velocities.size();
         SetRelativeToJointIndex(relativeToJointIndex);
+        ActorInstance* actorInstance = motionInstance->GetActorInstance();
         m_velocities.resize(numJoints);
         m_angularVelocities.resize(numJoints);
+
+        const float originalTime = motionInstance->GetCurrentTime();
 
         // Prepare for sampling.
         AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
         AnimGraphPose* prevPose = posePool.RequestPose(actorInstance);
         AnimGraphPose* currentPose = posePool.RequestPose(actorInstance);
+        Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
 
         const size_t numSamples = 3;
         const float timeRange = 0.05f; // secs
-
         const float halfTimeRange = timeRange * 0.5f;
-        const float startTime = requestedSampleTime - halfTimeRange;
-        const float numInbetweens = aznumeric_cast<float>(numSamples - 1); // Number of elements or windows between two keyframes.
-        const float frameDelta = timeRange / numInbetweens;
-        const float motionDuration = motion->GetDuration();
+        const float startTime = originalTime - halfTimeRange;
+        const float frameDelta = timeRange / numSamples;
+        const float motionDuration = motionInstance->GetMotion()->GetDuration();
 
         // Zero all linear and angular velocities.
         Reset();
 
-        for (size_t sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex)
+        for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
         {
             float sampleTime = startTime + sampleIndex * frameDelta;
             sampleTime = AZ::GetClamp(sampleTime, 0.0f, motionDuration);
+            motionInstance->SetCurrentTime(sampleTime);
 
             if (sampleIndex == 0)
             {
-                sampleSettings.m_sampleTime = sampleTime;
-                motion->SamplePose(&prevPose->GetPose(), sampleSettings);
+                motionInstance->GetMotion()->Update(bindPose, &prevPose->GetPose(), motionInstance);
                 continue;
             }
 
-            sampleSettings.m_sampleTime = sampleTime;
-            motion->SamplePose(&currentPose->GetPose(), sampleSettings);
+            motionInstance->GetMotion()->Update(bindPose, &currentPose->GetPose(), motionInstance);
 
             const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
 
             for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
             {
-                const AZ::Vector3 prevWorldPosition = prevPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
-                const AZ::Vector3 currentWorldPosition = currentPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
-                const AZ::Vector3 prevPosition = inverseJointWorldTransform.TransformPoint(prevWorldPosition);
-                const AZ::Vector3 currentPosition = inverseJointWorldTransform.TransformPoint(currentWorldPosition);
-
                 // Calculate the linear velocity.
+                const AZ::Vector3 prevPosition = prevPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
+                const AZ::Vector3 currentPosition = currentPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
                 const AZ::Vector3 velocity = CalculateLinearVelocity(prevPosition, currentPosition, frameDelta);
-                m_velocities[jointIndex] += velocity;
+                m_velocities[jointIndex] += inverseJointWorldTransform.TransformVector(velocity);
             }
 
             *prevPose = *currentPose;
         }
 
+        const float numSamplesFloat = aznumeric_cast<float>(numSamples);
         for (size_t i = 0; i < numJoints; ++i)
         {
-            m_velocities[i] /= numInbetweens;
-            m_angularVelocities[i] /= numInbetweens;
+            m_velocities[i] /= numSamplesFloat;
+            m_angularVelocities[i] /= numSamplesFloat;
         }
+
+        motionInstance->SetCurrentTime(originalTime); // Set the current time back to what it was.
 
         posePool.FreePose(prevPose);
         posePool.FreePose(currentPose);

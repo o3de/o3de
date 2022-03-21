@@ -54,9 +54,6 @@ namespace Terrain
 
         void SetWorldSize(AZ::Vector2 sizeInMeters);
 
-        const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
-        const AZ::Aabb& GetTerrainBounds() const;
-        const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;
     private:
 
         static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
@@ -78,7 +75,6 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         // AZ::RPI::SceneNotificationBus overrides...
-        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
         void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
         
         // AZ::RPI::FeatureProcessor overrides...

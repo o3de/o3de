@@ -80,13 +80,7 @@ namespace AzToolsFramework
 
         // set up signals before we start thread.
         m_shutdownThreadSignal = false;
-        m_WorkerThread = AZStd::thread(
-            { /*m_name =*/ "Perforce worker" },
-            [this]
-            {
-                ThreadWorker();
-            }
-        );
+        m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
 
         SourceControlConnectionRequestBus::Handler::BusConnect();
         SourceControlCommandBus::Handler::BusConnect();

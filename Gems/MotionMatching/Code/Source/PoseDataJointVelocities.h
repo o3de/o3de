@@ -37,7 +37,7 @@ namespace EMotionFX::MotionMatching
         void CopyFrom(const PoseData* from) override;
         void Blend(const Pose* destPose, float weight) override;
 
-        void CalculateVelocity(const ActorInstance* actorInstance, Motion* motion, float requestedSampleTime, size_t relativeToJointIndex);
+        void CalculateVelocity(MotionInstance* motionInstance, size_t relativeToJointIndex);
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color) const override;
 
         AZStd::vector<AZ::Vector3>& GetVelocities()                         { return m_velocities; }

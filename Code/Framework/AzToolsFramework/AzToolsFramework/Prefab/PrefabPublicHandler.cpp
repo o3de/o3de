@@ -373,8 +373,7 @@ namespace AzToolsFramework
 
             if (!instanceToParentUnder.has_value())
             {
-                AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
-                instanceToParentUnder = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
+                instanceToParentUnder = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
                 parent = instanceToParentUnder->get().GetContainerEntityId();
             }
 

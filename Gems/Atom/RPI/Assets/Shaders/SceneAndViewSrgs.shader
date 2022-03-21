@@ -32,9 +32,8 @@
     [
         {
             "Name": "",
-            "RemoveBuildArguments": {
-                "azslc": ["--strip-unused-srgs"]
-            }
+            "PlusArguments": "",
+            "MinusArguments": "--strip-unused-srgs"
         }
     ]  
 }

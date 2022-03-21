@@ -17,7 +17,7 @@ namespace AzFramework
 {
     namespace RenderGeometry
     {
-        struct RayRequest;
+        struct RayResult;
     }
 }
 
@@ -33,9 +33,7 @@ public:
     //! Convert the input ray collision into a canvas space position and pass the event and that position
     //! to the UI canvas to handle as a positional input event
     //! \return true if the event was handled
-    virtual bool ProcessHitInputEvent(
-        const AzFramework::InputChannel::Snapshot& inputSnapshot,
-        const AzFramework::RenderGeometry::RayRequest& rayRequest) = 0;
+    virtual bool ProcessHitInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult) = 0;
 };
 
 using UiCanvasOnMeshBus = AZ::EBus<UiCanvasOnMeshInterface>;

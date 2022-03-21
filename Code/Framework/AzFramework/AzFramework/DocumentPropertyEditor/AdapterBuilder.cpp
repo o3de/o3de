@@ -21,23 +21,6 @@ namespace AZ::DocumentPropertyEditor
         CurrentNode()[attribute] = AZStd::move(value);
     }
 
-    void AdapterBuilder::OnEditorChanged(AZStd::function<void(const Dom::Path&, const Dom::Value&)> onChangedCallback)
-    {
-        // The value path is the first child of the PropertyEditor node
-        Dom::Path changedPath = GetCurrentPath() / 0;
-        CallbackAttribute(
-            Nodes::PropertyEditor::OnChanged,
-            [changedPath, onChangedCallback](const Dom::Value& value)
-            {
-                onChangedCallback(changedPath, value);
-            });
-    }
-
-    Dom::Path AdapterBuilder::GetCurrentPath() const
-    {
-        return m_currentPath;
-    }
-
     bool AdapterBuilder::IsError() const
     {
         return !m_error.empty();

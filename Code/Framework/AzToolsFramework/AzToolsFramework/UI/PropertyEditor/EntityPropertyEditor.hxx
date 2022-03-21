@@ -28,10 +28,8 @@
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
-#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
-#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzQtComponents/Components/O3DEStylesheet.h>
@@ -66,9 +64,7 @@ namespace AzToolsFramework
     class ComponentModeCollectionInterface;
     struct SourceControlFileInfo;
     class ReadOnlyEntityPublicInterface;
-    class FocusModeInterface;
-    class ContainerEntityInterface;
- 
+
     namespace AssetBrowser
     {
         class ProductAssetBrowserEntry;
@@ -123,7 +119,6 @@ namespace AzToolsFramework
         , public AZ::TickBus::Handler
         , private EditorWindowUIRequestBus::Handler
         , private ReadOnlyEntityPublicNotificationBus::Handler
-        , public FocusModeNotificationBus::Handler
     {
         Q_OBJECT;
     public:
@@ -163,9 +158,6 @@ namespace AzToolsFramework
         void SetPropertyEditingActive(InstanceDataNode* pNode) override;
         void SetPropertyEditingComplete(InstanceDataNode* pNode) override;
         void SealUndoStack() override;
-
-        // FocusModeNotificationBus overrides ...
-        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
         // Context menu population for entity component properties.
         void RequestPropertyContextMenu(InstanceDataNode* node, const QPoint& globalPos) override;
@@ -642,9 +634,6 @@ namespace AzToolsFramework
 
         // Reordering row widgets within the RPE.
         static constexpr float MoveFadeSeconds = 0.5f;
-
-        FocusModeInterface* m_focusModeInterface = nullptr;
-        ContainerEntityInterface* m_containerEntityInterface = nullptr;
 
         ReorderState m_currentReorderState = ReorderState::Inactive;
         ComponentEditor* m_reorderRowWidgetEditor = nullptr;

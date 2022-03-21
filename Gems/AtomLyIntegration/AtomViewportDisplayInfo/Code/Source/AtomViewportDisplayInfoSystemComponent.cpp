@@ -14,8 +14,6 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -23,7 +21,6 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI.Reflect/MemoryUsage.h>
 
 #include <CryCommon/ISystem.h>
 #include <CryCommon/IConsole.h>
@@ -206,17 +203,6 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawRendererInfo()
     {
         DrawLine(m_rendererDescription, AZ::Colors::Yellow);
-
-        // resolution and MSAA state
-        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-        const RHI::MultisampleState& multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
-
-        DrawLine(AZStd::string::format(
-            "Resolution: %dx%d (%s)",
-            viewportContext->GetViewportSize().m_width,
-            viewportContext->GetViewportSize().m_height,
-            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA"
-        ));
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo()
@@ -328,18 +314,6 @@ namespace AZ::Render
             AZStd::string::format(
                 "VRAM (resident/reserved): %.2f / %.2f MiB | %.2f available", deviceResidentMB, deviceReservedMB, availableDeviceMemoryMB),
             deviceMemoryColor);
-
-        // RPI AssetStreamingImagePool usage
-        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetStreamingPool();
-        const RHI::HeapMemoryUsage& imagePoolMemoryUsage = streamingImagePool->GetRHIPool()->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-
-        float imagePoolReservedMB = static_cast<float>(imagePoolMemoryUsage.m_reservedInBytes) / MB;
-        float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
-
-        DrawLine(
-            AZStd::string::format("RPI AssetStreamingImagePool: %.2f / %.2f MiB", imagePoolReservedMB, imagePoolBudgetMB),
-            (imagePoolReservedMB > 0.99f * imagePoolBudgetMB) ? AZ::Colors::Red : AZ::Colors::White
-        );
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()

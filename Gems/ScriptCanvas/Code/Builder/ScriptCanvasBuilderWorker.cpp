@@ -39,11 +39,10 @@ namespace ScriptCanvasBuilder
 
     void Worker::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
     {
+        AZ_TracePrintf(s_scriptCanvasBuilder, "Start Creating Job");
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
-        AZ_TracePrintf(s_scriptCanvasBuilder, "Start Creating Job: %s", fullPath.c_str());
-        response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
 
         const ScriptCanvasEditor::EditorGraph* sourceGraph = nullptr;
         const ScriptCanvas::GraphData* graphData = nullptr;
@@ -59,20 +58,12 @@ namespace ScriptCanvasBuilder
         else
         {
             AZ_TracePrintf(s_scriptCanvasBuilder, "Failed to load the file: %s", fullPath.c_str());
-            return;
+            response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
         }
 
-        if (!sourceGraph)
-        {
-            AZ_Error(s_scriptCanvasBuilder, false, "Graph Component missing after successfully loaded: %s", fullPath.c_str());
-            return;
-        }
-
-        if (!graphData)
-        {
-            AZ_Error(s_scriptCanvasBuilder, false, "GraphData missing after successfully loaded: %s", fullPath.c_str());
-            return;
-        }
+        // in terms of job creation, assert on anything but smooth sailing from this point
+        AZ_Assert(sourceGraph, "Graph component is missing from entity.");
+        AZ_Assert(graphData, "GraphData is missing from entity");
 
         struct EntityIdComparer
         {
@@ -96,13 +87,7 @@ namespace ScriptCanvasBuilder
 
         AZ::SerializeContext* serializeContext{};
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        if (!serializeContext)
-        {
-            AZ_Error(s_scriptCanvasBuilder, false
-                , "SerializeContext is required to enumerate dependent assets in the ScriptCanvas file: %s, but was missing"
-                , fullPath.c_str());
-            return;
-        }
+        AZ_Assert(serializeContext, "SerializeContext is required to enumerate dependent assets in the ScriptCanvas file");
 
         AZStd::unordered_multimap<AZStd::string, AssetBuilderSDK::SourceFileDependency> jobDependenciesByKey;
         auto assetFilter = [this, &jobDependenciesByKey]
@@ -141,19 +126,14 @@ namespace ScriptCanvasBuilder
             return true;
         };
 
-        if (!serializeContext->EnumerateInstanceConst(graphData
+        AZ_Verify(serializeContext->EnumerateInstanceConst
+            ( graphData
             , azrtti_typeid<ScriptCanvas::GraphData>()
             , assetFilter
             , {}
             , AZ::SerializeContext::ENUM_ACCESS_FOR_READ
             , nullptr
-            , nullptr))
-        {
-            AZ_Error(s_scriptCanvasBuilder, false
-                , "Failed to enumerate the graph data instance loaded from: %s"
-                , fullPath.c_str());
-            return;
-        }
+            , nullptr), "Failed to gather dependencies from graph data");
 
         // Flush asset database events to ensure no asset references are held by closures queued on Ebuses.
         AZ::Data::AssetManager::Instance().DispatchEvents();
@@ -178,7 +158,7 @@ namespace ScriptCanvasBuilder
         }
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-        AZ_TracePrintf(s_scriptCanvasBuilder, "Finish Creating Job: %s", fullPath.c_str());
+        AZ_TracePrintf(s_scriptCanvasBuilder, "Finish Creating Job");
     }
 
     const char* Worker::GetFingerprintString() const

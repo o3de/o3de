@@ -22,7 +22,6 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QInputDialog>
-#include <QIcon>
 
 namespace O3DE::ProjectManager
 {
@@ -69,9 +68,6 @@ namespace O3DE::ProjectManager
         {
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
-
-        // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
-        QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
 

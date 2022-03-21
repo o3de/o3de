@@ -14,7 +14,6 @@ set(FILES
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
-    Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
     Include/Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h
@@ -112,16 +111,6 @@ set(FILES
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
     Source/Checkerboard/CheckerboardPass.h
-    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.h
-    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.cpp
-    Source/CubeMapCapture/CubeMapCapture.h
-    Source/CubeMapCapture/CubeMapCapture.cpp
-    Source/CubeMapCapture/CubeMapRenderer.h
-    Source/CubeMapCapture/CubeMapRenderer.cpp
-    Source/Debug/RenderDebugFeatureProcessor.h
-    Source/Debug/RenderDebugFeatureProcessor.cpp
-    Source/Debug/RenderDebugSettings.h
-    Source/Debug/RenderDebugSettings.cpp
     Source/Decals/DecalFeatureProcessor.h
     Source/Decals/DecalFeatureProcessor.cpp
     Source/Decals/DecalTextureArray.h

@@ -50,7 +50,7 @@ namespace AZStd
 
     struct thread_desc
     {
-        //! Debug thread name. Limited to 16 characters on Linux.
+        //! Debug thread name.
         const char*     m_name{ "AZStd::thread" };
 
         //! Thread stack size. Default is -1, which means we will use the default stack size for each platform.

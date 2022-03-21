@@ -19,7 +19,7 @@ namespace AzFramework
 {
     namespace RenderGeometry
     {
-        struct RayRequest;
+        struct RayResult;
     }
 }
 
@@ -37,9 +37,7 @@ public: // member functions
     UiCanvasOnMeshComponent();
 
     // UiCanvasOnMeshInterface
-    bool ProcessHitInputEvent(
-        const AzFramework::InputChannel::Snapshot& inputSnapshot,
-        const AzFramework::RenderGeometry::RayRequest& rayRequest) override;
+    bool ProcessHitInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult) override;
     // ~UiCanvasOnMeshInterface
 
 
@@ -78,7 +76,7 @@ protected: // member functions
     void Deactivate() override;
     // ~AZ::Component
 
-    bool CalculateUVFromRayIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, AZ::Vector2& outUv);
+    bool ProcessCollisionInputEventInternal(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult);
 
     AZ::EntityId GetCanvas();
 

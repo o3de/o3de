@@ -47,8 +47,8 @@ namespace UnitTest
     //! @param width Width of the image
     //! @param height Height of the image
     //! @param pixelSize Number of bytes per pixel
-    //! @param pixelX The X coordinate of the pixel to set to a specific value based on the component
-    //! @param pixelY The Y coordinate of the pixel to set to a specific value based on the component
+    //! @param pixelX The X coordinate of the pixel to set to 1
+    //! @param pixelY The Y coordinate of the pixel to set to 1
     //! @return A vector of bytes for the image data
     AZStd::vector<uint8_t> BuildSpecificPixelImageData(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY);
 
@@ -58,8 +58,8 @@ namespace UnitTest
     //! @param width The width of the image
     //! @param height The height of the image
     //! @param pixelSize The number of bytes per pixel
-    //! @param pixelX The X coordinate of the pixel to set to a specific value based on the component
-    //! @param pixelY The Y coordinate of the pixel to set to a specific value based on the component
+    //! @param pixelX The X coordinate of the pixel to set to 1
+    //! @param pixelY The Y coordinate of the pixel to set to 1
     //! @return A mip chain asset with the specific pixel image data
     AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY);
 
@@ -70,11 +70,11 @@ namespace UnitTest
     //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
     AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed);
 
-    //! Creates an AZ::RPI::StreamingImageAsset where all the pixels are 0 except for the one pixel at the given coordinates, which is set to a specific value based on the component.
+    //! Creates an AZ::RPI::StreamingImageAsset where all the pixels are 0 except for the one pixel at the given coordinates, which is set to 1.
     //! \param width The width of the AZ::RPI::StreamingImageAsset
     //! \param height The height of the AZ::RPI::StreamingImageAsset
-    //! \param pixelX The X coordinate of the pixel to set to a specific value based on the component
-    //! \param pixelY The Y coordinate of the pixel to set to a specific value based on the component
+    //! \param pixelX The X coordinate of the pixel to set to 1
+    //! \param pixelY The Y coordinate of the pixel to set to 1
     //! \return The AZ::RPI::StreamingImageAsset in a loaded ready state
     AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY);
 

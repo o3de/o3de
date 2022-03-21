@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <Atom/Features/Debug.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/Lights/CapsuleLight.azsli>
 #include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
@@ -21,34 +20,21 @@
 
 void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
-    if( IsDirectLightingEnabled() )
+    if (o_enableDirectionalLights)
     {
-        if (o_enableDirectionalLights)
-        {
-            ApplyDirectionalLights(surface, lightingData, screenUv);
-        }
-        if (o_enablePunctualLights)
-        {
-            ApplySimplePointLights(surface, lightingData);
-            ApplySimpleSpotLights(surface, lightingData);
-        }
-        if (o_enableAreaLights)
-        {
-            ApplyPointLights(surface, lightingData);
-            ApplyDiskLights(surface, lightingData);
-            ApplyCapsuleLights(surface, lightingData);
-            ApplyQuadLights(surface, lightingData);
-            ApplyPolygonLights(surface, lightingData);
-        }
+        ApplyDirectionalLights(surface, lightingData, screenUv);
     }
-
-    if( UseDebugLight() )
+    if (o_enablePunctualLights)
     {
-        float3 lightIntensity = SceneSrg::m_debugLightingIntensity;
-        float3 lightDirection = SceneSrg::m_debugLightingDirection;
-
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, lightDirection);
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, lightDirection);
+        ApplySimplePointLights(surface, lightingData);
+        ApplySimpleSpotLights(surface, lightingData);
     }
-
+    if (o_enableAreaLights)
+    {
+        ApplyPointLights(surface, lightingData);
+        ApplyDiskLights(surface, lightingData);
+        ApplyCapsuleLights(surface, lightingData);
+        ApplyQuadLights(surface, lightingData);
+        ApplyPolygonLights(surface, lightingData);
+    }
 }

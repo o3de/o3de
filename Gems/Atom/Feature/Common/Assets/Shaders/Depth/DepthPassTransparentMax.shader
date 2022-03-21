@@ -9,6 +9,10 @@
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }
     },
 
+
+    "CompilerHints" : {
+    },
+
     "ProgramSettings" : 
     {
         "EntryPoints":

@@ -85,7 +85,6 @@ namespace EMotionFX::MotionMatching
 
     private:
         MotionInstance* CreateMotionInstance() const;
-        void DebugDrawQueryPose(AzFramework::DebugDisplayRequests& debugDisplay, bool drawPose, bool drawVelocities) const;
         void SamplePose(MotionInstance* motionInstance, Pose& outputPose);
         void SamplePose(Motion* motion, Pose& outputPose, float sampleTime) const;
 

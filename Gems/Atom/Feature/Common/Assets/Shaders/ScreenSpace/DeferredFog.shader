@@ -22,6 +22,11 @@
 
     "DrawList" : "forward",
 
+    "CompilerHints" : { 
+        "DisableOptimizations" : false,
+        "GenerateDebugInfo" : false
+    },
+
     "ProgramSettings":
     {
       "EntryPoints":

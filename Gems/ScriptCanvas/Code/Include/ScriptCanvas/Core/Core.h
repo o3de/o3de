@@ -380,17 +380,12 @@ namespace ScriptCanvasEditor
 
         bool PathEquals(const SourceHandle& other) const;
 
-        const AZ::IO::Path& RelativePath() const;
-
         AZStd::string ToString() const;
 
     private:
         ScriptCanvas::DataPtr m_data;
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
         AZ::IO::Path m_path;
-        AZ::IO::Path m_relativePath;
-
-        void SanitizePaths();
     };
 }
 
@@ -421,7 +416,6 @@ namespace ScriptCanvas
         ScriptCanvasEditor::EditorGraph* ModEditorGraph();
 
         AZStd::unique_ptr<AZ::Entity> m_scriptCanvasEntity;
-
     private:
         ScriptCanvasData(const ScriptCanvasData&) = delete;
     };

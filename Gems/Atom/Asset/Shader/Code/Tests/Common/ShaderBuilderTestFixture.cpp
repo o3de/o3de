@@ -11,8 +11,6 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Name/NameDictionary.h>
 
-#include <AzslShaderBuilderSystemComponent.h>
-
 namespace UnitTest
 {
     void ShaderBuilderTestFixture::SetUp()

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Math/Aabb.h>
 
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Physics/Material.h>
@@ -94,8 +93,6 @@ namespace Terrain
         AZStd::vector<Physics::MaterialId> GetMaterialList() const override;
         AZStd::vector<float> GetHeights() const override;
         AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const override;
-        void UpdateHeightsAndMaterials(const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
-            const AZ::Aabb& region = AZ::Aabb::CreateNull()) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -109,11 +106,9 @@ namespace Terrain
         Physics::MaterialId FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const;
 
         void GenerateHeightsInBounds(AZStd::vector<float>& heights) const;
-        AZ::Aabb GetRegionClampedToGrid(const AZ::Aabb& region) const;
+        void GenerateHeightsAndMaterialsInBounds(AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const;
 
-        void NotifyListenersOfHeightfieldDataChange(const AZ::Aabb* dirtyRegion = nullptr,
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask =
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
+        void NotifyListenersOfHeightfieldDataChange();
 
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;

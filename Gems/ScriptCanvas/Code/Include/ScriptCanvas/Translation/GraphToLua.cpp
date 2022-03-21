@@ -30,10 +30,7 @@ namespace GraphToLuaCpp
 {
     AZStd::string ToDependencyTableName(AZStd::string_view fileName)
     {
-        AZStd::string tableName = AZStd::string::format("%s%s", ScriptCanvas::Grammar::ToSafeName(fileName).c_str()
-            , ScriptCanvas::Grammar::k_DependencySuffix);
-        AZStd::to_lower(tableName.begin(), tableName.end());
-        return  tableName;
+        return AZStd::string::format("%s%s", ScriptCanvas::Grammar::ToSafeName(fileName).c_str(), ScriptCanvas::Grammar::k_DependencySuffix);
     }
 
     AZStd::string FileNameToTableName(AZStd::string_view fileName)
@@ -164,37 +161,9 @@ namespace ScriptCanvas
             }
         }
 
-        bool GraphToLua::IsConstructCallRequired() const
-        {
-            if (!m_model.GetEBusHandlings().empty())
-            {
-                return true;
-            }
-
-            if (!m_model.GetNodeableParse().empty())
-            {
-                return true;
-            }
-
-            auto& variables = m_model.GetVariables();
-            for (auto& variable : variables)
-            {
-                if (m_model.IsUserNodeable(variable))
-                {
-                    return true;
-                }
-                else if (variable->m_isMember)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         bool GraphToLua::IsDebugInfoWritten() const
         {
-            return m_buildConfiguration == BuildConfiguration::Debug
+            return m_executionConfig == BuildConfiguration::Debug
                 && m_functionBlockConfig == FunctionBlockConfig::Traced;
         }
 
@@ -291,18 +260,13 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateBody(BuildConfiguration configuration)
         {
-            constexpr const char* k_stars =
-                "-- **********************************************************************************************************************";
-            constexpr const char* k_debugDescription =
-                "-- ***** debug configuration, debug information available upon when tracing is requested, no performance markers in place";
-
-            m_buildConfiguration = configuration;
+            m_executionConfig = configuration;
 
             if (configuration == BuildConfiguration::Release)
             {
+                m_dotLua.WriteLine("-- release configuration, no debug information available, no performance markers");
                 m_dotLua.WriteLine("if _G.%s then", Grammar::k_InterpretedConfigurationRelease);
-                m_dotLua.WriteLine(k_stars);
-                m_dotLua.WriteLine("-- ****** release configuration, no debug information available, no performance markers");
+                m_dotLua.WriteNewLine();
             }
 
             TranslateBody();
@@ -310,27 +274,22 @@ namespace ScriptCanvas
             if (configuration == BuildConfiguration::Release)
             {
                 m_dotLua.WriteNewLine();
-                m_dotLua.WriteLine("-- ***** end release configuration");
-                m_dotLua.WriteLine(k_stars);
+                m_dotLua.WriteLine("-- performance configuration, no debug information available, performance markers in place");
                 m_dotLua.WriteLine("elseif _G.%s then", Grammar::k_InterpretedConfigurationPerformance);
-                m_dotLua.WriteLine(k_stars);
-                m_dotLua.WriteLine("-- ***** performance configuration, no debug information available, performance markers in place");
+                m_dotLua.WriteNewLine();
+
             }
             else if (configuration == BuildConfiguration::Performance)
             {
                 m_dotLua.WriteNewLine();
-                m_dotLua.WriteLine("-- ***** end performance configuration");
-                m_dotLua.WriteLine(k_stars);
+                m_dotLua.WriteLine("-- debug configuration, debug information available upon when tracing is requested, no performance markers in place");
                 m_dotLua.WriteLine("else");
-                m_dotLua.WriteLine(k_stars);
-                m_dotLua.WriteLine(k_debugDescription);
                 m_dotLua.WriteNewLine();
             }
             else
             {
                 m_dotLua.WriteNewLine();
-                m_dotLua.WriteLine("-- ***** end debug configuration");
-                m_dotLua.WriteLine(k_stars);
+                m_dotLua.WriteLine("-- end debug configuration");
                 m_dotLua.WriteLine("end");
             }
         }
@@ -344,59 +303,15 @@ namespace ScriptCanvas
         void GraphToLua::TranslateClassOpen()
         {
             m_dotLua.WriteLine("local %s = {}", m_tableName.data());
-            TranslateInheritance();
             m_dotLua.WriteNewLine();
         }
 
         void GraphToLua::TranslateConstruction()
         {
-            if (!m_model.IsClass())
+            if (m_model.IsPerEntityDataRequired())
             {
-                return;
+                TranslateInheritance();
             }
-
-            m_dotLua.WriteNewLine();
-            m_dotLua.Write("function %s.new(executionState", m_tableName.c_str());
-            WriteConstructionInput();
-            m_dotLua.WriteLine(")");
-
-            OpenFunctionBlock(m_dotLua);
-            {
-                // local self = setmetatable({}, GraphNameInstance_MT)
-                m_dotLua.WriteLineIndented("local self = setmetatable({}, %s%s)"
-                    , m_tableName.c_str()
-                    , Grammar::k_MetaTableSuffix);
-
-                // self.executionState = executionState
-                m_dotLua.WriteLineIndented("self.%s = %s"
-                    , Grammar::k_executionStateVariableName, Grammar::k_executionStateVariableName);
-
-                // call Construct() here
-                if (!m_model.GetInterface().IsBaseClass() || IsConstructCallRequired())
-                {
-                    m_dotLua.WriteIndented("self.Construct(self, executionState");
-                    WriteConstructionInput();
-                    m_dotLua.WriteLine(")");
-                }
-
-                // \note the current execution out storage does not support inheritance
-                // a doubly indexed array may be necessary, or some other mechanism
-                // consider moving initialize initialize execution outs to Construct,
-                // and getting a rawget accessible Execution out offset that is local to the object
-
-                // initialize outs to no-ops
-                if (const auto& outKeys = m_model.GetInterface().GetOutKeys(); !outKeys.empty())
-                {
-                    // k_InitializeExecutionOutsNameInterpretedClass(self, outKeyCount)
-                    m_dotLua.WriteLineIndented("%s(self, %zu)", Grammar::k_InitializeExecutionOutsNameInterpretedClass, outKeys.size());
-                }
-
-                m_dotLua.WriteLineIndented("return self");
-            }
-
-            CloseFunctionBlock(m_dotLua);
-            m_dotLua.WriteNewLine();
-            WriteConstructMethod();
         }
 
         void GraphToLua::TranslateDependencies()
@@ -658,7 +573,7 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateExecutionTreeFunctionCall(Grammar::ExecutionTreeConstPtr execution)
         {
-            TranslateExecutionOuts(execution->GetNodeable(), execution);
+            TranslateNodeableOuts(execution->GetNodeable(), execution);
             WriteDebugInfoIn(execution, "TranslateExecutionTreeFunctionCall begin");
             m_dotLua.WriteIndent();
             WriteLocalOutputInitialization(execution);
@@ -784,10 +699,11 @@ namespace ScriptCanvas
 
             const size_t outIndex = *outCallIndexOptional;
 
-            m_dotLua.WriteIndented("%s(self, %zu)(", Grammar::k_GetExecutionOutNameInterpretedClass, outIndex);
+            m_dotLua.WriteIndented("%s(self, %zu", Grammar::k_NodeableCallInterpretedOut, outIndex);
 
             if (execution->GetInputCount() > 0)
             {
+                m_dotLua.Write(", ");
                 WriteFunctionCallInput(execution);
             }
 
@@ -801,7 +717,7 @@ namespace ScriptCanvas
             // translate the block, with the parameter information passed in
             TranslateFunctionDefinition(execution, lex);
 
-            if (m_buildConfiguration == BuildConfiguration::Debug)
+            if (m_executionConfig == BuildConfiguration::Debug)
             {
                 m_dotLua.Indent();
 
@@ -820,7 +736,7 @@ namespace ScriptCanvas
             
             TranslateFunctionBlock(execution, FunctionBlockConfig::Ignored, lex);
 
-            if (m_buildConfiguration == BuildConfiguration::Debug)
+            if (m_executionConfig == BuildConfiguration::Debug)
             {
                 m_dotLua.WriteLineIndented("end");
                 m_dotLua.Outdent();
@@ -864,7 +780,7 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateFunctionBlock(Grammar::ExecutionTreeConstPtr functionBlock, FunctionBlockConfig config, IsNamed lex)
         {
-            if (m_buildConfiguration == BuildConfiguration::Debug || config == FunctionBlockConfig::Ignored)
+            if (m_executionConfig == BuildConfiguration::Debug || config == FunctionBlockConfig::Ignored)
             {
                 m_functionBlockConfig = config;
                 TranslateFunctionBlock(functionBlock, lex);
@@ -878,9 +794,9 @@ namespace ScriptCanvas
             if (isNamed == IsNamed::Yes)
             {
                 m_dotLua.Write(" %s", m_tableName.data());
-                // function GraphName
+                // function TableName
                 m_dotLua.Write(execution->IsPure() ? "." : ":" );
-                // function GraphName. OR function GraphName:
+                // function TableName. OR function TableName:
                 m_dotLua.Write(execution->GetName());
             }
 
@@ -911,7 +827,7 @@ namespace ScriptCanvas
                                 m_dotLua.Write(", ");
                             }
                         }
-                        else if (!m_model.IsUserNodeable()) // #functions2 this may have to distinguish between user nodeable and object
+                        else if (!m_model.IsUserNodeable())
                         {
                             inputIndex = 1;
                         }
@@ -1030,6 +946,7 @@ namespace ScriptCanvas
             {
                 TranslateEBusHandlerCreation(eventHandling, leftValue);
                 TranslateEBusEvents(eventHandling, leftValue);
+                m_dotLua.WriteNewLine();
             }
         }
         
@@ -1045,10 +962,7 @@ namespace ScriptCanvas
                 for (auto& out : nodeAndParse->m_latents)
                 {
                     m_dotLua.WriteNewLine();
-                    TranslateExecutionOut
-                        ( nodeAndParse->m_nodeable
-                        , out.second
-                        , nodeAndParse->m_isInterpreted ? OutSourceType::InterpretedClass : OutSourceType::Nodeable);
+                    TranslateNodeableOut(nodeAndParse->m_nodeable, out.second);
                 }
 
                 if (!nodeAndParse->m_latents.empty())
@@ -1060,26 +974,57 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateInheritance()
         {
-            if (!m_model.IsClass())
+            if (m_model.IsUserNodeable())
             {
-                return;
+                // setmetatable(Subgraph, { __index = Nodeable })
+                m_dotLua.WriteLine("setmetatable(%s, { __index = %s })", m_tableName.c_str(), Grammar::k_NodeableUserBaseClassName);
+                // local SubgraphInstance_MT = { __index = Subgraph }
+                m_dotLua.WriteLine("local %s%s = { __index = %s }", m_tableName.c_str(), Grammar::k_MetaTableSuffix, m_tableName.c_str());
+            }
+            else
+            {
+                m_dotLua.WriteLine("%s.__index = %s", m_tableName.c_str(), m_tableName.c_str());
             }
 
-            if (!m_model.GetInterface().IsBaseClass())
+            m_dotLua.WriteNewLine();
+            m_dotLua.Write("function %s.new(executionState", m_tableName.c_str());
+            WriteConstructionInput();
+            m_dotLua.WriteLine(")");
+
+            OpenFunctionBlock(m_dotLua);
             {
-                // setmetatable(GraphName, { __index = ParentClassName })
-                m_dotLua.WriteLine("setmetatable(%s, { __index = %s })"
-                    , m_tableName.c_str(), m_model.GetInterface().GetParentClassName().c_str());
+                if (m_model.IsUserNodeable())
+                {
+                    // local self = OverrideNodeableMetatable(Nodeable(), SubgraphInstance_MT)
+                    m_dotLua.WriteLineIndented("local self = %s(%s(%s), %s%s)"
+                        , Grammar::k_OverrideNodeableMetatableName
+                        , Grammar::k_NodeableUserBaseClassName
+                        , Grammar::k_executionStateVariableName
+                        , m_tableName.c_str()
+                        , Grammar::k_MetaTableSuffix);
+
+                    // initialize outs to no-ops
+                    const auto& outKeys = m_model.GetInterface().GetOutKeys();
+                    if (!outKeys.empty())
+                    {
+                        m_dotLua.WriteLineIndented("%s(self, %zu)", Grammar::k_InitializeNodeableOutKeys, outKeys.size());
+                    }
+                }
+                else
+                {
+                    m_dotLua.WriteLineIndented("local self = setmetatable({}, %s)", m_tableName.c_str());
+                }
+
+                m_dotLua.WriteLineIndented("self.%s = %s", Grammar::k_executionStateVariableName, Grammar::k_executionStateVariableName);
+                TranslateVariableInitialization("self.");
+                m_dotLua.WriteLineIndented("return self");
             }
 
-            // local GraphNameInstance_MT = { __index = GraphName }
-            m_dotLua.WriteLine("local %s%s = { __index = %s }", m_tableName.c_str(), Grammar::k_MetaTableSuffix, m_tableName.c_str());
+            CloseFunctionBlock(m_dotLua);
+            m_dotLua.WriteNewLine();
         }
 
-        void GraphToLua::TranslateExecutionOut
-            ( Grammar::VariableConstPtr host
-            , Grammar::ExecutionTreeConstPtr execution
-            , OutSourceType sourceType)
+        void GraphToLua::TranslateNodeableOut(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
         {
             auto outCallIndexOptional = execution->GetOutCallIndex();
             if (!outCallIndexOptional)
@@ -1090,11 +1035,12 @@ namespace ScriptCanvas
 
             const size_t outIndex = *outCallIndexOptional;
 
-            const auto setExecutionOutName = sourceType == OutSourceType::InterpretedClass
-                ? Grammar::k_SetExecutionOutNameInterpretedClass
+            // #functions2 remove-execution-out-hash
+            const auto setExecutionOutName = Grammar::IsUserFunctionDefinition(execution)
+                ? Grammar::k_NodeableSetExecutionOutUserSubgraphName
                 : execution->HasReturnValues()
-                    ? Grammar::k_SetExecutionOutResultNameNodeable
-                    : Grammar::k_SetExecutionOutNameNodeable;
+                    ? Grammar::k_NodeableSetExecutionOutResultName
+                    : Grammar::k_NodeableSetExecutionOutName;
 
             m_dotLua.WriteLineIndented("%s(self.%s, %zu, -- %s"
                 , setExecutionOutName
@@ -1109,17 +1055,14 @@ namespace ScriptCanvas
             m_dotLua.Outdent();
         }
 
-        void GraphToLua::TranslateExecutionOuts(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
+        void GraphToLua::TranslateNodeableOuts(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
         {
             const auto outs = execution->GetInternalOuts();
             
             for (const auto& out : outs)
             {
                 m_dotLua.WriteNewLine();
-                TranslateExecutionOut
-                    ( host
-                    , out
-                    , Grammar::IsUserFunctionCall(execution) ? OutSourceType::InterpretedClass : OutSourceType::Nodeable);
+                TranslateNodeableOut(host, out);
             }
 
             if (!outs.empty())
@@ -1130,11 +1073,6 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateStaticInitialization()
         {
-            if (m_buildConfiguration == BuildConfiguration::Debug)
-            {
-                m_dotLua.WriteLine("%s.%s = \"%s\"", m_tableName.data(), Grammar::k_internalClassName, m_tableName.data());
-            }
-
             if (m_runtimeInputs.m_staticVariables.empty())
             {
                 return;
@@ -1162,7 +1100,7 @@ namespace ScriptCanvas
             auto& variables = m_model.GetVariables();
             for (auto& variable : variables)
             {
-                if (variable->m_isDebugOnly && m_buildConfiguration != BuildConfiguration::Debug)
+                if (variable->m_isDebugOnly && m_executionConfig != BuildConfiguration::Debug)
                 {
                     continue;
                 }
@@ -1222,7 +1160,7 @@ namespace ScriptCanvas
                     }
                     else
                     {
-                        // self.leaf = Leaf.new(executionState)
+                        // self.leaf = Lef.new(executionState)
                         m_dotLua.WriteLineIndented("%s%s = %s.new(%s)"
                             , leftValue.data()
                             , variable->m_name.data()
@@ -1247,7 +1185,6 @@ namespace ScriptCanvas
 
                     case Grammar::VariableConstructionRequirement::InputNodeable:
                         m_dotLua.WriteLineIndented("%s:InitializeExecutionState(%s)", variable->m_name.data(), Grammar::k_executionStateVariableName);
-                        // \note move this to the auto-generated Cpp file
                         m_dotLua.WriteLineIndented("%s:%s()", variable->m_name.c_str(), Grammar::k_InitializeExecutionOutByRequiredCountName);
                         m_dotLua.WriteLineIndented("%s%s = %s", leftValue.data(), variable->m_name.data(), variable->m_name.data());
                         break;
@@ -1345,33 +1282,6 @@ namespace ScriptCanvas
             {
                 m_dotLua.Write(", %s", Grammar::k_DependentAssetsArgName);
             }
-        }
-
-        void GraphToLua::WriteConstructMethod()
-        {
-            // function GraphName.Construct(self, executionState, ...)
-            //     -- optional
-            //     Parent.Construct(self, executionState, ...)
-            //     -- variable initialization, if any
-            // end
-            m_dotLua.Write("function %s.Construct(self, executionState", m_tableName.data());
-            WriteConstructionInput();
-            m_dotLua.WriteLine(")");
-            OpenFunctionBlock(m_dotLua);
-            {
-                if (!m_model.GetInterface().IsBaseClass())
-                {
-                    // Parent.Construct(self, ...)
-                    m_dotLua.WriteIndented("%s.Construct(self, executionState", m_model.GetInterface().GetParentClassName().c_str());
-                    // #functions2 this will need the arguments to be unpacked
-                    WriteConstructionInput();
-                    m_dotLua.WriteLine(")");
-                }
-
-                TranslateVariableInitialization("self.");
-            }
-            CloseFunctionBlock(m_dotLua);
-            m_dotLua.WriteNewLine();
         }
 
         void GraphToLua::WriteCycleBegin(Grammar::ExecutionTreeConstPtr execution)
@@ -1923,7 +1833,7 @@ namespace ScriptCanvas
 
         void GraphToLua::WriteInfiniteLoopCheckPost(Grammar::ExecutionTreeConstPtr execution)
         {
-            if (m_buildConfiguration == BuildConfiguration::Debug)
+            if (m_executionConfig == BuildConfiguration::Debug)
             {
                 if (auto controlVariable = m_model.GetImplicitVariable(execution))
                 {
@@ -1960,7 +1870,7 @@ namespace ScriptCanvas
 
         void GraphToLua::WriteInfiniteLoopCheckPre(Grammar::ExecutionTreeConstPtr execution)
         {
-            if (m_buildConfiguration == BuildConfiguration::Debug)
+            if (m_executionConfig == BuildConfiguration::Debug)
             {
                 if (auto controlVariable = m_model.GetImplicitVariable(execution))
                 {

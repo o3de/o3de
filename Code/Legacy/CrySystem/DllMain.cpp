@@ -63,10 +63,7 @@ AZ_POP_DISABLE_WARNING
 
 extern "C"
 {
-#if !defined(AZ_MONOLITHIC_BUILD)
-CRYSYSTEM_API
-#endif
-ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
+CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
 {
     CSystem* pSystem = NULL;
 

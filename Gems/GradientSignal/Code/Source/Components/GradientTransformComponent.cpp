@@ -70,7 +70,9 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
                     ->Attribute(AZ::Edit::Attributes::SliderCurveMidpoint, 0.25) // Give the frequency zoom a non-linear scale slider with higher precision at the low end
 
-                    ->GroupElementToggle("Advanced", &GradientTransformConfig::m_advancedMode)
+                    ->DataElement(0, &GradientTransformConfig::m_advancedMode, "Advanced Mode", "Enables advanced configuration options.")
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                     ->DataElement(0, &GradientTransformConfig::m_allowReference, "Allow Reference", "When enabled, the shape reference can be overridden. When disabled, all operations are relative to this entity.")

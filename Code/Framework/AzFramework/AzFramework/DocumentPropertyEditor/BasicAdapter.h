@@ -21,7 +21,7 @@ namespace AZ::DocumentPropertyEditor
         //! Resets the contents of this adapter with a new DOM.
         void SetContents(Dom::Value contents);
         Dom::Value GetContents() const override;
-        Dom::PatchOutcome RequestContentChange(const Dom::Patch& patch);
+        Dom::PatchOutcome RequestContentChange(const Dom::Patch& patch) override;
 
     private:
         Dom::Value m_value;

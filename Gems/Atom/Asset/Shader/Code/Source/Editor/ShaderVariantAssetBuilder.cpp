@@ -53,8 +53,9 @@
 #include "AzslData.h"
 #include "AzslCompiler.h"
 #include <CommonFiles/Preprocessor.h>
+#include <CommonFiles/GlobalBuildOptions.h>
 #include <ShaderPlatformInterfaceRequest.h>
-#include "ShaderBuildArgumentsManager.h"
+#include "AtomShaderConfig.h"
 
 namespace AZ
 {
@@ -737,8 +738,6 @@ namespace AZ
 
             const auto& jobParameters = request.m_jobDescription.m_jobParameters;
             const AZStd::string& shaderSourceFileFullPath = jobParameters.at(ShaderSourceFilePathJobParam);
-            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
-            RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
             AZStd::string shaderFileName;
             AzFramework::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderFileName);
 
@@ -770,13 +769,10 @@ namespace AZ
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 
-            ShaderBuildArgumentsManager buildArgsManager;
-            buildArgsManager.Init();
-            // A job always runs on behalf of an Asset Processing platform (aka PlatformInfo).
-            // Let's merge the shader build arguments of the current PlatformInfo with the global
-            // set of arguments.
-            const auto platformName = ShaderBuilderUtility::GetPlatformNameFromPlatformInfo(request.m_platformInfo);
-            buildArgsManager.PushArgumentScope(platformName);
+            GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderVariantAssetBuilderName);
+            // At this moment We have global build options that should be merged with the build options that are common
+            // to all the supervariants of this shader.
+            buildOptions.m_compilerArguments.Merge(shaderSourceDescriptor.m_compiler);
 
             //! The ShaderOptionGroupLayout is common across all RHIs & Supervariants
             RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = nullptr;
@@ -784,11 +780,7 @@ namespace AZ
             // Generate shaders for each of those ShaderPlatformInterfaces.
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
-                AZStd::string apiName(shaderPlatformInterface->GetAPIName().GetCStr());
-                AZ_TraceContext("Platform API", apiName);
-
-                buildArgsManager.PushArgumentScope(apiName);
-                buildArgsManager.PushArgumentScope(shaderSourceData.m_removeBuildArguments, shaderSourceData.m_addBuildArguments, shaderSourceData.m_definitions);
+                AZ_TraceContext("ShaderPlatformInterface", shaderPlatformInterface->GetAPIName().GetCStr());
 
                 // Loop through all the Supervariants.
                 uint32_t supervariantIndexCounter = 0;
@@ -803,8 +795,6 @@ namespace AZ
                         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
                         return;
                     }
-
-                    buildArgsManager.PushArgumentScope(supervariantInfo.m_removeBuildArguments, supervariantInfo.m_addBuildArguments, supervariantInfo.m_definitions);
 
                     AZStd::string shaderStemNamePrefix = shaderFileName;
                     if (supervariantIndex.GetIndex() > 0)
@@ -866,8 +856,10 @@ namespace AZ
                     RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor;
                     if (shaderPlatformInterface->VariantCompilationRequiresSrgLayoutData())
                     {
-                        const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
-                        const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
+                        AZStd::string azslcCompilerParameters =
+                            shaderPlatformInterface->GetAzslCompilerParameters(buildOptions.m_compilerArguments);
+                        const bool platformUsesRegisterSpaces =
+                            (AzFramework::StringFunc::Find(azslcCompilerParameters, "--use-spaces") != AZStd::string::npos);
                     
                         RPI::ShaderResourceGroupLayoutList srgLayoutList;
                         RootConstantData rootConstantData;
@@ -892,7 +884,7 @@ namespace AZ
                         
                         pipelineLayoutDescriptor =
                             ShaderBuilderUtility::BuildPipelineLayoutDescriptorForApi(
-                                ShaderVariantAssetBuilderName, srgLayoutList, shaderEntryPoints, buildArgsManager.GetCurrentArguments(), rootConstantData,
+                                ShaderVariantAssetBuilderName, srgLayoutList, shaderEntryPoints, buildOptions.m_compilerArguments, rootConstantData,
                                 shaderPlatformInterface, bindingDependencies);
                         if (!pipelineLayoutDescriptor)
                         {
@@ -907,7 +899,7 @@ namespace AZ
                     // Setup the shader variant creation context:
                     ShaderVariantCreationContext shaderVariantCreationContext =
                     {
-                        *shaderPlatformInterface, request.m_platformInfo, buildArgsManager.GetCurrentArguments(), request.m_tempDirPath,
+                        *shaderPlatformInterface, request.m_platformInfo, buildOptions.m_compilerArguments, request.m_tempDirPath,
                         shaderVariantAssetBuildTimestamp,
                         shaderSourceDescriptor,
                         *shaderOptionGroupLayout.get(),
@@ -957,12 +949,9 @@ namespace AZ
                             response.m_outputProducts.push_back(AZStd::move(jobProduct));
                         }
                     }
-                    buildArgsManager.PopArgumentScope(); // Pop the supervariant build arguments.
                     supervariantIndexCounter++;
                 } // End of supervariant for block
-
-                buildArgsManager.PopArgumentScope(); // Pop the .shader build arguments.
-                buildArgsManager.PopArgumentScope(); // Pop the RHI build arguments.
+                
             }
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
@@ -1114,7 +1103,7 @@ namespace AZ
                 RHI::ShaderPlatformInterface::StageDescriptor descriptor;
                 bool shaderWasCompiled = creationContext.m_shaderPlatformInterface.CompilePlatformInternal(
                     creationContext.m_platformInfo, variantShaderSourcePath, shaderEntryName, assetBuilderShaderType,
-                    creationContext.m_tempDirPath, descriptor, creationContext.m_shaderBuildArguments);
+                    creationContext.m_tempDirPath, descriptor, creationContext.m_shaderCompilerArguments);
 
                 if (!shaderWasCompiled)
                 {

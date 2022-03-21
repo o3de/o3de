@@ -30,6 +30,10 @@
         }
     },
 
+    "CompilerHints" : { 
+        "DisableOptimizations" : false
+    },
+
     "ProgramSettings":
     {
       "EntryPoints":
@@ -49,9 +53,7 @@
     [
         {
             "Name": "",
-            "AddBuildArguments": {
-                "azslc": ["--no-alignment-validation"]
-            }
+            "PlusArguments": "--no-alignment-validation"
         }
     ],
 

@@ -60,7 +60,6 @@ namespace ScriptCanvasBuilder
         ReflectEntityIdNodes,
         FixExecutionStateNodeableConstruction,
         SwitchAssetsToBinary,
-        ReinforcePreloadBehavior,
         // add new entries above
         Current,
     };

@@ -20,41 +20,35 @@ namespace Benchmark
 {
     using namespace UnitTest::PrefabTestUtils;
 
-    class PrefabBenchmarkHarness
-    {
-        virtual void SetupHarness(const benchmark::State& state) = 0;
-        virtual void TeardownHarness(const benchmark::State& state) = 0;
-    };
-
     class BM_Prefab
         : public UnitTest::AllocatorsBenchmarkFixture
-        , public PrefabBenchmarkHarness
         , public UnitTest::TraceBusRedirector
     {
-    public:
-        void SetupHarness(const benchmark::State& state) override;
-        void TeardownHarness(const benchmark::State& state) override;
+        void internalSetUp(const benchmark::State& state);
+        void internalTearDown(const benchmark::State& state);
 
     protected:
         void SetUp(const benchmark::State& state) override
         {
-            SetupHarness(state);
+            internalSetUp(state);
         }
         void SetUp(benchmark::State& state) override
         {
-            SetupHarness(state);
+            internalSetUp(state);
         }
 
         void TearDown(const benchmark::State& state) override
         {
-            TeardownHarness(state);
+            internalTearDown(state);
         }
         void TearDown(benchmark::State& state) override
         {
-            TeardownHarness(state);
+            internalTearDown(state);
         }
 
-        AZ::Entity* CreateEntity(const char* entityName, const AZ::EntityId& parentId = AZ::EntityId());
+        AZ::Entity* CreateEntity(
+            const char* entityName,
+            const AZ::EntityId& parentId = AZ::EntityId());
         void CreateEntities(const unsigned int entityCount, AZStd::vector<AZ::Entity*>& entities);
         void SetEntityParent(const AZ::EntityId& entityId, const AZ::EntityId& parentId);
 

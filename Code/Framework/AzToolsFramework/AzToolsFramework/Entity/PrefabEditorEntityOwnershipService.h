@@ -22,9 +22,8 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
-        class PrefabFocusInterface;
-        class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
+        class PrefabLoaderInterface;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -216,10 +215,8 @@ namespace AzToolsFramework
 
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
-
-        Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
-        Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent = nullptr;
-        Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
+        Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent;
+        Prefab::PrefabLoaderInterface* m_loaderInterface;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
         bool m_isRootPrefabAssigned = false;

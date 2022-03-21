@@ -94,7 +94,7 @@ namespace AZ
 
             Microsoft::WRL::ComPtr<ID3D12CommandSignature> signatureComPtr;
             HRESULT  hr = device.GetDevice()->CreateCommandSignature(&desc, rootSignature, IID_GRAPHICS_PPV_ARGS(signatureComPtr.GetAddressOf()));
-            if (!device.AssertSuccess(hr))
+            if (!AssertSuccess(hr))
             {
                 return RHI::ResultCode::Fail;
             }

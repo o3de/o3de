@@ -50,7 +50,12 @@ namespace AZ
             return l.ptr != r.ptr;
         }
 
-        bool AssertSuccess(HRESULT hr);
+        inline bool AssertSuccess(HRESULT hr)
+        {
+            bool success = SUCCEEDED(hr);
+            AZ_Assert(success, "HRESULT not a success %x", hr);
+            return success;
+        }
 
         template<class T, class U>
         inline RHI::Ptr<T> DX12ResourceCast(U* resource)

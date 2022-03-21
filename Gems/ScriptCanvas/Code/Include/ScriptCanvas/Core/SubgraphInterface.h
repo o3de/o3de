@@ -147,7 +147,7 @@ namespace ScriptCanvas
             size_t GetInCountNotPure() const;
 
             const Inputs* GetInput(const AZStd::string& in) const;
-
+            
             const Out& GetLatentOut(size_t index) const;
 
             size_t GetLatentOutCount() const;
@@ -160,7 +160,7 @@ namespace ScriptCanvas
 
             LexicalScope GetLexicalScope(const In& in) const;
 
-            AZ::Outcome<AZStd::string, AZStd::string> GetName() const;
+            AZStd::string GetName() const;
 
             const NamespacePath& GetNamespacePath() const;
 
@@ -173,16 +173,9 @@ namespace ScriptCanvas
 
             const Outs* GetOuts(const AZStd::string& in) const;           
 
-            // meaningless (and empty) if not an object
-            const AZStd::string& GetParentClassName() const;
-
             bool IsActiveDefaultObject() const;
 
-            bool IsBaseClass() const;
-
             AZ::Outcome<bool> IsBranch(const AZStd::string& in) const;
-
-            bool IsClass() const;
 
             // returns true iff there is at least one latent out
             bool IsLatent() const;
@@ -192,6 +185,8 @@ namespace ScriptCanvas
             bool IsParsedPure() const;
 
             bool IsUserNodeable() const;
+
+            bool IsUserVariable() const;
 
             bool HasAnyFunctionality() const;
 
@@ -224,7 +219,7 @@ namespace ScriptCanvas
             void MarkRequiresConstructionParametersForDependencies();
 
             // #sc_user_data_type expose this to users directly, so they can say "I don't just want to make a component with this, I want to drop it right into another graph" 
-            void MarkClass();
+            void MarkUserVariable();
 
             void MergeExecutionCharacteristics(const SubgraphInterface & dependency);
 
@@ -239,14 +234,12 @@ namespace ScriptCanvas
 
             bool RequiresConstructionParametersForDependencies() const;
 
-            void MarkBaseClass();
-
             void SetNamespacePath(const NamespacePath& namespacePath);
 
             AZStd::string ToExecutionString() const;
 
         private:
-            bool m_isClass = false;
+            bool m_isUserVariable = false;
 
             bool m_areAllChildrenPure = true;
 
@@ -266,8 +259,6 @@ namespace ScriptCanvas
             Outs m_latents;
             AZStd::vector<AZ::Crc32> m_outKeys;
             NamespacePath m_namespacePath;
-            bool m_isBaseClass = true;
-            AZStd::string m_parentClassName;
 
             bool AddOutKey(const AZStd::string& name);
             const Out* FindImmediateOut(const AZStd::string& in, const AZStd::string& out) const;

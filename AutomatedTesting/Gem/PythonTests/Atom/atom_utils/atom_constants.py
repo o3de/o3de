@@ -63,23 +63,6 @@ MESH_LOD_TYPE = {
     'specific lod': 2,
 }
 
-# Display Mapper type
-DISPLAY_MAPPER_OPERATION_TYPE = {
-    'Aces': 0,
-    'AcesLut': 1,
-    'Passthrough': 2,
-    'GammaSRGB': 3,
-    'Reinhard': 4,
-}
-
-# Display Mapper presets
-DISPLAY_MAPPER_PRESET = {
-    '48Nits': 0,
-    '1000Nits': 1,
-    '2000Nits': 2,
-    '4000Nits': 3,
-}
-
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -329,42 +312,16 @@ class AtomComponentProperties:
     def display_mapper(property: str = 'name') -> str:
         """
         Display Mapper level component properties.
-          - 'Type' specifies the Display Mapper type from atom_constants.py DISPLAY_MAPPER_OPERATION_TYPE
           - 'Enable LDR color grading LUT' toggles the use of LDR color grading LUT
           - 'LDR color Grading LUT' is the Low Definition Range (LDR) color grading for Look-up Textures (LUT) which is
-            an Asset.id value corresponding to a LUT asset file.
-          - 'Override Defaults' toggle enables parameter overrides for ACES settings (bool)
-          - 'Alter Surround' toggle applies gamma adjustments for dim surround (bool)
-          - 'Alter Desaturation' toggle applies desaturation adjustment for luminance differences (bool)
-          - 'Alter CAT D60 to D65' toggles conversion referencing black luminance level constant (bool)
-          - 'Preset Selection' select from a list of presets from atom_constants.py DISPLAY_MAPPER_PRESET
-          - 'Cinema Limit (black)' reference black
-          - 'Cinema Limit (white)' reference white
-          - 'Min Point (luminance)' linear extension below this value
-          - 'Mid Point (luminance)' middle gray value
-          - 'Max Point (luminance)' linear extension above this value
-          - 'Surround Gamma' applied to compensate for the condition of the viewing environment
-          - 'Gamma' value applied as the basic Gamma curve Opto-Electrical Transfer Function (OETF)
+            an Asset.id value corresponding to a lighting asset file.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Display Mapper',
-            'Type': 'Controller|Configuration|Type',
             'Enable LDR color grading LUT': 'Controller|Configuration|Enable LDR color grading LUT',
             'LDR color Grading LUT': 'Controller|Configuration|LDR color Grading LUT',
-            'Override Defaults': 'Controller|Configuration|ACES Parameters|Override Defaults',
-            'Alter Surround': 'Controller|Configuration|ACES Parameters|Alter Surround',
-            'Alter Desaturation': 'Controller|Configuration|ACES Parameters|Alter Desaturation',
-            'Alter CAT D60 to D65': 'Controller|Configuration|ACES Parameters|Alter CAT D60 to D65',
-            'Preset Selection': 'Controller|Configuration|ACES Parameters|Load Preset|Preset Selection',
-            'Cinema Limit (black)': 'Controller|Configuration|ACES Parameters|Cinema Limit (black)',
-            'Cinema Limit (white)': 'Controller|Configuration|ACES Parameters|Cinema Limit (white)',
-            'Min Point (luminance)': 'Controller|Configuration|ACES Parameters|Min Point (luminance)',
-            'Mid Point (luminance)': 'Controller|Configuration|ACES Parameters|Mid Point (luminance)',
-            'Max Point (luminance)': 'Controller|Configuration|ACES Parameters|Max Point (luminance)',
-            'Surround Gamma': 'Controller|Configuration|ACES Parameters|Surround Gamma',
-            'Gamma': 'Controller|Configuration|ACES Parameters|Gamma',
         }
         return properties[property]
 
