@@ -11,7 +11,6 @@
 
 #include <AzCore/Component/EntityId.h>
 
-#include <QPushButton>
 #include <QVBoxLayout>
 
 namespace GradientSignal
@@ -110,13 +109,11 @@ namespace GradientSignal
         layout->setContentsMargins(QMargins());
         layout->setAlignment(Qt::AlignHCenter);
 
-        m_preview = new GradientPreviewWidget(this);
+        m_preview = new GradientPreviewWidget(true, this);
         m_preview->setFixedSize(256, 256);
         layout->addWidget(m_preview);
 
-        QPushButton* popout = new QPushButton("Show Larger Preview");
-        layout->addWidget(popout);
-        connect(popout, &QPushButton::clicked, this, [this]()
+        QObject::connect(m_preview, &GradientPreviewWidget::popoutClicked, this, [this]()
         {
             delete m_previewWindow;
             m_previewWindow = new GradientPreviewWidget;
