@@ -269,6 +269,26 @@ namespace AssetUtilities
     // If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
     bool IsInIntermediateAssetsFolder(AZ::IO::PathView path, AZ::IO::PathView cachePath = "");
 
+    // Returns the absolute path of the intermediate assets folder
+    AZ::IO::FixedMaxPath GetIntermediateAssetsFolder(AZ::IO::PathView cachePath);
+
+    struct ProductPath
+    {
+        ProductPath(AZStd::string scanfolderRelativeProductPath, AZStd::string platformIdentifier);
+
+        //! Absolute path for the product in the intermediate asset folder
+        AZStd::string GetIntermediatePath() const { return m_intermediatePath.StringAsPosix(); }
+        //! Absolute path for the product in the cache folder
+        AZStd::string GetCachePath() const { return m_cachePath.StringAsPosix(); }
+        //! Relative path of the product for the database, this includes the platform prefix and is lowercased
+        AZStd::string GetDatabasePath() const { return m_databasePath.StringAsPosix(); }
+        //! Scanfolder relative path of the product.  This is lowercased
+        AZStd::string GetRelativePath() const { return m_relativePath; }
+
+        AZStd::string m_relativePath;
+        AZ::IO::Path m_intermediatePath, m_cachePath, m_databasePath;
+    };
+
     class BuilderFilePatternMatcher
         : public AssetBuilderSDK::FilePatternMatcher
     {

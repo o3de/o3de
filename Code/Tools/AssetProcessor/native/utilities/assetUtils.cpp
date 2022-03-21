@@ -1490,10 +1490,16 @@ namespace AssetUtilities
             fixedCachedPath = cacheDir.absolutePath().toUtf8().constData();
         }
 
-        AZ::IO::FixedMaxPath intermediateAssetsPath(cachePath);
-        intermediateAssetsPath /= AssetProcessor::IntermediateAssetsFolderName;
+        AZ::IO::FixedMaxPath intermediateAssetsPath = GetIntermediateAssetsFolder(cachePath);
 
         return path.IsRelativeTo(intermediateAssetsPath);
+    }
+
+    AZ::IO::FixedMaxPath GetIntermediateAssetsFolder(AZ::IO::PathView cachePath)
+    {
+        AZ::IO::FixedMaxPath path(cachePath);
+
+        return path / AssetProcessor::IntermediateAssetsFolderName;
     }
 
     BuilderFilePatternMatcher::BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID)
@@ -1715,5 +1721,33 @@ namespace AssetUtilities
     void JobLogTraceListener::AddWarning()
     {
         ++m_warningCount;
+    }
+
+    ProductPath::ProductPath(AZStd::string scanfolderRelativeProductPath, AZStd::string platformIdentifier)
+    {
+        AZ_Assert(AZ::IO::PathView(scanfolderRelativeProductPath).IsRelative(), "scanfolderRelativeProductPath is not relative: %s", scanfolderRelativeProductPath.c_str());
+
+        if(AZ::IO::PathView(scanfolderRelativeProductPath).IsAbsolute())
+        {
+            __debugbreak();
+        }
+
+        QDir cacheDir;
+        [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+        AZ_Error("AssetUtils", result, "Failed to get cache root");
+
+        AZ::IO::FixedMaxPath cachePath = cacheDir.absolutePath().toUtf8().constData();
+
+        // Lowercase the inputs.  The cache path is always lowercased, which means the database path is lowercased,
+        // and for consistency, the intermediate path is also lowercased.
+        // All the other parts of the path must remain properly cased.
+        AZStd::to_lower(scanfolderRelativeProductPath.begin(), scanfolderRelativeProductPath.end());
+        AZStd::to_lower(platformIdentifier.begin(), platformIdentifier.end());
+
+        m_relativePath = NormalizeFilePath(scanfolderRelativeProductPath.c_str()).toUtf8().constData();
+        m_cachePath = cachePath / platformIdentifier / scanfolderRelativeProductPath;
+        m_intermediatePath = AssetUtilities::GetIntermediateAssetsFolder(cachePath) / scanfolderRelativeProductPath;
+        m_databasePath = AZ::IO::FixedMaxPath(platformIdentifier) / scanfolderRelativeProductPath;
     }
 } // namespace AssetUtilities
