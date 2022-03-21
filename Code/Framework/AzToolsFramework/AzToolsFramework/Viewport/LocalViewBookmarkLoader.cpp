@@ -102,7 +102,7 @@ namespace AzToolsFramework
         }
 
         // once written to the desired file, remove the key from the settings registry
-        // registry->Remove(bookmarkKey + "/");
+        registry->Remove(bookmarkKey + "/");
 
         AZ_Warning(
             "LocalViewBookmarkLoader", saved, R"(Unable to save Local View Bookmark file to path "%s"\n)", localBookmarkFilePath.c_str());
@@ -347,10 +347,12 @@ namespace AzToolsFramework
     AZStd::optional<ViewBookmark> LocalViewBookmarkLoader::LoadBookmarkAtIndex(int index)
     {
         ReadViewBookmarksFromSettingsRegistry();
+
         if (index >= 0 && index < m_localBookmarks.size())
         {
             return m_localBookmarks[index];
         }
+
         AZ_Warning("LocalViewBookmarkLoader", false, "Couldn't load View Bookmark from file.");
         return AZStd::nullopt;
     }
@@ -389,7 +391,6 @@ namespace AzToolsFramework
     {
         auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         const AZ::EntityId containerEntityId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
-
         if (!containerEntityId.IsValid())
         {
             return nullptr;
@@ -397,7 +398,6 @@ namespace AzToolsFramework
 
         AZ::Entity* containerEntity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(containerEntity, &AZ::ComponentApplicationBus::Events::FindEntity, containerEntityId);
-
         if (!containerEntity)
         {
             return nullptr;
@@ -436,14 +436,14 @@ namespace AzToolsFramework
             "It is a requirement for the LocalViewBookmarkLoader class. "
             "Check that it is being correctly initialized.");
 
-        auto prefabTemplate = prefabSystemComponent->FindTemplate(rootPrefabTemplateId);
-        AZStd::string prefabTemplateName = prefabTemplate->get().GetFilePath().Filename().Stem().Native();
+        const auto prefabTemplate = prefabSystemComponent->FindTemplate(rootPrefabTemplateId);
+        const AZStd::string prefabTemplateName = prefabTemplate->get().GetFilePath().Filename().Stem().Native();
 
         // to generate the file name in which we will store the view Bookmarks we use the name of the prefab + the timestamp
         // e.g. LevelName_1639763579377.setreg
-        AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-        AZStd::string sTime = AZStd::string::format("%llu", now.time_since_epoch().count());
-        return prefabTemplateName.data() + AZStd::string("_") + sTime + ".setreg";
+        const AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+        const AZStd::string timeSinceEpoch = AZStd::string::format("%llu", now.time_since_epoch().count());
+        return prefabTemplateName.data() + AZStd::string("_") + timeSinceEpoch + ".setreg";
     }
 
     void LocalViewBookmarkLoader::SetupLocalViewBookmarkComponent()
