@@ -164,15 +164,20 @@ namespace GradientSignal
         m_dependencyMonitor.ConnectDependency(m_configuration.m_shapeEntityId);
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
         AZ::TickBus::Handler::BusConnect();
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceAltitudeGradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
         UpdateFromShape();
         m_dirty = false;
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void SurfaceAltitudeGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         m_dependencyMonitor.Reset();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
@@ -224,7 +229,7 @@ namespace GradientSignal
             return;
         }
 
-        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::shared_lock lock(m_queryMutex);
 
         SurfaceData::SurfacePointList points;
         SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
@@ -294,9 +299,7 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::UpdateFromShape()
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::unique_lock lock(m_queryMutex);
 
         if (m_configuration.m_shapeEntityId.IsValid())
         {
@@ -320,7 +323,13 @@ namespace GradientSignal
     }
     void SurfaceAltitudeGradientComponent::SetShapeEntityId(AZ::EntityId entityId)
     {
-        m_configuration.m_shapeEntityId = entityId;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_shapeEntityId = entityId;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -331,7 +340,13 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::SetAltitudeMin(float altitudeMin)
     {
-        m_configuration.m_altitudeMin = altitudeMin;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_altitudeMin = altitudeMin;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -342,7 +357,13 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::SetAltitudeMax(float altitudeMax)
     {
-        m_configuration.m_altitudeMax = altitudeMax;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_altitudeMax = altitudeMax;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -358,13 +379,25 @@ namespace GradientSignal
 
     void SurfaceAltitudeGradientComponent::RemoveTag(int tagIndex)
     {
-        m_configuration.RemoveTag(tagIndex);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.RemoveTag(tagIndex);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void SurfaceAltitudeGradientComponent::AddTag(AZStd::string tag)
     {
-        m_configuration.AddTag(tag);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.AddTag(tag);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }

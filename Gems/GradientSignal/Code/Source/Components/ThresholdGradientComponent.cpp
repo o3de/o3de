@@ -105,12 +105,17 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         ThresholdGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ThresholdGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         m_dependencyMonitor.Reset();
         GradientRequestBus::Handler::BusDisconnect();
         ThresholdGradientRequestBus::Handler::BusDisconnect();
@@ -138,6 +143,8 @@ namespace GradientSignal
 
     float ThresholdGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         return (m_configuration.m_gradientSampler.GetValue(sampleParams) <= m_configuration.m_threshold) ? 0.0f : 1.0f;
     }
 
@@ -148,6 +155,8 @@ namespace GradientSignal
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
             return;
         }
+
+        AZStd::shared_lock lock(m_queryMutex);
 
         m_configuration.m_gradientSampler.GetValues(positions, outValues);
         for (auto& outValue : outValues)
@@ -168,7 +177,13 @@ namespace GradientSignal
 
     void ThresholdGradientComponent::SetThreshold(float threshold)
     {
-        m_configuration.m_threshold = threshold;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_threshold = threshold;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

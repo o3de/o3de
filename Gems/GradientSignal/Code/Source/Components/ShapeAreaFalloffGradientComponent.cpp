@@ -124,12 +124,17 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_shapeEntityId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         ShapeAreaFalloffGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ShapeAreaFalloffGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         m_dependencyMonitor.Reset();
         GradientRequestBus::Handler::BusDisconnect();
         ShapeAreaFalloffGradientRequestBus::Handler::BusDisconnect();
@@ -157,6 +162,8 @@ namespace GradientSignal
 
     float ShapeAreaFalloffGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         float distance = 0.0f;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, sampleParams.m_position);
 
@@ -175,6 +182,8 @@ namespace GradientSignal
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
             return;
         }
+
+        AZStd::shared_lock lock(m_queryMutex);
 
         bool shapeConnected = false;
         const float falloffWidth = m_configuration.m_falloffWidth;
@@ -215,7 +224,13 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::SetShapeEntityId(AZ::EntityId entityId)
     {
-        m_configuration.m_shapeEntityId = entityId;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_shapeEntityId = entityId;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -226,7 +241,13 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::SetFalloffWidth(float falloffWidth)
     {
-        m_configuration.m_falloffWidth = falloffWidth;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_falloffWidth = falloffWidth;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -237,7 +258,13 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::SetFalloffType(FalloffType type)
     {
-        m_configuration.m_falloffType = type;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_falloffType = type;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }
