@@ -148,6 +148,9 @@ namespace GradientSignal
 
     void DitherGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         m_dependencyMonitor.Reset();
         GradientRequestBus::Handler::BusDisconnect();
         DitherGradientRequestBus::Handler::BusDisconnect();
@@ -250,6 +253,8 @@ namespace GradientSignal
 
     float DitherGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         const AZ::Vector3& coordinate = sampleParams.m_position;
 
         const float pointsPerUnit = GetCalculatedPointsPerUnit();
@@ -271,6 +276,8 @@ namespace GradientSignal
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
             return;
         }
+
+        AZStd::shared_lock lock(m_queryMutex);
 
         const float pointsPerUnit = GetCalculatedPointsPerUnit();
 
@@ -294,6 +301,8 @@ namespace GradientSignal
 
     bool DitherGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         return m_configuration.m_gradientSampler.IsEntityInHierarchy(entityId);
     }
 
@@ -309,7 +318,13 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetUseSystemPointsPerUnit(bool value)
     {
-        m_configuration.m_useSystemPointsPerUnit = value;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_useSystemPointsPerUnit = value;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -320,7 +335,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPointsPerUnit(float points)
     {
-        m_configuration.m_pointsPerUnit = points;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_pointsPerUnit = points;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -331,7 +351,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPatternOffset(AZ::Vector3 offset)
     {
-        m_configuration.m_patternOffset = offset;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_patternOffset = offset;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -342,7 +367,12 @@ namespace GradientSignal
 
     void DitherGradientComponent::SetPatternType(AZ::u8 type)
     {
-        m_configuration.m_patternType = (DitherGradientConfig::BayerPatternType)type;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_patternType = (DitherGradientConfig::BayerPatternType)type;
+        }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

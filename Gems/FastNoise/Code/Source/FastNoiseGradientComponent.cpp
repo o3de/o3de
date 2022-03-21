@@ -288,6 +288,9 @@ namespace FastNoiseGem
 
     void FastNoiseGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         GradientSignal::GradientRequestBus::Handler::BusDisconnect();
         FastNoiseGradientRequestBus::Handler::BusDisconnect();
         GradientSignal::GradientTransformNotificationBus::Handler::BusDisconnect();
@@ -315,7 +318,7 @@ namespace FastNoiseGem
 
     void FastNoiseGradientComponent::OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform)
     {
-        AZStd::unique_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_gradientTransform = newTransform;
     }
 
@@ -324,10 +327,9 @@ namespace FastNoiseGem
         AZ::Vector3 uvw;
         bool wasPointRejected = false;
 
-        {
-            AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
-            m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
-        }
+        AZStd::shared_lock lock(m_queryMutex);
+
+        m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
 
         // Generator returns a range between [-1, 1], map that to [0, 1]
         return wasPointRejected ?
@@ -343,7 +345,7 @@ namespace FastNoiseGem
             return;
         }
 
-        AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        AZStd::shared_lock lock(m_queryMutex);
         AZ::Vector3 uvw;
 
         for (size_t index = 0; index < positions.size(); index++)
@@ -362,8 +364,15 @@ namespace FastNoiseGem
     template <typename TValueType, TValueType FastNoiseGradientConfig::*TConfigMember, void (FastNoise::*TMethod)(TValueType)>
     void FastNoiseGradientComponent::SetConfigValue(TValueType value)
     {
-        m_configuration.*TConfigMember = value;
-        ((&m_generator)->*TMethod)(value);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+
+            m_configuration.*TConfigMember = value;
+            ((&m_generator)->*TMethod)(value);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

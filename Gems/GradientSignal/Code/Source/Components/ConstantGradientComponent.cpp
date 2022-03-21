@@ -105,6 +105,9 @@ namespace GradientSignal
 
     void ConstantGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         GradientRequestBus::Handler::BusDisconnect();
         ConstantGradientRequestBus::Handler::BusDisconnect();
     }
@@ -131,6 +134,8 @@ namespace GradientSignal
 
     float ConstantGradientComponent::GetValue([[maybe_unused]] const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         return m_configuration.m_value;
     }
 
@@ -143,6 +148,8 @@ namespace GradientSignal
             return;
         }
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         AZStd::fill(outValues.begin(), outValues.end(), m_configuration.m_value);
     }
 
@@ -153,7 +160,13 @@ namespace GradientSignal
 
     void ConstantGradientComponent::SetConstantValue(float constant)
     {
-        m_configuration.m_value = constant;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_value = constant;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }
