@@ -282,8 +282,10 @@ namespace FastNoiseGem
         m_generator.SetCellularReturnType(m_configuration.m_cellularReturnType);
         m_generator.SetCellularJitter(m_configuration.m_cellularJitter);
 
-        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
         FastNoiseGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void FastNoiseGradientComponent::Deactivate()

@@ -99,8 +99,10 @@ namespace GradientSignal
 
     void ConstantGradientComponent::Activate()
     {
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         ConstantGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ConstantGradientComponent::Deactivate()
