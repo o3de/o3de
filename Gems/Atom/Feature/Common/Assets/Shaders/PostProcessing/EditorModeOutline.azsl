@@ -28,7 +28,7 @@ float2 Outliner(const float2 uv, const float lineThickness)
     const float2 unormalizedUv = float2(uv.x * PassSrg::m_maskDimensions.x, uv.y * PassSrg::m_maskDimensions.y);
     float2 outlines = float2(0., 0.);
     
-    // Outliner kernal
+    // Outliner kernel
     for(float u = -lineThickness; u <= lineThickness; u+=1.)
     {
         for(float v = -lineThickness; v <= lineThickness; v+=1.)

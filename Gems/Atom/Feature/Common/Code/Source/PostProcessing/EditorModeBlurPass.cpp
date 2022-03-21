@@ -15,7 +15,7 @@
 
 // Temporary measure for setting the blur pass shader parameters at runtime until GHI 3455 is implemented
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeBlurPass, 0.0f, 0.0f, 20.0f, 1.0f);
-AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernalHalfWidth, 5.0f);
+AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernelHalfWidth, 5.0f);
 
  namespace AZ
 {
@@ -35,7 +35,7 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernalHalfWidth, 5.0f);
         void EditorModeBlurPass::InitializeInternal()
         {
             EditorModeFeedbackPassBase::InitializeInternal();
-            m_kernalHalfWidthIndex.Reset();
+            m_kernelHalfWidthIndex.Reset();
         }
         
         void EditorModeBlurPass::FrameBeginInternal(FramePrepareParams params)
@@ -44,9 +44,9 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernalHalfWidth, 5.0f);
             EditorModeFeedbackPassBase::FrameBeginInternal(params);
         }
 
-        void EditorModeBlurPass::SetKernalHalfWidth(const float width)
+        void EditorModeBlurPass::SetKernelHalfWidth(const float width)
         {
-            m_kernalHalfWidth = width;
+            m_kernelHalfWidth = width;
         }
 
         void EditorModeBlurPass::SetSrgConstants()
@@ -56,9 +56,9 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernalHalfWidth, 5.0f);
             SetDepthTransitionStart(cl_editorModeBlurPass_DepthTransitionStart);
             SetDepthTransitionDuration(cl_editorModeBlurPass_DepthTransitionDuration);
             SetFinalBlendAmount(cl_editorModeBlurPass_FinalBlendAmount);
-            SetKernalHalfWidth(cl_editorModeBlurPass_KernalHalfWidth);
+            SetKernelHalfWidth(cl_editorModeBlurPass_KernelHalfWidth);
 
-            m_shaderResourceGroup->SetConstant(m_kernalHalfWidthIndex, m_kernalHalfWidth);
+            m_shaderResourceGroup->SetConstant(m_kernelHalfWidthIndex, m_kernelHalfWidth);
         }
     } // namespace Render
 } // namespace AZ
