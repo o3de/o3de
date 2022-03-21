@@ -27,14 +27,15 @@ namespace Terrain
         if (serialize)
         {
             serialize->Class<DetailMaterialConfiguration>()
-                ->Version(2)
+                ->Version(1)
                 ->Field("UseHeightBasedBlending", &DetailMaterialConfiguration::m_useHeightBasedBlending)
                 ->Field("RenderDistance", &DetailMaterialConfiguration::m_renderDistance)
                 ->Field("FadeDistance", &DetailMaterialConfiguration::m_fadeDistance)
                 ->Field("Scale", &DetailMaterialConfiguration::m_scale)
                 ;
+
             serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("WorldSize", &TerrainWorldRendererConfig::m_worldSize)
                 ->Field("DetailMaterialConfiguration", &TerrainWorldRendererConfig::m_detailMaterialConfig)
                 ;

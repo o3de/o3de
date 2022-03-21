@@ -32,6 +32,7 @@ namespace Terrain
 {
     struct DetailMaterialConfiguration
     {
+        AZ_CLASS_ALLOCATOR(DetailMaterialConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(DetailMaterialConfiguration, "{D2A2EFBB-B0C2-4363-9B32-15B9ACD52902}");
 
         bool m_useHeightBasedBlending = false;
