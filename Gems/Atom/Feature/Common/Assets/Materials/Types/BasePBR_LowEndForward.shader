@@ -36,10 +36,6 @@
         }
     },
 
-    "CompilerHints" : { 
-        "DisableOptimizations" : false
-    },
-
     "ProgramSettings":
     {
       "EntryPoints":

@@ -20,6 +20,7 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 
+AZ_DECLARE_BUDGET(Terrain);
 
 namespace Terrain
 {
@@ -122,6 +123,9 @@ namespace Terrain
 
     void TerrainHeightGradientListComponent::Deactivate()
     {
+        // Ensure that we only deactivate when no queries are actively running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         m_dependencyMonitor.Reset();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
@@ -158,12 +162,16 @@ namespace Terrain
         AZ::Vector3& outPosition,
         bool& terrainExists)
     {
+        // Allow multiple queries to run simultaneously, but prevent them from running in parallel with activation / deactivation.
+        AZStd::shared_lock lock(m_queryMutex);
+
         float maxSample = 0.0f;
         terrainExists = false;
 
-        AZ_WarningOnce(
+        AZ_ErrorOnce(
             "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with terrain height entity references");
+            "Detected cyclic dependencies with terrain height entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
 
         if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {
@@ -197,12 +205,18 @@ namespace Terrain
     void TerrainHeightGradientListComponent::GetHeights(
         AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList)
     {
+        AZ_PROFILE_FUNCTION(Terrain);
+
+        // Allow multiple queries to run simultaneously, but prevent them from running in parallel with activation / deactivation.
+        AZStd::shared_lock lock(m_queryMutex);
+
         AZ_Assert(
             inOutPositionList.size() == terrainExistsList.size(), "The position list size doesn't match the terrainExists list size.");
 
-        AZ_WarningOnce(
+        AZ_ErrorOnce(
             "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
-            "Detected cyclic dependencies with terrain height entity references");
+            "Detected cyclic dependencies with terrain height entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
 
         if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {
@@ -254,29 +268,33 @@ namespace Terrain
 
     void TerrainHeightGradientListComponent::OnCompositionChanged()
     {
-        RefreshMinMaxHeights();
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::HeightData);
-    }
+        // We query the shape and world bounds prior to locking the queryMutex to help reduce the chances of deadlocks between
+        // threads due to the EBus call mutexes.
 
-    void TerrainHeightGradientListComponent::RefreshMinMaxHeights()
-    {
         // Get the height range of our height provider based on the shape component.
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(m_cachedShapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+        AZ::Aabb shapeBounds = AZ::Aabb::CreateNull();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            shapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
         // Get the height range of the entire world
-        m_cachedHeightQueryResolution = 1.0f;
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution);
-
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             worldBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb);
 
-        // Save off the min/max heights so that we don't have to re-query them on every single height query.
-        m_cachedMinWorldHeight = worldBounds.GetMin().GetZ();
-        m_cachedMaxWorldHeight = worldBounds.GetMax().GetZ();
+        // Ensure that we only change our cached data and terrain registration status when no queries are actively running.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+
+            m_cachedShapeBounds = shapeBounds;
+
+            // Save off the min/max heights so that we don't have to re-query them on every single height query.
+            m_cachedMinWorldHeight = worldBounds.GetMin().GetZ();
+            m_cachedMaxWorldHeight = worldBounds.GetMax().GetZ();
+
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+                AzFramework::Terrain::TerrainDataNotifications::HeightData);
+        }
     }
 
     void TerrainHeightGradientListComponent::OnTerrainDataChanged(

@@ -9,6 +9,8 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Math/IntersectPoint.h>
+#include <AzCore/Math/IntersectSegment.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
 
@@ -23,7 +25,7 @@
 #endif // !defined(_RELEASE)
 
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
-
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Anonymous namespace
@@ -98,6 +100,19 @@ namespace
     }
 #endif
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    AZ::Vector2 ConvertBarycentricCoordsToUVCoords(float u, float v, float w, AZ::Vector2 uv0, AZ::Vector2 uv1, AZ::Vector2 uv2)
+    {
+        float arrVertWeight[3] = { max(0.f, u), max(0.f, v), max(0.f, w) };
+        float fDiv = 1.f / (arrVertWeight[0] + arrVertWeight[1] + arrVertWeight[2]);
+        arrVertWeight[0] *= fDiv;
+        arrVertWeight[1] *= fDiv;
+        arrVertWeight[2] *= fDiv;
+
+        AZ::Vector2 uvResult = uv0 * arrVertWeight[0] + uv1 * arrVertWeight[1] + uv2 * arrVertWeight[2];
+        return uvResult;
+    }
+
 } // Anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -108,9 +123,43 @@ namespace
 UiCanvasOnMeshComponent::UiCanvasOnMeshComponent()
 {}
 
-bool UiCanvasOnMeshComponent::ProcessHitInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiCanvasOnMeshComponent::ProcessHitInputEvent(
+    const AzFramework::InputChannel::Snapshot& inputSnapshot,
+    const AzFramework::RenderGeometry::RayRequest& rayRequest)
 {
-    return ProcessCollisionInputEventInternal(inputSnapshot, rayResult);
+    AZ::EntityId canvasEntityId = GetCanvas();
+
+    if (canvasEntityId.IsValid())
+    {
+        // Cache bus pointer as it will be used twice
+        UiCanvasBus::BusPtr uiCanvasInterfacePtr;
+        UiCanvasBus::Bind(uiCanvasInterfacePtr, canvasEntityId);
+        if (!uiCanvasInterfacePtr)
+        {
+            return false;
+        }
+
+        // Calculate UV texture coordinates of the intersected geometry
+        AZ::Vector2 uv(0.0f);
+        if (CalculateUVFromRayIntersection(rayRequest, uv))
+        {
+            AZ::Vector2 canvasSize;
+            UiCanvasBus::EventResult(canvasSize, uiCanvasInterfacePtr, &UiCanvasInterface::GetCanvasSize);
+            AZ::Vector2 canvasPoint = AZ::Vector2(uv.GetX() * canvasSize.GetX(), uv.GetY() * canvasSize.GetY());
+
+            bool handledByCanvas = false;
+            UiCanvasBus::EventResult(handledByCanvas, uiCanvasInterfacePtr,
+                &UiCanvasInterface::HandleInputPositionalEvent, inputSnapshot, canvasPoint);
+
+            if (handledByCanvas)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,36 +237,123 @@ void UiCanvasOnMeshComponent::Deactivate()
     UiCanvasManagerNotificationBus::Handler::BusDisconnect();
 }
 
-bool UiCanvasOnMeshComponent::ProcessCollisionInputEventInternal(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, AZ::Vector2& outUv)
 {
-    AZ::EntityId canvasEntityId = GetCanvas();
+    outUv = AZ::Vector2(0.0f);
 
-    if (canvasEntityId.IsValid())
+    // Make sure we can get the model asset
+    AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+    AZ::Render::MeshComponentRequestBus::EventResult(
+        modelAsset, GetEntityId(), &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+    AZ::RPI::ModelAsset* asset = modelAsset.Get();
+    if (!asset)
     {
-        // Cache bus pointer as it will be used twice
-        UiCanvasBus::BusPtr uiCanvasInterfacePtr;
-        UiCanvasBus::Bind(uiCanvasInterfacePtr, canvasEntityId);
-        if (!uiCanvasInterfacePtr)
+        return false;
+    }
+
+    // Calculate the nearest point of collision
+    AZ::Transform meshWorldTM;
+    AZ::TransformBus::EventResult(meshWorldTM, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
+    AZ::Transform meshWorldTMInverse = meshWorldTM.GetInverse();
+
+    AZ::Vector3 rayOrigin = meshWorldTMInverse.TransformPoint(rayRequest.m_startWorldPosition);
+    AZ::Vector3 rayEnd = meshWorldTMInverse.TransformPoint(rayRequest.m_endWorldPosition);
+    AZ::Vector3 rayDirection = rayEnd - rayOrigin;
+
+    // When a segment intersects a triangle, the returned hit distance will be between [0, 1].
+    // Initialize min hit distance to be greater than 1 so that the first hit will be the new min
+    float minResultDistance = 2.0f;
+    bool foundResult = false;
+
+    auto lods = modelAsset->GetLodAssets();
+    if (lods.empty())
+    {
+        return false;
+    }
+
+    auto meshes = lods[0]->GetMeshes();
+    for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
+    {
+        // Find position and UV semantics
+        static const AZ::Name positionName = AZ::Name::FromStringLiteral("POSITION");
+        static const AZ::Name uvName = AZ::Name::FromStringLiteral("UV");
+        auto streamBufferList = mesh.GetStreamBufferInfoList();
+        const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;
+        const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo* uvBuffer = nullptr;
+
+        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& bufferInfo : streamBufferList)
         {
-            return false;
+            if (bufferInfo.m_semantic.m_name == positionName)
+            {
+                positionBuffer = &bufferInfo;
+            }
+            else if ((bufferInfo.m_semantic.m_name == uvName) && (bufferInfo.m_semantic.m_index == 0))
+            {
+                uvBuffer = &bufferInfo;
+            }
         }
 
-        AZ::Vector2 canvasSize;
-        UiCanvasBus::EventResult(canvasSize, uiCanvasInterfacePtr, &UiCanvasInterface::GetCanvasSize);
-
-        AZ::Vector2 canvasPoint = AZ::Vector2(rayResult.m_uv.GetX() * canvasSize.GetX(), rayResult.m_uv.GetY() * canvasSize.GetY());
-
-        bool handledByCanvas = false;
-        UiCanvasBus::EventResult(handledByCanvas, uiCanvasInterfacePtr,
-            &UiCanvasInterface::HandleInputPositionalEvent, inputSnapshot, canvasPoint);
-
-        if (handledByCanvas)
+        if (!positionBuffer || !uvBuffer)
         {
-            return true;
+            continue;
+        }
+
+        auto positionBufferAsset = positionBuffer->m_bufferAssetView.GetBufferAsset();
+        const float* rawPositionBuffer = (const float*)(positionBufferAsset->GetBuffer().begin());
+        AZ_Assert(
+            positionBuffer->m_bufferAssetView.GetBufferViewDescriptor().m_elementFormat == AZ::RHI::Format::R32G32B32_FLOAT,
+            "Unexpected position element format.");
+
+        auto uvBufferAsset = uvBuffer->m_bufferAssetView.GetBufferAsset();
+        const float* rawUvBuffer = (const float*)(uvBufferAsset->GetBuffer().begin());
+        AZ_Assert(
+            uvBuffer->m_bufferAssetView.GetBufferViewDescriptor().m_elementFormat == AZ::RHI::Format::R32G32_FLOAT,
+            "Unexpected UV element format.");
+
+        auto indexBuffer = mesh.GetIndexBufferAssetView().GetBufferAsset();
+        const uint32_t* rawIndexBuffer = (const uint32_t*)(indexBuffer->GetBuffer().begin());
+        AZ_Assert(
+            (indexBuffer->GetBufferViewDescriptor().m_elementCount % 3) == 0,
+            "index buffer not a multiple of 3");
+
+        for (uint32_t index = 0; index < indexBuffer->GetBufferViewDescriptor().m_elementCount; index += 3)
+        {
+            uint32_t index1 = rawIndexBuffer[index];
+            uint32_t index2 = rawIndexBuffer[index + 1];
+            uint32_t index3 = rawIndexBuffer[index + 2];
+
+            AZ::Vector3 vertex1(
+                rawPositionBuffer[index1 * 3], rawPositionBuffer[(index1 * 3) + 1], rawPositionBuffer[(index1 * 3) + 2]);
+            AZ::Vector3 vertex2(
+                rawPositionBuffer[index2 * 3], rawPositionBuffer[(index2 * 3) + 1], rawPositionBuffer[(index2 * 3) + 2]);
+            AZ::Vector3 vertex3(
+                rawPositionBuffer[index3 * 3], rawPositionBuffer[(index3 * 3) + 1], rawPositionBuffer[(index3 * 3) + 2]);
+            AZ::Vector3 resultNormal;
+
+            float resultDistance = 0.0f;
+            if (AZ::Intersect::IntersectSegmentTriangle(rayOrigin, rayEnd, vertex1, vertex2, vertex3, resultNormal, resultDistance))
+            {
+                if (resultDistance < minResultDistance)
+                {
+                    AZ::Vector3 hitPosition = rayOrigin + (rayDirection * resultDistance);
+                    AZ::Vector3 uvw = AZ::Intersect::Barycentric(vertex1, vertex2, vertex3, hitPosition);
+                    if (uvw.IsGreaterEqualThan(AZ::Vector3::CreateZero()))
+                    {
+                        AZ::Vector3 uv1(rawUvBuffer[index1 * 2], rawUvBuffer[(index1 * 2) + 1], 0.0f);
+                        AZ::Vector3 uv2(rawUvBuffer[index2 * 2], rawUvBuffer[(index2 * 2) + 1], 0.0f);
+                        AZ::Vector3 uv3(rawUvBuffer[index3 * 2], rawUvBuffer[(index3 * 2) + 1], 0.0f);
+                        outUv = ConvertBarycentricCoordsToUVCoords(
+                            uvw.GetX(), uvw.GetY(), uvw.GetZ(), AZ::Vector2(uv1), AZ::Vector2(uv2), AZ::Vector2(uv3));
+                        minResultDistance = resultDistance;
+                        foundResult = true;
+                    }
+                }
+            }
         }
     }
 
-    return false;
+    return foundResult;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

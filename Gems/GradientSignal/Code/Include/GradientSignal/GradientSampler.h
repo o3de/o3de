@@ -114,7 +114,8 @@ namespace GradientSignal
 
             if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
-                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references on entity id %s",
+                    m_gradientId.ToString().c_str());
             }
             else
             {
@@ -178,7 +179,9 @@ namespace GradientSignal
 
             if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
-                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references");
+                AZ_ErrorOnce(
+                    "GradientSignal", false, "Detected cyclic dependencies with gradient entity references on entity id %s",
+                    m_gradientId.ToString().c_str());
                 ClearOutputValues(outValues);
                 return;
             }
