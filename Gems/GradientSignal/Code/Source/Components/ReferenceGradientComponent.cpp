@@ -98,12 +98,17 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         ReferenceGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ReferenceGradientComponent::Deactivate()
     {
+        // Prevent deactivation from happening while any queries are running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         m_dependencyMonitor.Reset();
         GradientRequestBus::Handler::BusDisconnect();
         ReferenceGradientRequestBus::Handler::BusDisconnect();
@@ -131,6 +136,7 @@ namespace GradientSignal
 
     float ReferenceGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
         return m_configuration.m_gradientSampler.GetValue(sampleParams);
     }
 
@@ -142,6 +148,7 @@ namespace GradientSignal
             return;
         }
 
+        AZStd::shared_lock lock(m_queryMutex);
         m_configuration.m_gradientSampler.GetValues(positions, outValues);
     }
 
