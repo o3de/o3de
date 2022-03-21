@@ -24,12 +24,14 @@ namespace ImageProcessingAtom
     {
         static constexpr int TiffMaxMessageSize = 1024;
 
+#ifdef AZ_ENABLE_TRACING
         static void ImageProcessingTiffErrorHandler(const char* module, const char* format, va_list argList)
         {
             char buffer[TiffMaxMessageSize];
             azvsnprintf(buffer, TiffMaxMessageSize, format, argList);
             AZ_Error(module, false, buffer);
         }
+#endif
 
         class TiffFileRead
         {
@@ -72,10 +74,12 @@ namespace ImageProcessingAtom
 
         IImageObject* LoadImageFromTIFF(const AZStd::string& filename)
         {
+#ifdef AZ_ENABLE_TRACING
             // Reroute the TIFF loader Error Handler so that any load errors are recorded.
             // There is also a warning handler that can get rerouted via TIFFSetWarningHandler, but the warnings include noisy notices
             // like 'tiff tag X unsupported', so it isn't currently hooked up here.
             TIFFSetErrorHandler(ImageProcessingTiffErrorHandler);
+#endif
 
             TiffFileRead tiffRead(filename);
             TIFF* tif = tiffRead.GetTiff();
