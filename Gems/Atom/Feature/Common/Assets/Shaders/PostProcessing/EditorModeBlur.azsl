@@ -29,7 +29,7 @@ float3 Blur(const float2 uv, const float2 uvDir, const float kernelHalfWidth)
         outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + (float2(i,i) * uvDir)) * PassSrg::m_maskDimensions.zw).rgb;
     }
 
-    return outColor / (kernelHalfWidth * 2 + 1);
+    return outColor / (kernelHalfWidth * 2.0 + 1.0);
 }
 
 PSOutput MainPS(VSOutput IN)
@@ -40,8 +40,8 @@ PSOutput MainPS(VSOutput IN)
     const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
     
     // Blur effect
-    float2 blurDir = (PassSrg::m_direction == 0) ? float2(1.0, 0.0) : float2(0.0, 1.0);
-    float3 finalEffect = Blur(IN.m_texCoord, blurDir, PassSrg::m_kernelHalfWidth);
+    float2 blurDirection = (PassSrg::m_direction == 0) ? float2(1.0, 0.0) : float2(0.0, 1.0);
+    float3 finalEffect = Blur(IN.m_texCoord, blurDirection, PassSrg::m_kernelHalfWidth);
     
     // Apply the depth transition to the blend amount
     const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
