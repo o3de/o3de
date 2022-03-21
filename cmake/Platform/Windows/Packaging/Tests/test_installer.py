@@ -126,8 +126,10 @@ def test_run_editor_fixture(test_run_asset_processor_batch_fixture, context):
             str(context.engine_bin_path / 'Editor.exe'),
             f'--project-path="{context.project_path}"',
             '--rhi=null',
-            '--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=True"'
-            '--skipWelcomeScreenDialog=True',
+            '--regset="/Amazon/Settings/EnableSourceControl=false"',
+            '--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=true"',
+            '--regset="/Amazon/AWS/Preferences/AWSAttributionEnabled=false"',
+            '--skipWelcomeScreenDialog=true',
             '+wait_seconds','10',
             '+quit'
         ]
