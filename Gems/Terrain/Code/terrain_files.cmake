@@ -10,7 +10,7 @@ set(FILES
     Include/Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h
     Include/Terrain/TerrainDataConstants.h
     Include/Terrain/Passes/TerrainDetailTextureComputePass.h
-    Include/Terrain/Passes/TerrainMacroTextureComputePass.h
+    Include/Terrain/Passes/TerrainMacroTextureClipmapComputePass.h
     Source/Components/TerrainHeightGradientListComponent.cpp
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp
@@ -42,7 +42,7 @@ set(FILES
     Source/TerrainRenderer/ClipmapBounds.cpp
     Source/TerrainRenderer/ClipmapBounds.h
     Source/TerrainRenderer/Passes/TerrainDetailTextureComputePass.cpp
-    Source/TerrainRenderer/Passes/TerrainMacroTextureComputePass.cpp
+    Source/TerrainRenderer/Passes/TerrainMacroTextureClipmapComputePass.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainRenderer/TerrainDetailMaterialManager.cpp

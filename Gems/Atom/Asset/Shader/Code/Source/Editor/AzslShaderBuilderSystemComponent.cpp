@@ -13,6 +13,7 @@
 
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/Utils.h>
+#include <Atom/RHI.Edit/ShaderBuildOptions.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -26,8 +27,6 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 
 #include <CommonFiles/Preprocessor.h>
-#include <CommonFiles/GlobalBuildOptions.h>
-#include <Editor/AtomShaderCapabilitiesConfigFile.h>
 
 namespace AZ
 {
@@ -45,9 +44,8 @@ namespace AZ
 
             PreprocessorOptions::Reflect(context);
             RHI::ShaderCompilerProfiling::Reflect(context);
-            AtomShaderConfig::CapabilitiesConfigFile::Reflect(context);
-            GlobalBuildOptions::Reflect(context);
-            RHI::ShaderCompilerArguments::Reflect(context);
+            RHI::ShaderBuildArguments::Reflect(context);
+            RHI::ShaderBuildOptions::Reflect(context);
         }
 
         void AzslShaderBuilderSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
