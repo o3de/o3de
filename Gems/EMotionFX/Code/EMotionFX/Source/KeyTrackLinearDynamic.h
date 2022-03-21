@@ -10,6 +10,7 @@
 
 // include required headers
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/Compare.h>
@@ -18,6 +19,7 @@
 #include "KeyFrame.h"
 #include "CompressedKeyFrames.h"
 #include "KeyFrameFinder.h"
+
 
 
 namespace AZ

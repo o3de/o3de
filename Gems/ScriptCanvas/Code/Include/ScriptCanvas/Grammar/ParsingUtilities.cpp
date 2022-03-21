@@ -1221,7 +1221,7 @@ namespace ScriptCanvas
 
         void PrettyPrint(AZStd::string& result, const AbstractCodeModel& model)
         {
-            if (model.IsPerEntityDataRequired())
+            if (model.IsClass())
             {
                 result += "* Per entity data required\n";
             }

@@ -6,53 +6,23 @@
  *
  */
 
-#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <Document/MaterialDocumentRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
-#include <Window/MaterialEditorWindowSettings.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
-#include <QByteArray>
-#include <QCloseEvent>
-#include <QDesktopServices>
-#include <QFileDialog>
 #include <QMessageBox>
-#include <QStatusBar>
-#include <QUrl>
 #include <QWindow>
-AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
 {
     MaterialEditorWindow::MaterialEditorWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, parent)
     {
-        // Among other things, we need the window wrapper to save the main window size, position, and state
-        auto mainWindowWrapper =
-            new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
-        mainWindowWrapper->setGuest(this);
-        mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "MaterialEditor", "mainWindowGeometry");
-
-        // set the style sheet for RPE highlighting and other styling
-        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/MaterialEditor.qss"));
-
-        QApplication::setWindowIcon(QIcon(":/Icons/materialeditor.svg"));
-
-        setObjectName("MaterialEditorWindow");
-
-        m_toolBar = new MaterialEditorToolBar(this);
+        m_toolBar = new MaterialEditorToolBar(m_toolId, this);
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
@@ -63,51 +33,13 @@ namespace MaterialEditor
 
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
-        m_assetBrowser->SetOpenHandler([this](const AZStd::string& absolutePath) {
-            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
-            {
-                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                    m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
-                return;
-            }
-
-            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
-            {
-                return;
-            }
-
-            QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
-        });
 
         m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/MaterialInspector");
-        m_materialInspector->SetIndicatorFunction(
-            [](const AzToolsFramework::InstanceDataNode* node)
-            {
-                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
-                if (property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue))
-                {
-                    return ":/Icons/changed_property.svg";
-                }
-                return ":/Icons/blank.png";
-            });
 
         AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Viewport Settings", new ViewportSettingsInspector(m_toolId, this), Qt::LeftDockWidgetArea, Qt::Vertical);
         SetDockWidgetVisible("Viewport Settings", false);
-
-        // Restore geometry and show the window
-        mainWindowWrapper->showFromSettings();
-
-        // Restore additional state for docked windows
-        auto windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
-            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
-
-        if (!windowSettings->m_mainWindowState.empty())
-        {
-            QByteArray windowState(windowSettings->m_mainWindowState.data(), static_cast<int>(windowSettings->m_mainWindowState.size()));
-            m_advancedDockManager->restoreState(windowState);
-        }
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
@@ -149,29 +81,6 @@ namespace MaterialEditor
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    bool MaterialEditorWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
-    {
-        CreateMaterialDialog createDialog(openPath.c_str(), this);
-        createDialog.adjustSize();
-
-        if (createDialog.exec() == QDialog::Accepted &&
-            !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
-            !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
-        {
-            savePath = createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData();
-            openPath = createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData();
-            return true;
-        }
-        return false;
-    }
-
-    bool MaterialEditorWindow::GetOpenDocumentParams(AZStd::string& openPath)
-    {
-        const AZStd::vector<AZ::Data::AssetType> assetTypes = { azrtti_typeid<AZ::RPI::MaterialAsset>() };
-        openPath = AtomToolsFramework::GetOpenFileInfo(assetTypes).absoluteFilePath().toUtf8().constData();
-        return !openPath.empty();
-    }
-
     void MaterialEditorWindow::OpenSettings()
     {
         SettingsDialog dialog(this);
@@ -191,23 +100,6 @@ namespace MaterialEditor
             <p><b>Ctrl+LMB</b> - rotate model</p>
             <p><b>Shift+LMB</b> - rotate environment</p>
             </body></html>)");
-    }
-
-    void MaterialEditorWindow::OpenAbout()
-    {
-        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
-    }
-
-    void MaterialEditorWindow::closeEvent(QCloseEvent* closeEvent)
-    {
-        // Capture docking state before shutdown
-        auto windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
-            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
-
-        QByteArray windowState = m_advancedDockManager->saveState();
-        windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());
-
-        Base::closeEvent(closeEvent);
     }
 } // namespace MaterialEditor
 

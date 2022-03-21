@@ -24,8 +24,7 @@ namespace MaterialEditor
     //! its panels, managing selection of assets, and performing high-level actions like saving. It contains...
     //! 2) MaterialViewport        - The user can see the selected Material applied to a model.
     //! 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
-    class MaterialEditorWindow
-        : public AtomToolsFramework::AtomToolsDocumentMainWindow
+    class MaterialEditorWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT
     public:
@@ -45,13 +44,8 @@ namespace MaterialEditor
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
-        bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath) override;
-        bool GetOpenDocumentParams(AZStd::string& openPath) override;
         void OpenSettings() override;
         void OpenHelp() override;
-        void OpenAbout() override;
-
-        void closeEvent(QCloseEvent* closeEvent) override;
 
         AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
         MaterialViewportWidget* m_materialViewport = {};

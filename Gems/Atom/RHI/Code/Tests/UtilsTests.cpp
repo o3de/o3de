@@ -21,6 +21,12 @@ namespace UnitTest
         UtilsTests()
             : m_application{ AZStd::make_unique<AzFramework::Application>() }
         {
+            // Add the Atom_RHI as an active gem for the Atom_Utils test in order
+            // to have the @gemroot:Atom_RHI@ alias set
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::Test::AddActiveGem("Atom_RHI", *settingsRegistry, AZ::IO::FileIOBase::GetInstance());
+            }
         }
 
         ~UtilsTests() override
@@ -28,7 +34,7 @@ namespace UnitTest
             m_application.reset();
         }
 
-        static constexpr const char TestDataFolder[] = "@engroot@/Gems/Atom/RHI/Code/Tests/UtilsTestsData/";
+        static constexpr const char TestDataFolder[] = "@gemroot:Atom_RHI@/Code/Tests/UtilsTestsData/";
 
         AZStd::unique_ptr<AzFramework::Application> m_application;
     };

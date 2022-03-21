@@ -22,6 +22,7 @@
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -603,19 +604,16 @@ namespace AZ
 
             bool MaterialPropertyInspector::SaveMaterial() const
             {
-                const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
-                    AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
+                const auto& defaultPath = AtomToolsFramework::GetUniqueFilePath(AZStd::string::format(
+                    "%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), AZ::RPI::MaterialSourceData::Extension));
 
-                const QString saveFilePath = AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath();
-                if (saveFilePath.isEmpty())
+                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
+                if (saveFilePath.empty())
                 {
                     return false;
                 }
 
-                if (!EditorMaterialComponentUtil::SaveSourceMaterialFromEditData(saveFilePath.toUtf8().constData(), m_editData))
+                if (!EditorMaterialComponentUtil::SaveSourceMaterialFromEditData(saveFilePath, m_editData))
                 {
                     AZ_Warning("AZ::Render::EditorMaterialComponentInspector", false, "Failed to save material data.");
                     return false;
@@ -626,14 +624,13 @@ namespace AZ
 
             bool MaterialPropertyInspector::SaveMaterialToSource() const
             {
-                const QString saveFilePath =
-                    AtomToolsFramework::GetSaveFileInfo(m_editData.m_materialSourcePath.c_str()).absoluteFilePath();
-                if (saveFilePath.isEmpty())
+                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(m_editData.m_materialSourcePath);
+                if (saveFilePath.empty())
                 {
                     return false;
                 }
 
-                if (!EditorMaterialComponentUtil::SaveSourceMaterialFromEditData(saveFilePath.toUtf8().constData(), m_editData))
+                if (!EditorMaterialComponentUtil::SaveSourceMaterialFromEditData(saveFilePath, m_editData))
                 {
                     AZ_Warning("AZ::Render::EditorMaterialComponentInspector", false, "Failed to save material data.");
                     return false;

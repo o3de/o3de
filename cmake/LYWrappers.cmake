@@ -408,6 +408,71 @@ function(ly_target_link_libraries TARGET)
 
 endfunction()
 
+#! o3de_copy_targets_usage_requires: Copies the usage requirements of the input targets
+# For input target that have a TYPE of "MODULE_LIBRARY", its INTERFACE_* properties are copied,
+# since a MODULE_LIBRARY cannot be linked
+# For input targets that are not of "MODULE_LIBRARY" TYPE, they are addded as dependency of the 
+# destination target through the target_link_libraries command
+# See: https://cmake.org/cmake/help/latest/prop_tgt/TYPE.html for list of available library types
+#
+# The primary purpose of this function is to aggregate the usage requirements of multiple dependencies
+# into an INTERFACE target, where it would act as a psuedo ALIAS target which can depend on multiple targets
+#\arg:TARGET destination INTERFACE target where usage requirements of the input targets will be aggregated into
+#\arg:SOURCE_TARGETS list of targets whose usage requirements will be copied from
+function(o3de_copy_targets_usage_requirements)
+    set(oneValueArgs TARGET)
+    set(multiValueArgs SOURCE_TARGETS)
+    cmake_parse_arguments(usage_dependencies "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT usage_dependencies_TARGET OR NOT TARGET ${usage_dependencies_TARGET})
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} must be specified a TARGET argument")
+    endif()
+
+    get_target_property(item_type ${usage_dependencies_TARGET} TYPE)
+    if (NOT item_type STREQUAL INTERFACE_LIBRARY)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} only supports copy of usage requirements to an INTERFACE TARGET")
+    endif()
+
+    set(dest_target ${usage_dependencies_TARGET})
+    
+    foreach(source_target IN LISTS usage_dependencies_SOURCE_TARGETS)
+        unset(item_type)
+        # Retrieve the resolved source target name
+        set(source_target_de_alias ${source_target})
+        if (TARGET ${source_target})
+            get_property(item_type TARGET ${source_target} PROPERTY TYPE)
+            ly_de_alias_target(${source_target} source_target_de_alias)
+        endif()
+
+        # If the source target does not exist the item_type is empty
+        # In that case the TARGET is assumed to not be a MODULE_LIBRARY
+        if(item_type STREQUAL MODULE_LIBRARY)
+            # For module libraries the INTERFACE properties are copied over
+            
+            # Copy over include and system include directories
+            target_include_directories(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_INCLUDE_DIRECTORIES>>)
+            target_include_directories(${dest_target} SYSTEM INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>>)
+
+            # Copy over dependent link libraries and linker options
+            target_link_libraries(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_LINK_LIBRARIES>>)
+            target_link_options(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_LINK_OPTIONS>>)
+
+            # Copy over compiler defintions and compiler options
+            target_compile_definitions(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_COMPILE_DEFINITIONS>>)
+            target_compile_options(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_COMPILE_OPTIONS>>)
+            # Copy over source filenames; For the destionation INTERFACE target these will not compile,
+            # but can be used as part of add_custom_command
+            target_sources(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_SOURCES>>)
+        else()
+            # The simpler case for non-MODULE targets is to copy the usage dependencies via target_link_libraries
+            # This even works for source targets with a TYPE of "INTERFACE_LIBRARY" as its INTERFACE_* PROPERTIES
+            # are transferred via target_link_libraries as well
+            # https://cmake.org/cmake/help/latest/command/add_library.html#interface-libraries
+            target_link_libraries(${dest_target} INTERFACE ${source_target_de_alias})
+        endif()
+    endforeach()
+endfunction()
+
 #! ly_delayed_target_link_libraries: internal function called by the root CMakeLists.txt after all targets
 #  have been declared to determine if they are regularly
 #  1) If a MODULE is passed in the list of items, it will add the INTERFACE_INCLUDE_DIRECTORIES as include

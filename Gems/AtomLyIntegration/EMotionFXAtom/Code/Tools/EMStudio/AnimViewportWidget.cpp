@@ -241,7 +241,6 @@ namespace EMStudio
         CalculateCameraProjection();
         RenderCustomPluginData();
         FollowCharacter();
-        m_renderer->CheckBounds();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
@@ -278,6 +277,8 @@ namespace EMStudio
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
                 m_renderer->GetCharacterCenter());
+
+            m_renderer->UpdateGroundplane();
         }
     }
 
@@ -291,9 +292,23 @@ namespace EMStudio
         return GetViewportContext()->GetId();
     }
 
+    void AnimViewportWidget::mousePressEvent(QMouseEvent* event)
+    {
+        m_pixelsSinceClick = 0;
+        m_prevMousePoint = event->globalPos();
+    }
+
+    void AnimViewportWidget::mouseMoveEvent(QMouseEvent* event)
+    {
+        int deltaX = event->globalX() - m_prevMousePoint.x();
+        int deltaY = event->globalY() - m_prevMousePoint.y();
+
+        m_pixelsSinceClick += AZStd::abs(deltaX) + AZStd::abs(deltaY);
+    }
+
     void AnimViewportWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        if (event->button() == Qt::RightButton)
+        if (event->button() == Qt::RightButton && m_pixelsSinceClick < MinMouseMovePixes)
         {
             OnContextMenuEvent(event);
         }
@@ -352,12 +367,15 @@ namespace EMStudio
                 });
         }
 
-        QAction* resetAction = menu->addAction("Reset Character");
-        connect(resetAction, &QAction::triggered, this, [this]()
-            {
-                m_renderer->Reinit();
-                UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
-            });
+        if (m_renderer && m_renderer->GetEntityId() != AZ::EntityId())
+        {
+            QAction* resetAction = menu->addAction("Move Character to Origin");
+            connect(resetAction, &QAction::triggered, this, [this]()
+                {
+                    m_renderer->MoveActorEntitiesToOrigin();
+                    UpdateCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
+                });
+        }
 
         if (!menu->isEmpty())
         {

@@ -6,12 +6,6 @@
  *
  */
 
-#include <AzCore/Math/Matrix3x4.h>
-#include <AzCore/Math/Matrix4x4.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/Math/Quaternion.h>
-#include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/vector.h>
 
 #include <MCore/Source/LogManager.h>

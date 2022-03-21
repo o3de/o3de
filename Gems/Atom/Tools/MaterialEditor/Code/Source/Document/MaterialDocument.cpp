@@ -45,8 +45,8 @@ namespace MaterialEditor
         }
     }
 
-    MaterialDocument::MaterialDocument(const AZ::Crc32& toolId)
-        : AtomToolsFramework::AtomToolsDocument(toolId)
+    MaterialDocument::MaterialDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+        : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
     {
         MaterialDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -146,7 +146,25 @@ namespace MaterialEditor
         return property->GetValue();
     }
 
-    AZStd::vector<AtomToolsFramework::DocumentObjectInfo> MaterialDocument::GetObjectInfo() const
+    AtomToolsFramework::DocumentTypeInfo MaterialDocument::BuildDocumentTypeInfo()
+    {
+        AtomToolsFramework::DocumentTypeInfo documentType;
+        documentType.m_documentTypeName = "Material";
+        documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
+            return aznew MaterialDocument(toolId, documentTypeInfo); };
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedExtensionsToSave.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::MaterialTypeAsset>());
+        documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
+            "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
+            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/types/standardpbr.azmaterialtype"));
+        return documentType;
+    }
+
+    AtomToolsFramework::DocumentObjectInfoVector MaterialDocument::GetObjectInfo() const
     {
         if (!IsOpen())
         {
@@ -154,7 +172,7 @@ namespace MaterialEditor
             return {};
         }
 
-        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> objects;
+        AtomToolsFramework::DocumentObjectInfoVector objects;
         objects.reserve(m_groups.size());
 
         AtomToolsFramework::DocumentObjectInfo objectInfo;
@@ -202,7 +220,7 @@ namespace MaterialEditor
         return SaveSucceeded();
     }
 
-    bool MaterialDocument::SaveAsCopy(AZStd::string_view savePath)
+    bool MaterialDocument::SaveAsCopy(const AZStd::string& savePath)
     {
         if (!AtomToolsDocument::SaveAsCopy(savePath))
         {
@@ -234,7 +252,7 @@ namespace MaterialEditor
         return SaveSucceeded();
     }
 
-    bool MaterialDocument::SaveAsChild(AZStd::string_view savePath)
+    bool MaterialDocument::SaveAsChild(const AZStd::string& savePath)
     {
         if (!AtomToolsDocument::SaveAsChild(savePath))
         {
@@ -292,11 +310,6 @@ namespace MaterialEditor
             return true;
         });
         return result;
-    }
-
-    bool MaterialDocument::IsSavable() const
-    {
-        return AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension);
     }
 
     bool MaterialDocument::BeginEdit()
@@ -398,7 +411,7 @@ namespace MaterialEditor
         return true;
     }
 
-    bool MaterialDocument::Open(AZStd::string_view loadPath)
+    bool MaterialDocument::Open(const AZStd::string& loadPath)
     {
         if (!AtomToolsDocument::Open(loadPath))
         {
@@ -887,6 +900,13 @@ namespace MaterialEditor
         objectInfo.m_description = group->m_description;
         objectInfo.m_objectType = azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>();
         objectInfo.m_objectPtr = const_cast<AtomToolsFramework::DynamicPropertyGroup*>(group);
+        objectInfo.m_nodeIndicatorFunction = [](const AzToolsFramework::InstanceDataNode* node)
+        {
+            const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(node);
+            return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue)
+                ? ":/Icons/changed_property.svg"
+                : ":/Icons/blank.png";
+        };
         return objectInfo;
     }
 

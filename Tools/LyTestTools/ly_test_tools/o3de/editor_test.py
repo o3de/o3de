@@ -33,6 +33,7 @@ import abc
 import functools
 import inspect
 import json
+import logging
 import math
 import os
 import re
@@ -49,6 +50,8 @@ from ly_test_tools.launchers.exceptions import WaitTimeoutError
 
 # This file contains ready-to-use test functions which are not actual tests, avoid pytest collection
 __test__ = False
+
+logger = logging.getLogger(__name__)
 
 
 class EditorTestBase(abc.ABC):
@@ -808,9 +811,12 @@ class EditorTestSuite:
                     test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
                     # Save the crash log
                     crash_file_name = os.path.basename(workspace.paths.crash_log())
-                    workspace.artifact_manager.save_artifact(
-                        os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
-                    editor_utils.cycle_crash_report(run_id, workspace)
+                    if os.path.exists(crash_file_name):
+                        workspace.artifact_manager.save_artifact(
+                            os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
+                        editor_utils.cycle_crash_report(run_id, workspace)
+                    else:
+                        logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
                     test_result = Result.Fail(test_spec, output, editor_log_content)
         except WaitTimeoutError:
@@ -903,9 +909,12 @@ class EditorTestSuite:
                                                                                  self._TIMEOUT_CRASH_LOG)
                                 # Save the crash log
                                 crash_file_name = os.path.basename(workspace.paths.crash_log())
-                                workspace.artifact_manager.save_artifact(
-                                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
-                                editor_utils.cycle_crash_report(run_id, workspace)
+                                if os.path.exists(crash_file_name):
+                                    workspace.artifact_manager.save_artifact(
+                                        os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
+                                    editor_utils.cycle_crash_report(run_id, workspace)
+                                else:
+                                    logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                                 results[test_spec_name] = Result.Crash(result.test_spec, output, return_code,
                                                                        crash_error, result.editor_log)
                                 crashed_result = result
@@ -971,8 +980,11 @@ class EditorTestSuite:
 
         result = self._exec_editor_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
         if result is None:
-            result = Result.Unknown(test_spec=test_spec,
-                                    extra_info="Unexpectedly found no test run information on stdout in the editor log")
+            logger.error(f"Unexpectedly found no test run in the editor log during {test_spec}")
+            result = {"Unknown":
+                      Result.Unknown(
+                          test_spec=test_spec,
+                          extra_info="Unexpectedly found no test run information on stdout in the editor log")}
         editor_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
@@ -1007,11 +1019,11 @@ class EditorTestSuite:
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
             if result is None:
-                result = Result.Unknown(test_spec=EditorBatchedTest,
-                                        extra_info=f"Unexpectedly found no test run information on stdout in the editor log")
+                logger.error("Unexpectedly found no test run in the editor log during EditorBatchedTest")
+                logger.debug(f"Results from EditorBatchedTest:\n{results}")
             if not isinstance(result, Result.Pass):
                 editor_utils.save_failed_asset_joblogs(workspace)
-                return
+                return  # exit early on first batch failure
 
     def _run_parallel_tests(self, request: _pytest.fixtures.FixtureRequest,
                             workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
@@ -1067,8 +1079,12 @@ class EditorTestSuite:
 
             for result in results_per_thread:
                 if result is None:
-                    result = Result.Unknown(test_spec=EditorParallelTest,
-                                            extra_info=f"Unexpectedly found no test run information on stdout in the editor log")
+                    logger.error("Unexpectedly found no test run in the editor log during EditorParallelTest")
+                    logger.debug(f"Results from EditorParallelTest thread:\n{results_per_thread}")
+                    result = {"Unknown":
+                              Result.Unknown(
+                                  test_spec=EditorParallelTest,
+                                  extra_info="Unexpectedly found no test run information on stdout in the editor log")}
                 editor_test_data.results.update(result)
                 if not isinstance(result, Result.Pass):
                     save_asset_logs = True
@@ -1131,8 +1147,12 @@ class EditorTestSuite:
         save_asset_logs = False
         for result in results_per_thread:
             if result is None:
-                result = Result.Unknown(test_spec=EditorSharedTest,
-                                        extra_info=f"Unexpectedly found no test run information on stdout in the editor log")
+                logger.error("Unexpectedly found no test run in the editor log during EditorSharedTest")
+                logger.debug(f"Results from EditorSharedTest thread:\n{results_per_thread}")
+                result = {"Unknown":
+                          Result.Unknown(
+                              test_spec=EditorSharedTest,
+                              extra_info="Unexpectedly found no test run information on stdout in the editor log")}
             editor_test_data.results.update(result)
             if not isinstance(result, Result.Pass):
                 save_asset_logs = True

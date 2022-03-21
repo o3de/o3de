@@ -875,8 +875,16 @@ namespace Terrain
         AZ::Vector2 stepSize(DetailTextureScale);
         AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(DetailTextureScale * 0.5f)); // offset by half a pixel
 
-        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion,
-            offsetWorldAabb, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+        {
+            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
+            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
+            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
+            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
+
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, offsetWorldAabb, stepSize, perPositionCallback,
+                AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+        }
 
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;

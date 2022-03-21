@@ -26,6 +26,7 @@ namespace EMStudio::ViewportUtil
     constexpr AZStd::string_view CameraDefaultOrbitDistanceSetting = "/Amazon/Preferences/Editor/Camera/DefaultOrbitDistance";
     constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
     constexpr AZStd::string_view CameraFreePanIdSetting = "/Amazon/Preferences/Editor/Camera/FreePanId";
+    constexpr AZStd::string_view CameraFreeLookIdSetting = "/Amazon/Preferences/Editor/Camera/FreeLookId";
 
     AzFramework::TranslateCameraInputChannelIds TranslateCameraInputChannelIds()
     {
@@ -75,7 +76,7 @@ namespace EMStudio::ViewportUtil
 
     AzFramework::InputChannelId RotateCameraInputChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_right")).c_str());
+        return AzFramework::InputChannelId(GetRegistry(CameraFreeLookIdSetting, AZStd::string("mouse_button_right")).c_str());
     }
 
     AzFramework::InputChannelId OrbitCameraInputChannelId()

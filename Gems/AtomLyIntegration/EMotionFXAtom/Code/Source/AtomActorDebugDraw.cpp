@@ -34,6 +34,80 @@ namespace AZ::Render
         m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(entityId);
     }
 
+    // Function for providing data required for debug drawing colliders
+    Physics::CharacterPhysicsDebugDraw::NodeDebugDrawData GetNodeDebugDrawData(
+        const Physics::CharacterColliderNodeConfiguration& colliderNodeConfig,
+        const EMotionFX::ActorInstance* instance,
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices)
+    {
+        Physics::CharacterPhysicsDebugDraw::NodeDebugDrawData nodeDebugDrawData;
+        const EMotionFX::Actor* actor = instance->GetActor();
+        const EMotionFX::Node* joint = actor->GetSkeleton()->FindNodeByName(colliderNodeConfig.m_name.c_str());
+        if (!joint)
+        {
+            nodeDebugDrawData.m_valid = false;
+            return nodeDebugDrawData;
+        }
+
+        const size_t nodeIndex = joint->GetNodeIndex();
+        nodeDebugDrawData.m_selected = cachedSelectedJointIndices &&
+            (cachedSelectedJointIndices->empty() || cachedSelectedJointIndices->find(nodeIndex) != cachedSelectedJointIndices->end());
+
+        const EMotionFX::Transform& actorInstanceGlobalTransform = instance->GetWorldSpaceTransform();
+        const EMotionFX::Transform& emfxNodeGlobalTransform =
+            instance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex);
+        nodeDebugDrawData.m_worldTransform = (emfxNodeGlobalTransform * actorInstanceGlobalTransform).ToAZTransform();
+        nodeDebugDrawData.m_valid = true;
+        return nodeDebugDrawData;
+    };
+
+    // Function for proviuding data required for debug drawing joint limits
+    Physics::CharacterPhysicsDebugDraw::JointDebugDrawData GetJointDebugDrawData(
+        const Physics::RagdollNodeConfiguration& ragdollNodeConfig,
+        const EMotionFX::ActorInstance* instance,
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices)
+    {
+        Physics::CharacterPhysicsDebugDraw::JointDebugDrawData jointDebugDrawData;
+        const EMotionFX::Actor* actor = instance->GetActor();
+        const EMotionFX::Node* joint = actor->GetSkeleton()->FindNodeByName(ragdollNodeConfig.m_debugName.c_str());
+        if (!joint)
+        {
+            jointDebugDrawData.m_valid = false;
+            return jointDebugDrawData;
+        }
+
+        jointDebugDrawData.m_valid = true;
+        const size_t nodeIndex = joint->GetNodeIndex();
+        const bool jointSelected = cachedSelectedJointIndices &&
+            (cachedSelectedJointIndices->empty() || cachedSelectedJointIndices->find(nodeIndex) != cachedSelectedJointIndices->end());
+
+        if (!jointSelected)
+        {
+            jointDebugDrawData.m_visible = false;
+            return jointDebugDrawData;
+        }
+
+        const EMotionFX::Node* ragdollParentNode = instance->GetActor()->GetPhysicsSetup()->FindRagdollParentNode(joint);
+        if (!ragdollParentNode)
+        {
+            jointDebugDrawData.m_valid = false;
+            return jointDebugDrawData;
+        }
+
+        const size_t ragdollParentNodeIndex = ragdollParentNode->GetNodeIndex();
+        const EMotionFX::Pose* currentPose = instance->GetTransformData()->GetCurrentPose();
+        const EMotionFX::Transform& childModelSpaceTransform = currentPose->GetModelSpaceTransform(nodeIndex);
+        jointDebugDrawData.m_childModelSpaceOrientation = childModelSpaceTransform.m_rotation;
+        jointDebugDrawData.m_parentModelSpaceOrientation = currentPose->GetModelSpaceTransform(ragdollParentNodeIndex).m_rotation;
+        EMotionFX::Transform parentModelSpaceTransform = currentPose->GetModelSpaceTransform(ragdollParentNodeIndex);
+        parentModelSpaceTransform.m_position = currentPose->GetModelSpaceTransform(nodeIndex).m_position;
+        jointDebugDrawData.m_parentWorldTransform = (parentModelSpaceTransform * instance->GetWorldSpaceTransform()).ToAZTransform();
+        jointDebugDrawData.m_childWorldTransform = (childModelSpaceTransform * instance->GetWorldSpaceTransform()).ToAZTransform();
+        jointDebugDrawData.m_visible = true;
+        jointDebugDrawData.m_selected = true;
+        return jointDebugDrawData;
+    }
+
     void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags, EMotionFX::ActorInstance* instance)
     {
         if (!m_auxGeomFeatureProcessor || !instance)
@@ -95,10 +169,14 @@ namespace AZ::Render
             RenderEMFXDebugDraw(instance);
         }
 
-        // Render
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::NodeOrientation))
         {
             RenderNodeOrientations(instance, debugDisplay, renderActorSettings.m_nodeOrientationScale * scaleMultiplier);
+        }
+
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::MotionExtraction))
+        {
+            RenderTrajectoryPath(debugDisplay, instance, renderActorSettings.m_trajectoryHeadColor, renderActorSettings.m_trajectoryPathColor);
         }
 
         // Render vertex normal, face normal, tagent and wireframe.
@@ -140,33 +218,66 @@ namespace AZ::Render
             }
         }
 
+        // Data required for debug drawing colliders and ragdolls
+        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(
+            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
+
+        Physics::CharacterPhysicsDebugDraw::NodeDebugDrawDataFunction nodeDebugDrawDataFunction =
+            [instance, cachedSelectedJointIndices](const Physics::CharacterColliderNodeConfiguration& colliderNodeConfig)
+        {
+            return GetNodeDebugDrawData(colliderNodeConfig, instance, cachedSelectedJointIndices);
+        };
+
+        Physics::CharacterPhysicsDebugDraw::JointDebugDrawDataFunction jointDebugDrawDataFunction =
+            [instance, cachedSelectedJointIndices](const Physics::RagdollNodeConfiguration& ragdollNodeConfig)
+        {
+            return GetJointDebugDrawData(ragdollNodeConfig, instance, cachedSelectedJointIndices);
+        };
+
         // Hit detection colliders
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::HitDetectionColliders))
         {
-            RenderColliders(debugDisplay, EMotionFX::PhysicsSetup::HitDetection, instance,
-                renderActorSettings.m_hitDetectionColliderColor, renderActorSettings.m_selectedHitDetectionColliderColor);
+            m_characterPhysicsDebugDraw.RenderColliders(
+                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::HitDetection),
+                nodeDebugDrawDataFunction,
+                { renderActorSettings.m_hitDetectionColliderColor, renderActorSettings.m_selectedHitDetectionColliderColor });
         }
 
         // Cloth colliders
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::ClothColliders))
         {
-            RenderColliders(debugDisplay, EMotionFX::PhysicsSetup::Cloth, instance,
-                renderActorSettings.m_clothColliderColor, renderActorSettings.m_selectedClothColliderColor);
+            m_characterPhysicsDebugDraw.RenderColliders(
+                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Cloth),
+                nodeDebugDrawDataFunction,
+                { renderActorSettings.m_clothColliderColor, renderActorSettings.m_selectedClothColliderColor });
         }
 
         // Simulated object colliders
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::SimulatedObjectColliders))
         {
-            RenderColliders(debugDisplay, EMotionFX::PhysicsSetup::SimulatedObjectCollider, instance,
-                renderActorSettings.m_simulatedObjectColliderColor, renderActorSettings.m_selectedSimulatedObjectColliderColor);
+            m_characterPhysicsDebugDraw.RenderColliders(
+                debugDisplay,
+                instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::SimulatedObjectCollider),
+                nodeDebugDrawDataFunction,
+                { renderActorSettings.m_simulatedObjectColliderColor, renderActorSettings.m_selectedSimulatedObjectColliderColor });
         }
 
         // Ragdoll
-        const bool renderRagdollColliders = AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollColliders);
-        const bool renderRagdollJointLimits = AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollJointLimits);
-        if (renderRagdollColliders || renderRagdollJointLimits)
+        if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollColliders))
         {
-            RenderRagdoll(debugDisplay, instance, renderRagdollColliders, renderRagdollJointLimits);
+            m_characterPhysicsDebugDraw.RenderColliders(
+                debugDisplay,
+                instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Ragdoll),
+                nodeDebugDrawDataFunction,
+                { renderActorSettings.m_ragdollColliderColor, renderActorSettings.m_selectedRagdollColliderColor });
+        }
+        if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollJointLimits))
+        {
+            m_characterPhysicsDebugDraw.RenderJointLimits(
+                debugDisplay, instance->GetActor()->GetPhysicsSetup()->GetRagdollConfig(), jointDebugDrawDataFunction,
+                { renderActorSettings.m_ragdollColliderColor, renderActorSettings.m_selectedRagdollColliderColor,
+                  renderActorSettings.m_violatedJointLimitColor });
         }
     }
 
@@ -781,6 +892,69 @@ namespace AZ::Render
         debugDisplay->SetState(oldState);
     }
 
+    void AtomActorDebugDraw::UpdateActorInstance(EMotionFX::ActorInstance* actorInstance, float deltaTime)
+    {
+        // Find the corresponding trajectory trace path for the given actor instance
+        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        if (!trajectoryPath)
+        {
+            return;
+        }
+
+        const EMotionFX::Actor* actor = actorInstance->GetActor();
+        const EMotionFX::Node* motionExtractionNode = actor->GetMotionExtractionNode();
+        const uint32 particleSampleRate = 30;
+        const float minLengthEstimate = 0.0001f;
+        const float maxdeltaRot = 0.99;
+        const uint32 maxNumberParticles = 50;
+        if (motionExtractionNode)
+        {
+            const EMotionFX::Transform& worldTM = actorInstance->GetWorldSpaceTransform();
+
+            // Add a particle to the trajectory path once we travel certain distance.
+            bool distanceTravelledEnough = false;
+            if (trajectoryPath->m_traceParticles.empty())
+            {
+                distanceTravelledEnough = true;
+            }
+            else
+            {
+                const size_t numParticles = trajectoryPath->m_traceParticles.size();
+                const EMotionFX::Transform& oldWorldTM = trajectoryPath->m_traceParticles[numParticles - 1].m_worldTm;
+
+                const AZ::Vector3& oldPos = oldWorldTM.m_position;
+                const AZ::Quaternion oldRot = oldWorldTM.m_rotation.GetNormalized();
+                const AZ::Quaternion rotation = worldTM.m_rotation.GetNormalized();
+
+                const AZ::Vector3 deltaPos = worldTM.m_position - oldPos;
+                const float deltaRot = AZStd::abs(rotation.Dot(oldRot));
+                if (deltaPos.GetLengthEstimate() > minLengthEstimate || deltaRot < maxdeltaRot)
+                {
+                    distanceTravelledEnough = true;
+                }
+            }
+
+            // Add the time delta to the time passed since the last add
+            trajectoryPath->m_timePassed += deltaTime;
+            if (trajectoryPath->m_timePassed >= (1.0f / particleSampleRate) && distanceTravelledEnough)
+            {
+                // Create the particle, fill its data and add it to the trajectory trace path
+                TrajectoryPathParticle trajectoryParticle;
+                trajectoryParticle.m_worldTm = worldTM;
+                trajectoryPath->m_traceParticles.emplace_back(trajectoryParticle);
+
+                // Reset the time passed as we just added a new particle
+                trajectoryPath->m_timePassed = 0.0f;
+            }
+        }
+
+        // Make sure we don't have too many items in our array
+        if (trajectoryPath->m_traceParticles.size() > maxNumberParticles)
+        {
+            trajectoryPath->m_traceParticles.erase(begin(trajectoryPath->m_traceParticles));
+        }
+    }
+
     void AtomActorDebugDraw::RenderLineAxis(
         AzFramework::DebugDisplayRequests* debugDisplay,
         AZ::Transform worldTM,
@@ -841,269 +1015,178 @@ namespace AZ::Render
         }
     }
 
-    void AtomActorDebugDraw::RenderColliders(AzFramework::DebugDisplayRequests* debugDisplay,
-        const AzPhysics::ShapeColliderPairList& colliders,
-        const EMotionFX::ActorInstance* actorInstance,
-        const EMotionFX::Node* node,
-        const AZ::Color& colliderColor) const
+    // Find the trajectory path for a given actor instance
+    AtomActorDebugDraw::TrajectoryTracePath* AtomActorDebugDraw::FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance)
     {
-        if (!debugDisplay)
+        for (TrajectoryTracePath* trajectoryPath : m_trajectoryTracePaths)
+        {
+            if (trajectoryPath->m_actorInstance == actorInstance)
+            {
+                return trajectoryPath;
+            }
+        }
+
+        // We haven't created a path for the given actor instance yet, do so
+        TrajectoryTracePath* tracePath = new TrajectoryTracePath();
+
+        tracePath->m_actorInstance = actorInstance;
+        tracePath->m_traceParticles.reserve(512);
+
+        m_trajectoryTracePaths.emplace_back(tracePath);
+        return tracePath;
+    }
+
+    void AtomActorDebugDraw::RenderTrajectoryPath(AzFramework::DebugDisplayRequests* debugDisplay,
+        const EMotionFX::ActorInstance* actorInstance,
+        const AZ::Color& headColor,
+        const AZ::Color& pathColor)
+    {
+        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        if (!trajectoryPath)
         {
             return;
         }
 
-        const size_t nodeIndex = node->GetNodeIndex();
-
-        for (const auto& collider : colliders)
-        {
-#ifndef EMFX_SCALE_DISABLED
-            const AZ::Vector3& worldScale = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex).m_scale;
-#else
-            const AZ::Vector3 worldScale = AZ::Vector3::CreateOne();
-#endif
-
-            const EMotionFX::Transform colliderOffsetTransform(collider.first->m_position, collider.first->m_rotation);
-            const EMotionFX::Transform& actorInstanceGlobalTransform = actorInstance->GetWorldSpaceTransform();
-            const EMotionFX::Transform& emfxNodeGlobalTransform =
-                actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex);
-            const EMotionFX::Transform emfxColliderGlobalTransformNoScale =
-                colliderOffsetTransform * emfxNodeGlobalTransform * actorInstanceGlobalTransform;
-
-            const AZ::TypeId colliderType = collider.second->RTTI_GetType();
-            if (colliderType == azrtti_typeid<Physics::SphereShapeConfiguration>())
-            {
-                Physics::SphereShapeConfiguration* sphere = static_cast<Physics::SphereShapeConfiguration*>(collider.second.get());
-
-                // O3DE Physics scaling rules: The maximum component from the node scale will be multiplied by the radius of the sphere.
-                const float radius = sphere->m_radius *
-                    MCore::Max3<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()),
-                        static_cast<float>(worldScale.GetZ()));
-
-                debugDisplay->DepthTestOff();
-                debugDisplay->SetColor(colliderColor);
-                debugDisplay->DrawWireSphere(emfxColliderGlobalTransformNoScale.m_position, radius);
-            }
-            else if (colliderType == azrtti_typeid<Physics::CapsuleShapeConfiguration>())
-            {
-                Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
-
-                // O3DE Physics scaling rules: The maximum of the X/Y scale components of the node scale will be multiplied by the radius of
-                // the capsule. The Z component of the entity scale will be multiplied by the height of the capsule.
-                const float radius =
-                    capsule->m_radius * MCore::Max<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()));
-                const float height = capsule->m_height * static_cast<float>(worldScale.GetZ());
-
-                debugDisplay->DepthTestOff();
-                debugDisplay->SetColor(colliderColor);
-                debugDisplay->DrawWireCapsule(
-                    emfxColliderGlobalTransformNoScale.m_position, emfxColliderGlobalTransformNoScale.ToAZTransform().GetBasisZ(), radius, height);
-            }
-            else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
-            {
-                Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
-
-                // O3DE Physics scaling rules: Each component of the box dimensions will be scaled by the node's world scale.
-                AZ::Vector3 dimensions = box->m_dimensions;
-                dimensions *= worldScale;
-
-                debugDisplay->DepthTestOff();
-                debugDisplay->SetColor(colliderColor);
-                debugDisplay->DrawWireBox(
-                    emfxColliderGlobalTransformNoScale.m_position, emfxColliderGlobalTransformNoScale.m_position + dimensions);
-            }
-        }
-    }
-
-    void AtomActorDebugDraw::RenderColliders(AzFramework::DebugDisplayRequests* debugDisplay,
-        EMotionFX::PhysicsSetup::ColliderConfigType colliderConfigType,
-        EMotionFX::ActorInstance* actorInstance,
-        const AZ::Color& defaultColor,
-        const AZ::Color& selectedColor) const
-    {
-        if (colliderConfigType == EMotionFX::PhysicsSetup::Unknown)
+        EMotionFX::Actor* actor = actorInstance->GetActor();
+        EMotionFX::Node* extractionNode = actor->GetMotionExtractionNode();
+        if (!extractionNode)
         {
             return;
         }
 
-        const EMotionFX::Actor* actor = actorInstance->GetActor();
-        const AZStd::shared_ptr<EMotionFX::PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
-        const Physics::CharacterColliderConfiguration* colliderConfig = physicsSetup->GetColliderConfigByType(colliderConfigType);
-
-        if (colliderConfig)
+        // Fast access to the trajectory trace particles
+        const AZStd::vector<TrajectoryPathParticle>& traceParticles = trajectoryPath->m_traceParticles;
+        if (traceParticles.empty())
         {
-            const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
-            EMotionFX::JointSelectionRequestBus::BroadcastResult(
-                cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
-
-            for (const Physics::CharacterColliderNodeConfiguration& nodeConfig : colliderConfig->m_nodes)
-            {
-                const EMotionFX::Node* joint = actor->GetSkeleton()->FindNodeByName(nodeConfig.m_name.c_str());
-                if (joint)
-                {
-                    const bool jointSelected = cachedSelectedJointIndices &&
-                        (cachedSelectedJointIndices->empty() || cachedSelectedJointIndices->find(joint->GetNodeIndex()) != cachedSelectedJointIndices->end());
-
-                    const AzPhysics::ShapeColliderPairList& colliders = nodeConfig.m_shapes;
-                    RenderColliders(debugDisplay, colliders, actorInstance, joint, jointSelected ? selectedColor : defaultColor);
-                }
-            }
-        }
-    }
-
-    void AtomActorDebugDraw::RenderJointFrame(AzFramework::DebugDisplayRequests* debugDisplay,
-        const AzPhysics::JointConfiguration& configuration,
-        const EMotionFX::ActorInstance* actorInstance,
-        const EMotionFX::Node* node,
-        const AZ::Color& color) const
-    {
-        const EMotionFX::Transform& actorInstanceWorldSpaceTransform = actorInstance->GetWorldSpaceTransform();
-        const EMotionFX::Pose* currentPose = actorInstance->GetTransformData()->GetCurrentPose();
-        const EMotionFX::Transform childJointLocalSpaceTransform(AZ::Vector3::CreateZero(), configuration.m_childLocalRotation);
-        const EMotionFX::Transform childModelSpaceTransform =
-            childJointLocalSpaceTransform * currentPose->GetModelSpaceTransform(node->GetNodeIndex());
-        const EMotionFX::Transform jointChildWorldSpaceTransformNoScale = (childModelSpaceTransform * actorInstanceWorldSpaceTransform);
-        AZ::Vector3 dir = jointChildWorldSpaceTransformNoScale.ToAZTransform().GetBasisX();
-
-        debugDisplay->SetColor(color);
-        debugDisplay->DrawArrow(jointChildWorldSpaceTransformNoScale.m_position, jointChildWorldSpaceTransformNoScale.m_position + dir, 0.1f);
-    }
-
-    void AtomActorDebugDraw::JointLimitRenderData::Clear()
-    {
-        m_vertexBuffer.clear();
-        m_indexBuffer.clear();
-        m_lineBuffer.clear();
-        m_lineValidityBuffer.clear();
-    }
-
-    void AtomActorDebugDraw::RenderJointLimit(AzFramework::DebugDisplayRequests* debugDisplay,
-        const AzPhysics::JointConfiguration& configuration,
-        const EMotionFX::ActorInstance* actorInstance,
-        const EMotionFX::Node* node,
-        const EMotionFX::Node* parentNode,
-        const AZ::Color& regularColor,
-        const AZ::Color& violatedColor)
-    {
-        const size_t nodeIndex = node->GetNodeIndex();
-        const size_t parentNodeIndex = parentNode->GetNodeIndex();
-        const EMotionFX::Transform& actorInstanceWorldTransform = actorInstance->GetWorldSpaceTransform();
-        const EMotionFX::Pose* currentPose = actorInstance->GetTransformData()->GetCurrentPose();
-        const AZ::Quaternion& parentOrientation = currentPose->GetModelSpaceTransform(parentNodeIndex).m_rotation;
-        const AZ::Quaternion& childOrientation = currentPose->GetModelSpaceTransform(nodeIndex).m_rotation;
-
-        m_jointLimitRenderData.Clear();
-        if (auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
-        {
-            jointHelpers->GenerateJointLimitVisualizationData(
-                configuration, parentOrientation, childOrientation, s_scale, s_angularSubdivisions, s_radialSubdivisions,
-                m_jointLimitRenderData.m_vertexBuffer, m_jointLimitRenderData.m_indexBuffer,
-                m_jointLimitRenderData.m_lineBuffer, m_jointLimitRenderData.m_lineValidityBuffer);
-        }
-
-        EMotionFX::Transform jointModelSpaceTransform = currentPose->GetModelSpaceTransform(parentNodeIndex);
-        jointModelSpaceTransform.m_position = currentPose->GetModelSpaceTransform(nodeIndex).m_position;
-        const EMotionFX::Transform jointGlobalTransformNoScale = jointModelSpaceTransform * actorInstanceWorldTransform;
-
-        const size_t numLineBufferEntries = m_jointLimitRenderData.m_lineBuffer.size();
-        if (m_jointLimitRenderData.m_lineValidityBuffer.size() * 2 != numLineBufferEntries)
-        {
-            AZ_ErrorOnce("EMotionFX", false, "Unexpected buffer size in joint limit visualization for node %s", node->GetName());
             return;
         }
 
-        for (size_t i = 0; i < numLineBufferEntries; i += 2)
+        const size_t numTraceParticles = traceParticles.size();
+        const float trailWidthHalf = 0.25f;
+        const float trailLength = 2.0f;
+        const float arrowWidthHalf = 0.75f;
+        const float arrowLength = 1.5f;
+        const AZ::Vector3 liftFromGround(0.0f, 0.0f, 0.0001f);
+
+        const AZ::Transform trajectoryWorldTM = actorInstance->GetWorldSpaceTransform().ToAZTransform();
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Render arrow head
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Get the position and some direction vectors of the trajectory node matrix
+        EMotionFX::Transform worldTM = traceParticles[numTraceParticles - 1].m_worldTm;
+        const AZ::Vector3 right = trajectoryWorldTM.GetBasisX().GetNormalized();
+        const AZ::Vector3 center = trajectoryWorldTM.GetTranslation();
+        const AZ::Vector3 forward = trajectoryWorldTM.GetBasisY().GetNormalized();
+        const AZ::Vector3 up(0.0f, 0.0f, 1.0f);
+
+        AZ::Vector3 vertices[7];
+        AZ::Vector3 oldLeft, oldRight;
+
+        /*
+                            4
+                           / \
+                          /   \
+                        /       \
+                      /           \
+                    /               \
+                  5-----6       2-----3
+                        |       |
+                        |       |
+                        |       |
+                        |       |
+                        |       |
+                        0-------1
+        */
+        // Construct the arrow vertices
+        float scale = 0.2f;
+        vertices[0] = center + (-right * trailWidthHalf - forward * trailLength) * scale;
+        vertices[1] = center + (right * trailWidthHalf - forward * trailLength) * scale;
+        vertices[2] = center + (right * trailWidthHalf) * scale;
+        vertices[3] = center + (right * arrowWidthHalf) * scale;
+        vertices[4] = center + (forward * arrowLength) * scale;
+        vertices[5] = center + (-right * arrowWidthHalf) * scale;
+        vertices[6] = center + (-right * trailWidthHalf) * scale;
+
+        oldLeft = vertices[6];
+        oldRight = vertices[2];
+
+        AZ::Vector3 arrowOldLeft = oldLeft;
+        AZ::Vector3 arrowOldRight = oldRight;
+
+        // Render the solid arrow
+        debugDisplay->SetColor(headColor);
+        debugDisplay->DrawTri(vertices[3] + liftFromGround, vertices[4] + liftFromGround, vertices[2] + liftFromGround);
+        debugDisplay->DrawTri(vertices[2] + liftFromGround, vertices[4] + liftFromGround, vertices[6] + liftFromGround);
+        debugDisplay->DrawTri(vertices[6] + liftFromGround, vertices[4] + liftFromGround, vertices[5] + liftFromGround);
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Render arrow tail (actual path)
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        AZ::Vector3 a, b;
+        AZ::Color color = pathColor;
+
+        // Render the path from the arrow head towards the tail
+        for (size_t i = numTraceParticles - 1; i > 0; i--)
         {
-            const AZ::Color& lineColor = m_jointLimitRenderData.m_lineValidityBuffer[i / 2] ? regularColor : violatedColor;
-            debugDisplay->DepthTestOff();
-            debugDisplay->DrawLine(
-                jointGlobalTransformNoScale.TransformPoint(m_jointLimitRenderData.m_lineBuffer[i]),
-                jointGlobalTransformNoScale.TransformPoint(m_jointLimitRenderData.m_lineBuffer[i + 1]), lineColor.GetAsVector4(), lineColor.GetAsVector4()
-            );
-        }
-    }
+            // Calculate the normalized distance to the head, this value also represents the alpha value as it fades away while getting
+            // closer to the end
+            float normalizedDistance = (float)i / numTraceParticles;
 
-    void AtomActorDebugDraw::RenderRagdoll(AzFramework::DebugDisplayRequests* debugDisplay,
-        EMotionFX::ActorInstance* actorInstance,
-        bool renderColliders,
-        bool renderJointLimits)
-    {
-        const EMotionFX::Actor* actor = actorInstance->GetActor();
-        const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
-        const size_t numNodes = skeleton->GetNumNodes();
-        const AZStd::shared_ptr<EMotionFX::PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
-        const Physics::RagdollConfiguration& ragdollConfig = physicsSetup->GetRagdollConfig();
-        const AZStd::vector<Physics::RagdollNodeConfiguration>& ragdollNodes = ragdollConfig.m_nodes;
-        const Physics::CharacterColliderConfiguration& colliderConfig = ragdollConfig.m_colliders;
-        const EMotionFX::RagdollInstance* ragdollInstance = actorInstance->GetRagdollInstance();
+            // Get the start and end point of the line segment and calculate the delta between them
+            worldTM = traceParticles[i].m_worldTm;
+            a = worldTM.m_position;
+            b = traceParticles[i - 1].m_worldTm.m_position;
+            AZ::Vector3 particleRight = worldTM.ToAZTransform().GetBasisX().GetNormalized();
 
-        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
-        const AZ::Color& violatedColor = settings.m_violatedJointLimitColor;
-        const AZ::Color& defaultColor = settings.m_ragdollColliderColor;
-        const AZ::Color& selectedColor = settings.m_selectedRagdollColliderColor;
-
-        const AZStd::unordered_set<size_t>* cachedSelectedJointIndices;
-        EMotionFX::JointSelectionRequestBus::BroadcastResult(
-            cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, actorInstance);
-
-        for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
-        {
-            const EMotionFX::Node* joint = skeleton->GetNode(nodeIndex);
-            const size_t jointIndex = joint->GetNodeIndex();
-
-            AZ::Outcome<size_t> ragdollNodeIndex = AZ::Failure();
-            if (ragdollInstance)
+            if (i > 1 && i < numTraceParticles - 3)
             {
-                ragdollNodeIndex = ragdollInstance->GetRagdollNodeIndex(jointIndex);
-            }
-            else
-            {
-                ragdollNodeIndex = ragdollConfig.FindNodeConfigIndexByName(joint->GetNameString());
+                const AZ::Vector3 deltaA = traceParticles[i - 2].m_worldTm.m_position - traceParticles[i - 1].m_worldTm.m_position;
+                const AZ::Vector3 deltaB = traceParticles[i - 1].m_worldTm.m_position - traceParticles[i].m_worldTm.m_position;
+                const AZ::Vector3 deltaC = traceParticles[i].m_worldTm.m_position - traceParticles[i + 1].m_worldTm.m_position;
+                const AZ::Vector3 deltaD = traceParticles[i + 1].m_worldTm.m_position - traceParticles[i + 2].m_worldTm.m_position;
+                AZ::Vector3 delta = deltaA + deltaB + deltaC + deltaD;
+                delta = delta.GetNormalizedSafe();
+
+                particleRight = up.Cross(delta);
             }
 
-            if (!ragdollNodeIndex.IsSuccess())
+            /*
+                    //              .
+                    //              .
+                    //              .
+                    //(oldLeft) 0   a   1 (oldRight)
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          |       |
+                    //          2---b---3
+            */
+
+            // Construct the arrow vertices
+            vertices[0] = oldLeft;
+            vertices[1] = oldRight;
+            vertices[2] = b + AZ::Vector3(-particleRight * trailWidthHalf) * scale;
+            vertices[3] = b + AZ::Vector3(particleRight * trailWidthHalf) * scale;
+
+            // Make sure we perfectly align with the arrow head
+            if (i == numTraceParticles - 1)
             {
-                continue;
+                normalizedDistance = 1.0f;
+                vertices[0] = arrowOldLeft;
+                vertices[1] = arrowOldRight;
             }
 
-            const bool jointSelected = cachedSelectedJointIndices &&
-                (cachedSelectedJointIndices->empty() || cachedSelectedJointIndices->find(joint->GetNodeIndex()) != cachedSelectedJointIndices->end());
+            // Render the solid arrow
+            color.SetA(normalizedDistance);
+            debugDisplay->SetColor(color);
+            debugDisplay->DrawTri(vertices[0] + liftFromGround, vertices[2] + liftFromGround, vertices[1] + liftFromGround);
+            debugDisplay->DrawTri(vertices[1] + liftFromGround, vertices[2] + liftFromGround, vertices[3] + liftFromGround);
 
-            AZ::Color finalColor;
-            if (jointSelected)
-            {
-                finalColor = selectedColor;
-            }
-            else
-            {
-                finalColor = defaultColor;
-            }
-
-            const Physics::RagdollNodeConfiguration& ragdollNode = ragdollNodes[ragdollNodeIndex.GetValue()];
-
-            if (renderColliders)
-            {
-                const Physics::CharacterColliderNodeConfiguration* colliderNodeConfig =
-                    colliderConfig.FindNodeConfigByName(joint->GetNameString());
-                if (colliderNodeConfig)
-                {
-                    const AzPhysics::ShapeColliderPairList& colliders = colliderNodeConfig->m_shapes;
-                    RenderColliders(debugDisplay, colliders, actorInstance, joint, finalColor);
-                }
-            }
-
-            if (renderJointLimits && jointSelected)
-            {
-                const AZStd::shared_ptr<AzPhysics::JointConfiguration>& jointLimitConfig = ragdollNode.m_jointConfig;
-                if (jointLimitConfig)
-                {
-                    const EMotionFX::Node* ragdollParentNode = physicsSetup->FindRagdollParentNode(joint);
-                    if (ragdollParentNode)
-                    {
-                        RenderJointLimit(debugDisplay, *jointLimitConfig, actorInstance, joint, ragdollParentNode, finalColor, violatedColor);
-                        RenderJointFrame(debugDisplay, *jointLimitConfig, actorInstance, joint, finalColor);
-                    }
-                }
-            }
+            // Overwrite the old left and right values so that they can be used for the next trace particle
+            oldLeft = vertices[2];
+            oldRight = vertices[3];
         }
     }
 } // namespace AZ::Render

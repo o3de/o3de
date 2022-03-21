@@ -609,6 +609,9 @@ namespace AzToolsFramework
             //! These finds all incoming dependencies: everything that depends on the given asset.
             //! Similar to QueryDirectProductDependencies, this query deals with product dependencies but retrieves rows from Products, not ProductDependencies.
             bool QueryDirectReverseProductDependenciesBySourceGuidSubId(AZ::Uuid dependencySourceGuid, AZ::u32 dependencySubId, productHandler handler);
+            bool QueryDirectReverseProductDependenciesBySourceGuidAllPlatforms(
+                AZ::Uuid dependencySourceGuid,
+                productDependencyHandler handler);
             bool QueryAllProductDependencies(AZ::s64 productID, productHandler handler);
 
             bool QueryUnresolvedProductDependencies(productDependencyHandler handler);

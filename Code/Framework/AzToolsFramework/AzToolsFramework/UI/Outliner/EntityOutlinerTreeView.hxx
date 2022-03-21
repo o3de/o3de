@@ -57,20 +57,19 @@ namespace AzToolsFramework
 
     protected:
         // Qt overrides
-        void mousePressEvent(QMouseEvent* event) override;
-        void mouseReleaseEvent(QMouseEvent* event) override;
-        void mouseDoubleClickEvent(QMouseEvent* event) override;
-        void mouseMoveEvent(QMouseEvent* event) override;
-        void focusInEvent(QFocusEvent* event) override;
-        void focusOutEvent(QFocusEvent* event) override;
         void dragMoveEvent(QDragMoveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
+        void focusInEvent(QFocusEvent* event) override;
+        void focusOutEvent(QFocusEvent* event) override;
         void leaveEvent(QEvent* event) override;
+        void mouseDoubleClickEvent(QMouseEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* event) override;
+        void mousePressEvent(QMouseEvent* event) override;
+        void mouseReleaseEvent(QMouseEvent* event) override;
+        void paintEvent(QPaintEvent* event) override;
 
         // FocusModeNotificationBus overrides ...
         void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
-
-        void paintEvent(QPaintEvent* event) override;
 
         //! Renders the left side of the item: appropriate background, branch lines, icons.
         void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
@@ -92,7 +91,6 @@ namespace AzToolsFramework
         void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
         
         QMouseEvent* m_queuedMouseEvent;
-        QModelIndex m_currentHoveredIndex;
         QPoint m_mousePosition;
 
         bool m_isDragSelectActive = false;
