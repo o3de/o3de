@@ -900,3 +900,14 @@ class TestReduceFileName(unittest.TestCase):
 
         with pytest.raises(TypeError):
             file_system.reduce_file_name_length(file_name=target_name)
+
+class TestFindAncestorFile(unittest.TestCase):
+
+    @mock.patch('os.path.exists', mock.MagicMock(side_effect=[False, False, True, True]))
+    def test_Find_OneLevel_ReturnsPath(self):
+        mock_file = 'mock_file.txt'
+        mock_start_path = os.path.join('foo1', 'foo2', 'foo3')
+        expected = os.path.abspath(os.path.join('foo1', mock_file))
+
+        actual = file_system.find_ancestor_file(mock_file, mock_start_path)
+        assert actual == expected

@@ -9,7 +9,7 @@
 set(FILES
     Tests/Common/ShaderBuilderTestFixture.h
     Tests/Common/ShaderBuilderTestFixture.cpp
-    Tests/SupervariantCmdArgumentTests.cpp
     Tests/McppBinderTests.cpp
     Tests/ShaderBuilderUtilityTests.cpp
+    Tests/ShaderBuildArgumentsTests.cpp
 )

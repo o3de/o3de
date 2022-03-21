@@ -18,6 +18,12 @@ set(FILES
     Source/CoreLights/EditorAreaLightComponent.cpp
     Source/CoreLights/EditorDirectionalLightComponent.h
     Source/CoreLights/EditorDirectionalLightComponent.cpp
+    Source/CubeMapCapture/EditorCubeMapRenderer.h
+    Source/CubeMapCapture/EditorCubeMapRenderer.cpp
+    Source/CubeMapCapture/EditorCubeMapCaptureComponent.h
+    Source/CubeMapCapture/EditorCubeMapCaptureComponent.cpp
+    Source/Debug/RenderDebugEditorComponent.cpp
+    Source/Debug/RenderDebugEditorComponent.h
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
     Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h

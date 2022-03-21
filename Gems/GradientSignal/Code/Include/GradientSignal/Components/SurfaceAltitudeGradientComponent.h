@@ -12,6 +12,7 @@
 #include <AzCore/Component/Component.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceAltitudeGradientRequestBus.h>
+#include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfacePointList.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
@@ -58,6 +59,7 @@ namespace GradientSignal
         , private SurfaceAltitudeGradientRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
         , private AZ::TickBus::Handler
+        , private SurfaceData::SurfaceDataSystemNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -81,6 +83,10 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // DependencyNotificationBus
         void OnCompositionChanged() override;
+
+        //////////////////////////////////////////////////////////////////////////
+        // SurfaceDataSystemNotificationBus
+        void OnSurfaceChanged(const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::TickBus::Handler
@@ -112,5 +118,6 @@ namespace GradientSignal
         SurfaceAltitudeGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
+        AZStd::atomic_bool m_surfaceDirty{ false };
     };
 }
