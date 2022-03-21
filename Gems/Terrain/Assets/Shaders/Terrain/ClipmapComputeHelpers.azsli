@@ -1,0 +1,78 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Clipmap levels
+// --------|--------------|-------- level 0 stack 0
+//   ------|--------------|------   level 1 stack 1
+//     ----|--------------|----     level 2 stack 2
+//       --|--------------|--       level 3 stack 3
+//         |--------------|         level 4 pyramid mip 0 (covers the whole map)
+//         |  ----------  |         level 5 pyramid mip 1
+//         |    ------    |         level 6 pyramid mip 2
+//         |      --      |         level 7 pyramid mip 3
+
+float GetClipmapScale(uint clipmapLevel)
+{
+    return PassSrg::m_clipmapData.m_clipmapScaleInv[clipmapLevel].x;
+}
+
+float2 GetPreviousClipmapCenter(uint clipmapLevel)
+{
+    return PassSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].xy;
+}
+
+float2 GetCurrentClipmapCenter(uint clipmapLevel)
+{
+    return PassSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].zw;
+}
+
+float2 GetWorldPosition(float2 clipmapCenter, uint2 pixelPosition, uint clipmapLevel)
+{
+    float2 normalizedPixelPosition = float2(float(pixelPosition.x) + 0.5, float(pixelPosition.y) + 0.5) / PassSrg::m_clipmapData.m_clipmapSize;
+    
+    float2 distance = normalizedPixelPosition - clipmapCenter;
+
+    // Toroidal addressing:
+    // If distance is out of the normalized range (-0.5, 0.5), meaning we need to start from the other side.
+    // The logic is equivalent to a modulation. Using step function for acceleration.
+    distance.x -= step(0.5, distance.x);
+    distance.x += step(distance.x, -0.5);
+    distance.y -= step(0.5, distance.y);
+    distance.y += step(distance.y, -0.5);
+
+    float clipmapScale = GetClipmapScale(clipmapLevel);
+    float2 maxRenderSize = PassSrg::m_clipmapData.m_maxRenderSize.xy;
+    float2 viewRelativePosition = distance * (maxRenderSize * clipmapScale);
+    return PassSrg::m_clipmapData.m_viewPosition.zw + viewRelativePosition;
+}
+
+float2 GetPreviousWorldPosition(uint2 pixelPosition, uint clipmapLevel)
+{
+    float2 previousClipmapCenter = GetPreviousClipmapCenter(clipmapLevel);
+    return GetWorldPosition(previousClipmapCenter, pixelPosition, clipmapLevel);
+}
+
+float2 GetCurrentWorldPosition(uint2 pixelPosition, uint clipmapLevel)
+{
+    float2 currentClipmapCenter = GetCurrentClipmapCenter(clipmapLevel);
+    return GetWorldPosition(currentClipmapCenter, pixelPosition, clipmapLevel);
+}
+
+float2 ddxPosition(uint clipmapLevel)
+{
+    float clipmapScale = GetClipmapScale(clipmapLevel);
+    float2 dxdy = PassSrg::m_clipmapData.m_maxRenderSize / PassSrg::m_clipmapData.m_clipmapSize * clipmapScale;
+    return float2(dxdy.x, 0.0);
+}
+
+float2 ddyPosition(uint clipmapLevel)
+{
+    float clipmapScale = GetClipmapScale(clipmapLevel);
+    float2 dxdy = PassSrg::m_clipmapData.m_maxRenderSize / PassSrg::m_clipmapData.m_clipmapSize * clipmapScale;
+    return float2(0.0, dxdy.y);
+}

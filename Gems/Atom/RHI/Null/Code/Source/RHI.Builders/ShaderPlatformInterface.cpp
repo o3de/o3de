@@ -46,7 +46,7 @@ namespace AZ
             [[maybe_unused]] RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptorBase,
             [[maybe_unused]] const ShaderResourceGroupInfoList& srgInfoList,
             [[maybe_unused]] const RootConstantsInfo& rootConstantsInfo,
-            [[maybe_unused]] const RHI::ShaderCompilerArguments& shaderCompilerArguments)
+            [[maybe_unused]] const RHI::ShaderBuildArguments& shaderBuildArguments)
         {
             PipelineLayoutDescriptor* pipelineLayoutDescriptor = azrtti_cast<PipelineLayoutDescriptor*>(pipelineLayoutDescriptorBase.get());
             AZ_Assert(pipelineLayoutDescriptor, "PipelineLayoutDescriptor should have been created by now");
@@ -80,21 +80,6 @@ namespace AZ
             return (shaderStageType == RHI::ShaderHardwareStage::RayTracing);
         }
 
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            return shaderCompilerArguments.MakeAdditionalAzslcCommandLineString() + " --use-spaces --namespace=dx --root-const=128";
-        }
-
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            return shaderCompilerArguments.MakeAdditionalAzslcWarningCommandLineString();
-        }
-
-        bool ShaderPlatformInterface::BuildHasDebugInfo([[maybe_unused]] const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            return "";
-        }
-
         const char* ShaderPlatformInterface::GetAzslHeader([[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform) const
         {
             if (platform.m_identifier == "pc")
@@ -115,7 +100,7 @@ namespace AZ
             [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform, [[maybe_unused]] const AZStd::string& shaderSourcePath,
             [[maybe_unused]] const AZStd::string& functionName, [[maybe_unused]] RHI::ShaderHardwareStage shaderStage,
             [[maybe_unused]] const AZStd::string& tempFolderPath, [[maybe_unused]] StageDescriptor& outputDescriptor,
-            [[maybe_unused]]  const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
+            [[maybe_unused]] const RHI::ShaderBuildArguments& shaderBuildArguments) const
         {
             outputDescriptor.m_stageType = shaderStage;
             return true;

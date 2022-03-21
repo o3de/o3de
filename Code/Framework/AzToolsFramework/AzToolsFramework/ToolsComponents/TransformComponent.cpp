@@ -28,6 +28,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
@@ -927,6 +928,12 @@ namespace AzToolsFramework
 
             AZ::EntityId actualValue = static_cast<AZ::EntityId>(*((AZ::EntityId*)newValue));
 
+            if (!actualValue.IsValid())
+            {
+                // Handled by the calling code.
+                return AZ::Success();
+            }
+
             // Prevent setting the parent to the entity itself.
             if (actualValue == GetEntityId())
             {
@@ -1177,6 +1184,12 @@ namespace AzToolsFramework
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 
+        bool TransformComponent::ShowClearButtonHandler()
+        {
+            // Hide the clear button if the current entity is the focus root, which is the default value.
+            return(!m_focusModeInterface->IsFocusRoot(GetParentId()));
+        }
+
         void TransformComponent::Reflect(AZ::ReflectContext* context)
         {
             // reflect data for script, serialization, editing..
@@ -1215,6 +1228,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::ChangeValidate, &TransformComponent::ValidatePotentialParent)->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::ParentChangedInspector)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
+                            Attribute(AZ::Edit::Attributes::ShowClearButtonHandler, &TransformComponent::ShowClearButtonHandler)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform, "Values", "")->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChangedInspector)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->

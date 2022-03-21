@@ -196,8 +196,76 @@ namespace AZ
         // McppBinder ends
         ///////////////////////////////////////////////////////////////////////
 
-        bool PreprocessFile(const AZStd::string& fullPath, PreprocessorData& outputData, const PreprocessorOptions& options
-            , bool collectDiagnostics, bool preprocessIncludedFiles)
+        // @returns true if a string starts with "-I", which is how the C-preprocessor understands include paths.  Examples:
+        // "-Isome/dir" (true)
+        // "-I/full/path/" (true)
+        // "-DMacro" (false)
+        static bool IsArgumentAnIncludeDirectory(const AZStd::string& argument)
+        {
+            if (argument.size() < 2)
+            {
+                return false;
+            }
+            return (argument[0] == '-') && (argument[1] == 'I');
+        }
+
+        // Transforms relative include path arguments. If the argument is not an include path the same argument is returned.
+        // @param argument A single command line arguments for the C-preprocessor.
+        // @param rootDir The root directory that will be joined with the relative path.
+        // @returns A copy of @argument if it is NOT an include path argument. If it is a include path then:
+        //      - If the directory is an absolute path:
+        //          - and it exists, a copy of @argument is returned.
+        //          - and it doesn't exist, an empty string is returned.
+        //      - If the directory is a relative path, it is transformed into an absolute directory by joining @rootDir with the relative path.
+        //          - If the directory exists a string as an include path argument is returned.
+        //          - If the directory doesn't exist and empty string is returned.
+        static AZStd::string NormalizeIncludePathArgument(const AZStd::string& argument, const AZ::IO::FixedMaxPath& rootDir)
+        {
+            if (!IsArgumentAnIncludeDirectory(argument))
+            {
+                return argument;
+            }
+
+            AZStd::string includeDirectory = argument.substr(2);
+            // Trim spaces at both ends.
+            AZ::StringFunc::TrimWhiteSpace(includeDirectory, true, true);
+            if (AZ::StringFunc::Path::IsRelative(includeDirectory.c_str()))
+            {
+                AZ::IO::FixedMaxPath absoluteDirectory = rootDir / includeDirectory;
+                if (!AZ::IO::SystemFile::Exists(absoluteDirectory.c_str()))
+                {
+                    AZ_Error("Preprocessor", false, "The directory argument: %s, doesn't exist as an absolute path: %s. Skipping...",
+                        argument.c_str(), absoluteDirectory.c_str());
+                    return {};
+                }
+                return AZStd::string::format("-I%s", absoluteDirectory.c_str());
+            }
+
+            // It's an absolute directory. Does it exist?
+            if (!AZ::IO::SystemFile::Exists(includeDirectory.c_str()))
+            {
+                AZ_Error("Preprocessor", false, "The absolute directory argument: %s, doesn't exist as an absolute path: %s. Skipping...",
+                    argument.c_str(), includeDirectory.c_str());
+                return {};
+            }
+
+            // The aboslute directory exists, return the argument as is.
+            return argument;
+        }
+
+        AZStd::vector<AZStd::string> AppendIncludePathsToArgumentList(const AZStd::vector<AZStd::string>& preprocessorArguments, AZStd::vector<AZStd::string> includePaths)
+        {
+            auto newList = preprocessorArguments;
+            for (const AZStd::string& folder : includePaths)
+            {
+                newList.push_back(AZStd::string::format("-I%s", folder.c_str()));
+            }
+            return newList;
+        }
+
+        bool PreprocessFile(const AZStd::string& fullPath, PreprocessorData& outputData
+            , const AZStd::vector<AZStd::string>& preprocessorArguments
+            , bool collectDiagnostics)
         {
             // create a wrapper instance
             McppBinder mcpp(outputData, collectDiagnostics);
@@ -205,36 +273,40 @@ namespace AZ
             // create the argc/argv
             const char* processName = "builder";
             const char* inputPath = fullPath.c_str();
-            // let's create the equivalent of that expression but in dynamic form:
-            //const char* argv[] = { processName, szInPath, "-C", "-+", "-D macro1"..., "-I path"..., NULL };
-            AZStd::vector< const char* > argv;
-            argv.reserve(5 + options.m_predefinedMacros.size() * 2 + options.m_projectIncludePaths.size() * 2);
+
+            AZStd::vector< AZStd::string > argv;
+            argv.reserve(2 /*processName + inputPath*/ + preprocessorArguments.size());
             argv.push_back(processName);
             argv.push_back(inputPath);
-            if (!preprocessIncludedFiles)
+
+            // The include directories in C-preprocessor arguments, when relative, are relative
+            // to the current project.
+            const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            for (const auto& cppArgument : preprocessorArguments)
             {
-                argv.push_back("-z");
+                auto normalizedArgument = NormalizeIncludePathArgument(cppArgument, projectPath);
+                if (normalizedArgument.empty())
+                {
+                    // An empty string means there was an error. The proper message is produced by NormalizePreprocessorIncludePath().
+                    return false;
+                }
+                argv.emplace_back(AZStd::move(normalizedArgument));
             }
-            argv.push_back("-C");  // conserve comments
-            argv.push_back("-+");  // C++ mode
-            for (const AZStd::string& macroDef : options.m_predefinedMacros)
-            {
-                argv.push_back("-D");
-                argv.push_back(&macroDef[0]); // pointers to the string data will be stable for the duration of the call
-            }
-            for (const AZStd::string& folder : options.m_projectIncludePaths)
-            {
-                argv.push_back("-I");
-                argv.push_back(&folder[0]);  // pointers to the string data will be stable for the duration of the call
-            }
-            argv.push_back(nullptr); // usual argv terminator
+
             // output the command line:
             AZStd::string stringifiedCommandLine;
-            AZ::StringFunc::Join(stringifiedCommandLine, argv.begin(), argv.end() - 1, " ");
+            AZ::StringFunc::Join(stringifiedCommandLine, argv.begin(), argv.end(), " ");
             AZ_TracePrintf("Preprocessor", "%s", stringifiedCommandLine.c_str());
             // when we don't specify an -o outfile, mcpp uses stdout.
-            // the trick is that since we hijacked putc & puts, stdout will not be written. 
-            bool result = mcpp.StartPreprocessWithCommandLine(aznumeric_cast<int>(argv.size()) - 1, argv.data());
+            // the trick is that since we hijacked putc & puts, stdout will not be written.
+            AZStd::vector< const char* > argsOfCstr;
+            argsOfCstr.reserve(argv.size() + 1);
+            for (const auto& arg : argv)
+            {
+                argsOfCstr.push_back(&arg[0]);
+            }
+            argsOfCstr.push_back(nullptr); // usual argv terminator
+            bool result = mcpp.StartPreprocessWithCommandLine(aznumeric_cast<int>(argsOfCstr.size()) - 1, argsOfCstr.data());
             return result;
         }
 
@@ -280,11 +352,35 @@ namespace AZ
             }
         }
 
-        // populate options with scan folders and contents of parsing shader_global_build_options.json
-        void InitializePreprocessorOptions(
-            PreprocessorOptions& options, [[maybe_unused]] const char* builderName, const char* optionalIncludeFolder)
+        AZStd::vector<AZStd::string> BuildListOfIncludeDirectories([[maybe_unused]] const char* builderName, const char* optionalIncludeFolder)
         {
             AZ_TraceContext("Init include-paths lookup options", "preprocessor");
+
+            AZStd::vector<AZStd::string> includePaths;
+
+            if (optionalIncludeFolder)
+            {
+                if (AZ::IO::SystemFile::Exists(optionalIncludeFolder))
+                {
+                    includePaths.emplace_back(AZStd::move(AZ::IO::Path(optionalIncludeFolder).LexicallyNormal().Native()));
+                }
+            }
+
+            auto PathCompare = [](AZ::IO::PathView searchPath)
+            {
+                return [searchPath](AZStd::string_view includePathView)
+                {
+                    return searchPath == AZ::IO::PathView(includePathView);
+                };
+            };
+
+            // Add the project path to list of include paths
+            AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            if (auto it = AZStd::find_if(includePaths.begin(), includePaths.end(), PathCompare(projectPath));
+                it == includePaths.end())
+            {
+                includePaths.emplace_back(projectPath.c_str(), projectPath.Native().size());
+            }
 
             // get the scan folders of the projects:
             bool success = true;
@@ -294,42 +390,17 @@ namespace AZ
                 scanFoldersVector);
             AZ_Warning(builderName, success, "Preprocessor option: Could not acquire a list of scan folders from the database.");
 
-            // Add the project path to list of include paths
-            AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
-            auto FindPath = [](AZ::IO::PathView searchPath)
-            {
-                return [searchPath](AZStd::string_view includePathView)
-                {
-                    return searchPath == AZ::IO::PathView(includePathView);
-                };
-            };
-            if (auto it = AZStd::find_if(options.m_projectIncludePaths.begin(), options.m_projectIncludePaths.end(), FindPath(projectPath));
-                it == options.m_projectIncludePaths.end())
-            {
-                options.m_projectIncludePaths.emplace_back(projectPath.c_str(), projectPath.Native().size());
-            }
-            if (optionalIncludeFolder)
-            {
-                if (auto it = AZStd::find_if(options.m_projectIncludePaths.begin(), options.m_projectIncludePaths.end(), FindPath(optionalIncludeFolder));
-                    it == options.m_projectIncludePaths.end())
-                {
-                    if (AZ::IO::SystemFile::Exists(optionalIncludeFolder))
-                    {
-                        options.m_projectIncludePaths.emplace_back(AZStd::move(AZ::IO::Path(optionalIncludeFolder).LexicallyNormal().Native()));
-                    }
-                }
-            }
             // but while we transfer to the set, we're going to keep only folders where +/ShaderLib exists
             for (AZ::IO::Path shaderScanFolder : scanFoldersVector)
             {
                 shaderScanFolder /= "ShaderLib";
-                if (auto it = AZStd::find_if(options.m_projectIncludePaths.begin(), options.m_projectIncludePaths.end(), FindPath(shaderScanFolder));
-                    it == options.m_projectIncludePaths.end())
+                if (auto it = AZStd::find_if(includePaths.begin(), includePaths.end(), PathCompare(shaderScanFolder));
+                    it == includePaths.end())
                 {
                     // the folders constructed this fashion constitute the base of automatic include search paths
                     if (AZ::IO::SystemFile::Exists(shaderScanFolder.c_str()))
                     {
-                        options.m_projectIncludePaths.emplace_back(AZStd::move(shaderScanFolder.LexicallyNormal().Native()));
+                        includePaths.emplace_back(AZStd::move(shaderScanFolder.LexicallyNormal().Native()));
                     }
                 }
             }
@@ -337,14 +408,16 @@ namespace AZ
             // finally the <engineroot>/Gems fallback
             AZ::IO::Path engineGemsFolder(AZStd::string_view{ AZ::Utils::GetEnginePath() });
             engineGemsFolder /= "Gems";
-            if (auto it = AZStd::find_if(options.m_projectIncludePaths.begin(), options.m_projectIncludePaths.end(), FindPath(engineGemsFolder));
-                it == options.m_projectIncludePaths.end())
+            if (auto it = AZStd::find_if(includePaths.begin(), includePaths.end(), PathCompare(engineGemsFolder));
+                it == includePaths.end())
             {
                 if (AZ::IO::SystemFile::Exists(engineGemsFolder.c_str()))
                 {
-                    options.m_projectIncludePaths.emplace_back(AZStd::move(engineGemsFolder.Native()));
+                    includePaths.emplace_back(AZStd::move(engineGemsFolder.Native()));
                 }
             }
+
+            return includePaths;
         }
 
     } // namespace ShaderBuilder
