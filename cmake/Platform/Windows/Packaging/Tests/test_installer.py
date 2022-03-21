@@ -120,24 +120,18 @@ def test_run_asset_processor_batch_fixture(test_compile_project_fixture, context
 @pytest.fixture(scope="session")
 def test_run_editor_fixture(test_run_asset_processor_batch_fixture, context):
     """ Editor can be run without crashing. """
-    # write out the attribution shown regset to avoid the modal popup stalling editor load
-    aws_attribution_regset = {
-            "Amazon": {
-                "AWS": {
-                    "Preferences": {
-                        "AWSAttributionConsentShown": True,
-                        "AWSAttributionEnabled": False 
-                    }
-                }
-            }
-        }
-    aws_attribution_path = context.project_path / 'user/Registry/editor_aws_preferences.setreg'
-    with aws_attribution_path.open('w') as f:
-        json.dump(aws_attribution_regset, f) 
-    
     try:
         # run Editor.exe for 2 mins 
-        result = context.run([str(context.engine_bin_path / 'Editor.exe'),f'--project-path="{context.project_path}"','--rhi=null','--skipWelcomeScreenDialog=True','+wait_seconds','10','+quit'], timeout=2*60)
+        cmd = [
+            str(context.engine_bin_path / 'Editor.exe'),
+            f'--project-path="{context.project_path}"',
+            '--rhi=null',
+            '--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=True"'
+            '--skipWelcomeScreenDialog=True',
+            '+wait_seconds','10',
+            '+quit'
+        ]
+        result = context.run(cmd, timeout=2*60)
         assert result.returncode == 0, f"Editor.exe failed with exit code {result.returncode}"
     except TimeoutExpired as e:
         pass
