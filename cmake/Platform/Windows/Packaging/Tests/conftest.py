@@ -31,10 +31,10 @@ def pytest_addoption(parser):
 
 class SessionContext:
     """ Holder for test session constants and helper functions. """
-    def __init__(self, request):
+    def __init__(self, request, temp_dir):
         # setup to capture subprocess output
         self.log_file = request.config.getoption("--log-file")
-        self.temp_dir = mkdtemp()
+        self.temp_dir = temp_dir
         self.temp_file = NamedTemporaryFile(dir=self.temp_dir, mode='w+t', delete=False)
 
         # we do not use Path.home() or os.path.expanduser() because it may return the 
@@ -123,6 +123,10 @@ class SessionContext:
             print(f"Removing {self.project_path}")
             shutil.rmtree(self.project_path, ignore_errors=True)
 
+        # uninstall engine in case we failed before the uninstall test has run
+        if self.installer_path.is_file():
+            self.run([str(self.installer_path) , f"InstallFolder={self.install_root}", "/quiet","/uninstall"], timeout=30*60)
+
         self.temp_file.close()
         self.log_reader_shutdown = True
         self.log_reader_thread.join()
@@ -130,17 +134,8 @@ class SessionContext:
         if self.log_file:
             shutil.copy(self.temp_file.name, Path(self.log_file).resolve())
 
-        # delete temporary directory and files
-        print(f"Removing {self.temp_dir}")
-        shutil.rmtree(self.temp_dir, ignore_errors=True)
-
-        # uninstall engine in case we failed before the uninstall test has run
-        if self.installer_path.is_file():
-            self.run([str(self.installer_path) , f"InstallFolder={self.install_root}", "/quiet","/uninstall"], timeout=30*60)
-
-
 @pytest.fixture(scope="session")
-def context(request):
-    session_context = SessionContext(request)
+def context(request, tmpdir_factory):
+    session_context = SessionContext(request, tmpdir_factory.mktemp("installer"))
     yield session_context
     session_context.cleanup()
