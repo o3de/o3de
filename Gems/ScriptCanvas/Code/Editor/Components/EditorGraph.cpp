@@ -450,8 +450,8 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::RefreshVariableReferences(const ScriptCanvas::VariableId& variableId)
     {
-        // ScopedGraphUndoBlocker undoBlocker(graphId);  use this
-        // before submission to make sure there is only a single, atomic undo spot
+        // direct connections between replaced nodes will still fail to the tune of crashing
+        // make sure and cover that case
 
         const auto variable = FindVariableById(variableId);
         if (!variable)
@@ -534,7 +534,7 @@ namespace ScriptCanvasEditor
                     }
                     else
                     {
-                        // before updating the variable reference, or checking if the new type is accpeted, the
+                        // before updating the variable reference, or checking if the new type is accepted, the
                         // node slot must be reset to its original, default type
                         const auto scriptCanvasEndpoint = ScriptCanvas::Endpoint(node->GetEntityId(), slot->GetId());
                         const auto graphCanvasEndpoint = ConvertToGraphCanvasEndpoint(scriptCanvasEndpoint);

@@ -616,7 +616,6 @@ namespace ScriptCanvasEditor
                 }
 
                 changed = true;
-                // consider returning nothing since the post undo has been performed
             }
         }
 

@@ -4068,14 +4068,13 @@ namespace GraphCanvas
             }
 
             RegisterSelectionItem(sceneMemberId);
+            SceneMemberRequestBus::Event(sceneMemberId, &SceneMemberRequests::SetScene, GetEntityId());
 
             if (positionItem)
             {
                 GeometryRequestBus::Event(sceneMemberId, &GeometryRequests::SetPosition, position);
             }
             
-            SceneMemberRequestBus::Event(sceneMemberId, &SceneMemberRequests::SetScene, GetEntityId());
-
             GeometryNotificationBus::MultiHandler::BusConnect(sceneMemberId);
             VisualNotificationBus::MultiHandler::BusConnect(sceneMemberId);
 
