@@ -35,7 +35,6 @@ namespace AssetProcessor
     const char* const AutoFailReasonKey = "failreason"; // the key to look in for auto-fail reason.
     const char* const AutoFailLogFile = "faillogfile"; // if this is provided, this is a complete log of the failure and will be added after the failreason.
     const char* const AutoFailOmitFromDatabaseKey = "failreason_omitFromDatabase"; // if set in your job info hash, your job will not be tracked by the database.
-    const char* const JobWarningKey = "ap_warningmessage"; // key used to store a warning message to be shown in the job log
     const char* const PlaceHolderFileName = "$missing_dependency$"; // Used as a placeholder in the dependency system, such as when a source file is deleted and a previously met dependency is broken.
     const unsigned int g_RetriesForFenceFile = 5; // number of retries for fencing
     const int RetriesForJobNetworkError = 1; // number of times to retry a job when a network error is determined to have caused a job failure
@@ -222,6 +221,8 @@ namespace AssetProcessor
 
         AssetBuilderSDK::AssetBuilderDesc   m_assetBuilderDesc;
         AssetBuilderSDK::JobParameterMap    m_jobParam;
+
+        AZStd::vector<AZStd::string> m_warnings;
 
         // autoFail makes jobs which are added to the list and will automatically fail, and are used
         // to make sure that a "failure" shows up on the list so that the user can click to inspect the job and see why
