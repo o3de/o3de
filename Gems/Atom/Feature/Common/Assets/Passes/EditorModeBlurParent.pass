@@ -42,7 +42,7 @@
             "PassRequests": [
                 {
                     "Name": "BlurHorizontalPass",
-                    "TemplateName": "EditorModeBlurHorizontalTemplate",
+                    "TemplateName": "EditorModeBlurTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",
@@ -65,11 +65,27 @@
                                 "Attachment": "InputColor"
                             }
                         }
-                    ]
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
+                        },
+                        "PipelineViewTag": "MainCamera",
+                        "ShaderDataMappings": {
+                            "UintMappings": [
+                                {
+                                    // Horizontal blur
+                                    "Name": "m_direction",
+                                    "Value": 0
+                                }
+                            ]
+                        }
+                    }
                 },
                 {
                     "Name": "BlurVerticalPass",
-                    "TemplateName": "EditorModeBlurVerticalTemplate",
+                    "TemplateName": "EditorModeBlurTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "InputDepth",
@@ -92,7 +108,23 @@
                                 "Attachment": "OutputColor"
                             }
                         }
-                    ]
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
+                        },
+                        "PipelineViewTag": "MainCamera",
+                        "ShaderDataMappings": {
+                            "UintMappings": [
+                                {
+                                    // Vertical blur
+                                    "Name": "m_direction",
+                                    "Value": 1
+                                }
+                            ]
+                        }
+                    }
                 }
             ]
         }

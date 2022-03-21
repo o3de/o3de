@@ -1,11 +1,11 @@
 {
-    // Applies a box blur effect in the horizontal direction as controlled by the box width
+    // Applies a box blur effect in the vertical direction as controlled by the box width
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeBlurHorizontalTemplate",
+            "Name": "EditorModeBlurTemplate",
             "PassClass": "EditorModeBlurPass",
             "Slots": [
                 {
@@ -65,23 +65,7 @@
                     "Input" : "InputColor",
                     "Output" : "OutputColor"
                 }
-            ],
-            "PassData": {
-                "$type": "FullscreenTrianglePassData",
-                "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
-                },
-                "PipelineViewTag": "MainCamera",
-                "ShaderDataMappings": {
-                    "UintMappings": [
-                        {
-                            // Horizontal blur
-                            "Name": "m_direction",
-                            "Value": 0
-                        }
-                    ]
-                }
-            }
+            ]
         }
     }
 }

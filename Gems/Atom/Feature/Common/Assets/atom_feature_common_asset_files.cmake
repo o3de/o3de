@@ -110,8 +110,7 @@ set(FILES
     Passes/EditorModeDesaturation.pass
     Passes/EditorModeTint.pass
     Passes/EditorModeBlurParent.pass
-    Passes/EditorModeBlurHorizontal.pass
-    Passes/EditorModeBlurVertical.pass
+    Passes/EditorModeBlur.pass
     Passes/EditorModeOutline.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
