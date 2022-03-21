@@ -509,6 +509,10 @@ namespace LyShine
             if (!m_dynamicDraw)
             {
                 m_dynamicDraw = uiRenderer->CreateDynamicDrawContextForRTT(GetRenderTargetName());
+                if (m_dynamicDraw)
+                {
+                    m_dynamicDraw->SetViewport(AZ::RHI::Viewport(m_viewportX, m_viewportWidth, m_viewportY, m_viewportHeight));
+                }
             }
 
             if (m_dynamicDraw)
@@ -1008,7 +1012,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     bool RenderGraph::IsEmpty()
     {
-        return m_renderNodes.empty();
+        return m_renderNodes.empty() && m_renderTargetRenderNodes.empty();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

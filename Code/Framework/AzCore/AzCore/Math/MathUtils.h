@@ -364,6 +364,13 @@ namespace AZ
     }
 
     //! Returns a linear interpolation between 2 values.
+    template<typename T>
+    constexpr T Lerp(const T& a, const T& b, float t)
+    {
+        return static_cast<T>(a + (b - a) * t);
+    }
+
+    //! Returns a linear interpolation between 2 values.
     constexpr float Lerp(float a, float b, float t)
     {
         return a + (b - a) * t;
