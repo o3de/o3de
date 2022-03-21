@@ -20,8 +20,8 @@
     "BlendState" : 
     {
         "Enable" : true,
-        "BlendSource" : "AlphaSource",
-        "BlendDest" : "AlphaSourceInverse",
+        "BlendSource" : "None",
+        "BlendDest" : "None",
         "BlendOp" : "Maximum"
     },
 

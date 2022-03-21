@@ -18,10 +18,11 @@ namespace AZ
             : public EditorModeFeedbackPassBase
         {
         public:
+            //! The outline syles supported by the outline effect.
             enum class OutlineStyle : AZ::u32
             {
-                Always,
-                Visible
+                Always, //!< Outlines both visible and occluded fragments of the entitites of interest.
+                Visible //!< Outlines only the visible fragments of the entitites of interest.
             };
 
             AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackPassBase);

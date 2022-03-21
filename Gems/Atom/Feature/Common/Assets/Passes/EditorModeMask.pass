@@ -45,7 +45,7 @@
                     },
                     "ImageDescriptor": {
                         // Red channel holds visible entities of interest fragments
-                        // Blue channel holds visible and occluded entities of interest
+                        // Green channel holds visible and occluded entities of interest fragments
                         "Format": "R8G8_UNORM",
                         "SharedQueueMask": "Graphics"
                     }

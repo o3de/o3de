@@ -80,7 +80,7 @@ VSOutput MainVS(VSInput IN)
 
 struct PixelOutput
 {
-    float4 m_mask : SV_Target0;
+    float2 m_mask : SV_Target0;
 };
 
 //! Returns the linearized depth of the specified non-linear depth value.
@@ -112,4 +112,4 @@ PixelOutput MainPS(VSOutput IN)
     }
 
     return OUT;
-} 
+}

@@ -17,12 +17,13 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     //! Outline line color.
     float4 m_lineColor;
 
-    //! Outline style to use ()
+    //! Outline style to use (0 = OutlineStyle::Always, 1 = OutlineStyle::Visible)
     uint m_outlineStyle;
 }
 
 //! Applies an outline effect to the entity mask of the specified line thickness.
-//! @returns The outlines of both channels of the entity mask.
+//! @returns The outlines of both the visible entities of interest fragments (red) and visible and
+//! occluded entities of interest fragments (green) channels of the entity mask.
 float2 Outliner(const float2 uv, const float lineThickness)
 {
     const float2 unormalizedUv = float2(uv.x * PassSrg::m_maskDimensions.x, uv.y * PassSrg::m_maskDimensions.y);
