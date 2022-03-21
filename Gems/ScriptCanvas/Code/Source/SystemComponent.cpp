@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <Libraries/Libraries.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
 #include <ScriptCanvas/Core/Contract.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -59,6 +60,7 @@ namespace ScriptCanvas
 {
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        AutoGenRegistry::ReflectFunctions(context);
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
         ReflectLibraries(context);

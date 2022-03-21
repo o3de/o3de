@@ -1,0 +1,72 @@
+{#
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+#}
+
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Source.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <ScriptCanvasAutoGenRegistry.h>
+
+{% for xml in dataFiles %}
+{% for Library in xml.iter('ScriptCanvasFunction') %}
+
+#include "{{ Library.attrib['Include'] }}"
+
+{% set className = macros.CleanName('ScriptCanvasFunction' + Library.attrib['Name']) %}
+{% set namespaceList = macros.CleanName(Library.attrib['Namespace']).split('::') %}
+{% set prettyNamespaceName = macros.CleanName(Library.attrib['Namespace'].replace('::', '_')) %}
+{% set categoryName = Library.attrib['Category']%}
+
+{% for namespace in namespaceList %}
+namespace {{namespace}}
+{
+{% endfor %}
+
+    class {{className}}
+        : public ScriptCanvas::IScriptCanvasFunctionRegistry
+    {
+    public:
+        {{className}}()
+        {
+            ScriptCanvas::AutoGenRegistry::GetInstance()->RegisterFunction("{{className}}", this);
+        }
+
+        ~{{className}}() = default;
+ 
+        void Reflect(AZ::ReflectContext* context) override
+        {
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+{% for function in Library.findall('Function') %}
+{% set functionName = macros.CleanName(function.attrib['Name'])%}
+                behaviorContext->Method("{{prettyNamespaceName}}_{{functionName}}", &{{functionName}}, 
+{{macros.GenerateFunctionMetaData(function)}})
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "{{categoryName}}")
+                ;
+
+{% endfor %}
+            }
+        }
+    };
+
+    static {{className}} s_{{className}};
+
+{% for namespace in namespaceList %}
+}
+{% endfor %}
+
+{% endfor %}
+{% endfor %}
