@@ -150,7 +150,7 @@ def AtomEditorComponents_OcclusionCullingPlane_AddedToEntity():
                 AtomComponentProperties.occlusion_culling_plane('Show Visualization')) is True)
 
         # 6. Toggle Transparent Visualization
-        # Set Show Visualization to True
+        # Set Transparent Visualization to True
         occlusion_culling_plane_component.set_component_property_value(
             AtomComponentProperties.occlusion_culling_plane('Transparent Visualization'), True)
         Report.result(
@@ -158,7 +158,7 @@ def AtomEditorComponents_OcclusionCullingPlane_AddedToEntity():
             occlusion_culling_plane_component.get_component_property_value(
                 AtomComponentProperties.occlusion_culling_plane('Transparent Visualization')) is True)
 
-        # Set Show Visualization to False
+        # Set Transparent Visualization to False
         occlusion_culling_plane_component.set_component_property_value(
             AtomComponentProperties.occlusion_culling_plane('Transparent Visualization'), False)
         Report.result(
