@@ -80,7 +80,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     Texture2DArray<float> m_directionalLightExponentialShadowmap;
     Texture2DArray<float> m_projectedShadowmaps;
     Texture2DArray<float> m_projectedExponentialShadowmap;
-    Texture2D<float> m_fullscreenShadow;
     Texture2D m_brdfMap;   
     Texture2D<uint4> m_tileLightData;
     StructuredBuffer<uint> m_lightListRemapped;

@@ -33,6 +33,17 @@
 
 #pragma once
 
+// Needed for DirectionalLightShadow.azsli - o_opacity_mode exists in most shaders but not this one.
+option enum class OpacityMode 
+{
+    Opaque, 
+    Cutout, 
+    Blended, 
+    TintedTransparent
+    
+} o_opacity_mode = OpacityMode::Blended;
+
+
 #include <HairUtilities.azsli>
 //------------------------------------------------------------------------------
 struct HairShadeParams
