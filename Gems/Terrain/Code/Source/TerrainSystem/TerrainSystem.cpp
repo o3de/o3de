@@ -22,6 +22,8 @@
 
 using namespace Terrain;
 
+AZ_DEFINE_BUDGET(Terrain);
+
 bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, const AZ::EntityId& layer2id) const
 {
     // Comparator for insertion/keylookup.
@@ -197,6 +199,8 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
     AZStd::vector<AZ::Vector3>& outPositions,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     const float minHeight = m_currentSettings.m_worldBounds.GetMin().GetZ();
     for (auto& position : inPositions)
     {
@@ -249,6 +253,8 @@ AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
     const AZ::Aabb& inRegion,
     const AZ::Vector2& stepSize) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::vector<AZ::Vector3> inPositions;
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize);
     inPositions.reserve(numSamplesX * numSamplesY);
@@ -269,6 +275,8 @@ AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
 AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromListOfVector2(
     const AZStd::span<const AZ::Vector2> inPositionsVec2) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::vector<AZ::Vector3> inPositions;
     inPositions.reserve(inPositionsVec2.size());
 
@@ -287,6 +295,8 @@ void TerrainSystem::MakeBulkQueries(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
     BulkQueriesCallback queryCallback) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     AZ::Aabb bounds;
@@ -344,6 +354,8 @@ void TerrainSystem::MakeBulkQueries(
 void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     AZStd::vector<AZ::Vector3> outPositions;
@@ -549,6 +561,8 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::vector<AZ::Vector3> directionVectors;
     directionVectors.reserve(inPositions.size() * 4);
     const AZ::Vector2 range(m_currentSettings.m_heightQueryResolution / 2.0f, m_currentSettings.m_heightQueryResolution / 2.0f);
@@ -869,6 +883,8 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
     AZStd::span<bool> terrainExists) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (terrainExists.size() == outSurfaceWeightsList.size())
     {
         AZStd::vector<float> heights(inPositions.size());

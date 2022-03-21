@@ -27,6 +27,8 @@
 #include <TerrainRaycast/TerrainRaycastContext.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
+AZ_DECLARE_BUDGET(Terrain);
+
 namespace Terrain
 {
     struct TerrainLayerPriorityComparator
@@ -368,6 +370,8 @@ namespace Terrain
         Sampler sampleFilter,
         AZStd::shared_ptr<ProcessAsyncParams> params) const
     {
+        AZ_PROFILE_FUNCTION(Terrain);
+
         // Determine the number of jobs to split the work into based on:
         // 1. The number of available worker threads.
         // 2. The desired number of jobs as passed in.
@@ -445,6 +449,8 @@ namespace Terrain
         Sampler sampleFilter,
         AZStd::shared_ptr<ProcessAsyncParams> params) const
     {
+        AZ_PROFILE_FUNCTION(Terrain);
+
         // ToDo: Determine the number of jobs to split the work into based on:
         // 1. The number of available worker threads.
         // 2. The desired number of jobs as passed in.

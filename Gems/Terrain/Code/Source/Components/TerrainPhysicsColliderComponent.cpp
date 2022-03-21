@@ -23,6 +23,8 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
+AZ_DECLARE_BUDGET(Terrain);
+
 namespace Terrain
 {
     void TerrainPhysicsSurfaceMaterialMapping::Reflect(AZ::ReflectContext* context)
@@ -259,7 +261,7 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(AZStd::vector<float>& heights) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Terrain);
 
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
@@ -314,7 +316,7 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
         const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& regionIn) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Terrain);
 
         AZ::Aabb region = regionIn;
 

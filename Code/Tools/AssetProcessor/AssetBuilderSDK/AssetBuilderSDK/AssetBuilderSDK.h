@@ -342,6 +342,8 @@ namespace AssetBuilderSDK
         {
         }
 
+        bool operator==(const SourceFileDependency& other) const;
+
         AZStd::string ToString() const;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -387,6 +389,7 @@ namespace AssetBuilderSDK
         JobDependency(const AZStd::string& jobKey, const AZStd::string& platformIdentifier, const JobDependencyType& type, const SourceFileDependency& sourceFile);
 
         AZStd::string ConcatenateSubIds() const;
+        bool operator==(const JobDependency& other) const;
 
         static void Reflect(AZ::ReflectContext* context);
     };
@@ -733,9 +736,9 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    
 
-    
+
+
 
     //! JobCancelListener can be used by builders in their processJob method to listen for job cancellation request.
     //! The address of this listener is the jobid which can be found in the process job request.
@@ -822,3 +825,26 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProductPathDependencyType, "{EF77742B-9627-4072-B431-396AA7183C80}");
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType, "{BE9C8805-DB17-4500-944A-EB33FD0BE347}");
 }
+
+namespace AZStd
+{
+    template<>
+    struct hash<AssetBuilderSDK::JobDependency>
+    {
+        size_t operator()(const AssetBuilderSDK::JobDependency& jobDependency) const
+        {
+            if(jobDependency.m_sourceFile.m_sourceFileDependencyPath.empty())
+            {
+                AZStd::hash<AZ::Uuid> hasher;
+
+                return hasher(jobDependency.m_sourceFile.m_sourceFileDependencyUUID);
+            }
+            else
+            {
+                AZStd::hash<AZStd::string> hasher;
+
+                return hasher(jobDependency.m_sourceFile.m_sourceFileDependencyPath);
+            }
+        }
+    };
+} // namespace AZStd

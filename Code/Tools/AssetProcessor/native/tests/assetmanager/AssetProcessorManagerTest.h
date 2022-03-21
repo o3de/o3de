@@ -70,14 +70,14 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_NewVersionNumber_IsNotANewBuilder);
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_NewAnalysisFingerprint_IsNotANewBuilder);
 
-    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_BasicTest);
-    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_UpdateTest);
-    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid);
-    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByName);
+    friend class GTEST_TEST_CLASS_NAME_(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_BasicTest);
+    friend class GTEST_TEST_CLASS_NAME_(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_UpdateTest);
+    friend class GTEST_TEST_CLASS_NAME_(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid);
+    friend class GTEST_TEST_CLASS_NAME_(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByName);
     friend class GTEST_TEST_CLASS_NAME_(
-        AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid_UpdatesWhenTheyAppear);
+        SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid_UpdatesWhenTheyAppear);
     friend class GTEST_TEST_CLASS_NAME_(
-        AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByName_UpdatesWhenTheyAppear);
+        SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByName_UpdatesWhenTheyAppear);
     friend class GTEST_TEST_CLASS_NAME_(
         AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardMissingFiles_ByName_UpdatesWhenTheyAppear);
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK);
@@ -106,6 +106,7 @@ public:
     friend struct DuplicateProcessTest;
     friend struct AbsolutePathProductDependencyTest;
     friend struct WildcardSourceDependencyTest;
+    friend struct SourceFileDependenciesTest;
 
     explicit AssetProcessorManager_Test(AssetProcessor::PlatformConfiguration* config, QObject* parent = nullptr);
     ~AssetProcessorManager_Test() override;
@@ -145,7 +146,6 @@ public:
     using AssetProcessorManager::m_stateData;
     using AssetProcessorManager::ComputeBuilderDirty;
 };
-
 
 class AssetProcessorManagerTest
     : public AssetProcessor::AssetProcessorTest
@@ -208,6 +208,40 @@ struct AbsolutePathProductDependencyTest
     const AssetProcessor::ScanFolderInfo* m_scanFolderInfo = nullptr;
     AZStd::string m_testPlatform = "SomePlatform";
 };
+
+struct SourceFileDependenciesTest : AssetProcessorManagerTest
+{
+    void SetupData(
+        const AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies,
+        const AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
+        bool createFile1Dummies,
+        bool createFile2Dummies,
+        bool primeMap,
+        AssetProcessor::AssetProcessorManager::JobToProcessEntry& job);
+
+    auto GetDependencyList();
+
+    AssetBuilderSDK::SourceFileDependency MakeSourceDependency(const char* file, bool wildcard = false);
+    AssetBuilderSDK::SourceFileDependency MakeSourceDependency(AZ::Uuid uuid);
+    AssetBuilderSDK::JobDependency MakeJobDependency(const char* file);
+    AssetBuilderSDK::JobDependency MakeJobDependency(AZ::Uuid uuid);
+
+    QString m_absPath;
+    QString m_watchFolderPath; 
+    QString m_dependsOnFile1_Source;
+    QString m_dependsOnFile2_Source;
+    QString m_dependsOnFile1_Job;
+    QString m_dependsOnFile2_Job;
+
+    const AssetProcessor::ScanFolderInfo* m_scanFolder = nullptr;
+
+    AZ::Uuid m_dummyBuilderUuid;
+    AZ::Uuid m_uuidOfA = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
+    AZ::Uuid m_uuidOfB = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
+    AZ::Uuid m_uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
+    AZ::Uuid m_uuidOfD = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
+};
+
 
 struct PathDependencyTest
     : public AssetProcessorManagerTest
