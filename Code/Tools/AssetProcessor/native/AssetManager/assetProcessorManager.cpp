@@ -3833,13 +3833,15 @@ namespace AssetProcessor
                     continue;
                 }
 
+                AZStd::string subIds = jobDependency.m_jobDependency.ConcatenateSubIds();
+
                 for (const auto& thisEntry : resolvedDependencyList)
                 {
                     SourceFileDependencyEntry newDependencyEntry(
                         builderId, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(), thisEntry.toUtf8().constData(),
                         JobDependencyType,
                         false,
-                        "");
+                        subIds.c_str());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
 
@@ -3856,7 +3858,7 @@ namespace AssetProcessor
                         ? SourceFileDependencyEntry::DEP_SourceLikeMatch
                         : JobDependencyType,
                         !entry.m_sourceFileInfo.m_uuid.IsNull(),
-                        "");
+                        subIds.c_str());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
             }
@@ -3875,8 +3877,6 @@ namespace AssetProcessor
                 // even if that something starts with the placeholder.
                 continue;
             }
-
-                AZStd::string subIds = jobDependency.m_jobDependency.ConcatenateSubIds();
 
             constexpr const char* DuplicateJobSourceDependencyMessageFormat =
                 "Builder `%s` emitted Source Dependency and Job Dependency on file `%s`.  "
@@ -3912,7 +3912,7 @@ namespace AssetProcessor
                         thisEntry.toUtf8().constData(),
                         SourceFileDependencyEntry::DEP_SourceToSource,
                         false,
-                        subIds.c_str());
+                        "");
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
             }
@@ -3949,7 +3949,7 @@ namespace AssetProcessor
                     ? SourceFileDependencyEntry::DEP_SourceLikeMatch
                     : SourceFileDependencyEntry::DEP_SourceToSource,
                     !sourceDependency.second.m_sourceFileDependencyUUID.IsNull(),
-                    subIds.c_str());
+                    "");
                 // If the UUID is null, then record that this dependency came from a (resolved) path
                 newDependencies.push_back(AZStd::move(newDependencyEntry));
             }

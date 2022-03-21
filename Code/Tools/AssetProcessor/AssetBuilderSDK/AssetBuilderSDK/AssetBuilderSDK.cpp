@@ -1329,6 +1329,8 @@ namespace AssetBuilderSDK
         , m_type(type)
         , m_sourceFile(sourceFile)
     {
+    }
+
     bool JobDependency::operator==(const JobDependency& other) const
     {
         return m_sourceFile == other.m_sourceFile
