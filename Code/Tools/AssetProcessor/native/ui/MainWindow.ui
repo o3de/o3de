@@ -1214,7 +1214,16 @@
             <item>
              <widget class="QLabel" name="label">
               <property name="text">
-               <string>Builders are used by the asset processor to transform source assets into product assets. Builders are mostly defined in C++, and the source for them can be in Gems, the engine, or your project.</string>
+               <string>Below is a list of all builders loaded by Asset Processor.  Builders are used by the asset processor to transform source assets into product assets. Builders are mostly defined in C++, and the source for them can be in Gems, the engine, or your project.  If a builder is missing from the list, make sure the owning gem is enabled and the component is activated. &lt;a href=&quot;https://www.o3de.org/docs/user-guide/assets/pipeline/asset-builders/&quot;&gt;Click here&lt;/a&gt; for documentation on creating a builder.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+              <property name="openExternalLinks">
+               <bool>true</bool>
+              </property>
+              <property name="textInteractionFlags">
+               <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
               </property>
              </widget>
             </item>
