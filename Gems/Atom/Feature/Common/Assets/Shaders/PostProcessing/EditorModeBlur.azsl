@@ -28,7 +28,8 @@ float3 Blur(const float2 uv, const float kernalWidth)
         for(float v = -kernalWidth; v <= kernalWidth; v+=1.)
         {
             weights += 1.;
-            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * PassSrg::m_maskDimensions.zw).rgb;
+            outColor += PassSrg::m_framebuffer.Sample(
+                PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * PassSrg::m_maskDimensions.zw).rgb;
         }
     }
 
