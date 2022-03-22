@@ -5,7 +5,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeBlurTemplate",
+            "Name": "EditorModeBlurVerticalTemplate",
             "PassClass": "EditorModeBlurPass",
             "Slots": [
                 {
@@ -65,7 +65,23 @@
                     "Input" : "InputColor",
                     "Output" : "OutputColor"
                 }
-            ]
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
+                },
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "UintMappings": [
+                        {
+                            // Vertical blur
+                            "Name": "m_direction",
+                            "Value": 1
+                        }
+                    ]
+                }
+            }
         }
     }
 }
