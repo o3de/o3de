@@ -460,7 +460,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
 //                       Light Types Application
 // 
 //==============================================================================
-void ApplyLighting(inout Surface surface, inout LightingData lightingData)
+void ApplyLighting(inout Surface surface, inout LightingData lightingData, float4 screenCoords)
 {
     // Shadow coordinates generation for the directional light
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
@@ -472,7 +472,7 @@ void ApplyLighting(inout Surface surface, inout LightingData lightingData)
 
     if (o_enableDirectionalLights)
     {
-        ApplyDirectionalLights(surface, lightingData);
+        ApplyDirectionalLights(surface, lightingData, screenCoords);
     }
 
     if (o_enablePunctualLights)

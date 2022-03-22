@@ -228,7 +228,7 @@ float3 CalculateLighting(
     // The normal assignment will be overriden afterwards per light
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
-    ApplyLighting(surface, lightingData);
+    ApplyLighting(surface, lightingData, screenCoords);
 
     return lightingData.diffuseLighting + lightingData.specularLighting;
 }
