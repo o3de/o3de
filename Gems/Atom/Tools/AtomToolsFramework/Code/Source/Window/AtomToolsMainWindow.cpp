@@ -13,6 +13,7 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/sort.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
@@ -26,21 +27,19 @@
 
 namespace AtomToolsFramework
 {
-    AtomToolsMainWindow::AtomToolsMainWindow(const AZ::Crc32& toolId, QWidget* parent)
+    AtomToolsMainWindow::AtomToolsMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent)
         : Base(parent)
         , m_toolId(toolId)
-        , m_advancedDockManager(new AzQtComponents::FancyDocking(this))
+        , m_advancedDockManager(new AzQtComponents::FancyDocking(this, objectName.toUtf8().constData()))
         , m_mainWindowWrapper(new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons))
     {
-        setObjectName(QApplication::applicationName().append(" MainWindow"));
+        setObjectName(objectName);
 
         setDockNestingEnabled(true);
         setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
         setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
-        AddCommonMenus();
 
         m_statusMessage = new QLabel(statusBar());
         statusBar()->addPermanentWidget(m_statusMessage, 1);
@@ -74,12 +73,15 @@ namespace AtomToolsFramework
             QApplication::organizationName(), QApplication::applicationName(), "mainWindowGeometry");
 
         AtomToolsMainWindowRequestBus::Handler::BusConnect(m_toolId);
+        AtomToolsMainMenuRequestBus::Handler::BusConnect(m_toolId);
+        QueueUpdateMenus(true);
     }
 
     AtomToolsMainWindow::~AtomToolsMainWindow()
     {
         PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
         AtomToolsMainWindowRequestBus::Handler::BusDisconnect();
+        AtomToolsMainMenuRequestBus::Handler::BusDisconnect();
     }
 
     void AtomToolsMainWindow::ActivateWindow()
@@ -112,13 +114,7 @@ namespace AtomToolsFramework
         addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
         resizeDocks({ dockWidget }, { 400 }, Qt::Horizontal);
         resizeDocks({ dockWidget }, { 400 }, Qt::Vertical);
-
-        auto dockAction = m_menuView->addAction(name.c_str(), [this, name](const bool checked) {
-            SetDockWidgetVisible(name, checked);
-        });
-        dockAction->setCheckable(true);
-        dockAction->setChecked(dockWidget->isVisible());
-        connect(dockWidget, &QDockWidget::visibilityChanged, dockAction, &QAction::setChecked);
+        QueueUpdateMenus(true);
         return true;
     }
 
@@ -129,16 +125,7 @@ namespace AtomToolsFramework
             if (dockWidget->windowTitle().compare(name.c_str(), Qt::CaseInsensitive) == 0)
             {
                 delete dockWidget;
-                break;
-            }
-        }
-
-        for (auto action : m_menuView->actions())
-        {
-            if (action->text().compare(name.c_str(), Qt::CaseInsensitive) == 0)
-            {
-                m_menuView->removeAction(action);
-                delete action;
+                QueueUpdateMenus(true);
                 break;
             }
         }
@@ -193,7 +180,96 @@ namespace AtomToolsFramework
         {
             names.push_back(dockWidget->windowTitle().toUtf8().constData());
         }
+        AZStd::sort(names.begin(), names.end());
         return names;
+    }
+
+    void AtomToolsMainWindow::QueueUpdateMenus(bool rebuildMenus)
+    {
+        m_rebuildMenus = m_rebuildMenus || rebuildMenus;
+        if (!m_updateMenus)
+        {
+            m_updateMenus = true;
+            QTimer::singleShot(0, [this]() {
+                if (m_rebuildMenus)
+                {
+                    setMenuBar(new QMenuBar());
+                    AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::CreateMenus, menuBar());
+                }
+                AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::UpdateMenus, menuBar());
+                m_updateMenus = false;
+                m_rebuildMenus = false;
+            });
+        }
+    }
+
+    void AtomToolsMainWindow::CreateMenus(QMenuBar* menuBar)
+    {
+        m_menuFile = menuBar->addMenu("&File");
+        m_menuFile->setObjectName("menuFile");
+        m_menuEdit = menuBar->addMenu("&Edit");
+        m_menuEdit->setObjectName("menuEdit");
+        m_menuView = menuBar->addMenu("&View");
+        m_menuView->setObjectName("menuView");
+        m_menuTools = menuBar->addMenu("&Tools");
+        m_menuTools->setObjectName("menuTools");
+        m_menuHelp = menuBar->addMenu("&Help");
+        m_menuHelp->setObjectName("menuHelp");
+
+        m_menuFile->addAction("Run &Python...", [this]() {
+            const QString script = QFileDialog::getOpenFileName(
+                this, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
+            if (!script.isEmpty())
+            {
+                AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                    &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
+            }
+        });
+
+        m_menuFile->addSeparator();
+
+        m_menuFile->addAction("E&xit", [this]() {
+            close();
+        }, QKeySequence::Quit);
+
+        // Add menu options to toggle the visibility of all dock widgets
+        auto dockWidgets = findChildren<QDockWidget*>();
+        AZStd::sort(dockWidgets.begin(), dockWidgets.end(), [](QDockWidget* a, QDockWidget* b) {
+            return a->windowTitle() < b->windowTitle();
+        });
+
+        for (auto dockWidget : dockWidgets)
+        {
+            const auto dockWidgetName = dockWidget->windowTitle();
+            auto dockAction = m_menuTools->addAction(dockWidgetName, [this, dockWidgetName](const bool checked) {
+                SetDockWidgetVisible(dockWidgetName.toUtf8().constData(), checked);
+            });
+            dockAction->setCheckable(true);
+            dockAction->setChecked(dockWidget->isVisible());
+            connect(dockWidget, &QDockWidget::visibilityChanged, dockAction, &QAction::setChecked);
+        }
+
+        m_menuTools->addSeparator();
+        m_menuTools->addAction("Default Layout", [this]() {
+            m_advancedDockManager->restoreState(m_defaultWindowState);
+        });
+        m_menuTools->addSeparator();
+
+        m_menuTools->addAction("&Settings...", [this]() {
+            OpenSettings();
+        }, QKeySequence::Preferences);
+
+        m_menuHelp->addAction("&Help...", [this]() {
+            OpenHelp();
+        });
+
+        m_menuHelp->addAction("&About...", [this]() {
+            OpenAbout();
+        });
+    }
+
+    void AtomToolsMainWindow::UpdateMenus([[maybe_unused]] QMenuBar* menuBar)
+    {
     }
 
     void AtomToolsMainWindow::SetStatusMessage(const QString& message)
@@ -250,47 +326,6 @@ namespace AtomToolsFramework
         }
 
         Base::closeEvent(closeEvent);
-    }
-
-    void AtomToolsMainWindow::AddCommonMenus()
-    {
-        m_menuFile = menuBar()->addMenu("&File");
-        m_menuEdit = menuBar()->addMenu("&Edit");
-        m_menuView = menuBar()->addMenu("&View");
-        m_menuHelp = menuBar()->addMenu("&Help");
-
-        m_menuFile->addAction("Run &Python...", [this]() {
-            const QString script = QFileDialog::getOpenFileName(
-                this, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
-            if (!script.isEmpty())
-            {
-                AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                    &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
-            }
-        });
-
-        m_menuFile->addSeparator();
-
-        m_menuFile->addAction("E&xit", [this]() {
-            close();
-        }, QKeySequence::Quit);
-
-        m_menuEdit->addAction("&Settings...", [this]() {
-            OpenSettings();
-        }, QKeySequence::Preferences);
-
-        m_menuView->addAction("Default Layout", [this]() {
-            m_advancedDockManager->restoreState(m_defaultWindowState);
-        });
-        m_menuView->addSeparator();
-
-        m_menuHelp->addAction("&Help...", [this]() {
-            OpenHelp();
-        });
-
-        m_menuHelp->addAction("&About...", [this]() {
-            OpenAbout();
-        });
     }
 
     void AtomToolsMainWindow::SetupMetrics()

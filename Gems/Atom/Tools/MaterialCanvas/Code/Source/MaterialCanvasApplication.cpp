@@ -11,9 +11,8 @@
 #include <MaterialCanvasApplication.h>
 
 #include <Document/MaterialCanvasDocument.h>
+#include <Window/MaterialCanvasGraphView.h>
 #include <Window/MaterialCanvasMainWindow.h>
-
-#include <GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
 
 void InitMaterialCanvasResources()
 {
@@ -76,16 +75,7 @@ namespace MaterialCanvas
         // Overriding default document type info to provide a custom view
         auto documentTypeInfo = MaterialCanvasDocument::BuildDocumentTypeInfo();
         documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
-
-            GraphCanvas::GraphId graphId;
-            MaterialCanvasDocumentRequestBus::EventResult(graphId, documentId, &MaterialCanvasDocumentRequestBus::Events::GetGraphId);
-
-            GraphCanvas::GraphCanvasGraphicsView* graphicsView = new GraphCanvas::GraphCanvasGraphicsView(m_window.get());
-            graphicsView->SetEditorId(toolId);
-            graphicsView->SetScene(graphId);
-
-            m_window->AddDocumentTab(documentId, graphicsView);
-            return true;
+            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId));
         };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
