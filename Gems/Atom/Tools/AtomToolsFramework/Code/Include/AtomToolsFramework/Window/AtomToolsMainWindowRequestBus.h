@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
+class QMenuBar;
 class QWidget;
 
 namespace AtomToolsFramework
@@ -49,17 +50,46 @@ namespace AtomToolsFramework
         //! Get a list of registered docked widget names
         virtual AZStd::vector<AZStd::string> GetDockWidgetNames() const = 0;
 
+        //! Prepare to update menus
+        virtual void QueueUpdateMenus(bool rebuildMenus) = 0;
+
         //! Resizes the main window to achieve a requested size for the viewport render target.
         //! (This indicates the size of the render target, not the desktop-scaled QT widget size).
-        virtual void ResizeViewportRenderTarget([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height) {};
+        virtual void ResizeViewportRenderTarget([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height){};
 
         //! Forces the viewport's render target to use the given resolution, ignoring the size of the viewport widget.
-        virtual void LockViewportRenderTargetSize([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height) {};
+        virtual void LockViewportRenderTargetSize([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height){};
 
         //! Releases the viewport's render target resolution lock, allowing it to match the viewport widget again.
-        virtual void UnlockViewportRenderTargetSize() {};
+        virtual void UnlockViewportRenderTargetSize(){};
     };
 
     using AtomToolsMainWindowRequestBus = AZ::EBus<AtomToolsMainWindowRequests>;
 
+    class AtomToolsMainMenuRequests : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::MultipleAndOrdered;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::Crc32 BusIdType;
+
+        struct BusHandlerOrderCompare
+        {
+            bool operator()(AtomToolsMainMenuRequests* left, AtomToolsMainMenuRequests* right) const
+            {
+                return left->GetMainMenuPriority() < right->GetMainMenuPriority();
+            }
+        };
+
+        //! Determines the order in which the implementing classes modify the main menu
+        virtual AZ::s32 GetMainMenuPriority() const { return 0; };
+
+        //! Close menu bar of all actions then recreates and repopulates menus
+        virtual void CreateMenus(QMenuBar* menuBar) = 0;
+
+        //! Update menu state based on the application state
+        virtual void UpdateMenus(QMenuBar* menuBar) = 0;
+    };
+
+    using AtomToolsMainMenuRequestBus = AZ::EBus<AtomToolsMainMenuRequests>;
 } // namespace AtomToolsFramework

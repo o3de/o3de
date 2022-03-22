@@ -24,6 +24,8 @@ set(FILES
     Source/Viewport/MaterialCanvasViewportWidget.cpp
     Source/Viewport/MaterialCanvasViewportWidget.h
 
+    Source/Window/MaterialCanvasGraphView.h
+    Source/Window/MaterialCanvasGraphView.cpp
     Source/Window/MaterialCanvasMainWindow.h
     Source/Window/MaterialCanvasMainWindow.cpp
     Source/Window/MaterialCanvas.qrc

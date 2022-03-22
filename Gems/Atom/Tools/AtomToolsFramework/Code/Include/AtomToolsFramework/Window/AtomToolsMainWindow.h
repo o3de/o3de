@@ -25,11 +25,12 @@ namespace AtomToolsFramework
     class AtomToolsMainWindow
         : public AzQtComponents::DockMainWindow
         , protected AtomToolsMainWindowRequestBus::Handler
+        , protected AtomToolsMainMenuRequestBus::Handler
     {
     public:
         using Base = AzQtComponents::DockMainWindow;
 
-        AtomToolsMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
+        AtomToolsMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent = 0);
         ~AtomToolsMainWindow();
 
         // AtomToolsMainWindowRequestBus::Handler overrides...
@@ -39,6 +40,11 @@ namespace AtomToolsFramework
         void SetDockWidgetVisible(const AZStd::string& name, bool visible) override;
         bool IsDockWidgetVisible(const AZStd::string& name) const override;
         AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
+        void QueueUpdateMenus(bool rebuildMenus) override;
+
+        // AtomToolsMainMenuRequestBus::Handler overrides...
+        void CreateMenus(QMenuBar* menuBar) override;
+        void UpdateMenus(QMenuBar* menuBar) override;
 
         void SetStatusMessage(const QString& message);
         void SetStatusWarning(const QString& message);
@@ -52,8 +58,6 @@ namespace AtomToolsFramework
         void showEvent(QShowEvent* showEvent) override;
         void closeEvent(QCloseEvent* closeEvent) override;
 
-        void AddCommonMenus();
-
         virtual void SetupMetrics();
         virtual void UpdateMetrics();
         virtual void UpdateWindowTitle();
@@ -64,6 +68,8 @@ namespace AtomToolsFramework
         AzQtComponents::WindowDecorationWrapper* m_mainWindowWrapper = {};
 
         bool m_shownBefore = {};
+        bool m_updateMenus = {};
+        bool m_rebuildMenus = {};
 
         QByteArray m_defaultWindowState;
 
@@ -76,6 +82,7 @@ namespace AtomToolsFramework
         QMenu* m_menuFile = {};
         QMenu* m_menuEdit = {};
         QMenu* m_menuView = {};
+        QMenu* m_menuTools = {};
         QMenu* m_menuHelp = {};
 
         AtomToolsFramework::AtomToolsAssetBrowser* m_assetBrowser = {};
