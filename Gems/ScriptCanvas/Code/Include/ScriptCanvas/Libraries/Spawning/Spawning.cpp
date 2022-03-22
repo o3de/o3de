@@ -6,10 +6,11 @@
  *
  */
 
-#include <ScriptCanvas/Libraries/Libraries.h>
-#include <ScriptCanvas/Libraries/Spawning/Spawning.h>
-#include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
+#include <AzFramework/Spawnable/SpawnableAssetRef.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.cpp>
+#include <ScriptCanvas/Libraries/Libraries.h>
+#include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
+#include <ScriptCanvas/Libraries/Spawning/Spawning.h>
 
 namespace ScriptCanvas
 {
@@ -19,19 +20,15 @@ namespace ScriptCanvas
         {
             using namespace AzFramework;
             using namespace ContainerTypeReflection;
-
-            Nodeables::Spawning::SpawnableAsset::Reflect(reflection);
-
+            
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
             {
                 serializeContext->Class<Spawning, LibraryDefinition>()
                     ->Version(1)
                     ;
 
-                CreateTypeAsMapValueHelper<Data::StringType, EntitySpawnTicket>::ReflectClassInfo(serializeContext);
-                CreateTypeAsMapValueHelper<Data::NumberType, EntitySpawnTicket>::ReflectClassInfo(serializeContext);
-
-                serializeContext->RegisterGenericType<AZStd::vector<EntitySpawnTicket>>();
+                //CreateTypeAsMapValueHelper<Data::StringType, EntitySpawnTicket>::ReflectClassInfo(serializeContext);
+                //CreateTypeAsMapValueHelper<Data::NumberType, EntitySpawnTicket>::ReflectClassInfo(serializeContext);
                 serializeContext->RegisterGenericType<AZStd::unordered_map<Data::StringType, EntitySpawnTicket>>();
                 serializeContext->RegisterGenericType<AZStd::unordered_map<Data::NumberType, EntitySpawnTicket>>();
 
@@ -46,6 +43,8 @@ namespace ScriptCanvas
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
             {
+                // reflecting EntitySpawnTicket to support Map<string, EntitySpawnTicket> and Map<Number, EntitySpawnTicket>
+                // as Script Canvas variable types
                 behaviorContext->Class<BehaviorClassReflection<EntitySpawnTicket>>("ReflectOnDemandTargets_EntitySpawnTicket")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::Script::Attributes::Ignore, true)
@@ -67,9 +66,35 @@ namespace ScriptCanvas
                         [](const AZStd::unordered_map<Data::NumberType, EntitySpawnTicket>&)
                         {
                         });
+
+                // reflecting SpawnableAssetRef to support Map<string, SpawnableAssetRef> and Map<Number, SpawnableAssetRef>
+                // as Script Canvas variable types
+                behaviorContext
+                    ->Class<BehaviorClassReflection<SpawnableAssetRef>>("ReflectOnDemandTargets_SpawnableAssetRef")
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ->Attribute(AZ::Script::Attributes::Ignore, true)
+                    // required to support Array<SpawnableAssetRef> variable type in Script Canvas
+                    ->Method(
+                        "ReflectVector",
+                        [](const AZStd::vector<SpawnableAssetRef>&)
+                        {
+                        })
+                    // required to support Map<String, SpawnableAssetRef> variable type in Script Canvas
+                    ->Method(
+                        "MapStringToSpawnableAssetRef",
+                        [](const AZStd::unordered_map<Data::StringType, SpawnableAssetRef>&)
+                        {
+                        })
+                    // required to support Map<Number, SpawnableAssetRef> variable type in Script Canvas
+                    ->Method(
+                        "MapNumberToSpawnableAssetRef",
+                        [](const AZStd::unordered_map<Data::NumberType, SpawnableAssetRef>&)
+                        {
+                        });
             }
 
             HashContainerReflector<EntitySpawnTicket>::Reflect(reflection);
+            HashContainerReflector<SpawnableAssetRef>::Reflect(reflection);
         }
 
         void Spawning::InitNodeRegistry(NodeRegistry& nodeRegistry)

@@ -9,18 +9,19 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
+#include <AzFramework/Spawnable/SpawnableBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
-#include <Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
     //! Node for spawning entities
     class SpawnNodeable
         : public Nodeable
-        , public AZ::TickBus::Handler
+        , public AzFramework::SpawnableNotificationsBus::Handler
     {
         SCRIPTCANVAS_NODE(SpawnNodeable);
     public:
@@ -29,20 +30,9 @@ namespace ScriptCanvas::Nodeables::Spawning
         SpawnNodeable& operator=(const SpawnNodeable& rhs);
 
         // ScriptCanvas::Nodeable  overrides ...
-        void OnInitializeExecutionState() override;
         void OnDeactivate() override;
 
-        // AZ::TickBus::Handler overrides ...
-        void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
-        
-    private:
-        struct SpawnableResult
-        {
-            AZStd::vector<Data::EntityIDType> m_entityList;
-            AzFramework::EntitySpawnTicket m_spawnTicket;
-        };
-        
-        AZStd::vector<SpawnableResult> m_completionResults;
-        AZStd::recursive_mutex m_mutex;
+        // AzFramework::SpawnableNotificationsBus::Handler overrides ...
+        void OnSpawn(AzFramework::EntitySpawnTicket spawnTicket, AZStd::vector<AZ::EntityId> entityList) override;
     };
 }

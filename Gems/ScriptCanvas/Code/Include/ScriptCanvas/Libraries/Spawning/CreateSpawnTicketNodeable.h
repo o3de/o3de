@@ -8,12 +8,12 @@
 
 #pragma once
 
+#include <AzFramework/Spawnable/SpawnableAssetRef.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.generated.h>
 #include <ScriptCanvas/CodeGen/NodeableCodegen.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
-#include <Libraries/Spawning/SpawnableAsset.h>
-#include <Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {

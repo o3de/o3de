@@ -290,6 +290,9 @@ set(FILES
     Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
+    Spawnable/SpawnableAssetRef.cpp
+    Spawnable/SpawnableAssetRef.h
+    Spawnable/SpawnableBus.h
     Spawnable/SpawnableEntitiesContainer.h
     Spawnable/SpawnableEntitiesContainer.cpp
     Spawnable/SpawnableEntitiesInterface.h
@@ -300,6 +303,8 @@ set(FILES
     Spawnable/SpawnableMetaData.h
     Spawnable/SpawnableMonitor.h
     Spawnable/SpawnableMonitor.cpp
+    Spawnable/SpawnableMonitor.cpp
+    Spawnable/SpawnableNotificationsHandler.h
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
     SurfaceData/SurfaceData.h

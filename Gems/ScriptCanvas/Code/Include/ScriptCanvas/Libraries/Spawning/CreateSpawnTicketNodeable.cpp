@@ -6,12 +6,17 @@
  *
  */
 
+#include <AzFramework/Spawnable/SpawnableBus.h>
 #include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
-    AzFramework::EntitySpawnTicket CreateSpawnTicketNodeable::CreateTicket(const SpawnableAsset& Prefab)
+    AzFramework::EntitySpawnTicket CreateSpawnTicketNodeable::CreateTicket(const AzFramework::SpawnableAssetRef& Prefab)
     {
-        return AzFramework::EntitySpawnTicket(Prefab.m_asset);
+        using namespace AzFramework;
+
+        EntitySpawnTicket spawnTicket;
+        SpawnableRequestsBus::BroadcastResult(spawnTicket, &SpawnableRequests::CreateSpawnTicket, Prefab);
+        return spawnTicket;
     }
 }

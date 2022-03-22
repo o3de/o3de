@@ -14,20 +14,20 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 
-namespace ScriptCanvas::Nodeables::Spawning
+namespace AzFramework
 {
-    //! A wrapper around Spawnable that can be used by Script Canvas
-    struct SpawnableAsset final
+    //! A wrapper around Spawnable asset that can be used by Script Canvas and Lua
+    struct SpawnableAssetRef final
     {
-        AZ_RTTI(SpawnableAsset, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");
+        AZ_RTTI(SpawnableAssetRef, "{A96A5037-AD0D-43B6-9948-ED63438C4A52}");
         static void Reflect(AZ::ReflectContext* context);
 
-        SpawnableAsset() = default;
-        SpawnableAsset(const SpawnableAsset& rhs);
-        SpawnableAsset& operator=(const SpawnableAsset& rhs);
+        SpawnableAssetRef() = default;
+        SpawnableAssetRef(const SpawnableAssetRef& rhs);
+        SpawnableAssetRef& operator=(const SpawnableAssetRef& rhs);
 
         void OnSpawnAssetChanged();
 
-        AZ::Data::Asset<AzFramework::Spawnable> m_asset;
+        AZ::Data::Asset<Spawnable> m_asset;
     };
 }

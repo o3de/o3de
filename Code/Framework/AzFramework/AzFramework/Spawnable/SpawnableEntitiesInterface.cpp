@@ -362,7 +362,11 @@ namespace AzFramework
         {
             serializeContext
                 ->Class<EntitySpawnTicket>();
-            
+
+            serializeContext->RegisterGenericType<AZStd::vector<EntitySpawnTicket>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, EntitySpawnTicket>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<double, EntitySpawnTicket>>(); // required to support Map<Number, EntitySpawnTicket> in Script Canvas
+
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EntitySpawnTicket>(
@@ -378,8 +382,9 @@ namespace AzFramework
                 ->Constructor<AZ::Data::Asset<Spawnable>>()
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
-                ->Attribute(AZ::Script::Attributes::Module, "Prefabs")
-                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true);
+                ->Attribute(AZ::Script::Attributes::Module, "prefabs")
+                ->Method("GetId", &EntitySpawnTicket::GetId);
+            ;
         }
     }
 
