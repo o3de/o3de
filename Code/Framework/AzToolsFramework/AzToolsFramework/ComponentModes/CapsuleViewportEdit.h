@@ -28,13 +28,13 @@ namespace AzToolsFramework
         void UpdateCapsuleManipulators();
         void ResetCapsuleManipulators();
 
-        virtual const AZ::Transform GetCapsuleWorldTransform() const = 0;
-        virtual const AZ::Transform GetCapsuleLocalTransform() const = 0;
-        virtual const AZ::Vector3 GetCapsuleNonUniformScale() const;
-        virtual const float GetCapsuleRadius() const = 0;
-        virtual const float GetCapsuleHeight() const = 0;
-        virtual const void SetCapsuleRadius(float radius) = 0;
-        virtual const void SetCapsuleHeight(float height) = 0;
+        virtual AZ::Transform GetCapsuleWorldTransform() const = 0;
+        virtual AZ::Transform GetCapsuleLocalTransform() const = 0;
+        virtual AZ::Vector3 GetCapsuleNonUniformScale() const;
+        virtual float GetCapsuleRadius() const = 0;
+        virtual float GetCapsuleHeight() const = 0;
+        virtual void SetCapsuleRadius(float radius) = 0;
+        virtual void SetCapsuleHeight(float height) = 0;
 
     protected:
         void OnCameraStateChanged(const AzFramework::CameraState& cameraState);

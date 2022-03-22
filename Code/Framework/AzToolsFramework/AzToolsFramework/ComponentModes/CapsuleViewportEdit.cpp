@@ -6,10 +6,10 @@
  *
  */
 
-#include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
+#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
 
 namespace AzToolsFramework
 {
@@ -22,16 +22,16 @@ namespace AzToolsFramework
         const float HalfHeight = 0.5f;
         const float ResetCapsuleHeight = 1.0f;
         const float ResetCapsuleRadius = 0.25f;
-    }
+    } // namespace
 
-    const AZ::Vector3 CapsuleViewportEdit::GetCapsuleNonUniformScale() const
+    AZ::Vector3 CapsuleViewportEdit::GetCapsuleNonUniformScale() const
     {
         return AZ::Vector3::CreateOne();
     }
 
     void CapsuleViewportEdit::OnCameraStateChanged(const AzFramework::CameraState& cameraState)
     {
-        float radius = GetCapsuleRadius();
+        const float radius = GetCapsuleRadius();
         const AZ::Transform capsuleLocalTransform = GetCapsuleLocalTransform();
         m_radiusManipulator->SetAxis(cameraState.m_side);
         m_radiusManipulator->SetLocalTransform(capsuleLocalTransform * AZ::Transform::CreateTranslation(cameraState.m_side * radius));
@@ -54,8 +54,8 @@ namespace AzToolsFramework
         AZ::Vector3 nonUniformScale = GetCapsuleNonUniformScale();
         AZ::Transform localTransform = GetCapsuleLocalTransform();
 
-        float capsuleHeight = GetCapsuleHeight();
-        float capsuleRadius = GetCapsuleRadius();
+        const float capsuleHeight = GetCapsuleHeight();
+        const float capsuleRadius = GetCapsuleRadius();
 
         m_radiusManipulator->SetSpace(worldTransform);
         m_radiusManipulator->SetLocalTransform(
@@ -80,9 +80,7 @@ namespace AzToolsFramework
     }
 
     void CapsuleViewportEdit::SetupRadiusManipulator(
-        const AZ::Transform& worldTransform,
-        const AZ::Transform& localTransform,
-        const AZ::Vector3& nonUniformScale)
+        const AZ::Transform& worldTransform, const AZ::Transform& localTransform, const AZ::Vector3& nonUniformScale)
     {
         float capsuleRadius = GetCapsuleRadius();
         m_radiusManipulator = AzToolsFramework::LinearManipulator::MakeShared(worldTransform);
@@ -92,20 +90,19 @@ namespace AzToolsFramework
         m_radiusManipulator->SetNonUniformScale(nonUniformScale);
         {
             AzToolsFramework::ManipulatorViews views;
-            views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
+            views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(
+                AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
             m_radiusManipulator->SetViews(AZStd::move(views));
         }
-        m_radiusManipulator->InstallMouseMoveCallback([this]
-        (const AzToolsFramework::LinearManipulator::Action& action)
+        m_radiusManipulator->InstallMouseMoveCallback(
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 OnRadiusManipulatorMoved(action);
             });
     }
 
     void CapsuleViewportEdit::SetupHeightManipulator(
-        const AZ::Transform& worldTransform,
-        const AZ::Transform& localTransform,
-        const AZ::Vector3& nonUniformScale)
+        const AZ::Transform& worldTransform, const AZ::Transform& localTransform, const AZ::Vector3& nonUniformScale)
     {
         float capsuleHeight = GetCapsuleHeight();
         m_heightManipulator = AzToolsFramework::LinearManipulator::MakeShared(worldTransform);
@@ -116,11 +113,12 @@ namespace AzToolsFramework
         m_heightManipulator->SetNonUniformScale(nonUniformScale);
         {
             AzToolsFramework::ManipulatorViews views;
-            views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
+            views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(
+                AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
             m_heightManipulator->SetViews(AZStd::move(views));
         }
-        m_heightManipulator->InstallMouseMoveCallback([this]
-        (const AzToolsFramework::LinearManipulator::Action& action)
+        m_heightManipulator->InstallMouseMoveCallback(
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 OnHeightManipulatorMoved(action);
             });
@@ -153,8 +151,8 @@ namespace AzToolsFramework
     {
         // manipulator action offsets do not take entity transform scale into account, so need to apply it here
         const AZ::Transform localTransform = GetCapsuleLocalTransform();
-        const AZ::Vector3 manipulatorPosition = AzToolsFramework::GetPositionInManipulatorFrame(
-            m_heightManipulator->GetSpace().GetUniformScale(), localTransform, action);
+        const AZ::Vector3 manipulatorPosition =
+            AzToolsFramework::GetPositionInManipulatorFrame(m_heightManipulator->GetSpace().GetUniformScale(), localTransform, action);
 
         // Get the distance the manipulator has moved along the axis.
         float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
@@ -175,7 +173,7 @@ namespace AzToolsFramework
         SetCapsuleHeight(capsuleHeight);
     }
 
-    void CapsuleViewportEdit::AdjustRadiusManipulator(const float capsuleHeight)
+    void CapsuleViewportEdit::AdjustRadiusManipulator(float capsuleHeight)
     {
         float capsuleRadius = GetCapsuleRadius();
 
@@ -189,7 +187,7 @@ namespace AzToolsFramework
         SetCapsuleRadius(capsuleRadius);
     }
 
-    void CapsuleViewportEdit::AdjustHeightManipulator(const float capsuleRadius)
+    void CapsuleViewportEdit::AdjustHeightManipulator(float capsuleRadius)
     {
         float capsuleHeight = GetCapsuleHeight();
 
