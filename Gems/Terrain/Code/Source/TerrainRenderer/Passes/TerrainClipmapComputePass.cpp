@@ -12,66 +12,77 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Terrain/Passes/TerrainMacroTextureClipmapComputePass.h>
+#include <Terrain/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 namespace Terrain
 {
     namespace MacroClipmap
     {
-        constexpr const char* colorClipmapName = "MacroColorClipmap";
-        constexpr const char* normalClipmapName = "MacroNormalClipmap";
+        constexpr const char* macroColorClipmapName = "MacroColorClipmap";
+        constexpr const char* macroNormalClipmapName = "MacroNormalClipmap";
+        constexpr const char* detailColorClipmapName = "DetailColorClipmap";
+        constexpr const char* detailNormalClipmapName = "DetailNormalClipmap";
+        constexpr const char* detailHeightClipmapName = "DetailHeightClipmap";
+        // Miscellany clipmap combining:
+        // roughness, specularF0, metalness, occlusion
+        constexpr const char* detailMiscClipmapName = "DetailMiscClipmap";
     } // namespace MacroClipmap
 
-    AZ::RPI::Ptr<TerrainMacroTextureClipmapGenerationPass> TerrainMacroTextureClipmapGenerationPass::Create(
+    AZ::RPI::Ptr<TerrainClipmapGenerationPass> TerrainClipmapGenerationPass::Create(
         const AZ::RPI::PassDescriptor& descriptor)
     {
-        AZ::RPI::Ptr<TerrainMacroTextureClipmapGenerationPass> pass = aznew TerrainMacroTextureClipmapGenerationPass(descriptor);
+        AZ::RPI::Ptr<TerrainClipmapGenerationPass> pass = aznew TerrainClipmapGenerationPass(descriptor);
         return pass;
     }
 
-    TerrainMacroTextureClipmapGenerationPass::TerrainMacroTextureClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
+    TerrainClipmapGenerationPass::TerrainClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor)
         : AZ::RPI::ComputePass(descriptor)
     {
     }
 
-    void TerrainMacroTextureClipmapGenerationPass::BuildInternal()
+    void TerrainClipmapGenerationPass::BuildInternal()
     {
         AZ::Data::Instance<AZ::RPI::AttachmentImagePool> pool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
 
-        // Color stack
-        {
-            AZ::RHI::ImageDescriptor imageDesc;
-            imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
-            imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::ShaderReadWrite;
-            imageDesc.m_size = AZ::RHI::Size(ClipmapSizeWidth, ClipmapSizeHeight, 1);
-            imageDesc.m_arraySize = ClipmapStackSize;
+        AZ::RHI::ImageDescriptor imageDesc;
+        imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
+        imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::ShaderReadWrite;
+        imageDesc.m_size = AZ::RHI::Size(ClipmapSizeWidth, ClipmapSizeHeight, 1);
+        imageDesc.m_arraySize = ClipmapStackSize;
 
-            m_macroColorClipmaps =
-                AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::colorClipmapName), nullptr, nullptr);
+        m_macroColorClipmaps =
+            AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::macroColorClipmapName), nullptr, nullptr);
+        m_detailColorClipmaps =
+            AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::detailColorClipmapName), nullptr, nullptr);
+        m_detailMiscClipmaps =
+            AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::detailMiscClipmapName), nullptr, nullptr);
 
-            AttachImageToSlot(AZ::Name(MacroClipmap::colorClipmapName), m_macroColorClipmaps);
-        }
+        AttachImageToSlot(AZ::Name(MacroClipmap::macroColorClipmapName), m_macroColorClipmaps);
+        AttachImageToSlot(AZ::Name(MacroClipmap::detailColorClipmapName), m_detailColorClipmaps);
+        AttachImageToSlot(AZ::Name(MacroClipmap::detailMiscClipmapName), m_detailMiscClipmaps);
 
-        // Normal stack
-        {
-            AZ::RHI::ImageDescriptor imageDesc;
-            imageDesc.m_format = AZ::RHI::Format::R8G8_UNORM;
-            imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::ShaderReadWrite;
-            imageDesc.m_size = AZ::RHI::Size(ClipmapSizeWidth, ClipmapSizeHeight, 1);
-            imageDesc.m_arraySize = ClipmapStackSize;
+        imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_SNORM;
 
-            m_macroColorClipmaps =
-                AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::normalClipmapName), nullptr, nullptr);
+        m_macroNormalClipmaps =
+            AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::macroNormalClipmapName), nullptr, nullptr);
+        m_detailNormalClipmaps =
+            AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::detailNormalClipmapName), nullptr, nullptr);
 
-            AttachImageToSlot(AZ::Name(MacroClipmap::normalClipmapName), m_macroColorClipmaps);
-        }
+        AttachImageToSlot(AZ::Name(MacroClipmap::macroNormalClipmapName), m_macroNormalClipmaps);
+        AttachImageToSlot(AZ::Name(MacroClipmap::detailNormalClipmapName), m_detailNormalClipmaps);
 
-        m_clipmapData.m_clipmapSize[0] = ClipmapSizeWidth;
-        m_clipmapData.m_clipmapSize[1] = ClipmapSizeHeight;
+        imageDesc.m_format = AZ::RHI::Format::R32_FLOAT;
+
+        m_detailHeightClipmaps =
+            AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::detailHeightClipmapName), nullptr, nullptr);
+        m_detailNormalClipmaps =
+            AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::detailNormalClipmapName), nullptr, nullptr);
+
+        AttachImageToSlot(AZ::Name(MacroClipmap::detailHeightClipmapName), m_detailHeightClipmaps);
     }
 
-    void TerrainMacroTextureClipmapGenerationPass::InitializeInternal()
+    void TerrainClipmapGenerationPass::InitializeInternal()
     {
         float clipmapScaleInv = 1.0f;
         for (int32_t clipmapIndex = ClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
@@ -83,10 +94,13 @@ namespace Terrain
 
         AZ::Vector4::CreateZero().StoreToFloat4(m_clipmapData.m_viewPosition.data());
 
+        m_clipmapData.m_clipmapSize[0] = ClipmapSizeWidth;
+        m_clipmapData.m_clipmapSize[1] = ClipmapSizeHeight;
+
         ComputePass::InitializeInternal();
     }
 
-    void TerrainMacroTextureClipmapGenerationPass::FrameBeginInternal(FramePrepareParams params)
+    void TerrainClipmapGenerationPass::FrameBeginInternal(FramePrepareParams params)
     {
         UpdateClipmapData();
 
@@ -115,7 +129,7 @@ namespace Terrain
         ComputePass::FrameBeginInternal(params);
     }
 
-    void TerrainMacroTextureClipmapGenerationPass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)
+    void TerrainClipmapGenerationPass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)
     {
         AZ::RPI::Scene* scene = m_pipeline->GetScene();
         TerrainFeatureProcessor* terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
@@ -137,10 +151,10 @@ namespace Terrain
         ComputePass::CompileResources(context);
     }
 
-    void TerrainMacroTextureClipmapGenerationPass::UpdateClipmapData()
+    void TerrainClipmapGenerationPass::UpdateClipmapData()
     {
         AZ::RPI::ViewPtr view = GetView();
-        AZ_Assert(view, "TerrainMacroTextureClipmapGenerationPass should have the MainCamera as the view.");
+        AZ_Assert(view, "TerrainClipmapGenerationPass should have the MainCamera as the view.");
 
         // pass current to previous
         m_clipmapData.m_viewPosition[0] = m_clipmapData.m_viewPosition[2];

@@ -8,7 +8,8 @@
 #pragma once
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
-#include <Atom/Feature/BlendUtility.azsli>
+#include <Atom/Features/BlendUtility.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
 
 enum DetailTextureFlags
 {
@@ -224,7 +225,7 @@ float GetDetailHeight(TerrainSrg::DetailMaterialData materialData, float2 uv, fl
     return height;
 }
 
-void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, float2 uv, float3 macroColor)
+void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, float2 uv, float2 uvDdx, float2 uvDdy, float3 macroColor)
 {
     TerrainSrg::DetailMaterialData detailMaterialData = TerrainSrg::m_detailMaterialData[materialId];
 
@@ -235,9 +236,6 @@ void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, f
     // the materials may have different uv transforms. This would create visible seams where the wrong
     // mip was being used. Instead, manually calculate the transformed ddx/ddy using the ddx/ddy of the
     // original uv.
-
-    float2 uvDdx = ddx(uv);
-    float2 uvDdy = ddy(uv);
 
     float2 uvX = uv + uvDdx;
     float2 uvY = uv + uvDdy;
@@ -294,15 +292,15 @@ void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint mat
 }
 
 //Blend a single detail material sample (with two possible material ids) onto a DetailSurface.
-void BlendDetailMaterial(inout DetailSurface surface, uint material1, uint material2, float blend, float2 detailUv, float weight, float3 macroColor)
+void BlendDetailMaterial(inout DetailSurface surface, uint material1, uint material2, float blend, float2 detailUv, float2 detailUvDdx, float2 detailUvDdy, float weight, float3 macroColor)
 {
     DetailSurface tempSurface;
-    GetDetailSurfaceForMaterial(tempSurface, material1, detailUv, macroColor);
+    GetDetailSurfaceForMaterial(tempSurface, material1, detailUv, detailUvDdx, detailUvDdy, macroColor);
     WeightDetailSurface(tempSurface, weight * (1.0 - blend));
     AddDetailSurface(surface, tempSurface);
     if (material2 != 0xFF)
     {
-        GetDetailSurfaceForMaterial(tempSurface, material2, detailUv, macroColor);
+        GetDetailSurfaceForMaterial(tempSurface, material2, detailUv, detailUvDdx, detailUvDdy, macroColor);
         WeightDetailSurface(tempSurface, weight * blend);
         AddDetailSurface(surface, tempSurface);
     }
@@ -315,7 +313,7 @@ instance, if detailMaterialIdUv falls perfectly in-between all 4 samples, then e
 Each sample can have two different detail materials defined with a blend value to determine their relative contribution.
 The detailUv is used for sampling the textures of each detail material.
 */
-bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord, float2 detailUv, float3 macroColor)
+bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord, float2 detailUv, float2 detailUvDdx, float2 detailUvDdy, float3 macroColor)
 {
     float2 textureSize;
     TerrainSrg::m_detailMaterialIdImage.GetDimensions(textureSize.x, textureSize.y);
@@ -362,7 +360,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
     if (all(material1.x == material1.yzw) && all(material2.x == material2.yzw))
     {
         // Fast path for same material ids
-        GetDetailSurfaceForMaterial(surface, material1.x, detailUv, macroColor);
+        GetDetailSurfaceForMaterial(surface, material1.x, detailUv, detailUvDdx, detailUvDdy, macroColor);
         if (material2.x != 0xFF)
         {
             float4 material2Blends = 1.0 - blends;
@@ -373,7 +371,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
                 (gatherWeight.x * (1.0 - gatherWeight.y) * material2Blends.z) + 
                 ((1.0 - gatherWeight.x) * (1.0 - gatherWeight.y) * material2Blends.w);
             WeightDetailSurface(surface, weight);
-            GetDetailSurfaceForMaterial(tempSurface, material2.x, detailUv, macroColor);
+            GetDetailSurfaceForMaterial(tempSurface, material2.x, detailUv, detailUvDdx, detailUvDdy, macroColor);
             WeightDetailSurface(tempSurface, 1.0 - weight);
             AddDetailSurface(surface, tempSurface);
         }
@@ -384,19 +382,19 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
 
         // X
         float weight = (1.0 - gatherWeight.x) * gatherWeight.y;
-        BlendDetailMaterial(surface, material1.x, material2.x, blends.x, detailUv, weight, macroColor);
+        BlendDetailMaterial(surface, material1.x, material2.x, blends.x, detailUv, detailUvDdx, detailUvDdy, weight, macroColor);
 
         // Y
         weight = gatherWeight.x * gatherWeight.y;
-        BlendDetailMaterial(surface, material1.y, material2.y, blends.y, detailUv, weight, macroColor);
+        BlendDetailMaterial(surface, material1.y, material2.y, blends.y, detailUv, detailUvDdx, detailUvDdy, weight, macroColor);
         
         // Z
         weight = gatherWeight.x * (1.0 - gatherWeight.y);
-        BlendDetailMaterial(surface, material1.z, material2.z, blends.z, detailUv, weight, macroColor);
+        BlendDetailMaterial(surface, material1.z, material2.z, blends.z, detailUv, detailUvDdx, detailUvDdy, weight, macroColor);
 
         // W
         weight = (1.0 - gatherWeight.x) * (1.0 - gatherWeight.y);
-        BlendDetailMaterial(surface, material1.w, material2.w, blends.w, detailUv, weight, macroColor);
+        BlendDetailMaterial(surface, material1.w, material2.w, blends.w, detailUv, detailUvDdx, detailUvDdy, weight, macroColor);
     }
 
     surface.m_normal = normalize(surface.m_normal);

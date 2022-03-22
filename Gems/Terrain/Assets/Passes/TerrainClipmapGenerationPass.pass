@@ -1,0 +1,79 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "TerrainClipmapGenerationPassTemplate",
+            "PassClass": "TerrainClipmapGenerationPass",
+            "Slots": [
+                {
+                    "Name": "MacroColorClipmap",
+                    "ShaderInputName": "m_macroColorClipmaps",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "MacroNormalClipmap",
+                    "ShaderInputName": "m_macroNormalClipmaps",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "DetailColorClipmap",
+                    "ShaderInputName": "m_detailColorClipmaps",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "DetailNormalClipmap",
+                    "ShaderInputName": "m_detailNormalClipmaps",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "DetailHeightClipmap",
+                    "ShaderInputName": "m_detailHeightClipmaps",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    // Miscellany clipmap combining:
+                    // specularF0, metalness, occlusion, height
+                    "Name": "DetailMiscClipmap",
+                    "ShaderInputName": "m_detailMiscClipmaps",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Terrain/TerrainClipmapGenerationPass.shader"
+                },
+                "PipelineViewTag": "MainCamera",
+                "Target Thread Count X": 1024,
+                "Target Thread Count Y": 1024,
+                "Target Thread Count Z": 1
+            }
+        }
+    }
+}

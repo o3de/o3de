@@ -48,5 +48,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     ClipmapData m_clipmapData;
 
     RWTexture2DArray<float4> m_macroColorClipmaps;
-    RWTexture2DArray<float2> m_macroNormalClipmaps;
+    RWTexture2DArray<float4> m_macroNormalClipmaps;
+    RWTexture2DArray<float4> m_detailColorClipmaps;
+    RWTexture2DArray<float4> m_detailNormalClipmaps;
+    RWTexture2DArray<float> m_detailHeightClipmaps;
+    // Miscellany clipmap combining:
+    // specularF0, metalness, occlusion, height
+    RWTexture2DArray<float4> m_detailMiscClipmaps;
 }

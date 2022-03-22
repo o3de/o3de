@@ -5,12 +5,8 @@
     "ClassData": {
         "AssetPaths": [
             {
-                "Name": "TerrainDetailTextureComputePassTemplate",
-                "Path": "Passes/TerrainDetailTextureComputePass.pass"
-            },
-            {
-                "Name": "TerrainMacroTextureClipmapGenerationPassTemplate",
-                "Path": "Passes/TerrainMacroTextureClipmapGenerationPass.pass"
+                "Name": "TerrainClipmapGenerationPassTemplate",
+                "Path": "Passes/TerrainClipmapGenerationPass.pass"
             },
             {
                 "Name": "TerrainParentPassTemplate",

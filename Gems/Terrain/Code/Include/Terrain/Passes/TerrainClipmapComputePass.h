@@ -17,16 +17,16 @@
 
 namespace Terrain
 {
-    class TerrainMacroTextureClipmapGenerationPass : public AZ::RPI::ComputePass
+    class TerrainClipmapGenerationPass : public AZ::RPI::ComputePass
     {
-        AZ_RPI_PASS(TerrainMacroTextureClipmapGenerationPass);
+        AZ_RPI_PASS(TerrainClipmapGenerationPass);
 
     public:
-        AZ_RTTI(Terrain::TerrainMacroTextureClipmapGenerationPass, "{BD504E93-87F4-484E-A17A-E337C3F2279C}", AZ::RPI::ComputePass);
-        AZ_CLASS_ALLOCATOR(Terrain::TerrainMacroTextureClipmapGenerationPass, AZ::SystemAllocator, 0);
-        virtual ~TerrainMacroTextureClipmapGenerationPass() = default;
+        AZ_RTTI(Terrain::TerrainClipmapGenerationPass, "{BD504E93-87F4-484E-A17A-E337C3F2279C}", AZ::RPI::ComputePass);
+        AZ_CLASS_ALLOCATOR(Terrain::TerrainClipmapGenerationPass, AZ::SystemAllocator, 0);
+        virtual ~TerrainClipmapGenerationPass() = default;
 
-        static AZ::RPI::Ptr<TerrainMacroTextureClipmapGenerationPass> Create(const AZ::RPI::PassDescriptor& descriptor);
+        static AZ::RPI::Ptr<TerrainClipmapGenerationPass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
         void BuildInternal() override;
         void InitializeInternal() override;
@@ -34,7 +34,7 @@ namespace Terrain
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
 
     private:
-        TerrainMacroTextureClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
+        TerrainClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
 
         //! Update ClipmapData every frame when view point is changed.
         void UpdateClipmapData();
@@ -74,6 +74,14 @@ namespace Terrain
         ClipmapData m_clipmapData;
 
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_macroColorClipmaps;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_macroNormalClipmaps;
+        // Detail color uses alpha to represent "has detail material"
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailColorClipmaps;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailNormalClipmaps;
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailHeightClipmaps;
+        // Miscellany clipmap combining:
+        // roughness, specularF0, metalness, occlusion
+        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailMiscClipmaps;
 
         AZ::RHI::ShaderInputNameIndex m_clipmapDataIndex = "m_clipmapData";
     };

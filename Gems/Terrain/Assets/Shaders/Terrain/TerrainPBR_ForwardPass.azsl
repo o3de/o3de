@@ -83,6 +83,8 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
     float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
     float2 detailUv = IN.m_worldPosition.xy * TerrainMaterialSrg::m_detailTextureMultiplier;
+    float2 detailUvDdx = ddx(detailUv);
+    float2 detailUvDdy = ddy(detailUv);
     
     // ------- Normal -------
     float3 macroNormal = normalize(IN.m_normal);
@@ -149,7 +151,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // Only sample detail textures if inside where detail materials should be drawn.
     if (detailFactor < 1.0)
     {
-        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, macroColor);
+        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, detailUvDdx, detailUvDdy, macroColor);
     }
 
     const float macroRoughness = 1.0;
