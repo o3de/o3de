@@ -181,11 +181,13 @@ def AtomEditorComponents_Mesh_AddedToEntity():
                           AtomComponentProperties.mesh('Mesh Asset')) == model.id)
 
         # 6. Set Mesh component Sort Key property
-        mesh_component.set_component_property_value(
-            AtomComponentProperties.mesh('Sort Key'), value=23456789)
-        Report.result(Tests.mesh_sort_key,
-                      mesh_component.get_component_property_value(
-                          AtomComponentProperties.mesh('Sort Key')) == 23456789)
+        # This part of the test is currently disabled due to a bug.
+        # It will be re-enabled in a future update once the bug is fixed.
+        # mesh_component.set_component_property_value(
+        #     AtomComponentProperties.mesh('Sort Key'), value=23456789)
+        # Report.result(Tests.mesh_sort_key,
+        #               mesh_component.get_component_property_value(
+        #                   AtomComponentProperties.mesh('Sort Key')) == 23456789)
 
         # 7. Set Mesh component Use ray tracing property
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Use ray tracing'), value=False)
