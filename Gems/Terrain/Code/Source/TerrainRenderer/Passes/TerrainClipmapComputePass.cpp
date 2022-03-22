@@ -76,8 +76,6 @@ namespace Terrain
 
         m_detailHeightClipmaps =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::detailHeightClipmapName), nullptr, nullptr);
-        m_detailNormalClipmaps =
-            AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, AZ::Name(MacroClipmap::detailNormalClipmapName), nullptr, nullptr);
 
         AttachImageToSlot(AZ::Name(MacroClipmap::detailHeightClipmapName), m_detailHeightClipmaps);
     }
