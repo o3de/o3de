@@ -22,6 +22,8 @@
 
 using namespace Terrain;
 
+AZ_DEFINE_BUDGET(Terrain);
+
 bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, const AZ::EntityId& layer2id) const
 {
     // Comparator for insertion/keylookup.
@@ -197,6 +199,8 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
     AZStd::vector<AZ::Vector3>& outPositions,
     Sampler sampler) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     const float minHeight = m_currentSettings.m_worldBounds.GetMin().GetZ();
     for (auto& position : inPositions)
     {
@@ -204,15 +208,28 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
         {
         case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
             {
-                AZ::Vector2 normalizedDelta;
-                AZ::Vector2 pos0;
-                ClampPosition(position.GetX(), position.GetY(), pos0, normalizedDelta);
-                const AZ::Vector2 pos1(pos0.GetX() + m_currentSettings.m_heightQueryResolution,
-                    pos0.GetY() + m_currentSettings.m_heightQueryResolution);
-                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos1.GetY(), minHeight));
+                if (InWorldBounds(position.GetX(), position.GetY()))
+                {
+                    AZ::Vector2 normalizedDelta;
+                    AZ::Vector2 pos0;
+                    ClampPosition(position.GetX(), position.GetY(), pos0, normalizedDelta);
+                    const AZ::Vector2 pos1(
+                        pos0.GetX() + m_currentSettings.m_heightQueryResolution, pos0.GetY() + m_currentSettings.m_heightQueryResolution);
+                    outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos1.GetY(), minHeight));
+                }
+                else
+                {
+                    // If the query position isn't within the world bounds, we'll place that position 4x into the query list
+                    // instead of the normal bilinear positions, because we don't want to interpolate between partially inside and
+                    // partially outside. We just want to give it a min height and "terrain doesn't exist".
+                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                }
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
@@ -236,6 +253,8 @@ AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
     const AZ::Aabb& inRegion,
     const AZ::Vector2& stepSize) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::vector<AZ::Vector3> inPositions;
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize);
     inPositions.reserve(numSamplesX * numSamplesY);
@@ -256,6 +275,8 @@ AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
 AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromListOfVector2(
     const AZStd::span<const AZ::Vector2> inPositionsVec2) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::vector<AZ::Vector3> inPositions;
     inPositions.reserve(inPositionsVec2.size());
 
@@ -274,6 +295,8 @@ void TerrainSystem::MakeBulkQueries(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
     BulkQueriesCallback queryCallback) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     AZ::Aabb bounds;
@@ -331,6 +354,8 @@ void TerrainSystem::MakeBulkQueries(
 void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     AZStd::vector<AZ::Vector3> outPositions;
@@ -536,6 +561,8 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     AZStd::vector<AZ::Vector3> directionVectors;
     directionVectors.reserve(inPositions.size() * 4);
     const AZ::Vector2 range(m_currentSettings.m_heightQueryResolution / 2.0f, m_currentSettings.m_heightQueryResolution / 2.0f);
@@ -561,8 +588,10 @@ void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& 
 
         normals[i] = (directionVectors[iteratorIndex + 2] - directionVectors[iteratorIndex + 1]).
                          Cross(directionVectors[iteratorIndex + 3] - directionVectors[iteratorIndex]).GetNormalized();
-        
-        terrainExists[i] = exists[iteratorIndex];
+
+        // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
+        // any of the four points exist, then the terrain exists.
+        terrainExists[i] = exists[iteratorIndex] || exists[iteratorIndex + 1] || exists [iteratorIndex + 2] || exists[iteratorIndex + 3];
     }
 }
 
@@ -588,16 +617,23 @@ AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sample
     const AZ::Vector2 up   (x, y - range);
     const AZ::Vector2 down (x, y + range);
 
-    AZ::Vector3 v1(up.GetX(), up.GetY(), GetHeightSynchronous(up.GetX(), up.GetY(), sampler, &terrainExists));
-    AZ::Vector3 v2(left.GetX(), left.GetY(), GetHeightSynchronous(left.GetX(), left.GetY(), sampler, &terrainExists));
-    AZ::Vector3 v3(right.GetX(), right.GetY(), GetHeightSynchronous(right.GetX(), right.GetY(), sampler, &terrainExists));
-    AZ::Vector3 v4(down.GetX(), down.GetY(), GetHeightSynchronous(down.GetX(), down.GetY(), sampler, &terrainExists));
+    bool terrainExists1 = false;
+    bool terrainExists2 = false;
+    bool terrainExists3 = false;
+    bool terrainExists4 = false;
+
+    AZ::Vector3 v1(up.GetX(), up.GetY(), GetHeightSynchronous(up.GetX(), up.GetY(), sampler, &terrainExists1));
+    AZ::Vector3 v2(left.GetX(), left.GetY(), GetHeightSynchronous(left.GetX(), left.GetY(), sampler, &terrainExists2));
+    AZ::Vector3 v3(right.GetX(), right.GetY(), GetHeightSynchronous(right.GetX(), right.GetY(), sampler, &terrainExists3));
+    AZ::Vector3 v4(down.GetX(), down.GetY(), GetHeightSynchronous(down.GetX(), down.GetY(), sampler, &terrainExists4));
 
     outNormal = (v3 - v2).Cross(v4 - v1).GetNormalized();
 
     if (terrainExistsPtr)
     {
-        *terrainExistsPtr = terrainExists;
+        // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
+        // any of the four points exist, then the terrain exists.
+        *terrainExistsPtr = terrainExists1 || terrainExists2 || terrainExists3 || terrainExists4;
     }
 
     return outNormal;
@@ -847,6 +883,8 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
     AZStd::span<bool> terrainExists) const
 {
+    AZ_PROFILE_FUNCTION(Terrain);
+
     if (terrainExists.size() == outSurfaceWeightsList.size())
     {
         AZStd::vector<float> heights(inPositions.size());

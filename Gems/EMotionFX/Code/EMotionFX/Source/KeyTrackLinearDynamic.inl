@@ -296,7 +296,7 @@ MCORE_INLINE ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::Interpol
     const float t = (currentTime - firstKey.GetTime()) / (nextKey.GetTime() - firstKey.GetTime());
 
     // perform the interpolation
-    return MCore::LinearInterpolate<ReturnType>(firstKey.GetValue(), nextKey.GetValue(), t);
+    return AZ::Lerp<ReturnType>(firstKey.GetValue(), nextKey.GetValue(), t);
 }
 
 

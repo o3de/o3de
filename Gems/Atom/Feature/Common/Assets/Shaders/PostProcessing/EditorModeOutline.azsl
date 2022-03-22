@@ -1,0 +1,62 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <EditorModeCommon.azsli>
+#include <EditorModeDepthTransition.azsli>
+
+partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{    
+    //! Outline line thickness.
+    float m_lineThickness;
+
+    //! Outline line color.
+    float4 m_lineColor;
+}
+
+//! Applies an outline effect to the entity mask of the specified line thickness.
+//! @note There are known issues with pimples due to z-fighting of coincident surfaces in the entity mask that will be addressed it LYN-10304.
+float Outliner(const float2 uv, const float lineThickness)
+{
+    const float2 maskSize = GetImageSize(PassSrg::m_entityMask);
+    const float2 unormalizedUv = float2(uv.x * maskSize.x, uv.y * maskSize.y);
+    const float2 maskSizeReciprocal = float2(1., 1.0) / maskSize;
+    float outline = 0.;
+    
+    // Outliner kernal
+    for(float u = -lineThickness; u <= lineThickness; u+=1.)
+    {
+        for(float v = -lineThickness; v <= lineThickness; v+=1.)
+        {
+            outline += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * maskSizeReciprocal).r;
+        }
+    }
+    
+    // Only apply the outliner effect to fragments not part of S
+    return min(1.0, (outline / (lineThickness * lineThickness)));
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+
+    // Apply the depth transition to the blend amount
+    const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask);
+
+    // Outline effect
+    const float lineThickness = lerp(1., PassSrg::m_lineThickness, 1.0 - t);
+    const float outline = mask > 0.0 ? 0.0 : Outliner(IN.m_texCoord, lineThickness);
+
+    // Apply the visual effect to non-mask entities, leaving mask entities untouched
+    OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outline);
+
+    return OUT;
+}

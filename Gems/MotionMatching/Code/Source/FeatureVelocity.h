@@ -40,8 +40,15 @@ namespace EMotionFX::MotionMatching
         void ExtractFeatureValues(const ExtractFeatureContext& context) override;
 
         static void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+            const Pose& pose,
+            const AZ::Vector3& velocity, // in relative-to-joint space
+            size_t jointIndex,
+            size_t relativeToJointIndex,
+            const AZ::Color& color);
+
+        static void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             MotionMatchingInstance* instance,
-            const AZ::Vector3& velocity, // in world space
+            const AZ::Vector3& velocity, // in relative-to-joint space
             size_t jointIndex,
             size_t relativeToJointIndex,
             const AZ::Color& color);

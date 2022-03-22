@@ -30,6 +30,14 @@ partial ShaderResourceGroup ViewSrg
     // See the GetViewSpacePosition( ) function below
     float4 m_unprojectionConstants;
 
+    // Debug members...
+
+    // Rendering options related to shader debugging
+    uint m_renderDebugOptions;
+
+    // Specifies what should be output to the view (i.e. normals, lighting, albedo, etc.)
+    uint m_renderDebugViewMode;
+
     float GetNearZ()
     {
         return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.x;

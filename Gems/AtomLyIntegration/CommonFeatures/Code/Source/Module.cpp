@@ -13,6 +13,8 @@
 #include <CommonFeaturesSystemComponent.h>
 #include <CoreLights/AreaLightComponent.h>
 #include <CoreLights/DirectionalLightComponent.h>
+#include <CubeMapCapture/CubeMapCaptureComponent.h>
+#include <Debug/RenderDebugComponent.h>
 #include <Decals/DecalComponent.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridComponent.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h>
@@ -44,8 +46,11 @@
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
 #include <EditorCommonFeaturesSystemComponent.h>
 #include <PostProcess/EditorPostFxSystemComponent.h>
+#include <PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.h>
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
+#include <CubeMapCapture/EditorCubeMapCaptureComponent.h>
+#include <Debug/RenderDebugEditorComponent.h>
 #include <Decals/EditorDecalComponent.h>
 #include <DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h>
 #include <DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h>
@@ -111,6 +116,7 @@ namespace AZ
                         PhysicalSkyComponent::CreateDescriptor(),
                         PostFxLayerComponent::CreateDescriptor(),
                         ReflectionProbeComponent::CreateDescriptor(),
+                        RenderDebugComponent::CreateDescriptor(),
                         RadiusWeightModifierComponent::CreateDescriptor(),
                         ShapeWeightModifierComponent::CreateDescriptor(),
                         EntityReferenceComponent::CreateDescriptor(),
@@ -122,11 +128,13 @@ namespace AZ
                         AttachmentComponent::CreateDescriptor(),
                         OcclusionCullingPlaneComponent::CreateDescriptor(),
                         VignetteComponent::CreateDescriptor(),
+                        CubeMapCaptureComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
                         EditorAreaLightComponent::CreateDescriptor(),
                         EditorCommonFeaturesSystemComponent::CreateDescriptor(),
                         EditorPostFxSystemComponent::CreateDescriptor(),
+                        EditorEditorModeFeedbackSystemComponent::CreateDescriptor(),
                         EditorDecalComponent::CreateDescriptor(),
                         EditorDirectionalLightComponent::CreateDescriptor(),
                         EditorBloomComponent::CreateDescriptor(),
@@ -146,6 +154,7 @@ namespace AZ
                         EditorPhysicalSkyComponent::CreateDescriptor(),
                         EditorPostFxLayerComponent::CreateDescriptor(),
                         EditorReflectionProbeComponent::CreateDescriptor(),
+                        RenderDebugEditorComponent::CreateDescriptor(),
                         EditorRadiusWeightModifierComponent::CreateDescriptor(),
                         EditorShapeWeightModifierComponent::CreateDescriptor(),
                         EditorEntityReferenceComponent::CreateDescriptor(),
@@ -157,6 +166,7 @@ namespace AZ
                         EditorAttachmentComponent::CreateDescriptor(),
                         EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
                         EditorVignetteComponent::CreateDescriptor(),
+                        EditorCubeMapCaptureComponent::CreateDescriptor(),
 #endif
                     });
             }
@@ -170,6 +180,7 @@ namespace AZ
                     azrtti_typeid<EditorMeshSystemComponent>(),
                     azrtti_typeid<EditorCommonFeaturesSystemComponent>(),
                     azrtti_typeid<EditorPostFxSystemComponent>(),
+                    azrtti_typeid<EditorEditorModeFeedbackSystemComponent>()
 #endif
                 };
             }
