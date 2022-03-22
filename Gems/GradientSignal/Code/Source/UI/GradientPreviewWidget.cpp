@@ -15,7 +15,7 @@
 
 namespace GradientSignal
 {
-    GradientPreviewWidget::GradientPreviewWidget(bool enablePopout, QWidget* parent)
+    GradientPreviewWidget::GradientPreviewWidget(QWidget* parent, bool enablePopout)
         : QWidget(parent)
     {
         setMinimumSize(256, 256);
@@ -26,8 +26,11 @@ namespace GradientSignal
         // the preview
         if (enablePopout)
         {
+            const int IconMargin = 2;
+            const int IconSize = 24;
+
             QVBoxLayout* layout = new QVBoxLayout(this);
-            layout->setContentsMargins(QMargins(2, 2, 2, 2));
+            layout->setContentsMargins(QMargins(IconMargin, IconMargin, IconMargin, IconMargin));
             layout->setAlignment(Qt::AlignTop | Qt::AlignRight);
 
             QIcon icon;
@@ -37,16 +40,11 @@ namespace GradientSignal
             m_popoutButton = new QToolButton(this);
             m_popoutButton->setIcon(icon);
             m_popoutButton->setAutoRaise(true);
-            m_popoutButton->setIconSize(QSize(24, 24));
+            m_popoutButton->setIconSize(QSize(IconSize, IconSize));
             m_popoutButton->setCursor(Qt::PointingHandCursor);
             m_popoutButton->hide();
             layout->addWidget(m_popoutButton);
             QObject::connect(m_popoutButton, &QToolButton::clicked, this, &GradientPreviewWidget::popoutClicked);
-        }
-        // For the popped out preview, make sure its window always stays on top
-        else
-        {
-            setWindowFlag(Qt::WindowStaysOnTopHint, true);
         }
     }
 

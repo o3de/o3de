@@ -25,7 +25,7 @@ namespace GradientSignal
         Q_OBJECT
 
     public:
-        GradientPreviewWidget(bool enablePopout = false, QWidget* parent = nullptr);
+        GradientPreviewWidget(QWidget* parent = nullptr, bool enablePopout = false);
         ~GradientPreviewWidget() override;
 
     Q_SIGNALS:
