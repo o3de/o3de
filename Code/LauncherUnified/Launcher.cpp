@@ -400,9 +400,7 @@ namespace O3DELauncher
 
         const bool dedicatedServer = IsDedicatedServer();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddClientServerTargetSpecialization(*settingsRegistry, dedicatedServer);
-
         
-
         AZ::SettingsRegistryInterface::FixedValueString pathToAssets;
         if (!settingsRegistry->Get(pathToAssets, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
         {
