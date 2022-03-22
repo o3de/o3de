@@ -48,6 +48,7 @@ namespace EMotionFX
          * @param actor The actor that will use the deformer.
          * @param node The node where the mesh belongs to during this initialization.
          * @param lodLevel The LOD level of the mesh the mesh deformer works on.
+         * @param highestJointId The pre-calculated highest id of all the joint id's in m_mesh
          */
         virtual void Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointId);
 

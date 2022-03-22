@@ -310,7 +310,8 @@ namespace EMotionFX
         SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)m_mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
         MCORE_ASSERT(skinningLayer);
 
-        AZStd::vector<uint16> localBoneMap(highestJointId + 1, AZStd::numeric_limits<uint16>::max());
+        constexpr uint16 invalidBoneIndex = AZStd::numeric_limits<uint16>::max();
+        AZStd::vector<uint16> localBoneMap(highestJointId + 1, invalidBoneIndex);
 
         // find out what bones this mesh uses
         const uint32 numOrgVerts = m_mesh->GetNumOrgVertices();
@@ -323,12 +324,12 @@ namespace EMotionFX
             for (size_t a = 0; a < numInfluences; ++a)
             {
                 SkinInfluence* influence = skinningLayer->GetInfluence(i, a);
-                uint16 nodeIndex = influence->GetNodeNr();
+                const uint16 nodeIndex = influence->GetNodeNr();
 
                 // get the bone index in the array
                 uint16 boneIndex = localBoneMap[nodeIndex];
                 // if the bone is not found in our array
-                if (boneIndex == AZStd::numeric_limits<uint16>::max())
+                if (boneIndex == invalidBoneIndex)
                 {
                     // add the bone to the array of bones in this deformer
                     BoneInfo lastBone;
