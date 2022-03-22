@@ -47,14 +47,13 @@ namespace AzQtComponents
 
     TEST_F(WindowDecorationWrapperTests, WindowDecorationWrapper_ShrinkWindow_KeepsGuestMinimumSize)
     {
-        QWidget* guest = new QWidget();
         QSize minimumSize(100, 100);
-        guest->setMinimumSize(minimumSize);
-        m_wrapper->setGuest(guest);
+        m_guest->setMinimumSize(minimumSize);
+        m_wrapper->setGuest(m_guest.get());
 
         m_wrapper->resize(50, 50);
 
-        QSize guestSize = guest->size();
+        QSize guestSize = m_guest->size();
         EXPECT_TRUE(guestSize.width() >= minimumSize.width());
         EXPECT_TRUE(guestSize.height() >= minimumSize.height());
     }
