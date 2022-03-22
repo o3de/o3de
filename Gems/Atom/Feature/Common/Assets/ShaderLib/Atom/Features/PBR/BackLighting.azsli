@@ -58,7 +58,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             {
                 thickness = max(transmissionDistance, transmission.thickness);
                 float transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.normal * transmission.GetDistortion() ) ) ), transmission.GetPower() ) * transmission.GetScale();
-                float lamberAttenuation = exp(-thickness * surface.transmission.GetAttenuationCoefficient()) * saturate(1.0 - thickness);
+                float lamberAttenuation = exp(-thickness * transmission.GetAttenuationCoefficient()) * saturate(1.0 - thickness);
                 result = transmittance * lamberAttenuation * lightIntensity;
             }
             break;
