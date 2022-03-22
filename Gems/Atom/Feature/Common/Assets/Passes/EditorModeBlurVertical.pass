@@ -1,12 +1,12 @@
 {
-    // Applies an outlining effect as controlled by the line thickness
+    // Applies a box blur effect in the vertical direction as controlled by the box width
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeOutlineTemplate",
-            "PassClass": "EditorModeOutlinePass",
+            "Name": "EditorModeBlurVerticalTemplate",
+            "PassClass": "EditorModeBlurPass",
             "Slots": [
                 {
                     "Name": "InputDepth",
@@ -69,9 +69,18 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeOutline.shader"
+                    "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "UintMappings": [
+                        {
+                            // Vertical blur
+                            "Name": "m_direction",
+                            "Value": 1
+                        }
+                    ]
+                }
             }
         }
     }
