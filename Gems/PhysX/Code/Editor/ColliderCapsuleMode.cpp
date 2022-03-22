@@ -21,19 +21,19 @@ namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(ColliderCapsuleMode, AZ::SystemAllocator, 0);
 
-    const AZ::Transform ColliderCapsuleMode::GetCapsuleWorldTransform() const
+    AZ::Transform ColliderCapsuleMode::GetCapsuleWorldTransform() const
     {
         AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         return worldTransform;
     }
 
-    const AZ::Transform ColliderCapsuleMode::GetCapsuleLocalTransform() const
+    AZ::Transform ColliderCapsuleMode::GetCapsuleLocalTransform() const
     {
         return Utils::GetColliderLocalTransform(m_entityComponentIdPair);
     }
 
-    const AZ::Vector3 ColliderCapsuleMode::GetCapsuleNonUniformScale() const
+    AZ::Vector3 ColliderCapsuleMode::GetCapsuleNonUniformScale() const
     {
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
@@ -41,7 +41,7 @@ namespace PhysX
         return nonUniformScale;
     }
 
-    const float ColliderCapsuleMode::GetCapsuleRadius() const
+    float ColliderCapsuleMode::GetCapsuleRadius() const
     {
         float capsuleRadius = 0.0f;
         PhysX::EditorColliderComponentRequestBus::EventResult(
@@ -49,7 +49,7 @@ namespace PhysX
         return capsuleRadius;
     }
 
-    const float ColliderCapsuleMode::GetCapsuleHeight() const
+    float ColliderCapsuleMode::GetCapsuleHeight() const
     {
         float capsuleHeight = 0.0f;
         PhysX::EditorColliderComponentRequestBus::EventResult(
@@ -57,13 +57,13 @@ namespace PhysX
         return capsuleHeight;
     }
 
-    const void ColliderCapsuleMode::SetCapsuleRadius(float radius)
+    void ColliderCapsuleMode::SetCapsuleRadius(float radius)
     {
         PhysX::EditorColliderComponentRequestBus::Event(
             m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::SetCapsuleRadius, radius);
     }
 
-    const void ColliderCapsuleMode::SetCapsuleHeight(float height)
+    void ColliderCapsuleMode::SetCapsuleHeight(float height)
     {
         PhysX::EditorColliderComponentRequestBus::Event(
             m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::SetCapsuleHeight, height);

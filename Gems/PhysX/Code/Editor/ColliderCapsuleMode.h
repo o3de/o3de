@@ -30,20 +30,20 @@ namespace PhysX
         void Teardown(const AZ::EntityComponentIdPair& idPair) override;
         void ResetValues(const AZ::EntityComponentIdPair& idPair) override;
 
-        // CapsuleViewportEdit ...
-        const AZ::Transform GetCapsuleWorldTransform() const override;
-        const AZ::Transform GetCapsuleLocalTransform() const override;
-        const AZ::Vector3 GetCapsuleNonUniformScale() const override;
-        const float GetCapsuleRadius() const override;
-        const float GetCapsuleHeight() const override;
-        const void SetCapsuleRadius(float radius) override;
-        const void SetCapsuleHeight(float height) override;
-
     private:
         // AzFramework::EntityDebugDisplayEventBus ...
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
+
+        // CapsuleViewportEdit ...
+        AZ::Transform GetCapsuleWorldTransform() const override;
+        AZ::Transform GetCapsuleLocalTransform() const override;
+        AZ::Vector3 GetCapsuleNonUniformScale() const override;
+        float GetCapsuleRadius() const override;
+        float GetCapsuleHeight() const override;
+        void SetCapsuleRadius(float radius) override;
+        void SetCapsuleHeight(float height) override;
 
         AZ::EntityComponentIdPair m_entityComponentIdPair;
     };
