@@ -95,7 +95,7 @@ def ForceRegion_SliceFileInstantiates():
     helper.init_idle()
 
     # 1) Open level
-    helper.open_level("Physics", "ForceRegion_SliceFileInstantiates")
+    helper.open_level("Physics", "ForceRegion_PrefabFileInstantiates")
 
     # 2) Enter game mode
     helper.enter_game_mode(Tests.enter_game_mode)
