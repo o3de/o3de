@@ -99,6 +99,7 @@ class SessionContext:
                 signtool_result = self.run([str(signtool_path),'verify', '/pa', str(file)])
                 assert signtool_result.returncode == 0
         except FileNotFoundError as e:
+            print('Unable to verify installer is appropriately signed because SignTool.exe was not found.  Verify Windows Kit is installed.')
             pass
 
     def run(self, command, timeout=None, cwd=None):
@@ -109,9 +110,6 @@ class SessionContext:
 
     def cleanup(self):
         """ Clean up temporary testing artifacts. """
-
-        # wait a few seconds for processes to stop using resources 
-        sleep(5)
 
         # unregister and delete project
         if self.project_path.is_dir():
