@@ -35,8 +35,6 @@ class DirectionalLightShadow
     //////////
     // public method
 
-    static float ChooseDimmest(float visDepth[5], float myDepth);
-
     //! This calculates visibility ratio of the surface from the light origin.
     //! This should be called from fragment shaders.
     //! @param lightIndex directional light index.
