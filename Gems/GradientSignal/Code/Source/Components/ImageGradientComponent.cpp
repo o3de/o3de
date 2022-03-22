@@ -494,7 +494,7 @@ namespace GradientSignal
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
 
         // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
-        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ImageGradientComponent::Deactivate()

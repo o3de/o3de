@@ -227,7 +227,7 @@ namespace GradientSignal
         MixedGradientRequestBus::Handler::BusConnect(GetEntityId());
 
         // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
-        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void MixedGradientComponent::Deactivate()
