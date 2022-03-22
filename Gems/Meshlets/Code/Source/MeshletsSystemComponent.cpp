@@ -5,6 +5,12 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
+#include <Atom/RHI/Factory.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+
+#include <Atom/RPI.Public/FeatureProcessorFactory.h>
+#include <MeshletsFeatureProcessor.h>
+
 namespace Meshlets
 {
     void MeshletsSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -24,6 +30,8 @@ namespace Meshlets
                     ;
             }
         }
+
+        AZ::Meshlets::MeshletsFeatureProcessor::Reflect(context);
     }
 
     void MeshletsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -38,6 +46,9 @@ namespace Meshlets
 
     void MeshletsSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ::RHI::Factory::GetComponentService());
+        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
     }
 
     void MeshletsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -66,6 +77,9 @@ namespace Meshlets
 
     void MeshletsSystemComponent::Activate()
     {
+        // Feature processor
+        AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<AZ::Meshlets::MeshletsFeatureProcessor>();
+
         MeshletsRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
     }
@@ -74,6 +88,8 @@ namespace Meshlets
     {
         AZ::TickBus::Handler::BusDisconnect();
         MeshletsRequestBus::Handler::BusDisconnect();
+
+        AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AZ::Meshlets::MeshletsFeatureProcessor>();
     }
 
     void MeshletsSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)

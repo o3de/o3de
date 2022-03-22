@@ -36,22 +36,29 @@ namespace AZ
         //----------------------------------------------------------------------
         void MeshletsModel::debugMarkMeshletsUVs(GeneratorMesh& mesh)	// Results will alter the mesh 
         {
-            for (uint32_t meshletId = 0; meshletId < m_meshletsData.meshlets.size(); ++meshletId)
+            for (uint32_t meshletId = 0; meshletId < m_meshletsData.Descriptors.size(); ++meshletId)
             {
-                meshopt_Meshlet& meshlet = m_meshletsData.meshlets[meshletId];
+                meshopt_Meshlet& meshlet = m_meshletsData.Descriptors[meshletId];
                 float tx = (meshletId % 3) * 0.5f;
                 float ty = ((meshletId / 3) % 3) * 0.5f;
-                for (uint32_t triIdx = 0, triOffset = meshlet.triangle_offset; triIdx < meshlet.triangle_count; ++triIdx, triOffset += 3)
+                for (uint32_t triIdx = 0 ; triIdx < meshlet.triangle_count; ++triIdx)
                 {
+                    uint32_t encodedTri = m_meshletsData.EncodedTriangles[meshlet.triangle_offset + triIdx];
+                    // Next bring decode the uint32_t and separate into three elements.
+                    uint8_t vtxIndirectIndex[3] = {
+                        (encodedTri >> 0) & 0xff,
+                        (encodedTri >> 8) & 0xff,
+                        (encodedTri >> 16) & 0xff
+                    }; 
+
                     for (uint32_t vtx = 0; vtx < 3; ++vtx)
                     {
-                        unsigned char vtxIndirectIndex = m_meshletsData.meshlet_triangles[triOffset + vtx];
-                        unsigned int vtxIndex = m_meshletsData.meshlet_vertices[meshlet.vertex_offset + vtxIndirectIndex];
+                        uint32_t vtxIndex = m_meshletsData.IndicesIndirection[meshlet.vertex_offset + vtxIndirectIndex[vtx]];
 
                         mesh.vertices[vtxIndex].tx = tx;
                         mesh.vertices[vtxIndex].ty = ty;
                     }
-                }
+                } 
             }
         }
 
@@ -127,9 +134,10 @@ namespace AZ
             meshlet_triangles.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
             uint32_t meshletsAmount = (uint32_t) meshlets.size();
 
-            m_meshletsData.meshlets = meshlets;
-            m_meshletsData.meshlet_vertices = meshlet_vertices;
-            m_meshletsData.meshlet_triangles = meshlet_triangles;
+            m_meshletsData.Descriptors = meshlets;
+            m_meshletsData.IndicesIndirection = meshlet_vertices;
+            m_meshletsData.EncodeTrianglesData(meshlet_triangles);
+            m_meshletsData.ValidateData((uint32_t)meshlet_vertices.size());
             ////////////////////////////
 
             // [Adi] - add this to display meshlet separation - debug purpose only
@@ -323,23 +331,24 @@ namespace AZ
                         const auto meshletsDesc = RHI::BufferViewDescriptor::CreateTyped(
                             0, meshletsAmount, RHI::Format::R32G32B32A32_UINT);
                         const auto meshletsAsset = CreateBufferAsset(MeshletsDescriptorsName.GetCStr(), meshletsDesc,
-                            defaultBindFlags, (void*)m_meshletsData.meshlets.data());
+                            defaultBindFlags, (void*)m_meshletsData.Descriptors.data());
                         modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsDescriptorsName }, MeshletsDescriptorsName,
                             RPI::BufferAssetView{ meshletsAsset, meshletsDesc });
 
                         // Meshlets triangles - sending it as uint32 to simplify calculations
+                        // The triangles data is encoded - each uint32_t is 3 indices of 8 bits.
                         const auto meshletsTrisDesc = RHI::BufferViewDescriptor::CreateTyped(
-                            0, (uint32_t)m_meshletsData.meshlet_triangles.size() >> 2, RHI::Format::R32_UINT);
+                            0, (uint32_t)m_meshletsData.EncodedTriangles.size(), RHI::Format::R32_UINT);
                         const auto meshletsTrisAsset = CreateBufferAsset(MeshletsTrianglesName.GetCStr(), meshletsTrisDesc,
-                            defaultBindFlags, (void*)m_meshletsData.meshlet_triangles.data());
+                            defaultBindFlags, (void*)m_meshletsData.EncodedTriangles.data());
                         modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsTrianglesName }, MeshletsTrianglesName,
                             RPI::BufferAssetView{ meshletsTrisAsset, meshletsTrisDesc });
 
                         // Meshlets indirect indices buffer
                         const auto meshletsIndicesDesc = RHI::BufferViewDescriptor::CreateTyped(
-                            0, (uint32_t)m_meshletsData.meshlet_vertices.size(), RHI::Format::R32_UINT);
+                            0, (uint32_t)m_meshletsData.IndicesIndirection.size(), RHI::Format::R32_UINT);
                         const auto meshletsIndicesAsset = CreateBufferAsset(MeshletsIndicesLookupName.GetCStr(), meshletsIndicesDesc,
-                            defaultBindFlags, (void*)m_meshletsData.meshlet_vertices.data());
+                            defaultBindFlags, (void*)m_meshletsData.IndicesIndirection.data());
                         modelLodAssetCreator.AddMeshStreamBuffer(RHI::ShaderSemantic{ MeshletsIndicesLookupName }, MeshletsIndicesLookupName,
                             RPI::BufferAssetView{ meshletsIndicesAsset, meshletsIndicesDesc });
                     }

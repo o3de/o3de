@@ -17,31 +17,27 @@
 
 #include <numeric>
 
+#pragma optimize("", off)
+
+
 namespace AZ::Meshlets
 {
     //! When given null srg, the index handle is NOT set.
     //! Useful when creating a specific Srg buffer.
-    void SharedBuffer::CreateSharedBuffer()
+    void SharedBuffer::CreateSharedBuffer(SrgBufferDescriptor& bufferDesc)
     {
-        // Create the global buffer that holds all buffer views
-        SrgBufferDescriptor  bufferDesc = SrgBufferDescriptor(
-            RHI::Format::R32_UINT,
-            RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
-            sizeof(uint32_t), uint32_t(m_sizeInBytes / sizeof(uint32_t)),
-            Name{ "SharedBuffer" }, Name{ "m_GlobalSharedBuffer" }, 0, 0
-        );
-
         // Descriptor setting
-        RPI::CommonBufferDescriptor desc;
-        desc.m_elementFormat = bufferDesc.m_elementFormat;
-        desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
-        desc.m_elementSize = bufferDesc.m_elementSize;
-        desc.m_bufferName = bufferDesc.m_bufferName.GetCStr();
-        desc.m_byteCount = (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize;
-        desc.m_bufferData = nullptr;
+        RPI::CommonBufferDescriptor descriptor;
 
-        // Buffer creation
-        m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+        descriptor.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
+        descriptor.m_elementFormat = bufferDesc.m_elementFormat;
+        descriptor.m_elementSize = bufferDesc.m_elementSize;
+        descriptor.m_bufferName = bufferDesc.m_bufferName.GetCStr();
+        descriptor.m_byteCount = (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize;
+        descriptor.m_bufferData = nullptr;
+
+        // The actual RPI shared buffer creation
+        m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(descriptor);
     }
 
     //--------------------------------------------------------------------------
@@ -49,26 +45,28 @@ namespace AZ::Meshlets
     //! the buffer Init in the FeatureProcessor and initialize properly
     SharedBuffer::SharedBuffer()
     {
-        AZ_Warning("SharedBuffer", false, "Missing information to properly create SharedBuffer. Init is required");
+        AZ_Warning("SharedBuffer", false, "Missing information to properly create SharedBuffer.");
+
+        Interface<SharedBufferInterface>::Register(this);
     }
 
-    SharedBuffer::SharedBuffer(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
+    SharedBuffer::SharedBuffer(AZStd::string bufferName, uint32_t sharedBufferSize, uint32_t maxRequiredAlignment)
     {
+        m_sizeInBytes = sharedBufferSize;
+        m_alignment = AZStd::max(maxRequiredAlignment, uint32_t(4)) + (maxRequiredAlignment % 4) ? (4 - maxRequiredAlignment % 4) : 0;
         m_bufferName = bufferName;
-        Init(bufferName, buffersDescriptors);
+        Init(bufferName);
     }
 
     SharedBuffer::~SharedBuffer()
     {
-        m_bufferAsset = {};
     }
 
-    //! Crucial method that will ensure that the alignment for the BufferViews is always kept.
-    //! This is important when requesting a BufferView as the offset needs to be aligned according
-    //!  to the element type of the buffer.
+    //! This method that ensures that the alignment over the various BufferViews is
+    //! always kept, given the various possible buffer descriptors using the buffer.
     void SharedBuffer::CalculateAlignment(AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
     {
-        m_alignment = 1;
+        m_alignment = 4;
         for (uint8_t bufferIndex = 0; bufferIndex < buffersDescriptors.size() ; ++bufferIndex)
         {
             // Using the least common multiple enables resource views to be typed and ensures they can get
@@ -87,7 +85,7 @@ namespace AZ::Meshlets
         m_freeListAllocator.Init(allocatorDescriptor);
     }
 
-    void SharedBuffer::Init(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
+    void SharedBuffer::Init(AZStd::string bufferName)
     {
         m_bufferName = bufferName;
         // m_sizeInBytes = 256u * (1024u * 1024u);
@@ -102,11 +100,24 @@ namespace AZ::Meshlets
         // support greedy memory allocation when memory has reached its end.  This must not invalidate the buffer during
         // the current frame, hence allocation of second buffer, fence and a copy must take place.
 
-        CalculateAlignment(buffersDescriptors);
+        // Create the global buffer that holds all buffer views
+        // Remark: in order to enable indirect usage, the file BufferSystem.cpp must
+        // be changed to support a pool that supports this type or else a buffer view
+        // validation test will fail.
+        // The change should be done in 'BufferSystem::CreateCommonBufferPool'.
+        SrgBufferDescriptor  bufferDesc = SrgBufferDescriptor(
+            RHI::Format::Unknown,
+            RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite, 
+            sizeof(uint32_t), uint32_t(m_sizeInBytes / sizeof(uint32_t)),
+            Name{ m_bufferName }, Name{ "m_GlobalSharedBuffer" }, 0, 0
+        );
+
+        // Use the following method to calculate alignment given a list of descriptors
+//        CalculateAlignment(buffersDescriptors);
 
         InitAllocator();
 
-        CreateSharedBuffer();
+        CreateSharedBuffer(bufferDesc);
 
         SystemTickBus::Handler::BusConnect();
     }
@@ -153,17 +164,9 @@ namespace AZ::Meshlets
         }
     }
 
-    Data::Asset<RPI::BufferAsset> SharedBuffer::GetBufferAsset() const
-    {
-        return m_bufferAsset;
-    }
-
     Data::Instance<RPI::Buffer> SharedBuffer::GetBuffer()
     {
-        if (!m_buffer)
-        {
-            m_buffer = RPI::Buffer::FindOrCreate(m_bufferAsset);
-        }
+        AZ_Assert(m_buffer, "SharedBuffer - the buffer doesn't exist yet");
         return m_buffer;
     }
 
@@ -224,3 +227,5 @@ namespace AZ::Meshlets
     }
 
 } // namespace AZ::Render
+
+#pragma optimize("", on)

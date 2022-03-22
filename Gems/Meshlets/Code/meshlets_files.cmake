@@ -5,6 +5,7 @@ set(FILES
     Source/MeshletsSystemComponent.cpp
     Source/MeshletsSystemComponent.h
     
+    Source/Meshlets/MeshletsData.h
     Source/Meshlets/MeshletsDispatchItem.h
     Source/Meshlets/MeshletsDispatchItem.cpp
     Source/Meshlets/SharedBufferInterface.h

@@ -21,6 +21,7 @@
 
 #include <SharedBuffer.h>
 #include <MeshletsDispatchItem.h>
+#include <MeshletsData.h>
 
 namespace AZ
 {
@@ -31,77 +32,6 @@ namespace AZ
 
     namespace Meshlets
     {
-        enum class ComputeStreamsSemantics : uint8_t
-        {
-            Indices = 0,
-            MeshletsData,
-            MehsletsTriangles,
-            MeshletsIndicesIndirection,
-            NumBufferStreams
-        };
-
-        enum class RenderStreamsSemantics : uint8_t
-        {
-            Indices = 0,
-            Positions,
-            Normals,
-            UVs,
-            Tangents,
-            BiTangents,
-            NumBufferStreams
-        };
-
-        // All meshlets should be assigned using a single buffer with multiple views
-        // So that the assignment to the GPU will be fast.
-        // This can be done as a second stage.
-
-
-        struct MeshletDescriptor
-        {
-            //! Offset into the indirect indices array representing the global index of
-            //! all the meshlet vertices.
-            //! The Indirect vertices array is built as follows:
-            //!     std::vector<uint32_t> indirectIndices;
-            //!     indirectIndices = { { meshlet 1 vertex indices }, { meshlet 2 }, .. { meshlet n} }
-            uint32_t vertexOffset;      // In uint32_t steps
-
-            //! Offset into the global meshlets triangleIndices array represented as:
-            //!     std::vector<uint8_t> triangleIndices;
-            //!     triangleIndices = { {meshlet 1 local indices group}, ... { meshlet n} }
-            //! The local indices are an 8 bits index that can represent up to 256 entries.
-            uint32_t triangleOffset;    // In bytes from the start of the array
-
-            //! Finding a vertex within the meshlet is done like that:
-            //!     triangleOffset = currentMeshlet.triangleOffset + meshletTrIndex * 3;
-            //!     localIndex_i = meshletTriangles[triangleOffset + i];    // i = triangle vertex index 0..2
-            //!     vertexIndex_i =  indirectIndices[currentMeshlet.vertexOffset + localIndex_i];
-
-            //! Amount of vertices and triangle for the mesh - based on this the arrays
-            //! indirectIndices and triangleIndices are created per meshlet.
-            uint32_t vertexCount;
-            uint32_t triangleCount;
-        };
-
-        struct GeneratorVertex
-        {
-            float px, py, pz;
-            float nx, ny, nz;
-            float tx, ty;
-        };
-
-        struct GeneratorMesh
-        {
-            std::vector<GeneratorVertex> vertices;
-            std::vector<unsigned int> indices;
-        };
-
-        struct MeshletsData
-        {
-            std::vector<meshopt_Meshlet> meshlets;
-            std::vector<unsigned int> meshlet_vertices;		// Vertex Index indirection map
-            std::vector<unsigned char> meshlet_triangles;	// Meshlet triangles into the vertex index indirection - local to meshlet.
-        };
-
         //! Currently assuming single model without Lods so that the handling of the
         //! meshlet creation and handling of the array is easier. If several meshes or Lods
         //! exist, they will be created as separate models and the last model's instance

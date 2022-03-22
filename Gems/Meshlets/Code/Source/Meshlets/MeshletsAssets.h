@@ -20,6 +20,7 @@
 //#include <meshoptimizer.h>
 
 #include <MeshletsDispatchItem.h>
+#include <MeshletsData.h>
 
 namespace AZ
 {
@@ -30,54 +31,6 @@ namespace AZ
 
     namespace Meshlets
     {
-        struct MeshletDescriptor
-        {
-            //! Offset into the indirect indices array representing the global index of
-            //! all the meshlet vertices.
-            //! The Indirect vertices array is built as follows:
-            //!     std::vector<uint32_t> indirectIndices;
-            //!     indirectIndices = { { meshlet 1 vertex indices }, { meshlet 2 }, .. { meshlet n} }
-            uint32_t vertexOffset;      // In uint32_t steps
-
-            //! Offset into the global meshlets triangleIndices array represented as:
-            //!     std::vector<uint8_t> triangleIndices;
-            //!     triangleIndices = { {meshlet 1 local indices group}, ... { meshlet n} }
-            //! The local indices are an 8 bits index that can represent up to 256 entries.
-            uint32_t triangleOffset;    // In bytes from the start of the array
-
-            //! Finding a vertex within the meshlet is done like that:
-            //!     triangleOffset = currentMeshlet.triangleOffset + meshletTrIndex * 3;
-            //!     localIndex_0 = meshletTriangles[triangleOffset + 0];
-            //!     localIndex_1 = meshletTriangles[triangleOffset + 1];
-            //!     localIndex_2 = meshletTriangles[triangleOffset + 2];
-            //!     vertexIndex_0 =  indirectIndices[currentMeshlet.vertexOffset + localIndex_0];
-
-            //! Amount of vertices and triangle for the mesh - based on this the arrays
-            //! indirectIndices and triangleIndices are created per meshlet.
-            uint32_t vertexCount;
-            uint32_t triangleCount;
-        };
-
-        struct GeneratorVertex
-        {
-            float px, py, pz;
-            float nx, ny, nz;
-            float tx, ty;
-        };
-
-        struct GeneratorMesh
-        {
-            std::vector<GeneratorVertex> vertices;
-            std::vector<unsigned int> indices;
-        };
-
-        struct MeshletsData
-        {
-            std::vector<meshopt_Meshlet> meshlets;
-            std::vector<unsigned int> meshlet_vertices;		// Vertex Index indirection map
-            std::vector<unsigned char> meshlet_triangles;	// Meshlet triangles into the vertex index indirection - local to meshlet.
-        };
-
         //======================================================================
         //! The following class is taking in ModelAsset and based on it, generates
         //! a new Atom Model that now contains enhanced meshlet data.

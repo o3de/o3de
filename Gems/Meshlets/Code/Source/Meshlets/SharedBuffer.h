@@ -23,7 +23,6 @@ namespace AZ
 {
     namespace RPI
     {
-        class BufferAsset;
         class Buffer;
     }
 
@@ -91,23 +90,22 @@ namespace AZ
         // Adopted from SkinnedMeshOutputStreamManager in order to make it more generic and context free usage
         //!=====================================================================
         class SharedBuffer
-            : public SharedBufferInterface
+            : public Meshlets::SharedBufferInterface
             , private SystemTickBus::Handler
         {
         public:
-            SharedBuffer();
-            SharedBuffer(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors);
-
             AZ_RTTI(AZ::Meshlets::SharedBuffer, "{6005990E-3BBF-4946-9F2B-6A7739912100}", AZ::Meshlets::SharedBufferInterface);
 
+            SharedBuffer();
+            SharedBuffer(AZStd::string bufferName, uint32_t sharedBufferSize, uint32_t maxRequiredAlignment = 16);
+
             ~SharedBuffer();
-            void Init(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors);
+            void Init(AZStd::string bufferName);
 
             // SharedBufferInterface
             AZStd::intrusive_ptr<SharedBufferAllocation> Allocate(size_t byteCount) override;
             void DeAllocate(RHI::VirtualAddress allocation) override;
             void DeAllocateNoSignal(RHI::VirtualAddress allocation) override;
-            Data::Asset<RPI::BufferAsset> GetBufferAsset() const override;
 
             Data::Instance<RPI::Buffer> GetBuffer() override;
 
@@ -129,12 +127,10 @@ namespace AZ
             void GarbageCollect();
             void CalculateAlignment(AZStd::vector<SrgBufferDescriptor>& buffersDescriptors);
             void InitAllocator();
-            void CreateSharedBuffer();
+            void CreateSharedBuffer(SrgBufferDescriptor& bufferDesc);
 
             AZStd::string m_bufferName = "MeshletsSharedBuffer";
-            Data::Asset<AZ::RPI::ResourcePoolAsset> m_bufferPoolAsset;
             Data::Instance<RPI::Buffer> m_buffer = nullptr;
-            Data::Asset<RPI::BufferAsset> m_bufferAsset = {};
 
             RHI::FreeListAllocator m_freeListAllocator;
             AZStd::mutex m_allocatorMutex;

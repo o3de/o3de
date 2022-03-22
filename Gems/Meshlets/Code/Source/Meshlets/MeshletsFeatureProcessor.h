@@ -11,7 +11,9 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
+
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <SharedBuffer.h>
 
 namespace Render
 {
@@ -55,23 +57,25 @@ namespace AZ
             // RPI::SceneNotificationBus overrides ...
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
             void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
-//            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
 
             void AddMeshletsModel(MeshletsModel* meshletsModel);
             bool RemoveMeshletsModel(MeshletsModel* meshletsModel);
 
         protected:
-
             /// Implement equivalent
 //            bool CreateMeshDrawPacket(Meshlets::Mesh* currentMesh);
 
-            void CleanResource();
+            void CreateResources();
+            void CleanResources();
 
 
         private:
             AZ_DISABLE_COPY_MOVE(MeshletsFeatureProcessor);
 
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
+
+            AZStd::unique_ptr<Meshlets::SharedBuffer> m_sharedBuffer;  // used for all meshlets geometry buffers.
 
             uint32_t m_memoryUsage = 0;
         };

@@ -17,6 +17,8 @@
 #include <AtomCore/Instance/Instance.h>
 #include <Atom/RHI/Allocator.h>
 
+#pragma optimize("", off)
+
 namespace AZ
 {
     namespace RHI
@@ -55,9 +57,6 @@ namespace AZ
             {
                 return Interface<SharedBufferInterface>::Get();
             }
-
-            //! Returns the shared buffer asset used for all Hair objects and passes
-            virtual Data::Asset<RPI::BufferAsset> GetBufferAsset() const = 0;
 
             //! Returns the buffer that is used for all skinned mesh outputs
             virtual Data::Instance<RPI::Buffer> GetBuffer() = 0;
@@ -132,3 +131,5 @@ namespace AZ
         };
     } // namespace Meshlets
 } // namespace AZ
+
+#pragma optimize("", on)

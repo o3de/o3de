@@ -34,16 +34,30 @@ namespace AZ
 
         MeshletsFeatureProcessor::MeshletsFeatureProcessor()
         {
+            CreateResources();
         }
 
-        void MeshletsFeatureProcessor::CleanResource()
+        void MeshletsFeatureProcessor::CreateResources()
         {
+            if (!Meshlets::SharedBufferInterface::Get())
+            {   // Since there can be several pipelines, allocate the shared buffer only for the
+                // first one and from that moment on it will be used through its interface
+                AZStd::string sharedBufferName = "MeshletsSharedBuffer";
+                uint32_t bufferMaxAlignment = 16;
+                uint32_t bufferSize = 256 * 1024 * 1024;
+                m_sharedBuffer = AZStd::make_unique<Meshlets::SharedBuffer>(sharedBufferName, bufferSize, bufferMaxAlignment);
+            }
+        }
+
+        void MeshletsFeatureProcessor::CleanResources()
+        {
+            m_sharedBuffer.reset();
         }
 
         MeshletsFeatureProcessor::~MeshletsFeatureProcessor()
         {
             // Destroy Umbra handles
-            CleanResource();
+            CleanResources();
         }
 
         void MeshletsFeatureProcessor::Reflect(ReflectContext* context)
@@ -290,14 +304,20 @@ namespace AZ
             AZ_UNUSED(packet);
         }
 
-        void MeshletsFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]]RPI::RenderPipelinePtr renderPipeline)
+        void MeshletsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
         {
-            CleanResource();
+            CleanResources();
+            CreateResources();
         }
 
-        void MeshletsFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
+        void MeshletsFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr renderPipeline)
         {
-            CleanResource();
+            CreateResources();
+        }
+
+        void MeshletsFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+        {
+            CleanResources();
         }
 
     } // namespace AtomSceneStream

@@ -95,9 +95,10 @@ namespace AZ
             meshlet_triangles.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
             uint32_t meshletsCount = (uint32_t) meshlets.size();
 
-            m_meshletsData.meshlets = meshlets;
-            m_meshletsData.meshlet_vertices = meshlet_vertices;
-            m_meshletsData.meshlet_triangles = meshlet_triangles;
+            m_meshletsData.Descriptors = meshlets;
+            m_meshletsData.IndicesIndirection = meshlet_vertices;
+            m_meshletsData.EncodeTrianglesData(meshlet_triangles);
+            m_meshletsData.ValidateData((uint32_t)meshlet_vertices.size());
             ////////////////////////////
 
             AZ_Warning("Meshlets", false, "Successfully generated [%d] meshlets\n", meshletsCount);
@@ -184,7 +185,6 @@ namespace AZ
 
             m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::Indices)] =
                 SrgBufferDescriptor(
-//                    RPI::CommonBufferPoolType::ReadWrite,
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite,
                     sizeof(uint32_t), indicesCount,
@@ -193,7 +193,6 @@ namespace AZ
 
             m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsData)] =
                 SrgBufferDescriptor(
-//                    RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32B32A32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
                     sizeof(uint32_t) * 4, meshletsCount,
@@ -202,19 +201,17 @@ namespace AZ
 
             m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MehsletsTriangles)] =
                 SrgBufferDescriptor(
-//                    RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
-                    sizeof(uint32_t), (uint32_t)m_meshletsData.meshlet_triangles.size() >> 2,
+                    sizeof(uint32_t), (uint32_t)m_meshletsData.EncodedTriangles.size(),
                     Name{ "MESHLETS_TRIANGLES" }, Name{ "m_MeshletsTriangles" }, 1, 0
                 );
 
             m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsIndicesIndirection)] =
                 SrgBufferDescriptor(
-//                    RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
-                    sizeof(uint32_t), (uint32_t)m_meshletsData.meshlet_vertices.size(),
+                    sizeof(uint32_t), (uint32_t)m_meshletsData.IndicesIndirection.size(),
                     Name{ "MESHLETS_LOOKUP" }, Name{ "m_MeshletsIndicesLookup" }, 2, 0
                 );
         }
@@ -230,7 +227,6 @@ namespace AZ
 
             m_renderBuffersDescriptors[uint8_t(ComputeStreamsSemantics::Indices)] =
                 SrgBufferDescriptor(
-//                    RPI::CommonBufferPoolType::StaticInputAssembly | RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
                     sizeof(uint32_t), indicesCount,
@@ -239,7 +235,6 @@ namespace AZ
 
             m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Positions)] =
                 SrgBufferDescriptor(
-//                    RPI::CommonBufferPoolType::StaticInputAssembly | RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32B32_FLOAT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
                     sizeof(float) * 3, vertexCount,
@@ -248,7 +243,6 @@ namespace AZ
 
             m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Normals)] =
                 SrgBufferDescriptor(
-//                    RPI::CommonBufferPoolType::StaticInputAssembly | RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32B32_FLOAT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
                     sizeof(float) * 3, vertexCount,
@@ -345,10 +339,12 @@ namespace AZ
         bool MeshletsRenderObject::CreateAndBindRenderBuffers()
         {
             // Next we get the shared buffer from which we create the view
-            RHI::Buffer* rhiBuffer = Meshlets::SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+            RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
             bool success = true;
-            uint32_t steamsNum = (uint32_t) m_renderBuffersDescriptors.size();
-            for (uint32_t stream = 0; stream < steamsNum ; ++stream)
+            uint32_t streamsNum = (uint32_t) m_renderBuffersDescriptors.size();
+            m_renderBuffersAllocators.resize(streamsNum);
+            m_renderBuffersViews.resize(streamsNum);
+            for (uint32_t stream = 0; stream < streamsNum ; ++stream)
             {
                 SrgBufferDescriptor& streamDesc = m_renderBuffersDescriptors[stream];
                 size_t requiredSize = (uint64_t)streamDesc.m_elementCount * streamDesc.m_elementSize;
@@ -383,7 +379,7 @@ namespace AZ
             if (success)
             {
                 Data::Instance<RPI::Buffer> sharedBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer();
-                for (uint32_t stream = 0; stream < steamsNum && success ; ++stream)
+                for (uint32_t stream = 0; stream < streamsNum && success ; ++stream)
                 {   // upload the original streams data - indices copy is not really required
                     SrgBufferDescriptor& streamDesc = m_renderBuffersDescriptors[stream];
                     size_t requiredSize = (uint64_t)streamDesc.m_elementCount * streamDesc.m_elementSize;
@@ -399,7 +395,7 @@ namespace AZ
             }
             else
             {
-                for (uint32_t stream = 0; stream < steamsNum ; ++stream)
+                for (uint32_t stream = 0; stream < streamsNum ; ++stream)
                 {   // remove previous allocations for this mesh
                     m_renderBuffersAllocators[stream] = nullptr;
                 }
@@ -410,9 +406,12 @@ namespace AZ
         bool MeshletsRenderObject::CreateAndBindComputeBuffers()
         {
             // Next we get the shared buffer from which we create the view
-            RHI::Buffer* rhiBuffer = Meshlets::SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+            RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
             bool success = true;
+
             uint32_t streamsNum = (uint32_t)m_computeBuffersDescriptors.size();
+            m_computeBuffersAllocators.resize(streamsNum);
+            m_computeBuffersViews.resize(streamsNum);
             for (uint32_t stream = 0; stream < streamsNum ; ++stream)
             {
                 SrgBufferDescriptor& streamDesc = m_computeBuffersDescriptors[stream];
@@ -490,10 +489,10 @@ namespace AZ
             PrepareRenderSrgDescriptors(vertexCount, indexCount);
 
             // Take care of the indices since it's stored differently than the rest of the streams
-            SrgBufferDescriptor& descriptor = m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)];
+            SrgBufferDescriptor* descriptor = &m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)];
             const RPI::BufferAssetView* bufferAssetView = &meshAsset.GetIndexBufferAssetView();
-            descriptor.m_bufferData = RetrieveBufferData(bufferAssetView, streamFormat, 0, indexCount, bufferDescriptor);
-            AZ_Error("Meshlets", streamFormat == descriptor.m_elementFormat, "Error - index buffer with different format [%d]", streamFormat);
+            descriptor->m_bufferData = RetrieveBufferData(bufferAssetView, streamFormat, 0, indexCount, bufferDescriptor);
+            AZ_Error("Meshlets", streamFormat == descriptor->m_elementFormat, "Error - index buffer with different format [%d]", streamFormat);
 
             // Now take care of the rest of the streams
             for (uint8_t stream = 0; stream < uint8_t(RenderStreamsSemantics::NumBufferStreams); ++stream)
@@ -503,18 +502,17 @@ namespace AZ
                     continue;
                 }
 
-                descriptor = m_renderBuffersDescriptors[stream];
-                bufferAssetView = meshAsset.GetSemanticBufferAssetView(descriptor.m_bufferName);
-                descriptor.m_bufferData = RetrieveBufferData(bufferAssetView, streamFormat, 0, vertexCount, bufferDescriptor);
+                descriptor = &m_renderBuffersDescriptors[stream];
+                bufferAssetView = meshAsset.GetSemanticBufferAssetView(descriptor->m_bufferName);
+                descriptor->m_bufferData = RetrieveBufferData(bufferAssetView, streamFormat, vertexCount, vertexCount, bufferDescriptor);
 
-                AZ_Error("Meshlets", streamFormat == descriptor.m_elementFormat,
-                    "Error - buffer %s with different format [%d]",
-                    descriptor.m_bufferName.GetCStr(), streamFormat);
+                AZ_Error("Meshlets", streamFormat == descriptor->m_elementFormat,
+                    "Error - buffer %s with different format [%d]", descriptor->m_bufferName.GetCStr(), streamFormat);
 
-                if (!descriptor.m_bufferData)
+                if (!descriptor->m_bufferData)
                 {
                     AZ_Error("Meshlets", false, "Failed to create meshlet model [%s] - buffer [%s] data could not be retrieved",
-                        descriptor.m_bufferName.GetCStr());
+                        descriptor->m_bufferName.GetCStr());
                     return 0;
                 }
             }
@@ -607,6 +605,11 @@ namespace AZ
             m_name = "Model_" + AZStd::to_string(s_modelNumber++);
             m_aabb.CreateNull();
 
+            if (!Meshlets::SharedBufferInterface::Get())
+            {
+                AZ_Error("Meshlets", false, "Shared buffer was NOT created - meshlets model will not be created.");
+                return;
+            }
             m_meshletsCount = CreateMeshletsFromModelAsset(sourceModelAsset);
         }
 
