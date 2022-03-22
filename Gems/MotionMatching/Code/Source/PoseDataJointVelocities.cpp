@@ -137,7 +137,7 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    void PoseDataJointVelocities::CalculateVelocity(const ActorInstance* actorInstance, Motion* motion, float requestedSampleTime, size_t relativeToJointIndex)
+    void PoseDataJointVelocities::CalculateVelocity(const ActorInstance* actorInstance, AnimGraphPosePool& posePool, Motion* motion, float requestedSampleTime, size_t relativeToJointIndex)
     {
         MotionDataSampleSettings sampleSettings;
         sampleSettings.m_actorInstance = actorInstance;
@@ -152,7 +152,6 @@ namespace EMotionFX::MotionMatching
         m_angularVelocities.resize(numJoints);
 
         // Prepare for sampling.
-        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
         AnimGraphPose* prevPose = posePool.RequestPose(actorInstance);
         AnimGraphPose* currentPose = posePool.RequestPose(actorInstance);
 
