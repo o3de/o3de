@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 4,
     "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/005_UseDisplacement.material",
     "propertyValues": {
         "blend.enableLayer3": false

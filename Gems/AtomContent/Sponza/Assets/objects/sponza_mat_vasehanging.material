@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "textureMap": "../Textures/vaseHanging_1k_basecolor.png"
@@ -11,7 +11,8 @@
             "applySpecularAA": true
         },
         "irradiance": {
-            "color": [
+            "irradianceColorSource": "Manual",
+            "manualColor": [
                 0.765606164932251,
                 1.0,
                 0.7052567601203918,
