@@ -13,6 +13,7 @@ import warnings
 import json
 import logging
 from abc import ABCMeta, abstractmethod
+from json import JSONDecodeError
 from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
@@ -60,7 +61,15 @@ def _find_project_json(engine_root, project):
     if os.path.isfile(manifest_json):
         # Read the o3de_manifest.json 
         with open(manifest_json, "r") as manifest_file:
-            json_data = json.load(manifest_file)
+
+            # Try to load the contents of the o3de_manifest.json file
+            try:
+                manifest_file_contents = manifest_file.read()
+                json_data = json.loads(manifest_file_contents)
+            except JSONDecodeError as jderror:
+                logger.error(f"Attempted to open the contents of {manifest_json}, found invalid JSON: {manifest_file_contents}")
+                raise jderror
+
             # Look at the "projects" key for registered project paths
             try:
                 for projects_path in json_data["projects"]:
