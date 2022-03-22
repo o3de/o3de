@@ -318,10 +318,10 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    // initialize default locations to 0. This is a temporary solution to match the 12 locations of the legacy system
+                    // initialize default locations to zero, this is a temporary solution to match the 12 locations of the legacy system
                     // once there is a UI for the view bookmarks these lines should be removed
                     if (const auto setRegPath = BookmarkSetRegPath(m_bookmarkFileName);
-                        !registry->SetObject(setRegPath, AZStd::vector<ViewBookmark>(12, ViewBookmark())))
+                        !registry->SetObject(setRegPath, AZStd::vector<ViewBookmark>(DefaultViewBookmarkCount, ViewBookmark())))
                     {
                         AZ_Warning("LocalViewBookmarkLoader", false, "SetObject for \"%s\" failed", setRegPath.c_str());
                     }
