@@ -130,9 +130,6 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponentsLevel_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponentsLevel_DisplayMapperAdded as test_module
 
-    class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
-        from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
-
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_generic'])
