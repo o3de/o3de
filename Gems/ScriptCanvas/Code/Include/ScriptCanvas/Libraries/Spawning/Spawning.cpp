@@ -26,9 +26,6 @@ namespace ScriptCanvas
                 serializeContext->Class<Spawning, LibraryDefinition>()
                     ->Version(1)
                     ;
-
-                //CreateTypeAsMapValueHelper<Data::StringType, EntitySpawnTicket>::ReflectClassInfo(serializeContext);
-                //CreateTypeAsMapValueHelper<Data::NumberType, EntitySpawnTicket>::ReflectClassInfo(serializeContext);
                 serializeContext->RegisterGenericType<AZStd::unordered_map<Data::StringType, EntitySpawnTicket>>();
                 serializeContext->RegisterGenericType<AZStd::unordered_map<Data::NumberType, EntitySpawnTicket>>();
 
