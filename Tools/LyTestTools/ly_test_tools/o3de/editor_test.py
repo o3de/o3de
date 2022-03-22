@@ -467,7 +467,9 @@ class EditorTestSuite:
                         def result(self, request, workspace, editor, editor_test_data, launcher_platform):
                             # The runner must have filled the editor_test_data.results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
-                            assert test_spec.__name__ in editor_test_data.results, f"No run data for test: {test_spec.__name__}."
+                            assert test_spec.__name__ in editor_test_data.results, \
+                                f"No results found for {test_spec.__name__}. Test may not have ran due to the Editor " \
+                                f"shutting down. Check for issues in previous tests."
                             cls._report_result(test_spec.__name__, editor_test_data.results[test_spec.__name__])
                         return result
                     
