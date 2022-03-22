@@ -9,12 +9,8 @@
 set(FILES
     Source/Editor/CommonFiles/CommonTypes.h
     Source/Editor/CommonFiles/CommonTypes.cpp
-    Source/Editor/CommonFiles/GlobalBuildOptions.h
-    Source/Editor/CommonFiles/GlobalBuildOptions.cpp
     Source/Editor/CommonFiles/Preprocessor.h
     Source/Editor/CommonFiles/Preprocessor.cpp
-    Source/Editor/AtomShaderCapabilitiesConfigFile.cpp
-    Source/Editor/AtomShaderCapabilitiesConfigFile.h
     Source/Editor/AzslData.h
     Source/Editor/AzslShaderBuilderSystemComponent.cpp
     Source/Editor/AzslShaderBuilderSystemComponent.h
@@ -27,10 +23,10 @@ set(FILES
     Source/Editor/AzslCompiler.h
     Source/Editor/ShaderVariantAssetBuilder.cpp
     Source/Editor/ShaderVariantAssetBuilder.h
-    Source/Editor/AtomShaderConfig.cpp
-    Source/Editor/AtomShaderConfig.h
     Source/Editor/PrecompiledShaderBuilder.cpp
     Source/Editor/PrecompiledShaderBuilder.h
     Source/Editor/SrgLayoutUtility.cpp
     Source/Editor/SrgLayoutUtility.h
+    Source/Editor/ShaderBuildArgumentsManager.cpp
+    Source/Editor/ShaderBuildArgumentsManager.h
 )

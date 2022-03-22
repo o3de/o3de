@@ -175,12 +175,10 @@ namespace AtomToolsFramework
         bool isActive = false;
         SourceControlConnectionRequestBus::BroadcastResult(isActive, &SourceControlConnectionRequests::IsActive);
 
-        if (isActive)
+        AZStd::string path = entry->GetFullPath();
+        if (isActive && ValidateDocumentPath(path))
         {
             menu->addSeparator();
-
-            AZStd::string path = entry->GetFullPath();
-            AzFramework::StringFunc::Path::Normalize(path);
 
             QMenu* sourceControlMenu = menu->addMenu("Source Control");
 
