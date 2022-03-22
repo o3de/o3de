@@ -47,12 +47,12 @@ namespace AzToolsFramework
 
     static AZStd::string BookmarkSetRegPath(const AZStd::string& bookmarkFileName)
     {
-        return "/" + bookmarkFileName + "/LocalBookmarks";
+        return AZStd::string::format("/%s/LocalBookmarks", bookmarkFileName.c_str());
     }
 
     static AZStd::string BookmarkSetRegPathAtIndex(const AZStd::string& bookmarkFileName, const int index)
     {
-        return BookmarkSetRegPath(bookmarkFileName) + "/" + AZStd::to_string(index);
+        return AZStd::string::format("%s/%i", BookmarkSetRegPath(bookmarkFileName).c_str(), index);
     }
 
     void LocalViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
