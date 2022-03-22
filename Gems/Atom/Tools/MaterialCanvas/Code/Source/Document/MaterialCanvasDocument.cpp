@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -63,9 +64,15 @@ namespace MaterialCanvas
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo); };
-        documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas", "materialcanvas" });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas", "materialcanvas" });
-        documentType.m_supportedExtensionsToSave.push_back({ "Material Canvas", "materialcanvas" });
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas Template", "materialcanvastemplate.azasset" });
+        documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas", "materialcanvas.azasset" });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas Template", "materialcanvastemplate.azasset" });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas", "materialcanvas.azasset" });
+        documentType.m_supportedExtensionsToSave.push_back({ "Material Canvas", "materialcanvas.azasset" });
+        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::AnyAsset>());
+        documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
+            "/O3DE/Atom/MaterialEditor/DefaultMaterialCanvasTemplateAsset",
+            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialCanvas/blank.materialcanvastemplate.azasset"));
         return documentType;
     }
 
@@ -88,6 +95,12 @@ namespace MaterialCanvas
             return false;
         }
 
+        auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(m_absolutePath);
+        if (!loadResult || !loadResult.GetValue().is<AZStd::string>())
+        {
+            return OpenFailed();
+        }
+
         return OpenSucceeded();
     }
 
@@ -98,6 +111,12 @@ namespace MaterialCanvas
             // SaveFailed has already been called so just forward the result without additional notifications.
             // TODO Replace bool return value with enum for open and save states.
             return false;
+        }
+
+        AZStd::string placeholderData;
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        {
+            return SaveFailed();
         }
 
         return SaveSucceeded();
@@ -112,6 +131,12 @@ namespace MaterialCanvas
             return false;
         }
 
+        AZStd::string placeholderData;
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        {
+            return SaveFailed();
+        }
+
         return SaveSucceeded();
     }
 
@@ -122,6 +147,12 @@ namespace MaterialCanvas
             // SaveFailed has already been called so just forward the result without additional notifications.
             // TODO Replace bool return value with enum for open and save states.
             return false;
+        }
+
+        AZStd::string placeholderData;
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        {
+            return SaveFailed();
         }
 
         return SaveSucceeded();
