@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 namespace LmbrCentral
 {
@@ -23,8 +24,6 @@ namespace AZ::RPI
 
 namespace Terrain
 {
-    class TerrainFeatureProcessor;
-
     struct TerrainWorldRendererConfig final
         : public AZ::ComponentConfig
     {
@@ -46,6 +45,7 @@ namespace Terrain
             WorldSizeCount,
         };
 
+        DetailMaterialConfiguration m_detailMaterialConfig;
         WorldSize m_worldSize = WorldSize::_1024Meters;
     };
 

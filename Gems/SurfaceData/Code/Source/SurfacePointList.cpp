@@ -225,7 +225,7 @@ namespace SurfaceData
                 size_t next = index + 1;
                 for (; next < listSize; ++next)
                 {
-                    if (m_surfaceWeightsList[m_sortedSurfacePointIndices[index]].HasAnyMatchingTags(desiredTags))
+                    if (m_surfaceWeightsList[m_sortedSurfacePointIndices[next]].HasAnyMatchingTags(desiredTags))
                     {
                         m_sortedSurfacePointIndices[index] = AZStd::move(m_sortedSurfacePointIndices[next]);
                         m_surfaceCreatorIdList[m_sortedSurfacePointIndices[index]] =
@@ -237,11 +237,11 @@ namespace SurfaceData
                         m_surfaceWeightsList[m_sortedSurfacePointIndices[index]] =
                             AZStd::move(m_surfaceWeightsList[m_sortedSurfacePointIndices[next]]);
 
-                        m_numSurfacePointsPerInput[inputIndex]--;
-
                         ++index;
                     }
                 }
+
+                m_numSurfacePointsPerInput[inputIndex] = index - surfacePointStartIndex;
             }
         }
     }
@@ -279,7 +279,14 @@ namespace SurfaceData
     {
         AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
 
-        return m_surfacePositionList.size();
+        size_t numValidEntries = 0;
+
+        for (size_t inputIndex = 0; (inputIndex < m_inputPositionSize); inputIndex++)
+        {
+            numValidEntries += m_numSurfacePointsPerInput[inputIndex];
+        }
+
+        return numValidEntries;
     }
 
     size_t SurfacePointList::GetSize(size_t inputPositionIndex) const
