@@ -349,6 +349,5 @@ class TestAutomation(EditorTestSuite):
     class ScriptCanvas_ShapeCast(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
-    @pytest.mark.xfail(reason="AssertionError: Failed to open level: ForceRegion_PrefabFileInstantiates does not exist or is invalid")
     class ForceRegion_PrefabFileInstantiates(EditorSharedTest):
         from .tests.force_region import ForceRegion_PrefabFileInstantiates as test_module
