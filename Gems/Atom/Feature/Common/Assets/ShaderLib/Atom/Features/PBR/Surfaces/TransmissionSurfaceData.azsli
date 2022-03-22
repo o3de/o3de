@@ -19,17 +19,25 @@ class TransmissionSurfaceData
 
     void InitializeToZero();
 
-    // Thick mode getters
+    // ----- Thick mode getters -----
+
     float GetAttenuationCoefficient() { return transmissionParams.x; }
     float GetPower() { return transmissionParams.y; }
     float GetDistortion() { return transmissionParams.z; }
 
-    // Thin mode getters
+    // ----- Thin mode getters -----
+
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
     float GetShrinkFactor() { return transmissionParams.x; }
+
+    // (N . L) to accept below (N . L = 0) in scattering through thin objects
     float GetTransmissionNdLBias() { return transmissionParams.y; }
+
+    // Attenuation applied to hide artifacts due to low-res shadow maps 
     float GetDistanceAttenuation() { return transmissionParams.z; }
 
-    // Common getters
+    // ----- Common getters -----
+
     float GetScale() { return transmissionParams.w; }
 };
 
