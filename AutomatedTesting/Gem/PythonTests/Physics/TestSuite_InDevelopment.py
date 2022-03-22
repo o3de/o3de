@@ -156,3 +156,7 @@ class TestAutomation(TestAutomationBase):
     def test_ForceRegion_SmallMagnitudeDeviationOnLargeForces(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SmallMagnitudeDeviationOnLargeForces as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_SpawnEntityWithPhysComponents as test_module
+        self._run_test(request, workspace, editor, test_module)
