@@ -68,6 +68,7 @@ set(FILES
     Include/ScriptCanvas/PerformanceTracker.h
     Include/ScriptCanvas/AutoGen/ScriptCanvas_Macros.jinja
     Include/ScriptCanvas/AutoGen/ScriptCanvas_Nodeable_Macros.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasFunction_Source.jinja
     Include/ScriptCanvas/AutoGen/ScriptCanvasGrammar_Header.jinja
     Include/ScriptCanvas/AutoGen/ScriptCanvasGrammar_Source.jinja
     Include/ScriptCanvas/AutoGen/ScriptCanvasNodeable_Header.jinja

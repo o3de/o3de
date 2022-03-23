@@ -1,0 +1,86 @@
+{#
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+#}
+
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Source.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <ScriptCanvasAutoGenRegistry.h>
+
+{% for ScriptCanvasFunction in dataFiles %}
+
+{{- macros.Required('Include', ScriptCanvasFunction, ScriptCanvasFunction) -}}
+{{- macros.Required('Name', ScriptCanvasFunction, ScriptCanvasFunction) -}}
+
+#include "{{ ScriptCanvasFunction.attrib['Include'] }}"
+
+{% set className = macros.CleanName('ScriptCanvasFunction' + ScriptCanvasFunction.attrib['Name']) %}
+{% set namespaceList = [] %}
+{% set sanitizedNamespaceName = 'GlobalMethod' %}
+{% if ScriptCanvasFunction.attrib['Namespace'] is defined and ScriptCanvasFunction.attrib['Namespace'] %}
+{% set namespaceList = macros.CleanName(ScriptCanvasFunction.attrib['Namespace']).split('::') %}
+{% set sanitizedNamespaceName = macros.CleanName(ScriptCanvasFunction.attrib['Namespace'].replace('::', '_')) %}
+{% endif %}
+{% set categoryName = ScriptCanvasFunction.attrib['Category'] %}
+
+{% for namespace in namespaceList %}
+namespace {{namespace}}
+{
+{% endfor %}
+
+    class {{className}}
+        : public ScriptCanvas::IScriptCanvasFunctionRegistry
+    {
+    public:
+        {{className}}()
+        {
+            ScriptCanvas::AutoGenRegistry::GetInstance()->RegisterFunction("{{sanitizedNamespaceName}}_{{className}}", this);
+        }
+
+        virtual ~{{className}}()
+        {
+            ScriptCanvas::AutoGenRegistry::GetInstance()->UnregisterFunction("{{sanitizedNamespaceName}}_{{className}}");
+        }
+ 
+        void Reflect(AZ::ReflectContext* context) override
+        {
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+{% for function in ScriptCanvasFunction.findall('Function') %}
+{{ macros.Required('Name', function, ScriptCanvasFunction) }}
+{% set functionName = macros.CleanName(function.attrib['Name']) %}
+{% set sanitizedFunctionName = macros.CleanName(function.attrib['Name']).replace('::', '_') %}
+                behaviorContext->Method("{{sanitizedNamespaceName}}_{{sanitizedFunctionName}}", &{{functionName}},
+{{macros.GenerateFunctionMetaData(function)}})
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+{% if categoryName %}
+                    ->Attribute(AZ::Script::Attributes::Category, "{{categoryName}}")
+{% endif %}
+                ;
+
+{% endfor %}
+            }
+        }
+    };
+
+    static {{className}} s_{{className}};
+
+{% for namespace in namespaceList %}
+}
+{% endfor %}
+
+{{ macros.ReportErrors() }}
+
+{% endfor %}
