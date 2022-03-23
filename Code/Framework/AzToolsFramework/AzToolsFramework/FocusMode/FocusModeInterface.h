@@ -43,6 +43,11 @@ namespace AzToolsFramework
 
         //! Returns whether the entity id provided is part of the focused sub-tree.
         virtual bool IsInFocusSubTree(AZ::EntityId entityId) const = 0;
+
+        //! Verifies if the entityId provided matches with the current focus root.
+        //! @return True if the entity provided is the focus root, false otherwise.
+        virtual bool IsFocusRoot(AZ::EntityId entityId) const = 0;
+
     };
 
 } // namespace AzToolsFramework

@@ -331,7 +331,8 @@ namespace AzToolsFramework
 
     void PropertyEntityIdCtrl::SetCurrentEntityId(const AZ::EntityId& newEntityId, bool emitChange, const AZStd::string& nameOverride)
     {
-        m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride, true);
+        m_entityIdLineEdit->setClearButtonEnabled(HasClearButton());
+        m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride);
         m_componentsSatisfyingServices.clear();
 
         if (!m_requiredServices.empty() || !m_incompatibleServices.empty())
@@ -513,6 +514,14 @@ namespace AzToolsFramework
             else if (attrValue->template Read<decltype(incompatibleServices)>(incompatibleServices))
             {
                 GUI->SetIncompatibleServices(incompatibleServices);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::ShowClearButtonHandler)
+        {
+            bool value;
+            if (attrValue->Read<bool>(value))
+            {
+                GUI->SetHasClearButton(value);
             }
         }
     }

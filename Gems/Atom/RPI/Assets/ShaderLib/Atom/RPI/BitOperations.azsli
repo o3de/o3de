@@ -1,0 +1,62 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// Creates a bit mask for the first N bits
+// Example: GetBitMask(3) returns 00000000000000000000000000000111
+//                                              bitMaskLength ^
+uint GetBitMask(uint bitMaskLength)
+{
+    uint bitmask = (1u << bitMaskLength) - 1u;
+    return bitmask;
+}
+
+// Creates a bit for a range
+// startBitIncluded is the lowest bit set in the mask
+// endBitExcluded is the highest bit not set in the mask
+// Example: GetBitMask(2, 6) returns 00000000000000000000000000111100
+//                                             endBitExcluded ^   ^ startBitIncluded
+//
+uint GetBitMask(uint startBitIncluded, uint endBitExcluded)
+{
+    uint diff = endBitExcluded - startBitIncluded;
+    uint bitmask = GetBitMask(diff);
+    return (bitmask << startBitIncluded);
+}
+
+// Returns the specified bit from the input uint shifted to the lowest bit
+// Example: Selecting bitIndex=7 from 00011010001000000011100010011000
+//                                                   bitIndex ^
+// Returns 1
+// 
+uint GetBit(uint input, uint bitIndex)
+{
+    return ((input >> bitIndex) & 1u);
+}
+
+// Returns the specified bit from the input uint shifted to the lowest bit
+// Example: startBitIncluded=11 and endBitExcluded=16
+// 
+// Example: Selecting bitIndex=7 from 00011010001000000011100010011000
+//                                    endBitExcluded ^    ^ startBitIncluded
+// Returns 00111
+// 
+uint GetBits(uint input, uint startBitIncluded, uint endBitExcluded)
+{
+    uint diff = endBitExcluded - startBitIncluded;
+    uint bitmask = GetBitMask(diff);
+    return ((input >> startBitIncluded) & bitmask);
+}
+
+
+
+
+
+
+

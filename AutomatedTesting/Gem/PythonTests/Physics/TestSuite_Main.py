@@ -349,19 +349,5 @@ class TestAutomation(EditorTestSuite):
     class ScriptCanvas_ShapeCast(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
-
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationNoPrefab(EditorTestSuite):
-
-    global_extra_cmdline_args = ["-BatchMode", "-autotest_mode",
-                                 '--regset=/Amazon/Preferences/EnablePrefabSystem=false']
-
-    @staticmethod
-    def get_number_parallel_editors():
-        return 16
-
-    @pytest.mark.xfail(reason="AssertionError: Failed to open level: ForceRegion_SliceFileInstantiates does not exist or is invalid")
-    class ForceRegion_SliceFileInstantiates(EditorSharedTest):
-        from .tests.force_region import ForceRegion_SliceFileInstantiates as test_module
+    class ForceRegion_PrefabFileInstantiates(EditorSharedTest):
+        from .tests.force_region import ForceRegion_PrefabFileInstantiates as test_module
