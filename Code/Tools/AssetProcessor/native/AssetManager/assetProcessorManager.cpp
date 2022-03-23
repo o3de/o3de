@@ -1092,6 +1092,7 @@ namespace AssetProcessor
                 newProduct.m_productName = newProductName.toUtf8().constData();
                 newProduct.m_assetType = product.m_productAssetType;
                 newProduct.m_subID = product.m_productSubID;
+                newProduct.m_hash = AssetUtilities::GetFileHash(product.m_productFileName.c_str());
 
                 //This is the legacy product guid, its only use is for backward compatibility as before the asset id's guid was created off of the relative product name.
                 // Right now when we query for an asset guid we first match on the source guid which is correct and secondarily match on the product guid. Eventually this will go away.
@@ -1103,6 +1104,16 @@ namespace AssetProcessor
                 //push back the new product into the new products list
                 newProducts.emplace_back(newProduct, &product);
                 newLegacySubIDs.push_back(product.m_legacySubIDs);
+            }
+
+            auto updatedProducts = newProducts;
+
+            if(!updatedProducts.empty())
+            {
+                for (const auto& priorProductEntry : priorProducts)
+                {
+                    updatedProducts.erase(AZStd::remove_if(updatedProducts.begin(), updatedProducts.end(), [&priorProductEntry](const auto& pair){ return pair.first == priorProductEntry; }), updatedProducts.end());
+                }
             }
 
             //now we want to remove any lingering product files from the previous build that no longer exist
@@ -1239,6 +1250,16 @@ namespace AssetProcessor
             for (const AZStd::string& affectedSourceFile : processedAsset.m_response.m_sourcesToReprocess)
             {
                 AssessFileInternal(affectedSourceFile.c_str(), false);
+            }
+
+            if(!updatedProducts.empty())
+            {
+                QStringList dependencies = GetSourceFilesWhichDependOnSourceFile(processedAsset.m_entry.GetAbsoluteSourcePath(), updatedProducts);
+
+                for(const auto& dependency : dependencies)
+                {
+                    AssessFileInternal(dependency, false);
+                }
             }
 
             //set the new products
@@ -1529,7 +1550,7 @@ namespace AssetProcessor
         {
             // since the scanner walks over EVERY file, there's no reason to process dependencies during scan but it is necessary to process deletes.
             // if modtime skipping is enabled, only changed files are processed, so we actually DO need to do this work when enabled
-            QStringList absoluteSourcePathList = GetSourceFilesWhichDependOnSourceFile(normalizedFilePath);
+            QStringList absoluteSourcePathList = GetSourceFilesWhichDependOnSourceFile(normalizedFilePath, {});
 
             for (const QString& absolutePath : absoluteSourcePathList)
             {
@@ -3251,14 +3272,14 @@ namespace AssetProcessor
                         jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
                         jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str());
 
-                    job.m_jobParam[AZ_CRC(JobWarningKey)] = AZStd::string::format(
+                    job.m_warnings.push_back(AZStd::string::format(
                         "No job was found to match the job dependency criteria declared by file %s. (File: %s, JobKey: %s, Platform: %s)\n"
                         "This may be due to a mismatched job key.\n"
                         "Job ordering will not be guaranteed and could result in errors or unexpected output.",
                         job.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData(),
                         jobDependencyInternal->m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
                         jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
-                        jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str());
+                        jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str()));
                 }
             }
 
@@ -3508,8 +3529,29 @@ namespace AssetProcessor
                             newJob.m_jobParam[AZ_CRC_CE("DebugFlag")] = "true";
                         }
 
+                        // Keep track of the job dependencies as we loop to help detect duplicates
+                        AZStd::unordered_set<AssetBuilderSDK::JobDependency> jobDependenciesDuplicateCheck;
+
                         for (const AssetBuilderSDK::JobDependency& jobDependency : jobDescriptor.m_jobDependencyList)
                         {
+                            if (auto result = jobDependenciesDuplicateCheck.insert(jobDependency); !result.second)
+                            {
+                                auto warningMessage = AZStd::string::format(
+                                    "Builder `%s` declared duplicate Job Dependencies for file `%s`.  Dependency: (`%s` `%s` `%s`).  Duplicates will be skipped.  "
+                                    "Please update the builder or content to remove the duplicates.",
+                                    builderInfo.m_name.c_str(),
+                                    actualRelativePath.toUtf8().constData(),
+                                    jobDependency.m_sourceFile.ToString().c_str(),
+                                    jobDependency.m_jobKey.c_str(),
+                                    jobDependency.m_platformIdentifier.c_str());
+
+                                AZ_Warning(AssetProcessor::DebugChannel, false, "%s", warningMessage.c_str());
+
+                                newJob.m_warnings.push_back(AZStd::move(warningMessage));
+
+                                continue;
+                            }
+
                             newJob.m_jobDependencyList.push_back(JobDependencyInternal(jobDependency));
                             ++numJobDependencies;
                         }
@@ -3730,7 +3772,8 @@ namespace AssetProcessor
         QString sourcePath;
         if (entry.m_sourceFileInfo.m_scanFolder)
         {
-            sourcePath = QString("%1/%2").arg(entry.m_sourceFileInfo.m_scanFolder->ScanPath(), entry.m_sourceFileInfo.m_pathRelativeToScanFolder);
+            sourcePath = QString("%1/%2").arg(
+                entry.m_sourceFileInfo.m_scanFolder->ScanPath(), entry.m_sourceFileInfo.m_pathRelativeToScanFolder);
         }
         else
         {
@@ -3738,43 +3781,45 @@ namespace AssetProcessor
         }
 
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer newDependencies;
-        for (const AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>& sourceDependency : entry.m_sourceFileDependencies)
+
+        struct DependencyDeduplication
         {
-            // figure out whether we can resolve the dependency or not:
-            QStringList resolvedDependencyList;
-            QString resolvedDatabaseName;
-            if (!ResolveSourceFileDependencyPath(sourceDependency.second, resolvedDatabaseName,resolvedDependencyList))
+            AZ::Uuid m_builderUuid;
+            AZStd::string m_source;
+            AZStd::string m_dependsOn;
+
+            DependencyDeduplication(AZ::Uuid builderUuid, AZStd::string source, AZStd::string dependsOn)
+                : m_builderUuid(std::move(builderUuid)),
+                  m_source(std::move(source)),
+                  m_dependsOn(std::move(dependsOn)) {}
+
+            bool operator==(const DependencyDeduplication& other) const
             {
-                // ResolveDependencyPath should only fail in a data error, otherwise it always outputs something,
-                // even if that something starts with the placeholder.
-                continue;
+                return m_builderUuid == other.m_builderUuid
+                    && m_source == other.m_source
+                    && m_dependsOn == other.m_dependsOn;
             }
 
-            // Handle multiple resolves (wildcard dependencies)
-            for (const auto& thisEntry : resolvedDependencyList)
+            struct Hasher
             {
-                // add the new dependency:
-                SourceFileDependencyEntry newDependencyEntry(
-                    sourceDependency.first,
-                    entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
-                    thisEntry.toUtf8().constData(),
-                    SourceFileDependencyEntry::DEP_SourceToSource,
-                    false);
-                newDependencies.push_back(AZStd::move(newDependencyEntry));
-            }
+                size_t operator()(const DependencyDeduplication& val) const
+                {
+                    size_t hash = 0;
+                    AZStd::hash_combine(hash, val.m_builderUuid, val.m_source, val.m_dependsOn);
 
-            SourceFileDependencyEntry newDependencyEntry(
-                sourceDependency.first,
-                entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
-                resolvedDatabaseName.toUtf8().constData(),
-                sourceDependency.second.m_sourceDependencyType == AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards ? SourceFileDependencyEntry::DEP_SourceLikeMatch : SourceFileDependencyEntry::DEP_SourceToSource,
-                !sourceDependency.second.m_sourceFileDependencyUUID.IsNull()); // If the UUID is null, then record that this dependency came from a (resolved) path
-            newDependencies.push_back(AZStd::move(newDependencyEntry));
-        }
+                    return hash;
+                }
+            };
+        };
 
-        // gather the job dependencies, too:
+        AZStd::unordered_set<DependencyDeduplication, DependencyDeduplication::Hasher> jobDependenciesDeduplication;
+
+        // gather the job dependencies first, since they're more specific and we'll use the dedupe set to check for unnecessary source dependencies
         for (const JobDetails& jobToCheck : entry.m_jobsToAnalyze)
         {
+            // Since we're dealing with job dependencies here, we're going to be saving these SourceDependencies as JobToJob dependencies
+            constexpr SourceFileDependencyEntry::TypeOfDependency JobDependencyType = SourceFileDependencyEntry::DEP_JobToJob;
+
             const AZ::Uuid& builderId = jobToCheck.m_assetBuilderDesc.m_busId;
             for (const AssetProcessor::JobDependencyInternal& jobDependency : jobToCheck.m_jobDependencyList)
             {
@@ -3782,30 +3827,131 @@ namespace AssetProcessor
                 QStringList resolvedDependencyList;
                 QString resolvedDatabaseName;
 
-                if (!ResolveSourceFileDependencyPath(jobDependency.m_jobDependency.m_sourceFile, resolvedDatabaseName, resolvedDependencyList))
+                if (!ResolveSourceFileDependencyPath(
+                    jobDependency.m_jobDependency.m_sourceFile, resolvedDatabaseName, resolvedDependencyList))
                 {
                     continue;
                 }
 
+                AZStd::string subIds = jobDependency.m_jobDependency.ConcatenateSubIds();
+
                 for (const auto& thisEntry : resolvedDependencyList)
                 {
                     SourceFileDependencyEntry newDependencyEntry(
-                        builderId,
-                        entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
-                        thisEntry.toUtf8().constData(),
-                        SourceFileDependencyEntry::DEP_JobToJob,   // significant line in this code block
-                        false);
+                        builderId, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(), thisEntry.toUtf8().constData(),
+                        JobDependencyType,
+                        false,
+                        subIds.c_str());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
 
+                // Source dependencies don't have any concept of jobs so if we store an entry for every job, we end up with duplicates.
+                // This isn't an issue with the builder, so no error/warning is needed, just check to avoid duplicates.
+                if (auto result = jobDependenciesDeduplication.emplace(
+                    builderId, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
+                    resolvedDatabaseName.toUtf8().constData()); result.second)
+                {
+                    SourceFileDependencyEntry newDependencyEntry(
+                        builderId, entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(), resolvedDatabaseName.toUtf8().constData(),
+                        jobDependency.m_jobDependency.m_sourceFile.m_sourceDependencyType ==
+                        AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                        ? SourceFileDependencyEntry::DEP_SourceLikeMatch
+                        : JobDependencyType,
+                        !entry.m_sourceFileInfo.m_uuid.IsNull(),
+                        subIds.c_str());
+                    newDependencies.push_back(AZStd::move(newDependencyEntry));
+                }
+            }
+        }
+
+        AZStd::unordered_set<AZStd::string> resolvedSourceDependenciesDeduplication;
+
+        for (const AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>& sourceDependency : entry.m_sourceFileDependencies)
+        {
+            // figure out whether we can resolve the dependency or not:
+            QStringList resolvedDependencyList;
+            QString resolvedDatabaseName;
+            if (!ResolveSourceFileDependencyPath(sourceDependency.second, resolvedDatabaseName, resolvedDependencyList))
+            {
+                // ResolveDependencyPath should only fail in a data error, otherwise it always outputs something,
+                // even if that something starts with the placeholder.
+                continue;
+            }
+
+            constexpr const char* DuplicateJobSourceDependencyMessageFormat =
+                "Builder `%s` emitted Source Dependency and Job Dependency on file `%s`.  "
+                "This is unnecessary and the builder should be updated to only emit the Job Dependency.";
+
+            // Handle multiple resolves (wildcard dependencies)
+            for (const auto& thisEntry : resolvedDependencyList)
+            {
+                if (jobDependenciesDeduplication.contains(
+                    DependencyDeduplication{ sourceDependency.first,
+                                             entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
+                                             thisEntry.toUtf8().constData() }))
+                {
+                    for (JobDetails& job : entry.m_jobsToAnalyze)
+                    {
+                        job.m_warnings.push_back(
+                            AZStd::string::format(
+                                DuplicateJobSourceDependencyMessageFormat,
+                                job.m_assetBuilderDesc.m_name.c_str(), thisEntry.toUtf8().constData()));
+                    }
+
+                    continue;
+                }
+
+                // Sometimes multiple source dependencies can resolve to the same file due to the overrides system
+                // Eliminate the duplicates, no warning is needed since the builder can't be expected to handle this
+                if (auto result = resolvedSourceDependenciesDeduplication.insert(thisEntry.toUtf8().constData()); result.second)
+                {
+                    // add the new dependency:
+                    SourceFileDependencyEntry newDependencyEntry(
+                        sourceDependency.first,
+                        entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
+                        thisEntry.toUtf8().constData(),
+                        SourceFileDependencyEntry::DEP_SourceToSource,
+                        false,
+                        "");
+                    newDependencies.push_back(AZStd::move(newDependencyEntry));
+                }
+            }
+
+            if (jobDependenciesDeduplication.contains(
+                DependencyDeduplication{
+                    sourceDependency.first,
+                    entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
+                    resolvedDatabaseName.toUtf8().constData() }))
+            {
+                for (JobDetails& job : entry.m_jobsToAnalyze)
+                {
+                    job.m_warnings.push_back(
+                        AZStd::string::format(
+                            DuplicateJobSourceDependencyMessageFormat,
+                            job.m_assetBuilderDesc.m_name.c_str(),
+                            resolvedDatabaseName.toUtf8().constData()
+                            ));
+                }
+
+                continue;
+            }
+
+            // Sometimes multiple source dependencies can resolve to the same file due to the overrides system
+            // Eliminate the duplicates, no warning is needed since the builder can't be expected to handle this
+            if (auto result = resolvedSourceDependenciesDeduplication.insert(resolvedDatabaseName.toUtf8().constData()); result.second)
+            {
                 SourceFileDependencyEntry newDependencyEntry(
-                    builderId,
+                    sourceDependency.first,
                     entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
                     resolvedDatabaseName.toUtf8().constData(),
-                    jobDependency.m_jobDependency.m_sourceFile.m_sourceDependencyType == AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards ? SourceFileDependencyEntry::DEP_SourceLikeMatch : SourceFileDependencyEntry::DEP_JobToJob,    // significant line in this code block
-                    !entry.m_sourceFileInfo.m_uuid.IsNull());
+                    sourceDependency.second.m_sourceDependencyType ==
+                    AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                    ? SourceFileDependencyEntry::DEP_SourceLikeMatch
+                    : SourceFileDependencyEntry::DEP_SourceToSource,
+                    !sourceDependency.second.m_sourceFileDependencyUUID.IsNull(),
+                    "");
+                // If the UUID is null, then record that this dependency came from a (resolved) path
                 newDependencies.push_back(AZStd::move(newDependencyEntry));
-
             }
         }
 
@@ -3816,12 +3962,12 @@ namespace AssetProcessor
         m_stateData->QueryDependsOnSourceBySourceDependency(
             entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(), // find all rows in the database where this is the source column
             nullptr, // no filter
-            SourceFileDependencyEntry::DEP_Any,    // significant line in this code block
+            SourceFileDependencyEntry::DEP_Any, // significant line in this code block
             [&](SourceFileDependencyEntry& existingEntry)
-        {
-            oldDependencies.insert(existingEntry.m_sourceDependencyID);
-            return true; // return true to keep stepping to additional rows
-        });
+            {
+                oldDependencies.insert(existingEntry.m_sourceDependencyID);
+                return true; // return true to keep stepping to additional rows
+            });
 
         m_stateData->RemoveSourceFileDependencies(oldDependencies);
         oldDependencies.clear();
@@ -4064,8 +4210,12 @@ namespace AssetProcessor
         }
     }
 
-    QStringList AssetProcessorManager::GetSourceFilesWhichDependOnSourceFile(const QString& sourcePath)
+    QStringList AssetProcessorManager::GetSourceFilesWhichDependOnSourceFile(const QString& sourcePath, const ProductInfoList& updatedProducts)
     {
+        // If updatedProducts != empty, we only return dependencies which match a subId in the updatedProducts list (called after process job to start dependencies which do care about specific products)
+        // If updatedProducts == empty, we only return dependencies with EMPTY m_subIds (called before create jobs to start dependencies which don't care about specific products)
+        // Note that dependencies with subIds are always JOB dependencies, pure source dependencies will never have any subIds
+
         // The purpose of this function is to find anything that depends on this given file, so that they can be added to the queue.
         // this is NOT a recursive query, because recursion will happen automatically as those files are in turn
         // analyzed.
@@ -4076,8 +4226,45 @@ namespace AssetProcessor
         QString databasePath;
         QString scanFolder;
 
-        auto callbackFunction = [this, &absoluteSourceFilePathQueue](SourceFileDependencyEntry& entry)
+        auto callbackFunction = [this, &absoluteSourceFilePathQueue, &updatedProducts](SourceFileDependencyEntry& entry)
         {
+            if(updatedProducts.empty() != entry.m_subIds.empty())
+            {
+                return true;
+            }
+
+            if(!updatedProducts.empty())
+            {
+                // Filter the dependencies to those which match the list of updated products
+                bool matched = false;
+
+                AZStd::vector<AZStd::string> dependencyProducts;
+                AZ::StringFunc::Tokenize(entry.m_subIds, dependencyProducts, ",", false, false);
+
+                for(const AZStd::string& dependencySubId : dependencyProducts)
+                {
+                    for(const auto& product : updatedProducts)
+                    {
+                        int subId = 0;
+                        if (AZ::StringFunc::LooksLikeInt(dependencySubId.c_str(), &subId) && static_cast<AZ::u32>(subId) == product.first.m_subID)
+                        {
+                            matched = true;
+                            break;
+                        }
+                    }
+
+                    if(matched)
+                    {
+                        break;
+                    }
+                }
+
+                if (!matched)
+                {
+                    return true;
+                }
+            }
+
             QString relativeDatabaseName = QString::fromUtf8(entry.m_source.c_str());
             QString absolutePath = m_platformConfig->FindFirstMatchingFile(relativeDatabaseName);
             if (!absolutePath.isEmpty())
