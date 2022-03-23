@@ -297,7 +297,15 @@ namespace AzQtComponents
 
         int index = m_currentPathSize - 1;
 
-        htmlString.prepend(generateIconHtml(index) + plainTextPath);
+        // TODO - This should be a setting
+        if (m_currentPathSize == 1)
+        {
+            htmlString.prepend(generateIconHtml(index) + plainTextPath);
+        }
+        else
+        {
+            htmlString.prepend(QString("<a style=\"background-color: #4A90E2;\"> ") + generateIconHtml(index) + plainTextPath + QString(" </a>"));
+        }
         --index;
 
         while (!m_truncatedPaths.isEmpty())
