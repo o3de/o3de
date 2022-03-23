@@ -156,7 +156,7 @@ namespace AssetUtilities
 
     //! Same as StripAssetPlatform, but does not perform any string copies
     //! The return result is only valid for as long as the original input is valid
-    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath);
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath, AZStd::string_view* outputPlatform = nullptr);
 
     //! Converts all slashes to forward slashes, removes double slashes,
     //! replaces all indirections such as '.' or '..' as appropriate.
@@ -275,6 +275,8 @@ namespace AssetUtilities
     struct ProductPath
     {
         ProductPath(AZStd::string scanfolderRelativeProductPath, AZStd::string platformIdentifier);
+
+        static ProductPath FromDatabasePath(AZStd::string_view databasePath);
 
         //! Absolute path for the product in the intermediate asset folder
         AZStd::string GetIntermediatePath() const { return m_intermediatePath.StringAsPosix(); }

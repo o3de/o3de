@@ -19,15 +19,14 @@ namespace AssetProcessor
     class ProductAsset
     {
     public:
-        ProductAsset(const AssetBuilderSDK::JobProduct& jobProduct, AZ::IO::Path absolutePath);
+        ProductAsset(AZ::IO::Path absolutePath);
 
         bool IsValid() const;
         bool ExistsOnDisk(bool printErrorMessage) const;
-        bool DeleteFile() const;
+        bool DeleteFile(bool sendNotification) const;
         AZ::u64 ComputeHash() const;
 
     protected:
-        const AssetBuilderSDK::JobProduct& m_product;
         const AZ::IO::Path m_absolutePath;
     };
 
@@ -36,13 +35,18 @@ namespace AssetProcessor
     {
     public:
         ProductAssetWrapper(const AssetBuilderSDK::JobProduct& jobProduct, const AssetUtilities::ProductPath& productPath);
+        ProductAssetWrapper(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, const AssetUtilities::ProductPath& productPath);
 
         bool IsValid() const;
         bool ExistOnDisk() const;
-        bool DeleteFiles() const;
+        bool DeleteFiles(bool sendNotification) const;
         AZ::u64 ComputeHash() const;
+        bool HasCacheProduct() const;
+        bool HasIntermediateProduct() const;
 
     protected:
         AZStd::fixed_vector<AZStd::unique_ptr<ProductAsset>, 2> m_products;
+        bool m_cacheProduct = false;
+        bool m_intermediateProduct = false;
     };
 }
