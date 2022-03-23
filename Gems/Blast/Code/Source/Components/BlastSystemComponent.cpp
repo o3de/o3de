@@ -22,6 +22,7 @@
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
 #include <Blast/BlastMaterial.h>
+#include <Material/MaterialAsset.h>
 #include <IConsole.h>
 #include <NvBlastExtPxSerialization.h>
 #include <NvBlastExtTkSerialization.h>
@@ -42,6 +43,9 @@ namespace Blast
     void BlastSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         BlastGlobalConfiguration::Reflect(context);
+
+        MaterialConfiguration::Reflect(context);
+        MaterialAsset::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -119,9 +123,15 @@ namespace Blast
         m_assetHandlers.emplace_back(blastAssetHandler);
 
         auto materialAsset = aznew AzFramework::GenericAssetHandler<BlastMaterialLibraryAsset>(
-            "Blast Material", "Blast", "blastmaterial");
+            "Blast Material", "Blast Material", "blastmaterial");
         materialAsset->Register();
         m_assetHandlers.emplace_back(materialAsset);
+
+        // TODO: "blastmaterial2" is temporary until the library asset is removed.
+        auto materialAsset2 = aznew AzFramework::GenericAssetHandler<MaterialAsset>(
+            "Blast Material 2", "Blast Material", "blastmaterial2");
+        materialAsset2->Register();
+        m_assetHandlers.emplace_back(materialAsset2);
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();

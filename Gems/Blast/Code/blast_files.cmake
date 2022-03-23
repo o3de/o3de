@@ -48,4 +48,10 @@ set(FILES
     Source/Common/BlastInterfaces.h
     Source/Common/BlastMaterial.cpp
     Source/Common/Utils.h
+    Source/Material/Material.h
+    Source/Material/Material.cpp
+    Source/Material/MaterialAsset.h
+    Source/Material/MaterialAsset.cpp
+    Source/Material/MaterialConfiguration.h
+    Source/Material/MaterialConfiguration.cpp
 )
