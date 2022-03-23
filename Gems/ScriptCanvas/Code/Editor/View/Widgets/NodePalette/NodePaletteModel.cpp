@@ -35,11 +35,11 @@ AZ_DEFINE_BUDGET(NodePaletteModel);
 
 namespace
 {
-    static constexpr char DefaultGlobalConstantCategory[] = "Behavior Context: Global Constants";
-    static constexpr char DefaultGlobalMethodCategory[] = "Behavior Context: Global Methods";
-    static constexpr char DefaultClassMethodCategory[] = "Behavior Context: Class Methods";
-    static constexpr char DefaultEbusHandlerCategory[] = "Behavior Context: EBus Handlers";
-    static constexpr char DefaultEbusEventCategory[] = "Behavior Context: EBus Events";
+    static constexpr char DefaultGlobalConstantCategory[] = "Global Constants";
+    static constexpr char DefaultGlobalMethodCategory[] = "Global Methods";
+    static constexpr char DefaultClassMethodCategory[] = "Class Methods";
+    static constexpr char DefaultEbusHandlerCategory[] = "Event Handlers";
+    static constexpr char DefaultEbusEventCategory[] = "Events";
 
     // Various Helper Methods
     bool IsDeprecated(const AZ::AttributeArray& attributes)
