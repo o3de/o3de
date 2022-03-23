@@ -66,9 +66,7 @@ namespace GraphCanvas
 
     GeometryComponent::GeometryComponent()
         : m_animating(false)
-    {
-        AZ_TracePrintf("ScriptCanvas", "GemometryComponent created!");
-    }
+    {}
 
     GeometryComponent::~GeometryComponent()
     {

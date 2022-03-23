@@ -487,7 +487,7 @@ namespace ScriptCanvas
             return;
         }
 
-        if ((m_variableReference == variableId) != (isTypeChange == IsVariableTypeChange::Yes))
+        if ((m_variableReference == variableId) && (isTypeChange != IsVariableTypeChange::Yes))
         {
             return;
         }

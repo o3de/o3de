@@ -2459,10 +2459,6 @@ namespace ScriptCanvasEditor
                 QSignalBlocker signalBlocker(m_tabBar);
                 m_tabBar->SelectTab(fileAssetId);
             }
-            else
-            {
-                AZ_Assert(false, "A graph was opened, but a tab was not created for it.");
-            }
         }
 
         if (m_activeGraph.IsGraphValid())
