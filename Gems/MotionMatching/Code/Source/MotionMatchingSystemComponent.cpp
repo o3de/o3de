@@ -46,6 +46,9 @@ namespace EMotionFX::MotionMatching
         "Use Kd-Tree to accelerate the motion matching search for the best next matching frame. "
         "Disabling it will heavily slow down performance and should only be done for debugging purposes");
 
+    AZ_CVAR(bool, mm_multiThreadedInitialization, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Use multi-threading to initialize motion matching.");
+
     void MotionMatchingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
