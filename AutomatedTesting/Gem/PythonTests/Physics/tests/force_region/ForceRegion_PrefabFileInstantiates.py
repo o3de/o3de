@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 # Test case ID : C6090546
-# Test Case Title : Check that a force region slice can be saved and instantiated
+# Test Case Title : Check that a force region prefab can be saved and instantiated
 
 
 
@@ -22,15 +22,15 @@ class Tests():
 # fmt: on
 
 
-def ForceRegion_SliceFileInstantiates():
+def ForceRegion_PrefabFileInstantiates():
 
     """
     Summary:
-    Check that a force region slice can be saved and instantiated
+    Check that a force region prefab can be saved and instantiated
 
     Level Description:
     The SphereRigidBody entity is placed above the ForceRegionBox entity
-    ForceRegionSliceEntity (entity) - Slice Asset which is imported from .slice file of another level which has
+    ForceRegionPrefabEntity (entity) - Prefab Asset which is imported from .prefab file of another level which has
                                       an entity with force region component.
     SphereRigidBody (entity) - Entity with PhysX Rigid body, Mesh and collider components.
     The SphereRigidBody is placed above the ForceRegionEntity.
@@ -134,4 +134,4 @@ def ForceRegion_SliceFileInstantiates():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(ForceRegion_SliceFileInstantiates)
+    Report.start_test(ForceRegion_PrefabFileInstantiates)
