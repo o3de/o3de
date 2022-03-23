@@ -136,8 +136,11 @@ class EditorBatchedTest(EditorSharedTest):
     is_batchable = True
     is_parallelizable = False
 
-
 class Result:
+
+    class EditorTestResultException(Exception):
+        """ Indicates that an unknown result was found during the tests  """
+
     class Base:
         def get_output_str(self):
             # type () -> str
@@ -467,9 +470,11 @@ class EditorTestSuite:
                         def result(self, request, workspace, editor, editor_test_data, launcher_platform):
                             # The runner must have filled the editor_test_data.results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
-                            assert test_spec.__name__ in editor_test_data.results, \
-                                f"No results found for {test_spec.__name__}. Test may not have ran due to the Editor " \
-                                f"shutting down. Check for issues in previous tests."
+                            if test_spec.__name__ not in editor_test_data.results:
+                                raise Result.EditorTestResultException(f"No results found for {test_spec.__name__}. "
+                                                                       f"Test may not have ran due to the Editor "
+                                                                       f"shutting down. Check for issues in previous "
+                                                                       f"tests.")
                             cls._report_result(test_spec.__name__, editor_test_data.results[test_spec.__name__])
                         return result
                     
