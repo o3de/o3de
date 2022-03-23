@@ -518,6 +518,10 @@ class TestAutomation(TestAutomationBase):
     def test_Joints_GlobalFrameConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_GlobalFrameConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
+        from .tests.script_canvas import ScriptCanvas_SpawnEntityWithPhysComponents as test_module
+        self._run_test(request, workspace, editor, test_module)
     
     @revert_physics_config
     def test_Material_DefaultLibraryUpdatedAcrossLevels(self, request, workspace, editor, launcher_platform):
