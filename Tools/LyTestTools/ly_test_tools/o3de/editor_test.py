@@ -331,6 +331,8 @@ class EditorTestSuite:
     _TEST_FAIL_RETCODE = 0xF  # Return code for test failure
 
     class TestData:
+        __test__ = False  # Required to tell PyTest to skip collecting this class even though it has "Test" in the name; avoids PyTest warnings.
+
         def __init__(self):
             self.results = {}  # Dict of str(test_spec.__name__) -> Result
             self.asset_processor = None
