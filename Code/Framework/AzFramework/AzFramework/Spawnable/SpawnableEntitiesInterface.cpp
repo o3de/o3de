@@ -383,6 +383,7 @@ namespace AzFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
                 ->Attribute(AZ::Script::Attributes::Module, "prefabs")
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
                 ->Method("GetId", &EntitySpawnTicket::GetId);
             ;
         }
