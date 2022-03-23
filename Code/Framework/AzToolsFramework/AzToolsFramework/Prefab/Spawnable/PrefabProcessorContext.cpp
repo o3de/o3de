@@ -311,4 +311,15 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                                                                                : AZ::Data::AssetLoadBehavior::NoLoad;
     }
 
+    void PrefabProcessorContext::AddPrefabSpawnablePostProcessEventHandler(PrefabSpawnablePostProcessEvent::Handler& handler)
+    {
+        handler.Connect(m_prefabPostProcessEvent);
+    }
+
+    void PrefabProcessorContext::SendSpawnablePostProcessEvent(const AZStd::string& prefabName, AzFramework::Spawnable& spawnable)
+    {
+        m_prefabPostProcessEvent.Signal(prefabName, spawnable);
+    }
+
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
+

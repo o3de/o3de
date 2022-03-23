@@ -94,6 +94,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             });
 
         SpawnableUtils::SortEntitiesByTransformHierarchy(*spawnable);
+
+        context.SendSpawnablePostProcessEvent(prefab.GetName(), *spawnable);
+
         context.GetProcessedObjects().push_back(AZStd::move(object));
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

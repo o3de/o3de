@@ -34,6 +34,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ::Data::AssetLoadBehavior m_loadBehavior;
     };
 
+    using PrefabSpawnablePostProcessEvent = AZ::Event<const AZStd::string&, AzFramework::Spawnable&>;
+
     class PrefabProcessorContext : private EntityIdPathMapperInterface
     {
     public:
@@ -84,6 +86,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ::IO::PathView GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId) override;
         void SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId, AZ::IO::PathView) override;
 
+        void AddPrefabSpawnablePostProcessEventHandler(PrefabSpawnablePostProcessEvent::Handler& handler);
+        void SendSpawnablePostProcessEvent(const AZStd::string& prefabName, AzFramework::Spawnable& spawnable);
+
     protected:
         using PrefabNames = AZStd::unordered_set<AZStd::string>;
         using PrefabContainer = AZStd::vector<PrefabDocument>;
@@ -98,6 +103,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         SpawnableEntityAliasStore m_entityAliases;
         ProcessedObjectStoreContainer m_products;
         ProductAssetDependencyContainer m_registeredProductAssetDependencies;
+        PrefabSpawnablePostProcessEvent m_prefabPostProcessEvent;
 
         AZ::PlatformTagSet m_platformTags;
         AZ::Uuid m_sourceUuid;
