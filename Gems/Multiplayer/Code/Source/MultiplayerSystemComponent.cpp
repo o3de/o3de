@@ -1232,7 +1232,7 @@ namespace Multiplayer
         {
             if (!multiplayer->StartHosting(sv_port, sv_isDedicated))
             {
-                AZLOG_ERROR("Failed to start listening on any allocated port");
+                AZLOG_ERROR("Failed to start listening on any allocated port. ('sv_port' was set to %d)", aznumeric_cast<int>(sv_port));
             }
         }
         else if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
@@ -1272,6 +1272,8 @@ namespace Multiplayer
         }
         else if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
+            // Unable to perform 'connect' command because Multiplayer system is not yet ready.
+            // Saving the command and its parameters to be executed later once Multiplayer system is ready.
             settingsRegistry->Set(DeferredConnectKey, true);
 
             const AZ::CVarFixedString params(arguments.empty() ? "" : arguments.front());
