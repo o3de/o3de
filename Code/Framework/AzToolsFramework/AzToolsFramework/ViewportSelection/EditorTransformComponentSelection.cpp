@@ -257,6 +257,14 @@ namespace AzToolsFramework
             const AzFramework::ClickDetector::ClickOutcome clickOutcome, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
             return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
+                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
+        }
+
+        static bool ManipulatorDittoExact(
+            const AzFramework::ClickDetector::ClickOutcome clickOutcome, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        {
+            return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
         }
@@ -1918,9 +1926,43 @@ namespace AzToolsFramework
             }
 
             // set manipulator pivot override translation or orientation (update manipulators)
-            if (Input::ManipulatorDitto(clickOutcome, mouseInteraction))
+            const bool manipulatorDitto = Input::ManipulatorDitto(clickOutcome, mouseInteraction);
+            const bool manipulatorDittoExact = Input::ManipulatorDittoExact(clickOutcome, mouseInteraction);
+            if (manipulatorDitto || manipulatorDittoExact)
             {
-                PerformManipulatorDitto(entityIdUnderCursor);
+                PerformManipulatorDitto(
+                    entityIdUnderCursor,
+                    [manipulatorDitto, manipulatorDittoExact, &mouseInteraction](const AZ::EntityId entityId)
+                    {
+                        const auto entityTranslationFn = [entityId]
+                        {
+                            AZ::Vector3 worldTranslation = AZ::Vector3::CreateZero();
+                            AZ::TransformBus::EventResult(worldTranslation, entityId, &AZ::TransformBus::Events::GetWorldTranslation);
+                            return worldTranslation;
+                        };
+
+                        if (manipulatorDitto)
+                        {
+                            return entityTranslationFn();
+                        }
+
+                        if (manipulatorDittoExact)
+                        {
+                            float distance;
+                            const auto& origin = mouseInteraction.m_mouseInteraction.m_mousePick.m_rayOrigin;
+                            const auto& direction = mouseInteraction.m_mouseInteraction.m_mousePick.m_rayDirection;
+                            if (AzToolsFramework::PickEntity(
+                                    entityId, origin, direction, distance,
+                                    mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId))
+                            {
+                                return origin + direction * distance;
+                            }
+                        }
+
+                        // fallback if for any reason PickEntity failed (e.g. may be out of range)
+                        return entityTranslationFn();
+                    });
+
                 return false;
             }
 
@@ -2042,7 +2084,9 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::PerformManipulatorDitto(const AZ::EntityId entityId)
+    template<typename ManipulatorTranslationFn>
+    void EditorTransformComponentSelection::PerformManipulatorDitto(
+        const AZ::EntityId entityId, ManipulatorTranslationFn&& manipulatorTranslationFn)
     {
         if (m_entityIdManipulators.m_manipulators)
         {
@@ -2053,17 +2097,18 @@ namespace AzToolsFramework
 
             if (entityId.IsValid())
             {
-                AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
-
                 // set orientation/translation to match picked entity
                 switch (m_mode)
                 {
                 case Mode::Rotation:
-                    OverrideManipulatorOrientation(QuaternionFromTransformNoScaling(worldFromLocal));
+                    {
+                        AZ::Quaternion worldOrientation = AZ::Quaternion::CreateIdentity();
+                        AZ::TransformBus::EventResult(worldOrientation, entityId, &AZ::TransformBus::Events::GetWorldRotationQuaternion);
+                        OverrideManipulatorOrientation(worldOrientation.GetNormalized());
+                    }
                     break;
                 case Mode::Translation:
-                    OverrideManipulatorTranslation(worldFromLocal.GetTranslation());
+                    OverrideManipulatorTranslation(manipulatorTranslationFn(entityId));
                     break;
                 case Mode::Scale:
                     // do nothing

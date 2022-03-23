@@ -301,7 +301,7 @@ namespace AzToolsFramework
         // ReadOnlyEntityPublicNotificationBus overrides ...
         void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
 
-        // Helpers to safely interact with the TransformBus (requests).
+        //! Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform);
@@ -311,7 +311,10 @@ namespace AzToolsFramework
 
         bool PerformGroupDitto(AZ::EntityId entityId);
         bool PerformIndividualDitto(AZ::EntityId entityId);
-        void PerformManipulatorDitto(AZ::EntityId entityId);
+        //! ManipulatorTranslationFn returns the position to use when 'dittoing' the manipulator.
+        //! @note: signature - AZ::Vector3(AZ::EntityId).
+        template<typename ManipulatorTranslationFn>
+        void PerformManipulatorDitto(AZ::EntityId entityId, ManipulatorTranslationFn&& manipulatorTranslationFn);
         void PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
