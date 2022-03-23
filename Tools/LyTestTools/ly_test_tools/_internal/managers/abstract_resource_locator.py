@@ -13,7 +13,6 @@ import warnings
 import json
 import logging
 from abc import ABCMeta, abstractmethod
-from json import JSONDecodeError
 from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
@@ -66,7 +65,7 @@ def _find_project_json(engine_root, project):
             try:
                 manifest_file_contents = manifest_file.read()
                 json_data = json.loads(manifest_file_contents)
-            except JSONDecodeError as jderror:
+            except json.JSONDecodeError as jderror:
                 logger.error(f"Attempted to open the contents of {manifest_json}, found invalid JSON: {manifest_file_contents}")
                 raise jderror
 
