@@ -3,6 +3,9 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+
 #include <Meshlets/MeshletsBus.h>
 
 namespace Meshlets
@@ -42,6 +45,12 @@ namespace Meshlets
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
+
+        //! Loads the pass templates mapping file 
+        void LoadPassTemplateMappings();
+
+        //! Used for loading the pass templates of the hair gem.
+        AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
     };
 
 } // namespace Meshlets

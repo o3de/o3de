@@ -1,0 +1,114 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/RHI/CommandList.h>
+
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/FrameGraphAttachmentInterface.h>
+#include <Atom/RHI/FrameGraphInterface.h>
+#include <Atom/RHI/PipelineState.h>
+
+#include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+
+#include <MultiDispatchComputePass.h>
+
+namespace AZ
+{
+    namespace Meshlets
+    {
+        Data::Instance<RPI::Shader> MultiDispatchComputePass::GetShader()
+        {
+            return m_shader;
+        }
+
+        RPI::Ptr<MultiDispatchComputePass> MultiDispatchComputePass::Create(const RPI::PassDescriptor& descriptor)
+        {
+            RPI::Ptr<MultiDispatchComputePass> pass = aznew MultiDispatchComputePass(descriptor);
+            return pass;
+        }
+
+        MultiDispatchComputePass::MultiDispatchComputePass(const RPI::PassDescriptor& descriptor)
+            : RPI::ComputePass(descriptor)
+        {
+        }
+
+        void MultiDispatchComputePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
+        {
+            // DON'T call the ComputePass:CompileResources as it will try to compile perDraw srg
+            // under the assumption that this is a single dispatch compute.  Here we have dispatch
+            // per hair object and each has its own perDraw srg.
+            if (m_shaderResourceGroup != nullptr)
+            {
+                BindPassSrg(context, m_shaderResourceGroup);
+                m_shaderResourceGroup->Compile();
+            }
+        }
+
+        void MultiDispatchComputePass::AddDispatchItems(AZStd::list<RHI::DispatchItem*>& dispatchItems)
+        {
+            for (auto& dispatchItem : dispatchItems)
+            {
+                if (dispatchItem)
+                {
+                    m_dispatchItems.insert(dispatchItem);
+                }
+            }
+        }
+
+        void MultiDispatchComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        {
+            RHI::CommandList* commandList = context.GetCommandList();
+
+            // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
+            // and sends them to the command list ahead of the dispatch.
+            // This includes the PerView, PerScene and PerPass srgs (what about per draw?)
+            SetSrgsForDispatch(commandList);
+
+            for (const RHI::DispatchItem* dispatchItem : m_dispatchItems)
+            {
+                commandList->Submit(*dispatchItem);
+            }
+
+            // Clear the dispatch items. They will need to be re-populated next frame
+            m_dispatchItems.clear();
+        }
+
+        // [Adi] - should be implemented to support hot reloading of the Compute shader
+        void MultiDispatchComputePass::BuildShaderAndRenderData()
+        {
+        }
+
+        // Before reloading shaders, we want to wait for existing dispatches to finish
+        // so shader reloading does not interfere in any way. Because AP reloads are async, there might
+        // be a case where dispatch resources are destructed and will most certainly cause a GPU crash.
+        // If we flag the need for rebuild, the build will be made at the start of the next frame - at
+        // this stage the dispatch items should have been cleared - now we can load the shader and data.
+        void MultiDispatchComputePass::OnShaderReinitialized([[maybe_unused]] const AZ::RPI::Shader& shader)
+        {
+            BuildShaderAndRenderData();
+        }
+
+        void MultiDispatchComputePass::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset)
+        {
+            BuildShaderAndRenderData();
+        }
+
+        void MultiDispatchComputePass::OnShaderVariantReinitialized([[maybe_unused]] const AZ::RPI::ShaderVariant& shaderVariant)
+        {
+            BuildShaderAndRenderData();
+        }
+    } // namespace Meshlets
+}   // namespace AZ

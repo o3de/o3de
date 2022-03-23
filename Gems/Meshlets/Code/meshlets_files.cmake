@@ -5,6 +5,15 @@ set(FILES
     Source/MeshletsSystemComponent.cpp
     Source/MeshletsSystemComponent.h
     
+    ../Assets/Passes/MeshletsPassTemplates.azasset
+    ../Assets/Passes/MeshletsPassRequest.azasset
+    ../Assets/Passes/MeshletsCompute.pass
+    
+    ../Assets/Shaders/MeshletsCompute.shader
+    ../Assets/Shaders/MeshletsCompute.azsl
+    
+    Source/Meshlets/MultiDispatchComputePass.h
+    Source/Meshlets/MultiDispatchComputePass.cpp
     Source/Meshlets/MeshletsData.h
     Source/Meshlets/MeshletsDispatchItem.h
     Source/Meshlets/MeshletsDispatchItem.cpp

@@ -12,29 +12,35 @@
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
-#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <SharedBuffer.h>
+
+#include <MultiDispatchComputePass.h>
 
 namespace Render
 {
     class MeshFeatureProcessorInterface;
 }
 
+namespace RPI
+{
+    class RenderPipeline;
+}
+
 namespace AZ
 {
-    class MeshletsModel;
+    class MeshletsRenderObject;
 
     namespace Meshlets
     {
-        class MeshletsAsset;
+        class MeshletsRenderObject;
 
-        using ModelsMapByModel = AZStd::unordered_map<MeshletsModel*, Render::MeshFeatureProcessorInterface::MeshHandle>;
-        using ModelsMapByName = AZStd::unordered_map<AZStd::string, MeshletsModel*>;
 
         class MeshletsFeatureProcessor final
             : public RPI::FeatureProcessor
             , private AZ::TickBus::Handler
         {
+            Name MeshletsComputePassName;
+
         public:
             AZ_RTTI(MeshletsFeatureProcessor, "{1D93DE27-2DC4-4E9B-90B3-DCDCB941C920}", RPI::FeatureProcessor);
 
@@ -43,12 +49,16 @@ namespace AZ
             MeshletsFeatureProcessor();
             virtual ~MeshletsFeatureProcessor();
 
+            void Init(RPI::RenderPipeline* pipeline);
+
             // FeatureProcessor overrides ...
             void Activate() override;
             void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
             void Render(const FeatureProcessor::RenderPacket& packet) override;
 //            void OnRenderEnd() override;
+
+            bool InitComputePass(const Name& passName);
 
             // AZ::TickBus::Handler overrides
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -59,8 +69,8 @@ namespace AZ
             void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
 
-            void AddMeshletsModel(MeshletsModel* meshletsModel);
-            bool RemoveMeshletsModel(MeshletsModel* meshletsModel);
+            void AddMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject);
+            void RemoveMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject);
 
         protected:
             /// Implement equivalent
@@ -68,16 +78,25 @@ namespace AZ
 
             void CreateResources();
             void CleanResources();
-
+            void CleanPasses();
 
         private:
             AZ_DISABLE_COPY_MOVE(MeshletsFeatureProcessor);
 
-            Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
-
             AZStd::unique_ptr<Meshlets::SharedBuffer> m_sharedBuffer;  // used for all meshlets geometry buffers.
 
-            uint32_t m_memoryUsage = 0;
+            Data::Instance<MultiDispatchComputePass> m_computePass;
+
+            AZStd::list<MeshletsRenderObject*> m_meshletsRenderObjects;
+
+            //! The render pipeline is acquired and set when a pipeline is created or changed
+            //! and accordingly the passes and the feature processor are associated.
+            //! Notice that scene can contain several pipelines all using the same feature
+            //! processor.  On the pass side, it will acquire the scene and request the FP, 
+            //! but on the FP side, it will only associate to the latest pass hence such a case
+            //! might still be a problem.  If needed, it can be resolved using a map for each
+            //! pass name per pipeline.
+            RPI::RenderPipeline* m_renderPipeline = nullptr;
         };
     } // namespace Meshlets
 } // namespace AZ

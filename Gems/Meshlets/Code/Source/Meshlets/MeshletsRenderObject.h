@@ -9,10 +9,7 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/ImagePool.h>
-
-#include <Atom/RPI.Public/Image/StreamingImage.h>
-#include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
@@ -32,6 +29,24 @@ namespace AZ
 
     namespace Meshlets
     {
+        struct MeshRenderData
+        {
+            //! Render pass data
+            AZStd::vector<Data::Instance<RHI::BufferView>> m_renderBuffersViews;
+            AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_renderBuffersAllocators;
+            AZStd::vector<SrgBufferDescriptor> m_renderBuffersDescriptors;
+            Data::Instance<RPI::ShaderResourceGroup> m_renderSrg;
+            RPI::MeshDrawPacket m_drawPacket;
+
+            //! Compute render data
+            AZStd::vector<Data::Instance<RHI::BufferView>> m_computeBuffersViews;
+            AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_computeBuffersAllocators;
+            AZStd::vector<SrgBufferDescriptor> m_computeBuffersDescriptors;
+            Data::Instance<RPI::ShaderResourceGroup> m_computeSrg;
+            Data::Instance<MeshletsDispatchItem> m_dispatchItem;
+        };
+        using ModelLodDataArray = AZStd::vector<MeshRenderData>;    // MeshRenderData per mesh in the Lod
+
         //! Currently assuming single model without Lods so that the handling of the
         //! meshlet creation and handling of the array is easier. If several meshes or Lods
         //! exist, they will be created as separate models and the last model's instance
@@ -55,9 +70,16 @@ namespace AZ
                 [[maybe_unused]] const char* moduleName
             );
 
-            Data::Instance<RPI::Model> GetMeshletsModel() { return m_meshletsModel; }
-
             AZStd::string& GetName() { return m_name;  }
+
+            ModelLodDataArray& GetMeshletsRenderData(uint32_t lodIdx = 0)
+            {
+                AZ_Assert(m_modelRenderData.size(), "Meshlets - model does not contain any render data");
+                return m_modelRenderData[AZStd::max(lodIdx, (uint32_t)m_modelRenderData.size() - 1)];
+            }
+
+            bool UpdateShader(Data::Instance<RPI::Shader> updatedShader);
+
 
         protected:
             bool ProcessBuffersData(float* position, uint32_t vtxNum);
@@ -78,19 +100,19 @@ namespace AZ
 
             uint32_t CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset);
 
-            uint32_t CreateMeshletsRenderObject(const RPI::ModelLodAsset::Mesh& meshAsset);
+            uint32_t CreateMeshletsRenderObject(const RPI::ModelLodAsset::Mesh& meshAsset, MeshRenderData &meshRenderData);
 
             uint32_t GetMehsletsCount() { m_meshletsCount;  }
 
-            void PrepareRenderSrgDescriptors(uint32_t vertexCount, uint32_t indicesCount);
+            void PrepareRenderSrgDescriptors(MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indicesCount);
             //! Should be called by CreateAndBindRenderBuffers
-            bool CreateAndBindRenderSrg();
-            bool CreateAndBindRenderBuffers();
+            bool CreateAndBindRenderSrg(MeshRenderData &meshRenderData);
+            bool CreateAndBindRenderBuffers(MeshRenderData &meshRenderData);
 
-            void PrepareComputeSrgDescriptors(uint32_t meshletsCount, uint32_t indicesCount);
+            void PrepareComputeSrgDescriptors(MeshRenderData &meshRenderData, uint32_t meshletsCount, uint32_t indicesCount);
             //! Should be called by CreateAndBindComputeBuffers.
-            bool CreateAndBindComputeSrg();
-            bool CreateAndBindComputeBuffers();
+            bool CreateAndBindComputeSrg(MeshRenderData &meshRenderData);
+            bool CreateAndBindComputeBuffers(MeshRenderData &meshRenderData);
 
         private:
             AZStd::string m_name;
@@ -101,41 +123,35 @@ namespace AZ
 
             static AZStd::vector<SrgBufferDescriptor> m_srgBufferDescriptors;
 
-            Data::Asset<RPI::ModelAsset> m_sourceModelAsset;
-
-            Data::Instance<RPI::Model> m_meshletsModel;
-
             // [Adi] - meshlets data should be a vector of meshlets data per lod per mesh
             MeshletsData m_meshletsData;    // the actual mesh meshlets' data
 
             uint32_t m_meshletsCount = 0;
 
+            /*
             using ModelLodDispatchMap = AZStd::unordered_map<RPI::ModelLodAsset::Mesh*, Data::Instance<MeshletsDispatchItem>>;
             using ModelLodDrawPacketMap = AZStd::unordered_map<RPI::ModelLodAsset::Mesh*, RPI::MeshDrawPacket>;
-
-            //! Lod entries dispatch items map - each Lod entry represents a map of dispatches used
-            //! for Compute per the different meshes existing within this Lod
-            AZStd::unordered_map<Data::Instance<RPI::ModelLod>, ModelLodDispatchMap> m_dispatchItems;
 
             //! Lod entries draw packets map - each Lod entry represents a map of draw packets for
             //! geometry render per the different meshes existing within this Lod
             AZStd::unordered_map<Data::Instance<RPI::ModelLod>, ModelLodDispatchMap> m_drawPackets;
 
-            //! Render pass data
+            //! Lod entries dispatch items map - each Lod entry represents a map of dispatches used
+            //! for Compute per the different meshes existing within this Lod
+            AZStd::unordered_map<Data::Instance<RPI::ModelLod>, ModelLodDispatchMap> m_dispatchItems;
+            */
+
+            //------------------------------------------------------------------
+            // [Adi]
+            // Remarks:
+            // 1. Moving to indirect compute, all the buffer views will need to either
+            // become offsets passed as part of each mesh dispatch, or bindless resources.
+            // Having the first approach does not require bindless mechanism in place.  
+            //------------------------------------------------------------------
             Data::Instance<RPI::Shader> m_renderShader;
-            AZStd::vector<Data::Instance<RHI::BufferView>> m_renderBuffersViews;
-            AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_renderBuffersAllocators;
-            AZStd::vector<SrgBufferDescriptor> m_renderBuffersDescriptors;
-            Data::Instance<RPI::ShaderResourceGroup> m_renderSrg;
-
-            //! Compute render data
             Data::Instance<RPI::Shader> m_computeShader;
-            AZStd::vector<Data::Instance<RHI::BufferView>> m_computeBuffersViews;
-            AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_computeBuffersAllocators;
-            AZStd::vector<SrgBufferDescriptor> m_computeBuffersDescriptors;
-            Data::Instance<RPI::ShaderResourceGroup> m_computeSrg;
 
-            MeshletsDispatchItem m_dispatchItem;
+            AZStd::vector<ModelLodDataArray> m_modelRenderData;         // Render data array of Lods.
         };
 
     } // namespace Meshlets

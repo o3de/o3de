@@ -1,0 +1,16 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        // [Adi] - temporary until we have more passes.
+        // This should be replaced with a parent pass that will contain all meshlets passes
+        "Name": "MeshletsComputePass",
+        "TemplateName": "MeshletsComputePassTemplate",
+        "Enabled": true,
+        // Currently no connections from the pipeline are required - this will change shortly
+        // to have depth and lighting brought in.
+        "Connections": [
+        ]
+    }
+}

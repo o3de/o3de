@@ -75,8 +75,24 @@ namespace Meshlets
     {
     }
 
+    void MeshletsSystemComponent::LoadPassTemplateMappings()
+    {
+        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        AZ_Assert(passSystem, "Meshlets Gem - cannot get the pass system.");
+
+        const char* passTemplatesFile = "Passes/MeshletsPassTemplates.azasset";
+        passSystem->LoadPassTemplateMappings(passTemplatesFile);
+    }
+
     void MeshletsSystemComponent::Activate()
     {
+        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        AZ_Assert(passSystem, "Cannot get the pass system.");
+
+        // Setup handler for load pass templates mappings
+        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+        passSystem->ConnectEvent(m_loadTemplatesHandler);
+
         // Feature processor
         AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<AZ::Meshlets::MeshletsFeatureProcessor>();
 

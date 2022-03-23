@@ -174,16 +174,17 @@ namespace AZ
             return m_aabb.IsValid() ? true : false;
         }
 
-        void MeshletsRenderObject::PrepareComputeSrgDescriptors(uint32_t meshletsCount, uint32_t indicesCount)
+        void MeshletsRenderObject::PrepareComputeSrgDescriptors(
+            MeshRenderData &meshRenderData, uint32_t meshletsCount, uint32_t indicesCount)
         {
-            if (m_computeBuffersDescriptors.size())
+            if (meshRenderData.m_computeBuffersDescriptors.size())
             {
                 return;
             }
 
-            m_computeBuffersDescriptors.resize(uint8_t(ComputeStreamsSemantics::NumBufferStreams));
+            meshRenderData.m_computeBuffersDescriptors.resize(uint8_t(ComputeStreamsSemantics::NumBufferStreams));
 
-            m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::Indices)] =
+            meshRenderData.m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::Indices)] =
                 SrgBufferDescriptor(
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite,
@@ -191,7 +192,7 @@ namespace AZ
                     Name{ "INDICES" }, Name{ "m_Indices" }, 3, 0
                 );
 
-            m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsData)] =
+            meshRenderData.m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsData)] =
                 SrgBufferDescriptor(
                     RHI::Format::R32G32B32A32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
@@ -199,7 +200,7 @@ namespace AZ
                     Name{ "MESHLETS" }, Name{ "m_MeshletsDescriptors" }, 0, 0
                 );
 
-            m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MehsletsTriangles)] =
+            meshRenderData.m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MehsletsTriangles)] =
                 SrgBufferDescriptor(
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
@@ -207,7 +208,7 @@ namespace AZ
                     Name{ "MESHLETS_TRIANGLES" }, Name{ "m_MeshletsTriangles" }, 1, 0
                 );
 
-            m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsIndicesIndirection)] =
+            meshRenderData.m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsIndicesIndirection)] =
                 SrgBufferDescriptor(
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
@@ -216,16 +217,17 @@ namespace AZ
                 );
         }
 
-        void MeshletsRenderObject::PrepareRenderSrgDescriptors(uint32_t vertexCount, uint32_t indicesCount)
+        void MeshletsRenderObject::PrepareRenderSrgDescriptors(
+            MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indicesCount)
         {
-            if (m_renderBuffersDescriptors.size())
+            if (meshRenderData.m_renderBuffersDescriptors.size())
             {
                 return;
             }
 
-            m_renderBuffersDescriptors.resize(uint8_t(RenderStreamsSemantics::NumBufferStreams));
+            meshRenderData.m_renderBuffersDescriptors.resize(uint8_t(RenderStreamsSemantics::NumBufferStreams));
 
-            m_renderBuffersDescriptors[uint8_t(ComputeStreamsSemantics::Indices)] =
+            meshRenderData.m_renderBuffersDescriptors[uint8_t(ComputeStreamsSemantics::Indices)] =
                 SrgBufferDescriptor(
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
@@ -233,7 +235,7 @@ namespace AZ
                     Name{ "INDICES" }, Name{ "m_Indices" }, 3, 0
                 );
 
-            m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Positions)] =
+            meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Positions)] =
                 SrgBufferDescriptor(
                     RHI::Format::R32G32B32_FLOAT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
@@ -241,7 +243,7 @@ namespace AZ
                     Name{ "POSITION" }, Name{ "m_Positions" }, 0, 0
                 );
 
-            m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Normals)] =
+            meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Normals)] =
                 SrgBufferDescriptor(
                     RHI::Format::R32G32B32_FLOAT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
@@ -249,7 +251,7 @@ namespace AZ
                     Name{ "NORMAL" }, Name{ "m_Normals" }, 1, 0
                 );
 
-            m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::UVs)] =
+            meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::UVs)] =
                 SrgBufferDescriptor(
 //                    RPI::CommonBufferPoolType::StaticInputAssembly | RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32_FLOAT,
@@ -258,7 +260,7 @@ namespace AZ
                     Name{ "UV" }, Name{ "m_TextureCoords" }, 2, 0
                 );
 
-            m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Tangents)] =
+            meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Tangents)] =
                 SrgBufferDescriptor(
 //                    RPI::CommonBufferPoolType::StaticInputAssembly | RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32B32A32_FLOAT,
@@ -267,7 +269,7 @@ namespace AZ
                     Name{ "TANGENT" }, Name{ "m_Tangents" }, 3, 0
                 );
 
-            m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::BiTangents)] =
+            meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::BiTangents)] =
                 SrgBufferDescriptor(
 //                    RPI::CommonBufferPoolType::StaticInputAssembly | RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32B32_FLOAT,
@@ -288,10 +290,10 @@ namespace AZ
         // This allows us to have a single sync point (barrier) between passes only for this
         //  buffer, while indirectly it is used as multiple buffers used by multiple objects in
         //  this pass. 
-        bool MeshletsRenderObject::CreateAndBindComputeSrg()
+        bool MeshletsRenderObject::CreateAndBindComputeSrg(MeshRenderData &meshRenderData)
         {
-            m_computeSrg = RPI::ShaderResourceGroup::Create(m_computeShader->GetAsset(), AZ::Name{ "ComputeSrg" });
-            if (!m_computeSrg)
+            meshRenderData.m_computeSrg = RPI::ShaderResourceGroup::Create(m_computeShader->GetAsset(), AZ::Name{ "ComputeSrg" });
+            if (!meshRenderData.m_computeSrg)
             {
                 AZ_Error("Meshlets", false, "Failed to create the Compute Srg");
                 return false;
@@ -299,11 +301,11 @@ namespace AZ
 
             for (uint8_t stream = 0; stream < uint8_t(ComputeStreamsSemantics::NumBufferStreams); ++stream)
             {
-                SrgBufferDescriptor& streamDesc = m_computeBuffersDescriptors[stream];
-                RHI::ShaderInputBufferIndex indexHandle = m_computeSrg->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
+                SrgBufferDescriptor& streamDesc = meshRenderData.m_computeBuffersDescriptors[stream];
+                RHI::ShaderInputBufferIndex indexHandle = meshRenderData.m_computeSrg->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
                 streamDesc.m_resourceShaderIndex = indexHandle.GetIndex();
 
-                if (!m_computeSrg->SetBufferView(indexHandle, m_computeBuffersViews[stream].get()))
+                if (!meshRenderData.m_computeSrg->SetBufferView(indexHandle, meshRenderData.m_computeBuffersViews[stream].get()))
                 {
                     AZ_Error("Meshlets", false, "Failed to bind compute buffer view for %s", streamDesc.m_bufferName.GetCStr());
                     return false;
@@ -312,10 +314,10 @@ namespace AZ
             return true;
         }
 
-        bool MeshletsRenderObject::CreateAndBindRenderSrg()
+        bool MeshletsRenderObject::CreateAndBindRenderSrg(MeshRenderData &meshRenderData)
         {
-            m_renderSrg = RPI::ShaderResourceGroup::Create(m_renderShader->GetAsset(), AZ::Name{ "RenderSrg" });
-            if (!m_renderSrg)
+            meshRenderData.m_renderSrg = RPI::ShaderResourceGroup::Create(m_renderShader->GetAsset(), AZ::Name{ "RenderSrg" });
+            if (!meshRenderData.m_renderSrg)
             {
                 AZ_Error("Meshlets", false, "Failed to create the render Srg");
                 return false;
@@ -323,11 +325,11 @@ namespace AZ
 
             for (uint8_t stream = 0; stream < uint8_t(RenderStreamsSemantics::NumBufferStreams); ++stream)
             {
-                SrgBufferDescriptor& streamDesc = m_renderBuffersDescriptors[stream];
-                RHI::ShaderInputBufferIndex indexHandle = m_renderSrg->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
+                SrgBufferDescriptor& streamDesc = meshRenderData.m_renderBuffersDescriptors[stream];
+                RHI::ShaderInputBufferIndex indexHandle = meshRenderData.m_renderSrg->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
                 streamDesc.m_resourceShaderIndex = indexHandle.GetIndex();
 
-                if (!m_renderSrg->SetBufferView(indexHandle, m_renderBuffersViews[stream].get()))
+                if (!meshRenderData.m_renderSrg->SetBufferView(indexHandle, meshRenderData.m_renderBuffersViews[stream].get()))
                 {
                     AZ_Error("Meshlets", false, "Failed to bind render buffer view for %s", streamDesc.m_bufferName.GetCStr());
                     return false;
@@ -336,20 +338,20 @@ namespace AZ
             return true;
         }
 
-        bool MeshletsRenderObject::CreateAndBindRenderBuffers()
+        bool MeshletsRenderObject::CreateAndBindRenderBuffers(MeshRenderData &meshRenderData)
         {
             // Next we get the shared buffer from which we create the view
             RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
             bool success = true;
-            uint32_t streamsNum = (uint32_t) m_renderBuffersDescriptors.size();
-            m_renderBuffersAllocators.resize(streamsNum);
-            m_renderBuffersViews.resize(streamsNum);
+            uint32_t streamsNum = (uint32_t) meshRenderData.m_renderBuffersDescriptors.size();
+            meshRenderData.m_renderBuffersAllocators.resize(streamsNum);
+            meshRenderData.m_renderBuffersViews.resize(streamsNum);
             for (uint32_t stream = 0; stream < streamsNum ; ++stream)
             {
-                SrgBufferDescriptor& streamDesc = m_renderBuffersDescriptors[stream];
+                SrgBufferDescriptor& streamDesc = meshRenderData.m_renderBuffersDescriptors[stream];
                 size_t requiredSize = (uint64_t)streamDesc.m_elementCount * streamDesc.m_elementSize;
-                m_renderBuffersAllocators[stream] = Meshlets::SharedBufferInterface::Get()->Allocate(requiredSize);
-                if (!m_renderBuffersAllocators[stream])
+                meshRenderData.m_renderBuffersAllocators[stream] = Meshlets::SharedBufferInterface::Get()->Allocate(requiredSize);
+                if (!meshRenderData.m_renderBuffersAllocators[stream])
                 {
                     AZ_Error("Meshlets", false, "Shared buffer out of memory for [%s]", streamDesc.m_bufferName.GetCStr());
                     success = false;
@@ -357,7 +359,7 @@ namespace AZ
 
                 // Create the buffer view into the shared buffer - it will be used as a separate buffer
                 // by the PerObject Srg.
-                streamDesc.m_viewOffsetInBytes = uint32_t(m_renderBuffersAllocators[stream]->GetVirtualAddress().m_ptr);
+                streamDesc.m_viewOffsetInBytes = uint32_t(meshRenderData.m_renderBuffersAllocators[stream]->GetVirtualAddress().m_ptr);
                 AZ_Assert(streamDesc.m_viewOffsetInBytes % streamDesc.m_elementSize == 0, "Offset of buffer within The SharedBuffer is NOT aligned.");
 
                 // And here we create resource view from the shared buffer 
@@ -381,7 +383,7 @@ namespace AZ
                 Data::Instance<RPI::Buffer> sharedBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer();
                 for (uint32_t stream = 0; stream < streamsNum && success ; ++stream)
                 {   // upload the original streams data - indices copy is not really required
-                    SrgBufferDescriptor& streamDesc = m_renderBuffersDescriptors[stream];
+                    SrgBufferDescriptor& streamDesc = meshRenderData.m_renderBuffersDescriptors[stream];
                     size_t requiredSize = (uint64_t)streamDesc.m_elementCount * streamDesc.m_elementSize;
                     bool upload = sharedBuffer->UpdateData( streamDesc.m_bufferData, requiredSize, streamDesc.m_viewOffsetInBytes);
                     AZ_Error("Meshlets", upload != success, "Data could not be uploaded to Render buffer [%s]", streamDesc.m_bufferName.GetCStr());
@@ -391,35 +393,35 @@ namespace AZ
 
             if (success)
             {
-                return CreateAndBindRenderSrg();
+                return CreateAndBindRenderSrg(meshRenderData);
             }
             else
             {
                 for (uint32_t stream = 0; stream < streamsNum ; ++stream)
                 {   // remove previous allocations for this mesh
-                    m_renderBuffersAllocators[stream] = nullptr;
+                    meshRenderData.m_renderBuffersAllocators[stream] = nullptr;
                 }
                 return false;
             }
         }
 
-        bool MeshletsRenderObject::CreateAndBindComputeBuffers()
+        bool MeshletsRenderObject::CreateAndBindComputeBuffers(MeshRenderData &meshRenderData)
         {
             // Next we get the shared buffer from which we create the view
             RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
             bool success = true;
 
-            uint32_t streamsNum = (uint32_t)m_computeBuffersDescriptors.size();
-            m_computeBuffersAllocators.resize(streamsNum);
-            m_computeBuffersViews.resize(streamsNum);
+            uint32_t streamsNum = (uint32_t)meshRenderData.m_computeBuffersDescriptors.size();
+            meshRenderData.m_computeBuffersAllocators.resize(streamsNum);
+            meshRenderData.m_computeBuffersViews.resize(streamsNum);
             for (uint32_t stream = 0; stream < streamsNum ; ++stream)
             {
-                SrgBufferDescriptor& streamDesc = m_computeBuffersDescriptors[stream];
+                SrgBufferDescriptor& streamDesc = meshRenderData.m_computeBuffersDescriptors[stream];
                 size_t requiredSize = (uint64_t)streamDesc.m_elementCount * streamDesc.m_elementSize;
-                m_computeBuffersAllocators[stream] = (stream == uint8_t(ComputeStreamsSemantics::Indices)) ?
-                    m_renderBuffersAllocators[uint8_t(RenderStreamsSemantics::Indices)] :     // copy existing allocator
+                meshRenderData.m_computeBuffersAllocators[stream] = (stream == uint8_t(ComputeStreamsSemantics::Indices)) ?
+                    meshRenderData.m_renderBuffersAllocators[uint8_t(RenderStreamsSemantics::Indices)] :     // copy existing allocator
                     Meshlets::SharedBufferInterface::Get()->Allocate(requiredSize);
-                if (!m_computeBuffersAllocators[stream])
+                if (!meshRenderData.m_computeBuffersAllocators[stream])
                 {
                     AZ_Error("Meshlets", false, "Shared buffer out of memory for [%s]", streamDesc.m_bufferName.GetCStr());
                     success = false;
@@ -427,7 +429,7 @@ namespace AZ
 
                 // Create the buffer view into the shared buffer - it will be used as a separate buffer
                 // by the PerObject Srg.
-                streamDesc.m_viewOffsetInBytes = uint32_t(m_renderBuffersAllocators[stream]->GetVirtualAddress().m_ptr);
+                streamDesc.m_viewOffsetInBytes = uint32_t(meshRenderData.m_renderBuffersAllocators[stream]->GetVirtualAddress().m_ptr);
                 AZ_Assert(streamDesc.m_viewOffsetInBytes % streamDesc.m_elementSize == 0, "Offset of buffer within The SharedBuffer is NOT aligned.");
 
                 // And here we create resource view from the shared buffer 
@@ -451,7 +453,7 @@ namespace AZ
                 Data::Instance<RPI::Buffer> sharedBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer();
                 for (uint32_t stream = 0; stream < streamsNum && success; ++stream)
                 {   // upload the original streams data - indices copy is not really required
-                    SrgBufferDescriptor& streamDesc = m_computeBuffersDescriptors[stream];
+                    SrgBufferDescriptor& streamDesc = meshRenderData.m_computeBuffersDescriptors[stream];
                     size_t requiredSize = (uint64_t)streamDesc.m_elementCount * streamDesc.m_elementSize;
                     bool upload = sharedBuffer->UpdateData(streamDesc.m_bufferData, requiredSize, streamDesc.m_viewOffsetInBytes);
                     AZ_Error("Meshlets", success != upload, "Data could not be uploaded to Compute buffer [%s]", streamDesc.m_bufferName.GetCStr());
@@ -461,13 +463,13 @@ namespace AZ
 
             if (success)
             {
-                return CreateAndBindComputeSrg();
+                return CreateAndBindComputeSrg(meshRenderData);
             }
             else
             {
                 for (uint32_t stream = 0; stream < streamsNum; ++stream)
                 {   // remove previous allocations for this mesh
-                    m_computeBuffersAllocators[stream] = nullptr;
+                    meshRenderData.m_computeBuffersAllocators[stream] = nullptr;
                 }
                 return false;
             }
@@ -478,7 +480,8 @@ namespace AZ
         // Moving the creator outside calling method and have the new model contain several
         // Lods did not work as it needs to be local to the block!
         uint32_t MeshletsRenderObject::CreateMeshletsRenderObject(
-            const RPI::ModelLodAsset::Mesh& meshAsset)
+            const RPI::ModelLodAsset::Mesh& meshAsset,
+            MeshRenderData &meshRenderData)
         {
             RHI::BufferViewDescriptor bufferDescriptor;
             RHI::Format streamFormat;
@@ -486,10 +489,10 @@ namespace AZ
             uint32_t vertexCount = meshAsset.GetVertexCount();
 
             // Prepare the rendering descriptor required next
-            PrepareRenderSrgDescriptors(vertexCount, indexCount);
+            PrepareRenderSrgDescriptors(meshRenderData, vertexCount, indexCount);
 
             // Take care of the indices since it's stored differently than the rest of the streams
-            SrgBufferDescriptor* descriptor = &m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)];
+            SrgBufferDescriptor* descriptor = &meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)];
             const RPI::BufferAssetView* bufferAssetView = &meshAsset.GetIndexBufferAssetView();
             descriptor->m_bufferData = RetrieveBufferData(bufferAssetView, streamFormat, 0, indexCount, bufferDescriptor);
             AZ_Error("Meshlets", streamFormat == descriptor->m_elementFormat, "Error - index buffer with different format [%d]", streamFormat);
@@ -502,7 +505,7 @@ namespace AZ
                     continue;
                 }
 
-                descriptor = &m_renderBuffersDescriptors[stream];
+                descriptor = &meshRenderData.m_renderBuffersDescriptors[stream];
                 bufferAssetView = meshAsset.GetSemanticBufferAssetView(descriptor->m_bufferName);
                 descriptor->m_bufferData = RetrieveBufferData(bufferAssetView, streamFormat, vertexCount, vertexCount, bufferDescriptor);
 
@@ -518,17 +521,17 @@ namespace AZ
             }
 
             // AABB generation - can also be used for vertices scaling / creating transform.
-            ProcessBuffersData((float*)m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Positions)].m_bufferData, vertexCount);
+            ProcessBuffersData((float*)meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Positions)].m_bufferData, vertexCount);
 
             // Now we start generating the meshlets data.
             uint32_t meshletsCount = CreateMeshlets(
-                (float*)m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Positions)].m_bufferData,
-                (float*)m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Normals)].m_bufferData,
-                (float*)m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::UVs)].m_bufferData,
+                (float*)meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Positions)].m_bufferData,
+                (float*)meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Normals)].m_bufferData,
+                (float*)meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::UVs)].m_bufferData,
                 vertexCount,
-                (uint16_t*) m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)].m_bufferData,
+                (uint16_t*) meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)].m_bufferData,
                 indexCount,
-                m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)].m_elementFormat
+                meshRenderData.m_renderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)].m_elementFormat
                 );
 
             if (!meshletsCount)
@@ -537,11 +540,11 @@ namespace AZ
                 return 0;
             }
 
-            if (!CreateAndBindRenderBuffers())
+            if (!CreateAndBindRenderBuffers(meshRenderData))
                 return 0;
 
-            PrepareComputeSrgDescriptors(meshletsCount, indexCount);
-            if (!CreateAndBindComputeBuffers())
+            PrepareComputeSrgDescriptors(meshRenderData, meshletsCount, indexCount);
+            if (!CreateAndBindComputeBuffers(meshRenderData))
                 return 0;
 
             return meshletsCount;
@@ -583,14 +586,22 @@ namespace AZ
         uint32_t MeshletsRenderObject::CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset)
         {
             uint32_t meshletsCount = 0;
-            m_sourceModelAsset = sourceModelAsset;
 
+            m_modelRenderData.resize(sourceModelAsset->GetLodAssets().size());
             for (const Data::Asset<RPI::ModelLodAsset>& lodAsset : sourceModelAsset->GetLodAssets())
             {
+                ModelLodDataArray lodRenderData;
+                uint32_t meshCount = uint32_t(lodAsset->GetMeshes().size());
+                lodRenderData.resize(meshCount);
+
 //                for (const RPI::ModelLodAsset::Mesh& meshAsset : lodAsset->GetMeshes())
-                for (uint32_t meshIdx=0 ; meshIdx<lodAsset->GetMeshes().size() ; ++meshIdx)
+                for (uint32_t meshIdx=0 ; meshIdx<meshCount ; ++meshIdx)
                 {
-                    meshletsCount += CreateMeshletsRenderObject(lodAsset->GetMeshes()[meshIdx]);
+                    MeshRenderData meshRenderData;
+                    meshletsCount += CreateMeshletsRenderObject(lodAsset->GetMeshes()[meshIdx], meshRenderData);
+
+                    // check for validity! better option is to allocate and pass by ptr.
+                    lodRenderData[meshIdx] = meshRenderData;    
                     if (meshIdx == 0)
                         break;   
                 }

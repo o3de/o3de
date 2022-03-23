@@ -1,0 +1,87 @@
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+
+/*
+
+sizeof(uint32_t), indicesCount,
+Name{ "INDICES" }, Name{ "m_Indices" }, 3, 0
+);
+
+m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsData)] =
+SrgBufferDescriptor(
+//                    RPI::CommonBufferPoolType::ReadOnly,
+RHI::Format::R32G32B32A32_UINT,
+RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+sizeof(uint32_t) * 4, meshletsCount,
+Name{ "MESHLETS" }, Name{ "m_MeshletsDescriptors" }, 0, 0
+);
+
+m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MehsletsTriangles)] =
+SrgBufferDescriptor(
+//                    RPI::CommonBufferPoolType::ReadOnly,
+RHI::Format::R32_UINT,
+RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+sizeof(uint32_t), (uint32_t)m_meshletsData.meshlet_triangles.size() >> 2,
+Name{ "MESHLETS_TRIANGLES" }, Name{ "m_MeshletsTriangles" }, 1, 0
+);
+
+m_computeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsIndicesIndirection)] =
+SrgBufferDescriptor(
+//                    RPI::CommonBufferPoolType::ReadOnly,
+RHI::Format::R32_UINT,
+RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+sizeof(uint32_t), (uint32_t)m_meshletsData.meshlet_vertices.size(),
+Name{ "MESHLETS_LOOKUP" }, Name{ "m_MeshletsIndicesLookup" }, 2, 0
+*/
+//------------------------------------------------------------------------------
+ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
+{
+    // For the next array review the structuee 'MeshletDescriptor'.
+    // The array holds the offsets and amount of vertices and triangles per 
+    // meshlet.
+    Buffer<float4>  m_MeshletsDescriptors;
+
+    // The following arrya consistes of sub arrays of triangles - one per meshlet.
+    // Each uint (32 bits) represents 3 x 8 bits indices into the meshlet indices 
+    // lookup array (the top byte is unused).
+    Buffer<uint>    m_MeshletsTriangles;    
+
+    // Array of sub-tables, each one represents lookup table for a meshlet that 
+    // maps between a meshlet local vertex index and its global index in the mesh.
+    Buffer<uint>    m_MeshletsIndicesLookup;    
+
+    // The final index buffer.
+    // Meshlets Compute threads will write the calculated indices per meshlet and 
+    // store it in the array if the meshlets are not culled.
+    RWBuffer<uint>  m_Indices;
+};
+
+//------------------------------------------------------------------------------
+[numthreads(THREAD_GROUP_SIZE, 1, 1)]
+void ComputeMeshletsIndexBuffer(
+    uint GIndex : SV_GroupIndex,
+    uint3 GId : SV_GroupID,
+    uint3 DTid : SV_DispatchThreadID)
+{
+    /*
+    uint32_t encodedTri = m_meshletsData.EncodedTriangles[triOffset];
+    unsigned char vtxIndirectIndex[3] = {
+        (encodedTri >> 16) & 0xff,
+        (encodedTri >> 8) & 0xff,
+        (encodedTri >> 0) & 0xff
+    }; 
+
+    for (uint32_t vtx = 0; vtx < 3; ++vtx)
+    {
+        unsigned int vtxIndex = m_meshletsData.IndicesIndirection[meshlet.vertex_offset + vtxIndirectIndex[vtx]];
+
+    unsigned char vtxIndirectIndex = m_meshletsData.meshlet_triangles[triOffset + vtx];
+    unsigned int vtxIndex = m_meshletsData.meshlet_vertices[meshlet.vertex_offset + vtxIndirectIndex];
+
+    mesh.vertices[vtxIndex].tx = tx;
+    mesh.vertices[vtxIndex].ty = ty;
+    GroupMemoryBarrierWithGroupSync();
+    */
+}

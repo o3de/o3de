@@ -88,6 +88,7 @@ namespace AZ::Meshlets
     void SharedBuffer::Init(AZStd::string bufferName)
     {
         m_bufferName = bufferName;
+        AZStd::string sufferNameInShader = "m_" + bufferName;
         // m_sizeInBytes = 256u * (1024u * 1024u);
         //
         // [To Do] replace this with max size request for allocation that can be given by the calling function
@@ -109,7 +110,7 @@ namespace AZ::Meshlets
             RHI::Format::Unknown,
             RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite, 
             sizeof(uint32_t), uint32_t(m_sizeInBytes / sizeof(uint32_t)),
-            Name{ m_bufferName }, Name{ "m_GlobalSharedBuffer" }, 0, 0
+            Name{ bufferName }, Name{ sufferNameInShader }, 0, 0
         );
 
         // Use the following method to calculate alignment given a list of descriptors
