@@ -76,6 +76,5 @@ namespace GradientSignal
     private:
         ReferenceGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
-        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

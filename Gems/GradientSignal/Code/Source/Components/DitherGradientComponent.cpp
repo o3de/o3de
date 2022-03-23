@@ -150,11 +150,10 @@ namespace GradientSignal
 
     void DitherGradientComponent::Deactivate()
     {
-        // Prevent deactivation from happening while any queries are running.
-        AZStd::unique_lock lock(m_queryMutex);
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
+        GradientRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
-        GradientRequestBus::Handler::BusDisconnect();
         DitherGradientRequestBus::Handler::BusDisconnect();
         SectorDataNotificationBus::Handler::BusDisconnect();
     }
@@ -303,8 +302,6 @@ namespace GradientSignal
 
     bool DitherGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
     {
-        AZStd::shared_lock lock(m_queryMutex);
-
         return m_configuration.m_gradientSampler.IsEntityInHierarchy(entityId);
     }
 

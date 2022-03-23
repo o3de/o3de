@@ -150,10 +150,9 @@ namespace GradientSignal
 
     void PerlinGradientComponent::Deactivate()
     {
-        // Prevent deactivation from happening while any queries are running.
-        AZStd::unique_lock lock(m_queryMutex);
-
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
         PerlinGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
 

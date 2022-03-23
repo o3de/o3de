@@ -116,10 +116,9 @@ namespace GradientSignal
 
     void RandomGradientComponent::Deactivate()
     {
-        // Prevent deactivation from happening while any queries are running.
-        AZStd::unique_lock lock(m_queryMutex);
-
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
         RandomGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
     }
@@ -146,7 +145,7 @@ namespace GradientSignal
 
     void RandomGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
     {
-        AZStd::shared_lock lock(m_queryMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_gradientTransform = newTransform;
     }
 

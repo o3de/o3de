@@ -290,10 +290,9 @@ namespace FastNoiseGem
 
     void FastNoiseGradientComponent::Deactivate()
     {
-        // Prevent deactivation from happening while any queries are running.
-        AZStd::unique_lock lock(m_queryMutex);
-
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientSignal::GradientRequestBus::Handler::BusDisconnect();
+
         FastNoiseGradientRequestBus::Handler::BusDisconnect();
         GradientSignal::GradientTransformNotificationBus::Handler::BusDisconnect();
     }

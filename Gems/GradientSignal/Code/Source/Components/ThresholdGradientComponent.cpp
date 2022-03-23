@@ -113,11 +113,10 @@ namespace GradientSignal
 
     void ThresholdGradientComponent::Deactivate()
     {
-        // Prevent deactivation from happening while any queries are running.
-        AZStd::unique_lock lock(m_queryMutex);
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
+        GradientRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
-        GradientRequestBus::Handler::BusDisconnect();
         ThresholdGradientRequestBus::Handler::BusDisconnect();
     }
 

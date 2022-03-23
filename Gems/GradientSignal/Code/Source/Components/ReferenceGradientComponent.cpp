@@ -106,11 +106,10 @@ namespace GradientSignal
 
     void ReferenceGradientComponent::Deactivate()
     {
-        // Prevent deactivation from happening while any queries are running.
-        AZStd::unique_lock lock(m_queryMutex);
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
+        GradientRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
-        GradientRequestBus::Handler::BusDisconnect();
         ReferenceGradientRequestBus::Handler::BusDisconnect();
     }
 
@@ -136,7 +135,6 @@ namespace GradientSignal
 
     float ReferenceGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZStd::shared_lock lock(m_queryMutex);
         return m_configuration.m_gradientSampler.GetValue(sampleParams);
     }
 
@@ -148,7 +146,6 @@ namespace GradientSignal
             return;
         }
 
-        AZStd::shared_lock lock(m_queryMutex);
         m_configuration.m_gradientSampler.GetValues(positions, outValues);
     }
 

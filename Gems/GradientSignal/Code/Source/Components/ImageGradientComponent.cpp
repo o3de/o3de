@@ -499,11 +499,10 @@ namespace GradientSignal
 
     void ImageGradientComponent::Deactivate()
     {
-        // Prevent deactivation from happening while any queries are running.
-        AZStd::unique_lock lock(m_queryMutex);
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
+        GradientRequestBus::Handler::BusDisconnect();
 
         AZ::Data::AssetBus::Handler::BusDisconnect();
-        GradientRequestBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
 
