@@ -1230,7 +1230,7 @@ namespace Multiplayer
     {
         if (IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get())
         {
-            if (multiplayer->StartHosting(sv_port, sv_isDedicated))
+            if (!multiplayer->StartHosting(sv_port, sv_isDedicated))
             {
                 AZLOG_ERROR("Failed to start listening on any allocated port");
             }
@@ -1289,7 +1289,7 @@ namespace Multiplayer
     void MultiplayerSystemComponent::ExecuteDeferredCommands()
     {
         // If there were connect or host command invocations before the creation of the Multiplayer system
-        // then those invocations were queued. Executed them now.
+        // then those invocations were queued. Execute them now.
         if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
             if (bool delayedHost = false;
