@@ -319,8 +319,6 @@ class EditorTestSuite:
     use_null_renderer = True
     # Maximum time for a single editor to stay open on a shared test
     timeout_editor_shared_test = 300
-    # Flag to determine whether to use new prefab system or use deprecated slice system for this test suite
-    enable_prefab_system = True
 
     # Function to calculate number of editors to run in parallel, this can be overridden by the user
     @staticmethod
@@ -767,6 +765,10 @@ class EditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        test_cmdline_args += [
+            "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+            f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+
         test_spec_uses_null_renderer = getattr(test_spec, "use_null_renderer", None)
         if test_spec_uses_null_renderer or (test_spec_uses_null_renderer is None and self.use_null_renderer):
             test_cmdline_args += ["-rhi=null"]
@@ -774,12 +776,6 @@ class EditorTestSuite:
             test_cmdline_args += ["--attach-debugger"]
         if test_spec.wait_for_debugger:
             test_cmdline_args += ["--wait-for-debugger"]
-        if self.enable_prefab_system:
-            test_cmdline_args += [
-                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-        else:
-            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
@@ -851,18 +847,16 @@ class EditorTestSuite:
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        test_cmdline_args += [
+            "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+            f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+
         if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
         if any([t.attach_debugger for t in test_spec_list]):
             test_cmdline_args += ["--attach-debugger"]
         if any([t.wait_for_debugger for t in test_spec_list]):
             test_cmdline_args += ["--wait-for-debugger"]
-        if self.enable_prefab_system:
-            test_cmdline_args += [
-                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-        else:
-            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
