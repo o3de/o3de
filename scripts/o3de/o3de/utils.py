@@ -168,6 +168,8 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
     Download file
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
+    :param force_overwrite: force overwrites the local file if one exists
+    :param object_name: name of the object being downloaded
     :param download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
     if download_path.is_file():
@@ -192,9 +194,12 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
                 def print_progress(downloaded, total_size):
                     end_ch = '\r'
-                    if (downloaded == total_size):
-                        end_ch = '\n'
-                    print(f'Downloading {object_name} - {downloaded} of {total_size} bytes - {(downloaded/total_size)*100:.2f}%', end=end_ch)
+                    if total_size == 0 or downloaded > total_size:
+                        print(f'Downloading {object_name} - {downloaded} bytes')
+                    else:
+                        if downloaded == total_size:
+                            end_ch = '\n'
+                        print(f'Downloading {object_name} - {downloaded} of {total_size} bytes - {(downloaded/total_size)*100:.2f}%', end=end_ch)
 
                 if download_progress_callback == None:
                     download_progress_callback = print_progress
@@ -228,6 +233,9 @@ def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwri
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file
+    :param force_overwrite: force overwrites the local file if one exists
+    :param object_name: name of the object being downloaded
+    :param download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
     download_file_result = download_file(parsed_uri, download_zip_path, force_overwrite, object_name, download_progress_callback)
     if download_file_result != 0:
