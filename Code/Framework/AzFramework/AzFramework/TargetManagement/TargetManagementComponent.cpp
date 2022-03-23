@@ -80,13 +80,8 @@ namespace AzFramework
         AZ_CLASS_ALLOCATOR(TargetManagementSettings, AZ::OSAllocator, 0);
         AZ_RTTI(TargetManagementSettings, "{AB1B14BB-C0E3-484A-B498-98F44A58C161}", AZ::UserSettings);
 
-        TargetManagementSettings()
-        {
-        }
-
-        ~TargetManagementSettings() override
-        {
-        }
+        TargetManagementSettings() = default;
+        ~TargetManagementSettings() override = default;
 
         AZStd::string m_neighborhoodName; // this is the neighborhood session (hub) we want to connect to
         AZStd::string m_persistentName; // this string is used as the persistent name for this target
@@ -407,22 +402,27 @@ namespace AzFramework
 
         const uint32_t totalBufferSize = packet.GetSize();
 
+        // Messages can be larger than the size of a packet so reserve a buffer for the total message size
         if (m_tmpInboundBufferPos == 0)
         {
             m_tmpInboundBuffer.reserve(totalBufferSize);
         }
 
+        // Read as much data as the packet can include and append it to the buffer
         const uint32_t readSize = AZStd::min(totalBufferSize - m_tmpInboundBufferPos, Neighborhood::NeighborBufferSize);
         memcpy(m_tmpInboundBuffer.begin() + m_tmpInboundBufferPos, packet.GetMessageBuffer().GetBuffer(), readSize);
         m_tmpInboundBufferPos += readSize;
         if (m_tmpInboundBufferPos == totalBufferSize)
         {
+            // Deserialize the complete buffer
             AZ::IO::MemoryStream msgBuffer(m_tmpInboundBuffer.data(), totalBufferSize, totalBufferSize);
             TmMsg* msg = nullptr;
             AZ::ObjectStream::ClassReadyCB readyCB(AZStd::bind(&TargetManagementComponent::OnMsgParsed, this, &msg, AZStd::placeholders::_1,
                 AZStd::placeholders::_2, AZStd::placeholders::_3));
             AZ::ObjectStream::LoadBlocking(&msgBuffer, *m_serializeContext, readyCB,
                 AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+
+            // Append to the inbox for handling
             if (msg)
             {
                 if (msg->GetCustomBlobSize() > 0)
@@ -454,6 +454,7 @@ namespace AzFramework
 
     void TargetManagementComponent::OnConnect([[maybe_unused]] AzNetworking::IConnection* connection)
     {
+        // Invoked when a target connection is established, handshake logic is handled via TargetConnect message
         ;
     }
 
@@ -697,43 +698,45 @@ namespace AzFramework
 
     void TargetManagementComponent::TickThread()
     {
+        // Executed in a side thread due to mutex lock and potentially large message sizes (MB scale)
         while (!m_stopRequested)
         {
             AZ_PROFILE_SCOPE(AzFramework, "TargetManager::Tick");
 
-            // Send
+            // Send outbound data
             size_t maxMsgsToSend = m_outbox.size();
-            const TargetInfo ti = GetMyTargetInfo();
-            for (size_t iSend = 0; iSend < maxMsgsToSend; ++iSend)
+            if (maxMsgsToSend > 0)
             {
-                // Send outbound data
-
-                // Lock outbox to prevent a read/write race
-                m_outboxMutex.lock();
-
-                uint8_t* outBuffer = (uint8_t*)m_outbox.front().second.data();
-                const size_t totalSize = m_outbox.front().second.size();
-                size_t outSize = m_outbox.front().second.size();
-                while (outSize > 0)
+                const TargetInfo ti = GetMyTargetInfo();
+                for (size_t iSend = 0; iSend < maxMsgsToSend; ++iSend)
                 {
-                    size_t bufferSize = AZStd::min(outSize, aznumeric_cast<size_t>(Neighborhood::NeighborBufferSize));
-                    AzFrameworkPackets::TargetMessage tmPacket;
-                    tmPacket.SetPersistentId(ti.GetPersistentId());
-                    tmPacket.SetSize(aznumeric_cast<uint32_t>(totalSize));
-                    Neighborhood::NeighborMessageBuffer encodingBuffer;
-                    encodingBuffer.CopyValues(outBuffer + (totalSize - outSize), bufferSize);
-                    tmPacket.SetMessageBuffer(encodingBuffer);
-                    outSize -= bufferSize;
+                    // Lock outbox to prevent a read/write race
+                    m_outboxMutex.lock();
 
-                    m_networkInterface->SendReliablePacket(
-                        static_cast<AzNetworking::ConnectionId>(m_settings->m_lastTarget.GetNetworkId()), tmPacket);          
+                    auto& outBoxElem = m_outbox.front().second;
+                    uint8_t* outBuffer = reinterpret_cast<uint8_t*>(outBoxElem.data());
+                    const size_t totalSize = outBoxElem.size();
+                    size_t outSize = outBoxElem.size();
+                    while (outSize > 0)
+                    {
+                        // Fragment the message into NeighborMessageBuffer packet sized chunks and send
+                        size_t bufferSize = AZStd::min(outSize, aznumeric_cast<size_t>(Neighborhood::NeighborBufferSize));
+                        AzFrameworkPackets::TargetMessage tmPacket;
+                        tmPacket.SetPersistentId(ti.GetPersistentId());
+                        tmPacket.SetSize(aznumeric_cast<uint32_t>(totalSize));
+                        Neighborhood::NeighborMessageBuffer encodingBuffer;
+                        encodingBuffer.CopyValues(outBuffer + (totalSize - outSize), bufferSize);
+                        tmPacket.SetMessageBuffer(encodingBuffer);
+                        outSize -= bufferSize;
+
+                        m_networkInterface->SendReliablePacket(
+                            static_cast<AzNetworking::ConnectionId>(m_settings->m_lastTarget.GetNetworkId()), tmPacket);
+                    }
+
+                    m_outbox.pop_front();
+                    m_outboxMutex.unlock();
                 }
-
-                m_outbox.pop_front();
-                m_outboxMutex.unlock();
             }
-
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
         }
     }
 

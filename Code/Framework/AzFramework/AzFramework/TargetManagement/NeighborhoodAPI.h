@@ -45,13 +45,18 @@ namespace Neighborhood {
     public:
         virtual ~NeighborhoodEvents() {}
 
-        // used to advertise a node and its capabilities
+        //! Used to advertise a node and its capabilities
+        //! @param node Packet containing join information from a Target node
+        //! @param networkId Network ID of the joining Target
         virtual void OnNodeJoined([[maybe_unused]] const AzFrameworkPackets::TargetConnect& node, [[maybe_unused]] const AZ::u32 networkId) {}
-        // used to notify that a node is no longer available
+        
+        //! Used to notify that a node is no longer available
+        //! @param networkId Network ID of the Target node leaving the host
         virtual void OnNodeLeft([[maybe_unused]] const AZ::u32 networkId) {}
     };
     typedef AZ::EBus<NeighborhoodEvents> NeighborhoodBus;
 
+    // Slightly below AzNetworking's TCP max packet size for maximum message space with room for packet headers
     static constexpr uint32_t NeighborBufferSize = 16000;
     using NeighborMessageBuffer = AzNetworking::ByteBuffer<NeighborBufferSize>;
 }   // namespace Neighborhood
