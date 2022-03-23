@@ -54,7 +54,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 131; // added image file dependencies
+            materialBuilderDescriptor.m_version = 132; // Job Dependency subIds
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -110,7 +110,8 @@ namespace AZ
             const char* jobKey,
             AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
             AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies,
-            bool forceOrderOnce = false)
+            bool forceOrderOnce = false,
+            AZStd::optional<AZ::u32> productSubId = AZStd::nullopt)
         {
             bool dependencyFileFound = false;
             
@@ -135,6 +136,11 @@ namespace AZ
                         jobDependency.m_jobKey = jobKey;
                         jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
                         jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                        
+                        if(productSubId)
+                        {
+                            jobDependency.m_productSubIds.push_back(productSubId.value());
+                        }
                         
                         // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data won't be used.
                         // However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the material type asset so the builder can get it's AssetId.
@@ -242,7 +248,9 @@ namespace AZ
                             shader.m_shaderFilePath,
                             "Shader Asset",
                             outputJobDescriptor.m_jobDependencyList,
-                            response.m_sourceFileDependencyList);
+                            response.m_sourceFileDependencyList,
+                            false,
+                            0);
                     }
 
                     auto addFunctorDependencies = [&outputJobDescriptor, &request, &response](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
@@ -319,7 +327,9 @@ namespace AZ
                         parentMaterialPath,
                         JobKey,
                         outputJobDescriptor.m_jobDependencyList,
-                        response.m_sourceFileDependencyList);
+                        response.m_sourceFileDependencyList,
+                        false,
+                        0);
 
                     // Even though above we were able to get away without deserializing the material json, we do need to deserialize here in order
                     // to easily read the property values. Note that with the latest .material file format, it actually wouldn't be too hard to
@@ -451,7 +461,7 @@ namespace AZ
                     AZ_TracePrintf("MaterialBuilder", AZStd::string::format("Producing %s...", fileName.c_str()).c_str());
 
                     // Load the material type file and create the MaterialTypeAsset object
-                    materialTypeAsset = CreateMaterialTypeAsset(request.m_sourceFile, document);
+                    materialTypeAsset = CreateMaterialTypeAsset(fullSourcePath, document);
 
                     if (!materialTypeAsset)
                     {
