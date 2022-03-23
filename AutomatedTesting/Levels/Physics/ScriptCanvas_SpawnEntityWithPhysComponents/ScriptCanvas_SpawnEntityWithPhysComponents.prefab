@@ -60,6 +60,19 @@
             "Id": "Entity_[1159459292531]",
             "Name": "Terrain",
             "Components": {
+                "Component_[11285817845582785960]": {
+                    "$type": "EditorTerrainPhysicsColliderComponent",
+                    "Id": 11285817845582785960,
+                    "Configuration": {
+                        "DefaultMaterial": {
+                            "MaterialIds": [
+                                {
+                                    "MaterialId": "{303C5A49-22F2-45A8-B24C-9F2C3CA13402}"
+                                }
+                            ]
+                        }
+                    }
+                },
                 "Component_[11701138785793981042]": {
                     "$type": "SelectionComponent",
                     "Id": 11701138785793981042
@@ -84,7 +97,7 @@
                             "Configuration": [
                                 512.0,
                                 512.0,
-                                1.0
+                                3.0
                             ]
                         }
                     }
@@ -114,23 +127,16 @@
                     "$type": "EditorInspectorComponent",
                     "Id": 16919232076966545697
                 },
-                "Component_[5182430712893438093]": {
-                    "$type": "EditorMaterialComponent",
-                    "Id": 5182430712893438093
-                },
-                "Component_[5675108321710651991]": {
-                    "$type": "AZ::Render::EditorMeshComponent",
-                    "Id": 5675108321710651991,
-                    "Controller": {
+                "Component_[2202641793179400233]": {
+                    "$type": "EditorAxisAlignedBoxShapeComponent",
+                    "Id": 2202641793179400233,
+                    "AxisAlignedBoxShape": {
                         "Configuration": {
-                            "ModelAsset": {
-                                "assetId": {
-                                    "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
-                                    "subId": 277889906
-                                },
-                                "assetHint": "objects/groudplane/groundplane_512x512m.azmodel"
-                            },
-                            "LodType": 1
+                            "Dimensions": [
+                                512.0,
+                                512.0,
+                                3.0
+                            ]
                         }
                     }
                 },
@@ -172,7 +178,7 @@
                         "Translate": [
                             504.0,
                             514.0,
-                            115.0
+                            125.0
                         ]
                     }
                 },

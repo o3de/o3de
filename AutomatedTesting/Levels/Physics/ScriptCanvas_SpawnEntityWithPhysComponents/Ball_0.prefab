@@ -75,6 +75,20 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 14516664121989909349
                 },
+                "Component_[1468307552800800397]": {
+                    "$type": "EditorColliderComponent",
+                    "Id": 1468307552800800397,
+                    "ColliderConfiguration": {
+                        "MaterialSelection": {
+                            "MaterialIds": [
+                                {}
+                            ]
+                        }
+                    },
+                    "ShapeConfiguration": {
+                        "ShapeType": 0
+                    }
+                },
                 "Component_[15077823605749753784]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 15077823605749753784
@@ -89,7 +103,7 @@
                             0.0,
                             -10.0
                         ],
-                        "Gravity Enabled": false,
+                        "CCD Enabled": true,
                         "Compute Mass": false,
                         "Inertia tensor": {
                             "roll": 0.0,
@@ -106,20 +120,6 @@
                 "Component_[17684915130650225825]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 17684915130650225825
-                },
-                "Component_[2794039544762226313]": {
-                    "$type": "EditorColliderComponent",
-                    "Id": 2794039544762226313,
-                    "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
-                            ]
-                        }
-                    },
-                    "ShapeConfiguration": {
-                        "ShapeType": 0
-                    }
                 },
                 "Component_[6163103491807544914]": {
                     "$type": "EditorLockComponent",
