@@ -6,3 +6,4 @@
 #
 #
 
+set(LY_LINK_OPTIONS INTERFACE "$<$<CONFIG:debug>:/INCREMENTAL>")
