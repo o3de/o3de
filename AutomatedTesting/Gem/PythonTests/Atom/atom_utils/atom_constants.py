@@ -80,7 +80,7 @@ DISPLAY_MAPPER_PRESET = {
     '4000Nits': 3,
 }
 # Control Type options for the Exposure Control component.
-CONTROL_TYPE = {
+EXPOSURE_CONTROL_TYPE = {
     'manual': 0,
     'eye_adaptation': 1
 }

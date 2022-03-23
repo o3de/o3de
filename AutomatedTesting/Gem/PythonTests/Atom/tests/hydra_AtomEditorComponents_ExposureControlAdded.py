@@ -196,7 +196,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import (AtomComponentProperties, CONTROL_TYPE)
+    from Atom.atom_utils.atom_constants import AtomComponentProperties, EXPOSURE_CONTROL_TYPE
     from azlmbr.math import Math_IsClose
 
     with Tracer() as error_tracer:
@@ -219,7 +219,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
         # 3. Remove the Exposure Control component.
         exposure_control_component.remove()
         general.idle_wait_frames(1)
-        Report.critical_result(Tests.exposure_control_component_removal,
+        Report.result(Tests.exposure_control_component_removal,
                                not exposure_control_entity.has_component(AtomComponentProperties.exposure_control()))
 
         # 4. Undo Exposure Control component removal.
@@ -242,14 +242,15 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
         # 8. Toggle the Enable parameter.
         # Set the Enable parameter to False.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('Enable'), False)
+            AtomComponentProperties.exposure_control('Enable'), value=False)
         Report.result(
             Tests.toggle_enable_parameter_off,
             exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('Enable')) is False)
+
         # Set the Enable parameter to True.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('Enable'), True)
+            AtomComponentProperties.exposure_control('Enable'), value=True)
         Report.result(
             Tests.toggle_enable_parameter_on,
             exposure_control_component.get_component_property_value(
@@ -258,14 +259,15 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
         # 9. Toggle the Enable Override parameter.
         # Set the Enable Override parameter to False.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('Enabled Override'), False)
+            AtomComponentProperties.exposure_control('Enabled Override'), value=False)
         Report.result(
             Tests.toggle_enabled_override_off,
             exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('Enabled Override')) is False)
+
         # Set the Enable Override parameter to True.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('Enabled Override'), True)
+            AtomComponentProperties.exposure_control('Enabled Override'), value=True)
         Report.result(
             Tests.toggle_enabled_override_on,
             exposure_control_component.get_component_property_value(
@@ -274,14 +276,15 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
         # 10. Toggle the ExposureControlType Override parameter.
         # Set the ExposureControlType Override parameter to False.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('ExposureControlType Override'), False)
+            AtomComponentProperties.exposure_control('ExposureControlType Override'), value=False)
         Report.result(
             Tests.toggle_control_type_override_off,
             exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('ExposureControlType Override')) is False)
+
         # Set the ExposureControlType Override parameter to True.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('ExposureControlType Override'), True)
+            AtomComponentProperties.exposure_control('ExposureControlType Override'), value=True)
         Report.result(
             Tests.toggle_control_type_override_on,
             exposure_control_component.get_component_property_value(
@@ -295,6 +298,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.manual_compensation_override_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('ManualCompensation Override')), 0.0))
+
         # Set ManualCompensationOverride to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('ManualCompensation Override'), value=1.0)
@@ -311,6 +315,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.minimum_exposure_override_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('EyeAdaptationExposureMin Override')), 0.0))
+
         # Set EyeAdaptationExposureMin to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('EyeAdaptationExposureMin Override'), value=1.0)
@@ -327,6 +332,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.maximum_exposure_override_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('EyeAdaptationExposureMax Override')), 0.0))
+
         # Set EyeAdaptationExposureMax Override to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('EyeAdaptationExposureMax Override'), value=1.0)
@@ -343,6 +349,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.speed_up_override_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('EyeAdaptationSpeedUp Override')), 0.0))
+
         # Set EyeAdaptationSpeedUp Override to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('EyeAdaptationSpeedUp Override'), value=1.0)
@@ -359,6 +366,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.speed_down_override_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('EyeAdaptationSpeedDown Override')), 0.0))
+
         # Set EyeAdaptationSpeedDown Override to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('EyeAdaptationSpeedDown Override'), value=1.0)
@@ -370,14 +378,15 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
         # 16. Toggle HeatmapEnabled Override.
         # Set the HeatmapEnabled Override parameter to False.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('HeatmapEnabled Override'), False)
+            AtomComponentProperties.exposure_control('HeatmapEnabled Override'), value=False)
         Report.result(
             Tests.toggle_heatmap_override_off,
             exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('HeatmapEnabled Override')) is False)
+
         # Set the HeatmapEnabled Override parameter to True.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('HeatmapEnabled Override'), True)
+            AtomComponentProperties.exposure_control('HeatmapEnabled Override'), value=True)
         Report.result(
             Tests.toggle_heatmap_override_on,
             exposure_control_component.get_component_property_value(
@@ -387,11 +396,11 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
 
         # 17. Set Control Type to Eye Adaptation.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('Control Type'), CONTROL_TYPE['eye_adaptation'])
+            AtomComponentProperties.exposure_control('Control Type'), EXPOSURE_CONTROL_TYPE['eye_adaptation'])
         Report.result(
             Tests.set_control_type,
             exposure_control_component.get_component_property_value(
-                AtomComponentProperties.exposure_control('Control Type')) == CONTROL_TYPE['eye_adaptation'])
+                AtomComponentProperties.exposure_control('Control Type')) == EXPOSURE_CONTROL_TYPE['eye_adaptation'])
 
         # 18. Set Manual Compensation to min/max values.
         # Set Manual Compensation to minimum value.
@@ -401,6 +410,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.manual_compensation_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('Manual Compensation')), -16.0))
+
         # Set Manual Compensation to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('Manual Compensation'), value=16.0)
@@ -417,6 +427,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.minimum_exposure_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('Minimum Exposure')), -16.0))
+
         # Set Minimum Exposure to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('Minimum Exposure'), value=16.0)
@@ -433,6 +444,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.maximum_exposure_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('Maximum Exposure')), -16.0))
+
         # Set Maximum Exposure to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('Maximum Exposure'), value=16.0)
@@ -449,6 +461,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.speed_up_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('Speed Up')), 0.01))
+
         # Set Speed Up to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('Speed Up'), value=10.0)
@@ -465,6 +478,7 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
             Tests.speed_down_min_value,
             Math_IsClose(exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('Speed Down')), 0.01))
+
         # Set Speed Down to maximum value.
         exposure_control_component.set_component_property_value(
             AtomComponentProperties.exposure_control('Speed Down'), value=10.0)
@@ -476,14 +490,15 @@ def AtomEditorComponents_ExposureControl_AddedToEntity():
         # 23. Toggle Enable Heatmap.
         # Set the Enable Heatmap parameter to True.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('Enable Heatmap'), True)
+            AtomComponentProperties.exposure_control('Enable Heatmap'), value=True)
         Report.result(
             Tests.toggle_enable_heatmap_on,
             exposure_control_component.get_component_property_value(
                 AtomComponentProperties.exposure_control('Enable Heatmap')) is True)
+
         # Set the Enable Heatmap parameter to False.
         exposure_control_component.set_component_property_value(
-            AtomComponentProperties.exposure_control('Enable Heatmap'), False)
+            AtomComponentProperties.exposure_control('Enable Heatmap'), value=False)
         Report.result(
             Tests.toggle_enable_heatmap_off,
             exposure_control_component.get_component_property_value(
