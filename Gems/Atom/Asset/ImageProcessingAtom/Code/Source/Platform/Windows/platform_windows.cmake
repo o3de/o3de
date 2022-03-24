@@ -5,6 +5,3 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-# Temporary fix for the linker issue caused by OpenEXR libs on debug builds
-set(LY_LINK_OPTIONS INTERFACE "$<$<CONFIG:debug>:/INCREMENTAL>")

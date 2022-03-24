@@ -10,3 +10,9 @@ set(LY_COMPILE_OPTIONS
     PRIVATE
         /EHsc
 )
+
+# Temporary fix for the linker issue caused by OpenEXR libs on debug builds
+set(LY_LINK_OPTIONS 
+	INTERFACE 
+		"$<$<CONFIG:debug>:/INCREMENTAL>"
+)
