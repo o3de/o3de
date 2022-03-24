@@ -47,13 +47,11 @@ namespace EMStudio
         // Plugin information
         const char* GetName() const override;
         uint32 GetClassID() const override;
-        const char* GetCreatorName() const override;
-        float GetVersion() const override;
         bool GetIsClosable() const override;
         bool GetIsFloatable() const override;
         bool GetIsVertical() const override;
         bool Init() override;
-        EMStudioPlugin* Clone();
+        EMStudioPlugin* Clone() const { return new AtomRenderPlugin(); }
         EMStudioPlugin::EPluginType GetPluginType() const override;
         QWidget* GetInnerWidget();
 
