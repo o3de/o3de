@@ -131,11 +131,6 @@ namespace AzToolsFramework
         {
             backgroundColor = m_prefabCapsuleEditColor;
         }
-        else if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId) && 
-            m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
-        {
-            backgroundColor = m_prefabCapsuleOverrideColor;
-        }
         else if (!(option.state & QStyle::State_Enabled))
         {
             backgroundColor = m_prefabCapsuleDisabledColor;
@@ -220,12 +215,6 @@ namespace AzToolsFramework
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
-        }
-        else if (
-            m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId) &&
-            m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
-        {
-            borderColor = m_prefabCapsuleOverrideColor;
         }
 
         QPen borderLinePen(borderColor, m_prefabBorderThickness);
