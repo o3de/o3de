@@ -458,12 +458,13 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        ReplacementInfoByNode replacementInfoByOldNode;
         ReplacementInfoByNode replacementInfoByNewNode;
-
+        
         AZStd::vector<ScriptCanvas::Node*> remainingNodes;
 
         {
+            ReplacementInfoByNode replacementInfoByOldNode;
+
             auto nodeEntities = GetNodeEntities();
             AZStd::vector<ScriptCanvas::Node*> nodes;
             nodes.reserve(nodeEntities.size());
@@ -487,14 +488,18 @@ namespace ScriptCanvasEditor
                             return;
                         }
 
-                        replacementInfoByOldNode[node->GetEntityId()] = AZStd::make_pair(*configOptional, slotStateOutcome.TakeValue());
+                        ReplacementInfo info;
+                        info.config = AZStd::move(*configOptional);
+                        info.oldNodeId = node->GetEntityId();
+                        info.slotStates = slotStateOutcome.TakeValue();
+                        replacementInfoByOldNode[node->GetEntityId()] = AZStd::move(info);
                     }
 
                     nodes.push_back(node);
                 }
             }
 
-            // replace all required nodes, update or clear all references to the variable that has been changed
+            // replace all required nodes, keep a list of the nodes that will remain
             for (auto node : nodes)
             {
                 if (auto iter = replacementInfoByOldNode.find(node->GetEntityId()); iter != replacementInfoByOldNode.end())
@@ -503,11 +508,12 @@ namespace ScriptCanvasEditor
 
                     ScriptCanvas::NodeUpdateSlotReport report;
 
-                    auto replaceOutcome = ReplaceLiveNode(*node, iter->second.first);
+                    auto replaceOutcome = ReplaceLiveNode(*node, iter->second.config);
                     if (replaceOutcome.IsSuccess())
                     {
-                        node = replaceOutcome.GetValue();
-                        replacementInfoByNewNode[node->GetEntityId()] = iter->second;
+                        auto newNode = replaceOutcome.GetValue();
+                        replacementInfoByNewNode[newNode->GetEntityId()] = iter->second;
+                        node = newNode;
                     }
                     else
                     {
@@ -556,9 +562,8 @@ namespace ScriptCanvasEditor
             }
         }
 
-
         // clear display types
-        for (auto resolvedEndpoint : referenceSlots)
+        for (auto& resolvedEndpoint : referenceSlots)
         {
             auto node = resolvedEndpoint.first;
             auto slot = const_cast<ScriptCanvas::Slot*>(resolvedEndpoint.second);
@@ -570,7 +575,7 @@ namespace ScriptCanvasEditor
         }
 
         // set all required slots back to references
-        for (auto resolvedEndpoint : referenceSlots)
+        for (auto& resolvedEndpoint : referenceSlots)
         {
             auto node = resolvedEndpoint.first;
             auto slot = const_cast<ScriptCanvas::Slot*>(resolvedEndpoint.second);
@@ -592,9 +597,8 @@ namespace ScriptCanvasEditor
             }
         }
 
-        // finally, replace all (possible) connections
-        // only for replaced nodes
-        for (auto replaceInfo : replacementInfoByNewNode)
+        // update slots (except for connection data) on replaced nodes
+        for (auto& replaceInfo : replacementInfoByNewNode)
         {
             auto newNode = FindNode(replaceInfo.first);
             if (!newNode)
@@ -603,7 +607,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            auto slotStateUpdateOutcome = UpdateSlotState(*newNode, replaceInfo.second.first, replaceInfo.second.second);
+            auto slotStateUpdateOutcome = UpdateSlotState(*newNode, replaceInfo.second.config, replaceInfo.second.slotStates, replacementInfoByNewNode, FixConnections::No);
             if (!slotStateUpdateOutcome.IsSuccess())
             {
                 AZ_Error("ScriptCanvas"
@@ -614,6 +618,30 @@ namespace ScriptCanvasEditor
                 return;
             }
         }
+
+
+        // finally, replace all possible old connections that required replacement, due to one or both ndoes on the ends being replaced
+        for (auto& replaceInfo : replacementInfoByNewNode)
+        {
+            auto newNode = FindNode(replaceInfo.first);
+            if (!newNode)
+            {
+                AZ_Error("ScriptCanvas", false, "Could not complete type change of variable. Failed to find new node just added to graph");
+                return;
+            }
+
+            auto slotStateUpdateOutcome = UpdateSlotState(*newNode, replaceInfo.second.config, replaceInfo.second.slotStates, replacementInfoByNewNode, FixConnections::Yes);
+            if (!slotStateUpdateOutcome.IsSuccess())
+            {
+                AZ_Error("ScriptCanvas"
+                    , false
+                    , "Could not complete type change of variable. Failed to relplace connections for %s: %s"
+                    , newNode->GetNodeName().c_str()
+                    , slotStateUpdateOutcome.GetError().c_str());
+                return;
+            }
+        }
+
     }
 
     AZ::Outcome<ScriptCanvas::Node*, AZStd::string> EditorGraph::ReplaceLiveNode
@@ -653,6 +681,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::SlotState& slotState = info.state;
         slotState.type = nodeSlot.GetType();
         slotState.name = nodeSlot.GetName();
+        info.oldEndpoint = ScriptCanvas::Endpoint(node.GetEntityId(), nodeSlot.GetId());
 
         if (IsData(slotState.type))
         {
@@ -722,18 +751,18 @@ namespace ScriptCanvasEditor
         return AZ::Success(slotStates);
     }
 
-    const EditorGraph::LiveSlotInfo* EditorGraph::FindMatchingSlotState
+    EditorGraph::LiveSlotInfo* EditorGraph::FindMatchingSlotState
         ( ScriptCanvas::Node& node
         , ScriptCanvas::Slot& slot
         , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
-        , const LiveSlotStates& slotState) const
+        , LiveSlotStates& slotState) const
     {
         const bool isGetSetVariableDataSlot = node.GetVariableInputSlot() == &slot || node.GetVariableOutputSlot() == &slot;
         const auto slotName = slot.GetName();
         const auto slotType = slot.GetType();
 
         auto iter = AZStd::find_if(slotState.begin(), slotState.end()
-            , [&slotName, &slotType, &isGetSetVariableDataSlot](const LiveSlotInfo& info)
+            , [&slotName, &slotType, &isGetSetVariableDataSlot](LiveSlotInfo& info)
             {
                 return info.state.type == slotType
                     && ((info.isGetSetVariableDataSlot && isGetSetVariableDataSlot)
@@ -747,33 +776,63 @@ namespace ScriptCanvasEditor
         ( ScriptCanvas::Node& node
         , ScriptCanvas::Slot& slot
         , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
-        , const LiveSlotInfo& slotInfo)
+        , LiveSlotInfo& oldSlotInfo
+        , const ReplacementInfoByNode& infoByNewNode)
     {
         const auto graphCanvasGraphId = GetGraphCanvasGraphId();
-        const auto scriptCanvasEndpoint = ScriptCanvas::Endpoint(node.GetEntityId(), slot.GetId());
-        const auto graphCanvasEndpoint = ConvertToGraphCanvasEndpoint(scriptCanvasEndpoint);
+        const auto newSCEndpoint = ScriptCanvas::Endpoint(node.GetEntityId(), slot.GetId());
+        const auto newGCEndpoint = ConvertToGraphCanvasEndpoint(newSCEndpoint);
 
-        for (size_t i = 0; i != slotInfo.connections.size(); ++i)
+        for (size_t i = 0; i != oldSlotInfo.connections.size(); ++i)
         {
             AZ::Entity* unusedEntity{};
-            const auto& previouslyConnectedSCEndpoint = slotInfo.connections[i];
+            auto previouslyConnectedSCEndpoint = oldSlotInfo.connections[i];
 
-            // another variable driven node may have already restored this connection
-            // static_assert(false, "these connections still refer to the old node");
+            // if endpoint.GetNodeId() is in infoByNewNode, find a new endpoint for connection
+            const auto previouslyConnectedNodeId = previouslyConnectedSCEndpoint.GetNodeId();
+            auto oldNodeInfoIter = AZStd::find_if(infoByNewNode.begin(), infoByNewNode.end()
+                , [previouslyConnectedNodeId](const auto& info)
+                {
+                    return info.second.oldNodeId == previouslyConnectedNodeId;
+                });
 
-            if (!FindConnection(unusedEntity, scriptCanvasEndpoint, previouslyConnectedSCEndpoint))
+            if (oldNodeInfoIter != infoByNewNode.end())
+            {
+                // look through the previously connected, now deleted node's slot info list...
+                const auto& connectionOldInfos = oldNodeInfoIter->second.slotStates;
+                auto oldConnectionMatch = AZStd::find_if(connectionOldInfos.begin(), connectionOldInfos.end(), [&previouslyConnectedSCEndpoint](const auto& oldConnection)
+                {
+                    // ...for an endpoint to this new node's replaced node's endpoint...
+                    return previouslyConnectedSCEndpoint == oldConnection.oldEndpoint;
+                });
+
+                // ...a match should be found...
+                if (oldConnectionMatch != connectionOldInfos.end())
+                {
+                    // ...so we take the NEW node-slot endpoint from the match.
+                    previouslyConnectedSCEndpoint = oldConnectionMatch->newEndpoint;
+                }
+                else
+                {
+                    AZ_Error("ScriptCanvas", false, "failed to map old connection endpoint to new one");
+                    continue;
+                }
+            }
+
+            // another replaced node may have already restored this connection
+            if (!FindConnection(unusedEntity, newSCEndpoint, previouslyConnectedSCEndpoint))
             {
                 const auto previouslyConnectedGCEndpoint = ConvertToGraphCanvasEndpoint(previouslyConnectedSCEndpoint);
                 GraphCanvas::SlotRequestBus::Event
-                    ( graphCanvasEndpoint.GetSlotId()
+                    ( newGCEndpoint.GetSlotId()
                     , &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint
                     , previouslyConnectedGCEndpoint);
 
-                if (!FindConnection(unusedEntity, scriptCanvasEndpoint, previouslyConnectedSCEndpoint))
+                if (!FindConnection(unusedEntity, newSCEndpoint, previouslyConnectedSCEndpoint))
                 {
                     // let me see it happen this time...
                     GraphCanvas::SlotRequestBus::Event
-                        ( graphCanvasEndpoint.GetSlotId()
+                        ( newGCEndpoint.GetSlotId()
                         , &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint
                         , previouslyConnectedGCEndpoint);
 
@@ -781,7 +840,7 @@ namespace ScriptCanvasEditor
                         ( "EditorGraph::UpdateSlotConnections Failed to restore connection between %s-%s and %s."
                         , node.GetNodeName().c_str()
                         , slot.GetName().c_str()
-                        , slotInfo.connectionNames[i].c_str()));
+                        , oldSlotInfo.connectionNames[i].c_str()));
                 }
             }
         }
@@ -793,7 +852,7 @@ namespace ScriptCanvasEditor
         ( ScriptCanvas::Node& node
         , ScriptCanvas::Slot& slot
         , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
-        , const LiveSlotInfo& slotInfo)
+        , LiveSlotInfo& slotInfo)
     {
         if (!IsData(slot.GetType()))
         {
@@ -829,7 +888,9 @@ namespace ScriptCanvasEditor
         ( ScriptCanvas::Node& node
         , ScriptCanvas::Slot& slot
         , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
-        , const LiveSlotStates& slotState)
+        , LiveSlotStates& slotState
+        , const ReplacementInfoByNode& infoByNewNode
+        , FixConnections fixConnections)
     {
         // find a match for the slot in the slot state
         auto match = FindMatchingSlotState(node, slot, nodeConfig, slotState);
@@ -840,9 +901,10 @@ namespace ScriptCanvasEditor
                     , node.GetNodeName().c_str()
                     , slot.GetName().c_str());
 
+            AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
+
             if (nodeConfig.m_tolerateNoMatchingPreviousSlot)
             {
-                AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
                 return AZ::Success();
             }
             else
@@ -851,43 +913,49 @@ namespace ScriptCanvasEditor
             }
         }
 
-        // update based on type / values
-        auto updateDataOutcome = UpdateSlotDatum(node, slot, nodeConfig, *match);
-        if (!updateDataOutcome.IsSuccess())
-        {
-            const auto msg = AZStd::string::format
-                ( "EditorGraph::UpdateSlotState Failed to datum: %s-%s, from previous slot"
-                , node.GetNodeName().c_str()
-                , slot.GetName().c_str());
+        //////////////////////////////////////////////////////////////////////////
+        // THE REAL REASON FOR THE FAILURE TO UPDATE THE NODE
+        // look out for early failures!
+        // and successes!
+        //////////////////////////////////////////////////////////////////////////
 
-            if (nodeConfig.m_tolerateFailureToUpdateData)
+        if (fixConnections == FixConnections::No)
+        {
+            AZ_Error("ScriptCanvas", !match->newEndpoint.IsValid(), "The matching slot state has already been initialized");
+            match->newEndpoint = ScriptCanvas::Endpoint(node.GetEntityId(), slot.GetId());
+
+            // update based on type / values
+            auto updateDataOutcome = UpdateSlotDatum(node, slot, nodeConfig, *match);
+            if (!updateDataOutcome.IsSuccess())
             {
+                const auto msg = AZStd::string::format
+                    ( "EditorGraph::UpdateSlotState Failed to datum: %s-%s, from previous slot"
+                    , node.GetNodeName().c_str()
+                    , slot.GetName().c_str());
+
                 AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
-                return AZ::Success();
-            }
-            else
-            {
-                return AZ::Failure(msg);
+                if (!nodeConfig.m_tolerateFailureToUpdateData)
+                {
+                    return AZ::Failure(msg);
+                }
             }
         }
-
-        // replace old connections
-        auto updateConnectionsOutcome = UpdateSlotConnections(node, slot, nodeConfig, *match);
-        if (!updateConnectionsOutcome.IsSuccess())
+        else
         {
-            const auto msg = AZStd::string::format
-                ( "EditorGraph::UpdateSlotState Failed to update slot connections: %s-%s, from previous slot"
-                , node.GetNodeName().c_str()
-                , slot.GetName().c_str());
+            // replace old connections
+            auto updateConnectionsOutcome = UpdateSlotConnections(node, slot, nodeConfig, *match, infoByNewNode);
+            if (!updateConnectionsOutcome.IsSuccess())
+            {
+                const auto msg = AZStd::string::format
+                    ( "EditorGraph::UpdateSlotState Failed to update slot connections: %s-%s, from previous slot"
+                    , node.GetNodeName().c_str()
+                    , slot.GetName().c_str());
 
-            if (nodeConfig.m_tolerateFailureToReplaceConnections)
-            {
                 AZ_Warning("ScriptCanvas", !nodeConfig.m_warnOnToleratedErrors, msg.c_str());
-                return AZ::Success();
-            }
-            else
-            {
-                return AZ::Failure(msg);
+                if (nodeConfig.m_tolerateFailureToReplaceConnections)
+                {
+                    return AZ::Failure(msg);
+                }
             }
         }
 
@@ -897,7 +965,9 @@ namespace ScriptCanvasEditor
     AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotState
         ( ScriptCanvas::Node& node
         , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
-        , const LiveSlotStates& slotState)
+        , LiveSlotStates& slotState
+        , const ReplacementInfoByNode& infoByNewNode
+        , FixConnections fixConnections)
     {
         auto nodeSlots = node.ModAllSlots();
 
@@ -910,7 +980,7 @@ namespace ScriptCanvasEditor
                     , node.GetNodeName().c_str()));
             }
 
-            auto slotOutcome = UpdateSlotState(node, *nodeSlot, nodeConfig, slotState);
+            auto slotOutcome = UpdateSlotState(node, *nodeSlot, nodeConfig, slotState, infoByNewNode, fixConnections);
             if (!slotOutcome.IsSuccess() && !nodeConfig.m_tolerateIndividualSlotUpdateFailures)
             {
                 return AZ::Failure(AZStd::string::format

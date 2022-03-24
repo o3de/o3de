@@ -374,21 +374,45 @@ namespace ScriptCanvasEditor
             AZStd::vector<ScriptCanvas::Endpoint> connections;
             AZStd::vector<AZStd::string> connectionNames;
             bool isGetSetVariableDataSlot = false;
+            ScriptCanvas::Endpoint oldEndpoint;
+            ScriptCanvas::Endpoint newEndpoint;
         };
 
         using LiveSlotStates = AZStd::vector<LiveSlotInfo>;
-        using ReplacementInfoByNode =
-            AZStd::unordered_map<AZ::EntityId, AZStd::pair<ScriptCanvas::NodeReplacementConfiguration, LiveSlotStates>>;
+        struct ReplacementInfo
+        {
+            ScriptCanvas::NodeReplacementConfiguration config;
+            LiveSlotStates slotStates;
+            AZ::EntityId oldNodeId;
+        };
+
+        using ReplacementInfoByNode = AZStd::unordered_map<AZ::EntityId, ReplacementInfo>;
+        using NodesById = AZStd::unordered_map<AZ::EntityId, ScriptCanvas::Node*>;
 
         AZ::Outcome<LiveSlotInfo, AZStd::string> ConvertToLiveStateInfo(const ScriptCanvas::Node& node, const ScriptCanvas::Slot& slot) const;
         static ScriptCanvas::Node* GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeReplacementConfiguration& config);
         AZ::Outcome<ScriptCanvas::Node*, AZStd::string> ReplaceLiveNode(ScriptCanvas::Node&, ScriptCanvas::NodeReplacementConfiguration&);
         AZ::Outcome<LiveSlotStates, AZStd::string> GetSlotState(const ScriptCanvas::Node& node) const;
-        const LiveSlotInfo* FindMatchingSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotStates& slotState) const;
-        AZ::Outcome<void, AZStd::string> UpdateSlotConnections(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotInfo& slotInfo);
-        AZ::Outcome<void, AZStd::string> UpdateSlotDatum(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotInfo& slotInfo);
-        AZ::Outcome<void, AZStd::string> UpdateSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotStates& slotState);
-        AZ::Outcome<void, AZStd::string> UpdateSlotState(ScriptCanvas::Node& node, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, const LiveSlotStates& slotState);
+        LiveSlotInfo* FindMatchingSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotStates& slotState) const;
+        AZ::Outcome<void, AZStd::string> UpdateSlotConnections(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot
+            , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotInfo& slotInfo, const ReplacementInfoByNode& ainfoByOldNode);
+        AZ::Outcome<void, AZStd::string> UpdateSlotDatum(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotInfo& slotInfo);
+
+        enum class FixConnections
+        {
+            No,
+            Yes
+        };
+        AZ::Outcome<void, AZStd::string> UpdateSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot
+            , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotStates& slotState
+            , const ReplacementInfoByNode& infoByOldNode, FixConnections fixConnections);
+
+        AZ::Outcome<void, AZStd::string> UpdateSlotState
+            ( ScriptCanvas::Node& node
+            , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
+            , LiveSlotStates& slotState
+            , const ReplacementInfoByNode& infoByOldNode, FixConnections fixConnections);
+
         void RefreshVariableReferences(const ScriptCanvas::VariableId& variableId) override;
 
         bool m_allowVersionUpdate = false;
