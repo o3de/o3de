@@ -75,8 +75,15 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
     float4 encodedNormal = PassSrg::m_normal.Load(IN.m_position.xy, sampleIndex);
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
-    bool multiScatterCompensationEnabled = (encodedNormal.a > 0.0f);
-    
+    bool enableIBL = DecodeUnorm2BitFlag1(encodedNormal.a);
+    if (!enableIBL)
+    {
+        PSOutput OUT;
+        OUT.m_color = float4(0.0f, 0.0f, 0.0f, 1.0f);
+        return OUT;
+    }
+
+    bool multiScatterCompensationEnabled = DecodeUnorm2BitFlag2(encodedNormal.a);
     float4 albedo = PassSrg::m_albedo.Load(IN.m_position.xy, sampleIndex);
     float specularOcclusion = albedo.a;
 
