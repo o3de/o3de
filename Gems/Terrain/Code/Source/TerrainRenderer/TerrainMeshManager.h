@@ -48,8 +48,8 @@ namespace Terrain
         AZ_RTTI(TerrainMeshManager, "{62C84AD8-05FE-4C78-8501-A2DB6731B9B7}");
         AZ_DISABLE_COPY_MOVE(TerrainMeshManager);
         
-        TerrainMeshManager() = default;
-        ~TerrainMeshManager() = default;
+        TerrainMeshManager();
+        ~TerrainMeshManager();
 
         void Initialize();
         bool IsInitialized() const;
@@ -59,10 +59,7 @@ namespace Terrain
         void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process);
         void RebuildDrawPackets(AZ::RPI::Scene& scene);
 
-        static constexpr float GridSpacing{ 1.0f };
         static constexpr int32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
-        static constexpr float GridMeters{ GridSpacing * GridSize };
-        static constexpr uint32_t MaxMaterialsPerSector = 4;
 
     private:
         
@@ -92,6 +89,7 @@ namespace Terrain
         };
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
+        void OnTerrainDataCreateEnd() override;
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 

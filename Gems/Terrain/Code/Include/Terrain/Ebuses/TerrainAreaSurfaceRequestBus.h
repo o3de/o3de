@@ -23,6 +23,11 @@ namespace Terrain
         ////////////////////////////////////////////////////////////////////////
         // EBusTraits
         using MutexType = AZStd::recursive_mutex;
+
+        // This bus will not lock during an EBus call. This lets us run multiple queries in parallel, but it also means
+        // that anything that implements this EBus will need to ensure that queries can't be in the middle of running at the
+        // same time as bus connects / disconnects.
+        static const bool LocklessDispatch = true;
         ////////////////////////////////////////////////////////////////////////
 
         virtual ~TerrainAreaSurfaceRequests() = default;

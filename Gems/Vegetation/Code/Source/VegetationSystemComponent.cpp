@@ -9,8 +9,6 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include <GradientSignal/ImageSettings.h>
-#include <GradientSignal/ImageAsset.h>
 #include <Vegetation/DescriptorListAsset.h>
 #include <Vegetation/AreaComponentBase.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>

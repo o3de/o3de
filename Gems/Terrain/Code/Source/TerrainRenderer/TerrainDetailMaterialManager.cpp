@@ -18,6 +18,7 @@
 #include <Atom/Utils/MaterialUtils.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
+#include <SurfaceData/Utility/SurfaceDataUtility.h>
 
 namespace Terrain
 {
@@ -55,9 +56,13 @@ namespace Terrain
         static const char* const DiffuseOcclusionFactor("occlusion.diffuseFactor");
         static const char* const HeightMap("parallax.textureMap");
         static const char* const HeightUseTexture("parallax.useTexture");
-        static const char* const HeightFactor("parallax.factor");
-        static const char* const HeightOffset("parallax.offset");
-        static const char* const HeightBlendFactor("parallax.blendFactor");
+        static const char* const ParallaxHeightFactor("parallax.factor");
+        static const char* const ParallaxHeightOffset("parallax.offset");
+        static const char* const TerrainSettingsOverrideParallax("terrain.overrideParallaxSettings");
+        static const char* const TerrainHeightFactor("terrain.heightScale");
+        static const char* const TerrainHeightOffset("terrain.heightOffset");
+        static const char* const HeightBlendFactor("terrain.blendFactor");
+        static const char* const HeightWeightClampFactor("terrain.weightClampFactor");
         static const char* const UvCenter("uv.center");
         static const char* const UvScale("uv.scale");
         static const char* const UvTileU("uv.tileU");
@@ -95,7 +100,8 @@ namespace Terrain
 
     void TerrainDetailMaterialManager::Initialize(
         const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+        const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
+        const AZ::Data::Instance<AZ::RPI::Material>& terrainMaterial)
     {
         AZ_Error(TerrainDetailMaterialManagerName, bindlessImageHandler, "bindlessImageHandler must not be null.");
         AZ_Error(TerrainDetailMaterialManagerName, terrainSrg, "terrainSrg must not be null.");
@@ -106,16 +112,12 @@ namespace Terrain
             return;
         }
 
-        InitializePassthroughDetailMaterial();
+        m_terrainMaterial = terrainMaterial;
+        UpdateTerrainMaterial();
 
-        ClipmapBoundsDescriptor desc;
-        desc.m_clipmapUpdateMultiple = 1;
-        desc.m_clipToWorldScale = DetailTextureScale;
-        desc.m_size = DetailTextureSize;
-        // Initialize world space to a value that won't match the initial camera position.
-        desc.m_worldSpaceCenter = AZ::Vector2(AZStd::numeric_limits<float>::max(), 0.0f);
-        m_detailMaterialIdBounds = ClipmapBounds(desc);
-        
+        InitializePassthroughDetailMaterial();
+        InitializeTextureParams();
+
         if (UpdateSrgIndices(terrainSrg))
         {
             m_bindlessImageHandler = bindlessImageHandler;
@@ -159,7 +161,7 @@ namespace Terrain
         }
     }
     
-    bool TerrainDetailMaterialManager::UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+    bool TerrainDetailMaterialManager::UpdateSrgIndices(const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
         const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = terrainSrg->GetLayout();
             
@@ -239,6 +241,11 @@ namespace Terrain
 
     void TerrainDetailMaterialManager::Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
+        if (m_terrainMaterial->NeedsCompile())
+        {
+            UpdateTerrainMaterial();
+        }
+
         if (m_detailMaterialBufferNeedsUpdate)
         {
             m_detailMaterialBufferNeedsUpdate = false;
@@ -249,7 +256,7 @@ namespace Terrain
         
         if (m_detailImageNeedsUpdate)
         {
-            terrainSrg->SetConstant(m_detailScalePropertyIndex, 1.0f / DetailTextureScale);
+            terrainSrg->SetConstant(m_detailScalePropertyIndex, 1.0f / m_detailTextureScale);
             terrainSrg->SetImage(m_detailMaterialIdPropertyIndex, m_detailTextureImage);
 
             m_detailMaterialDataBuffer.UpdateSrg(terrainSrg.get());
@@ -258,12 +265,68 @@ namespace Terrain
         }
 
     }
+    
+    void TerrainDetailMaterialManager::InitializeTextureParams()
+    {   
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            m_detailTextureScale, &AzFramework::Terrain::TerrainDataRequests::GetTerrainSurfaceDataQueryResolution);
+
+        // Texture size needs to be twice the render distance because the camera is positioned in the middle of the texture.
+        m_detailTextureSize = lroundf(m_config.m_renderDistance / m_detailTextureScale) * 2;
+
+        ClipmapBoundsDescriptor desc;
+        desc.m_clipmapUpdateMultiple = 1;
+        desc.m_clipToWorldScale = m_detailTextureScale;
+        desc.m_size = m_detailTextureSize;
+
+        // Initialize world space to a value that won't match the initial camera position.
+        desc.m_worldSpaceCenter = AZ::Vector2(AZStd::numeric_limits<float>::max(), 0.0f);
+        m_detailMaterialIdBounds = ClipmapBounds(desc);
+
+        m_detailTextureImage = {}; // Force the image to rebuild
+        m_detailImageNeedsUpdate = true;
+    }
+    
+    void TerrainDetailMaterialManager::UpdateTerrainMaterial()
+    {
+        AZ::RPI::MaterialPropertyIndex detailTextureMultiplierIndex = m_terrainMaterial->FindPropertyIndex(AZ::Name("settings.detailTextureMultiplier"));
+        AZ::RPI::MaterialPropertyIndex detailTextureFadeDistanceIndex = m_terrainMaterial->FindPropertyIndex(AZ::Name("settings.detailFadeDistance"));
+        AZ::RPI::MaterialPropertyIndex detailTextureFadeLengthIndex = m_terrainMaterial->FindPropertyIndex(AZ::Name("settings.detailFadeLength"));
+
+        AZ_Assert(detailTextureMultiplierIndex.IsValid(), "Terrain Feature Processor unable to find settings.detailTextureMultiplier in the terrain material.");
+        AZ_Assert(detailTextureFadeDistanceIndex.IsValid(), "Terrain Feature Processor unable to find settings.detailFadeDistance in the terrain material.");
+        AZ_Assert(detailTextureFadeLengthIndex.IsValid(), "Terrain Feature Processor unable to find settings.detailFadeLength in the terrain material.");
+
+        m_terrainMaterial->SetPropertyValue(detailTextureMultiplierIndex, m_config.m_scale);
+        m_terrainMaterial->SetPropertyValue(detailTextureFadeDistanceIndex, AZStd::GetMax<float>(0.0f, m_config.m_renderDistance - m_config.m_fadeDistance));
+        m_terrainMaterial->SetPropertyValue(detailTextureFadeLengthIndex, m_config.m_fadeDistance);
+    }
+
+    void TerrainDetailMaterialManager::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)
+    {
+        m_config = config;
+        
+        AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(
+            AZ::Name{ "o_terrainUseHeightBasedBlending" },
+            AZ::RPI::ShaderOptionValue{ m_config.m_useHeightBasedBlending }
+        );
+
+        if (IsInitialized())
+        {
+            UpdateTerrainMaterial();
+            InitializeTextureParams();
+        }
+    }
 
     void TerrainDetailMaterialManager::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         if ((dataChangedMask & TerrainDataChangedMask::SurfaceData) != 0)
         {
             m_dirtyDetailRegion.AddAabb(dirtyRegion);
+        }
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
+        {
+            InitializeTextureParams();
         }
     }
 
@@ -632,10 +695,10 @@ namespace Terrain
         applyImage(BaseColorMap, materialData.m_colorImage, BaseColorUseTexture, DetailTextureFlags::UseTextureBaseColor, shaderData.m_colorImageIndex);
         applyProperty(BaseColorFactor, shaderData.m_baseColorFactor);
 
-        const auto index = getIndex(BaseColorColor);
-        if (index.IsValid())
+        const auto baseColorIndex = getIndex(BaseColorColor);
+        if (baseColorIndex.IsValid())
         {
-            AZ::Color baseColor = material->GetPropertyValue(index).GetValue<AZ::Color>();
+            const AZ::Color baseColor = material->GetPropertyValue(baseColorIndex).GetValue<AZ::Color>();
             shaderData.m_baseColorRed = baseColor.GetR();
             shaderData.m_baseColorGreen = baseColor.GetG();
             shaderData.m_baseColorBlue = baseColor.GetB();
@@ -691,9 +754,26 @@ namespace Terrain
         applyProperty(DiffuseOcclusionFactor, shaderData.m_occlusionFactor);
             
         applyImage(HeightMap, materialData.m_heightImage, HeightUseTexture, DetailTextureFlags::UseTextureHeight, shaderData.m_heightImageIndex);
-        applyProperty(HeightFactor, shaderData.m_heightFactor);
-        applyProperty(HeightOffset, shaderData.m_heightOffset);
+
+        bool terrainSettingsOverrideParallax = false;
+        applyProperty(TerrainSettingsOverrideParallax, terrainSettingsOverrideParallax);
+
+        if (terrainSettingsOverrideParallax)
+        {
+            applyProperty(TerrainHeightFactor, shaderData.m_heightFactor);
+            applyProperty(TerrainHeightOffset, shaderData.m_heightOffset);
+        }
+        else
+        {
+            // Parallax ranges from 0 to 0.1, so multiply by 10 to be in the 0-1 range.
+            applyProperty(ParallaxHeightFactor, shaderData.m_heightFactor);
+            shaderData.m_heightFactor *= 10.0f;
+            applyProperty(ParallaxHeightOffset, shaderData.m_heightOffset);
+            shaderData.m_heightOffset *= 10.0f;
+        }
         applyProperty(HeightBlendFactor, shaderData.m_heightBlendFactor);
+        applyProperty(HeightWeightClampFactor, shaderData.m_heightWeightClampFactor);
+        shaderData.m_heightWeightClampFactor = 1.0f / AZStd::GetMax(0.0001f, shaderData.m_heightWeightClampFactor);
 
         AZ::Render::UvTransformDescriptor transformDescriptor;
         applyProperty(UvCenter, transformDescriptor.m_center);
@@ -741,7 +821,7 @@ namespace Terrain
 
             const AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
             AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
-                AZ::RHI::ImageBindFlags::ShaderRead, DetailTextureSize, DetailTextureSize, AZ::RHI::Format::R8G8B8A8_UINT
+                AZ::RHI::ImageBindFlags::ShaderRead, m_detailTextureSize, m_detailTextureSize, AZ::RHI::Format::R8G8B8A8_UINT
             );
             const AZ::Name TerrainDetailName = AZ::Name(TerrainDetailChars);
             m_detailTextureImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainDetailName, nullptr, nullptr);
@@ -872,11 +952,19 @@ namespace Terrain
             }
         };
             
-        AZ::Vector2 stepSize(DetailTextureScale);
-        AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(DetailTextureScale * 0.5f)); // offset by half a pixel
+        AZ::Vector2 stepSize(m_detailTextureScale);
+        AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(m_detailTextureScale * 0.5f)); // offset by half a pixel
 
-        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion,
-            offsetWorldAabb, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+        {
+            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
+            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
+            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
+            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
+
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, offsetWorldAabb, stepSize, perPositionCallback,
+                AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+        }
 
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;
@@ -912,7 +1000,7 @@ namespace Terrain
     {
         for (const auto& materialRegion : m_detailMaterialRegions.GetDataVector())
         {
-            if (materialRegion.m_region.Contains(AZ::Vector3(position.GetX(), position.GetY(), 0.0f)))
+            if (SurfaceData::AabbContains2D(materialRegion.m_region, position))
             {
                 return &materialRegion;
             }
