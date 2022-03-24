@@ -18,7 +18,7 @@ namespace ${GemName}
         : public AZ::ComponentBus
     {
     public:
-        AZ_RTTI(${SanitizedCppName}Requests, "{${Random_Uuid}}");
+        AZ_RTTI(${GemName}::${SanitizedCppName}Requests, "{${Random_Uuid}}");
 
         // Put your public request methods here
     };
