@@ -1120,7 +1120,7 @@ namespace AZ
                 }
                 else
                 {
-                    /* Couldn't find irradianc.manualColor -> check for an irradiance.color legacy fallback */
+                    /* Couldn't find irradiance.manualColor -> check for an irradiance.color legacy fallback */
                     propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
                     if (propertyIndex.IsValid())
                     {
@@ -1130,7 +1130,7 @@ namespace AZ
                     {
                         AZ_Warning("MeshFeatureProcessor", false, "Requested manual color as irradianceColorSource "
                                 "but I could not find an irradiance.manualColor field. Defaulting to black.");
-                        subMesh.m_irradianceColor = AZ::Color(0.0f);
+                        subMesh.m_irradianceColor = AZ::Colors::Black;
                     }
                 }
             }
@@ -1138,7 +1138,7 @@ namespace AZ
             {
                 AZ_Warning("MeshFeatureProcessor", false, "Unknown irradianceColorSource value: %s, "
                         "defaulting to black.", irradianceColorSource.GetCStr());
-                subMesh.m_irradianceColor = AZ::Color(0.0f);
+                subMesh.m_irradianceColor = AZ::Colors::Black;
             }
 
 
