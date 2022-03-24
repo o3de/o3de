@@ -118,40 +118,12 @@ namespace AzToolsFramework
             );
         }
 
-        const Instance* InstanceUpdateExecutor::ClimbUpToTargetInstance(
-            const Instance* startInstance, const Instance* targetInstance, AZStd::string& aliasPath) const
-        {
-            if (!startInstance)
-            {
-                return nullptr;
-            }
-
-            // Climb up the instance hierarchy from this instance until you hit the target or the root.
-            InstanceOptionalConstReference instance = *startInstance;
-            AZStd::vector<InstanceOptionalConstReference> instancePath;
-
-            while (&instance->get() != targetInstance && instance->get().GetParentInstance() != AZStd::nullopt)
-            {
-                instancePath.emplace_back(instance);
-                instance = instance->get().GetParentInstance();
-            }
-
-            aliasPath = "";
-            for (auto instanceIter = instancePath.rbegin(); instanceIter != instancePath.rend(); ++instanceIter)
-            {
-                aliasPath.append("/Instances/");
-                aliasPath.append((*instanceIter)->get().GetInstanceAlias());
-            }
-
-            return &instance->get();
-        }
-
         const void InstanceUpdateExecutor::ReplaceFocusedContainerTransformAccordingToRoot(
             const Instance* focusedInstance, PrefabDom& focusedInstanceDom) const
         {
             // Climb from the focused instance to the root and store the path.
             AZStd::string rootToFocusedInstance;
-            auto rootInstance = ClimbUpToTargetInstance(focusedInstance, nullptr, rootToFocusedInstance);
+            auto rootInstance = PrefabDomUtils::ClimbUpToTargetInstance(focusedInstance, nullptr, rootToFocusedInstance);
 
             if (rootInstance != focusedInstance)
             {
@@ -182,7 +154,7 @@ namespace AzToolsFramework
             auto focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
 
             AZStd::string aliasPath;
-            auto domSourceInstance = ClimbUpToTargetInstance(instance, &focusedInstance->get(), aliasPath);
+            auto domSourceInstance = PrefabDomUtils::ClimbUpToTargetInstance(instance, &focusedInstance->get(), aliasPath);
             
             PrefabDomPath domSourcePath(aliasPath.c_str());
             PrefabDom partialInstanceDom;
@@ -201,7 +173,7 @@ namespace AzToolsFramework
             if (domSourceInstance != &focusedInstance->get())
             {
                 AZStd::string aliasPathToFocus;
-                auto focusedInstanceAncestor = ClimbUpToTargetInstance(&focusedInstance->get(), instance, aliasPathToFocus);
+                auto focusedInstanceAncestor = PrefabDomUtils::ClimbUpToTargetInstance(&focusedInstance->get(), instance, aliasPathToFocus);
 
                 // If the focused instance is a descendant (or the instance itself), we need to replace its portion of the dom with the template one.
                 if (focusedInstanceAncestor == instance)

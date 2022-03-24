@@ -344,6 +344,45 @@ namespace AzToolsFramework
 
                 qDebug() << printMessage.data() << "\n" << prefabBuffer.GetString();
             }
+
+            AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue)
+            {
+                rapidjson::StringBuffer prefabBuffer;
+                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+                prefabDomValue.Accept(writer);
+
+                return prefabBuffer.GetString();
+            }
+
+            
+            const Instance* ClimbUpToTargetInstance(
+                const Instance* startInstance, const Instance* targetInstance, AZStd::string& aliasPath)
+            {
+                if (!startInstance)
+                {
+                    return nullptr;
+                }
+
+                // Climb up the instance hierarchy from this instance until you hit the target or the root.
+                InstanceOptionalConstReference instance = *startInstance;
+                AZStd::vector<InstanceOptionalConstReference> instancePath;
+
+                while (&instance->get() != targetInstance && instance->get().GetParentInstance() != AZStd::nullopt)
+                {
+                    instancePath.emplace_back(instance);
+                    instance = instance->get().GetParentInstance();
+                }
+
+                aliasPath = "";
+                for (auto instanceIter = instancePath.rbegin(); instanceIter != instancePath.rend(); ++instanceIter)
+                {
+                    aliasPath.append("/Instances/");
+                    aliasPath.append((*instanceIter)->get().GetInstanceAlias());
+                }
+
+                return &instance->get();
+            }
+
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework
