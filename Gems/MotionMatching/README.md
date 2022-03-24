@@ -101,6 +101,12 @@ The trajectory history stores world space position and facing direction data of 
 
 ![Trajectory Feature](https://user-images.githubusercontent.com/43751992/151819315-beb8d9a1-69ca-49cd-bec0-ba2bae2dc469.png)
 
+## Trajectory prediction
+
+The user controls the character by its future trajectory. The future trajectory contains the path the character is expected to move along, if it should accelerate, move faster, or come to a stop, and if it should be walking forward doing a turn, or strafe sideways. Based on a joystick position, we need to predict the future trajectory and build the path and the facing direction vectors across the control points. The trajectory feature defines the time window of the prediction and the number of samples to be generated. We generate an exponential curve that starts in the direction of the character and then bends towards the given target.
+
+https://user-images.githubusercontent.com/43751992/156741698-d2306bac-cdf5-4a25-96bd-0fc4422b598b.mp4
+
 ## Motion Matching data
 
 Data based on a given skeleton but independent of the instance like the motion capture database, the feature schema or feature matrix is stored here. It is just a wrapper to group the sharable data.
@@ -192,6 +198,17 @@ for_all (nearest frames found in the broad-phase)
 
 StartTransition(newBestMatchingFrame);
 ```
+
+## Demo Levels & Prefabs
+
+There are two demo levels available in the `Gems/MotionMatching/Assets/Levels/`. Copy & paste the content of the `/Levels/` folder to your project levels folder to give them a test run.
+
+There are also two prefabs available that you can instantiate into any of your existing levels or an empty new one for a quick try:
+
+- `/Assets/AutomaticDemo/MotionMatching_AutoDemoCharacter.prefab`: Motion matching demo where the character will move around and follow a path in the level automatically.
+- `/Assets/AutomaticDemo/MotionMatching_ControllableCharacter.prefab`: Motion matching demo where you can use a gamepad to move the character around.
+
+https://user-images.githubusercontent.com/43751992/158962835-22a769a4-183b-438d-b7a9-f782e086b600.mp4
 
 ## Jupyter notebook
 

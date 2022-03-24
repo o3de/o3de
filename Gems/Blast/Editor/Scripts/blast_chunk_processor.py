@@ -98,7 +98,7 @@ def get_mesh_node_names(sceneGraph):
         if sceneGraph.has_node_sibling(node):
             node = sceneGraph.get_node_sibling(node)
         elif children:
-            node = children.pop()
+            node = children.pop(0)
         else:
             node = azlmbr.scene.graph.NodeIndex()
 

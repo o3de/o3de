@@ -849,10 +849,13 @@ namespace AZStd
 #endif
 
             size_type offset = firstPtr - m_start;
-            // unless we have 1 elements we have memory overlapping, so we need to use move.
-            pointer newLast = AZStd::move(lastPtr, m_last, firstPtr);
-            Internal::destroy<pointer>::range(newLast, m_last);
-            m_last = newLast;
+            if (firstPtr != lastPtr)
+            {
+                // unless we have 1 elements we have memory overlapping, so we need to use move.
+                pointer newLast = AZStd::move(lastPtr, m_last, firstPtr);
+                Internal::destroy<pointer>::range(newLast, m_last);
+                m_last = newLast;
+            }
             return iterator(AZSTD_POINTER_ITERATOR_PARAMS(m_start)) + offset;
         }
 

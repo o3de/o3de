@@ -102,6 +102,7 @@ namespace AtomToolsFramework
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler overrides ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
+        void SetCursorMode(AzToolsFramework::CursorInputMode mode) override;
         bool IsMouseOver() const override;
         void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
         void ClearOverrideCursor() override;
@@ -135,6 +136,7 @@ namespace AtomToolsFramework
 
     private:
         void SendWindowResizeEvent();
+        void SendWindowCloseEvent();
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;

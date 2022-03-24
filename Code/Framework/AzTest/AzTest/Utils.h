@@ -11,8 +11,14 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzTest/Printers.h>
+
+namespace AZ::IO
+{
+    class FileIOBase;
+}
 namespace AZ
 {
+    class SettingsRegistryInterface;
     namespace Test
     {
         /*! Command line parameter functions */
@@ -54,6 +60,14 @@ namespace AZ
 
         // Returns the path to the engine's root by cdup from the current execution path until engine.txt is found
         AZStd::string GetEngineRootPath();
+
+        //! Add to the SettingsRegistry an entry with the gem name under the
+        //! SettingsRegistryMergeUtils::ActiveGemsRootKey field
+        //! This also queries the gem path as determined by recursing through the o3de manifest
+        //! files(o3de_manifest.json, project.json, engine.json, gem.json) and matching the gem name.
+        //! If the FileIOBase pointer is non-nullptr an alias is registered that maps
+        //! @gemroot<gem-name> to <gem-path>
+        void AddActiveGem(AZStd::string_view, AZ::SettingsRegistryInterface& registry, AZ::IO::FileIOBase* fileIo = nullptr);
 
         //! Provides a scoped object that will create a temporary operating-system specific folder on creation, and delete it and 
         //! its contents on destruction. This class is only available on host platforms (Windows, Mac, and Linux)

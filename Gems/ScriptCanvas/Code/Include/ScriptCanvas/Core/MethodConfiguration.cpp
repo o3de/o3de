@@ -23,17 +23,38 @@ namespace ScriptCanvas
         {
             if (const AZ::BehaviorParameter * argument = method.GetArgument(argIndex))
             {
-                const AZStd::string argumentTypeName = replaceTypeName.empty()
-                    ? AZ::BehaviorContextHelper::IsStringParameter(*argument)
-                    ? Data::GetName(Data::Type::String())
-                    : Data::GetName(Data::FromAZType(argument->m_typeId))
-                    : AZStd::string(replaceTypeName);
-
                 const AZStd::string* argumentNamePtr = method.GetArgumentName(argIndex);
+                // Use name from behavior context metadata if available
+                if (argumentNamePtr && !argumentNamePtr->empty())
+                {
+                    return *argumentNamePtr;
+                }
+                else
+                {
+                    AZStd::string_view argumentTypeName = replaceTypeName;
+                    if (argumentTypeName.empty())
+                    {
+                        if (AZ::BehaviorContextHelper::IsStringParameter(*argument))
+                        {
+                            argumentTypeName = Data::GetName(Data::Type::String());
+                        }
+                        else
+                        {
+                            argumentTypeName = Data::GetName(Data::FromAZType(argument->m_typeId));
+                        }
+                    }
 
-                return argumentNamePtr && !argumentNamePtr->empty()
-                    ? *argumentNamePtr
-                    : (AZStd::string::format("%s:%2zu", argumentTypeName.data(), argIndex));
+                    size_t argumentNum = method.GetNumArguments();
+                    // Provide default argument name based on index if there is more than one argument
+                    if (argumentNum == 1)
+                    {
+                        return argumentTypeName;
+                    }
+                    else
+                    {
+                        return AZStd::string::format("%s:%2zu", argumentTypeName.data(), argIndex);
+                    }
+                }
             }
 
             return {};

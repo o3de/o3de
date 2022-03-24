@@ -10,17 +10,22 @@
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
+#include <AzCore/Debug/Trace.h>
 #include <Metal/Metal.h>
 #include <RHI/BufferMemoryAllocator.h>
 #include <RHI/Conversions.h>
 #include <RHI/ShaderResourceGroupPool.h>
 
-//[GFX TODO][ATOM - 3653] - Remove one of the ways of allocating constant/argument buffers
-//#define ARGUMENTBUFFER_PAGEALLOCATOR
+//Disable this for better gpu captures. Xcode tooling is not good at handling Argument buffers that are sub-allocated
+//from a big buffer (i.e Page) and hence the recommendaiton is to disable this to allocate individual
+//buffers for ABs. Having individual buffer means that buffer labelling will also work making it easier
+//to travers SRGs within the capture. 
+#define ARGUMENTBUFFER_PAGEALLOCATOR
 
 struct ResourceBindingData
 {
-    AZ::RHI::Ptr<AZ::Metal::Memory> m_resourcPtr;
+    id<MTLResource> m_resourcPtr = nil;
+    AZ::Metal::ResourceType m_rescType = AZ::Metal::ResourceType::MtlUndefined;
     union
     {
         AZ::RHI::ShaderInputImageAccess m_imageAccess;
@@ -34,7 +39,8 @@ struct ResourceBindingData
 
     size_t GetHash() const
     {
-        return static_cast<size_t>(m_resourcPtr->GetHash());
+        AZ_Assert(m_resourcPtr, "m_resourcPtr is null");
+        return m_resourcPtr.hash;
     }
 };
 

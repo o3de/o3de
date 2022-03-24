@@ -20,8 +20,7 @@
                 "Id": 14126657869720434043,
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
-                    "Entity_[1158396607729]",
-                    "Entity_[690245172465]"
+                    "Instance_[789383805137]/ContainerEntity"
                 ]
             },
             "Component_[15230859088967841193]": {
@@ -123,119 +122,6 @@
                 "Component_[952797371922080273]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 952797371922080273
-                }
-            }
-        },
-        "Entity_[1158396607729]": {
-            "Id": "Entity_[1158396607729]",
-            "Name": "Camera",
-            "Components": {
-                "Component_[11895140916889160460]": {
-                    "$type": "EditorEntityIconComponent",
-                    "Id": 11895140916889160460
-                },
-                "Component_[16880285896855930892]": {
-                    "$type": "{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D} EditorCameraComponent",
-                    "Id": 16880285896855930892,
-                    "Controller": {
-                        "Configuration": {
-                            "Field of View": 55.0,
-                            "EditorEntityId": 10986816090292405240
-                        }
-                    }
-                },
-                "Component_[17187464423780271193]": {
-                    "$type": "EditorLockComponent",
-                    "Id": 17187464423780271193
-                },
-                "Component_[17495696818315413311]": {
-                    "$type": "EditorEntitySortComponent",
-                    "Id": 17495696818315413311
-                },
-                "Component_[18086214374043522055]": {
-                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 18086214374043522055,
-                    "Parent Entity": "Entity_[1146574390643]",
-                    "Transform Data": {
-                        "Translate": [
-                            -10.68217658996582,
-                            -0.35692599415779114,
-                            8.096297264099121
-                        ],
-                        "Rotate": [
-                            0.08758439868688583,
-                            37.60460662841797,
-                            -90.1435317993164
-                        ]
-                    }
-                },
-                "Component_[18387556550380114975]": {
-                    "$type": "SelectionComponent",
-                    "Id": 18387556550380114975
-                },
-                "Component_[2654521436129313160]": {
-                    "$type": "EditorVisibilityComponent",
-                    "Id": 2654521436129313160
-                },
-                "Component_[444962702619705400]": {
-                    "$type": "EditorScriptCanvasComponent",
-                    "Id": 444962702619705400,
-                    "m_name": "CameraController_AutomaticDemo.scriptcanvas",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{07C8F66D-5CCA-50AB-84DA-2D8041DE99C5}",
-                            "path": "E:/Main/o3de/Gems/MotionMatching/Assets/Levels/MotionMatching_AutomaticDemo/CameraController_AutomaticDemo.scriptcanvas"
-                        },
-                        "entityId": [
-                            [
-                                {
-                                    "m_id": "{41580E96-162D-4B0C-A1FF-93339C9DD3F3}"
-                                },
-                                ""
-                            ]
-                        ],
-                        "overrides": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[690245172465]"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{41580E96-162D-4B0C-A1FF-93339C9DD3F3}"
-                                },
-                                "VariableName": "FollowEntity",
-                                "InitialValueSource": 1
-                            }
-                        ]
-                    },
-                    "sourceHandle": {
-                        "id": "{07C8F66D-5CCA-50AB-84DA-2D8041DE99C5}",
-                        "path": "E:/Main/o3de/Gems/MotionMatching/Assets/Levels/MotionMatching_AutomaticDemo/CameraController_AutomaticDemo.scriptcanvas"
-                    }
-                },
-                "Component_[5265045084611556958]": {
-                    "$type": "EditorDisabledCompositionComponent",
-                    "Id": 5265045084611556958
-                },
-                "Component_[7169798125182238623]": {
-                    "$type": "EditorPendingCompositionComponent",
-                    "Id": 7169798125182238623
-                },
-                "Component_[8866210352157164042]": {
-                    "$type": "EditorInspectorComponent",
-                    "Id": 8866210352157164042
-                },
-                "Component_[9129253381063760879]": {
-                    "$type": "EditorOnlyEntityComponent",
-                    "Id": 9129253381063760879
                 }
             }
         },
@@ -445,112 +331,33 @@
                     "Id": 931091830724002070
                 }
             }
-        },
-        "Entity_[690245172465]": {
-            "Id": "Entity_[690245172465]",
-            "Name": "Character",
-            "Components": {
-                "Component_[11597229343526178171]": {
-                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 11597229343526178171,
-                    "Parent Entity": "Entity_[1146574390643]",
-                    "Transform Data": {
-                        "Translate": [
-                            -0.18471145629882813,
-                            -0.813662052154541,
-                            2.384185791015625e-7
-                        ]
-                    }
+        }
+    },
+    "Instances": {
+        "Instance_[789383805137]": {
+            "Source": "AutomaticDemo/MotionMatching_AutoDemoCharacter.prefab",
+            "Patches": [
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[584138064332982595]/Parent Entity",
+                    "value": "../Entity_[1146574390643]"
                 },
-                "Component_[14107982186732641271]": {
-                    "$type": "EditorPendingCompositionComponent",
-                    "Id": 14107982186732641271
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[584138064332982595]/Transform Data/Translate/0",
+                    "value": -5.433444023132324
                 },
-                "Component_[14228236558420546799]": {
-                    "$type": "SelectionComponent",
-                    "Id": 14228236558420546799
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[584138064332982595]/Transform Data/Translate/1",
+                    "value": -0.5852940082550049
                 },
-                "Component_[15604336135208144911]": {
-                    "$type": "EditorLockComponent",
-                    "Id": 15604336135208144911
-                },
-                "Component_[16342601629016048675]": {
-                    "$type": "EditorInspectorComponent",
-                    "Id": 16342601629016048675
-                },
-                "Component_[17265393425283505607]": {
-                    "$type": "EditorCharacterControllerComponent",
-                    "Id": 17265393425283505607,
-                    "Configuration": {
-                        "entityId": "",
-                        "Material": {
-                            "MaterialIds": [
-                                {}
-                            ]
-                        },
-                        "ContactOffset": 0.08999999612569809,
-                        "ScaleCoeff": 0.9800000190734863
-                    },
-                    "ShapeConfig": {
-                        "Capsule": {
-                            "Height": 1.600000023841858
-                        }
-                    }
-                },
-                "Component_[2381308685144705877]": {
-                    "$type": "EditorEntityIconComponent",
-                    "Id": 2381308685144705877
-                },
-                "Component_[2746443750569725403]": {
-                    "$type": "EditorEntitySortComponent",
-                    "Id": 2746443750569725403
-                },
-                "Component_[3162062719870617335]": {
-                    "$type": "EditorDisabledCompositionComponent",
-                    "Id": 3162062719870617335
-                },
-                "Component_[3194309617651850877]": {
-                    "$type": "EditorVisibilityComponent",
-                    "Id": 3194309617651850877
-                },
-                "Component_[5478644887482298038]": {
-                    "$type": "EditorAnimGraphComponent",
-                    "Id": 5478644887482298038,
-                    "AnimGraphAsset": {
-                        "assetId": {
-                            "guid": "{4C39D082-8749-5658-89AE-2A17DD16F565}"
-                        },
-                        "assetHint": "levels/motionmatching_automaticdemo/motionmatching_automaticdemo.animgraph"
-                    },
-                    "MotionSetAsset": {
-                        "assetId": {
-                            "guid": "{E983A8BE-51DB-5A30-83B9-20E6EECE3BBE}"
-                        },
-                        "assetHint": "motionmatching.motionset"
-                    },
-                    "ActiveMotionSetName": "MotionMatching"
-                },
-                "Component_[6845599104697207399]": {
-                    "$type": "EditorActorComponent",
-                    "Id": 6845599104697207399,
-                    "ActorAsset": {
-                        "assetId": {
-                            "guid": "{0D974177-48F4-50A2-881E-D7D4EA559030}",
-                            "subId": 1149045819
-                        },
-                        "loadBehavior": "QueueLoad",
-                        "assetHint": "character/rinmm.actor"
-                    },
-                    "MaterialPerLOD": [
-                        {}
-                    ],
-                    "AttachmentTarget": ""
-                },
-                "Component_[9034336184923007978]": {
-                    "$type": "EditorOnlyEntityComponent",
-                    "Id": 9034336184923007978
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/Component_[584138064332982595]/Transform Data/Translate/2",
+                    "value": 2.384185791015625e-7
                 }
-            }
+            ]
         }
     }
 }
