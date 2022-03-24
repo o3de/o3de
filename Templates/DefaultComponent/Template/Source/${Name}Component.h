@@ -30,10 +30,8 @@ namespace ${SanitizedCppName}
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
     protected:
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
     };
 } // namespace ${SanitizedCppName}

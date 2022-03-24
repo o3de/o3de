@@ -10,39 +10,22 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/Component/EntityId.h>
+#include <AzCore/Component/ComponentBus.h>
 
 namespace ${SanitizedCppName}
 {
     class ${SanitizedCppName}Requests
+        : public AZ::ComponentBus
     {
     public:
         AZ_RTTI(${SanitizedCppName}Requests, "{${Random_Uuid}}");
-        virtual ~${SanitizedCppName}Requests() = default;
-        // Put your public methods here
 
-        // Put notification events here
-        // void RegisterEvent(AZ::EventHandler<...> notifyHandler);
-        // AZ::Event<...> m_notifyEvent1;
+        // Put your public request methods here
     };
-
-    class ${SanitizedCppName}BusTraits
-        : public AZ::EBusTraits
-    {
-    public:
-        //////////////////////////////////////////////////////////////////////////
-        // EBusTraits overrides
-        using BusIdType = AZ::EntityId;
-        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        //////////////////////////////////////////////////////////////////////////
-    };
-
-    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests, ${SanitizedCppName}BusTraits>;
+    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests>;
     inline namespace ${SanitizedCppName}Interface
     {
-        inline constexpr auto Get = [](${SanitizedCppName}BusTraits::BusIdType busId) {return ${SanitizedCppName}RequestBus::FindFirstHandler(busId); };
+        inline constexpr auto Get = [](AZ::ComponentBus::BusIdType busId) {return ${SanitizedCppName}RequestBus::FindFirstHandler(busId); };
     }
 
 } // namespace ${SanitizedCppName}
