@@ -23,13 +23,13 @@
             "isTemplated": true
         },
         {
-            "file": "Include/${Name}Interface.h",
+            "file": "Include/${GemName}/${Name}Interface.h",
             "isTemplated": true
         }
     ],
     "createDirectories": [
         {
-            "dir": "Include"
+            "dir": "Include/${GemName}"
         },
         {
             "dir": "Source"

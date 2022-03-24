@@ -11,9 +11,9 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <${SanitizedCppName}Interface.h>
+#include <${GemName}/${SanitizedCppName}Interface.h>
 
-namespace ${SanitizedCppName}
+namespace ${GemName}
 {
     class ${SanitizedCppName}Component
         : public AZ::Component
@@ -34,4 +34,4 @@ namespace ${SanitizedCppName}
         void Activate() override;
         void Deactivate() override;
     };
-} // namespace ${SanitizedCppName}
+} // namespace ${GemName}
