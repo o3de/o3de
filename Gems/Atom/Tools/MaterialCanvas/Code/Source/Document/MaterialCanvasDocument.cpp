@@ -89,7 +89,7 @@ namespace MaterialCanvas
         // However, there may be no need as this is an established pattern in other applications that provide multiple options and templates
         // to use as a starting point for a new document.
         documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
-            "/O3DE/Atom/MaterialEditor/DefaultMaterialCanvasTemplateAsset",
+            "/O3DE/Atom/MaterialCanvas/DefaultMaterialCanvasTemplateAsset",
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialCanvas/blank.materialcanvastemplate.azasset"));
         return documentType;
     }
