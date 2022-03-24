@@ -56,14 +56,6 @@ namespace EMStudio
         delete m_adjustActorCallback;
     }
 
-
-    // clone the log window
-    EMStudioPlugin* AttachmentsPlugin::Clone()
-    {
-        return new AttachmentsPlugin();
-    }
-
-
     // init after the parent dock window has been created
     bool AttachmentsPlugin::Init()
     {
@@ -285,5 +277,3 @@ namespace EMStudio
         return ReInitAttachmentsPlugin();
     }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Attachments/moc_AttachmentsPlugin.cpp>
