@@ -973,7 +973,9 @@ protected:
     NiceMock<FileCacheManagerMock> m_mockFileCacheManager;
 
 private:
+    #if !defined(AUDIO_RELEASE)
     NiceMock<ATLDebugNameStoreMock> m_mockDebugNameStore;
+    #endif // !AUDIO_RELEASE
 
     const char* m_audioTestAlias { "@audiotestroot@" };
     AZ::IO::FileIOBase* m_prevFileIO { nullptr };
