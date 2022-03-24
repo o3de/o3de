@@ -1045,7 +1045,7 @@ namespace AZ
                 // Use only the baseColor, no texture on top of it
                 subMesh.m_irradianceColor = subMesh.m_baseColor;
             }
-            if (irradianceColorSource == AZ::Name("BaseColor"))
+            else if (irradianceColorSource == AZ::Name("BaseColor"))
             {
                 // Check if texturing is enabled
                 bool useTexture;
@@ -1090,7 +1090,8 @@ namespace AZ
                             {
                                 AZ_Warning("MeshFeatureProcessor", false, "textureBlendMode '%s' is not "
                                         "yet supported when requesting BaseColor irradiance source, "
-                                        "defaulting to 'Multiply'.", textureBlendMode.GetCStr());
+                                        "using 'Multiply' for deriving the irradiance color.",
+                                        textureBlendMode.GetCStr());
                             }
                         }
                         // 'Multiply' blend mode:
