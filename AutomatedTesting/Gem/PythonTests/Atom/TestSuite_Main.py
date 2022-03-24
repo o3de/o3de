@@ -126,3 +126,6 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C36525660")
     class AtomEditorComponentsLevel_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponentsLevel_DisplayMapperAdded as test_module
+
+    class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
+        from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
