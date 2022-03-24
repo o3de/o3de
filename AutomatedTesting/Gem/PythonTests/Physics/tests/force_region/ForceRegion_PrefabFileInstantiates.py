@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 # Test case ID : C6090546
-# Test Case Title : Check that a force region slice can be saved and instantiated
+# Test Case Title : Check that a force region prefab can be saved and instantiated
 
 
 
@@ -15,22 +15,22 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 class Tests():
     enter_game_mode   = ("Entered game mode",            "Failed to enter game mode")
     find_sphere       = ("SphereRigidBody found",        "SphereRigidBody not found")
-    find_force_region = ("ForceRegionSliceEntity found", "ForceRegionSliceEntity not found")
+    find_force_region = ("ForceRegionPrefabEntity found", "ForceRegionPrefabEntity not found")
     sphere_dropped    = ("Sphere dropped down",          "Sphere did not drop down") 
     sphere_bounced    = ("Sphere bounced up vertically", "Sphere did not bounce up vertically")
     exit_game_mode    = ("Exited game mode",             "Couldn't exit game mode")
 # fmt: on
 
 
-def ForceRegion_SliceFileInstantiates():
+def ForceRegion_PrefabFileInstantiates():
 
     """
     Summary:
-    Check that a force region slice can be saved and instantiated
+    Check that a force region prefab can be saved and instantiated
 
     Level Description:
     The SphereRigidBody entity is placed above the ForceRegionBox entity
-    ForceRegionSliceEntity (entity) - Slice Asset which is imported from .slice file of another level which has
+    ForceRegionPrefabEntity (entity) - Prefab Asset which is imported from .prefab file of another level which has
                                       an entity with force region component.
     SphereRigidBody (entity) - Entity with PhysX Rigid body, Mesh and collider components.
     The SphereRigidBody is placed above the ForceRegionEntity.
@@ -95,7 +95,7 @@ def ForceRegion_SliceFileInstantiates():
     helper.init_idle()
 
     # 1) Open level
-    helper.open_level("Physics", "ForceRegion_SliceFileInstantiates")
+    helper.open_level("Physics", "ForceRegion_PrefabInstantiates")
 
     # 2) Enter game mode
     helper.enter_game_mode(Tests.enter_game_mode)
@@ -103,7 +103,7 @@ def ForceRegion_SliceFileInstantiates():
     # 3) Retrieve and validate entities
     Sphere.id = general.find_game_entity("SphereRigidBody")
     Report.critical_result(Tests.find_sphere, Sphere.id.IsValid())
-    ForceRegion.id = general.find_game_entity("ForceRegionSliceEntity")
+    ForceRegion.id = general.find_game_entity("ForceRegionPrefab")
     Report.critical_result(Tests.find_force_region, ForceRegion.id.IsValid())
 
     # 4) Get the initial position of the Sphere (rigid body)
@@ -134,4 +134,4 @@ def ForceRegion_SliceFileInstantiates():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(ForceRegion_SliceFileInstantiates)
+    Report.start_test(ForceRegion_PrefabFileInstantiates)

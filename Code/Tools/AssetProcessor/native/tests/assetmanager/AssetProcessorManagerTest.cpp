@@ -3647,68 +3647,6 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_ClearsFingerprint)
 
 //////////////////////////////////////////////////////////////////////////
 
-MockBuilderInfoHandler::~MockBuilderInfoHandler()
-{
-    BusDisconnect();
-    m_builderDesc = {};
-}
-
-void MockBuilderInfoHandler::GetMatchingBuildersInfo([[maybe_unused]] const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList)
-{
-    builderInfoList.push_back(m_builderDesc);
-}
-
-void MockBuilderInfoHandler::GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList)
-{
-    builderInfoList.push_back(m_builderDesc);
-}
-
-void MockBuilderInfoHandler::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
-{
-    response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-
-    for (const auto& platform : request.m_enabledPlatforms)
-    {
-        AssetBuilderSDK::JobDescriptor jobDescriptor;
-        jobDescriptor.m_priority = 0;
-        jobDescriptor.m_critical = true;
-        jobDescriptor.m_jobKey = "Mock Job";
-        jobDescriptor.SetPlatformIdentifier(platform.m_identifier.c_str());
-        jobDescriptor.m_additionalFingerprintInfo = m_jobFingerprint.toUtf8().data();
-
-        if (!m_jobDependencyFilePath.isEmpty())
-        {
-            jobDescriptor.m_jobDependencyList.push_back(AssetBuilderSDK::JobDependency("Mock Job", "pc", AssetBuilderSDK::JobDependencyType::Order,
-                AssetBuilderSDK::SourceFileDependency(m_jobDependencyFilePath.toUtf8().constData(), AZ::Uuid::CreateNull())));
-        }
-
-        if (!m_dependencyFilePath.isEmpty())
-        {
-            response.m_sourceFileDependencyList.push_back(AssetBuilderSDK::SourceFileDependency(m_dependencyFilePath.toUtf8().data(), AZ::Uuid::CreateNull()));
-        }
-        response.m_createJobOutputs.push_back(jobDescriptor);
-        m_createJobsCount++;
-    }
-}
-
-void MockBuilderInfoHandler::ProcessJob([[maybe_unused]] const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
-{
-    response.m_resultCode = AssetBuilderSDK::ProcessJobResultCode::ProcessJobResult_Success;
-}
-
-AssetBuilderSDK::AssetBuilderDesc MockBuilderInfoHandler::CreateBuilderDesc(const QString& builderName, const QString& builderId, const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns)
-{
-    AssetBuilderSDK::AssetBuilderDesc builderDesc;
-
-    builderDesc.m_name = builderName.toUtf8().data();
-    builderDesc.m_patterns = builderPatterns;
-    builderDesc.m_busId = AZ::Uuid::CreateString(builderId.toUtf8().data());
-    builderDesc.m_builderType = AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal;
-    builderDesc.m_createJobFunction = AZStd::bind(&MockBuilderInfoHandler::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-    builderDesc.m_processJobFunction = AZStd::bind(&MockBuilderInfoHandler::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-    return builderDesc;
-}
-
 void FingerprintTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
@@ -3857,21 +3795,21 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(dependsOnFilec1_Job, QString("tempdata\n")));
 
     QStringList dependList;
-    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFileb1_Source);
+    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFileb1_Source, {});
     EXPECT_EQ(dependList.size(), 1);
     EXPECT_EQ(dependList[0], absPath.toUtf8().constData());
     dependList.clear();
 
-    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFilec1_Job);
+    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFilec1_Job, {});
     EXPECT_EQ(dependList.size(), 1);
     EXPECT_EQ(dependList[0], absPath.toUtf8().constData());
     dependList.clear();
 
-    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFilea_Source);
+    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFilea_Source, {});
     EXPECT_EQ(dependList.size(), 0);
     dependList.clear();
 
-    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFiled_Job);
+    dependList = m_assetProcessorManager.get()->GetSourceFilesWhichDependOnSourceFile(dependsOnFiled_Job, {});
     EXPECT_EQ(dependList.size(), 0);
 
     dependList.clear();
@@ -4478,7 +4416,7 @@ bool WildcardSourceDependencyTest::Test(
 
 AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const QString& path)
 {
-    auto result = m_assetProcessorManager->GetSourceFilesWhichDependOnSourceFile(path);
+    auto result = m_assetProcessorManager->GetSourceFilesWhichDependOnSourceFile(path, {});
 
     return QStringListToVector(result);
 }
@@ -4540,21 +4478,21 @@ void WildcardSourceDependencyTest::SetUp()
     // Relative path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "a.foo", "%a.foo",
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Absolute path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "b.foo", tempPath.absoluteFilePath("%b.foo").toUtf8().constData(),
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Test what happens when we have 2 dependencies on the same file
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "folder/one/d.foo", "%c.foo",
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "folder/one/d.foo", tempPath.absoluteFilePath("%c.foo").toUtf8().constData(),
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
 #ifdef AZ_PLATFORM_WINDOWS
     // Test to make sure a relative wildcard dependency doesn't match an absolute path
@@ -4566,7 +4504,7 @@ void WildcardSourceDependencyTest::SetUp()
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "folder/one/d.foo",
         (test).toUtf8().constData(),
-        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 #endif
 
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependencies(dependencies));
