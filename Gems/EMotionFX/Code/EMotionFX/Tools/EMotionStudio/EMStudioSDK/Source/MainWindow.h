@@ -72,7 +72,6 @@ namespace EMStudio
 {
     // forward declaration
     class DirtyFileManager;
-    class EMStudioPlugin;
     class FileManager;
     class MainWindow;
     class NativeEventFilter;
