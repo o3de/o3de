@@ -40,7 +40,7 @@ namespace Blast
             m_fakeEntityProvider = AZStd::make_shared<FakeEntityProvider>(3);
             m_mockPxAsset = AZStd::make_unique<FakeExtPxAsset>(actorDesc);
             m_asset = AZStd::make_unique<BlastAsset>(m_mockPxAsset.get());
-            m_blastMaterial = AZStd::make_unique<BlastMaterial>(BlastMaterialConfiguration());
+            m_blastMaterial = AZStd::make_unique<Material>(MaterialConfiguration());
 
             m_systemHandler = AZStd::make_shared<MockBlastSystemBusHandler>();
             m_mockTkFramework = AZStd::make_unique<MockTkFramework>();
@@ -59,7 +59,7 @@ namespace Blast
         AZStd::shared_ptr<FakeEntityProvider> m_fakeEntityProvider;
         AZStd::unique_ptr<FakeExtPxAsset> m_mockPxAsset;
         AZStd::unique_ptr<BlastAsset> m_asset;
-        AZStd::unique_ptr<BlastMaterial> m_blastMaterial;
+        AZStd::unique_ptr<Material> m_blastMaterial;
 
         AZStd::shared_ptr<MockBlastSystemBusHandler> m_systemHandler;
         AZStd::unique_ptr<MockTkFramework> m_mockTkFramework;
@@ -92,7 +92,7 @@ namespace Blast
                  m_mockListener.get(),
                  nullptr,
                  Physics::MaterialId(),
-                 *m_blastMaterial,
+                 m_blastMaterial.get(),
                  m_fakeActorFactory,
                  m_fakeEntityProvider,
                  blastActorConfiguration};

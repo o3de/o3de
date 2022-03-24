@@ -49,7 +49,7 @@ namespace Blast
         Nv::Blast::ExtStressSolverSettings GetStressSolverSettings(uint32_t iterationsCount) const;
 
         //! Returns underlying pointer of the native type.
-        void* GetNativePointer();
+        const void* GetNativePointer() const;
 
     private:
         float m_health;

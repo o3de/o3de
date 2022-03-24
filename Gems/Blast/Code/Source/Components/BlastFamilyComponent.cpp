@@ -22,6 +22,7 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <Blast/BlastActor.h>
 #include <Blast/BlastSystemBus.h>
+#include <Material/Material.h>
 #include <Common/Utils.h>
 #include <Components/BlastFamilyComponentNotificationBusHandler.h>
 #include <Components/BlastMeshDataComponent.h>
@@ -34,10 +35,12 @@
 namespace Blast
 {
     BlastFamilyComponent::BlastFamilyComponent(
-        const AZ::Data::Asset<BlastAsset> blastAsset, const BlastMaterialId materialId,
-        Physics::MaterialId physicsMaterialId, const BlastActorConfiguration actorConfiguration)
+        AZ::Data::Asset<BlastAsset> blastAsset,
+        AZ::Data::Asset<MaterialAsset> blastMaterialAsset,
+        Physics::MaterialId physicsMaterialId,
+        const BlastActorConfiguration& actorConfiguration)
         : m_blastAsset(blastAsset)
-        , m_materialId(materialId)
+        , m_blastMaterialAsset(blastMaterialAsset)
         , m_physicsMaterialId(physicsMaterialId)
         , m_actorConfiguration(actorConfiguration)
         , m_debugRenderMode(DebugRenderDisabled)
@@ -54,9 +57,9 @@ namespace Blast
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<BlastFamilyComponent, AZ::Component>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("BlastAsset", &BlastFamilyComponent::m_blastAsset)
-                ->Field("BlastMaterial", &BlastFamilyComponent::m_materialId)
+                ->Field("BlastMaterialAsset", &BlastFamilyComponent::m_blastMaterialAsset)
                 ->Field("PhysicsMaterial", &BlastFamilyComponent::m_physicsMaterialId)
                 ->Field("ActorConfiguration", &BlastFamilyComponent::m_actorConfiguration);
         }
@@ -192,6 +195,7 @@ namespace Blast
         AZ_PROFILE_FUNCTION(Physics);
 
         AZ_Assert(m_blastAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast asset.");
+        AZ_Assert(m_blastMaterialAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast material asset.");
 
         Spawn();
 
@@ -220,9 +224,11 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        if (!m_blastAsset.IsReady())
+        if (!m_blastAsset.IsReady() || !m_blastMaterialAsset.IsReady())
         {
+            // TODO: This doesn't seem to do anything. Isn't this suppose to connect to OnAssetReady?
             m_shouldSpawnOnAssetLoad = true;
+            AZ_Warning("BlastFamilyComponent", false, "Blast assets are not ready.");
             return;
         }
 
@@ -232,14 +238,11 @@ namespace Blast
         AZ::Transform transform = AZ::Transform::Identity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
-        // Get blast material
-        BlastMaterialFromAssetConfiguration blastMaterialConfiguration;
-        auto materialLibrary = blastSystem->GetGlobalConfiguration().m_materialLibrary.Get();
-        if (materialLibrary)
-        {
-            materialLibrary->GetDataForMaterialId(m_materialId, blastMaterialConfiguration);
-        }
-        auto blastMaterial = BlastMaterial(blastMaterialConfiguration.m_configuration);
+        // Create blast material instance
+        // TODO: At the moment each component creates its own instance of the material asset.
+        // A better approach could be to create only one instance per material asset so all
+        // components using the same asset will reference the same instance.
+        m_blastMaterial = AZStd::make_unique<Material>(m_blastMaterialAsset.Get()->GetMaterialConfiguration());
 
         AZStd::shared_ptr<EntityProvider> entityProvider = EntityProvider::Create();
 
@@ -249,7 +252,7 @@ namespace Blast
              this,
              blastSystem->GetTkGroup(),
              m_physicsMaterialId,
-             blastMaterial,
+             m_blastMaterial.get(),
              AZStd::make_shared<BlastActorFactoryImpl>(),
              entityProvider,
              m_actorConfiguration};
@@ -258,7 +261,7 @@ namespace Blast
 
         // Create stress solver
         auto stressSolverSettings =
-            blastMaterial.GetStressSolverSettings(blastSystem->GetGlobalConfiguration().m_stressSolverIterations);
+            m_blastMaterial->GetStressSolverSettings(blastSystem->GetGlobalConfiguration().m_stressSolverIterations);
         // Have to do const cast here, because TkFamily does not give non-const family
         auto solverPtr = Nv::Blast::ExtStressSolver::create(
             const_cast<NvBlastFamily&>(*m_family->GetTkFamily()->getFamilyLL()), stressSolverSettings);
@@ -282,7 +285,7 @@ namespace Blast
         m_solver->setAllNodesInfoFromLL(physicsMaterial->GetDensity());
 
         // Create damage and actor render managers
-        m_damageManager = AZStd::make_unique<DamageManager>(blastMaterial, m_family->GetActorTracker());
+        m_damageManager = AZStd::make_unique<DamageManager>(m_blastMaterial.get(), m_family->GetActorTracker());
 
         if (m_meshDataComponent)
         {
@@ -307,6 +310,8 @@ namespace Blast
         m_actorRenderManager = nullptr;
         m_damageManager = nullptr;
         m_solver = nullptr;
+
+        m_blastMaterial = nullptr;
     }
 
     AZ::EntityId BlastFamilyComponent::GetFamilyId()

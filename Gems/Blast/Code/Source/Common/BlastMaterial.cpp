@@ -112,46 +112,6 @@ namespace Blast
         }
     }
 
-    void BlastActorConfiguration::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<BlastActorConfiguration>()
-                ->Version(1)
-                ->Field("CollisionLayer", &BlastActorConfiguration::m_collisionLayer)
-                ->Field("CollisionGroupId", &BlastActorConfiguration::m_collisionGroupId)
-                ->Field("Simulated", &BlastActorConfiguration::m_isSimulated)
-                ->Field("InSceneQueries", &BlastActorConfiguration::m_isInSceneQueries)
-                ->Field("CcdEnabled", &BlastActorConfiguration::m_isCcdEnabled)
-                ->Field("ColliderTag", &BlastActorConfiguration::m_tag);
-
-            if (auto editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<BlastActorConfiguration>("BlastActorConfiguration", "Configuration for a collider")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BlastActorConfiguration::m_isSimulated, "Simulated",
-                        "If set, this actor's collider will partake in collision in the physical simulation")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BlastActorConfiguration::m_isInSceneQueries, "In Scene Queries",
-                        "If set, this actor's collider will be visible for scene queries")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BlastActorConfiguration::m_isCcdEnabled, "CCD Enabled",
-                        "If set, actor's rigid body will have CCD enabled")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BlastActorConfiguration::m_collisionLayer, "Collision Layer",
-                        "The collision layer assigned to the collider")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BlastActorConfiguration::m_collisionGroupId, "Collides With",
-                        "The collision group containing the layers this collider collides with")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BlastActorConfiguration::m_tag, "Tag",
-                        "Tag used to identify colliders from one another");
-            }
-        }
-    }
-
     void BlastMaterialFromAssetConfiguration::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

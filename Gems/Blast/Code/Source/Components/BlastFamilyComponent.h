@@ -15,7 +15,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
-#include <Blast/BlastMaterial.h>
+#include <Material/MaterialAsset.h>
 #include <Common/BlastInterfaces.h>
 #include <Family/ActorRenderManager.h>
 #include <Family/BlastFamily.h>
@@ -42,8 +42,10 @@ namespace Blast
         AZ_COMPONENT(BlastFamilyComponent, "{88ECE087-C88A-4A83-A83C-477BA9C13221}", AZ::Component);
 
         BlastFamilyComponent(
-            AZ::Data::Asset<BlastAsset> blastAsset, Blast::BlastMaterialId materialId,
-            Physics::MaterialId physicsMaterialId, BlastActorConfiguration actorConfiguration);
+            AZ::Data::Asset<BlastAsset> blastAsset,
+            AZ::Data::Asset<MaterialAsset> blastMaterialAsset,
+            Physics::MaterialId physicsMaterialId,
+            const BlastActorConfiguration& actorConfiguration);
 
         BlastFamilyComponent() = default;
         virtual ~BlastFamilyComponent() = default;
@@ -103,12 +105,15 @@ namespace Blast
         physx::unique_ptr<Nv::Blast::ExtStressSolver> m_solver;
         AZStd::unique_ptr<BlastFamily> m_family;
 
+        // Blast material instance
+        AZStd::unique_ptr<Material> m_blastMaterial;
+
         // Dependencies
         BlastMeshData* m_meshDataComponent = nullptr;
 
         // Configurations
         AZ::Data::Asset<BlastAsset> m_blastAsset;
-        const BlastMaterialId m_materialId{};
+        AZ::Data::Asset<MaterialAsset> m_blastMaterialAsset;
         Physics::MaterialId m_physicsMaterialId;
         const BlastActorConfiguration m_actorConfiguration{};
 

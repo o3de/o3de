@@ -81,7 +81,7 @@ namespace Blast
         return settings;
     }
 
-    void* Material::GetNativePointer()
+    const void* Material::GetNativePointer() const
     {
         return &m_blastMaterial;
     }

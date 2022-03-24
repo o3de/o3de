@@ -22,9 +22,9 @@ namespace Blast
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<EditorBlastFamilyComponent, EditorComponentBase>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("BlastAsset", &EditorBlastFamilyComponent::m_blastAsset)
-                ->Field("BlastMaterial", &EditorBlastFamilyComponent::m_materialId)
+                ->Field("BlastMaterialAsset", &EditorBlastFamilyComponent::m_blastMaterialAsset)
                 ->Field("PhysicsMaterial", &EditorBlastFamilyComponent::m_physicsMaterialId)
                 ->Field("ActorConfiguration", &EditorBlastFamilyComponent::m_actorConfiguration);
 
@@ -42,10 +42,11 @@ namespace Blast
                         AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_blastAsset, "Blast asset",
                         "Assigned blast asset")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_materialId, "Blast Material",
-                        "Assigned blast material from current material library")
-                    ->ElementAttribute(
-                        Attributes::BlastMaterialLibraryAssetId, &EditorBlastFamilyComponent::GetMaterialLibraryAssetId)
+                        AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_blastMaterialAsset, "Blast Material",
+                        "Assigned blast material asset")
+                        ->Attribute(AZ_CRC_CE("EditButton"), "")
+                        ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Asset Editor")
+                        ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_physicsMaterialId,
                         "Physics Material", "Assigned physics material from current physics material library")
@@ -82,9 +83,14 @@ namespace Blast
 
     void EditorBlastFamilyComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_Assert(asset.GetId() == m_blastAsset.GetId(), "Got OnAssetReady for something other than our blast asset.");
-        // Fill in our missing m_assetData on our reference
-        m_blastAsset = asset;
+        if (asset == m_blastAsset)
+        {
+            m_blastAsset = asset;
+        }
+        else if (asset == m_blastMaterialAsset)
+        {
+            m_blastMaterialAsset = asset;
+        }
     }
 
     void EditorBlastFamilyComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -101,6 +107,12 @@ namespace Blast
             AZ::Data::AssetBus::MultiHandler::BusConnect(m_blastAsset.GetId());
             m_blastAsset.QueueLoad();
         }
+
+        if (m_blastMaterialAsset.GetId().IsValid())
+        {
+            AZ::Data::AssetBus::MultiHandler::BusConnect(m_blastMaterialAsset.GetId());
+            m_blastMaterialAsset.QueueLoad();
+        }
     }
 
     void EditorBlastFamilyComponent::Deactivate()
@@ -113,12 +125,7 @@ namespace Blast
     void EditorBlastFamilyComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         gameEntity->CreateComponent<BlastFamilyComponent>(
-            m_blastAsset, m_materialId, m_physicsMaterialId, m_actorConfiguration);
-    }
-
-    AZ::Data::AssetId EditorBlastFamilyComponent::GetMaterialLibraryAssetId() const
-    {
-        return AZ::Interface<BlastSystemRequests>::Get()->GetGlobalConfiguration().m_materialLibrary.GetId();
+            m_blastAsset, m_blastMaterialAsset, m_physicsMaterialId, m_actorConfiguration);
     }
 
     AZ::Data::AssetId EditorBlastFamilyComponent::GetPhysicsMaterialLibraryAssetId() const

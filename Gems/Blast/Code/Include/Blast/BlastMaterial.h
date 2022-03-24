@@ -10,8 +10,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzFramework/Physics/Collision/CollisionLayers.h>
-#include <AzFramework/Physics/Collision/CollisionGroups.h>
 
 #include <NvBlastExtDamageShaders.h>
 #include <NvBlastExtStressSolver.h>
@@ -181,26 +179,5 @@ namespace Blast
         friend class BlastMaterialLibraryAssetEventHandler;
         void GenerateMissingIds();
         AZStd::vector<BlastMaterialFromAssetConfiguration> m_materialLibrary;
-    };
-
-    //! Class that describes configuration of the rigid bodies used in Blast Actors.
-    class BlastActorConfiguration
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(BlastActorConfiguration, AZ::SystemAllocator, 0);
-        AZ_RTTI(BlastActorConfiguration, "{949E731B-0418-4B70-8969-2871F66CF463}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        BlastActorConfiguration() = default;
-        BlastActorConfiguration(const BlastActorConfiguration&) = default;
-        virtual ~BlastActorConfiguration() = default;
-
-        AzPhysics::CollisionLayer m_collisionLayer; //! Which collision layer is this actor's collider on.
-        AzPhysics::CollisionGroups::Id m_collisionGroupId; //! Which layers does this actor's collider collide with.
-        bool m_isSimulated = true; //! Should this actor's shapes partake in collision in the physical simulation.
-        bool m_isInSceneQueries =
-            true; //! Should this actor's shapes partake in scene queries (ray casts, overlap tests, sweeps).
-        bool m_isCcdEnabled = true; //! Should this actor's rigid body be using CCD.
-        AZStd::string m_tag; //! Identification tag for the collider
     };
 } // namespace Blast
