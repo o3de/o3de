@@ -50,12 +50,16 @@ namespace Audio
         void TryEnqueueRequest(AudioRequestVariant&& request);
         void ExecuteQueuedRequests();
         bool HasId() const;
+        void Reset();
 
         AudioRequestsQueue m_queuedAudioRequests;
 
         SATLWorldPosition m_oPosition;
         TAudioObjectID m_nAudioObjectID{ INVALID_AUDIO_OBJECT_ID };
         void* m_ownerOverride{ nullptr };
+
+        bool m_waitingForId{ false };
+        bool m_releaseAtEndOfQueue{ false };
     };
 
 } // namespace Audio

@@ -42,6 +42,7 @@ namespace Audio
         {
             // Assign the new audio object ID...
             m_nAudioObjectID = request.m_objectId;
+            m_waitingForId = false;
             // Now execute any requests queued while this was waiting for an ID assignment
             ExecuteQueuedRequests();
         };
@@ -49,7 +50,7 @@ namespace Audio
         // 0: instance-specific initialization (default).  So the bAsync flag is used to determine init type.
         // 1: All initialize sync
         // 2: All initialize async
-
+        m_waitingForId = true;
         auto audioProxiesInitType = static_cast<AZ::u32>(Audio::CVars::s_AudioProxiesInitType);
         if ((bInitAsync && audioProxiesInitType == 0) || audioProxiesInitType == 2)
         {
@@ -301,23 +302,25 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioProxy::Release()
     {
-        // If it has ID, push a Release request.  Then reset info.
-        // Queueing this type of request isn't currently allowed
-        // but if needed, ExecuteQueuedRequests needs to look for
-        // a Release request and handle it differently (by calling
-        // this function and ignoring the remaining enqueued requests).
+        // If it has ID, push a Release request.
+        // When the proxy is still waiting for an ID to be assigned,
+        // set a flag which indicates that after executing all the queued
+        // events it should be released.
+        // After calling Release(), the pointer should not be used
+        // anymore since it's been recycled back to the AudioSystem's pool.
         if (HasId())
         {
             Audio::ObjectRequest::Release releaseObject;
             releaseObject.m_audioObjectId = m_nAudioObjectID;
             AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(releaseObject));
         }
+        else if (m_waitingForId)
+        {
+            m_releaseAtEndOfQueue = true;
+            return;
+        }
 
-        m_nAudioObjectID = INVALID_AUDIO_OBJECT_ID;
-        m_oPosition = {};
-        m_ownerOverride = nullptr;
-        m_queuedAudioRequests.clear();
-
+        Reset();
         AZ::Interface<IAudioSystem>::Get()->RecycleAudioProxy(this);
     }
 
@@ -336,12 +339,28 @@ namespace Audio
         }
         AZ::Interface<IAudioSystem>::Get()->PushRequests(m_queuedAudioRequests);
         m_queuedAudioRequests.clear();
+
+        if (m_releaseAtEndOfQueue)
+        {
+            Release();
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioProxy::HasId() const
     {
         return (m_nAudioObjectID != INVALID_AUDIO_OBJECT_ID);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CAudioProxy::Reset()
+    {
+        m_nAudioObjectID = INVALID_AUDIO_OBJECT_ID;
+        m_oPosition = {};
+        m_ownerOverride = nullptr;
+        m_releaseAtEndOfQueue = false;
+        m_waitingForId = false;
+        m_queuedAudioRequests.clear();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
