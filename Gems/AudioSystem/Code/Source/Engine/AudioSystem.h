@@ -23,8 +23,6 @@
     #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #endif // !AUDIO_RELEASE
 
-#define PROVIDE_GETNAME_SUPPORT
-
 AZ_DECLARE_BUDGET(Audio);
 
 namespace Audio
@@ -103,10 +101,6 @@ namespace Audio
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) override;
         void DestroyAudioSource(TAudioSourceId sourceId) override;
 
-        // When AUDIO_RELEASE is defined, these two functions always return nullptr
-        const char* GetAudioControlName(const EAudioControlType controlType, const TATLIDType atlID) const override;
-        const char* GetAudioSwitchStateName(const TAudioControlID switchID, const TAudioSwitchStateID stateID) const override;
-
     private:
         using TAudioProxies = AZStd::vector<CAudioProxy*, Audio::AudioSystemStdAllocator>;
 
@@ -138,11 +132,6 @@ namespace Audio
         AZStd::string m_controlsPath;
 
     #if !defined(AUDIO_RELEASE)
-        #if defined(PROVIDE_GETNAME_SUPPORT)
-        mutable AZStd::mutex m_debugNameStoreMutex;
-        CATLDebugNameStore m_debugNameStore;
-        #endif // PROVIDE_GETNAME_SUPPORT
-
         void DrawGlobalDebugInfo() override;
     #endif // !AUDIO_RELEASE
     };

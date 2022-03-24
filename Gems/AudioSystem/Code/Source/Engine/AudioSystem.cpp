@@ -233,16 +233,6 @@ namespace Audio
 
         m_oATL.Update();
 
-    #if !defined(AUDIO_RELEASE)
-        #if defined(PROVIDE_GETNAME_SUPPORT)
-        {
-            AZ_PROFILE_SCOPE(Audio, "Sync Debug Name Changes");
-            AZStd::scoped_lock lock(m_debugNameStoreMutex);
-            m_debugNameStore.SyncChanges(m_oATL.GetDebugStore());
-        }
-        #endif // PROVIDE_GETNAME_SUPPORT
-    #endif // !AUDIO_RELEASE
-
         if (!handledBlockingRequests)
         {
             auto endUpdateTime = AZStd::chrono::system_clock::now();      // stamp the end time
@@ -472,79 +462,6 @@ namespace Audio
     void CAudioSystem::DestroyAudioSource(TAudioSourceId sourceId)
     {
         m_oATL.DestroyAudioSource(sourceId);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    const char* CAudioSystem::GetAudioControlName([[maybe_unused]] const EAudioControlType controlType, [[maybe_unused]] const TATLIDType atlID) const
-    {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetAudioControlName - called from non-Main thread!");
-        const char* sResult = nullptr;
-
-    #if !defined(AUDIO_RELEASE)
-        #if defined(PROVIDE_GETNAME_SUPPORT)
-        AZStd::lock_guard<AZStd::mutex> lock(m_debugNameStoreMutex);
-        switch (controlType)
-        {
-            case eACT_AUDIO_OBJECT:
-            {
-                sResult = m_debugNameStore.LookupAudioObjectName(atlID);
-                break;
-            }
-            case eACT_TRIGGER:
-            {
-                sResult = m_debugNameStore.LookupAudioTriggerName(atlID);
-                break;
-            }
-            case eACT_RTPC:
-            {
-                sResult = m_debugNameStore.LookupAudioRtpcName(atlID);
-                break;
-            }
-            case eACT_SWITCH:
-            {
-                sResult = m_debugNameStore.LookupAudioSwitchName(atlID);
-                break;
-            }
-            case eACT_PRELOAD:
-            {
-                sResult = m_debugNameStore.LookupAudioPreloadRequestName(atlID);
-                break;
-            }
-            case eACT_ENVIRONMENT:
-            {
-                sResult = m_debugNameStore.LookupAudioEnvironmentName(atlID);
-                break;
-            }
-            case eACT_SWITCH_STATE: // not handled here, use GetAudioSwitchStateName!
-                [[fallthrough]];
-            case eACT_NONE:
-                [[fallthrough]];
-            default:
-            {
-                g_audioLogger.Log(LogType::Warning, "AudioSystem::GetAudioControlName - called with invalid EAudioControlType!");
-                break;
-            }
-        }
-        #endif // PROVIDE_GETNAME_SUPPORT
-    #endif // !AUDIO_RELEASE
-
-        return sResult;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    const char* CAudioSystem::GetAudioSwitchStateName([[maybe_unused]] const TAudioControlID switchID, [[maybe_unused]] const TAudioSwitchStateID stateID) const
-    {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetAudioSwitchStateName - called from non-Main thread!");
-        const char* sResult = nullptr;
-
-    #if !defined(AUDIO_RELEASE)
-        #if defined(PROVIDE_GETNAME_SUPPORT)
-        AZStd::lock_guard<AZStd::mutex> lock(m_debugNameStoreMutex);
-        sResult = m_debugNameStore.LookupAudioSwitchStateName(switchID, stateID);
-        #endif // PROVIDE_GETNAME_SUPPORT
-    #endif // !AUDIO_RELEASE
-
-        return sResult;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -504,9 +504,6 @@ namespace Audio
 
         virtual TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) = 0;
         virtual void DestroyAudioSource(TAudioSourceId sourceId) = 0;
-
-        virtual const char* GetAudioControlName(EAudioControlType controlType, TATLIDType atlID) const = 0;
-        virtual const char* GetAudioSwitchStateName(TAudioControlID switchID, TAudioSwitchStateID stateID) const = 0;
     };
 
 

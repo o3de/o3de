@@ -83,9 +83,6 @@ namespace Audio
         TAudioSourceId CreateAudioSource(const SAudioInputConfig&) override { return INVALID_AUDIO_SOURCE_ID; }
         void DestroyAudioSource(TAudioSourceId) override {}
 
-        const char* GetAudioControlName(EAudioControlType, TATLIDType) const override { return nullptr; }
-        const char* GetAudioSwitchStateName(TAudioControlID, TAudioSwitchStateID) const override { return nullptr; }
-
     private:
         NullAudioProxy m_nullAudioProxy;
     };

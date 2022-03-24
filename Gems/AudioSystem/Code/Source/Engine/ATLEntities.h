@@ -426,34 +426,27 @@ namespace Audio
     class CATLDebugNameStore
     {
     public:
-        CATLDebugNameStore();
-        ~CATLDebugNameStore();
+        CATLDebugNameStore() = default;
+        ~CATLDebugNameStore() = default;
 
-        void SyncChanges(const CATLDebugNameStore& rOtherNameStore);
+        // The Add* and Remove* functions return true if the storage changed, false otherwise
+        bool AddAudioObject(const TAudioObjectID nObjectID, const char* const sName);
+        bool AddAudioTrigger(const TAudioControlID nTriggerID, const char* const sName);
+        bool AddAudioRtpc(const TAudioControlID nRtpcID, const char* const sName);
+        bool AddAudioSwitch(const TAudioControlID nSwitchID, const char* const sName);
+        bool AddAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID, const char* const sName);
+        bool AddAudioPreloadRequest(const TAudioPreloadRequestID nRequestID, const char* const sName);
+        bool AddAudioEnvironment(const TAudioEnvironmentID nEnvironmentID, const char* const sName);
 
-        void AddAudioObject(const TAudioObjectID nObjectID, const char* const sName);
-        void AddAudioTrigger(const TAudioControlID nTriggerID, const char* const sName);
-        void AddAudioRtpc(const TAudioControlID nRtpcID, const char* const sName);
-        void AddAudioSwitch(const TAudioControlID nSwitchID, const char* const sName);
-        void AddAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID, const char* const sName);
-        void AddAudioPreloadRequest(const TAudioPreloadRequestID nRequestID, const char* const sName);
-        void AddAudioEnvironment(const TAudioEnvironmentID nEnvironmentID, const char* const sName);
+        bool RemoveAudioObject(const TAudioObjectID nObjectID);
+        bool RemoveAudioTrigger(const TAudioControlID nTriggerID);
+        bool RemoveAudioRtpc(const TAudioControlID nRtpcID);
+        bool RemoveAudioSwitch(const TAudioControlID nSwitchID);
+        bool RemoveAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID);
+        bool RemoveAudioPreloadRequest(const TAudioPreloadRequestID nRequestID);
+        bool RemoveAudioEnvironment(const TAudioEnvironmentID nEnvironmentID);
 
-        void RemoveAudioObject(const TAudioObjectID nObjectID);
-        void RemoveAudioTrigger(const TAudioControlID nTriggerID);
-        void RemoveAudioRtpc(const TAudioControlID nRtpcID);
-        void RemoveAudioSwitch(const TAudioControlID nSwitchID);
-        void RemoveAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID);
-        void RemoveAudioPreloadRequest(const TAudioPreloadRequestID nRequestID);
-        void RemoveAudioEnvironment(const TAudioEnvironmentID nEnvironmentID);
-
-        bool AudioObjectsChanged() const { return m_bATLObjectsChanged; }
-        bool AudioTriggersChanged() const { return m_bATLTriggersChanged; }
-        bool AudioRtpcsChanged() const { return m_bATLRtpcsChanged; }
-        bool AudioSwitchesChanged() const { return m_bATLSwitchesChanged; }
-        bool AudioPreloadsChanged() const { return m_bATLPreloadsChanged; }
-        bool AudioEnvironmentsChanged() const { return m_bATLEnvironmentsChanged; }
-
+        // The Lookup* functions return nullptr if the content is not found.
         const char* LookupAudioObjectName(const TAudioObjectID nObjectID) const;
         const char* LookupAudioTriggerName(const TAudioControlID nTriggerID) const;
         const char* LookupAudioRtpcName(const TAudioControlID nRtpcID) const;
@@ -476,13 +469,6 @@ namespace Audio
         TAudioSwitchMap m_cATLSwitchNames;
         TAudioPreloadRequestsMap m_cATLPreloadRequestNames;
         TAudioEnvironmentMap m_cATLEnvironmentNames;
-
-        mutable bool m_bATLObjectsChanged;
-        mutable bool m_bATLTriggersChanged;
-        mutable bool m_bATLRtpcsChanged;
-        mutable bool m_bATLSwitchesChanged;
-        mutable bool m_bATLPreloadsChanged;
-        mutable bool m_bATLEnvironmentsChanged;
     };
 #endif // !AUDIO_RELEASE
 } // namespace Audio

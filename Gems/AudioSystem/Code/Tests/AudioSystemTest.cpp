@@ -522,6 +522,7 @@ TEST(AudioFlagsTest, AudioFlags_SetAndClearAll_FlagsAreCorrect)
 // Test CATLDebugNameStore //
 //-------------------------//
 
+#if !defined(AUDIO_RELEASE)
 class ATLDebugNameStoreTestFixture
     : public ::testing::Test
 {
@@ -545,9 +546,7 @@ public:
     }
 
 protected:
-#if !defined(AUDIO_RELEASE)
     CATLDebugNameStore m_atlNames;
-#endif
     AZStd::string m_audioObjectName;
     AZStd::string m_audioTriggerName;
     AZStd::string m_audioRtpcName;
@@ -557,24 +556,14 @@ protected:
     AZStd::string m_audioPreloadRequestName;
 };
 
-#if !defined(AUDIO_RELEASE)
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_InitiallyDirty_ReturnsFalse)
-{
-    // expect that no changes are detected after construction.
-    EXPECT_FALSE(m_atlNames.AudioObjectsChanged());
-    EXPECT_FALSE(m_atlNames.AudioTriggersChanged());
-    EXPECT_FALSE(m_atlNames.AudioRtpcsChanged());
-    EXPECT_FALSE(m_atlNames.AudioSwitchesChanged());
-    EXPECT_FALSE(m_atlNames.AudioEnvironmentsChanged());
-    EXPECT_FALSE(m_atlNames.AudioPreloadsChanged());
-}
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioObject_IsDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioObject_Success)
 {
     auto audioObjectID = AudioStringToID<TAudioObjectID>(m_audioObjectName.c_str());
-    m_atlNames.AddAudioObject(audioObjectID, m_audioObjectName.c_str());
-
-    EXPECT_TRUE(m_atlNames.AudioObjectsChanged());
+    bool added = m_atlNames.AddAudioObject(audioObjectID, m_audioObjectName.c_str());
+    EXPECT_TRUE(added);
+    added = m_atlNames.AddAudioObject(audioObjectID, m_audioObjectName.c_str());
+    EXPECT_FALSE(added);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioObjectAndLookupName_FindsName)
@@ -585,12 +574,13 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioObjectAndLookupNa
     EXPECT_STREQ(m_atlNames.LookupAudioObjectName(audioObjectID), m_audioObjectName.c_str());
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioTrigger_IsDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioTrigger_Success)
 {
     auto audioTriggerID = AudioStringToID<TAudioControlID>(m_audioTriggerName.c_str());
-    m_atlNames.AddAudioTrigger(audioTriggerID, m_audioTriggerName.c_str());
-
-    EXPECT_TRUE(m_atlNames.AudioTriggersChanged());
+    bool added = m_atlNames.AddAudioTrigger(audioTriggerID, m_audioTriggerName.c_str());
+    EXPECT_TRUE(added);
+    added = m_atlNames.AddAudioTrigger(audioTriggerID, m_audioTriggerName.c_str());
+    EXPECT_FALSE(added);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioTriggerAndLookupName_FindsName)
@@ -601,12 +591,13 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioTriggerAndLookupN
     EXPECT_STREQ(m_atlNames.LookupAudioTriggerName(audioTriggerID), m_audioTriggerName.c_str());
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioRtpc_IsDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioRtpc_Success)
 {
     auto audioRtpcID = AudioStringToID<TAudioControlID>(m_audioRtpcName.c_str());
-    m_atlNames.AddAudioRtpc(audioRtpcID, m_audioRtpcName.c_str());
-
-    EXPECT_TRUE(m_atlNames.AudioRtpcsChanged());
+    bool added = m_atlNames.AddAudioRtpc(audioRtpcID, m_audioRtpcName.c_str());
+    EXPECT_TRUE(added);
+    added = m_atlNames.AddAudioRtpc(audioRtpcID, m_audioRtpcName.c_str());
+    EXPECT_FALSE(added);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioRtpcAndLookupName_FindsName)
@@ -617,12 +608,13 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioRtpcAndLookupName
     EXPECT_STREQ(m_atlNames.LookupAudioRtpcName(audioRtpcID), m_audioRtpcName.c_str());
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioSwitch_IsDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioSwitch_Success)
 {
     auto audioSwitchID = AudioStringToID<TAudioControlID>(m_audioSwitchName.c_str());
-    m_atlNames.AddAudioSwitch(audioSwitchID, m_audioSwitchName.c_str());
-
-    EXPECT_TRUE(m_atlNames.AudioSwitchesChanged());
+    bool added = m_atlNames.AddAudioSwitch(audioSwitchID, m_audioSwitchName.c_str());
+    EXPECT_TRUE(added);
+    added = m_atlNames.AddAudioSwitch(audioSwitchID, m_audioSwitchName.c_str());
+    EXPECT_FALSE(added);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioSwitchAndLookupName_FindsName)
@@ -633,15 +625,16 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioSwitchAndLookupNa
     EXPECT_STREQ(m_atlNames.LookupAudioSwitchName(audioSwitchID), m_audioSwitchName.c_str());
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioSwitchState_IsDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioSwitchState_Success)
 {
     auto audioSwitchID = AudioStringToID<TAudioControlID>(m_audioSwitchName.c_str());
     m_atlNames.AddAudioSwitch(audioSwitchID, m_audioSwitchName.c_str());
 
     auto audioSwitchStateID = AudioStringToID<TAudioSwitchStateID>(m_audioSwitchStateName.c_str());
-    m_atlNames.AddAudioSwitchState(audioSwitchID, audioSwitchStateID, m_audioSwitchStateName.c_str());
-
-    EXPECT_TRUE(m_atlNames.AudioSwitchesChanged());
+    bool added = m_atlNames.AddAudioSwitchState(audioSwitchID, audioSwitchStateID, m_audioSwitchStateName.c_str());
+    EXPECT_TRUE(added);
+    added = m_atlNames.AddAudioSwitchState(audioSwitchID, audioSwitchStateID, m_audioSwitchStateName.c_str());
+    EXPECT_FALSE(added);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioSwitchStateAndLookupNames_FindsNames)
@@ -656,12 +649,13 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioSwitchStateAndLoo
     EXPECT_STREQ(m_atlNames.LookupAudioSwitchStateName(audioSwitchID, audioSwitchStateID), m_audioSwitchStateName.c_str());
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioPreload_IsDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioPreload_Success)
 {
     auto audioPreloadID = AudioStringToID<TAudioPreloadRequestID>(m_audioPreloadRequestName.c_str());
-    m_atlNames.AddAudioPreloadRequest(audioPreloadID, m_audioPreloadRequestName.c_str());
-
-    EXPECT_TRUE(m_atlNames.AudioPreloadsChanged());
+    bool added = m_atlNames.AddAudioPreloadRequest(audioPreloadID, m_audioPreloadRequestName.c_str());
+    EXPECT_TRUE(added);
+    added = m_atlNames.AddAudioPreloadRequest(audioPreloadID, m_audioPreloadRequestName.c_str());
+    EXPECT_FALSE(added);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioPreloadAndLookupName_FindsName)
@@ -672,12 +666,13 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioPreloadAndLookupN
     EXPECT_STREQ(m_atlNames.LookupAudioPreloadRequestName(audioPreloadID), m_audioPreloadRequestName.c_str());
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioEnvironment_IsDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioEnvironment_Success)
 {
     auto audioEnvironmentID = AudioStringToID<TAudioEnvironmentID>(m_audioEnvironmentName.c_str());
-    m_atlNames.AddAudioEnvironment(audioEnvironmentID, m_audioEnvironmentName.c_str());
-
-    EXPECT_TRUE(m_atlNames.AudioEnvironmentsChanged());
+    bool added = m_atlNames.AddAudioEnvironment(audioEnvironmentID, m_audioEnvironmentName.c_str());
+    EXPECT_TRUE(added);
+    added = m_atlNames.AddAudioEnvironment(audioEnvironmentID, m_audioEnvironmentName.c_str());
+    EXPECT_FALSE(added);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioEnvironmentAndLookupName_FindsName)
@@ -688,110 +683,105 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_AddAudioEnvironmentAndLoo
     EXPECT_STREQ(m_atlNames.LookupAudioEnvironmentName(audioEnvironmentID), m_audioEnvironmentName.c_str());
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioObjectNotFound_NotDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioObjectNotFound_Fails)
 {
     auto audioObjectID = AudioStringToID<TAudioObjectID>(m_audioObjectName.c_str());
-    m_atlNames.RemoveAudioObject(audioObjectID);
+    bool removed = m_atlNames.RemoveAudioObject(audioObjectID);
 
-    EXPECT_FALSE(m_atlNames.AudioObjectsChanged());
+    EXPECT_FALSE(removed);
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioTriggerNotFound_NotDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioTriggerNotFound_Fails)
 {
     auto audioTriggerID = AudioStringToID<TAudioControlID>(m_audioTriggerName.c_str());
-    m_atlNames.RemoveAudioTrigger(audioTriggerID);
+    bool removed = m_atlNames.RemoveAudioTrigger(audioTriggerID);
 
-    EXPECT_FALSE(m_atlNames.AudioTriggersChanged());
+    EXPECT_FALSE(removed);
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioRtpcNotFound_NotDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioRtpcNotFound_Fails)
 {
     auto audioRtpcID = AudioStringToID<TAudioControlID>(m_audioRtpcName.c_str());
-    m_atlNames.RemoveAudioRtpc(audioRtpcID);
+    bool removed = m_atlNames.RemoveAudioRtpc(audioRtpcID);
 
-    EXPECT_FALSE(m_atlNames.AudioRtpcsChanged());
+    EXPECT_FALSE(removed);
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioSwitchNotFound_NotDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioSwitchNotFound_Fails)
 {
     auto audioSwitchID = AudioStringToID<TAudioControlID>(m_audioSwitchName.c_str());
-    m_atlNames.RemoveAudioSwitch(audioSwitchID);
+    bool removed = m_atlNames.RemoveAudioSwitch(audioSwitchID);
 
-    EXPECT_FALSE(m_atlNames.AudioSwitchesChanged());
+    EXPECT_FALSE(removed);
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioSwitchStateNotFound_NotDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioSwitchStateNotFound_Fails)
 {
     auto audioSwitchID = AudioStringToID<TAudioControlID>(m_audioSwitchName.c_str());
     auto audioSwitchStateID = AudioStringToID<TAudioSwitchStateID>(m_audioSwitchStateName.c_str());
-    m_atlNames.RemoveAudioSwitchState(audioSwitchID, audioSwitchStateID);
+    bool removed = m_atlNames.RemoveAudioSwitchState(audioSwitchID, audioSwitchStateID);
 
-    // todo: Revisit this test!
-    // The last expect will be true unless we clear the dirty flags (SyncChanges) after adding the switch.
-    // Could setup a separate fixture for this, and given that issue is resolved, can split this into two tests.
+    EXPECT_FALSE(removed);
 
-    EXPECT_FALSE(m_atlNames.AudioSwitchesChanged());
-
-    // now add the switch and test again.
     m_atlNames.AddAudioSwitch(audioSwitchID, m_audioSwitchName.c_str());
-    m_atlNames.RemoveAudioSwitchState(audioSwitchID, audioSwitchStateID);
+    removed = m_atlNames.RemoveAudioSwitchState(audioSwitchID, audioSwitchStateID);
 
-    EXPECT_TRUE(m_atlNames.AudioSwitchesChanged());
+    EXPECT_FALSE(removed);
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioPreloadRequestNotFound_NotDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioPreloadRequestNotFound_Fails)
 {
     auto audioPreloadID = AudioStringToID<TAudioPreloadRequestID>(m_audioPreloadRequestName.c_str());
-    m_atlNames.RemoveAudioPreloadRequest(audioPreloadID);
+    bool removed = m_atlNames.RemoveAudioPreloadRequest(audioPreloadID);
 
-    EXPECT_FALSE(m_atlNames.AudioPreloadsChanged());
+    EXPECT_FALSE(removed);
 }
 
-TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioEnvironmentNotFound_NotDirty)
+TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioEnvironmentNotFound_Fails)
 {
     auto audioEnvironmentID = AudioStringToID<TAudioEnvironmentID>(m_audioEnvironmentName.c_str());
-    m_atlNames.RemoveAudioEnvironment(audioEnvironmentID);
+    bool removed = m_atlNames.RemoveAudioEnvironment(audioEnvironmentID);
 
-    EXPECT_FALSE(m_atlNames.AudioEnvironmentsChanged());
+    EXPECT_FALSE(removed);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioObjectAndLookupName_FindsNone)
 {
     auto audioObjectID = AudioStringToID<TAudioObjectID>(m_audioObjectName.c_str());
-    m_atlNames.AddAudioObject(audioObjectID, m_audioObjectName.c_str());
-    m_atlNames.RemoveAudioObject(audioObjectID);
+    bool added = m_atlNames.AddAudioObject(audioObjectID, m_audioObjectName.c_str());
+    bool removed = m_atlNames.RemoveAudioObject(audioObjectID);
 
-    EXPECT_TRUE(m_atlNames.AudioObjectsChanged());
+    EXPECT_TRUE(added && removed);
     EXPECT_EQ(m_atlNames.LookupAudioObjectName(audioObjectID), nullptr);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioTriggerAndLookupName_FindsNone)
 {
     auto audioTriggerID = AudioStringToID<TAudioControlID>(m_audioTriggerName.c_str());
-    m_atlNames.AddAudioTrigger(audioTriggerID, m_audioTriggerName.c_str());
-    m_atlNames.RemoveAudioTrigger(audioTriggerID);
+    bool added = m_atlNames.AddAudioTrigger(audioTriggerID, m_audioTriggerName.c_str());
+    bool removed = m_atlNames.RemoveAudioTrigger(audioTriggerID);
 
-    EXPECT_TRUE(m_atlNames.AudioTriggersChanged());
+    EXPECT_TRUE(added && removed);
     EXPECT_EQ(m_atlNames.LookupAudioTriggerName(audioTriggerID), nullptr);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioRtpcAndLookupName_FindsNone)
 {
     auto audioRtpcID = AudioStringToID<TAudioControlID>(m_audioRtpcName.c_str());
-    m_atlNames.AddAudioRtpc(audioRtpcID, m_audioRtpcName.c_str());
-    m_atlNames.RemoveAudioRtpc(audioRtpcID);
+    bool added = m_atlNames.AddAudioRtpc(audioRtpcID, m_audioRtpcName.c_str());
+    bool removed = m_atlNames.RemoveAudioRtpc(audioRtpcID);
 
-    EXPECT_TRUE(m_atlNames.AudioRtpcsChanged());
+    EXPECT_TRUE(added && removed);
     EXPECT_EQ(m_atlNames.LookupAudioRtpcName(audioRtpcID), nullptr);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioSwitchAndLookupName_FindsNone)
 {
     auto audioSwitchID = AudioStringToID<TAudioControlID>(m_audioSwitchName.c_str());
-    m_atlNames.AddAudioSwitch(audioSwitchID, m_audioSwitchName.c_str());
-    m_atlNames.RemoveAudioSwitch(audioSwitchID);
+    bool added = m_atlNames.AddAudioSwitch(audioSwitchID, m_audioSwitchName.c_str());
+    bool removed = m_atlNames.RemoveAudioSwitch(audioSwitchID);
 
-    EXPECT_TRUE(m_atlNames.AudioSwitchesChanged());
+    EXPECT_TRUE(added && removed);
     EXPECT_EQ(m_atlNames.LookupAudioSwitchName(audioSwitchID), nullptr);
 }
 
@@ -800,30 +790,30 @@ TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioSwitchStateAnd
     auto audioSwitchID = AudioStringToID<TAudioControlID>(m_audioSwitchName.c_str());
     auto audioSwitchStateID = AudioStringToID<TAudioSwitchStateID>(m_audioSwitchStateName.c_str());
     m_atlNames.AddAudioSwitch(audioSwitchID, m_audioSwitchName.c_str());
-    m_atlNames.AddAudioSwitchState(audioSwitchID, audioSwitchStateID, m_audioSwitchStateName.c_str());
-    m_atlNames.RemoveAudioSwitchState(audioSwitchID, audioSwitchStateID);
+    bool added = m_atlNames.AddAudioSwitchState(audioSwitchID, audioSwitchStateID, m_audioSwitchStateName.c_str());
+    bool removed = m_atlNames.RemoveAudioSwitchState(audioSwitchID, audioSwitchStateID);
 
-    EXPECT_TRUE(m_atlNames.AudioSwitchesChanged());
+    EXPECT_TRUE(added && removed);
     EXPECT_EQ(m_atlNames.LookupAudioSwitchStateName(audioSwitchID, audioSwitchStateID), nullptr);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioPreloadRequestAndLookupName_FindsNone)
 {
     auto audioPreloadID = AudioStringToID<TAudioPreloadRequestID>(m_audioPreloadRequestName.c_str());
-    m_atlNames.AddAudioPreloadRequest(audioPreloadID, m_audioPreloadRequestName.c_str());
-    m_atlNames.RemoveAudioPreloadRequest(audioPreloadID);
+    bool added = m_atlNames.AddAudioPreloadRequest(audioPreloadID, m_audioPreloadRequestName.c_str());
+    bool removed = m_atlNames.RemoveAudioPreloadRequest(audioPreloadID);
 
-    EXPECT_TRUE(m_atlNames.AudioPreloadsChanged());
+    EXPECT_TRUE(added && removed);
     EXPECT_EQ(m_atlNames.LookupAudioPreloadRequestName(audioPreloadID), nullptr);
 }
 
 TEST_F(ATLDebugNameStoreTestFixture, ATLDebugNameStore_RemoveAudioEnvironmentAndLookupName_FindsNone)
 {
     auto audioEnvironmentID = AudioStringToID<TAudioEnvironmentID>(m_audioEnvironmentName.c_str());
-    m_atlNames.AddAudioEnvironment(audioEnvironmentID, m_audioEnvironmentName.c_str());
-    m_atlNames.RemoveAudioEnvironment(audioEnvironmentID);
+    bool added = m_atlNames.AddAudioEnvironment(audioEnvironmentID, m_audioEnvironmentName.c_str());
+    bool removed = m_atlNames.RemoveAudioEnvironment(audioEnvironmentID);
 
-    EXPECT_TRUE(m_atlNames.AudioEnvironmentsChanged());
+    EXPECT_TRUE(added && removed);
     EXPECT_EQ(m_atlNames.LookupAudioEnvironmentName(audioEnvironmentID), nullptr);
 }
 
