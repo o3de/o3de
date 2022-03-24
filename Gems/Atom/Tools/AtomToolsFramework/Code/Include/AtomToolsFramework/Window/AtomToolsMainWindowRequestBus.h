@@ -73,6 +73,7 @@ namespace AtomToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Crc32 BusIdType;
 
+        //! Force handlers of this bus to be processed in priority order
         struct BusHandlerOrderCompare
         {
             bool operator()(AtomToolsMainMenuRequests* left, AtomToolsMainMenuRequests* right) const
@@ -81,13 +82,15 @@ namespace AtomToolsFramework
             }
         };
 
-        //! Determines the order in which the implementing classes modify the main menu
+        //! Override this function to specify the order in which menu actions are added and updated relative to other handlers. Handlers
+        //! specifying a lower number are processed first. The common use case is that we want common, application-wide main menu actions to
+        //! appear at the top of menus and document/view specific actions to be added after those.
         virtual AZ::s32 GetMainMenuPriority() const { return 0; };
 
-        //! Close menu bar of all actions then recreates and repopulates menus
+        //! Override this function to repopulate the main menu bar after it has been cleared
         virtual void CreateMenus(QMenuBar* menuBar) = 0;
 
-        //! Update menu state based on the application state
+        //! Override this function to apply manual updates to main menu actions
         virtual void UpdateMenus(QMenuBar* menuBar) = 0;
     };
 
