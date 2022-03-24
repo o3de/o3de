@@ -20,7 +20,7 @@ namespace ${GemName}
         , public ${SanitizedCppName}RequestBus::Handler
     {
     public:
-        AZ_COMPONENT(${SanitizedCppName}Component, "{${Random_Uuid}}");
+        AZ_COMPONENT(${GemName}::${SanitizedCppName}Component, "{${Random_Uuid}}");
 
         static void Reflect(AZ::ReflectContext* context);
 
