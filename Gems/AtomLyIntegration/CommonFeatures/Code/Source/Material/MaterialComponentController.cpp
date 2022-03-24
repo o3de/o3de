@@ -627,7 +627,7 @@ namespace AZ
             }
 
             // Unlike material properties which are applied to the material itself, UV overrides are applied outside the material
-            // by the MeshFeatureProcessor. So all we have to do is notify the mesh component that the materials were update and it
+            // by the MeshFeatureProcessor. So all we have to do is notify the mesh component that the materials were updated and it
             // will pass the updated data to the MeshFeatureProcessor.
             QueueMaterialUpdateNotification();
         }
