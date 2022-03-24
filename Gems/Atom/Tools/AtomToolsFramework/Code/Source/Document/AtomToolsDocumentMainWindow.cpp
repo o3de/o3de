@@ -282,15 +282,20 @@ namespace AtomToolsFramework
     {
         if (!absolutePath.empty())
         {
+            // Get the list of previously stored recent file paths from the settings registry
             AZStd::vector<AZStd::string> paths = GetSettingsObject(RecentFilePathsKey, AZStd::vector<AZStd::string>());
+
+            // If the new path is already in the list then remove it Because it will be moved to the front of the list
             AZStd::erase_if(paths, [&absolutePath](const AZStd::string& currentPath) {
                 return AZ::StringFunc::Equal(currentPath, absolutePath);
             });
 
             paths.insert(paths.begin(), absolutePath);
-            if (paths.size() > 10)
+
+            constexpr const size_t recentFilePathsMax = 10;
+            if (paths.size() > recentFilePathsMax)
             {
-                paths.resize(10);
+                paths.resize(recentFilePathsMax);
             }
 
             SetSettingsObject(RecentFilePathsKey, paths);
@@ -584,12 +589,7 @@ namespace AtomToolsFramework
     {
         if (documentId == GetCurrentDocumentId())
         {
-            bool canUndo = false;
-            AtomToolsDocumentRequestBus::EventResult(canUndo, documentId, &AtomToolsDocumentRequestBus::Events::CanUndo);
-            bool canRedo = false;
-            AtomToolsDocumentRequestBus::EventResult(canRedo, documentId, &AtomToolsDocumentRequestBus::Events::CanRedo);
-            m_actionUndo->setEnabled(canUndo);
-            m_actionRedo->setEnabled(canRedo);
+            QueueUpdateMenus(false);
         }
     }
 

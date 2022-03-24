@@ -54,13 +54,13 @@ namespace AtomToolsFramework
         m_assetBrowser = new AtomToolsAssetBrowser(this);
         AddDockWidget("Asset Browser", m_assetBrowser, Qt::BottomDockWidgetArea);
 
+        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("Python Terminal", false);
+
         m_logPanel = new AzToolsFramework::LogPanel::TracePrintFLogPanel(this);
         m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Log", "", ""));
         AddDockWidget("Logging", m_logPanel, Qt::BottomDockWidgetArea);
         SetDockWidgetVisible("Logging", false);
-
-        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea);
-        SetDockWidgetVisible("Python Terminal", false);
 
         SetupMetrics();
         UpdateWindowTitle();
@@ -96,18 +96,21 @@ namespace AtomToolsFramework
         auto dockWidget = qobject_cast<QDockWidget*>(widget);
         if (!dockWidget)
         {
+            // If the widget being added is not already dockable then add a container dock widget for it
             dockWidget = new AzQtComponents::StyledDockWidget(name.c_str(), this);
             dockWidget->setWidget(widget);
-            widget->setObjectName(QString("%1_Widget").arg(name.c_str()));
             widget->setWindowTitle(name.c_str());
-            widget->setParent(dockWidget);
+            widget->setObjectName(QString("%1_Widget").arg(name.c_str()));
             widget->setMinimumSize(QSize(300, 300));
+            widget->setParent(dockWidget);
             widget->setVisible(true);
         }
 
-        dockWidget->setMinimumSize(QSize(300, 300));
+        // Rename, resize, and reparent the dock widget for this main window
+        dockWidget->setWindowTitle(name.c_str());
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+        dockWidget->setMinimumSize(QSize(300, 300));
         dockWidget->setParent(this);
         dockWidget->setVisible(true);
 
@@ -193,7 +196,17 @@ namespace AtomToolsFramework
             QTimer::singleShot(0, [this]() {
                 if (m_rebuildMenus)
                 {
-                    setMenuBar(new QMenuBar());
+                    // Clearing all actions that were added directly to the menu bar
+                    menuBar()->clear();
+
+                    // Instead of destroying and recreating the menu bar, destroying the individual child menus to prevent the UI from
+                    // popping when the menu bar is recreated
+                    auto menus = menuBar()->findChildren<QMenu*>();
+                    for (auto menu : menus)
+                    {
+                        delete menu;
+                    }
+
                     AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::CreateMenus, menuBar());
                 }
                 AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::UpdateMenus, menuBar());

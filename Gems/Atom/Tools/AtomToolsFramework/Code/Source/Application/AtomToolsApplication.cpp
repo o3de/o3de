@@ -178,6 +178,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
+        // Disabling source control integration by default to disable messages and menus if no supported source control system is active
         const bool enableSourceControl = GetSettingsValue("/O3DE/AtomToolsFramework/Application/EnableSourceControl", false);
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
             &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
@@ -214,14 +215,21 @@ namespace AtomToolsFramework
         m_assetBrowserInteractions.reset();
         m_styleManager.reset();
 
-        // Save application settings to settings registry file
+        // Save application registry settings to a target specific settings file. The file must be named so that it is only loaded for an
+        // application with the corresponding target name.
         AZStd::string settingsFileName(AZStd::string::format("usersettings.%s.setreg", m_targetName.c_str()));
         AZStd::to_lower(settingsFileName.begin(), settingsFileName.end());
 
         const AZ::IO::FixedMaxPath settingsFilePath(
             AZStd::string::format("%s/user/Registry/%s", AZ::Utils::GetProjectPath().c_str(), settingsFileName.c_str()));
-        SaveSettingsToFile(settingsFilePath, { "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) });
 
+        // This will only save modified registry settings that match the following filters
+        const AZStd::vector<AZStd::string> filters = {
+            "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
+
+        SaveSettingsToFile(settingsFilePath, filters);
+
+        // Handler for serializing legacy user settings
         UnloadSettings();
 
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();

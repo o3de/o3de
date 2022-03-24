@@ -43,6 +43,11 @@ namespace MaterialCanvas
     MaterialCanvasDocument::MaterialCanvasDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
         : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
     {
+        // Creating the scene entity and graph for this document. This may end up moving to the view if we can have the document only store
+        // minimal material graph specific data that can be transformed into a graph canvas graph in the view and back. That abstraction
+        // would help maintain a separation between the serialized data and the UI for rendering and interacting with the graph. This would
+        // also help establish a mediator pattern for other node based tools that want to visualize their data or documents as a graph. My
+        // understanding is that graph model will help with this.
         m_sceneEntity = {};
         GraphCanvas::GraphCanvasRequestBus::BroadcastResult(m_sceneEntity, &GraphCanvas::GraphCanvasRequests::CreateSceneAndActivate);
 
@@ -60,16 +65,29 @@ namespace MaterialCanvas
 
     AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::BuildDocumentTypeInfo()
     {
+        // Setting up placeholder document type info and extensions. This is not representative of final data.
         AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo); };
+
+        // Need to revisit the distinction between file types for creation versus file types for opening. Creation types are meant to be
+        // used as templates or documents from which another is derived, like material types or parents. Currently a combination of the
+        // filters is used to determine how the create document dialog is populated. The base document class rejects file types that are not
+        // listed in the extension supported for opening. Will change to make the base class support opening anything listed in open
+        // or create and the create dialog look at the create list exclusively.
         documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas Template", "materialcanvastemplate.azasset" });
         documentType.m_supportedExtensionsToCreate.push_back({ "Material Canvas", "materialcanvas.azasset" });
         documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas Template", "materialcanvastemplate.azasset" });
         documentType.m_supportedExtensionsToOpen.push_back({ "Material Canvas", "materialcanvas.azasset" });
         documentType.m_supportedExtensionsToSave.push_back({ "Material Canvas", "materialcanvas.azasset" });
+
+        // Currently using AnyAsset As a placeholder until proper asset types are created.
         documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::AnyAsset>());
+
+        // Using a blank template file to create a new document until UX and workflow can be revisited for creating new or empty documents.
+        // However, there may be no need as this is an established pattern in other applications that provide multiple options and templates
+        // to use as a starting point for a new document.
         documentType.m_defaultAssetIdToCreate = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
             "/O3DE/Atom/MaterialEditor/DefaultMaterialCanvasTemplateAsset",
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialCanvas/blank.materialcanvastemplate.azasset"));
@@ -95,6 +113,7 @@ namespace MaterialCanvas
             return false;
         }
 
+        // Saving and loading a placeholder string asset
         auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(m_absolutePath);
         if (!loadResult || !loadResult.GetValue().is<AZStd::string>())
         {
@@ -113,6 +132,7 @@ namespace MaterialCanvas
             return false;
         }
 
+        // Saving and loading a placeholder string asset
         AZStd::string placeholderData;
         if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
         {
@@ -131,6 +151,7 @@ namespace MaterialCanvas
             return false;
         }
 
+        // Saving and loading a placeholder string asset
         AZStd::string placeholderData;
         if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
         {
@@ -149,6 +170,7 @@ namespace MaterialCanvas
             return false;
         }
 
+        // Saving and loading a placeholder string asset
         AZStd::string placeholderData;
         if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
         {
