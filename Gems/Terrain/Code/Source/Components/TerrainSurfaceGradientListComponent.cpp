@@ -15,6 +15,8 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
+AZ_DECLARE_BUDGET(Terrain);
+
 namespace Terrain
 {
     void TerrainSurfaceGradientMapping::Reflect(AZ::ReflectContext* context)
@@ -112,13 +114,18 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::Deactivate()
     {
+        // Ensure that we only deactivate when no queries are actively running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         m_dependencyMonitor.Reset();
 
         Terrain::TerrainAreaSurfaceRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         // Since this surface data will no longer exist, notify the terrain system to refresh the area.
-        OnCompositionChanged();
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
     }
 
     bool TerrainSurfaceGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -145,6 +152,9 @@ namespace Terrain
         const AZ::Vector3& inPosition,
         AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const
     {
+        // Allow multiple queries to run simultaneously, but prevent them from running in parallel with activation / deactivation.
+        AZStd::shared_lock lock(m_queryMutex);
+
         outSurfaceWeights.clear();
 
         if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
@@ -170,6 +180,11 @@ namespace Terrain
         AZStd::span<const AZ::Vector3> inPositionList,
         AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const
     {
+        AZ_PROFILE_FUNCTION(Terrain);
+
+        // Allow multiple queries to run simultaneously, but prevent them from running in parallel with activation / deactivation.
+        AZStd::shared_lock lock(m_queryMutex);
+
         AZ_Assert(
             inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
 
@@ -197,6 +212,9 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
+        // Ensure that we only change our terrain registration status when no queries are actively running.
+        AZStd::unique_lock lock(m_queryMutex);
+
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
             AzFramework::Terrain::TerrainDataNotifications::SurfaceData);

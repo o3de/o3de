@@ -9,7 +9,7 @@
 #include "BlendSpaceNodeWidget.h"
 #include <MCore/Source/Algorithms.h>
 #include <AzCore/Casting/numeric_cast.h>
-
+#include <AzCore/Math/MathUtils.h>
 
 namespace EMStudio
 {
@@ -45,8 +45,8 @@ void BlendSpaceNodeWidget::RenderCurrentSamplePoint(QPainter& painter, const QPo
 
 void BlendSpaceNodeWidget::RenderSampledMotionPoint(QPainter& painter, const QPointF& point, float weight)
 {
-    const float alpha = MCore::LinearInterpolate<float>(s_motionPointAlphaMin, s_motionPointAlphaMax, weight);
-    const float size = MCore::LinearInterpolate<float>(s_motionPointWidthMin, s_motionPointWidthMax, weight);
+    const float alpha = AZ::Lerp(s_motionPointAlphaMin, s_motionPointAlphaMax, weight);
+    const float size = AZ::Lerp(s_motionPointWidthMin, s_motionPointWidthMax, weight);
     
     QColor color = s_motionPointColor;
     color.setAlphaF(alpha);
