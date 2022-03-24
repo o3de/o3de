@@ -58,6 +58,7 @@ namespace ImageProcessingAtomEditor
 
         m_ui->helpBtn->setToolTip(QString("Visit the Texture Settings documentation on o3de.org."));
         m_ui->saveBtn->setToolTip(QString("Save settings to a .assetinfo sidecar file. The texture source asset is automatically processed on save."));
+        m_ui->saveBtn->setDefault(true);
         m_ui->cancelBtn->setToolTip(QString("Close Texture Settings."));
 
         //Initialize all the format string here

@@ -2,26 +2,9 @@
 <ui version="4.0">
   <class>ResolutionSettingWidget</class>
     <widget class="QWidget" name="ResolutionSettingWidget">
-      <property name="geometry">
-        <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>465</width>
-          <height>300</height>
-        </rect>
-      </property>
       <layout class="QVBoxLayout" name="listLayout">
         <item>
-          <layout class="QGridLayout" name="gridLayout" columnminimumwidth="120,137,137,91">
-            <property name="leftMargin">
-                <number>0</number>
-            </property>
-            <property name="topMargin">
-                <number>0</number>
-            </property>
-            <property name="rightMargin">
-                <number>0</number>
-            </property>
+          <layout class="QGridLayout" name="gridLayout" columnminimumwidth="118,102,100,148">
             <item row="0" column="0">
               <widget class="QLabel" name="platformLabel">
                 <property name="text">
