@@ -36,7 +36,7 @@ namespace AtomToolsFramework
     AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title = "Document");
     AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title = "Document");
     AZStd::string GetUniqueFilePath(const AZStd::string& initialPath);
-    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& baseName);
+    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension);
     AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath);
     bool ValidateDocumentPath(AZStd::string& path);
     bool LaunchTool(const QString& baseName, const QStringList& arguments);

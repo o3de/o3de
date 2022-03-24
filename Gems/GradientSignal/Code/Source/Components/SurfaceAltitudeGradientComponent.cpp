@@ -166,6 +166,7 @@ namespace GradientSignal
         AZ::TickBus::Handler::BusConnect();
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceAltitudeGradientRequestBus::Handler::BusConnect(GetEntityId());
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
         UpdateFromShape();
         m_dirty = false;
     }
@@ -173,6 +174,7 @@ namespace GradientSignal
     void SurfaceAltitudeGradientComponent::Deactivate()
     {
         m_dependencyMonitor.Reset();
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         GradientRequestBus::Handler::BusDisconnect();
@@ -212,6 +214,13 @@ namespace GradientSignal
         if (positions.size() != outValues.size())
         {
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        if (GradientRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
             return;
         }
 
@@ -257,11 +266,29 @@ namespace GradientSignal
 
             //notify observers if content has changed
             if (altitudeMinOld != m_configuration.m_altitudeMin ||
-                altitudeMaxOld != m_configuration.m_altitudeMax)
+                altitudeMaxOld != m_configuration.m_altitudeMax ||
+                m_surfaceDirty)
             {
                 LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
             }
             m_dirty = false;
+            m_surfaceDirty = false;
+        }
+    }
+
+    void SurfaceAltitudeGradientComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds)
+    {
+        // Create a box that's infinite in the XY direction, but contains our altitude range, so that we can compare against the dirty
+        // surface region.
+        const AZ::Aabb altitudeBox = AZ::Aabb::CreateFromMinMaxValues(
+            AZStd::numeric_limits<float>::lowest(), AZStd::numeric_limits<float>::lowest(), m_configuration.m_altitudeMin,
+            AZStd::numeric_limits<float>::max(), AZStd::numeric_limits<float>::max(), m_configuration.m_altitudeMax);
+
+        if (oldBounds.Overlaps(altitudeBox) || newBounds.Overlaps(altitudeBox))
+        {
+            m_dirty = true;
+            m_surfaceDirty = true;
         }
     }
 

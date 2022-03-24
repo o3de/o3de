@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
+#include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Skeleton.h>
 
@@ -66,8 +67,9 @@ namespace EMotionFX::MotionMatching
         // Feature extraction
         struct EMFX_API ExtractFeatureContext
         {
-            ExtractFeatureContext(FeatureMatrix& featureMatrix)
+            ExtractFeatureContext(FeatureMatrix& featureMatrix, AnimGraphPosePool& posePool)
                 : m_featureMatrix(featureMatrix)
+                , m_posePool(posePool)
             {
             }
 
@@ -76,6 +78,7 @@ namespace EMotionFX::MotionMatching
 
             size_t m_frameIndex = InvalidIndex;
             const Pose* m_framePose = nullptr; //! Pre-sampled pose for the given frame.
+            AnimGraphPosePool& m_posePool;
 
             ActorInstance* m_actorInstance = nullptr;
         };
@@ -85,12 +88,14 @@ namespace EMotionFX::MotionMatching
         // Feature cost
         struct EMFX_API FrameCostContext
         {
-            FrameCostContext(const FeatureMatrix& featureMatrix, const Pose& currentPose)
-                : m_featureMatrix(featureMatrix)
+            FrameCostContext(const FrameDatabase& frameDatabase, const FeatureMatrix& featureMatrix, const Pose& currentPose)
+                : m_frameDatabase(frameDatabase)
+                , m_featureMatrix(featureMatrix)
                 , m_currentPose(currentPose)
             {
             }
 
+            const FrameDatabase& m_frameDatabase;
             const FeatureMatrix& m_featureMatrix;
             const ActorInstance* m_actorInstance = nullptr;
             const Pose& m_currentPose; //! Current actor instance pose.
@@ -143,8 +148,6 @@ namespace EMotionFX::MotionMatching
         void SetRelativeToNodeIndex(size_t nodeIndex);
 
         static void Reflect(AZ::ReflectContext* context);
-        static void CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outVelocity);
-        static void CalculateVelocity(const ActorInstance* actorInstance, size_t jointIndex, size_t relativeToJointIndex, const Frame& frame, AZ::Vector3& outVelocity);
 
     protected:
         //! Calculate a normalized direction vector difference between the two given vectors.

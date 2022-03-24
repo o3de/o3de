@@ -460,7 +460,7 @@ namespace AZ
                                             sourceSize.m_height,
                                             sourceSize.m_depth);
             
-            MTLBlitOption mtlBlitOption = GetBlitOption(destImage->GetDescriptor().m_format);
+            MTLBlitOption mtlBlitOption = GetBlitOption(destImage->GetDescriptor().m_format, RHI::ImageAspect::Color);
 
             [blitEncoder copyFromBuffer:framePacket->m_stagingResource
                            sourceOffset:framePacket->m_dataOffset
