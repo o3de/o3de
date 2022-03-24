@@ -14,7 +14,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-namespace ${SanitizedCppName}
+namespace ${GemName}
 {
     void ${SanitizedCppName}Component::Activate()
     {
@@ -48,7 +48,7 @@ namespace ${SanitizedCppName}
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<${SanitizedCppName}Component>("${SanitizedCppName} Component Group")
-                ->Attribute(AZ::Script::Attributes::Category, "${SanitizedCppName} Gem Group")
+                ->Attribute(AZ::Script::Attributes::Category, "${GemName} Gem Group")
                 ;
         }
     }
@@ -69,4 +69,4 @@ namespace ${SanitizedCppName}
     void ${SanitizedCppName}Component::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
-} // namespace ${SanitizedCppName}
+} // namespace ${GemName}

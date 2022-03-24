@@ -12,7 +12,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 
-namespace ${SanitizedCppName}
+namespace ${GemName}
 {
     class ${SanitizedCppName}Requests
         : public AZ::ComponentBus
@@ -23,9 +23,10 @@ namespace ${SanitizedCppName}
         // Put your public request methods here
     };
     using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests>;
+
     inline namespace ${SanitizedCppName}Interface
     {
         inline constexpr auto Get = [](AZ::ComponentBus::BusIdType busId) {return ${SanitizedCppName}RequestBus::FindFirstHandler(busId); };
     }
 
-} // namespace ${SanitizedCppName}
+} // namespace ${GemName}
