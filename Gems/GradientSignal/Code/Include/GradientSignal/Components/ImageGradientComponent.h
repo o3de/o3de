@@ -81,6 +81,7 @@ namespace GradientSignal
         CustomScaleType m_customScaleType = CustomScaleType::None;
         float m_scaleRangeMin = 0.0f;
         float m_scaleRangeMax = 1.0f;
+        AZ::u32 m_mipIndex = 0;
     };
 
     static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
@@ -154,5 +155,7 @@ namespace GradientSignal
         ChannelToUse m_currentChannel = ChannelToUse::Red;
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
+        AZ::u32 m_currentMipIndex = 0;
+        AZ::RHI::Size m_imageSize;
     };
 }

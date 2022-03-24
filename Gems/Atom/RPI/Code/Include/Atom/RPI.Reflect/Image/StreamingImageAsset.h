@@ -76,6 +76,9 @@ namespace AZ
             //! Returns the mip chain index associated with the provided mip level.
             size_t GetMipChainIndex(size_t mipLevel) const;
 
+            //! Returns the total number of mip levels in the image.
+            size_t GetMipLevelCount() const;
+
             //! Given a mip chain index, returns the highest detail mip level associated with the mip chain.
             size_t GetMipLevel(size_t mipChainIndex) const;
 

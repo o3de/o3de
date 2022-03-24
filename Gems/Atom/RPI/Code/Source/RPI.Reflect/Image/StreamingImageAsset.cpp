@@ -69,6 +69,11 @@ namespace AZ
             return m_mipLevelToChainIndex[mipLevel];
         }
 
+        size_t StreamingImageAsset::GetMipLevelCount() const
+        {
+            return m_mipLevelToChainIndex.size();
+        }
+
         size_t StreamingImageAsset::GetMipLevel(size_t mipChainIndex) const
         {
             return m_mipChains[mipChainIndex].m_mipOffset;

@@ -151,7 +151,7 @@ namespace GradientSignal
         if (serialize)
         {
             serialize->Class<ImageGradientConfig, AZ::ComponentConfig>()
-                ->Version(3)
+                ->Version(4)
                 ->Field("TilingX", &ImageGradientConfig::m_tilingX)
                 ->Field("TilingY", &ImageGradientConfig::m_tilingY)
                 ->Field("StreamingImageAsset", &ImageGradientConfig::m_imageAsset)
@@ -160,6 +160,7 @@ namespace GradientSignal
                 ->Field("CustomScale", &ImageGradientConfig::m_customScaleType)
                 ->Field("ScaleRangeMin", &ImageGradientConfig::m_scaleRangeMin)
                 ->Field("ScaleRangeMax", &ImageGradientConfig::m_scaleRangeMax)
+                ->Field("MipIndex", &ImageGradientConfig::m_mipIndex)
                 ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -202,6 +203,11 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMax, "Range Maximum", "The maximum range each value from the image data is scaled against.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_mipIndex, "Mip Index", "Mip index to sample from.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::Min, 0)
+                    ->Attribute(AZ::Edit::Attributes::Max, AZ::RHI::Limits::Image::MipCountMax)
                     ;
             }
         }
@@ -350,14 +356,48 @@ namespace GradientSignal
                 SetupDefaultMultiplierAndOffset();
                 break;
             }
+
+            // Make sure the custom mip level doesn't exceed the available mip levels in this
+            // image asset. If so, then just use the lowest available mip level.
+            auto mipLevelCount = m_configuration.m_imageAsset->GetMipLevelCount();
+            m_currentMipIndex = m_configuration.m_mipIndex;
+            if (m_currentMipIndex >= mipLevelCount)
+            {
+                AZ_Warning("GradientSignal", false, "Mip level index (%d) out of bounds, only %d levels available. Using lowest available mip level",
+                    m_currentMipIndex, mipLevelCount);
+
+                m_currentMipIndex = aznumeric_cast<AZ::u32>(mipLevelCount) - 1;
+            }
         }
         else
         {
             m_currentChannel = ChannelToUse::Red;
+            m_currentMipIndex = 0;
             SetupDefaultMultiplierAndOffset();
         }
 
-        m_imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
+        // Retrieve the ImageMipChainAsset for our current mip level so we can retrieve
+        // the image size for later calculations.
+        // Use m_tailMipChain if it's the last mip chain
+        const AZ::RPI::ImageMipChainAsset* mipChainAsset = nullptr;
+        auto mipChainIndex = m_configuration.m_imageAsset->GetMipChainIndex(m_currentMipIndex);
+        if (mipChainIndex == m_configuration.m_imageAsset->GetMipChainCount() - 1)
+        {
+            mipChainAsset = &m_configuration.m_imageAsset->GetTailMipChain();
+        }
+        else
+        {
+            mipChainAsset = m_configuration.m_imageAsset->GetMipChainAsset(mipChainIndex).Get();
+        }
+
+        // Multiple mip levels can be stored in a single chain via different sub images,
+        // so we need to retrieve the offset to determine the correct sub image index
+        // to retrieve the correct image size
+        auto mipChainOffset = aznumeric_cast<AZ::u32>(m_configuration.m_imageAsset->GetMipLevel(mipChainIndex));
+        auto layout = mipChainAsset->GetSubImageLayout(m_currentMipIndex - mipChainOffset);
+        m_imageSize = layout.m_size;
+
+        m_imageData = m_configuration.m_imageAsset->GetSubImageData(m_currentMipIndex, 0);
     }
 
     float ImageGradientComponent::GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const
@@ -365,8 +405,8 @@ namespace GradientSignal
         if (!m_imageData.empty())
         {
             const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-            auto width = imageDescriptor.m_size.m_width;
-            auto height = imageDescriptor.m_size.m_height;
+            const auto& width = m_imageSize.m_width;
+            const auto& height = m_imageSize.m_height;
 
             if (width > 0 && height > 0)
             {
@@ -459,7 +499,8 @@ namespace GradientSignal
         AZStd::vector<float> pixelValues(width * height);
         auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
         auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(width, height);
-        AZ::RPI::GetSubImagePixelValues(m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues, aznumeric_cast<AZ::u8>(m_currentChannel));
+        AZ::RPI::GetSubImagePixelValues(m_configuration.m_imageAsset, topLeft, bottomRight, pixelValues,
+            aznumeric_cast<AZ::u8>(m_currentChannel), m_currentMipIndex);
 
         // Retrieve the min/max values from our image data
         auto [min, max] = AZStd::minmax_element(pixelValues.begin(), pixelValues.end());
