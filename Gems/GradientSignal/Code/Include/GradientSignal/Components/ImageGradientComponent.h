@@ -16,7 +16,6 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-#include <GradientSignal/ImageAsset.h>
 #include <GradientSignal/Util.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 
