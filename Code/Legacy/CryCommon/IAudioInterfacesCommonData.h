@@ -430,9 +430,7 @@ namespace AZStd
     template<>
     struct hash<Audio::TriggerNotificationIdType>
     {
-        using argument_type = Audio::TriggerNotificationIdType;
-        using result_type = size_t;
-        inline result_type operator()(const argument_type& id) const
+        constexpr size_t operator()(const Audio::TriggerNotificationIdType& id) const
         {
             AZStd::hash<uintptr_t> hasher;
             return hasher(id.m_owner);
