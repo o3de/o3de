@@ -127,9 +127,6 @@ PbrLightingOutput EyePS_Common(VSOutput IN)
     surface.clearCoat.roughness = 0.0;
     surface.clearCoat.normal = float3(0.0, 0.0, 0.0);
 
-    // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
-
     // Apply Direct Lighting
     ApplyDirectLighting(surface, lightingData);
 
