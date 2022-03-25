@@ -14,7 +14,6 @@
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include "MaterialInputs/SpecularInput.azsli"
-#include "MaterialInputs/OcclusionInput.azsli"
 #include "MaterialInputs/UvSetCount.azsli"
 #include "MaterialInputs/SubsurfaceInput.azsli"
 #include "MaterialInputs/TransmissionInput.azsli"
@@ -26,7 +25,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     // Auto-generate material SRG fields for common inputs
     COMMON_SRG_INPUTS_SPECULAR_F0()
-    COMMON_SRG_INPUTS_OCCLUSION()
 
     // This includes common base color, normal, and roughness inputs for iris/sclera.
     COMMON_SRG_INPUTS_EYE()

@@ -102,9 +102,6 @@
                 "$import": "MaterialInputs/SpecularPropertyGroup.json"
             },
             { 
-                "$import": "MaterialInputs/OcclusionPropertyGroup.json"
-            },
-            { 
                 "$import": "MaterialInputs/SubsurfaceAndTransmissionPropertyGroup.json"
             },
             { 

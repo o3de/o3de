@@ -14,7 +14,6 @@
 // ---------- Material Parameters ----------
 
 COMMON_OPTIONS_SPECULAR_F0()
-COMMON_OPTIONS_OCCLUSION()
 
 // This includes common base color, normal, and roughness options for iris/sclera
 COMMON_OPTIONS_EYE()
