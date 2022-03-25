@@ -9,6 +9,7 @@
 #pragma once
 
 #include <QGraphicsView>
+#include <QTimer>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
