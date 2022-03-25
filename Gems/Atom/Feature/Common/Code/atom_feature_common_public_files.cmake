@@ -81,7 +81,6 @@ set(FILES
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshInputBuffers.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshInstance.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h
-    Include/Atom/Feature/SkinnedMesh/SkinnedMeshRenderProxyInterface.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h

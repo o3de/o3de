@@ -21,7 +21,6 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
-#include <Atom/Feature/SkinnedMesh/SkinnedMeshRenderProxyInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInputBuffers.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
@@ -200,7 +199,7 @@ namespace AZ
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;
             AZ::Data::Instance<AZ::RPI::Buffer> m_boneTransforms = nullptr;
-            AZ::Render::SkinnedMeshRenderProxyInterfaceHandle m_skinnedMeshRenderProxy;
+            AZ::Render::SkinnedMeshFeatureProcessorInterface::SkinnedMeshHandle m_skinnedMeshHandle;
             AZ::Render::SkinnedMeshFeatureProcessorInterface* m_skinnedMeshFeatureProcessor = nullptr;
             AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             //m_meshHandle is wrapped in a shared pointer so that it can be shared between this and the SkinnedMeshRenderProxy (the handle itself cannot be copied)

@@ -517,12 +517,12 @@ namespace AZ::Render
 
     void AtomActorInstance::OnUpdateSkinningMatrices()
     {
-        if (m_skinnedMeshRenderProxy.IsValid())
+        if (m_skinnedMeshHandle.IsValid())
         {
             AZStd::vector<float> boneTransforms;
             GetBoneTransformsFromActorInstance(m_actorInstance, boneTransforms, GetSkinningMethod());
 
-            m_skinnedMeshRenderProxy->SetSkinningMatrices(boneTransforms);
+            m_skinnedMeshFeatureProcessor->SetSkinningMatrices(m_skinnedMeshHandle, boneTransforms);
 
             // Update the morph weights for every lod. This does not mean they will all be dispatched, but they will all have up to date weights
             // TODO: once culling is hooked up such that EMotionFX and Atom are always in sync about which lod to update, only update the currently visible lods [ATOM-13564]
@@ -598,7 +598,7 @@ namespace AZ::Render
                         swizzle_unique(m_wrinkleMaskWeights, remapped);
                     }
 
-                    m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
+                    m_skinnedMeshFeatureProcessor->SetMorphTargetWeights(m_skinnedMeshHandle, lodIndex, m_morphTargetWeights);
 
                     // Until EMotionFX and Atom lods are synchronized [ATOM-13564] we don't know which EMotionFX lod to pull the weights from
                     // Until that is fixed, just use lod 0 [ATOM-15251]
@@ -636,7 +636,7 @@ namespace AZ::Render
         MeshComponentRequestBus::Handler::BusDisconnect();
         MaterialComponentNotificationBus::Handler::BusDisconnect();
         TransformNotificationBus::Handler::BusDisconnect();
-        m_skinnedMeshFeatureProcessor->ReleaseRenderProxyInterface(m_skinnedMeshRenderProxy);
+        m_skinnedMeshFeatureProcessor->ReleaseSkinnedMesh(m_skinnedMeshHandle);
         if (m_meshHandle)
         {
             m_meshFeatureProcessor->ReleaseMesh(*m_meshHandle);
@@ -661,8 +661,8 @@ namespace AZ::Render
         }
 
         // If render proxies already exist, they will be auto-freed
-        SkinnedMeshFeatureProcessorInterface::SkinnedMeshRenderProxyDesc desc{ m_skinnedMeshInputBuffers, m_skinnedMeshInstance, m_meshHandle, m_boneTransforms, {GetAtomSkinningMethod()} };
-        m_skinnedMeshRenderProxy = m_skinnedMeshFeatureProcessor->AcquireRenderProxyInterface(desc);
+        SkinnedMeshFeatureProcessorInterface::SkinnedMeshHandleDescriptor desc{ m_skinnedMeshInputBuffers, m_skinnedMeshInstance, m_meshHandle, m_boneTransforms, {GetAtomSkinningMethod()} };
+        m_skinnedMeshHandle = m_skinnedMeshFeatureProcessor->AcquireSkinnedMesh(desc);
 
         if (m_transformInterface)
         {
@@ -694,17 +694,17 @@ namespace AZ::Render
     
     void AtomActorInstance::EnableSkinning(uint32_t lodIndex, uint32_t meshIndex)
     {
-        if (m_skinnedMeshRenderProxy.IsValid())
+        if (m_skinnedMeshHandle.IsValid())
         {
-            m_skinnedMeshRenderProxy->EnableSkinning(lodIndex, meshIndex);
+            m_skinnedMeshFeatureProcessor->EnableSkinning(m_skinnedMeshHandle, lodIndex, meshIndex);
         }
     }
 
     void AtomActorInstance::DisableSkinning(uint32_t lodIndex, uint32_t meshIndex)
     {
-        if (m_skinnedMeshRenderProxy.IsValid())
+        if (m_skinnedMeshHandle.IsValid())
         {
-            m_skinnedMeshRenderProxy->DisableSkinning(lodIndex, meshIndex);
+            m_skinnedMeshFeatureProcessor->DisableSkinning(m_skinnedMeshHandle, lodIndex, meshIndex);
         }
     }
 

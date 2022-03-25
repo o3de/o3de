@@ -87,7 +87,7 @@ namespace AZ
 
             AZ::RHI::ConstantsData m_rootConstantData;
 
-            // Per-SkinnedMeshInstancenstance constants for morph targets
+            // Per-SkinnedMeshInstance constants for morph targets
             MorphTargetInstanceMetaData m_morphInstanceMetaData;
             // A conservative value for encoding/decoding the accumulated deltas
             float m_accumulatedDeltaIntegerEncoding;
