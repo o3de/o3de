@@ -107,6 +107,12 @@ namespace AZ
 
                 imageDescriptor.m_size = layout.m_size;
             }
+            else
+            {
+                AZ_Warning("Streaming Image", false, "Mip level index (%d) out of bounds, only %d levels available for asset %s",
+                    mipLevel, imageDescriptor.m_mipLevels, m_assetId.ToString<AZStd::string>().c_str());
+                return RHI::ImageDescriptor();
+            }
 
             return imageDescriptor;
         }
@@ -117,7 +123,8 @@ namespace AZ
 
             if (mipChainAsset == nullptr)
             {
-                AZ_Warning("Streaming Image", false, "MipChain asset wasn't loaded");
+                AZ_Warning("Streaming Image", false, "MipChain asset wasn't loaded for assetId %s",
+                    m_assetId.ToString<AZStd::string>().c_str());
                 return AZStd::span<const uint8_t>();
             }
 
