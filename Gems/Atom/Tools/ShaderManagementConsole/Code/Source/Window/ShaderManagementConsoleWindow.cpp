@@ -20,7 +20,7 @@
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : Base(toolId, parent)
+        : Base(toolId, "ShaderManagementConsoleWindow",  parent)
     {
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
 
