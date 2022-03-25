@@ -1029,9 +1029,7 @@ namespace AZ
         {
             RPI::MaterialPropertyIndex propertyIndex;
 
-            // Default to manual color, in case the material type doesn't have the concept of
-            // manual vs. automatic irradiance color.
-            AZ::Name irradianceColorSource = AZ::Name("Manual");
+            AZ::Name irradianceColorSource;
             propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
             if (propertyIndex.IsValid())
             {
@@ -1040,7 +1038,40 @@ namespace AZ
                                                 ->GetPropertyDescriptor(propertyIndex)
                                                 ->GetEnumName(enumVal);
             }
-            if (irradianceColorSource == AZ::Name("BaseColorTint"))
+
+            if (irradianceColorSource.IsEmpty() || irradianceColorSource == AZ::Name("Manual"))
+            {
+                propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.manualColor"));
+                if (propertyIndex.IsValid())
+                {
+                    subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                    if (material->FindPropertyIndex(AZ::Name("irradiance.color")).IsValid())
+                    {
+                        AZ_Warning(
+                            "MeshFeatureProcessor", false,
+                            "Found both irradiance.manualColor and irradiance.color fields. "
+                            "Using irradiance.manualColor and ignoring irradiance.color.");
+                    }
+                }
+                else
+                {
+                    // Couldn't find irradiance.manualColor -> check for an irradiance.color in case the material type
+                    // doesn't have the concept of manual vs. automatic irradiance color, allow a simpler property name
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
+                    if (propertyIndex.IsValid())
+                    {
+                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                    }
+                    else if (irradianceColorSource == AZ::Name("Manual"))
+                    {
+                        // Warn the user if an explicit manual irradianceColorSource was requested, but no color found
+                        AZ_Warning("MeshFeatureProcessor", false, "Requested manual color as irradianceColorSource but I "
+                                "could not find an irradiance.manualColor or irradiance.color field. Defaulting to black.");
+                        subMesh.m_irradianceColor = AZ::Colors::Black;
+                    }
+                }
+            }
+            else if (irradianceColorSource == AZ::Name("BaseColorTint"))
             {
                 // Use only the baseColor, no texture on top of it
                 subMesh.m_irradianceColor = subMesh.m_baseColor;
@@ -1109,29 +1140,6 @@ namespace AZ
                 {
                     // No texture, simply copy the baseColor
                     subMesh.m_irradianceColor = subMesh.m_baseColor;
-                }
-            }
-            else if (irradianceColorSource == AZ::Name("Manual"))
-            {
-                propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.manualColor"));
-                if (propertyIndex.IsValid())
-                {
-                    subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
-                }
-                else
-                {
-                    /* Couldn't find irradiance.manualColor -> check for an irradiance.color legacy fallback */
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
-                    if (propertyIndex.IsValid())
-                    {
-                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
-                    }
-                    else
-                    {
-                        AZ_Warning("MeshFeatureProcessor", false, "Requested manual color as irradianceColorSource "
-                                "but I could not find an irradiance.manualColor field. Defaulting to black.");
-                        subMesh.m_irradianceColor = AZ::Colors::Black;
-                    }
                 }
             }
             else

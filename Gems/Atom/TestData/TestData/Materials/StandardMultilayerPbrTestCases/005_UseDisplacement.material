@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 3,
     "propertyValues": {
         "blend.blendSource": "Displacement",
         "blend.displacementBlendDistance": 0.008999999612569809,

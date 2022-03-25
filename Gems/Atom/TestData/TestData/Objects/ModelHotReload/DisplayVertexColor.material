@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 3,
     "propertyValues": {
         "blend.blendSource": "BlendMaskVertexColors",
         "blend.debugDrawMode": "FinalBlendWeights",
