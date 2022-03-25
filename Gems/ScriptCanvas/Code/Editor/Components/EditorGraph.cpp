@@ -454,7 +454,7 @@ namespace ScriptCanvasEditor
         if (!variable)
         {
             AZ_Warning("ScriptCanvas", false
-                , "EditorGraph::::RefreshVariableReferences called with variableId that did not refe to a variable");
+                , "EditorGraph::::RefreshVariableReferences called with variableId that did not refer to a variable");
             return;
         }
 
@@ -754,7 +754,6 @@ namespace ScriptCanvasEditor
     EditorGraph::LiveSlotInfo* EditorGraph::FindMatchingSlotState
         ( ScriptCanvas::Node& node
         , ScriptCanvas::Slot& slot
-        , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
         , LiveSlotStates& slotState) const
     {
         const bool isGetSetVariableDataSlot = node.GetVariableInputSlot() == &slot || node.GetVariableOutputSlot() == &slot;
@@ -851,7 +850,6 @@ namespace ScriptCanvasEditor
     AZ::Outcome<void, AZStd::string> EditorGraph::UpdateSlotDatum
         ( ScriptCanvas::Node& node
         , ScriptCanvas::Slot& slot
-        , [[maybe_unused]] const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
         , LiveSlotInfo& slotInfo)
     {
         if (!IsData(slot.GetType()))
@@ -893,7 +891,7 @@ namespace ScriptCanvasEditor
         , FixConnections fixConnections)
     {
         // find a match for the slot in the slot state
-        auto match = FindMatchingSlotState(node, slot, nodeConfig, slotState);
+        auto match = FindMatchingSlotState(node, slot, slotState);
         if (!match)
         {
             const auto msg = AZStd::string::format
@@ -913,19 +911,13 @@ namespace ScriptCanvasEditor
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // THE REAL REASON FOR THE FAILURE TO UPDATE THE NODE
-        // look out for early failures!
-        // and successes!
-        //////////////////////////////////////////////////////////////////////////
-
         if (fixConnections == FixConnections::No)
         {
             AZ_Error("ScriptCanvas", !match->newEndpoint.IsValid(), "The matching slot state has already been initialized");
             match->newEndpoint = ScriptCanvas::Endpoint(node.GetEntityId(), slot.GetId());
 
             // update based on type / values
-            auto updateDataOutcome = UpdateSlotDatum(node, slot, nodeConfig, *match);
+            auto updateDataOutcome = UpdateSlotDatum(node, slot, *match);
             if (!updateDataOutcome.IsSuccess())
             {
                 const auto msg = AZStd::string::format

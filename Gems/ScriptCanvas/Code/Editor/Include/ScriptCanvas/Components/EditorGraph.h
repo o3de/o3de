@@ -393,10 +393,10 @@ namespace ScriptCanvasEditor
         static ScriptCanvas::Node* GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeReplacementConfiguration& config);
         AZ::Outcome<ScriptCanvas::Node*, AZStd::string> ReplaceLiveNode(ScriptCanvas::Node&, ScriptCanvas::NodeReplacementConfiguration&);
         AZ::Outcome<LiveSlotStates, AZStd::string> GetSlotState(const ScriptCanvas::Node& node) const;
-        LiveSlotInfo* FindMatchingSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotStates& slotState) const;
+        LiveSlotInfo* FindMatchingSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, LiveSlotStates& slotState) const;
         AZ::Outcome<void, AZStd::string> UpdateSlotConnections(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot
             , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotInfo& slotInfo, const ReplacementInfoByNode& ainfoByOldNode);
-        AZ::Outcome<void, AZStd::string> UpdateSlotDatum(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotInfo& slotInfo);
+        AZ::Outcome<void, AZStd::string> UpdateSlotDatum(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, LiveSlotInfo& slotInfo);
 
         enum class FixConnections
         {
