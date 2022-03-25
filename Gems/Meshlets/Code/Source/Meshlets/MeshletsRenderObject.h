@@ -29,6 +29,9 @@ namespace AZ
 
     namespace Meshlets
     {
+        const uint32_t maxVerticesPerMeshlet = 64;      // matching wave/warp groups size multiplier
+        const uint32_t maxTrianglesPerMeshlet = 124;    // NVidia-recommended 126, rounded down to a multiple of 4
+
         struct MeshRenderData
         {
             //! Render pass data
@@ -80,6 +83,7 @@ namespace AZ
 
             bool UpdateShader(Data::Instance<RPI::Shader> updatedShader);
 
+            uint32_t GetMeshletsCount() { return m_meshletsCount; }
 
         protected:
             bool ProcessBuffersData(float* position, uint32_t vtxNum);
@@ -102,14 +106,12 @@ namespace AZ
 
             uint32_t CreateMeshletsRenderObject(const RPI::ModelLodAsset::Mesh& meshAsset, MeshRenderData &meshRenderData);
 
-            uint32_t GetMehsletsCount() { m_meshletsCount;  }
-
             void PrepareRenderSrgDescriptors(MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indicesCount);
             //! Should be called by CreateAndBindRenderBuffers
             bool CreateAndBindRenderSrg(MeshRenderData &meshRenderData);
             bool CreateAndBindRenderBuffers(MeshRenderData &meshRenderData);
 
-            void PrepareComputeSrgDescriptors(MeshRenderData &meshRenderData, uint32_t meshletsCount, uint32_t indicesCount);
+            void PrepareComputeSrgDescriptors(MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indexCount);
             //! Should be called by CreateAndBindComputeBuffers.
             bool CreateAndBindComputeSrg(MeshRenderData &meshRenderData);
             bool CreateAndBindComputeBuffers(MeshRenderData &meshRenderData);

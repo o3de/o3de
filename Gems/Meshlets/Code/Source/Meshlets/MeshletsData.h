@@ -21,6 +21,7 @@ namespace AZ
         enum class ComputeStreamsSemantics : uint8_t
         {
             Indices = 0,
+            UVs,            // for debug coloring purposes
             MeshletsData,
             MehsletsTriangles,
             MeshletsIndicesIndirection,

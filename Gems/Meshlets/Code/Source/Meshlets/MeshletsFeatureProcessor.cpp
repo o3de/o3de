@@ -10,6 +10,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
@@ -121,6 +122,43 @@ namespace AZ
             return true;
         }
 
+
+        bool MeshletsFeatureProcessor::AddMeshletsPassesToPipeline(RPI::RenderPipeline* renderPipeline)
+        {
+            const char* passRequestAssetFilePath = "Passes/MeshletsPassRequest.azasset";
+            m_passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            const AZ::RPI::PassRequest* passRequest = nullptr;
+            if (m_passRequestAsset->IsReady())
+            {
+                passRequest = m_passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+            }
+            if (!passRequest)
+            {
+                AZ_Error("Meshlets", false, "Failed to add meshlets pass. Can't load PassRequest from [%s]", passRequestAssetFilePath);
+                return false;
+            }
+
+            passRequest->m_templateName == AZ::Name("MeshletsComputePassTemplate");
+
+            // Create the pass
+            RPI::Ptr<RPI::Pass> pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
+            if (!pass)
+            {
+                AZ_Error("Meshlets", false, "Failed creating meshlets pass from pass request for pipeline [%s]",
+                    renderPipeline->GetId().GetCStr());
+                return false;
+            }
+
+            // Add the pass to render pipeline
+            bool success = renderPipeline->AddPassAfter(pass, Name("OpaquePass"));
+
+            AZ_Error("Meshlets", success, "Meshlets pass injection to render pipeline [%s] failed",
+                renderPipeline->GetId().GetCStr());
+
+            return success;
+        }
+
         void MeshletsFeatureProcessor::AddMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject)
         {
             m_meshletsRenderObjects.push_back(meshletsRenderObject);
@@ -173,8 +211,10 @@ namespace AZ
         void MeshletsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
         {
             CleanResources();
-            CreateResources();
+
             m_renderPipeline = renderPipeline;
+            CreateResources();
+            AddMeshletsPassesToPipeline(m_renderPipeline);
             Init(m_renderPipeline);
         }
 
@@ -182,6 +222,7 @@ namespace AZ
         {
             m_renderPipeline = renderPipeline.get();
             CreateResources();
+            AddMeshletsPassesToPipeline(m_renderPipeline);
             Init(m_renderPipeline);
         }
 

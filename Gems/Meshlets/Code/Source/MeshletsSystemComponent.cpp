@@ -1,6 +1,4 @@
 
-#include <MeshletsSystemComponent.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -9,8 +7,12 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
-#include <MeshletsFeatureProcessor.h>
 
+#include <MeshletsSystemComponent.h>
+#include <MeshletsFeatureProcessor.h>
+#include <MultiDispatchComputePass.h>
+
+#pragma optimize("", off)
 namespace Meshlets
 {
     void MeshletsSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -86,6 +88,9 @@ namespace Meshlets
 
     void MeshletsSystemComponent::Activate()
     {
+        // Feature processor
+        AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<AZ::Meshlets::MeshletsFeatureProcessor>();
+
         auto* passSystem = AZ::RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
 
@@ -93,8 +98,7 @@ namespace Meshlets
         m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
         passSystem->ConnectEvent(m_loadTemplatesHandler);
 
-        // Feature processor
-        AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<AZ::Meshlets::MeshletsFeatureProcessor>();
+        passSystem->AddPassCreator(AZ::Name("MultiDispatchComputePass"), &AZ::Meshlets::MultiDispatchComputePass::Create);
 
         MeshletsRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();

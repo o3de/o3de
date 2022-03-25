@@ -6,7 +6,7 @@
         "AssetPaths": [
             {
                 "Name": "MeshletsComputePassTemplate",
-                "Path": "Passes/MeshletsComputePass.pass"
+                "Path": "Passes/MeshletsCompute.pass"
             }
         ]
     }

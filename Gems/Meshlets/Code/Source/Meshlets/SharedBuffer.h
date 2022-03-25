@@ -69,12 +69,14 @@ namespace AZ
                 Name bufferName,
                 Name paramNameInSrg,
                 uint32_t resourceShaderIndex,
-                uint32_t viewOffsetInBytes
+                uint32_t viewOffsetInBytes,
+                uint8_t* bufferData = nullptr
             ) : //m_poolType(poolType),
                 m_elementFormat(elementFormat), m_bindFlags(m_bindFlags),
                 m_elementSize(elementSize), m_elementCount(elementCount),
                 m_bufferName(bufferName), m_paramNameInSrg(paramNameInSrg),
-                m_resourceShaderIndex(resourceShaderIndex), m_viewOffsetInBytes(viewOffsetInBytes)
+                m_resourceShaderIndex(resourceShaderIndex), m_viewOffsetInBytes(viewOffsetInBytes),
+                m_bufferData(bufferData)
             {};
         };
 

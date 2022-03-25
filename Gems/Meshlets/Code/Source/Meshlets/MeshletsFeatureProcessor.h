@@ -76,6 +76,8 @@ namespace AZ
             /// Implement equivalent
 //            bool CreateMeshDrawPacket(Meshlets::Mesh* currentMesh);
 
+            bool AddMeshletsPassesToPipeline(RPI::RenderPipeline* renderPipeline);
+
             void CreateResources();
             void CleanResources();
             void CleanPasses();
@@ -84,6 +86,9 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(MeshletsFeatureProcessor);
 
             AZStd::unique_ptr<Meshlets::SharedBuffer> m_sharedBuffer;  // used for all meshlets geometry buffers.
+
+            // Cache the pass request data for creating a parent pass and associating it in the pipeline
+            AZ::Data::Asset<AZ::RPI::AnyAsset> m_passRequestAsset;
 
             Data::Instance<MultiDispatchComputePass> m_computePass;
 
