@@ -164,6 +164,8 @@ namespace EMStudio
 
         void LoadKeyboardShortcuts();
 
+        void UpdatePlugins(float timeDelta);
+
     public slots:
         void OnAutosaveTimeOut();
         void LoadLayoutAfterShow();
@@ -309,8 +311,6 @@ namespace EMStudio
         // AZ::TickBus::Handler overrides
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
         int GetTickOrder() override;
-
-        void UpdatePlugins(float timeDelta);
 
         void EnableUpdatingPlugins();
         void DisableUpdatingPlugins();

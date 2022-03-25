@@ -17,6 +17,7 @@ namespace EMStudio
     {
     public:
         AZ_RTTI(PersistentPlugin, "{5A1715B1-4AAC-4DBE-B05F-F59D19EBF128}")
+        virtual ~PersistentPlugin() = default;
 
         virtual const char* GetName() const = 0;
 
