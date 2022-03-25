@@ -28,7 +28,7 @@ AZ_POP_DISABLE_WARNING
 
 static const int LabelColumnStretch = 2;
 static const int ValueColumnStretch = 3;
-#pragma optimize("", off)
+ 
 namespace AzToolsFramework
 {
     PropertyRowWidget::PropertyRowWidget(QWidget* pParent)
