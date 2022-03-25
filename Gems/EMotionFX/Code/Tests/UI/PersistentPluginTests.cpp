@@ -25,7 +25,7 @@ namespace EMotionFX
         MOCK_METHOD1(Reflect, void(AZ::ReflectContext*));
         MOCK_METHOD0(GetOptions, EMStudio::PluginOptions*());
         MOCK_METHOD1(Update, void(float));
-        MOCK_METHOD2(Render, void(EMStudio::RenderPlugin*, EMStudio::EMStudioPlugin::RenderInfo*));
+        MOCK_METHOD1(Render, void(EMotionFX::ActorRenderFlags));
     };
 
     TEST_F(UIFixture, CreatePersistentPluginTest)
@@ -39,9 +39,6 @@ namespace EMotionFX
             << "Failed to add persistent plugin to plugin manager.";
         EXPECT_EQ(pluginManager->GetPersistentPlugins().size(), pluginManager->GetNumPersistentPlugins())
             << "Mismatch between the actual container size and the returned number of plugins.";
-
-        EXPECT_CALL(*plugin, Reflect(testing::_)).Times(1);
-        EXPECT_CALL(*plugin, GetOptions()).Times(1);
     }
 
     TEST_F(UIFixture, RemovePersistentPluginTest)
@@ -65,26 +62,6 @@ namespace EMotionFX
         EMStudio::GetPluginManager()->AddPersistentPlugin(plugin);
 
         EXPECT_CALL(*plugin, Update(testing::_)).Times(1);
-        EMStudio::GetManager()->UpdatePlugins(1.0f / 60.0f);
-    }
-
-    TEST_F(UIFixture, RenderPersistentPluginsTest)
-    {
-        PersistentTestPlugin* plugin = new PersistentTestPlugin();
-        EMStudio::GetPluginManager()->AddPersistentPlugin(plugin);
-
-        EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-        EMStudio::OpenGLRenderPlugin* renderPlugin = static_cast<EMStudio::OpenGLRenderPlugin*>(pluginManager->FindActivePlugin(EMStudio::OpenGLRenderPlugin::CLASS_ID));
-        ASSERT_TRUE(renderPlugin) << "Render plugin not found.";
-
-        ASSERT_TRUE(renderPlugin->GetNumViewWidgets() > 0) << "No render view widget available.";
-        EMStudio::RenderViewWidget* viewWidget = renderPlugin->GetViewWidget(0);
-        ASSERT_TRUE(viewWidget) << "Cannot get render view widget.";
-
-        EMStudio::RenderWidget* renderWidget = viewWidget->GetRenderWidget();
-        ASSERT_TRUE(renderWidget) << "No active render widget.";
-
-        EXPECT_CALL(*plugin, Render(testing::_, testing::_)).Times(1);
-        renderWidget->RenderCustomPluginData();
+        EMStudio::GetMainWindow()->UpdatePlugins(1.0f / 60.0f);
     }
 } // namespace EMotionFX
