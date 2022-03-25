@@ -20,18 +20,18 @@ class TestEditorTestBase(unittest.TestCase):
 
     def test_EditorSharedTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorSharedTest()
-        assert mock_editorsharedtest.is_batchable == True
-        assert mock_editorsharedtest.is_parallelizable == True
+        assert mock_editorsharedtest.is_batchable
+        assert mock_editorsharedtest.is_parallelizable
 
     def test_EditorParallelTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorParallelTest()
-        assert mock_editorsharedtest.is_batchable == False
-        assert mock_editorsharedtest.is_parallelizable == True
+        assert not mock_editorsharedtest.is_batchable
+        assert mock_editorsharedtest.is_parallelizable
 
     def test_EditorBatchedTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorBatchedTest()
-        assert mock_editorsharedtest.is_batchable == True
-        assert mock_editorsharedtest.is_parallelizable == False
+        assert mock_editorsharedtest.is_batchable
+        assert not mock_editorsharedtest.is_parallelizable
 
 
 class TestResultBase(unittest.TestCase):

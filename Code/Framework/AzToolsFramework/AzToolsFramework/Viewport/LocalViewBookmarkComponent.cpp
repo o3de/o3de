@@ -8,6 +8,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/ViewBookmarkLoaderInterface.h>
 
@@ -19,6 +20,8 @@ namespace AzToolsFramework
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext->RegisterGenericType<AZStd::vector<ViewBookmark>>();
+
             serializeContext->Class<LocalViewBookmarkComponent, EditorComponentBase>()->Version(1)->Field(
                 "LocalBookmarkFileName", &LocalViewBookmarkComponent::m_localBookmarksFileName);
 
