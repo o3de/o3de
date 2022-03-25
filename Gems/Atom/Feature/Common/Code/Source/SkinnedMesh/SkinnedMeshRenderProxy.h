@@ -10,7 +10,6 @@
 
 #include <SkinnedMesh/SkinnedMeshDispatchItem.h>
 #include <MorphTargets/MorphTargetDispatchItem.h>
-#include <Atom/Feature/SkinnedMesh/SkinnedMeshRenderProxyInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h>
 
@@ -33,18 +32,17 @@ namespace AZ
         class SkinnedMeshFeatureProcessor;
 
         class SkinnedMeshRenderProxy final
-            : public SkinnedMeshRenderProxyInterface
         {
             friend SkinnedMeshFeatureProcessor;
 
         public:
-            AZ_RTTI(AZ::Render::SkinnedMeshRenderProxy, "{C77A21E7-113A-4DC9-972F-923E1BEFBC9A}", AZ::Render::SkinnedMeshRenderProxyInterface);
-            explicit SkinnedMeshRenderProxy(const SkinnedMeshFeatureProcessorInterface::SkinnedMeshRenderProxyDesc& desc);
+            AZ_RTTI(AZ::Render::SkinnedMeshRenderProxy, "{C77A21E7-113A-4DC9-972F-923E1BEFBC9A}");
+            explicit SkinnedMeshRenderProxy(const SkinnedMeshFeatureProcessorInterface::SkinnedMeshHandleDescriptor& desc);
 
-            void SetSkinningMatrices(const AZStd::vector<float>& data) override;
-            void SetMorphTargetWeights(uint32_t lodIndex, const AZStd::vector<float>& weights) override;
-            void EnableSkinning(uint32_t lodIndex, uint32_t meshIndex) override;
-            void DisableSkinning(uint32_t lodIndex, uint32_t meshIndex) override;
+            void SetSkinningMatrices(const AZStd::vector<float>& data);
+            void SetMorphTargetWeights(uint32_t lodIndex, const AZStd::vector<float>& weights);
+            void EnableSkinning(uint32_t lodIndex, uint32_t meshIndex);
+            void DisableSkinning(uint32_t lodIndex, uint32_t meshIndex);
 
             uint32_t GetLodCount() const;
             AZStd::span<const AZStd::unique_ptr<SkinnedMeshDispatchItem>> GetDispatchItems(uint32_t lodIndex) const;
@@ -66,7 +64,5 @@ namespace AZ
 
             SkinnedMeshFeatureProcessor* m_featureProcessor = nullptr;
         };
-
-        using SkinnedMeshRenderProxyHandle = StableDynamicArrayHandle<SkinnedMeshRenderProxy>;
     } // namespace Render
 } // namespace AZ

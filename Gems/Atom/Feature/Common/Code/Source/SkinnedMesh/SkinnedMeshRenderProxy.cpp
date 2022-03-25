@@ -22,7 +22,7 @@ namespace AZ
 {
     namespace Render
     {
-        SkinnedMeshRenderProxy::SkinnedMeshRenderProxy(const SkinnedMeshFeatureProcessorInterface::SkinnedMeshRenderProxyDesc& desc)
+        SkinnedMeshRenderProxy::SkinnedMeshRenderProxy(const SkinnedMeshFeatureProcessorInterface::SkinnedMeshHandleDescriptor& desc)
             : m_inputBuffers(desc.m_inputBuffers)
             , m_instance(desc.m_instance)
             , m_meshHandle(desc.m_meshHandle)

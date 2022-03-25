@@ -311,10 +311,10 @@ namespace AZ
             m_morphTargetDispatches.clear();
         }
 
-        SkinnedMeshRenderProxyHandle SkinnedMeshFeatureProcessor::AcquireRenderProxy(const SkinnedMeshRenderProxyDesc& desc)
+        SkinnedMeshFeatureProcessor::SkinnedMeshHandle SkinnedMeshFeatureProcessor::AcquireSkinnedMesh(const SkinnedMeshHandleDescriptor& desc)
         {
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
-            SkinnedMeshRenderProxyHandle handle = m_renderProxies.emplace(desc);
+            SkinnedMeshHandle handle = m_renderProxies.emplace(desc);
             if (!handle->Init(*GetParentScene(), this))
             {
                 m_renderProxies.erase(handle);
@@ -322,7 +322,7 @@ namespace AZ
             return handle;
         }
 
-        bool SkinnedMeshFeatureProcessor::ReleaseRenderProxy(SkinnedMeshRenderProxyHandle& handle)
+        bool SkinnedMeshFeatureProcessor::ReleaseSkinnedMesh(SkinnedMeshHandle& handle)
         {
             if (handle.IsValid())
             {
@@ -331,6 +331,39 @@ namespace AZ
                 return true;
             }
             return false;
+        }
+
+        void SkinnedMeshFeatureProcessor::SetSkinningMatrices(const SkinnedMeshHandle& handle, const AZStd::vector<float>& data)
+        {
+            if (handle.IsValid())
+            {
+                handle->SetSkinningMatrices(data);
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::SetMorphTargetWeights(
+            const SkinnedMeshHandle& handle, uint32_t lodIndex, const AZStd::vector<float>& weights)
+        {
+            if (handle.IsValid())
+            {
+                handle->SetMorphTargetWeights(lodIndex, weights);
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::EnableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex)
+        {
+            if (handle.IsValid())
+            {
+                handle->EnableSkinning(lodIndex, meshIndex);
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::DisableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex)
+        {
+            if (handle.IsValid())
+            {
+                handle->DisableSkinning(lodIndex, meshIndex);
+            }
         }
 
         void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline)
@@ -402,17 +435,6 @@ namespace AZ
                 commandList->Submit(*dispatchItem);
             }
             m_morphTargetDispatches.clear();
-        }
-
-        SkinnedMeshRenderProxyInterfaceHandle SkinnedMeshFeatureProcessor::AcquireRenderProxyInterface(const SkinnedMeshRenderProxyDesc& desc)
-        {
-            return AcquireRenderProxy(desc);
-        }
-
-        bool SkinnedMeshFeatureProcessor::ReleaseRenderProxyInterface(SkinnedMeshRenderProxyInterfaceHandle& interfaceHandle)
-        {
-            SkinnedMeshRenderProxyHandle handle(AZStd::move(interfaceHandle));
-            return ReleaseRenderProxy(handle);
         }
 
         Data::Instance<RPI::Shader> SkinnedMeshFeatureProcessor::GetSkinningShader() const
