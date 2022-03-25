@@ -126,6 +126,20 @@ namespace AzToolsFramework
         return AzToolsFramework::IsInFocusSubTree(entityId, m_focusRoot);
     }
 
+    bool FocusModeSystemComponent::IsFocusRoot(AZ::EntityId entityId) const
+    {
+        if (m_focusRoot.IsValid())
+        {
+            return (entityId == m_focusRoot);
+        }
+        else
+        {
+            AZ::EntityId parentId;
+            EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
+            return !parentId.IsValid();
+        }
+    }
+
     void FocusModeSystemComponent::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
     {
         // If the parent's entityId is in the list and the child isn't, add the child to the list.

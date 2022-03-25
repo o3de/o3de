@@ -27,6 +27,12 @@
                     "details": {
                         "name": "Result"
                     }
+                },
+                {
+                    "base": "DataInput_StringValue_0",
+                    "details": {
+                        "name": "String Value"
+                    }
                 }
             ]
         }

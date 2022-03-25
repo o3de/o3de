@@ -77,7 +77,7 @@ namespace O3DE::ProjectManager
             if (vsWhereFile.exists() && vsWhereFile.isFile())
             {
                 QStringList vsWhereBaseArguments = QStringList{"-version",
-                                                               "[16.9.2,17)",
+                                                               "[16.11,18)",
                                                                "-latest",
                                                                "-requires",
                                                                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"};
@@ -105,7 +105,7 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.9.2 or higher not found.<br><br>"
+            return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.11 or higher or Visual Studio 2022 version 17.0 or higher not found.<br><br>"
                 "A compatible version of Visual Studio is required to build this project.<br>"
                 "Refer to the <a href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual Studio requirements</a> for more information."));
         }

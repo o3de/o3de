@@ -53,8 +53,9 @@
     [
         {
             "Name": "NoMSAA",
-            "PlusArguments": "--no-ms",
-            "MinusArguments": ""
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
         }
     ]
 }

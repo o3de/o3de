@@ -76,11 +76,18 @@ namespace AZ
                 return RHI::ResultCode::OutOfMemory;
             }
 
+            auto memoryView = m_memoryAllocator.Allocate(memoryRequirements.size, memoryRequirements.alignment);
+            if (!memoryView.IsValid())
+            {
+                memoryUsage.m_reservedInBytes -= memoryRequirements.size;
+                return RHI::ResultCode::OutOfMemory;
+            }
+
             RHI::ResultCode result = image.Init(device, imageDescriptor);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             result = image.BindMemoryView(
-                m_memoryAllocator.Allocate(image.m_memoryRequirements.size, image.m_memoryRequirements.alignment), 
+                memoryView, 
                 m_memoryAllocator.GetDescriptor().m_heapMemoryLevel);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
@@ -185,6 +192,12 @@ namespace AZ
             m_memoryAllocator.DeAllocate(image.m_memoryView);
             image.m_memoryView = MemoryView();
             image.Invalidate();
+        }
+
+        void StreamingImagePool::ComputeFragmentation() const
+        {
+            const RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+            memoryUsage.m_fragmentation = m_memoryAllocator.ComputeFragmentation();
         }
 
         void StreamingImagePool::OnFrameEnd()

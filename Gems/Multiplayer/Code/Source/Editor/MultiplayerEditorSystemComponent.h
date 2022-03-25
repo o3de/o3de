@@ -85,6 +85,7 @@ namespace Multiplayer
 
     private:
         void LaunchEditorServer();
+        bool FindServerLauncher(AZ::IO::FixedMaxPath& serverPath);
         
         //! EditorEvents::Handler overrides
         //! @{
