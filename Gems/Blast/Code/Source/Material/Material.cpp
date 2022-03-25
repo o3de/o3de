@@ -70,14 +70,14 @@ namespace Blast
         }
     }
 
-    Nv::Blast::ExtStressSolverSettings Material::GetStressSolverSettings(uint32_t iterationsCount) const
+    Nv::Blast::ExtStressSolverSettings Material::GetStressSolverSettings(uint32_t iterationCount) const
     {
         Nv::Blast::ExtStressSolverSettings settings;
         settings.hardness = m_blastMaterial.health;
         settings.stressLinearFactor = m_stressLinearFactor;
         settings.stressAngularFactor = m_stressAngularFactor;
         settings.graphReductionLevel = 0;
-        settings.bondIterationsPerFrame = iterationsCount;
+        settings.bondIterationsPerFrame = iterationCount;
         return settings;
     }
 

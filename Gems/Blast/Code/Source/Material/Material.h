@@ -45,8 +45,8 @@ namespace Blast
         //! Normalizes the non-stress damage based on the thresholds.
         float GetNormalizedDamage(float damage) const;
 
-        //! Generates NvBlast stress solver settings from this material and provided iterationsCount.
-        Nv::Blast::ExtStressSolverSettings GetStressSolverSettings(uint32_t iterationsCount) const;
+        //! Generates NvBlast stress solver settings from this material and provided iterationCount.
+        Nv::Blast::ExtStressSolverSettings GetStressSolverSettings(uint32_t iterationCount) const;
 
         //! Returns underlying pointer of the native type.
         const void* GetNativePointer() const;

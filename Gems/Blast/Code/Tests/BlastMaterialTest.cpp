@@ -117,9 +117,8 @@ namespace UnitTest
 
         Blast::Material material(materialConfiguration);
 
-        //! Generates NvBlast stress solver settings from this material and provided iterationsCount.
-        const uint32_t iterationsCount = 2;
-        const Nv::Blast::ExtStressSolverSettings stressSolverSettings = material.GetStressSolverSettings(iterationsCount);
+        const uint32_t iterationCount = 2;
+        const Nv::Blast::ExtStressSolverSettings stressSolverSettings = material.GetStressSolverSettings(iterationCount);
 
         EXPECT_NEAR(stressSolverSettings.hardness, 0.6f, Tolerance);
         EXPECT_NEAR(stressSolverSettings.stressLinearFactor, 0.65f, Tolerance);

@@ -9,7 +9,6 @@
 
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -39,7 +38,6 @@ namespace Blast
         , public AZ::Interface<Blast::BlastSystemRequests>::Registrar
         , public AZ::TickBus::Handler
         , private CrySystemEventBus::Handler
-        , private AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_COMPONENT(BlastSystemComponent, "{9705144A-FF10-45CE-AA3D-3E1F43872429}");
@@ -60,9 +58,6 @@ namespace Blast
 
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
-        // AZ::Data::AssetBus interface implementation
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         // Blast configuration methods
         void LoadConfiguration();

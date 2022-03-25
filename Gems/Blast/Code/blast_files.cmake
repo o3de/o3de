@@ -11,7 +11,6 @@ set(FILES
     Include/Blast/BlastActorConfiguration.h
     Include/Blast/BlastActorData.h
     Include/Blast/BlastFamilyComponentBus.h
-    Include/Blast/BlastMaterial.h
     Include/Blast/BlastSystemBus.h
     Include/Blast/BlastDebug.h
     Source/Actor/BlastActorDesc.h
@@ -47,7 +46,6 @@ set(FILES
     Source/Family/DamageManager.h
     Source/Family/DamageManager.cpp
     Source/Common/BlastInterfaces.h
-    Source/Common/BlastMaterial.cpp
     Source/Common/Utils.h
     Source/Material/Material.h
     Source/Material/Material.cpp

@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Editor/EditorSystemComponent.h>
 #include <Editor/EditorWindow.h>
-#include <Editor/MaterialIdWidget.h>
 
 namespace Blast
 {
@@ -37,10 +36,6 @@ namespace Blast
         }
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-
-        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType,
-            aznew Blast::Editor::MaterialIdWidget());
     }
 
     void EditorSystemComponent::Deactivate()

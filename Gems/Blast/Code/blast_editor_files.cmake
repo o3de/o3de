@@ -20,8 +20,6 @@ set(FILES
     Editor/EditorWindow.h
     Editor/EditorWindow.cpp
     Editor/EditorWindow.ui
-    Editor/MaterialIdWidget.h
-    Editor/MaterialIdWidget.cpp
     Editor/SettingsWidget.h
     Editor/SettingsWidget.cpp
 )
