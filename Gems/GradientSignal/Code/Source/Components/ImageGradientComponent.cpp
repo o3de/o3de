@@ -359,7 +359,7 @@ namespace GradientSignal
 
             // Make sure the custom mip level doesn't exceed the available mip levels in this
             // image asset. If so, then just use the lowest available mip level.
-            auto mipLevelCount = m_configuration.m_imageAsset->GetMipLevelCount();
+            auto mipLevelCount = m_configuration.m_imageAsset->GetImageDescriptor().m_mipLevels;
             m_currentMipIndex = m_configuration.m_mipIndex;
             if (m_currentMipIndex >= mipLevelCount)
             {
@@ -376,27 +376,8 @@ namespace GradientSignal
             SetupDefaultMultiplierAndOffset();
         }
 
-        // Retrieve the ImageMipChainAsset for our current mip level so we can retrieve
-        // the image size for later calculations.
-        // Use m_tailMipChain if it's the last mip chain
-        const AZ::RPI::ImageMipChainAsset* mipChainAsset = nullptr;
-        auto mipChainIndex = m_configuration.m_imageAsset->GetMipChainIndex(m_currentMipIndex);
-        if (mipChainIndex == m_configuration.m_imageAsset->GetMipChainCount() - 1)
-        {
-            mipChainAsset = &m_configuration.m_imageAsset->GetTailMipChain();
-        }
-        else
-        {
-            mipChainAsset = m_configuration.m_imageAsset->GetMipChainAsset(mipChainIndex).Get();
-        }
-
-        // Multiple mip levels can be stored in a single chain via different sub images,
-        // so we need to retrieve the offset to determine the correct sub image index
-        // to retrieve the correct image size
-        auto mipChainOffset = aznumeric_cast<AZ::u32>(m_configuration.m_imageAsset->GetMipLevel(mipChainIndex));
-        auto layout = mipChainAsset->GetSubImageLayout(m_currentMipIndex - mipChainOffset);
-        m_imageSize = layout.m_size;
-
+        // Update our cached image data
+        m_imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptorForMipLevel(m_currentMipIndex);
         m_imageData = m_configuration.m_imageAsset->GetSubImageData(m_currentMipIndex, 0);
     }
 
@@ -404,9 +385,8 @@ namespace GradientSignal
     {
         if (!m_imageData.empty())
         {
-            const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-            const auto& width = m_imageSize.m_width;
-            const auto& height = m_imageSize.m_height;
+            const auto& width = m_imageDescriptor.m_size.m_width;
+            const auto& height = m_imageDescriptor.m_size.m_height;
 
             if (width > 0 && height > 0)
             {
@@ -453,7 +433,7 @@ namespace GradientSignal
                     return GetTerrariumPixelValue(x, y);
                 }
 
-                const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+                const float value = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
                 return (value * m_multiplier) + m_offset;
             }
         }

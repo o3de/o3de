@@ -572,7 +572,8 @@ namespace AZ
                 return aznumeric_cast<T>(0);
             }
 
-            return GetImageDataPixelValue<T>(imageData, imageAsset->GetImageDescriptor(), x, y, componentIndex);
+            auto imageDescriptor = imageAsset->GetImageDescriptorForMipLevel(mip);
+            return GetImageDataPixelValue<T>(imageData, imageDescriptor, x, y, componentIndex);
         }
 
         template<>
@@ -606,7 +607,7 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
+            auto imageDescriptor = imageAsset->GetImageDescriptorForMipLevel(mip);
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
@@ -636,7 +637,7 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
+            auto imageDescriptor = imageAsset->GetImageDescriptorForMipLevel(mip);
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
@@ -666,7 +667,7 @@ namespace AZ
                 return false;
             }
 
-            const AZ::RHI::ImageDescriptor& imageDescriptor = imageAsset->GetImageDescriptor();
+            auto imageDescriptor = imageAsset->GetImageDescriptorForMipLevel(mip);
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)

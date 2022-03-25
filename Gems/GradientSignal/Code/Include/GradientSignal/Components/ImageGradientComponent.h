@@ -156,6 +156,6 @@ namespace GradientSignal
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
         AZ::u32 m_currentMipIndex = 0;
-        AZ::RHI::Size m_imageSize;
+        AZ::RHI::ImageDescriptor m_imageDescriptor;
     };
 }
