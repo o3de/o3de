@@ -97,6 +97,8 @@ set(FILES
     Source/PreviewRenderer/PreviewRendererCaptureState.h
     Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
     Source/PreviewRenderer/PreviewRendererSystemComponent.h
+    Source/PropertyEditor/ImagePropertyAssetCtrl.cpp
+    Source/PropertyEditor/ImagePropertyAssetCtrl.h
     Source/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.cpp
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h
     Include/AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorControllerInterface.h

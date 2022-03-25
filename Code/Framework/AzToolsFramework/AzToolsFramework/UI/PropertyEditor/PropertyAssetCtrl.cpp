@@ -343,6 +343,15 @@ namespace AzToolsFramework
         }
     }
 
+    bool PropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
+    {        
+        if (assetId.IsValid() && !assetType.IsNull() && assetType == GetCurrentAssetType())
+        {
+            return true;
+        }
+        return false;
+    }
+
     bool PropertyAssetCtrl::IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId, AZ::Data::AssetType* pAssetType) const
     {
         if (pAssetId)
@@ -363,7 +372,7 @@ namespace AzToolsFramework
         // Helper function to consistently check and set asset ID and type for all possible mime types
         auto checkAsset = [&, this](const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType)
         {
-            if (assetId.IsValid() && !assetType.IsNull() && assetType == GetCurrentAssetType())
+            if (CanAcceptAsset(assetId, assetType))
             {
                 if (pAssetId)
                 {
