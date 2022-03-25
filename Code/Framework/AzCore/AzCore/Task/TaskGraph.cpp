@@ -99,6 +99,7 @@ namespace AZ
 
     void TaskGraph::Submit(TaskGraphEvent* waitEvent)
     {
+        AZ_Assert(!IsEmpty(), "Empty task graph submitted");
         SubmitOnExecutor(TaskExecutor::Instance(), waitEvent);
     }
 
