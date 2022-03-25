@@ -345,11 +345,7 @@ namespace AzToolsFramework
 
     bool PropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
     {        
-        if (assetId.IsValid() && !assetType.IsNull() && assetType == GetCurrentAssetType())
-        {
-            return true;
-        }
-        return false;
+        return (assetId.IsValid() && !assetType.IsNull() && assetType == GetCurrentAssetType());
     }
 
     bool PropertyAssetCtrl::IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId, AZ::Data::AssetType* pAssetType) const

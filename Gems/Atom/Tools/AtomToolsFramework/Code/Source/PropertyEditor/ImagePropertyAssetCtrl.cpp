@@ -92,7 +92,7 @@ namespace AtomToolsFramework
             auto assetId = GUI->GetSelectedAssetID();
             AZ::Data::AssetInfo assetInfo;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
-            instance = property_t(GUI->GetSelectedAssetID(), assetInfo.m_assetType, GUI->GetCurrentAssetHint());
+            instance = property_t(assetInfo.m_assetId, assetInfo.m_assetType, assetInfo.m_relativePath);
         }
     }
 

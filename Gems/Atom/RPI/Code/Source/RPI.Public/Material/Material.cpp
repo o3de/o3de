@@ -622,7 +622,7 @@ namespace AZ
 
                 if (!image)
                 {
-                    AZ_Error(s_debugTraceName, false, "Could not create StreamingImage");
+                    AZ_Error(s_debugTraceName, false, "Could not create an image from the ImageAsset [%s]", assetInfo.m_relativePath.c_str());
                     return false;
                 }
 
