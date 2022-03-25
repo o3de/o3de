@@ -343,7 +343,8 @@ namespace Terrain
             offsetRegion = AZ::Aabb::CreateFromMinMaxValues(worldSizeMin.GetX(),worldSizeMin.GetY(),worldSizeMin.GetZ(),regionMin.GetX(), regionMin.GetY(), worldMaxZ);
 
             AZStd::pair<size_t, size_t> numSamples;
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion, offsetRegion, gridResolution);
+            auto sampler = AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT;
+            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion, offsetRegion, gridResolution, sampler);
 
             xOffset = numSamples.first;
             yOffset = numSamples.second;
