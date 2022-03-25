@@ -5,12 +5,17 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-# fmt: off
+
 class Tests():
-    azshader_was_removed =          ("azshader was removed",        "Failed to remove azshader")
-    azshader_was_compiled =         ("azshader was compiled",       "Failed to compile azshader")
-    no_error_occurred =             ("No errors detected",          "Errors were detected")
-# fmt: on
+    azshader_was_removed = (
+        "azshader was removed",
+        "Failed to remove azshader")
+    azshader_was_compiled = (
+        "azshader was compiled",
+        "Failed to compile azshader")
+    no_error_occurred = (
+        "No errors detected",
+        "Errors were detected")
 
 
 def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
@@ -126,7 +131,8 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         _copy_tmp_files_in_order(src_assets_subdir, file_list, game_asset_path, 1.0)
 
         # Give enough time to AP to compile the shader
-        helper.wait_for_condition(lambda: _asset_exists(azshader_name), 60.0)
+        general.idle_wait_frames(1)
+        helper.wait_for_condition(lambda: _asset_exists(azshader_name), 120.0)
 
         Report.critical_result(Tests.azshader_was_compiled, _asset_exists(azshader_name))
 
@@ -135,6 +141,7 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         # to make the source files visible to the AP in reverse order. The
         # ShaderAssetBuilder will only succeed when the last file becomes visible.
         _remove_files(game_asset_path, reverse_file_list)
+        general.idle_wait_frames(1)
         helper.wait_for_condition(lambda: not _asset_exists(azshader_name), 5.0)
         Report.critical_result(Tests.azshader_was_removed, not _asset_exists(azshader_name))
 
@@ -152,6 +159,7 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         _copy_tmp_files_in_order(src_assets_subdir, reverse_file_list, game_asset_path, 3.0)
 
         # Give enough time to AP to compile the shader
+        general.idle_wait_frames(1)
         helper.wait_for_condition(lambda: _asset_exists(azshader_name), 60.0)
 
         Report.critical_result(Tests.azshader_was_compiled, _asset_exists(azshader_name))
@@ -162,6 +170,7 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         # First Clean up.
         # Remove left over files.
         _remove_files(game_asset_path, reverse_file_list)
+        general.idle_wait_frames(1)
         helper.wait_for_condition(lambda: not _asset_exists(azshader_name), 5.0)
         Report.critical_result(Tests.azshader_was_removed, not _asset_exists(azshader_name))
 
@@ -169,15 +178,18 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         _copy_tmp_files_in_order(src_assets_subdir, reverse_file_list, game_asset_path)
 
         # Give enough time to AP to compile the shader
+        general.idle_wait_frames(1)
         helper.wait_for_condition(lambda: _asset_exists(azshader_name), 60.0)
 
         Report.critical_result(Tests.azshader_was_compiled, _asset_exists(azshader_name))
 
         # All good, let's cleanup leftover files before closing the test.
         _remove_files(game_asset_path, reverse_file_list)
+        general.idle_wait_frames(1)
         helper.wait_for_condition(lambda: not _asset_exists(azshader_name), 5.0)
 
         # Look for errors to raise.
+        general.idle_wait_frames(1)
         helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)
         Report.result(Tests.no_error_occurred, not error_tracer.has_errors)
 
