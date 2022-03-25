@@ -26,7 +26,7 @@ namespace ${GemName}
 
     inline namespace ${SanitizedCppName}Interface
     {
-        inline constexpr auto Get = [](AZ::ComponentBus::BusIdType busId) {return ${SanitizedCppName}RequestBus::FindFirstHandler(busId); };
+        inline constexpr auto Get = [](AZ::ComponentBus::BusIdType busId) { return ${SanitizedCppName}RequestBus::FindFirstHandler(busId); };
     }
 
 } // namespace ${GemName}
