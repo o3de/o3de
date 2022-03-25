@@ -18,7 +18,7 @@ void EvaluateEyeSurface(
     bool isFrontFace,
     inout Surface surface)
 {
-    float3x3 uvMatrix = CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms. Eye materials are only using UV1 (unwrapped), so no transformation is needed.
+    float3x3 uvMatrix = CreateIdentity3x3(); // The eye material type doesn't support UV transforms
     
     // ------- Iris/Sclera Layer Setup -------
 

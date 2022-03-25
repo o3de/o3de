@@ -13,10 +13,13 @@
 
 // ---------- Material Parameters ----------
 
+COMMON_OPTIONS_BASE_COLOR(o_iris_)
+COMMON_OPTIONS_NORMAL(o_iris_)
+COMMON_OPTIONS_ROUGHNESS(o_iris_)
+COMMON_OPTIONS_BASE_COLOR(o_sclera_)
+COMMON_OPTIONS_NORMAL(o_sclera_)
+COMMON_OPTIONS_ROUGHNESS(o_sclera_)
 COMMON_OPTIONS_SPECULAR_F0()
-
-// This includes common base color, normal, and roughness options for iris/sclera
-COMMON_OPTIONS_EYE()
 
 #include "MaterialInputs/AlphaInput.azsli"
 

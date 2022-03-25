@@ -13,21 +13,24 @@
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
+#include "MaterialInputs/BaseColorInput.azsli"
+#include "MaterialInputs/NormalInput.azsli"
+#include "MaterialInputs/RoughnessInput.azsli"
 #include "MaterialInputs/SpecularInput.azsli"
 #include "MaterialInputs/UvSetCount.azsli"
 #include "MaterialInputs/SubsurfaceInput.azsli"
 #include "MaterialInputs/TransmissionInput.azsli"
 
-// This includes base color, normal, and roughness input azsli's.
-#include "MaterialInputs/EyeInput.azsli"
-
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     // Auto-generate material SRG fields for common inputs
+    COMMON_SRG_INPUTS_BASE_COLOR(m_iris_)
+    COMMON_SRG_INPUTS_NORMAL(m_iris_)
+    COMMON_SRG_INPUTS_ROUGHNESS(m_iris_)
+    COMMON_SRG_INPUTS_BASE_COLOR(m_sclera_)
+    COMMON_SRG_INPUTS_NORMAL(m_sclera_)
+    COMMON_SRG_INPUTS_ROUGHNESS(m_sclera_)
     COMMON_SRG_INPUTS_SPECULAR_F0()
-
-    // This includes common base color, normal, and roughness inputs for iris/sclera.
-    COMMON_SRG_INPUTS_EYE()
 
     Sampler m_sampler
     {
