@@ -960,7 +960,7 @@ namespace UnitTest
     TEST_F(ImageProcessingTest, TestAverageColor)
     {
         //load builder presets
-        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native());
         ASSERT_TRUE(outcome.IsSuccess());
 
         auto checkAverageColor = [&](ImageFeature figureKey, AZ::Color expectedAverage)
@@ -968,7 +968,7 @@ namespace UnitTest
             AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
             AZStd::string inputFile = m_imagFileNameMap[figureKey];
-            ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "pc", outProducts, m_context.get());
+            ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder.Native(), "pc", outProducts, m_context.get());
             if (process != nullptr)
             {
                 process->ProcessAll();
