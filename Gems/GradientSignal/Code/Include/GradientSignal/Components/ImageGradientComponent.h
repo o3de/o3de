@@ -131,7 +131,7 @@ namespace GradientSignal
 
         void GetSubImageData();
         float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
-        float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y, AZStd::span<const uint8_t> imageData) const;
+        float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
         void SetupMultiplierAndOffset(float min, float max);
         void SetupDefaultMultiplierAndOffset();
         void SetupAutoScaleMultiplierAndOffset();
@@ -154,6 +154,7 @@ namespace GradientSignal
         GradientTransform m_gradientTransform;
         AZStd::span<const uint8_t> m_imageData;
         ChannelToUse m_currentChannel = ChannelToUse::Red;
+        CustomScaleType m_currentScaleType = CustomScaleType::None;
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
         AZ::u32 m_currentMipIndex = 0;

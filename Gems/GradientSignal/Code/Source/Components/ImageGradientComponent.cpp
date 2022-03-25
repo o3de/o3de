@@ -339,23 +339,7 @@ namespace GradientSignal
             }
 
             m_currentChannel = m_configuration.m_channelToUse;
-
-            // Calculate the multiplier and offset based on our custom scale type
-            switch (m_configuration.m_customScaleType)
-            {
-            case CustomScaleType::Auto:
-                SetupAutoScaleMultiplierAndOffset();
-                break;
-
-            case CustomScaleType::Manual:
-                SetupManualScaleMultiplierAndOffset();
-                break;
-
-            case CustomScaleType::None:
-            default:
-                SetupDefaultMultiplierAndOffset();
-                break;
-            }
+            m_currentScaleType = m_configuration.m_customScaleType;
 
             // Make sure the custom mip level doesn't exceed the available mip levels in this
             // image asset. If so, then just use the lowest available mip level.
@@ -372,13 +356,33 @@ namespace GradientSignal
         else
         {
             m_currentChannel = ChannelToUse::Red;
+            m_currentScaleType = CustomScaleType::None;
             m_currentMipIndex = 0;
-            SetupDefaultMultiplierAndOffset();
         }
 
         // Update our cached image data
         m_imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptorForMipLevel(m_currentMipIndex);
         m_imageData = m_configuration.m_imageAsset->GetSubImageData(m_currentMipIndex, 0);
+
+        // Calculate the multiplier and offset based on our scale type
+        // Make sure we do this last, because the calculation might
+        // depend on the image data (e.g. auto scale finds the min/max value
+        // from the image data, which might be different based on the mip level)
+        switch (m_currentScaleType)
+        {
+        case CustomScaleType::Auto:
+            SetupAutoScaleMultiplierAndOffset();
+            break;
+
+        case CustomScaleType::Manual:
+            SetupManualScaleMultiplierAndOffset();
+            break;
+
+        case CustomScaleType::None:
+        default:
+            SetupDefaultMultiplierAndOffset();
+            break;
+        }
     }
 
     float ImageGradientComponent::GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const
@@ -429,7 +433,7 @@ namespace GradientSignal
 
                 // For terrarium, there is a separate algorithm for retrieving the value
                 const float value = (m_currentChannel == ChannelToUse::Terrarium)
-                    ? GetTerrariumPixelValue(x, y, m_imageData)
+                    ? GetTerrariumPixelValue(x, y)
                     : AZ::RPI::GetImageDataPixelValue<float>(
                         m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
 
@@ -442,13 +446,11 @@ namespace GradientSignal
         return defaultValue;
     }
 
-    float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y, AZStd::span<const uint8_t> imageData) const
+    float ImageGradientComponent::GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const
     {
-        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-
-        float r = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
-        float g = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
-        float b = AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
+        float r = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Red));
+        float g = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Green));
+        float b = AZ::RPI::GetImageDataPixelValue<float>(m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(ChannelToUse::Blue));
 
         /*
             "Terrarium" is an image-based terrain file format as defined here:  https://www.mapzen.com/blog/terrain-tile-service/
@@ -485,21 +487,19 @@ namespace GradientSignal
 
     void ImageGradientComponent::SetupAutoScaleMultiplierAndOffset()
     {
-        const AZ::RHI::ImageDescriptor& imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptor();
-        auto width = imageDescriptor.m_size.m_width;
-        auto height = imageDescriptor.m_size.m_height;
+        auto width = m_imageDescriptor.m_size.m_width;
+        auto height = m_imageDescriptor.m_size.m_height;
 
         // Retrieve all the pixel values from our image data
         AZStd::vector<float> pixelValues(width * height);
 
         if (m_currentChannel == ChannelToUse::Terrarium)
         {
-            const auto& imageData = m_configuration.m_imageAsset->GetSubImageData(0, 0);
             for (uint32_t y = 0; y < height; y++)
             {
                 for (uint32_t x = 0; x < width; x++)
                 {
-                    pixelValues[(y * width) + x] = GetTerrariumPixelValue(x, y, imageData);
+                    pixelValues[(y * width) + x] = GetTerrariumPixelValue(x, y);
                 }
             }
         }
