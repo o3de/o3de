@@ -20,13 +20,14 @@ namespace ${GemName}
     public:
         AZ_RTTI(${GemName}::${SanitizedCppName}Requests, "{${Random_Uuid}}");
 
-        // Put your public request methods here
+        // Put your public request methods here.
+        
+        // Put notification events here. Examples:
+        // void RegisterEvent(AZ::EventHandler<...> notifyHandler);
+        // AZ::Event<...> m_notifyEvent1;
+        
     };
-    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests>;
 
-    inline namespace ${SanitizedCppName}Interface
-    {
-        inline constexpr auto Get = [](AZ::ComponentBus::BusIdType busId) { return ${SanitizedCppName}RequestBus::FindFirstHandler(busId); };
-    }
+    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests>;
 
 } // namespace ${GemName}
