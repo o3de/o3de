@@ -10,6 +10,7 @@
 #include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -34,10 +35,11 @@ namespace AZ
         DiffuseProbeGridClassificationPass::DiffuseProbeGridClassificationPass(const RPI::PassDescriptor& descriptor)
             : RPI::RenderPass(descriptor)
         {
-            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            if (!(RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_rayTracing && AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED))
             {
                 // GI is not supported on this platform
                 SetEnabled(false);
+                return;
             }
             else
             {

@@ -27,7 +27,7 @@ namespace AZ
         DiffuseProbeGridRenderPass::DiffuseProbeGridRenderPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
         {
-            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            if (!(RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_rayTracing && AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED))
             {
                 // GI is not supported on this platform
                 SetEnabled(false);
