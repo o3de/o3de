@@ -155,7 +155,9 @@ namespace AZ
 #ifdef AZ_DX12_DXR_SUPPORT
             D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
             GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(options5));
-            m_features.m_rayTracing = options5.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+            // TODO REVERT. DISABLED TO TEST CHANGES THAT AFFECT PRECOMPILED GI SHADERS
+            // m_features.m_rayTracing = options5.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+            m_features.m_rayTracing = false;
 #else
             m_features.m_rayTracing = false;
 #endif
