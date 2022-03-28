@@ -72,14 +72,6 @@
        <width>40</width>
        <height>20</height>
       </size>
-<<<<<<< HEAD
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <widget class="QToolButton" name="m_cameraMenu">
-     <property name="toolTip">
-=======
      </property>
     </spacer>
    </item>
@@ -89,7 +81,6 @@
       <string>Camera settings</string>
      </property>
      <property name="text">
->>>>>>> development
       <string>Camera settings</string>
      </property>
      <property name="icon">
@@ -103,12 +94,9 @@
      <property name="toolTip">
       <string>Debug information</string>
      </property>
-<<<<<<< HEAD
-=======
      <property name="text">
       <string>Debug information</string>
      </property>
->>>>>>> development
      <property name="icon">
       <iconset>
        <normaloff>:/Menu/debug.svg</normaloff>:/Menu/debug.svg</iconset>
@@ -123,12 +111,9 @@
      <property name="toolTip">
       <string>Toggle viewport helpers</string>
      </property>
-<<<<<<< HEAD
-=======
      <property name="text">
       <string>Toggle viewport helpers</string>
      </property>
->>>>>>> development
      <property name="icon">
       <iconset>
        <normaloff>:/Menu/helpers.svg</normaloff>:/Menu/helpers.svg</iconset>
@@ -143,12 +128,9 @@
      <property name="toolTip">
       <string>Viewport resolution</string>
      </property>
-<<<<<<< HEAD
-=======
      <property name="text">
       <string>Viewport resolution</string>
      </property>
->>>>>>> development
      <property name="icon">
       <iconset>
        <normaloff>:/Menu/resolution.svg</normaloff>:/Menu/resolution.svg</iconset>
@@ -160,12 +142,9 @@
      <property name="toolTip">
       <string>Other settings</string>
      </property>
-<<<<<<< HEAD
-=======
      <property name="text">
       <string>Other settings</string>
      </property>
->>>>>>> development
      <property name="icon">
       <iconset>
        <normaloff>:/Menu/menu.svg</normaloff>:/Menu/menu.svg</iconset>
